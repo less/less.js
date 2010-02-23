@@ -16,6 +16,7 @@ development status
 ### Not yet implemented:
 
 - Mixins
+- Functions
 - Color operations
 - Importing
 - Namespaces

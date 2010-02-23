@@ -1,0 +1,18 @@
+.magic-box {
+  content: "gold";
+  width: 60cm;
+  height: 40cm;
+}
+.magic-box #lock { color: silver; }
+#accessors {
+  content: "gold";
+  width: 60cm;
+}
+.unlock {
+  content: "gold";
+  width: 60cm;
+  height: 40cm;
+  color: silver;
+  border-color: orange;
+}
+.unlock #lock { color: silver; }

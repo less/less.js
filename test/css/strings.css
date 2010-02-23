@@ -1,0 +1,12 @@
+#strings {
+  background-image: url("http://son-of-a-banana.com");
+  quotes: "~" "~";
+  content: "#*%:&^,)!.(~*})";
+  empty: "";
+}
+#comments { content: "/* hello */ // not-so-secret"; }
+#single-quote {
+  quotes: "'" "'";
+  content: '""#!&""';
+  empty: '';
+}

@@ -1,0 +1,46 @@
+/*  
+ * Comment Test
+ * 
+ * - cloudhead (http://cloudhead.net)
+ *
+ */
+
+////////////////
+@var: "content";
+////////////////
+
+/* Colors
+ * ------
+ *   #EDF8FC (background blue)
+ *   #166C89 (darkest blue)
+ *
+ * Text:
+ *   #333 (standard text) // A comment within a comment!
+ *   #1F9EC9 (standard link)
+ *
+ */
+
+/* @group Variables
+------------------- */
+#comments {
+  /**/ // An empty comment 
+  color: red; /* A C-style comment */
+  background-color: orange; // A little comment
+  font-size: 12px;
+  
+  /* lost comment */ content: @var;
+  
+  border: 1px solid black;
+  
+  // padding & margin //
+  padding: 0;
+  margin: 2em;
+} //
+
+/* commented out
+  #more-comments {
+    color: grey;
+  }
+*/
+
+//

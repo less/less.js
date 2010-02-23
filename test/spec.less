@@ -1,0 +1,26 @@
+@import "lib";
+
+div.browse {
+  @var: 1px;
+  margin: 0 0 20px;
+  &.class {
+    padding: 0;
+  }
+  :hover {
+    width: @var;
+    height: 1 + @var;
+  }
+  #div {
+    @poo: #fff;
+    foo: bar, zoo;
+    > pipe {
+        color: @poo;    
+    }
+  }
+  > foo {
+    foo: #444;    
+  }
+  &:last {
+    c:1;    
+  }
+}

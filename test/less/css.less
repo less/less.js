@@ -1,0 +1,104 @@
+/* 
+
+  a CSS File
+
+*/
+
+div { color: black; }
+div { width: 99%; }
+
+* {
+  min-width: 45em;
+}
+
+h1, h2 > a > p, h3 {
+  color: none;
+}
+
+div.class {
+  color: blue;
+}
+
+div#id {
+  color: green;
+}
+
+.class#id {
+  color: purple;
+}
+
+.one.two.three {
+  color: grey;
+}
+
+@media print {
+  font-size: 3em;
+}
+
+@media screen {
+  font-size: 10px;
+}
+
+@font-face {
+  font-family: 'Garamond Pro';
+  src: url("/fonts/garamond-pro.ttf");
+}
+
+a:hover, a:link {
+  color: #999;
+}
+
+p, p:first-child {
+  text-transform: none;
+}
+
+q:lang(no) {
+  quotes: none;
+}
+
+p + h1 {
+  font-size: 2.2em;
+}
+
+input[type="text"] { 
+  font-weight: normal; 
+}
+
+h2[title] {
+  font-size: 100%;
+}
+
+[disabled] {
+  color: transparent;
+}
+
+#shorthands {
+  border: 1px solid #000;
+  font: 12px/16px Arial;
+  margin: 1px 0;
+  padding: 0 auto;
+  background: url("http://www.lesscss.org/spec.html") no-repeat 0 4px;
+}
+
+#more-shorthands {
+  margin: 0;
+  padding: 1px 0 2px 0;
+  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif; 
+}
+
+.misc {
+  -moz-border-radius: 2px;
+  display: -moz-inline-stack;
+  width: .1em;
+  background-color: #009998;
+  background-image: url(images/image.jpg);
+  background: -webkit-gradient(linear, left top, left bottom, from(red), to(blue));
+  margin: ;
+}
+
+#important {
+  color: red !important;
+  width: 100%!important;
+  height: 20px ! important;
+}
+

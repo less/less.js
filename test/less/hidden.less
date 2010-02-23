@@ -1,0 +1,25 @@
+.hidden {
+  color: transparent;
+  .inside {
+    width: 0%;
+  }
+};
+
+.fully-hidden {
+  color: none;
+};
+
+.visible {
+  width: 100%;
+  .hidden {
+    color: black;
+  };
+}
+
+.mix {
+  .hidden;
+}
+
+.mix2 {
+  .visible;
+}

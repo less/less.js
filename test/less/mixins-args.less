@@ -1,0 +1,59 @@
+.mixin (@a: 1px, @b: 50%) {
+  width: @a * 5;
+  height: @b - 1%;
+}
+
+.mixiny
+(@a: 0, @b: 0) {
+  margin: @a;
+  padding: @b;
+}
+
+.hidden() {
+  color: transparent;
+}
+
+.two-args {
+  color: blue;
+  .mixin(2px, 100%);
+}
+
+.one-arg {
+  .mixin(3px);
+}
+
+.no-parens {
+  .mixin;
+}
+
+.no-args {
+  .mixin();
+}
+
+.var-args {
+  @var: 9;
+  .mixin(@var, @var * 2);
+}
+
+.multi-mix {
+  .mixin(2px, 30%);
+  .mixiny(4, 5);
+}
+
+.maxa(@arg1: 10, @arg2: #f00) {
+  padding: @arg1 * 2px;
+  color: @arg2;
+}
+
+body {
+  .maxa(15);
+}
+
+@glob: 5;
+.global-mixin(@a:2) {
+  width: @glob + @a;
+}
+
+.scope-mix {
+  .global-mixin(3);
+}

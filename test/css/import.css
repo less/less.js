@@ -1,0 +1,12 @@
+#css { color: yellow; }
+#import { color: red; }
+.mixin {
+  height: 10px;
+  color: red;
+}
+#import-test {
+  height: 10px;
+  color: red;
+  width: 10px;
+  height: 30%;
+}

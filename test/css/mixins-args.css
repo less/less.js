@@ -1,0 +1,32 @@
+.two-args {
+  color: blue;
+  width: 10px;
+  height: 99%;
+}
+.one-arg {
+  width: 15px;
+  height: 49%;
+}
+.no-parens {
+  width: 5px;
+  height: 49%;
+}
+.no-args {
+  width: 5px;
+  height: 49%;
+}
+.var-args {
+  width: 45;
+  height: 17%;
+}
+.multi-mix {
+  width: 10px;
+  height: 29%;
+  margin: 4;
+  padding: 5;
+}
+body {
+  padding: 30px;
+  color: #ff0000;
+}
+.scope-mix { width: 8; }

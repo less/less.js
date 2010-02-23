@@ -1,0 +1,43 @@
+.mixin { border: 1px solid black; }
+.mixout { border-color: orange; }
+.borders { border-style: dashed; }
+
+#namespace {
+  .borders {
+    border-style: dotted;
+  }
+  .biohazard {
+    content: "death";
+    .man {
+      color: transparent;
+    }
+  }
+}
+#theme > .mixin {
+  background-color: grey;
+}
+#container {
+  color: black;
+  .mixin, .mixout;
+  #theme > .mixin;
+}
+
+#header {
+  .milk {
+    color: white;
+    .mixin, #theme > .mixin;
+  }
+  #cookie {
+    .chips {
+      #namespace .borders;
+      .calories {
+        #container;
+      }
+    }
+    .borders;
+  }
+}
+.secure-zone { #namespace .biohazard .man; }
+.direct {
+  #namespace > .borders;
+}

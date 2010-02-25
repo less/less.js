@@ -4,7 +4,9 @@
   content: "#*%:&^,)!.(~*})";
   empty: "";
 }
-#comments { content: "/* hello */ // not-so-secret"; }
+#comments {
+  content: "/* hello */ // not-so-secret";
+}
 #single-quote {
   quotes: "'" "'";
   content: '""#!&""';

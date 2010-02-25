@@ -6,9 +6,6 @@ require.paths.unshift(__dirname, path.join(__dirname, '..'),
                       path.join(__dirname, 'vendor', 'vows')); 
 
 var vows = require('lib/vows');
-
-GLOBAL.inspect = inspect;
-
 var less = require('lib/less/adapters/server');
 
 fs.readdirSync('test/less').forEach(function (file) {

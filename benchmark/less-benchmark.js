@@ -10,25 +10,34 @@ var file = path.join(__dirname, 'benchmark.less');
 fs.stat(file, function (e, stats) {
     fs.open(file, process.O_RDONLY, stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
-            var tree, css, start, end;
+            var tree, css, start, end, total;
 
-            sys.puts("Bechmarking... " + path.basename(file), "");
+            sys.puts("Bechmarking...\n", path.basename(file) + " (" +
+                     parseInt(data.length / 1024) + " KB)", "");
+
             start = new(Date);
             tree = less.parser.parse(data);
             end = new(Date);
 
-            sys.puts("Parsed " + parseInt(data.length / 1024) + " KB in " +
-                     ((end - start) / 1000) + "s (" +
-                     parseInt(1000 / (end - start) *
-                     data.length / 1000) + " KB\/s)");
+            total = end - start;
+
+            sys.puts("Parsing: " +
+                     total + " ms (" +
+                     parseInt(1000 / total *
+                     data.length / 1024) + " KB\/s)");
 
             start = new(Date);
             css = tree.toCSS([], {frames: []});
             end = new(Date);
 
-            sys.puts("Generated " + parseInt(css.length / 1024) + " KB in " +
-                     (end - start) + " ms (" +
-                     (1000 / (end - start) * css.length / 1000) + " KB\/s)");
+            sys.puts("Generation: " + (end - start) + " ms (" +
+                     parseInt(1000 / (end - start) *
+                     data.length / 1024) + " KB\/s)");
+
+            total += end - start;
+
+            sys.puts("Total: " + total + "ms (" +
+                     parseInt(1000 / total * data.length / 1024) + " KB/s)");
         });
     });
 });

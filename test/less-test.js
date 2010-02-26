@@ -3,7 +3,7 @@ var path = require('path'),
     sys = require('sys');
 
 require.paths.unshift(__dirname, path.join(__dirname, '..'),
-                      path.join(__dirname, 'vendor', 'vows')); 
+                      path.join(__dirname, 'vendor', 'vows'));
 
 var vows = require('lib/vows');
 var less = require('lib/less/adapters/server');
@@ -16,7 +16,7 @@ fs.readdirSync('test/less').forEach(function (file) {
             else { sys.print(e || err) }
             sys.puts("");
         });
-    }); 
+    });
 });
 
 function toCSS(path, callback) {

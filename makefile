@@ -4,4 +4,10 @@
 test: 
 	node test/less-test.js
 
-.PHONY: test
+#
+# Run benchmark
+#
+benchmark:
+	node benchmark/less-benchmark.js
+
+.PHONY: test benchmark

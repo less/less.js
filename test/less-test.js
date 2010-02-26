@@ -11,9 +11,13 @@ var less = require('lib/less/adapters/server');
 fs.readdirSync('test/less').forEach(function (file) {
     toCSS('test/less/' + file, function (err, less) {
         read(path.join('test/css', path.basename(file, '.less')) + '.css', function (e, css) {
-            sys.print(file + ": ")
+            sys.print("- " + file + ": ")
             if (less === css) { sys.print('OK') }
-            else { sys.print(e || err) }
+            else if (err && err.name == 'ParseError') {
+                sys.print("!\n  " + err.message);
+            } else {
+                sys.print("=/=");
+            }
             sys.puts("");
         });
     });

@@ -7,9 +7,8 @@ var path = require('path'),
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
 var less = require('lib/less/adapters/server');
-var input = path.join(process.cwd(), process.argv[2]),
-    output = path.join(process.cwd(), process.argv[3] ||
-                       input.replace(/\.le?ss$/, '.css'));
+var input = process.argv[2] && path.join(process.cwd(), process.argv[2]),
+    output = process.argv[3] && path.join(process.cwd(), process.argv[3]);
 
 var css, fd, tree;
 
@@ -18,8 +17,12 @@ fs.stat(input, function (e, stats) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
             tree = less.parser.parse(data);
             css = tree.toCSS([], {frames: []});
-            fd = fs.openSync(output, "w");
-            fs.writeSync(fd, css, 0, "utf8");
+            if (output) {
+                fd = fs.openSync(output, "w");
+                fs.writeSync(fd, css, 0, "utf8");
+            } else {
+                sys.print(css);
+            }
         });
     });
 });

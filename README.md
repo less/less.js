@@ -12,12 +12,12 @@ development status
 - Nested rules
 - & selector
 - Numerical operations
+- Color operations
 
 ### Not yet implemented:
 
 - Mixins
 - Functions
-- Color operations
 - Importing
 - Namespaces
 - Accessors

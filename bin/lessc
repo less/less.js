@@ -16,12 +16,16 @@ fs.stat(input, function (e, stats) {
     fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
             tree = less.parser.parse(data);
-            css = tree.toCSS([], {frames: []});
-            if (output) {
-                fd = fs.openSync(output, "w");
-                fs.writeSync(fd, css, 0, "utf8");
+            if (less.parser.error) {
+                process.stdio.writeError(less.parser.error.message);
             } else {
-                sys.print(css);
+                css = tree.toCSS([], {frames: []});
+                if (output) {
+                    fd = fs.openSync(output, "w");
+                    fs.writeSync(fd, css, 0, "utf8");
+                } else {
+                    sys.print(css);
+                }
             }
         });
     });

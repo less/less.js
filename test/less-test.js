@@ -13,8 +13,8 @@ fs.readdirSync('test/less').forEach(function (file) {
         read(path.join('test/css', path.basename(file, '.less')) + '.css', function (e, css) {
             sys.print("- " + file + ": ")
             if (less === css) { sys.print('OK') }
-            else if (err && err.name == 'ParseError') {
-                sys.print("!\n  " + err.message);
+            else if (err) {
+                sys.print("!\n  " + (err && err.message));
             } else {
                 sys.print("=/=");
             }
@@ -24,12 +24,16 @@ fs.readdirSync('test/less').forEach(function (file) {
 });
 
 function toCSS(path, callback) {
+    var tree;
     read(path, function (e, str) {
         if (e) { return callback(e) }
-        try {
-            callback(null, less.parser.parse(str).toCSS([], {frames: []}));
-        } catch (e) {
-            callback(e);
+
+        tree = less.parser.parse(str);
+
+        if (less.parser.error) {
+            callback(less.parser.error);
+        } else {
+            callback(null, tree.toCSS([], {frames: []}));
         }
     });
 }

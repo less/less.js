@@ -24,7 +24,7 @@ fs.readdirSync('test/less').forEach(function (file) {
 });
 
 function toCSS(path, callback) {
-    var tree;
+    var tree, css;
     read(path, function (e, str) {
         if (e) { return callback(e) }
 
@@ -33,7 +33,12 @@ function toCSS(path, callback) {
         if (less.parser.error) {
             callback(less.parser.error);
         } else {
-            callback(null, tree.toCSS([], {frames: []}));
+            try {
+                css = tree.toCSS([], {frames: []});
+                callback(null, css);
+            } catch (e) {
+                callback(e);
+            }
         }
     });
 }
@@ -42,7 +47,9 @@ function read(path, callback) {
     fs.stat(path, function (e, stats) {
         if (e) return callback(e);
         fs.open(path, process.O_RDONLY, stats.mode, function (e, fd) {
+            if (e) return callback(e);
             fs.read(fd, stats.size, 0, "utf8", function (e, data) {
+                if (e) return callback(e);
                 callback(null, data);
             });
         });

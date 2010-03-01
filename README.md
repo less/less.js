@@ -3,6 +3,8 @@ less.js
 
 > Leaner CSS, in your browser.
 
+**less.js is currently under development, and not to be relied upon!**
+
 development status
 ------------------
 

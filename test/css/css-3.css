@@ -7,14 +7,36 @@
   font-family: Headline;
   src: local(Futura-Medium), url(fonts.svg#MyGeometricModern) format("svg");
 }
-.other { -moz-transform: translate(0, 11em) rotate(-90deg); }
-p:not([class*="lead"]) { color: black; }
-input[type="text"].class#id[attr=32]:not(1) { color: white; }
-div#id.class[a=1][b=2].class:not(1) { color: white; }
-ul.comma > li:not(:only-child)::after { color: white; }
-ol.comma > li:nth-last-child(2)::after { color: white; }
-li:nth-child(4n+1) { color: white; }
-li:nth-child(-5n) { color: white; }
-li:nth-child(-n+2) { color: white; }
-a[href^="http://"], a[href$="http://"] { color: black; }
-p::before { color: black; }
+.other {
+  -moz-transform: translate(0, 11em) rotate(-90deg);
+}
+p:not([class*="lead"]) {
+  color: black;
+}
+input[type="text"].class#id[attr=32]:not(1) {
+  color: white;
+}
+div#id.class[a=1][b=2].class:not(1) {
+  color: white;
+}
+ul.comma > li:not(:only-child)::after {
+  color: white;
+}
+ol.comma > li:nth-last-child(2)::after {
+  color: white;
+}
+li:nth-child(4n+1) {
+  color: white;
+}
+li:nth-child(-5n) {
+  color: white;
+}
+li:nth-child(-n+2) {
+  color: white;
+}
+a[href^="http://"], a[href$="http://"] {
+  color: black;
+}
+p::before {
+  color: black;
+}

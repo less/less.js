@@ -1,32 +1,32 @@
 #yelow #short {
-    color: #fea;
+  color: #fea;
 }
 #yelow #long {
-    color: #ffeeaa;
+  color: #ffeeaa;
 }
 #yelow #rgba {
-    color: rgba(255, 238, 170, 0.1);
+  color: rgba(255, 238, 170, 0.1);
 }
 #blue #short {
-    color: #00f;
+  color: #00f;
 }
 #blue #long {
-    color: #0000ff;
+  color: #0000ff;
 }
 #blue #rgba {
-    color: rgba(0, 0, 255, 0.1);
+  color: rgba(0, 0, 255, 0.1);
 }
 #overflow .a {
-    color: #000000;
+  color: #000000;
 }
 #overflow .b {
-    color: #ffffff;
+  color: #ffffff;
 }
 #overflow .c {
-    color: #ffffff;
+  color: #ffffff;
 }
 #overflow .d {
-    color: #00ff00;
+  color: #00ff00;
 }
 #grey {
   color: #c8c8c8;

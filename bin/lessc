@@ -7,12 +7,37 @@ var path = require('path'),
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
 var less = require('lib/less/adapters/server');
-var input = process.argv[2] && path.join(process.cwd(), process.argv[2]),
-    output = process.argv[3] && path.join(process.cwd(), process.argv[3]);
+var args = process.argv.slice(1);
+
+args = args.filter(function (arg) {
+    if (arg = arg.match(/^--?([a-z][a-z-]*)$/i)) { arg = arg[1] }
+    else { return arg }
+
+    switch (arg) {
+        case 'v':
+            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler)");
+            process.exit(0);
+        case 'h':
+            sys.puts("usage: lessc source [destination]");
+            process.exit(0);
+    }
+});
+
+var input = args[1] && path.join(process.cwd(), args[1]),
+    output = args[2] && path.join(process.cwd(), args[2]);
 
 var css, fd, tree;
 
+if (! input) {
+    process.stdio.writeError("lessc: no input files\n");
+    process.exit(1);
+}
+
 fs.stat(input, function (e, stats) {
+    if (e) {
+        process.stdio.writeError("lessc: " + e.message + ": '" + input + "'\n");
+        process.exit(1);
+    }
     fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
             tree = less.parser.parse(data);

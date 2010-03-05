@@ -19,6 +19,11 @@ fs.stat(file, function (e, stats) {
             tree = less.parser.parse(data);
             end = new(Date);
 
+            if (less.parser.error) {
+                process.stdio.writeError(less.parser.error.message);
+                process.exit(3);
+            }
+
             total = end - start;
 
             sys.puts("Parsing: " +

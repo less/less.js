@@ -8,6 +8,19 @@ require.paths.unshift(__dirname, path.join(__dirname, '..'),
 var vows = require('lib/vows');
 var less = require('lib/less/adapters/server');
 
+less.tree = {};
+process.mixin(less.tree, require(path.join(__dirname, '..', 'lib', 'less', 'tree')));
+
+less.tree.functions.add = function (a, b) {
+    return new(less.tree.Dimension)(a.value + b.value);
+}
+less.tree.functions.increment = function (a) {
+    return new(less.tree.Dimension)(a.value + 1);
+}
+less.tree.functions.color = function (str) {
+    if (str.content === "evil red") { return new(less.tree.Color)("600") }
+}
+
 fs.readdirSync('test/less').forEach(function (file) {
     toCSS('test/less/' + file, function (err, less) {
         read(path.join('test/css', path.basename(file, '.less')) + '.css', function (e, css) {

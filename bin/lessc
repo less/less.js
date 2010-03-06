@@ -10,7 +10,9 @@ var less = require('lib/less/adapters/server');
 var args = process.argv.slice(1);
 
 args = args.filter(function (arg) {
-    if (arg = arg.match(/^--?([a-z][a-z-]*)$/i)) { arg = arg[1] }
+    var match;
+
+    if (match = arg.match(/^--?([a-z][a-z-]*)$/i)) { arg = match[1] }
     else { return arg }
 
     switch (arg) {

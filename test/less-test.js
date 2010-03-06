@@ -2,10 +2,8 @@ var path = require('path'),
     fs = require('fs'),
     sys = require('sys');
 
-require.paths.unshift(__dirname, path.join(__dirname, '..'),
-                      path.join(__dirname, 'vendor', 'vows'));
+require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
-var vows = require('lib/vows');
 var less = require('lib/less/adapters/server');
 
 less.tree = {};
@@ -68,9 +66,4 @@ function read(path, callback) {
         });
     });
 }
-
-
-vows.tell('LeSS', function () {});
-
-
 

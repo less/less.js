@@ -21,13 +21,15 @@ less.tree.functions.color = function (str) {
 
 fs.readdirSync('test/less').forEach(function (file) {
     toCSS('test/less/' + file, function (err, less) {
-        read(path.join('test/css', path.basename(file, '.less')) + '.css', function (e, css) {
-            sys.print("- " + file + ": ")
-            if (less === css) { sys.print('OK') }
+        var name = path.basename(file, '.less');
+
+        read(path.join('test/css', name) + '.css', function (e, css) {
+            sys.print("- " + name + ": ")
+            if (less === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {
-                sys.print("!\n  " + (err && err.message));
+                sys.print(stylize("ERROR: " + (err && err.message), 'red'));
             } else {
-                sys.print("=/=");
+                sys.print(stylize("FAIL", 'yellow'));
             }
             sys.puts("");
         });
@@ -67,3 +69,16 @@ function read(path, callback) {
     });
 }
 
+// Stylize a string
+function stylize(str, style) {
+    var styles = {
+        'bold'      : [1,  22],
+        'inverse'   : [7,  27],
+        'underline' : [4,  24],
+        'yellow'    : [33, 39],
+        'green'     : [32, 39],
+        'red'       : [31, 39]
+    };
+    return '\033[' + styles[style][0] + 'm' + str +
+           '\033[' + styles[style][1] + 'm';
+}

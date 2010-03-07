@@ -3,6 +3,10 @@
   height: @b - 1%;
 }
 
+.mixina (@style, @width, @color: black) {
+    border: @width @style @color;
+}
+
 .mixiny
 (@a: 0, @b: 0) {
   margin: @a;
@@ -16,6 +20,7 @@
 .two-args {
   color: blue;
   .mixin(2px, 100%);
+  .mixina(dotted, 2px);
 }
 
 .one-arg {

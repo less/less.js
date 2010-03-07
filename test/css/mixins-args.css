@@ -2,6 +2,7 @@
   color: blue;
   width: 10px;
   height: 99%;
+  border: 2px dotted black;
 }
 .one-arg {
   width: 15px;
@@ -29,4 +30,6 @@ body {
   padding: 30px;
   color: #ff0000;
 }
-.scope-mix { width: 8; }
+.scope-mix {
+  width: 8;
+}

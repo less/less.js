@@ -30,9 +30,9 @@ A stable release is due sometime end of March.
 - Functions
 - Static mixins
 - Comment output
+- Dynamic mixins
 
 ### Not yet implemented:
 
-- Dynamic mixins
 - Importing
 - Accessors

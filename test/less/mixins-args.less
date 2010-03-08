@@ -62,3 +62,11 @@ body {
 .scope-mix {
   .global-mixin(3);
 }
+
+.nested-ruleset (@width: 200px) {
+    width: @width;
+    .column { margin: @width; }
+}
+.content {
+    .nested-ruleset(600px);
+}

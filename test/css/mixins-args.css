@@ -33,3 +33,9 @@ body {
 .scope-mix {
   width: 8;
 }
+.content {
+  width: 600px;
+}
+.content .column {
+  margin: 600px;
+}

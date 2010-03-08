@@ -19,7 +19,11 @@ less.tree.functions.color = function (str) {
     if (str.content === "evil red") { return new(less.tree.Color)("600") }
 }
 
+sys.puts("\n" + stylize("LESS", 'underline') + "\n");
+
 fs.readdirSync('test/less').forEach(function (file) {
+    if (! /\.less/.test(file)) { return }
+
     toCSS('test/less/' + file, function (err, less) {
         var name = path.basename(file, '.less');
 

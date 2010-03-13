@@ -4,10 +4,7 @@ var path = require('path'),
 
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
-var less = require('lib/less/adapters/server');
-
-less.tree = {};
-process.mixin(less.tree, require(path.join(__dirname, '..', 'lib', 'less', 'tree')));
+var less = require('lib/less');
 
 less.tree.functions.add = function (a, b) {
     return new(less.tree.Dimension)(a.value + b.value);

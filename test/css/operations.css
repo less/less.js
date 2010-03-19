@@ -16,9 +16,11 @@
   height: 0px;
   width: 4px;
 }
-.shorthands { padding: -1px 2px 0 -4px; }
+.shorthands {
+  padding: -1px 2px 0 -4px;
+}
 .colors {
-  color: #112233;
+  color: #123;
   border-color: #334455;
   background-color: #000000;
 }

@@ -16,33 +16,35 @@ fs.stat(file, function (e, stats) {
                      parseInt(data.length / 1024) + " KB)", "");
 
             start = new(Date);
-            tree = less.parser.parse(data);
-            end = new(Date);
 
-            if (less.parser.error) {
-                process.stdio.writeError(less.parser.error.message);
-                process.exit(3);
-            }
+            less.parser.parse(data, function (err, tree) {
+                end = new(Date);
 
-            total = end - start;
+                total = end - start;
 
-            sys.puts("Parsing: " +
-                     total + " ms (" +
-                     parseInt(1000 / total *
-                     data.length / 1024) + " KB\/s)");
+                sys.puts("Parsing: " +
+                         total + " ms (" +
+                         parseInt(1000 / total *
+                         data.length / 1024) + " KB\/s)");
 
-            start = new(Date);
-            css = tree.toCSS([], {frames: []});
-            end = new(Date);
+                start = new(Date);
+                css = tree.toCSS([], {frames: []});
+                end = new(Date);
 
-            sys.puts("Generation: " + (end - start) + " ms (" +
-                     parseInt(1000 / (end - start) *
-                     data.length / 1024) + " KB\/s)");
+                sys.puts("Generation: " + (end - start) + " ms (" +
+                         parseInt(1000 / (end - start) *
+                         data.length / 1024) + " KB\/s)");
 
-            total += end - start;
+                total += end - start;
 
-            sys.puts("Total: " + total + "ms (" +
-                     parseInt(1000 / total * data.length / 1024) + " KB/s)");
+                sys.puts("Total: " + total + "ms (" +
+                         parseInt(1000 / total * data.length / 1024) + " KB/s)");
+
+                if (err) {
+                    process.stdio.writeError(err.message);
+                    process.exit(3);
+                }
+            });
         });
     });
 });

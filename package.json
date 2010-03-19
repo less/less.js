@@ -1,0 +1,11 @@
+{
+  "name"          : "less",
+  "description"   : "Leaner CSS",
+  "url"           : "http://lesscss.org",
+  "keywords"      : ["css", "parser", "lesscss", "browser"],
+  "author"        : "Alexis Sellier <self@dcloudhead.net>",
+  "contributors"  : [],
+  "dependencies"  : [],
+  "lib"           : "lib",
+  "version"       : "1.0.0"
+}

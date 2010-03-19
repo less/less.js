@@ -6,7 +6,7 @@ var path = require('path'),
 
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
-var less = require('lib/less/adapters/server');
+var less = require('lib/less');
 var args = process.argv.slice(1);
 
 args = args.filter(function (arg) {
@@ -42,18 +42,19 @@ fs.stat(input, function (e, stats) {
     }
     fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
-            tree = less.parser.parse(data);
-            if (less.parser.error) {
-                process.stdio.writeError(less.parser.error.message);
-            } else {
-                css = tree.toCSS([], {frames: []});
-                if (output) {
-                    fd = fs.openSync(output, "w");
-                    fs.writeSync(fd, css, 0, "utf8");
+            less.parser.parse(data, function (err, tree) {
+                if (err) {
+                    process.stdio.writeError(err);
                 } else {
-                    sys.print(css);
+                    css = tree.toCSS([], {frames: []});
+                    if (output) {
+                        fd = fs.openSync(output, "w");
+                        fs.writeSync(fd, css, 0, "utf8");
+                    } else {
+                        sys.print(css);
+                    }
                 }
-            }
+            });
         });
     });
 });

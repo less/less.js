@@ -42,18 +42,18 @@ function toCSS(path, callback) {
     read(path, function (e, str) {
         if (e) { return callback(e) }
 
-        tree = less.parser.parse(str);
-
-        if (less.parser.error) {
-            callback(less.parser.error);
-        } else {
-            try {
-                css = tree.toCSS([], {frames: []});
-                callback(null, css);
-            } catch (e) {
-                callback(e);
+        less.parser.parse(str, function (err, tree) {
+            if (err) {
+                callback(err);
+            } else {
+                try {
+                    css = tree.toCSS([], {frames: []});
+                    callback(null, css);
+                } catch (e) {
+                    callback(e);
+                }
             }
-        }
+        });
     });
 }
 

@@ -28,7 +28,7 @@ fs.stat(file, function (e, stats) {
                          data.length / 1024) + " KB\/s)");
 
                 start = new(Date);
-                css = tree.toCSS([], {frames: []});
+                css = tree.toCSS();
                 end = new(Date);
 
                 sys.puts("Generation: " + (end - start) + " ms (" +

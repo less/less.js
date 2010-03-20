@@ -47,7 +47,7 @@ function toCSS(path, callback) {
                 callback(err);
             } else {
                 try {
-                    css = tree.toCSS([], {frames: []});
+                    css = tree.toCSS();
                     callback(null, css);
                 } catch (e) {
                     callback(e);

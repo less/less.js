@@ -3,7 +3,7 @@
   "description"   : "Leaner CSS",
   "url"           : "http://lesscss.org",
   "keywords"      : ["css", "parser", "lesscss", "browser"],
-  "author"        : "Alexis Sellier <self@dcloudhead.net>",
+  "author"        : "Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
   "dependencies"  : [],
   "lib"           : "lib",

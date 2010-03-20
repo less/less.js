@@ -46,7 +46,7 @@ fs.stat(input, function (e, stats) {
                 if (err) {
                     process.stdio.writeError(err);
                 } else {
-                    css = tree.toCSS([], {frames: []});
+                    css = tree.toCSS();
                     if (output) {
                         fd = fs.openSync(output, "w");
                         fs.writeSync(fd, css, 0, "utf8");

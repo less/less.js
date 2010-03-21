@@ -42,7 +42,9 @@ fs.stat(input, function (e, stats) {
     }
     fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
-            less.parser.parse(data, function (err, tree) {
+            new(less.Parser)({
+                paths: [path.dirname(input)]
+            }).parse(data, function (err, tree) {
                 if (err) {
                     process.stdio.writeError(err);
                 } else {

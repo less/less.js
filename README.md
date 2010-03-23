@@ -32,7 +32,3 @@ A stable release is due sometime end of March.
 - Comment output
 - Dynamic mixins
 
-### Not yet implemented:
-
-- Importing
-- Accessors

@@ -31,4 +31,5 @@ A stable release is due sometime end of March.
 - Static mixins
 - Comment output
 - Dynamic mixins
+- Importing
 

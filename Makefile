@@ -21,9 +21,11 @@ VERSION = `cat VERSION`
 
 less:
 	@@mkdir -p build
-	@@cat ${SRC}/parser.js\
+	@@cat lib/ext/*.js\
+	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
-	      ${SRC}/tree/*.js > ${BUILD}
+	      ${SRC}/tree/*.js\
+	      ${SRC}/browser.js > ${BUILD}
 	@@echo ${BUILD} built.
 
 min: less

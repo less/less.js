@@ -4,7 +4,7 @@ var path = require('path'),
 
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
-var less = require('lib/less');
+var less = require('index');
 var file = path.join(__dirname, 'benchmark.less');
 
 fs.stat(file, function (e, stats) {

@@ -1,7 +1,7 @@
 var path = require('path'),
     fs = require('fs');
 
-require.paths.unshift(__dirname);
+require.paths.unshift(path.join(__dirname, 'lib'));
 
 var less = {
     version: [2, 0, 0],
@@ -86,7 +86,6 @@ less.Parser.importer = function (file, paths, callback) {
 }
 
 require('less/functions');
-require('ext/array');
 
 for (var k in less) { exports[k] = less[k] }
 

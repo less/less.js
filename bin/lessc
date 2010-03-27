@@ -6,7 +6,7 @@ var path = require('path'),
 
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
-var less = require('lib/less');
+var less = require('index');
 var args = process.argv.slice(1);
 
 args = args.filter(function (arg) {

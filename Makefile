@@ -14,8 +14,8 @@ benchmark:
 # Build less.js
 #
 SRC = lib/less
-BUILD = build/less.js
-BUILD_MIN = build/less.min.js
+DIST = dist/less.js
+DIST_MIN = dist/less.min.js
 HEADER = build/header.js
 VERSION = `cat VERSION`
 
@@ -25,13 +25,13 @@ less:
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/tree/*.js\
-	      ${SRC}/browser.js > ${BUILD}
-	@@echo ${BUILD} built.
+	      ${SRC}/browser.js > ${DIST}
+	@@echo ${DIST} built.
 
 min: less
 	@@echo Minifying...
-	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${BUILD_MIN}
+	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
 	@@java -jar build/compiler.jar\
-		     --js ${BUILD} >> ${BUILD_MIN}
+		     --js ${DIST} >> ${DIST_MIN}
 
 .PHONY: test benchmark

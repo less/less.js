@@ -20,16 +20,17 @@ HEADER = build/header.js
 VERSION = `cat VERSION`
 
 less:
-	@@mkdir -p build
-	@@cat lib/ext/*.js\
+	@@mkdir -p dist
+	@@cat build/compat.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/tree/*.js\
+	      ${SRC}/tree.js\
 	      ${SRC}/browser.js > ${DIST}
 	@@echo ${DIST} built.
 
 min: less
-	@@echo Minifying...
+	@@echo minifying...
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
 	@@java -jar build/compiler.jar\
 		     --js ${DIST} >> ${DIST_MIN}

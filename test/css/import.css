@@ -1,6 +1,4 @@
-#css {
-  color: yellow;
-}
+@import "import-test-d.css";
 #import {
   color: red;
 }

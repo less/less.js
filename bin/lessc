@@ -31,13 +31,13 @@ var input = args[1] && path.join(process.cwd(), args[1]),
 var css, fd, tree;
 
 if (! input) {
-    process.stdio.writeError("lessc: no input files\n");
+    sys.puts("lessc: no input files\n");
     process.exit(1);
 }
 
 fs.stat(input, function (e, stats) {
     if (e) {
-        process.stdio.writeError("lessc: " + e.message + ": '" + input + "'\n");
+        sys.puts("lessc: " + e.message + ": '" + input + "'\n");
         process.exit(1);
     }
     fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
@@ -46,7 +46,7 @@ fs.stat(input, function (e, stats) {
                 paths: [path.dirname(input)]
             }).parse(data, function (err, tree) {
                 if (err) {
-                    process.stdio.writeError(err);
+                    sys.puts(err.message);
                 } else {
                     css = tree.toCSS();
                     if (output) {

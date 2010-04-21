@@ -41,7 +41,7 @@ fs.stat(file, function (e, stats) {
                          parseInt(1000 / total * data.length / 1024) + " KB/s)");
 
                 if (err) {
-                    process.stdio.writeError(err.message);
+                    sys.puts(err.message);
                     process.exit(3);
                 }
             });

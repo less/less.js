@@ -3,6 +3,7 @@
   quotes: "~" "~";
   content: "#*%:&^,)!.(~*})";
   empty: "";
+  brackets: "{" "}";
 }
 #comments {
   content: "/* hello */ // not-so-secret";

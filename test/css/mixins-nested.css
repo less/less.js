@@ -1,0 +1,6 @@
+.class .inner {
+  height: 300;
+}
+.class .inner .innest {
+  width: 30;
+}

@@ -1,0 +1,13 @@
+.mix (@a: 10) {
+  .inner {
+    height: @a * 10;
+
+    .innest {
+      width: @a;  
+    }  
+  }
+}
+
+.class {
+  .mix(30);
+}

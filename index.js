@@ -40,7 +40,7 @@ var less = {
  'keyword',  'variable',  'ruleset',    'element',
  'selector', 'quoted',    'expression', 'rule',
  'call',     'url',       'alpha',      'import',
- 'mixin',    'comment'
+ 'mixin',    'comment', 'anonymous'
 ].forEach(function (n) {
     require(path.join('less', 'tree', n));
 });

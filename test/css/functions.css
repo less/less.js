@@ -4,3 +4,6 @@
   height: undefined("self");
   border-width: 5;
 }
+#built-in {
+  escaped: -Some::weird(#thing, y);
+}

@@ -6,4 +6,9 @@
 }
 #built-in {
   escaped: -Some::weird(#thing, y);
+  lighten: #ff8080;
+  darken: #800000;
+  saturate: #203c31;
+  desaturate: #29332f;
+  greyscale: #2e2e2e;
 }

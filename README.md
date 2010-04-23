@@ -25,5 +25,6 @@ synopsis
 
 ### in the browser
 
-    <link rel="less" href="/stylesheets/main.less" type="text/css">
+    <script src="less.js"></script>
+    <link rel="less" href="main.less" type="text/css">
 

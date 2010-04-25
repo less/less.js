@@ -46,7 +46,7 @@ fs.stat(input, function (e, stats) {
                 paths: [path.dirname(input)]
             }).parse(data, function (err, tree) {
                 if (err) {
-                    sys.puts(err.message);
+                    less.writeError(err);
                 } else {
                     css = tree.toCSS();
                     if (output) {

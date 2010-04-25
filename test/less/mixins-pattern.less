@@ -1,0 +1,73 @@
+.mixin () {
+    zero: 0;    
+}
+.mixin (@a: 1px) {
+    one: 1;    
+}
+.mixin (@a) {
+    one-req: 1;    
+}
+.mixin (@a: 1px, @b: 2px) {
+    two: 2;    
+}
+
+.mixin (@a: 1px, @b: 2px, @c: 3px) {
+    three: 3;    
+}
+
+.zero {
+    .mixin();  
+}
+
+.one {
+    .mixin(1);  
+}
+
+.two {
+    .mixin(1, 2);  
+}
+
+.three {
+    .mixin(1, 2, 3);  
+}
+
+//
+
+.mixout ('left') {
+    left: 1;    
+}
+
+.mixout ('right') {
+    right: 1;    
+}
+
+.left {
+    .mixout('left');
+}
+.right {
+    .mixout('right');
+}
+.none {
+    .mixout('top');
+}
+
+//
+
+.border (@side, @width) {
+    color: black;
+    .border-side(@side, @width);
+}
+.border-side (left, @w) {
+    border-left: @w;
+}
+.border-side (right, @w) {
+    border-right: @w;
+}
+
+.border-right {
+    .border(right, 4px);    
+}
+.border-left {
+    .border(left, 4px);    
+}
+

@@ -34,6 +34,9 @@ a[href^="http://"] {
 a[href$="http://"] {
   color: black;
 }
+form[data-disabled] {
+  color: black;
+}
 p::before {
   color: black;
 }

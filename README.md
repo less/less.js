@@ -25,7 +25,7 @@ synopsis
 
 ### in the browser
 
-First, run `make less` in the command line. It will the *less.js* file in *dist/*.
+First, run `make less` in the command line. It will the build the *less.js* file in *dist/*.
 Then, you can use it as such:
 
     <script src="less.js"></script>

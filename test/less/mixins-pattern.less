@@ -8,7 +8,11 @@
     one-req: 1;    
 }
 .mixin (@a: 1px, @b: 2px) {
-    two: 2;    
+    two: 2;
+}
+
+.mixin (@a, @b, @c) {
+    three-req: 3;
 }
 
 .mixin (@a: 1px, @b: 2px, @c: 3px) {
@@ -65,9 +69,31 @@
 }
 
 .border-right {
-    .border(right, 4px);    
+    .border(right, 4px);
 }
 .border-left {
-    .border(left, 4px);    
+    .border(left, 4px);
 }
 
+//
+
+
+.border-radius (@r) {
+    both: @r * 10;
+}
+.border-radius (@r, left) {
+    left: @r;
+}
+.border-radius (@r, right) {
+    right: @r;
+}
+
+.only-right {
+    .border-radius(33, right);
+}
+.only-left {
+    .border-radius(33, left);
+}
+.left-right {
+    .border-radius(33);
+}

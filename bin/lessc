@@ -4,9 +4,9 @@ var path = require('path'),
     fs = require('fs'),
     sys = require('sys');
 
-require.paths.unshift(__dirname, path.join(__dirname, '..'));
+require.paths.unshift(path.join(__dirname, '..', 'lib'));
 
-var less = require('lib/less');
+var less = require('less');
 var args = process.argv.slice(1);
 
 args = args.filter(function (arg) {

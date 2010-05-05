@@ -1,11 +1,11 @@
 .mixin () {
-    zero: 0;    
+    zero: 0;
 }
 .mixin (@a: 1px) {
-    one: 1;    
+    one: 1;
 }
 .mixin (@a) {
-    one-req: 1;    
+    one-req: 1;
 }
 .mixin (@a: 1px, @b: 2px) {
     two: 2;
@@ -16,33 +16,33 @@
 }
 
 .mixin (@a: 1px, @b: 2px, @c: 3px) {
-    three: 3;    
+    three: 3;
 }
 
 .zero {
-    .mixin();  
+    .mixin();
 }
 
 .one {
-    .mixin(1);  
+    .mixin(1);
 }
 
 .two {
-    .mixin(1, 2);  
+    .mixin(1, 2);
 }
 
 .three {
-    .mixin(1, 2, 3);  
+    .mixin(1, 2, 3);
 }
 
 //
 
 .mixout ('left') {
-    left: 1;    
+    left: 1;
 }
 
 .mixout ('right') {
-    right: 1;    
+    right: 1;
 }
 
 .left {

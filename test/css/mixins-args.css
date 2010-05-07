@@ -39,3 +39,9 @@ body {
 .content .column {
   margin: 600px;
 }
+#same-var-name {
+  radius: 5px;
+}
+#var-inside {
+  width: 10px;
+}

@@ -70,3 +70,23 @@ body {
 .content {
     .nested-ruleset(600px);
 }
+
+//
+
+.same-var-name2(@radius) {
+  radius: @radius;
+}
+.same-var-name(@radius) {
+  .same-var-name2(@radius);
+}
+#same-var-name {
+  .same-var-name(5px);
+}
+
+//
+
+.var-inside () {
+    @var: 10px;
+    width: @var;
+}
+#var-inside { .var-inside; }

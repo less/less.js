@@ -13,5 +13,6 @@
   desaturate: #29332f;
   greyscale: #2e2e2e;
   format: "rgb(32, 128, 64)";
+  format-string: "hello world";
   eformat: rgb(32, 128, 64);
 }

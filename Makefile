@@ -21,7 +21,7 @@ VERSION = `cat VERSION`
 
 less:
 	@@mkdir -p dist
-	@@cat build/compat.js\
+	@@cat build/ecma-5.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/tree/*.js\

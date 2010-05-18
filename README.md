@@ -29,6 +29,6 @@ First, run `make less` in the command line. It will the build the *less.js* file
 Then, you can use it as such:
 
     <script src="less.js"></script>
-    <link rel="less" href="main.less" type="text/css">
+    <link rel="stylesheet/less" href="main.less" type="text/css">
 
 To build a minified version, run `make min`

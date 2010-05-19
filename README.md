@@ -28,7 +28,7 @@ synopsis
 First, run `make less` in the command line. It will the build the *less.js* file in *dist/*.
 Then, you can use it as such:
 
-    <script src="less.js"></script>
     <link rel="stylesheet/less" href="main.less" type="text/css">
+    <script src="less.js"></script>
 
 To build a minified version, run `make min`

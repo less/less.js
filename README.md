@@ -32,3 +32,10 @@ Then, you can use it as such:
     <script src="less.js"></script>
 
 To build a minified version, run `make min`
+
+installation
+------------
+
+In node:
+
+    $ npm install less

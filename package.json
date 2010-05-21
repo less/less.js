@@ -6,6 +6,7 @@
   "author"        : "Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
   "version"       : "1.0.7",
+  "bin"           : { "lessc": "./bin/lessc" },
   "main"          : "./lib/less",
   "directories"   : { "lib": "./lib", "test": "./test" },
   "engines"       : { "node": ">=0.1.93" }

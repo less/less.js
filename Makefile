@@ -14,19 +14,22 @@ benchmark:
 # Build less.js
 #
 SRC = lib/less
-DIST = dist/less.js
-DIST_MIN = dist/less.min.js
 HEADER = build/header.js
-VERSION = `cat VERSION`
+VERSION = `cat package.json | grep version \
+														| grep -o '[0-9]\.[0-9]\.[0-9]'`
+DIST = dist/less-${VERSION}.js
+DIST_MIN = dist/less-${VERSION}.min.js
 
 less:
 	@@mkdir -p dist
+	@@touch ${DIST}
+	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST}
 	@@cat build/ecma-5.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
-	      ${SRC}/browser.js > ${DIST}
+	      ${SRC}/browser.js >> ${DIST}
 	@@echo ${DIST} built.
 
 min: less

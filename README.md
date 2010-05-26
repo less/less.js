@@ -8,6 +8,13 @@ less.js is the next evolution of [LESS](http://lesscss.org), eventually, it will
 less.js is a complete rewrite of LESS in JavaScript, and will be able to run directly in the browser,
 as well as on the server, with node.js.
 
+where do I get it?
+------------------
+
+Go to the Downloads section, and get the latest version:
+
+<http://github.com/cloudhead/less.js/downloads>
+
 synopsis
 --------
 

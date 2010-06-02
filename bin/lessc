@@ -17,9 +17,11 @@ args = args.filter(function (arg) {
 
     switch (arg) {
         case 'v':
-            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler)");
+        case 'version':
+            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
             process.exit(0);
         case 'h':
+        case 'help':
             sys.puts("usage: lessc source [destination]");
             process.exit(0);
     }
@@ -31,7 +33,7 @@ var input = args[1] && path.join(process.cwd(), args[1]),
 var css, fd, tree;
 
 if (! input) {
-    sys.puts("lessc: no input files\n");
+    sys.puts("lessc: no input files");
     process.exit(1);
 }
 

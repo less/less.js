@@ -5,9 +5,9 @@
   "keywords"      : ["css", "parser", "lesscss", "browser"],
   "author"        : "Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
-  "version"       : "1.0.9",
+  "version"       : "1.0.10",
   "bin"           : { "lessc": "./bin/lessc" },
-  "main"          : "./lib/less",
-  "directories"   : { "lib": "./lib", "test": "./test" },
+  "main"          : "./lib/less/index",
+  "directories"   : { "lib": "./lib/less", "test": "./test" },
   "engines"       : { "node": ">=0.1.93" }
 }

@@ -16,7 +16,7 @@ benchmark:
 SRC = lib/less
 HEADER = build/header.js
 VERSION = `cat package.json | grep version \
-														| grep -o '[0-9]\.[0-9]\.[0-9]'`
+														| grep -o '[0-9]\.[0-9]\.[0-9]\+'`
 DIST = dist/less-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
 

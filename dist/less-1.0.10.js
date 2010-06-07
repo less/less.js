@@ -337,6 +337,34 @@ less.Parser = function Parser(env) {
             root = new(tree.Ruleset)([], $(this.parsers.primary));
             root.root = true;
 
+            root.toCSS = (function (toCSS) {
+                var line, lines, column;
+
+                return function () {
+                    try {
+                        return toCSS.call(this);
+                    } catch (e) {
+                        lines = input.split('\n');
+                        line = (input.slice(0, e.index).match(/\n/g) || "").length + 1;
+                        for (var n = e.index, column = -1;
+                                 n >= 0 && input.charAt(n) !== '\n';
+                                 n--) { column++ }
+
+                        throw {
+                            name: "NameError",
+                            message: e.message,
+                            line: line,
+                            column: column,
+                            extract: [
+                                lines[line - 2],
+                                lines[line - 1],
+                                lines[line]
+                            ]
+                        };
+                    }
+                };
+            })(root.toCSS);
+
             // If `i` is smaller than the `input.length - 1`,
             // it means the parser wasn't able to parse the whole
             // string, so we've got a parsing error.
@@ -536,10 +564,10 @@ less.Parser = function Parser(env) {
                 // see `parsers.variable`.
                 //
                 variable: function () {
-                    var name;
+                    var name, index = i;
 
                     if (input.charAt(i) === '@' && (name = $(/@[a-zA-Z0-9_-]+/g))) {
-                        return new(tree.Variable)(name);
+                        return new(tree.Variable)(name, index);
                     }
                 },
 
@@ -617,7 +645,7 @@ less.Parser = function Parser(env) {
                 // selector for now.
                 //
                 call: function () {
-                    var elements = [], e, c, args;
+                    var elements = [], e, c, args, index = i;
 
                     while (e = $(/[#.][a-zA-Z0-9_-]+/g)) {
                         elements.push(new(tree.Element)(c, e));
@@ -626,7 +654,7 @@ less.Parser = function Parser(env) {
                     $('(') && (args = $(this.entities.arguments)) && $(')');
 
                     if (elements.length > 0 && ($(';') || peek('}'))) {
-                        return new(tree.mixin.Call)(elements, args);
+                        return new(tree.mixin.Call)(elements, args, index);
                     }
                 },
 
@@ -845,7 +873,7 @@ less.Parser = function Parser(env) {
                     }
 
                     if ($(this.end)) {
-                        return new(tree.Rule)(name, value);
+                        return new(tree.Rule)(name, value, memo);
                     } else {
                         furthest = i;
                         i = memo;
@@ -1452,26 +1480,42 @@ tree.Keyword.prototype = {
 if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
 
 tree.mixin = {};
-tree.mixin.Call = function MixinCall(elements, args) {
+tree.mixin.Call = function MixinCall(elements, args, index) {
     this.selector = new(tree.Selector)(elements);
     this.arguments = args;
+    this.index = index;
 };
 tree.mixin.Call.prototype = {
     eval: function (env) {
-        var mixins, rules = [];
+        var mixins, rules = [], match = false;
 
         for (var i = 0; i < env.frames.length; i++) {
             if ((mixins = env.frames[i].find(this.selector)).length > 0) {
                 for (var m = 0; m < mixins.length; m++) {
                     if (mixins[m].match(this.arguments, env)) {
-                        Array.prototype.push.apply(
-                              rules, mixins[m].eval(this.arguments, env).rules);
+                        try {
+                            Array.prototype.push.apply(
+                                  rules, mixins[m].eval(this.arguments, env).rules);
+                            match = true;
+                        } catch (e) {
+                            throw { message: e.message, index: this.index };
+                        }
                     }
                 }
-                return rules;
+                if (match) {
+                    return rules;
+                } else {
+                    throw { message: 'No matching definition was found for `' +
+                                      this.selector.toCSS().trim() + '('      +
+                                      this.arguments.map(function (a) {
+                                          return a.toCSS();
+                                      }).join(', ') + ")`",
+                            index:   this.index };
+                }
             }
         }
-        throw new(Error)(this.selector.toCSS().trim() + " is undefined");
+        throw { message: this.selector.toCSS().trim() + " is undefined",
+                index: this.index };
     }
 };
 
@@ -1501,7 +1545,8 @@ tree.mixin.Definition.prototype = {
                 if (val = (args && args[i]) || this.params[i].value) {
                     frame.rules.unshift(new(tree.Rule)(this.params[i].name, val.eval(env)));
                 } else {
-                    throw new(Error)("wrong number of arguments for " + this.name);
+                    throw { message: "wrong number of arguments for " + this.name +
+                            ' (' + args.length + ' for ' + this.arity + ')' };
                 }
             }
         }
@@ -1511,7 +1556,6 @@ tree.mixin.Definition.prototype = {
     },
     match: function (args, env) {
         var argsLength = (args && args.length) || 0;
-
 
         if (argsLength < this.required) {
             return false;
@@ -1575,9 +1619,10 @@ tree.Quoted.prototype = {
 };
 if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
 
-tree.Rule = function Rule(name, value) {
+tree.Rule = function Rule(name, value, index) {
     this.name = name;
     this.value = (value instanceof tree.Value) ? value : new(tree.Value)([value]);
+    this.index = index;
 
     if (name.charAt(0) === '@') {
         this.variable = true;
@@ -1829,7 +1874,7 @@ tree.URL.prototype = {
 };
 if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
 
-tree.Variable = function Variable(name) { this.name = name };
+tree.Variable = function Variable(name, index) { this.name = name, this.index = index };
 tree.Variable.prototype = {
     eval: function (env) {
         var variable, v, name = this.name;
@@ -1840,7 +1885,8 @@ tree.Variable.prototype = {
             }
         })) { return variable }
         else {
-            throw new(Error)("variable " + this.name + " is undefined");
+            throw { message: "variable " + this.name + " is undefined",
+                    index: this.index };
         }
     }
 };
@@ -1853,6 +1899,7 @@ tree.find = function (obj, fun) {
     }
     return null;
 };
+(function () {
 //
 // Select all links with the 'rel' attribute set to "less"
 //
@@ -1874,7 +1921,10 @@ var readyTimer = setInterval(function () {
             sheets = (document.querySelectorAll || jQuery).call(document, 'link[rel="stylesheet/less"]');
         }
         clearInterval(readyTimer);
-        loadStyleSheets(function (sheet, env) {
+
+        loadStyleSheets(function (root, sheet, env) {
+            createCSS(root.toCSS(), sheet, env.lastModified);
+
             if (env.local) {
                 log("less: loading " + sheet.href + " from local storage.");
             } else {
@@ -1890,34 +1940,43 @@ var readyTimer = setInterval(function () {
 if (less.env === 'development') {
     refreshTimer = setInterval(function () {
         if (/!refresh/.test(location.hash)) {
-            loadStyleSheets(function () {});
+            loadStyleSheets(function (root, sheet, lastModified) {
+                createCSS(root.toCSS(), sheet, lastModified);
+            });
         }
     }, 1000);
 }
 
 function loadStyleSheets(callback) {
     for (var i = 0; i < sheets.length; i++) {
-        (function (sheet) { // Because the functions here are async, we need to create a closure
-            var css = typeof(localStorage) !== "undefined" && localStorage.getItem(sheet.href);
-            var styles = css && JSON.parse(css);
+        loadStyleSheet(sheets[i], callback);
+    }
+}
 
-            xhr(sheet.href, function (data, lastModified) {
-                if (styles && (new(Date)(lastModified).valueOf() ===
-                               new(Date)(styles.timestamp).valueOf())) {
-                    // Use local copy
-                    createCSS(styles.css, sheet);
-                    callback(sheet, {local: true})
-                } else {
-                    // Use remote copy (re-parse)
-                    new(less.Parser)({ optimization: 3 }).parse(data, function (e, root) {
-                        if (e) { return error(e, sheet.href) }
-                        createCSS(root.toCSS(), sheet, lastModified);
-                        callback(sheet, {local: false})
-                    });
+function loadStyleSheet(sheet, callback) {
+    var css = typeof(localStorage) !== "undefined" && localStorage.getItem(sheet.href);
+    var styles = css && JSON.parse(css);
+
+    xhr(sheet.href, function (data, lastModified) {
+        if (styles && (new(Date)(lastModified).valueOf() ===
+                       new(Date)(styles.timestamp).valueOf())) {
+            // Use local copy
+            createCSS(styles.css, sheet);
+            callback(null, sheet, { local: true });
+        } else {
+            // Use remote copy (re-parse)
+            new(less.Parser)({ optimization: 3 }).parse(data, function (e, root) {
+                if (e) { return error(e, sheet.href) }
+                try {
+                    callback(root, sheet, { local: false, lastModified: lastModified });
+                } catch (e) {
+                    error(e, sheet.href);
                 }
             });
-        })(sheets[i]);
-    }
+        }
+    }, function (status) {
+        throw new(Error)("Couldn't load " + sheet.href + " (" + status + ")");
+    });
 }
 
 function createCSS(styles, sheet, lastModified) {
@@ -1927,7 +1986,7 @@ function createCSS(styles, sheet, lastModified) {
     css.title = 'less-sheet';
 
     if (sheet) {
-        css.title = sheet.title || sheet.href.match(/(^|\/)([-\w]+)\.[a-z]+$/i)[1];
+        css.title = sheet.title || sheet.href.match(/(?:^|\/)([-\w]+)\.[a-z]+$/i)[1];
 
         // Don't update the local store if the file wasn't modified
         if (lastModified && typeof(localStorage) !== "undefined") {
@@ -1952,7 +2011,7 @@ function xhr(url, callback, errback) {
         if (xhr.status === 0) {
             callback(xhr.responseText);
         } else {
-            errback(xhr.responseText);
+            errback(xhr.status);
         }
     } else {
         xhr.open('GET', url, true);
@@ -1962,7 +2021,7 @@ function xhr(url, callback, errback) {
                     callback(xhr.responseText,
                              xhr.getResponseHeader("Last-Modified"));
                 } else if (typeof(errback) === 'function') {
-                    errback(xhr.responseText);
+                    errback(xhr.status);
                 }
             }
         };
@@ -1996,18 +2055,18 @@ function error(e, href) {
 
     var elem = document.createElement('div'), timer;
     elem.id = "less-error-message";
-    elem.innerHTML = '<h3>There is an error in your .less file</h3> '           +
-                     '<p><a href="' + href   + '">' + href + "</a> "            +
-                     'on line '     + e.line + ', column ' + e.column + ':</p>' +
+    elem.innerHTML = '<h3>' + (e.message || 'There is an error in your .less file') + '</h3>' +
+                     '<p><a href="' + href   + '">' + href + "</a> "                +
+                     'on line '     + e.line + ', column ' + (e.column + 1)         + ':</p>' +
                      template.replace(/\[(-?\d)\]/g, function (_, i) {
                          return e.line + parseInt(i);
                      }).replace(/\{(\d)\}/g, function (_, i) {
                          return e.extract[parseInt(i)];
-                     }).replace(/\{current\}/, e.extract[1].slice(0, e.column)  +
-                                               '<span class="error">'           +
-                                               e.extract[1].slice(e.column) +
+                     }).replace(/\{current\}/, e.extract[1].slice(0, e.column)      +
+                                               '<span class="error">'               +
+                                               e.extract[1].slice(e.column)         +
                                                '</span>');
-
+    // CSS for error messages
     createCSS([
         '#less-error-message span {',
             'margin-right: 15px;',
@@ -2018,7 +2077,7 @@ function error(e, href) {
             'margin: 0;',
         '}',
         '#less-error-message pre.ctx {',
-            'color: #ee7777;',
+            'color: #dd7777;',
         '}',
         '#less-error-message h3 {',
             'padding: 15px 0 5px 0;',
@@ -2054,3 +2113,11 @@ function error(e, href) {
         }, 10);
     }
 }
+
+less.Parser.importer = function (path, paths, callback) {
+    loadStyleSheet({ href: path, title: path }, function (root) {
+        callback(root);
+    });
+};
+
+})();

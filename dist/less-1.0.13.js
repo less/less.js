@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.10
+// LESS - Leaner CSS v1.0.13
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -1911,40 +1911,52 @@ less.env = location.hostname == '127.0.0.1' ||
            location.protocol == 'file:'     ? 'development'
                                             : 'production';
 
+less.watch   = function () { return this.watchMode = true };
+less.unwatch = function () { return this.watchMode = false };
 
 // Load the stylesheets when the body is ready
 var readyTimer = setInterval(function () {
     if (document.body) {
-        if (!document.querySelectorAll && typeof(jQuery) === "undefined") {
-            log("No selector method found");
-        } else {
-            sheets = (document.querySelectorAll || jQuery).call(document, 'link[rel="stylesheet/less"]');
-        }
+        sheets = select('link[rel="stylesheet/less"]');
+
         clearInterval(readyTimer);
 
         loadStyleSheets(function (root, sheet, env) {
-            createCSS(root.toCSS(), sheet, env.lastModified);
-
             if (env.local) {
                 log("less: loading " + sheet.href + " from local storage.");
             } else {
+                createCSS(root.toCSS(), sheet, env.lastModified);
                 log("less: parsed " + sheet.href + " successfully.");
             }
         });
     }
 }, 10);
 
+if (less.env === 'development' && /!refresh/.test(location.hash)) {
+    less.watchMode = true;
+}
+
 //
 // Auto-refresh
 //
 if (less.env === 'development') {
     refreshTimer = setInterval(function () {
-        if (/!refresh/.test(location.hash)) {
+        if (less.watchMode) {
             loadStyleSheets(function (root, sheet, lastModified) {
-                createCSS(root.toCSS(), sheet, lastModified);
+                if (root) {
+                    createCSS(root.toCSS(), sheet, lastModified);
+                }
             });
         }
     }, 1000);
+}
+
+function select(str) {
+    if (!document.querySelectorAll && typeof(jQuery) === "undefined") {
+        log("No selector method found");
+    } else {
+        return (document.querySelectorAll || jQuery).call(document, str);
+    }
 }
 
 function loadStyleSheets(callback) {
@@ -1980,26 +1992,39 @@ function loadStyleSheet(sheet, callback) {
 }
 
 function createCSS(styles, sheet, lastModified) {
-    var css = document.createElement('style');
-    css.type = 'text/css';
-    css.media = 'screen';
-    css.title = 'less-sheet';
+    var css, title, id;
 
-    if (sheet) {
-        css.title = sheet.title || sheet.href.match(/(?:^|\/)([-\w]+)\.[a-z]+$/i)[1];
+    // If there is no title set, use the filename, minus the extension
+    title = sheet.title || sheet.href.match(/(?:^|\/)([-\w]+)\.[a-z]+$/i)[1];
+    id = '-less-' + title;
 
-        // Don't update the local store if the file wasn't modified
-        if (lastModified && typeof(localStorage) !== "undefined") {
-            localStorage.setItem(sheet.href, JSON.stringify({ timestamp: lastModified, css: styles }));
-        }
+    // If the stylesheet doesn't exist, create a new node
+    if ((css = document.getElementById(id)) === null) {
+        css = document.createElement('style');
+        css.type = 'text/css';
+        css.media = 'screen';
+        css.title = title;
+        css.id = id;
+        document.getElementsByTagName('head')[0].appendChild(css);
     }
 
-    if (css.styleSheet) {
-        css.styleSheet.cssText = styles;
+    if (css.styleSheet) { // IE
+        try {
+            css.styleSheet.cssText = styles;
+        } catch (e) {
+            throw new(Error)("Couldn't reassign styleSheet.cssText.");
+        }
     } else {
+        if (css.childNodes.length > 0) {
+            css.removeChild(css.childNodes[0]);
+        }
         css.appendChild(document.createTextNode(styles));
     }
-    document.getElementsByTagName('head')[0].appendChild(css);
+
+    // Don't update the local store if the file wasn't modified
+    if (lastModified && typeof(localStorage) !== "undefined") {
+        localStorage.setItem(sheet.href, JSON.stringify({ timestamp: lastModified, css: styles }));
+    }
 }
 
 function xhr(url, callback, errback) {
@@ -2047,6 +2072,8 @@ function log(str) {
 }
 
 function error(e, href) {
+    if (document.getElementById('less-error-message')) { return }
+
     var template = ['<div>',
                         '<pre class="ctx"><span>[-1]</span>{0}</pre>',
                         '<pre><span>[0]</span>{current}</pre>',
@@ -2092,7 +2119,7 @@ function error(e, href) {
             'padding-bottom: 2px;',
             'border-bottom: 1px dashed red;',
         '}'
-    ].join(''));
+    ].join(''), { title: 'error-message' });
 
     elem.style.cssText = [
         "font-family: Arial, sans-serif",

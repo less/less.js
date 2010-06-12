@@ -69,12 +69,16 @@ fs.stat(input, function (e, stats) {
                 if (err) {
                     less.writeError(err);
                 } else {
-                    css = tree.toCSS({ compress: options.compress });
-                    if (output) {
-                        fd = fs.openSync(output, "w");
-                        fs.writeSync(fd, css, 0, "utf8");
-                    } else {
-                        sys.print(css);
+                    try {
+                        css = tree.toCSS({ compress: options.compress });
+                        if (output) {
+                            fd = fs.openSync(output, "w");
+                            fs.writeSync(fd, css, 0, "utf8");
+                        } else {
+                            sys.print(css);
+                        }
+                    } catch (e) {
+                        less.writeError(e);
                     }
                 }
             });

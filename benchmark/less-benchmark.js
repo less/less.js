@@ -17,7 +17,7 @@ fs.stat(file, function (e, stats) {
 
             start = new(Date);
 
-            new(less.Parser)().parse(data, function (err, tree) {
+            new(less.Parser)({ optimization: 3 }).parse(data, function (err, tree) {
                 end = new(Date);
 
                 total = end - start;

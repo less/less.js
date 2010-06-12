@@ -8,6 +8,10 @@ require.paths.unshift(path.join(__dirname, '..', 'lib'));
 
 var less = require('less');
 var args = process.argv.slice(1);
+var options = {
+    compress: false,
+    optimization: 1
+};
 
 args = args.filter(function (arg) {
     var match;
@@ -24,6 +28,13 @@ args = args.filter(function (arg) {
         case 'help':
             sys.puts("usage: lessc source [destination]");
             process.exit(0);
+        case 'x':
+        case 'compress':
+            options.compress = true;
+            break;
+        case 'O0': options.optimization = 0; break;
+        case 'O1': options.optimization = 1; break;
+        case 'O2': options.optimization = 2; break;
     }
 });
 
@@ -52,12 +63,13 @@ fs.stat(input, function (e, stats) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
             new(less.Parser)({
                 paths: [path.dirname(input)],
+                optimization: options.optimization,
                 filename: input
             }).parse(data, function (err, tree) {
                 if (err) {
                     less.writeError(err);
                 } else {
-                    css = tree.toCSS();
+                    css = tree.toCSS({ compress: options.compress });
                     if (output) {
                         fd = fs.openSync(output, "w");
                         fs.writeSync(fd, css, 0, "utf8");

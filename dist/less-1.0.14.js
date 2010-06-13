@@ -3,7 +3,7 @@
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
-// Licensed under the MIT license.
+// Licensed under the Apache 2.0 License.
 //
 
 // ecma-5.js

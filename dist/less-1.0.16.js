@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.15
+// LESS - Leaner CSS v1.0.16
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -1914,11 +1914,13 @@ tree.find = function (obj, fun) {
 };
 (function () {
 
+var isFileProtocol = location.protocol === 'file:';
+
 less.env = location.hostname == '127.0.0.1' ||
            location.hostname == '0.0.0.0'   ||
            location.hostname == 'localhost' ||
-           location.protocol == 'file:'     ||
-           location.port.length > 0         ? 'development'
+           location.port.length > 0         ||
+           isFileProtocol                   ? 'development'
                                             : 'production';
 
 // Load styles asynchronously (default: false)
@@ -1930,7 +1932,7 @@ less.env = location.hostname == '127.0.0.1' ||
 less.async = false;
 
 // Interval between watch polls
-less.poll = location.protocol == 'file:' ? 1000 : 1500;
+less.poll = isFileProtocol ? 1000 : 1500;
 
 //
 // Watch mode
@@ -1957,6 +1959,7 @@ if (less.env === 'development') {
     less.optimization = 3;
 }
 
+var cache = (typeof(window.localStorage) === 'undefined') ? null : window.localStorage;
 
 //
 // Select all links with the 'rel' attribute set to "less"
@@ -1991,8 +1994,8 @@ function loadStyleSheets(callback, async) {
 }
 
 function loadStyleSheet(sheet, callback, async) {
-    var css = typeof(localStorage) !== "undefined" && localStorage.getItem(sheet.href);
-    var timestamp = typeof(localStorage) !== "undefined" && localStorage.getItem(sheet.href + ':timestamp');
+    var css       = cache && cache.getItem(sheet.href);
+    var timestamp = cache && cache.getItem(sheet.href + ':timestamp');
     var styles = { css: css, timestamp: timestamp };
 
     xhr(sheet.href, async, function (data, lastModified) {
@@ -2054,36 +2057,43 @@ function createCSS(styles, sheet, lastModified) {
     }
 
     // Don't update the local store if the file wasn't modified
-    if (lastModified && typeof(localStorage) !== "undefined") {
-        localStorage.setItem(sheet.href, styles);
-        localStorage.setItem(sheet.href + ':timestamp', lastModified);
+    if (lastModified && cache) {
+        cache.setItem(sheet.href, styles);
+        cache.setItem(sheet.href + ':timestamp', lastModified);
     }
 }
 
 function xhr(url, async, callback, errback) {
     var xhr = getXMLHttpRequest();
 
-    if (window.location.protocol === "file:") {
-        xhr.open('GET', url, false);
-        xhr.send(null);
+    async = isFileProtocol ? false : (async || less.async);
+
+    xhr.open('GET', url, async);
+    xhr.send(null);
+
+    if (isFileProtocol) {
         if (xhr.status === 0) {
             callback(xhr.responseText);
         } else {
             errback(xhr.status);
         }
-    } else {
-        xhr.open('GET', url, async || less.async);
+    } else if (async) {
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    callback(xhr.responseText,
-                             xhr.getResponseHeader("Last-Modified"));
-                } else if (typeof(errback) === 'function') {
-                    errback(xhr.status);
-                }
+                handleResponse(xhr, callback, errback);
             }
         };
-        xhr.send(null);
+    } else {
+        handleResponse(xhr, callback, errback);
+    }
+
+    function handleResponse(xhr, callback, errback) {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            callback(xhr.responseText,
+                     xhr.getResponseHeader("Last-Modified"));
+        } else if (typeof(errback) === 'function') {
+            errback(xhr.status);
+        }
     }
 }
 

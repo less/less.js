@@ -32,13 +32,12 @@ synopsis
 
 ### in the browser
 
-First, run `make less` in the command line. It will the build the *less.js* file in *dist/*.
-Then, you can use it as such:
+Get the pre-built version from the `dist/` folder, and include it as such:
 
     <link rel="stylesheet/less" href="main.less" type="text/css">
-    <script src="less.js"></script>
+    <script src="less.js" type="text/javascript"></script>
 
-To build a minified version, run `make min`
+Note the `rel="stylesheet/less"` for all stylesheets you want to parse with LESS.
 
 installation
 ------------

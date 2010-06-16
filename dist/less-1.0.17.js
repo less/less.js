@@ -1,10 +1,18 @@
 //
-// LESS - Leaner CSS v1.0.16
+// LESS - Leaner CSS v1.0.17
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
 // Licensed under the Apache 2.0 License.
 //
+(function (window, undefined) {
+//
+// Stub out `require` in the browser
+//
+function require(arg) {
+    return window.less[arg.split('/')[1]];
+};
+
 
 // ecma-5.js
 //
@@ -125,11 +133,14 @@ if (!String.prototype.trim) {
         return String(this).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
     };
 }
-if (typeof(require) !== 'undefined') {
-    var less = exports;
-    var tree = require('less/tree');
+var less, tree;
+
+if (typeof(window) === 'undefined') {
+    less = exports,
+    tree = require('less/tree');
 } else {
-    var less = tree = {};
+    less = window.less = {},
+    tree = window.less.tree = {};
 }
 //
 // less.js - parser
@@ -1044,7 +1055,7 @@ less.Parser = function Parser(env) {
 
 less.Parser.importer = null;
 
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+(function (tree) {
 
 tree.functions = {
     rgb: function (r, g, b) {
@@ -1059,10 +1070,8 @@ tree.functions = {
         return this.hsla(h, s, l, 1.0);
     },
     hsla: function (h, s, l, a) {
-        h = (((number(h) % 360) + 360) % 360) / 360;
+        h = (number(h) % 360) / 360;
         s = number(s); l = number(l); a = number(a);
-
-        //require('sys').puts(h, s, l)
 
         var m2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
         var m1 = l * 2 - m2;
@@ -1079,6 +1088,18 @@ tree.functions = {
             else if (h * 3 < 2) return m1 + (m2 - m1) * (2/3 - h) * 6;
             else                return m1;
         }
+    },
+    hue: function (color) {
+        return new(tree.Dimension)(Math.round(color.toHSL().h));
+    },
+    saturation: function (color) {
+        return new(tree.Dimension)(Math.round(color.toHSL().s * 100), '%');
+    },
+    lightness: function (color) {
+        return new(tree.Dimension)(Math.round(color.toHSL().l * 100), '%');
+    },
+    alpha: function (color) {
+        return new(tree.Dimension)(color.toHSL().a);
     },
     saturate: function (color, amount) {
         var hsl = color.toHSL();
@@ -1097,18 +1118,26 @@ tree.functions = {
     lighten: function (color, amount) {
         var hsl = color.toHSL();
 
-        hsl.l *= (1 + amount.value / 100);
+        hsl.l += amount.value / 100;
         hsl.l = clamp(hsl.l);
         return this.hsl(hsl.h, hsl.s, hsl.l);
     },
     darken: function (color, amount) {
         var hsl = color.toHSL();
 
-        hsl.l *= (1 - amount.value / 100);
+        hsl.l -= amount.value / 100;
         hsl.l = clamp(hsl.l);
         return this.hsl(hsl.h, hsl.s, hsl.l);
     },
-    greyscale: function (color, amount) {
+    spin: function (color, amount) {
+        var hsl = color.toHSL();
+        var hue = (hsl.h + amount.value) % 360;
+
+        hsl.h = hue < 0 ? 360 + hue : hue;
+
+        return this.hsl(hsl.h, hsl.s, hsl.l);
+    },
+    greyscale: function (color) {
         return this.desaturate(color, new(tree.Dimension)(100));
     },
     e: function (str) {
@@ -1143,7 +1172,9 @@ function number(n) {
 function clamp(val) {
     return Math.min(1, Math.max(0, val));
 }
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Alpha = function Alpha(val) {
     this.value = val;
@@ -1154,7 +1185,9 @@ tree.Alpha.prototype = {
     },
     eval: function () { return this }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Anonymous = function Anonymous(string) {
     this.value = string.content || string;
@@ -1165,7 +1198,9 @@ tree.Anonymous.prototype = {
     },
     eval: function () { return this }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 //
 // A function call node.
@@ -1202,7 +1237,9 @@ tree.Call.prototype = {
         return this.eval(env).toCSS();
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 //
 // RGB Colors - #ff0014, #eee
 //
@@ -1290,7 +1327,9 @@ tree.Color.prototype = {
     }
 };
 
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Comment = function Comment(value) {
     this.value = value;
@@ -1300,7 +1339,9 @@ tree.Comment.prototype = {
         return env.compress ? '' : this.value;
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 //
 // A number with a unit
@@ -1333,7 +1374,8 @@ tree.Dimension.prototype = {
     }
 };
 
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+})(require('less/tree'));
+(function (tree) {
 
 tree.Directive = function Directive(name, value) {
     this.name = name;
@@ -1364,7 +1406,9 @@ tree.Directive.prototype = {
     find: function () { return tree.Ruleset.prototype.find.apply(this.ruleset, arguments) },
     rulesets: function () { return tree.Ruleset.prototype.rulesets.apply(this.ruleset) }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Element = function Element(combinator, value) {
     this.combinator = combinator instanceof tree.Combinator ?
@@ -1394,7 +1438,9 @@ tree.Combinator.prototype.toCSS = function (env) {
         '>' : env.compress ? '>' : ' > '
     }[this.value];
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Expression = function Expression(value) { this.value = value };
 tree.Expression.prototype = {
@@ -1413,7 +1459,9 @@ tree.Expression.prototype = {
         }).join(' ');
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 //
 // CSS @import node
 //
@@ -1481,14 +1529,18 @@ tree.Import.prototype = {
         }
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Keyword = function Keyword(value) { this.value = value };
 tree.Keyword.prototype = {
     eval: function () { return this },
     toCSS: function () { return this.value }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.mixin = {};
 tree.mixin.Call = function MixinCall(elements, args, index) {
@@ -1583,7 +1635,9 @@ tree.mixin.Definition.prototype = {
         return true;
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Operation = function Operation(op, operands) {
     this.op = op.trim();
@@ -1613,7 +1667,9 @@ tree.operate = function (op, a, b) {
         case '/': return a / b;
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Quoted = function Quoted(value, content) {
     this.value = value;
@@ -1628,7 +1684,9 @@ tree.Quoted.prototype = {
         return this;
     }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Rule = function Rule(name, value, index) {
     this.name = name;
@@ -1650,27 +1708,6 @@ tree.Rule.prototype.eval = function (context) {
     return new(tree.Rule)(this.name, this.value.eval(context));
 };
 
-tree.Value = function Value(value) {
-    this.value = value;
-    this.is = 'value';
-};
-tree.Value.prototype = {
-    eval: function (env) {
-        if (this.value.length === 1) {
-            return this.value[0].eval(env);
-        } else {
-            return new(tree.Value)(this.value.map(function (v) {
-                return v.eval(env);
-            }));
-        }
-    },
-    toCSS: function (env) {
-        return this.value.map(function (e) {
-            return e.toCSS(env);
-        }).join(env.compress ? ',' : ', ');
-    }
-};
-
 tree.Shorthand = function Shorthand(a, b) {
     this.a = a;
     this.b = b;
@@ -1682,7 +1719,9 @@ tree.Shorthand.prototype = {
     },
     eval: function () { return this }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Ruleset = function Ruleset(selectors, rules) {
     this.selectors = selectors;
@@ -1846,8 +1885,8 @@ tree.Ruleset.prototype = {
         return css.join('') + (env.compress ? '\n' : '');
     }
 };
-
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+})(require('less/tree'));
+(function (tree) {
 
 tree.Selector = function Selector(elements) {
     this.elements = elements;
@@ -1874,7 +1913,8 @@ tree.Selector.prototype.toCSS = function (env) {
     }).join('');
 };
 
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+})(require('less/tree'));
+(function (tree) {
 
 tree.URL = function URL(val) {
     this.value = val;
@@ -1885,7 +1925,33 @@ tree.URL.prototype = {
     },
     eval: function () { return this }
 };
-if (typeof(require) !== 'undefined') { var tree = require('less/tree') }
+
+})(require('less/tree'));
+(function (tree) {
+
+tree.Value = function Value(value) {
+    this.value = value;
+    this.is = 'value';
+};
+tree.Value.prototype = {
+    eval: function (env) {
+        if (this.value.length === 1) {
+            return this.value[0].eval(env);
+        } else {
+            return new(tree.Value)(this.value.map(function (v) {
+                return v.eval(env);
+            }));
+        }
+    },
+    toCSS: function (env) {
+        return this.value.map(function (e) {
+            return e.toCSS(env);
+        }).join(env.compress ? ',' : ', ');
+    }
+};
+
+})(require('less/tree'));
+(function (tree) {
 
 tree.Variable = function Variable(name, index) { this.name = name, this.index = index };
 tree.Variable.prototype = {
@@ -1904,15 +1970,16 @@ tree.Variable.prototype = {
     }
 };
 
-if (typeof(require) !== 'undefined') { var tree = exports }
-
-tree.find = function (obj, fun) {
+})(require('less/tree'));
+require('less/tree').find = function (obj, fun) {
     for (var i = 0, r; i < obj.length; i++) {
         if (r = fun.call(obj, obj[i])) { return r }
     }
     return null;
 };
-(function () {
+//
+// browser.js - client-side engine
+//
 
 var isFileProtocol = location.protocol === 'file:';
 
@@ -2206,4 +2273,4 @@ less.Parser.importer = function (path, paths, callback) {
     });
 };
 
-})();
+})(window);

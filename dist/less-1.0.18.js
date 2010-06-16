@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.17
+// LESS - Leaner CSS v1.0.18
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -486,10 +486,10 @@ less.Parser = function Parser(env) {
 
                 if (input.charAt(i) !== '/') return;
 
-                if (comment = $(/\/\*(?:[^*]|\*+[^\/*])*\*+\/\n?/g)) {
+                if (input.charAt(i + 1) === '/') {
+                    return new(tree.Comment)($(/\/\/.*/g), true);
+                } else if (comment = $(/\/\*(?:[^*]|\*+[^\/*])*\*+\/\n?/g)) {
                     return new(tree.Comment)(comment);
-                } else {
-                    return $(/\/\/.*/g);
                 }
             },
 
@@ -1331,13 +1331,15 @@ tree.Color.prototype = {
 })(require('less/tree'));
 (function (tree) {
 
-tree.Comment = function Comment(value) {
+tree.Comment = function Comment(value, silent) {
     this.value = value;
+    this.silent = !!silent;
 };
 tree.Comment.prototype = {
     toCSS: function (env) {
         return env.compress ? '' : this.value;
-    }
+    },
+    eval: function () { return this }
 };
 
 })(require('less/tree'));
@@ -1739,7 +1741,7 @@ tree.Ruleset.prototype = {
             } else if (rule instanceof tree.mixin.Call) {
                 Array.prototype.push.apply(rules, rule.eval(context));
             } else {
-                rules.push(rule.eval(context));
+                rules.push(rule.eval ? rule.eval(context) : '');
             }
         });
         this.rules = rules;
@@ -1843,10 +1845,12 @@ tree.Ruleset.prototype = {
             } else if (rule.rules) {
                 rulesets.push(rule.toCSS(paths, env));
             } else if (rule instanceof tree.Comment) {
-                if (this.root) {
-                    rulesets.push(rule.toCSS(env));
-                } else {
-                    rules.push(rule.toCSS(env));
+                if (!rule.silent) {
+                    if (this.root) {
+                        rulesets.push(rule.toCSS(env));
+                    } else {
+                        rules.push(rule.toCSS(env));
+                    }
                 }
             } else {
                 if (rule.toCSS && !rule.variable) {
@@ -2033,41 +2037,42 @@ var cache = (typeof(window.localStorage) === 'undefined') ? null : window.localS
 //
 var sheets = select('link[rel="stylesheet/less"]');
 
-less.refresh = function () {
+less.refresh = function (reload) {
     loadStyleSheets(function (root, sheet, env) {
         if (env.local) {
-            log("less: loading " + sheet.href + " from local storage.");
+            log("loading " + sheet.href + " from cache.");
         } else {
+            log("parsed " + sheet.href + " successfully.");
             createCSS(root.toCSS(), sheet, env.lastModified);
-            log("less: parsed " + sheet.href + " successfully.");
         }
-    });
+    }, reload);
 };
 
 less.refresh();
 
 function select(str) {
     if (!document.querySelectorAll && typeof(jQuery) === "undefined") {
-        log("No selector method found");
+        log("no selector method found.");
     } else {
         return (document.querySelectorAll || jQuery).call(document, str);
     }
 }
 
-function loadStyleSheets(callback, async) {
+function loadStyleSheets(callback, reload) {
     for (var i = 0; i < sheets.length; i++) {
-        loadStyleSheet(sheets[i], callback, async);
+        loadStyleSheet(sheets[i], callback, reload);
     }
 }
 
-function loadStyleSheet(sheet, callback, async) {
+function loadStyleSheet(sheet, callback, reload) {
     var css       = cache && cache.getItem(sheet.href);
     var timestamp = cache && cache.getItem(sheet.href + ':timestamp');
-    var styles = { css: css, timestamp: timestamp };
+    var styles    = { css: css, timestamp: timestamp };
 
-    xhr(sheet.href, async, function (data, lastModified) {
-        if (styles && (new(Date)(lastModified).valueOf() ===
-                       new(Date)(styles.timestamp).valueOf())) {
+    xhr(sheet.href, function (data, lastModified) {
+        if (!reload && styles &&
+           (new(Date)(lastModified).valueOf() ===
+            new(Date)(styles.timestamp).valueOf())) {
             // Use local copy
             createCSS(styles.css, sheet);
             callback(null, sheet, { local: true });
@@ -2125,15 +2130,15 @@ function createCSS(styles, sheet, lastModified) {
 
     // Don't update the local store if the file wasn't modified
     if (lastModified && cache) {
+        log('saving ' + sheet.href + ' to cache.');
         cache.setItem(sheet.href, styles);
         cache.setItem(sheet.href + ':timestamp', lastModified);
     }
 }
 
-function xhr(url, async, callback, errback) {
+function xhr(url, callback, errback) {
     var xhr = getXMLHttpRequest();
-
-    async = isFileProtocol ? false : (async || less.async);
+    var async = isFileProtocol ? false : less.async;
 
     xhr.open('GET', url, async);
     xhr.send(null);
@@ -2171,7 +2176,7 @@ function getXMLHttpRequest() {
         try {
             return new(ActiveXObject)("MSXML2.XMLHTTP.3.0");
         } catch (e) {
-            log("less: browser doesn't support AJAX.");
+            log("browser doesn't support AJAX.");
             return null;
         }
     }
@@ -2182,7 +2187,7 @@ function removeNode(node) {
 }
 
 function log(str) {
-    if (less.env == 'development' && typeof(console) !== "undefined") { console.log(str) }
+    if (less.env == 'development' && typeof(console) !== "undefined") { console.log('less: ' + str) }
 }
 
 function error(e, href) {

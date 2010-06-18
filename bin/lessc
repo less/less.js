@@ -24,6 +24,9 @@ args = args.filter(function (arg) {
         case 'version':
             sys.puts("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
             process.exit(0);
+        case 'verbose':
+            options.verbose = true;
+            break;
         case 'h':
         case 'help':
             sys.puts("usage: lessc source [destination]");

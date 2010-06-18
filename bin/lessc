@@ -68,6 +68,7 @@ fs.stat(input, function (e, stats) {
             }).parse(data, function (err, tree) {
                 if (err) {
                     less.writeError(err);
+                    process.exit(1);
                 } else {
                     try {
                         css = tree.toCSS({ compress: options.compress });
@@ -79,6 +80,7 @@ fs.stat(input, function (e, stats) {
                         }
                     } catch (e) {
                         less.writeError(e);
+                        process.exit(2);
                     }
                 }
             });

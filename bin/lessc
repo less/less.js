@@ -10,7 +10,8 @@ var less = require('less');
 var args = process.argv.slice(1);
 var options = {
     compress: false,
-    optimization: 1
+    optimization: 1,
+    silent: false
 };
 
 args = args.filter(function (arg) {
@@ -26,6 +27,10 @@ args = args.filter(function (arg) {
             process.exit(0);
         case 'verbose':
             options.verbose = true;
+            break;
+        case 's':
+        case 'silent':
+            options.silent = true;
             break;
         case 'h':
         case 'help':
@@ -70,7 +75,7 @@ fs.stat(input, function (e, stats) {
                 filename: input
             }).parse(data, function (err, tree) {
                 if (err) {
-                    less.writeError(err);
+                    less.writeError(err, options);
                     process.exit(1);
                 } else {
                     try {
@@ -82,7 +87,7 @@ fs.stat(input, function (e, stats) {
                             sys.print(css);
                         }
                     } catch (e) {
-                        less.writeError(e);
+                        less.writeError(e, options);
                         process.exit(2);
                     }
                 }

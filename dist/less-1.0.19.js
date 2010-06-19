@@ -1606,11 +1606,10 @@ tree.mixin.Definition = function (name, params, rules) {
         if (p.name && !p.value) { return count + 1 }
         else                    { return count }
     }, 0);
+    this.parent = tree.Ruleset.prototype;
 };
 tree.mixin.Definition.prototype = {
     toCSS: function () { return "" },
-
-    parent:   tree.Ruleset.prototype,
     variable: function (name) { return this.parent.variable.call(this, name) },
     find:     function ()     { return this.parent.find.apply(this, arguments) },
     rulesets: function ()     { return this.parent.rulesets.apply(this) },

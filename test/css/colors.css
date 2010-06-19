@@ -16,6 +16,9 @@
 #blue #rgba {
   color: rgba(0, 0, 255, 0.1);
 }
+#alpha #hsla {
+  color: rgba(61, 45, 41, 0.6);
+}
 #overflow .a {
   color: #000000;
 }

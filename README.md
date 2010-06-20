@@ -11,9 +11,7 @@ as well as on the server, with node.js.
 where do I get it?
 ------------------
 
-Go to the Downloads section, and get the latest version:
-
-<http://github.com/cloudhead/less.js/downloads>
+The latest builds are in the `dist/` folder.
 
 synopsis
 --------

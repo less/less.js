@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.20
+// LESS - Leaner CSS v1.0.21
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -1067,6 +1067,9 @@ if (typeof(window) !== 'undefined') {
     // Used by `@import` directives
     //
     less.Parser.importer = function (path, paths, callback) {
+        if (path[0] !== '/' && paths.length > 0) {
+            path = paths[0] + path;
+        }
         loadStyleSheet({ href: path, title: path }, function (root) {
             callback(root);
         });
@@ -2065,6 +2068,8 @@ var cache = (typeof(window.localStorage) === 'undefined') ? null : window.localS
 //
 var sheets = select('link[rel="stylesheet/less"]');
 
+var startTime = endTime = new(Date);
+
 less.refresh = function (reload) {
     loadStyleSheets(function (root, sheet, env) {
         if (env.local) {
@@ -2073,6 +2078,9 @@ less.refresh = function (reload) {
             log("parsed " + sheet.href + " successfully.");
             createCSS(root.toCSS(), sheet, env.lastModified);
         }
+        log("css for " + sheet.href + " generated in " + (new(Date) - endTime) + 'ms');
+        (env.remaining === 0) && log("css generated in " + (new(Date) - startTime) + 'ms');
+        endTime = new(Date);
     }, reload);
 };
 
@@ -2088,13 +2096,14 @@ function select(str) {
 
 function loadStyleSheets(callback, reload) {
     for (var i = 0; i < sheets.length; i++) {
-        loadStyleSheet(sheets[i], callback, reload);
+        loadStyleSheet(sheets[i], callback, reload, sheets.length - (i + 1));
     }
 }
 
-function loadStyleSheet(sheet, callback, reload) {
-    var css       = cache && cache.getItem(sheet.href);
-    var timestamp = cache && cache.getItem(sheet.href + ':timestamp');
+function loadStyleSheet(sheet, callback, reload, remaining) {
+    var href      = sheet.href.replace(/\?.*$/, '');
+    var css       = cache && cache.getItem(href);
+    var timestamp = cache && cache.getItem(href + ':timestamp');
     var styles    = { css: css, timestamp: timestamp };
 
     xhr(sheet.href, function (data, lastModified) {
@@ -2103,31 +2112,35 @@ function loadStyleSheet(sheet, callback, reload) {
             new(Date)(styles.timestamp).valueOf())) {
             // Use local copy
             createCSS(styles.css, sheet);
-            callback(null, sheet, { local: true });
+            callback(null, sheet, { local: true, remaining: remaining });
         } else {
             // Use remote copy (re-parse)
             new(less.Parser)({
-                optimization: less.optimization
+                optimization: less.optimization,
+                paths: [href.replace(/[\w\.-]+$/, '')]
             }).parse(data, function (e, root) {
-                if (e) { return error(e, sheet.href) }
+                if (e) { return error(e, href) }
                 try {
-                    callback(root, sheet, { local: false, lastModified: lastModified });
-                    removeNode(document.getElementById('less-error-message:' + sheet.href.replace(/[^a-z]+/gi, '-')));
+                    callback(root, sheet, { local: false, lastModified: lastModified, remaining: remaining });
+                    removeNode(document.getElementById('less-error-message:' + href.replace(/[^a-z]+/gi, '-')));
                 } catch (e) {
-                    error(e, sheet.href);
+                    error(e, href);
                 }
             });
         }
-    }, function (status) {
-        throw new(Error)("Couldn't load " + sheet.href + " (" + status + ")");
+    }, function (status, url) {
+        throw new(Error)("Couldn't load " + url+ " (" + status + ")");
     });
 }
 
 function createCSS(styles, sheet, lastModified) {
     var css;
 
+    // Strip the query-string
+    var href = sheet.href.replace(/\?.*$/, '');
+
     // If there is no title set, use the filename, minus the extension
-    var id = 'less:' + (sheet.title || sheet.href.match(/(?:^|\/)([-\w]+)\.[a-z]+$/i)[1]);
+    var id = 'less:' + (sheet.title || href.match(/(?:^|\/)([-\w]+)\.[a-z]+$/i)[1]);
 
     // If the stylesheet doesn't exist, create a new node
     if ((css = document.getElementById(id)) === null) {
@@ -2158,9 +2171,9 @@ function createCSS(styles, sheet, lastModified) {
 
     // Don't update the local store if the file wasn't modified
     if (lastModified && cache) {
-        log('saving ' + sheet.href + ' to cache.');
-        cache.setItem(sheet.href, styles);
-        cache.setItem(sheet.href + ':timestamp', lastModified);
+        log('saving ' + href + ' to cache.');
+        cache.setItem(href, styles);
+        cache.setItem(href + ':timestamp', lastModified);
     }
 }
 
@@ -2192,7 +2205,7 @@ function xhr(url, callback, errback) {
             callback(xhr.responseText,
                      xhr.getResponseHeader("Last-Modified"));
         } else if (typeof(errback) === 'function') {
-            errback(xhr.status);
+            errback(xhr.status, url);
         }
     }
 }

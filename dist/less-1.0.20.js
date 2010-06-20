@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.19
+// LESS - Leaner CSS v1.0.20
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -377,8 +377,8 @@ less.Parser = function Parser(env) {
                             filename: env.filename,
                             index: e.index,
                             line: line + 1,
-                            callLine: getLine(e.call) + 1,
-                            callExtract: lines[getLine(e.call)],
+                            callLine: e.call && (getLine(e.call) + 1),
+                            callExtract: lines[getLine(e.call) - 1],
                             stack: e.stack,
                             column: column,
                             extract: [
@@ -1062,7 +1062,16 @@ less.Parser = function Parser(env) {
     };
 };
 
-less.Parser.importer = null;
+if (typeof(window) !== 'undefined') {
+    //
+    // Used by `@import` directives
+    //
+    less.Parser.importer = function (path, paths, callback) {
+        loadStyleSheet({ href: path, title: path }, function (root) {
+            callback(root);
+        });
+    };
+}
 
 (function (tree) {
 
@@ -1115,28 +1124,28 @@ tree.functions = {
 
         hsl.s += amount.value / 100;
         hsl.s = clamp(hsl.s);
-        return this.hsl(hsl.h, hsl.s, hsl.l);
+        return hsla(hsl);
     },
     desaturate: function (color, amount) {
         var hsl = color.toHSL();
 
         hsl.s -= amount.value / 100;
         hsl.s = clamp(hsl.s);
-        return this.hsl(hsl.h, hsl.s, hsl.l);
+        return hsla(hsl);
     },
     lighten: function (color, amount) {
         var hsl = color.toHSL();
 
         hsl.l += amount.value / 100;
         hsl.l = clamp(hsl.l);
-        return this.hsl(hsl.h, hsl.s, hsl.l);
+        return hsla(hsl);
     },
     darken: function (color, amount) {
         var hsl = color.toHSL();
 
         hsl.l -= amount.value / 100;
         hsl.l = clamp(hsl.l);
-        return this.hsl(hsl.h, hsl.s, hsl.l);
+        return hsla(hsl);
     },
     spin: function (color, amount) {
         var hsl = color.toHSL();
@@ -1144,7 +1153,7 @@ tree.functions = {
 
         hsl.h = hue < 0 ? 360 + hue : hue;
 
-        return this.hsl(hsl.h, hsl.s, hsl.l);
+        return hsla(hsl);
     },
     greyscale: function (color) {
         return this.desaturate(color, new(tree.Dimension)(100));
@@ -1164,6 +1173,10 @@ tree.functions = {
         return new(tree.Quoted)('"' + str + '"', str);
     }
 };
+
+function hsla(hsla) {
+    return tree.functions.hsla(hsla.h, hsla.s, hsla.l, hsla.a);
+}
 
 function number(n) {
     if (n instanceof tree.Dimension) {
@@ -1261,7 +1274,6 @@ tree.Color = function (rgb, a) {
     //
     if (Array.isArray(rgb)) {
         this.rgb = rgb;
-        this.alpha = a;
     } else if (rgb.length == 6) {
         this.rgb = rgb.match(/.{2}/g).map(function (c) {
             return parseInt(c, 16);
@@ -1271,6 +1283,7 @@ tree.Color = function (rgb, a) {
             return parseInt(c + c, 16);
         });
     }
+    this.alpha = typeof(a) === 'number' ? a : 1;
 };
 tree.Color.prototype = {
     eval: function () { return this },
@@ -1282,7 +1295,7 @@ tree.Color.prototype = {
     // Values are capped between `0` and `255`, rounded and zero-padded.
     //
     toCSS: function () {
-        if (this.alpha && this.alpha < 1.0) {
+        if (this.alpha < 1.0) {
             return "rgba(" + this.rgb.map(function (c) {
                 return Math.round(c);
             }).concat(this.alpha).join(', ') + ")";
@@ -1317,7 +1330,8 @@ tree.Color.prototype = {
     toHSL: function () {
         var r = this.rgb[0] / 255,
             g = this.rgb[1] / 255,
-            b = this.rgb[2] / 255;
+            b = this.rgb[2] / 255,
+            a = this.alpha;
 
         var max = Math.max(r, g, b), min = Math.min(r, g, b);
         var h, s, l = (max + min) / 2, d = max - min;
@@ -1334,7 +1348,7 @@ tree.Color.prototype = {
             }
             h /= 6;
         }
-        return { h: h * 360, s: s, l: l };
+        return { h: h * 360, s: s, l: l, a: a };
     }
 };
 
@@ -1504,6 +1518,9 @@ tree.Import = function (path, imports) {
     // Only pre-compile .less files
     if (! this.css) {
         imports.push(this.path, function (root) {
+            if (! root) {
+                throw new(Error)("Error parsing " + that.path);
+            }
             that.root = root;
         });
     }
@@ -2279,14 +2296,5 @@ function error(e, href) {
         }, 10);
     }
 }
-
-//
-// Used by `@import` directives
-//
-less.Parser.importer = function (path, paths, callback) {
-    loadStyleSheet({ href: path, title: path }, function (root) {
-        callback(root);
-    });
-};
 
 })(window);

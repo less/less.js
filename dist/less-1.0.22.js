@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.21
+// LESS - Leaner CSS v1.0.22
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -335,7 +335,48 @@ less.Parser = function Parser(env) {
                 input = input.replace(/\/\*(?:[^*]|\*+[^\/*])*\*+\//g, function (comment) {
                     return that.optimization > 1 ? '' : comment.replace(/\n(\s*\n)+/g, '\n');
                 });
-                chunks = input.split(/^(?=\n)/mg);
+                if (that.optimization > 1) {
+                    chunks = (function (chunks) {
+                        var level = 0,
+                            j = 0,
+                            skip = /[^"'\{\}]+/g,
+                            match,
+                            chunk,
+                            inString;
+
+                        for (var i = 0, c; i < input.length; i++) {
+                            chunk = chunks[j];
+
+                            skip.lastIndex = i;
+
+                            if (match = skip.exec(input)) {
+                                if (match.index === i) {
+                                    i += match[0].length;
+                                    chunk.push(match[0]);
+                                }
+                            }
+                            c = input.charAt(i);
+
+                            if (c === '}' && !inString) {
+                                level --;
+                                chunk.push(c);
+                                if (level === 0) {
+                                    chunks[++j] = [];
+                                }
+                            } else {
+                                if (c === '{' && !inString) {
+                                    level ++;
+                                } else if (c === '"' || c === "'") {
+                                    inString = inString === c ? false : c;
+                                }
+                                chunk.push(c);
+                            }
+                        }
+                        return chunks.map(function (c) { return c.join('') });;
+                    })([[]]);
+                } else {
+                    chunks = [input];
+                }
             } else {
                 chunks = [input];
             }
@@ -1206,7 +1247,8 @@ tree.Alpha = function (val) {
 };
 tree.Alpha.prototype = {
     toCSS: function () {
-        return "alpha(opacity=" + this.value.toCSS() + ")";
+        return "alpha(opacity=" +
+               (this.value.toCSS ? this.value.toCSS() : this.value) + ")";
     },
     eval: function () { return this }
 };
@@ -2064,9 +2106,17 @@ if (less.env === 'development') {
 var cache = (typeof(window.localStorage) === 'undefined') ? null : window.localStorage;
 
 //
-// Select all links with the 'rel' attribute set to "less"
+// Get all <link> tags with the 'rel' attribute set to "stylesheet/less"
 //
-var sheets = select('link[rel="stylesheet/less"]');
+var links = document.getElementsByTagName('link');
+
+less.sheets = [];
+
+for (var i = 0; i < links.length; i++) {
+    if (links[i].rel === 'stylesheet/less') {
+        less.sheets.push(links[i]);
+    }
+}
 
 var startTime = endTime = new(Date);
 
@@ -2086,17 +2136,9 @@ less.refresh = function (reload) {
 
 less.refresh();
 
-function select(str) {
-    if (!document.querySelectorAll && typeof(jQuery) === "undefined") {
-        log("no selector method found.");
-    } else {
-        return (document.querySelectorAll || jQuery).call(document, str);
-    }
-}
-
 function loadStyleSheets(callback, reload) {
-    for (var i = 0; i < sheets.length; i++) {
-        loadStyleSheet(sheets[i], callback, reload, sheets.length - (i + 1));
+    for (var i = 0; i < less.sheets.length; i++) {
+        loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1));
     }
 }
 

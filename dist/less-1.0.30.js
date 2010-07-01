@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.23
+// LESS - Leaner CSS v1.0.30
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -184,7 +184,6 @@ less.Parser = function Parser(env) {
         furthest,    // furthest index the parser has gone to
         chunks,      // chunkified input
         current,     // index of current chunk, in `input`
-        inputLength,
         parser;
 
     var that = this;
@@ -305,13 +304,15 @@ less.Parser = function Parser(env) {
         }
     }
 
-    this.env = env || {};
+    this.env = env = env || {};
 
     // The optimization level dictates the thoroughness of the parser,
     // the lower the number, the less nodes it will create in the tree.
     // This could matter for debugging, or if you want to access
     // the individual nodes in the tree.
     this.optimization = ('optimization' in this.env) ? this.env.optimization : 1;
+
+    this.env.filename = this.env.filename || null;
 
     //
     // The Parser
@@ -330,52 +331,60 @@ less.Parser = function Parser(env) {
             chunks = [];
             input = str.replace(/\r\n/g, '\n');
 
-            // Split the input into chunks,
-            // delimited by /\n\n/ and 
-            // removing comments (see rationale above),
-            // depending on the level of optimization.
-            if (that.optimization > 0) {
-                if (that.optimization > 1) {
-                    input = input.replace(/\/\*(?:[^*]|\*+[^\/*])*\*+\//g, '');
-                    chunks = (function (chunks) {
-                        var j = 0,
-                            skip = /[^"'\{\}]+/g,
-                            match,
-                            chunk,
-                            inString;
+            // Split the input into chunks.
+            chunks = (function (chunks) {
+                var j = 0,
+                    skip = /[^"'\{\}\/]+/g,
+                    comment = /\/\*(?:[^*]|\*+[^\/*])*\*+\/|\/\/.*/g,
+                    level = 0,
+                    match,
+                    chunk = chunks[0],
+                    inString;
 
-                        for (var i = 0, c; i < input.length; i++) {
-                            chunk = chunks[j];
+                for (var i = 0, c, cc; i < input.length; i++) {
+                    skip.lastIndex = i;
+                    if (match = skip.exec(input)) {
+                        if (match.index === i) {
+                            i += match[0].length;
+                            chunk.push(match[0]);
+                        }
+                    }
+                    c = input.charAt(i);
+                    comment.lastIndex = i;
 
-                            skip.lastIndex = i;
-
-                            if (match = skip.exec(input)) {
+                    if (!inString && c === '/') {
+                        cc = input.charAt(i + 1);
+                        if (cc === '/' || cc === '*') {
+                            if (match = comment.exec(input)) {
                                 if (match.index === i) {
                                     i += match[0].length;
                                     chunk.push(match[0]);
+                                    c = input.charAt(i);
                                 }
-                            }
-                            c = input.charAt(i);
-
-                            if (c === '}' && !inString) {
-                                chunk.push(c);
-                                chunks[++j] = [];
-                            } else {
-                                if (c === '"' || c === "'") {
-                                    inString = inString === c ? false : c;
-                                }
-                                chunk.push(c);
                             }
                         }
-                        return chunks.map(function (c) { return c.join('') });;
-                    })([[]]);
-                } else {
-                    chunks = [input];
+                    }
+
+                    if        (c === '{' && !inString) { level ++;
+                        chunk.push(c);
+                    } else if (c === '}' && !inString) { level --;
+                        chunk.push(c);
+                        chunks[++j] = chunk = [];
+                    } else {
+                        if (c === '"' || c === "'") {
+                            if (!inString) {
+                                inString = c;
+                            } else {
+                                inString = inString === c ? false : inString;
+                            }
+                        }
+                        chunk.push(c);
+                    }
                 }
-            } else {
-                chunks = [input];
-            }
-            inputLength = input.length;
+                if (level > 0) { throw new(Error)("Missing closing '}'") }
+
+                return chunks.map(function (c) { return c.join('') });;
+            })([[]]);
 
             // Start with the primary rule.
             // The whole syntax tree is held under a Ruleset node,
@@ -387,18 +396,43 @@ less.Parser = function Parser(env) {
             root.toCSS = (function (toCSS) {
                 var line, lines, column;
 
-                return function (options) {
+                return function (options, variables) {
+                    var frames = [];
+
                     options = options || {};
+                    //
+                    // Allows setting variables with a hash, so:
+                    //
+                    //   `{ color: new(tree.Color)('#f01') }` will become:
+                    //
+                    //   new(tree.Rule)('@color',
+                    //     new(tree.Value)([
+                    //       new(tree.Expression)([
+                    //         new(tree.Color)('#f01')
+                    //       ])
+                    //     ])
+                    //   )
+                    //
+                    if (typeof(variables) === 'object' && !Array.isArray(variables)) {
+                        variables = Object.keys(variables).map(function (k) {
+                            var value = variables[k];
+
+                            if (! (value instanceof tree.Value)) {
+                                if (! (value instanceof tree.Expression)) {
+                                    value = new(tree.Expression)([value]);
+                                }
+                                value = new(tree.Value)([value]);
+                            }
+                            return new(tree.Rule)('@' + k, value, false, 0);
+                        });
+                        frames = [new(tree.Ruleset)(null, variables)];
+                    }
+
                     try {
                         var css = toCSS.call(this, [], {
-                            frames: [],
+                            frames:   frames,
                             compress: options.compress || false
                         });
-                        if (options.compress) {
-                            return css.replace(/(\s)+/g, "$1");
-                        } else {
-                            return css;
-                        }
                     } catch (e) {
                         lines = input.split('\n');
                         line = getLine(e.index);
@@ -423,6 +457,11 @@ less.Parser = function Parser(env) {
                                 lines[line + 1]
                             ]
                         };
+                    }
+                    if (options.compress) {
+                        return css.replace(/(\s)+/g, "$1");
+                    } else {
+                        return css;
                     }
 
                     function getLine(index) {
@@ -948,7 +987,7 @@ less.Parser = function Parser(env) {
                 if (c === '.' || c === '#' || c === '&') { return }
 
                 if (name = $(this.variable) || $(this.property)) {
-                    if ((name.charAt(0) != '@') && (match = /^([^@+\/*(;{}-]*);/.exec(chunks[j]))) {
+                    if ((name.charAt(0) != '@') && (match = /^([^@+\/'"*(;{}-]*);/.exec(chunks[j]))) {
                         i += match[0].length - 1;
                         value = new(tree.Anonymous)(match[1]);
                     } else if (name === "font") {
@@ -2077,7 +2116,9 @@ require('less/tree').find = function (obj, fun) {
 // browser.js - client-side engine
 //
 
-var isFileProtocol = location.protocol === 'file:';
+var isFileProtocol = (location.protocol === 'file:'    ||
+                      location.protocol === 'chrome:'  ||
+                      location.protocol === 'resource:');
 
 less.env = location.hostname == '127.0.0.1' ||
            location.hostname == '0.0.0.0'   ||
@@ -2122,18 +2163,37 @@ if (less.env === 'development') {
     less.optimization = 3;
 }
 
-var cache = (typeof(window.localStorage) === 'undefined') ? null : window.localStorage;
+var cache;
+
+try {
+    cache = (typeof(window.localStorage) === 'undefined') ? null : window.localStorage;
+} catch (_) {
+    cache = null;
+}
 
 //
 // Get all <link> tags with the 'rel' attribute set to "stylesheet/less"
 //
 var links = document.getElementsByTagName('link');
+var typePattern = /^text\/(x-)?less$/;
 
 less.sheets = [];
 
 for (var i = 0; i < links.length; i++) {
-    if (links[i].rel === 'stylesheet/less') {
+    if (links[i].rel === 'stylesheet/less' || (links[i].rel.match(/stylesheet/) &&
+       (links[i].type.match(typePattern)))) {
         less.sheets.push(links[i]);
+    }
+}
+
+var styles = document.getElementsByTagName('style');
+
+for (var i = 0; i < styles.length; i++) {
+    if (styles[i].type.match(typePattern)) {
+        new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
+            styles[i].type      = 'text/css';
+            styles[i].innerHTML = tree.toCSS();
+        });
     }
 }
 
@@ -2153,7 +2213,7 @@ less.refresh = function (reload) {
     }, reload);
 };
 
-less.refresh();
+less.refresh(less.env === 'development');
 
 function loadStyleSheets(callback, reload) {
     for (var i = 0; i < less.sheets.length; i++) {
@@ -2242,6 +2302,9 @@ function xhr(url, callback, errback) {
     var xhr = getXMLHttpRequest();
     var async = isFileProtocol ? false : less.async;
 
+    if (typeof(xhr.overrideMimeType) === 'function') {
+        xhr.overrideMimeType('text/css');
+    }
     xhr.open('GET', url, async);
     xhr.send(null);
 

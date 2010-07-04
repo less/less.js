@@ -14,6 +14,11 @@
   width: 24em;
   size: 1cm;
 }
+.with-functions {
+  color: #646464;
+  color: #ff8080;
+  color: #c94a4a;
+}
 .negative {
   height: 0px;
   width: 4px;

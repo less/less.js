@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.30
+// LESS - Leaner CSS v1.0.31
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -618,15 +618,20 @@ less.Parser = function Parser(env) {
                 call: function () {
                     var name, args;
 
-                    if (! (name = $(/^([\w-]+|%)\(/))) return;
+                    if (! (name = /^([\w-]+|%)\(/.exec(chunks[j]))) return;
 
-                    if (name[1].toLowerCase() === 'alpha') { return $(this.alpha) }
+                    name = name[1].toLowerCase();
+
+                    if (name === 'url') { return null }
+                    else                { i += name.length + 1 }
+
+                    if (name === 'alpha') { return $(this.alpha) }
 
                     args = $(this.entities.arguments);
 
                     if (! $(')')) return;
 
-                    if (name) { return new(tree.Call)(name[1], args) }
+                    if (name) { return new(tree.Call)(name, args) }
                 },
                 arguments: function () {
                     var args = [], arg;
@@ -654,10 +659,11 @@ less.Parser = function Parser(env) {
                     var value;
 
                     if (input.charAt(i) !== 'u' || !$(/^url\(/)) return;
-                    value = $(this.entities.quoted) || $(/^[-\w%@$\/.&=:;#+?]+/);
+                    value = $(this.entities.quoted) || $(this.entities.variable) || $(/^[-\w%@$\/.&=:;#+?]+/);
                     if (! $(')')) throw new(Error)("missing closing ) for url()");
 
-                    return new(tree.URL)(value.value ? value : new(tree.Anonymous)(value));
+                    return new(tree.URL)((value.value || value instanceof tree.Variable)
+                                        ? value : new(tree.Anonymous)(value));
                 },
 
                 //
@@ -1127,7 +1133,8 @@ less.Parser = function Parser(env) {
             //
             operand: function () {
                 return $(this.sub) || $(this.entities.dimension) ||
-                       $(this.entities.color) || $(this.entities.variable);
+                       $(this.entities.color) || $(this.entities.variable) ||
+                       $(this.entities.call);
             },
 
             //
@@ -2058,7 +2065,10 @@ tree.URL.prototype = {
     toCSS: function () {
         return "url(" + this.value.toCSS() + ")";
     },
-    eval: function () { return this }
+    eval: function (ctx) {
+        this.value = this.value.eval(ctx);
+        return this;
+    }
 };
 
 })(require('less/tree'));
@@ -2186,20 +2196,10 @@ for (var i = 0; i < links.length; i++) {
     }
 }
 
-var styles = document.getElementsByTagName('style');
-
-for (var i = 0; i < styles.length; i++) {
-    if (styles[i].type.match(typePattern)) {
-        new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
-            styles[i].type      = 'text/css';
-            styles[i].innerHTML = tree.toCSS();
-        });
-    }
-}
-
-var startTime = endTime = new(Date);
 
 less.refresh = function (reload) {
+    var startTime = endTime = new(Date);
+
     loadStyleSheets(function (root, sheet, env) {
         if (env.local) {
             log("loading " + sheet.href + " from cache.");
@@ -2211,9 +2211,24 @@ less.refresh = function (reload) {
         (env.remaining === 0) && log("css generated in " + (new(Date) - startTime) + 'ms');
         endTime = new(Date);
     }, reload);
+
+    loadStyles();
 };
+less.refreshStyles = loadStyles;
 
 less.refresh(less.env === 'development');
+
+function loadStyles() {
+    var styles = document.getElementsByTagName('style');
+    for (var i = 0; i < styles.length; i++) {
+        if (styles[i].type.match(typePattern)) {
+            new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
+                styles[i].type      = 'text/css';
+                styles[i].innerHTML = tree.toCSS();
+            });
+        }
+    }
+}
 
 function loadStyleSheets(callback, reload) {
     for (var i = 0; i < less.sheets.length; i++) {
@@ -2243,7 +2258,7 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
                 if (e) { return error(e, href) }
                 try {
                     callback(root, sheet, { local: false, lastModified: lastModified, remaining: remaining });
-                    removeNode(document.getElementById('less-error-message:' + href.replace(/[^a-z]+/gi, '-')));
+                    removeNode(document.getElementById('less-error-message:' + extractId(href)));
                 } catch (e) {
                     error(e, href);
                 }
@@ -2254,6 +2269,14 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     });
 }
 
+function extractId(href) {
+    return href.replace(/^[a-z]+:\/\/?[^\/]+/, '')  // Remove protocol & domain
+               .replace(/^\//,                 '')  // Remove root /
+               .replace(/\?.*$/,               '')  // Remove query
+               .replace(/\.[^\/]+$/,           '')  // Remove file extension
+               .replace(/[^\w-]+/g,           '-'); // Replace illegal characters
+}
+
 function createCSS(styles, sheet, lastModified) {
     var css;
 
@@ -2261,7 +2284,7 @@ function createCSS(styles, sheet, lastModified) {
     var href = sheet.href ? sheet.href.replace(/\?.*$/, '') : '';
 
     // If there is no title set, use the filename, minus the extension
-    var id = 'less:' + (sheet.title || href.match(/(?:^|\/)([-\w]+)\.[a-z]+$/i)[1]);
+    var id = 'less:' + (sheet.title || extractId(href));
 
     // If the stylesheet doesn't exist, create a new node
     if ((css = document.getElementById(id)) === null) {
@@ -2356,7 +2379,7 @@ function log(str) {
 }
 
 function error(e, href) {
-    var id = 'less-error-message:' + href.replace(/[^a-z]+/ig, '-');
+    var id = 'less-error-message:' + extractId(href);
 
     if (! e.extract) { throw e }
 

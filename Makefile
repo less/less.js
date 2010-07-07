@@ -41,4 +41,17 @@ min: less
 	@@java -jar build/compiler.jar\
 		     --js ${DIST} >> ${DIST_MIN}
 
+clean:
+	git rm dist/*
+
+dist: clean min
+	git add dist/*
+	git commit -a -m "(dist) build ${VERSION}"
+	git archive master --prefix=less/ -o less-${VERSION}.tar.gz
+	npm publish less-${VERSION}.tar.gz
+
+stable:
+	npm tag less ${VERSION} stable
+
+
 .PHONY: test benchmark

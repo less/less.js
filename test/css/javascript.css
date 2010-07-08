@@ -6,4 +6,5 @@
 }
 .scope {
   var: 42;
+  escaped: 7px;
 }

@@ -8,6 +8,6 @@
   "version"       : "1.0.33",
   "bin"           : { "lessc": "./bin/lessc" },
   "main"          : "./lib/less/index",
-  "directories"   : { "lib": "./lib/less", "test": "./test" },
+  "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.1.93" }
 }

@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.33
+// LESS - Leaner CSS v1.0.34
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -139,7 +139,8 @@ if (typeof(window) === 'undefined') {
     less = exports,
     tree = require('less/tree');
 } else {
-    less = window.less = {},
+    if (typeof(window.less) === 'undefined') { window.less = {} }
+    less = window.less,
     tree = window.less.tree = {};
 }
 //
@@ -657,11 +658,11 @@ less.Parser = function Parser(env) {
                     var value;
 
                     if (input.charAt(i) !== 'u' || !$(/^url\(/)) return;
-                    value = $(this.entities.quoted) || $(this.entities.variable) || $(/^[-\w%@$\/.&=:;#+?]+/);
+                    value = $(this.entities.quoted) || $(this.entities.variable) || $(/^[-\w%@$\/.&=:;#+?]+/) || "";
                     if (! $(')')) throw new(Error)("missing closing ) for url()");
 
                     return new(tree.URL)((value.value || value instanceof tree.Variable)
-                                        ? value : new(tree.Anonymous)(value));
+                                        ? value : new(tree.Anonymous)(value), imports.paths);
                 },
 
                 //
@@ -704,7 +705,7 @@ less.Parser = function Parser(env) {
                     var value, c = input.charCodeAt(i);
                     if ((c > 57 || c < 45) || c === 47) return;
 
-                    if (value = $(/^(-?\d*\.?\d+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm)?/)) {
+                    if (value = $(/^(-?\d*\.?\d+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|rad|grad|turn)?/)) {
                         return new(tree.Dimension)(value[1], value[2]);
                     }
                 },
@@ -949,7 +950,7 @@ less.Parser = function Parser(env) {
 
                 if (! $('[')) return;
 
-                if (key = $(/^[a-z-]+/) || $(this.entities.quoted)) {
+                if (key = $(/^[a-zA-Z-]+/) || $(this.entities.quoted)) {
                     if ((op = $(/^[|~*$^]?=/)) &&
                         (val = $(this.entities.quoted) || $(/^[\w-]+/))) {
                         attr = [key, op, val.toCSS ? val.toCSS() : val].join('');
@@ -1283,10 +1284,10 @@ tree.functions = {
     },
     '%': function (quoted /* arg, arg, ...*/) {
         var args = Array.prototype.slice.call(arguments, 1),
-            str = quoted.content;
+            str = quoted.value;
 
         for (var i = 0; i < args.length; i++) {
-            str = str.replace(/%s/,    args[i].content)
+            str = str.replace(/%s/,    args[i].value)
                      .replace(/%[da]/, args[i].toCSS());
         }
         str = str.replace(/%%/g, '%');
@@ -1333,7 +1334,7 @@ tree.Alpha.prototype = {
 (function (tree) {
 
 tree.Anonymous = function (string) {
-    this.value = string.content || string;
+    this.value = string.value || string;
 };
 tree.Anonymous.prototype = {
     toCSS: function () {
@@ -1629,9 +1630,9 @@ tree.Import = function (path, imports) {
 
     // The '.less' extension is optional
     if (path instanceof tree.Quoted) {
-        this.path = /\.(le?|c)ss$/.test(path.content) ? path.content : path.content + '.less';
+        this.path = /\.(le?|c)ss$/.test(path.value) ? path.value : path.value + '.less';
     } else {
-        this.path = path.value.content || path.value;
+        this.path = path.value.value || path.value;
     }
 
     this.css = /css$/.test(this.path);
@@ -1864,13 +1865,13 @@ tree.operate = function (op, a, b) {
 })(require('less/tree'));
 (function (tree) {
 
-tree.Quoted = function (value, content) {
-    this.value = value;
-    this.content = content;
+tree.Quoted = function (str, content) {
+    this.value = content || '';
+    this.quote = str.charAt(0);
 };
 tree.Quoted.prototype = {
     toCSS: function () {
-        return this.value;
+        return this.quote + this.value + this.quote;
     },
     eval: function () {
         return this;
@@ -2125,16 +2126,20 @@ tree.Selector.prototype.toCSS = function (env) {
 })(require('less/tree'));
 (function (tree) {
 
-tree.URL = function (val) {
+tree.URL = function (val, paths) {
+    // Add the base path if the URL is relative and we are in the browser
+    if (!/^(?:http:\/)?\//.test(val.value) && paths.length > 0 && typeof(window) !== 'undefined') {
+        val.value = [paths[0], val.value].join('/').replace('//', '/');
+    }
     this.value = val;
+    this.paths = paths;
 };
 tree.URL.prototype = {
     toCSS: function () {
         return "url(" + this.value.toCSS() + ")";
     },
     eval: function (ctx) {
-        this.value = this.value.eval(ctx);
-        return this;
+        return new(tree.URL)(this.value.eval(ctx), this.paths);
     }
 };
 
@@ -2197,7 +2202,8 @@ var isFileProtocol = (location.protocol === 'file:'    ||
                       location.protocol === 'chrome:'  ||
                       location.protocol === 'resource:');
 
-less.env = location.hostname == '127.0.0.1' ||
+less.env = less.env                         ||
+           location.hostname == '127.0.0.1' ||
            location.hostname == '0.0.0.0'   ||
            location.hostname == 'localhost' ||
            location.port.length > 0         ||
@@ -2213,7 +2219,7 @@ less.env = location.hostname == '127.0.0.1' ||
 less.async = false;
 
 // Interval between watch polls
-less.poll = isFileProtocol ? 1000 : 1500;
+less.poll = less.poll || (isFileProtocol ? 1000 : 1500);
 
 //
 // Watch mode
@@ -2337,11 +2343,12 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
 }
 
 function extractId(href) {
-    return href.replace(/^[a-z]+:\/\/?[^\/]+/, '')  // Remove protocol & domain
-               .replace(/^\//,                 '')  // Remove root /
-               .replace(/\?.*$/,               '')  // Remove query
-               .replace(/\.[^\/]+$/,           '')  // Remove file extension
-               .replace(/[^\w-]+/g,           '-'); // Replace illegal characters
+    return href.replace(/^[a-z]+:\/\/?[^\/]+/, '' )  // Remove protocol & domain
+               .replace(/^\//,                 '' )  // Remove root /
+               .replace(/\?.*$/,               '' )  // Remove query
+               .replace(/\.[^\.\/]+$/,         '' )  // Remove file extension
+               .replace(/[^\.\w-]+/g,          '-')  // Replace illegal characters
+               .replace(/\./g,                 ':'); // Replace dots with colons(for valid id)
 }
 
 function createCSS(styles, sheet, lastModified) {

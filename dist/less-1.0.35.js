@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.34
+// LESS - Leaner CSS v1.0.35
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -382,7 +382,13 @@ less.Parser = function Parser(env) {
                         chunk.push(c);
                     }
                 }
-                if (level > 0) { throw new(Error)("Missing closing '}'") }
+                if (level > 0) {
+                    throw {
+                        type: 'Syntax',
+                        message: "Missing closing `}`",
+                        filename: env.filename
+                    };
+                }
 
                 return chunks.map(function (c) { return c.join('') });;
             })([[]]);
@@ -2128,8 +2134,8 @@ tree.Selector.prototype.toCSS = function (env) {
 
 tree.URL = function (val, paths) {
     // Add the base path if the URL is relative and we are in the browser
-    if (!/^(?:http:\/)?\//.test(val.value) && paths.length > 0 && typeof(window) !== 'undefined') {
-        val.value = [paths[0], val.value].join('/').replace('//', '/');
+    if (!/^(?:https?:\/|file:\/)?\//.test(val.value) && paths.length > 0 && typeof(window) !== 'undefined') {
+        val.value = paths[0] + (val.value.charAt(0) === '/' ? val.value.slice(1) : val.value);
     }
     this.value = val;
     this.paths = paths;
@@ -2310,10 +2316,16 @@ function loadStyleSheets(callback, reload) {
 }
 
 function loadStyleSheet(sheet, callback, reload, remaining) {
+    var url       = window.location.href;
     var href      = sheet.href.replace(/\?.*$/, '');
     var css       = cache && cache.getItem(href);
     var timestamp = cache && cache.getItem(href + ':timestamp');
     var styles    = { css: css, timestamp: timestamp };
+
+    // Stylesheets in IE don't always return the full path
+    if (! /^(https?|file):/.test(href)) {
+        href = url.slice(0, url.lastIndexOf('/') + 1) + href;
+    }
 
     xhr(sheet.href, function (data, lastModified) {
         if (!reload && styles &&
@@ -2324,18 +2336,22 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
             callback(null, sheet, { local: true, remaining: remaining });
         } else {
             // Use remote copy (re-parse)
-            new(less.Parser)({
-                optimization: less.optimization,
-                paths: [href.replace(/[\w\.-]+$/, '')]
-            }).parse(data, function (e, root) {
-                if (e) { return error(e, href) }
-                try {
-                    callback(root, sheet, { local: false, lastModified: lastModified, remaining: remaining });
-                    removeNode(document.getElementById('less-error-message:' + extractId(href)));
-                } catch (e) {
-                    error(e, href);
-                }
-            });
+            try {
+                new(less.Parser)({
+                    optimization: less.optimization,
+                    paths: [href.replace(/[\w\.-]+$/, '')]
+                }).parse(data, function (e, root) {
+                    if (e) { return error(e, href) }
+                    try {
+                        callback(root, sheet, { local: false, lastModified: lastModified, remaining: remaining });
+                        removeNode(document.getElementById('less-error-message:' + extractId(href)));
+                    } catch (e) {
+                        error(e, href);
+                    }
+                });
+            } catch (e) {
+                error(e, href);
+            }
         }
     }, function (status, url) {
         throw new(Error)("Couldn't load " + url+ " (" + status + ")");
@@ -2364,7 +2380,7 @@ function createCSS(styles, sheet, lastModified) {
     if ((css = document.getElementById(id)) === null) {
         css = document.createElement('style');
         css.type = 'text/css';
-        css.media = sheet.media;
+        css.media = sheet.media || 'screen';
         css.id = id;
         document.getElementsByTagName('head')[0].appendChild(css);
     }
@@ -2455,42 +2471,57 @@ function log(str) {
 function error(e, href) {
     var id = 'less-error-message:' + extractId(href);
 
-    if (! e.extract) { throw e }
+    var template = ['<ul>',
+                        '<li><label>[-1]</label><pre class="ctx">{0}</pre></li>',
+                        '<li><label>[0]</label><pre>{current}</pre></li>',
+                        '<li><label>[1]</label><pre class="ctx">{2}</pre></li>',
+                    '</ul>'].join('\n');
 
-    var template = ['<div>',
-                        '<pre class="ctx"><span>[-1]</span>{0}</pre>',
-                        '<pre><span>[0]</span>{current}</pre>',
-                        '<pre class="ctx"><span>[1]</span>{2}</pre>',
-                    '</div>'].join('\n');
+    var elem = document.createElement('div'), timer, content;
 
-    var elem = document.createElement('div'), timer;
-    elem.id = id;
+    elem.id        = id;
     elem.className = "less-error-message";
-    elem.innerHTML = '<h3>' + (e.message || 'There is an error in your .less file') + '</h3>' +
-                     '<p><a href="' + href   + '">' + href + "</a> "                +
-                     'on line '     + e.line + ', column ' + (e.column + 1)         + ':</p>' +
-                     template.replace(/\[(-?\d)\]/g, function (_, i) {
-                         return (parseInt(e.line) + parseInt(i)) || '';
-                     }).replace(/\{(\d)\}/g, function (_, i) {
-                         return e.extract[parseInt(i)] || '';
-                     }).replace(/\{current\}/, e.extract[1].slice(0, e.column)      +
-                                               '<span class="error">'               +
-                                               e.extract[1].slice(e.column)         +
-                                               '</span>');
+
+    content = '<h3>'  + (e.message || 'There is an error in your .less file') +
+              '</h3>' + '<p><a href="' + href   + '">' + href + "</a> ";
+
+    if (e.extract) {
+        content += 'on line ' + e.line + ', column ' + (e.column + 1) + ':</p>' +
+            template.replace(/\[(-?\d)\]/g, function (_, i) {
+                return (parseInt(e.line) + parseInt(i)) || '';
+            }).replace(/\{(\d)\}/g, function (_, i) {
+                return e.extract[parseInt(i)] || '';
+            }).replace(/\{current\}/, e.extract[1].slice(0, e.column) + '<span class="error">' +
+                                      e.extract[1].slice(e.column)    + '</span>');
+    }
+    elem.innerHTML = content;
+
     // CSS for error messages
     createCSS([
-        '.less-error-message span {',
+        '.less-error-message ul, .less-error-message li {',
+            'list-style-type: none;',
             'margin-right: 15px;',
+            'padding: 4px 0;',
+            'margin: 0;',
+        '}',
+        '.less-error-message label {',
+            'font-size: 12px;',
+            'margin-right: 15px;',
+            'padding: 4px 0;',
+            'color: #cc7777;',
         '}',
         '.less-error-message pre {',
             'color: #ee4444;',
             'padding: 4px 0;',
             'margin: 0;',
+            'display: inline-block;',
         '}',
         '.less-error-message pre.ctx {',
-            'color: #dd7777;',
+            'color: #dd4444;',
         '}',
         '.less-error-message h3 {',
+            'font-size: 20px;',
+            'font-weight: bold;',
             'padding: 15px 0 5px 0;',
             'margin: 0;',
         '}',

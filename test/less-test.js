@@ -61,15 +61,9 @@ function toCSS(path, callback) {
 }
 
 function read(path, callback) {
-    fs.stat(path, function (e, stats) {
+    fs.readFile(path, 'utf8', function (e, data) {
         if (e) return callback(e);
-        fs.open(path, process.O_RDONLY, stats.mode, function (e, fd) {
-            if (e) return callback(e);
-            fs.read(fd, stats.size, 0, "utf8", function (e, data) {
-                if (e) return callback(e);
-                callback(null, data);
-            });
-        });
+        callback(null, data);
     });
 }
 

@@ -67,7 +67,7 @@ fs.stat(input, function (e, stats) {
         sys.puts("lessc: " + e.message);
         process.exit(1);
     }
-    fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
+    fs.open(input, "r", stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
             new(less.Parser)({
                 paths: [path.dirname(input)],

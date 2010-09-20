@@ -10,7 +10,7 @@ var file = path.join(__dirname, 'benchmark.less');
 if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
 
 fs.stat(file, function (e, stats) {
-    fs.open(file, process.O_RDONLY, stats.mode, function (e, fd) {
+    fs.open(file, "r", stats.mode, function (e, fd) {
         fs.read(fd, stats.size, 0, "utf8", function (e, data) {
             var tree, css, start, end, total;
 

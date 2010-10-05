@@ -1,0 +1,14 @@
+.eval {
+  js: 42;
+  js: 2;
+  js: "hello world";
+  sigkill: 9;
+  ternary: true;
+}
+.scope {
+  var: 42;
+  escaped: 7px;
+}
+.vars {
+  width: 8;
+}

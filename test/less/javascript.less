@@ -1,0 +1,16 @@
+.eval {
+    js: `42`;
+    js: `1 + 1`;
+    js: `"hello world"`;
+    sigkill: `process.SIGKILL`;
+    ternary: `(1 + 1 == 2 ? true : false)`;
+}
+.scope {
+    @foo: 42;
+    var: `this.foo.toJS()`;
+    escaped: e(`2 + 5 + 'px'`);
+}
+.vars {
+    @var: `4 + 4`;
+    width: @var;
+}

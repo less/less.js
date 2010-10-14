@@ -24,7 +24,7 @@ fs.readdirSync('test/less').forEach(function (file) {
     toCSS('test/less/' + file, function (err, less) {
         var name = path.basename(file, '.less');
 
-        read(path.join('test/css', name) + '.css', function (e, css) {
+        fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
             sys.print("- " + name + ": ")
             if (less === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {
@@ -39,7 +39,7 @@ fs.readdirSync('test/less').forEach(function (file) {
 
 function toCSS(path, callback) {
     var tree, css;
-    read(path, function (e, str) {
+    fs.readFile(path, 'utf-8', function (e, str) {
         if (e) { return callback(e) }
 
         new(less.Parser)({
@@ -56,19 +56,6 @@ function toCSS(path, callback) {
                     callback(e);
                 }
             }
-        });
-    });
-}
-
-function read(path, callback) {
-    fs.stat(path, function (e, stats) {
-        if (e) return callback(e);
-        fs.open(path, process.O_RDONLY, stats.mode, function (e, fd) {
-            if (e) return callback(e);
-            fs.read(fd, stats.size, 0, "utf8", function (e, data) {
-                if (e) return callback(e);
-                callback(null, data);
-            });
         });
     });
 }

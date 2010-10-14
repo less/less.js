@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.35
+// LESS - Leaner CSS v1.0.36
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -2208,13 +2208,12 @@ var isFileProtocol = (location.protocol === 'file:'    ||
                       location.protocol === 'chrome:'  ||
                       location.protocol === 'resource:');
 
-less.env = less.env                         ||
-           location.hostname == '127.0.0.1' ||
-           location.hostname == '0.0.0.0'   ||
-           location.hostname == 'localhost' ||
-           location.port.length > 0         ||
-           isFileProtocol                   ? 'development'
-                                            : 'production';
+less.env = less.env || (location.hostname == '127.0.0.1' ||
+                        location.hostname == '0.0.0.0'   ||
+                        location.hostname == 'localhost' ||
+                        location.port.length > 0         ||
+                        isFileProtocol                   ? 'development'
+                                                         : 'production');
 
 // Load styles asynchronously (default: false)
 //
@@ -2354,7 +2353,7 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
             }
         }
     }, function (status, url) {
-        throw new(Error)("Couldn't load " + url+ " (" + status + ")");
+        throw new(Error)("Couldn't load " + url + " (" + status + ")");
     });
 }
 
@@ -2425,7 +2424,7 @@ function xhr(url, callback, errback) {
         if (xhr.status === 0) {
             callback(xhr.responseText);
         } else {
-            errback(xhr.status);
+            errback(xhr.status, url);
         }
     } else if (async) {
         xhr.onreadystatechange = function () {

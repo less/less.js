@@ -62,37 +62,33 @@ if (! input) {
     process.exit(1);
 }
 
-fs.stat(input, function (e, stats) {
+fs.readFile(input, 'utf-8', function (e, data) {
     if (e) {
         sys.puts("lessc: " + e.message);
         process.exit(1);
     }
-    fs.open(input, process.O_RDONLY, stats.mode, function (e, fd) {
-        fs.read(fd, stats.size, 0, "utf8", function (e, data) {
-            new(less.Parser)({
-                paths: [path.dirname(input)],
-                optimization: options.optimization,
-                filename: input
-            }).parse(data, function (err, tree) {
-                if (err) {
-                    less.writeError(err, options);
-                    process.exit(1);
+
+    new(less.Parser)({
+        paths: [path.dirname(input)],
+        optimization: options.optimization,
+        filename: input
+    }).parse(data, function (err, tree) {
+        if (err) {
+            less.writeError(err, options);
+            process.exit(1);
+        } else {
+            try {
+                css = tree.toCSS({ compress: options.compress });
+                if (output) {
+                    fd = fs.openSync(output, "w");
+                    fs.writeSync(fd, css, 0, "utf8");
                 } else {
-                    try {
-                        css = tree.toCSS({ compress: options.compress });
-                        if (output) {
-                            fd = fs.openSync(output, "w");
-                            fs.writeSync(fd, css, 0, "utf8");
-                        } else {
-                            sys.print(css);
-                        }
-                    } catch (e) {
-                        less.writeError(e, options);
-                        process.exit(2);
-                    }
+                    sys.print(css);
                 }
-            });
-        });
+            } catch (e) {
+                less.writeError(e, options);
+                process.exit(2);
+            }
+        }
     });
 });
-

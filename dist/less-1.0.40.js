@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.38
+// LESS - Leaner CSS v1.0.40
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -246,19 +246,10 @@ less.Parser = function Parser(env) {
             match = input.charAt(i) === tok ? tok : null;
             length = 1;
             sync ();
-
-        //  1. We move to the next chunk, if necessary.
-        //  2. Set the `lastIndex` to be relative
-        //     to the current chunk, and try to match in it.
-        //  3. Make sure we matched at `index`. Because we use
-        //     the /g flag, the match could be anywhere in the
-        //     chunk. We have to make sure it's at our previous
-        //     index, which we stored in [2].
-        //
         } else {
             sync ();
 
-            if (match = tok.exec(chunks[j])) { // 3.
+            if (match = tok.exec(chunks[j])) {
                 length = match[0].length;
             } else {
                 return null;
@@ -796,7 +787,7 @@ less.Parser = function Parser(env) {
 
                     if (s !== '.' && s !== '#') { return }
 
-                    while (e = $(/^[#.][\w-]+/)) {
+                    while (e = $(/^[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/)) {
                         elements.push(new(tree.Element)(c, e));
                         c = $('>');
                     }
@@ -832,7 +823,7 @@ less.Parser = function Parser(env) {
                     if ((input.charAt(i) !== '.' && input.charAt(i) !== '#') ||
                         peek(/^[^{]*(;|})/)) return;
 
-                    if (match = $(/^([#.][\w-]+)\s*\(/)) {
+                    if (match = $(/^([#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+)\s*\(/)) {
                         name = match[1];
 
                         while (param = $(this.entities.variable) || $(this.entities.literal)
@@ -913,7 +904,7 @@ less.Parser = function Parser(env) {
                 var e, t;
 
                 c = $(this.combinator);
-                e = $(/^[.#:]?[\w-]+/) || $('*') || $(this.attribute) || $(/^\([^)@]+\)/);
+                e = $(/^(?:[.#]?|:*)(?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/) || $('*') || $(this.attribute) || $(/^\([^)@]+\)/);
 
                 if (e) { return new(tree.Element)(c, e) }
             },
@@ -1023,7 +1014,7 @@ less.Parser = function Parser(env) {
                 }
             },
             rule: function () {
-                var value, c = input.charAt(i), important;
+                var name, value, c = input.charAt(i), important;
                 save();
 
                 if (c === '.' || c === '#' || c === '&') { return }
@@ -1080,7 +1071,7 @@ less.Parser = function Parser(env) {
                 if (value = $(this['import'])) {
                     return value;
                 } else if (name = $(/^@media|@page/)) {
-                    types = $(/^[^{]+/).trim();
+                    types = ($(/^[^{]+/) || '').trim();
                     if (rules = $(this.block)) {
                         return new(tree.Directive)(name + " " + types, rules);
                     }
@@ -1311,6 +1302,26 @@ tree.functions = {
         hsl.h = hue < 0 ? 360 + hue : hue;
 
         return hsla(hsl);
+    },
+    //
+    // Copyright (c) 2006-2009 Hampton Catlin, Nathan Weizenbaum, and Chris Eppstein
+    // http://sass-lang.com
+    //
+    mix: function (color1, color2, weight) {
+        var p = weight.value / 100.0;
+        var w = p * 2 - 1;
+        var a = color1.toHSL().a - color2.toHSL().a;
+
+        var w1 = (((w * a == -1) ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
+        var w2 = 1 - w1;
+
+        var rgb = [color1.rgb[0] * w1 + color2.rgb[0] * w2,
+                   color1.rgb[1] * w1 + color2.rgb[1] * w2,
+                   color1.rgb[2] * w1 + color2.rgb[2] * w2];
+
+        var alpha = color1.alpha * p + color2.alpha * (1 - p);
+
+        return new(tree.Color)(rgb, alpha);
     },
     greyscale: function (color) {
         return this.desaturate(color, new(tree.Dimension)(100));
@@ -2350,7 +2361,7 @@ function loadStyleSheets(callback, reload) {
 }
 
 function loadStyleSheet(sheet, callback, reload, remaining) {
-    var url       = window.location.href;
+    var url       = window.location.href.replace(/[#?].*$/, '');
     var href      = sheet.href.replace(/\?.*$/, '');
     var css       = cache && cache.getItem(href);
     var timestamp = cache && cache.getItem(href + ':timestamp');
@@ -2362,7 +2373,7 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     }
 
     xhr(sheet.href, sheet.type, function (data, lastModified) {
-        if (!reload && styles &&
+        if (!reload && styles && lastModified &&
            (new(Date)(lastModified).valueOf() ===
             new(Date)(styles.timestamp).valueOf())) {
             // Use local copy

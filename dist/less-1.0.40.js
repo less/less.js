@@ -2411,7 +2411,9 @@ less.loadStyleSheet = function (path, callback) {
                     if (root) {
                       createCSS(root.toCSS(), sheet, env.lastModified);
                     }
-                    callback();
+                    if (callback) {
+                      callback();
+                    }
                   }, true)
 };
 

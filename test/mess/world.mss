@@ -8,7 +8,7 @@ Map {
   line-width: 1;
 }
 
-#simple-class {
+.simple-class {
   polygon-fill: #efefef;
   line-color: #ccc;
   line-width: 2;

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- AFGHANISTAN-PAKISTAN ROADS -->
+
+<!-- See the README for information on where to obtain the required shapefiles -->
+
+<!DOCTYPE Map[
+    <!ENTITY map_srs "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs">
+    <!ENTITY layer_srs "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs">
+]>
+
+<Map srs="&map_srs;">
+
+  <Stylesheet src="afghanistan-pakistan.mss" />
+  
+  <!-- Disputed Area -->
+  <Layer id="pakistan_admin_fill" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./pfrc/pak_ad1_pfrc_ply</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <!-- == NATURAL FILLS =================================== -->
+  
+  <Layer class="natural" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_natural</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer class="natural" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_natural</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+  <Layer class="water" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./aims/lakes</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer class="water" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./aims/river-regions</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer class="water" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_water</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <!-- == BORDERS ========================================= -->
+
+	<Layer class="border district" srs="&layer_srs;">
+		<Datasource>
+			<Parameter name="file">./andrew/NWFP_Union_Council</Parameter>
+			<Parameter name="type">shape</Parameter>
+		</Datasource>
+	</Layer>
+  
+	<Layer class="border district" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./andrew/tehsils</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+	</Layer>
+  
+  <Layer class="border district" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./aims/districts</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+	<Layer class="border province" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./andrew/provinces-from-tehsils</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+	</Layer>
+    
+  <Layer class="border province" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./aims/provinces</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afg-extent" class="border country" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./test</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+  <Layer id="pak-extent" class="border country" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./pak-derived-extent</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <!-- == ROADS =========================================== -->
+  
+  <Layer id="pakistan_highway_outline" class="road outline" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_outline" class="road outline" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan_highway_minor" class="road minor" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_minor" class="road minor" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan_highway_tertiary" class="road tertiary" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_tertiary" class="road tertiary" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan_highway_secondary" class="road secondary " srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_secondary" class="road secondary" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan_highway_primary" class="road primary " srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_primary" class="road primary" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan_highway_trunk" class="road trunk" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_trunk" class="road trunk" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan_highway_motorway" class="road motorway" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan_highway_motorway" class="road motorway" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+	</Layer>
+
+	<!-- == BUILDINGS ======================================= -->
+
+	<Layer id="pakistan-building" class="building" srs="&layer_srs;">
+		<Datasource>
+			<Parameter name="file">./osm/buildings-gc8607</Parameter>
+			<Parameter name="type">shape</Parameter>
+		</Datasource>
+	</Layer>
+  
+  <!-- == LABELS ========================================== -->
+  
+  <Layer id="pakistan-label-province" class="label province" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./pfrc/pak_ad1_pfrc_ply</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+    
+  <Layer id="afghanistan-label-province" class="label province" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./aims/provinces</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="pakistan-label-district" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./andrew/tehsils</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan-label-district" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./aims/districts</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+	</Layer>
+
+	<Layer class="label nwfp" srs="&layer_srs;">
+		<Datasource>
+			<Parameter name="file">./andrew/NWFP_Union_Council</Parameter>
+			<Parameter name="type">shape</Parameter>
+		</Datasource>
+	</Layer>
+  
+  <Layer id="pakistan-label-road" class="label road" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/pakistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+  <Layer id="afghanistan-label-road" class="label road" srs="&layer_srs;">
+    <Datasource>
+      <Parameter name="file">./osm/afghanistan_highway</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+  <Layer id="afg-label" class="label country" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./test</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+  <Layer id="pak-label" class="label country" srs="&layer_srs;" status="on">
+    <Datasource>
+      <Parameter name="file">./pfrc/pak-derived-extent</Parameter>
+      <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+  
+</Map>

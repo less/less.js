@@ -72,23 +72,12 @@ fs.readFile(input, 'utf-8', function (e, data) {
         paths: [path.dirname(input)],
         optimization: options.optimization,
         filename: input
-    }).render(data, function (err, tree) {
+    }).render(data, function (err, output) {
         if (err) {
             less.writeError(err, options);
             process.exit(1);
         } else {
-            try {
-                css = tree.toCSS({ compress: options.compress });
-                if (output) {
-                    fd = fs.openSync(output, "w");
-                    fs.writeSync(fd, css, 0, "utf8");
-                } else {
-                    sys.print(css);
-                }
-            } catch (e) {
-                less.writeError(e, options);
-                process.exit(2);
-            }
+            sys.puts(output);
         }
     });
 });

@@ -1,13 +1,17 @@
 {
-  "name"          : "less",
-  "description"   : "Leaner CSS",
-  "url"           : "http://lesscss.org",
-  "keywords"      : ["css", "parser", "lesscss", "browser"],
-  "author"        : "Alexis Sellier <self@cloudhead.net>",
+  "name"          : "mess",
+  "description"   : "Mapnik Stylesheet Parser",
+  "url"           : "https://github.com/developmentseed/mess.js",
+  "keywords"      : ["mapnik", "maps"],
+  "author"        : "Alexis Sellier <self@cloudhead.net>, Tom MacWright <macwright@gmail.com>",
   "contributors"  : [],
-  "version"       : "1.0.40",
-  "bin"           : { "lessc": "./bin/lessc" },
-  "main"          : "./lib/less/index",
+  "version"       : "0.0.40",
+  "bin"           : { "messc": "./bin/messc" },
+  "main"          : "./mib/mess/index",
   "directories"   : { "test": "./test" },
-  "engines"       : { "node": ">=0.2.0" }
+  "engines"       : { "node": ">=0.2.4" },
+  "dependencies"  : {
+    "underscore": ">= 1.0.3",
+    "step": ">= 0.0.3"
+  }
 }

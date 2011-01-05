@@ -1,49 +1,33 @@
+    
+                               _)      
+     __ `__ \   _ \  __|  __|   |  __| 
+     |   |   |  __/\__ \\__ \   |\__ \ 
+    _|  _|  _|\___|____/____/_) |____/ 
+                            ___/       
 
-    mess is an attempt to use less.js to compile cascadenik-formatted styles.
+    mess.js is an attempt to use less.js to
+    compile cascadenik-formatted styles.
 
+    it is inspired by but incompatible with 
+    Cascadenik [1]. most importantly it deviates
+    by
 
-less.js
-=======
+    1. Supporting JSON MML representations only
+    2. Implementing composition of styles instead
+       of overriding
 
-about
------
+    mess.js is based on less.js [2], a CSS compiler
+    written by Alexis Sellier. It includes
+    underscore.js [3].
 
-less.js is the next evolution of [LESS](http://lesscss.org), eventually, it will become LESS 2.0.
-less.js is a complete rewrite of LESS in JavaScript, and will be able to run directly in the browser,
-as well as on the server, with node.js.
+    like less, mess.js provides a binary in bin/,
+    named mess, although it is designed primarily
+    for usage as a library.
 
-where do I get it?
-------------------
+    usage:
 
-The latest builds are in the `dist/` folder.
+      messc map_file.json
 
-synopsis
---------
-
-### in node.js
-
-    var less = require('less');
-
-    less.render(".class { width: 10px * 2 }", function (e, css) {
-        sys.puts(css); // .class { width: 20px }
-    });
-
-### via the command-line (requires node)
-
-    bin/lessc style.less
-
-### in the browser
-
-Get the pre-built version from the `dist/` folder, and include it as such:
-
-    <link rel="stylesheet/less" href="main.less" type="text/css">
-    <script src="less.js" type="text/javascript"></script>
-
-Note the `rel="stylesheet/less"` for all stylesheets you want to parse with LESS.
-
-installation
-------------
-
-In node:
-
-    $ npm install less
+    [1]: https://github.com/mapnik/Cascadenik
+    [2]: https://github.com/cloudhead/less.js
+    [3]: https://github.com/documentcloud/underscore/

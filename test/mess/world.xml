@@ -6,7 +6,7 @@
 <Map srs="&srs900913;">
   <![CDATA[ {"mapCenter":{"lat":5707705.7750886,"lon":-8436507.6843787,"zoom":9}} ]]>
   <Layer id="world" srs="&srs900913;">
-      <StyleName>class-world</StyleName>
+      <StyleName>id-simple-id</StyleName>
     <Datasource>
       <Parameter name="file">data/world_borders_merc</Parameter>
       <Parameter name="type">shape</Parameter>
@@ -15,7 +15,7 @@
     </Datasource>
   </Layer>
   <Layer id="otto" srs="+proj=merc +lon_0=0 +lat_ts=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs ">
-      <StyleName>class-otto</StyleName>
+      <StyleName>class-simple-class</StyleName>
     <Datasource>
         <Parameter name="file">data/ottawaroads_merc</Parameter>
       <Parameter name="type">shape</Parameter>
@@ -32,8 +32,10 @@
     </Datasource>
   </Layer>
 
-<Style name="class-world">
 
+
+
+  <Style name="id-simple-id">
 <Rule>
  <PolygonSymbolizer>
   <CssParameter name="fill">#eeeeee</CssParameter>
@@ -44,12 +46,25 @@
  </LineSymbolizer>
 </Rule>
 </Style>
-<Style name="class-otto">
+<Style name="class-simple-class">
 <Rule>
+ <PolygonSymbolizer>
+  <CssParameter name="fill">#efefef</CssParameter>
+ </PolygonSymbolizer>
  <LineSymbolizer>
   <CssParameter name="color">#cccccc</CssParameter>
-  <CssParameter name="width">1</CssParameter>
+  <CssParameter name="width">2</CssParameter>
  </LineSymbolizer>
 </Rule>
 </Style>
+<Style name="id-combined-a--class-combined-b">
+<Rule>
+ <LineSymbolizer>
+  <CssParameter name="color">#cccccc</CssParameter>
+  <CssParameter name="width">3</CssParameter>
+ </LineSymbolizer>
+</Rule>
+</Style>
+  
+
 </Map>

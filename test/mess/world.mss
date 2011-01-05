@@ -11,15 +11,10 @@ Map {
 .simple-class {
   polygon-fill: #efefef;
   line-color: #ccc;
-  line-width: 2;
+  line-width: 1;
 }
 
 #combined-a .combined-b {
   line-color: #ccc;
-  line-width: 3;
-}
-
-#comma-a, .comma-b {
-  line-color: #000;
-  line-width: 4;
+  line-width: 1;
 }

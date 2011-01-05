@@ -6,7 +6,7 @@ var path = require('path'),
 
 require.paths.unshift(path.join(__dirname, '..', 'lib'));
 
-var less = require('less');
+var mess = require('mess');
 var args = process.argv.slice(1);
 var options = {
     compress: false,
@@ -23,7 +23,7 @@ args = args.filter(function (arg) {
     switch (arg) {
         case 'v':
         case 'version':
-            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
+            sys.puts("messc " + mess.version.join('.') + " (MESS Compiler) [JavaScript]");
             process.exit(0);
         case 'verbose':
             options.verbose = true;
@@ -34,7 +34,7 @@ args = args.filter(function (arg) {
             break;
         case 'h':
         case 'help':
-            sys.puts("usage: lessc source [destination]");
+            sys.puts("usage: messc source [destination]");
             process.exit(0);
         case 'x':
         case 'compress':
@@ -58,23 +58,23 @@ if (output && output[0] != '/') {
 var css, fd, tree;
 
 if (! input) {
-    sys.puts("lessc: no input files");
+    sys.puts("messc: no input files");
     process.exit(1);
 }
 
 fs.readFile(input, 'utf-8', function (e, data) {
     if (e) {
-        sys.puts("lessc: " + e.message);
+        sys.puts("messc: " + e.message);
         process.exit(1);
     }
 
-    new(less.Renderer)({
+    new(mess.Renderer)({
         paths: [path.dirname(input)],
         optimization: options.optimization,
         filename: input
     }).render(data, function (err, output) {
         if (err) {
-            less.writeError(err, options);
+            mess.writeError(err, options);
             process.exit(1);
         } else {
             sys.puts(output);

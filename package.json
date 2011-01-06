@@ -1,13 +1,13 @@
 {
   "name"          : "mess",
-  "description"   : "Mapnik Stylesheet Parser",
+  "description"   : "Mapnik Stylesheet Compiler",
   "url"           : "https://github.com/developmentseed/mess.js",
   "keywords"      : ["mapnik", "maps"],
   "author"        : "Alexis Sellier <self@cloudhead.net>, Tom MacWright <macwright@gmail.com>",
   "contributors"  : [],
   "version"       : "0.0.40",
   "bin"           : { "messc": "./bin/messc" },
-  "main"          : "./mib/mess/index",
+  "main"          : "./lib/mess/index",
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.2.4" },
   "dependencies"  : {

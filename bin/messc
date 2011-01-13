@@ -11,7 +11,8 @@ var args = process.argv.slice(1);
 var options = {
     compress: false,
     optimization: 1,
-    silent: false
+    silent: false,
+    json: true
 };
 
 args = args.filter(function (arg) {
@@ -28,13 +29,17 @@ args = args.filter(function (arg) {
         case 'verbose':
             options.verbose = true;
             break;
+        case 'j':
+            options.json = true;
         case 's':
         case 'silent':
             options.silent = true;
             break;
         case 'h':
         case 'help':
-            sys.puts("usage: messc source [destination]");
+            sys.puts("Usage: messc source");
+            sys.puts("Options:");
+            sys.puts("  -j\tParse JSON map manifest");
             process.exit(0);
         case 'x':
         case 'compress':
@@ -54,8 +59,6 @@ var output = args[2];
 if (output && output[0] != '/') {
     output = path.join(process.cwd(), output);
 }
-
-var css, fd, tree;
 
 if (! input) {
     sys.puts("messc: no input files");

@@ -12,7 +12,7 @@ var options = {
     compress: false,
     optimization: 1,
     silent: false,
-    json: true
+    json: false
 };
 
 args = args.filter(function (arg) {
@@ -71,16 +71,37 @@ fs.readFile(input, 'utf-8', function (e, data) {
         process.exit(1);
     }
 
-    new(mess.Renderer)({
-        paths: [path.dirname(input)],
-        optimization: options.optimization,
-        filename: input
-    }).render(data, function (err, output) {
-        if (err) {
-            mess.writeError(err, options);
-            process.exit(1);
-        } else {
-            sys.puts(output);
-        }
-    });
+    if (options.json) {
+        new(mess.Renderer)({
+            paths: [path.dirname(input)],
+            optimization: options.optimization,
+            filename: input
+        }).render(data, function (err, output) {
+            if (err) {
+                mess.writeError(err, options);
+                process.exit(1);
+            } else {
+                sys.puts(output);
+            }
+        });
+    } else {
+        new(mess.Parser)({
+            paths: [path.dirname(input)],
+            optimization: options.optimization,
+            filename: input
+        }).parse(data, function (err, tree) {
+            if (err) {
+                less.writeError(err, options);
+                process.exit(1);
+            } else {
+                try {
+                    css = tree.toCSS({ compress: options.compress });
+                    sys.print(css);
+                } catch (e) {
+                    less.writeError(e, options);
+                    process.exit(2);
+                }
+            }
+        });
+    }
 });

@@ -91,14 +91,14 @@ fs.readFile(input, 'utf-8', function (e, data) {
             filename: input
         }).parse(data, function (err, tree) {
             if (err) {
-                less.writeError(err, options);
+                mess.writeError(err, options);
                 process.exit(1);
             } else {
                 try {
                     css = tree.toCSS({ compress: options.compress });
                     sys.print(css);
                 } catch (e) {
-                    less.writeError(e, options);
+                    mess.writeError(e, options);
                     process.exit(2);
                 }
             }

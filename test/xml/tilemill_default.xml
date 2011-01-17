@@ -1,0 +1,9 @@
+
+  <Style name="id-world-1">
+    <Rule>
+      
+      <PolygonSymbolizer fill="#eeeeee"/>
+      <LineSymbolizer stroke="#cccccc"
+       stroke-width="0.5"/>
+    </Rule>
+  </Style>

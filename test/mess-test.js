@@ -4,27 +4,19 @@ var path = require('path'),
 
 require.paths.unshift(__dirname, path.join(__dirname, '..'));
 
-var less = require('lib/less');
+var mess = require('lib/mess');
 
-less.tree.functions.add = function (a, b) {
-    return new(less.tree.Dimension)(a.value + b.value);
-}
-less.tree.functions.increment = function (a) {
-    return new(less.tree.Dimension)(a.value + 1);
-}
-less.tree.functions.color = function (str) {
-    if (str.value === "evil red") { return new(less.tree.Color)("600") }
-}
+sys.puts("\n" + stylize("MESS", 'underline') + "\n");
 
-sys.puts("\n" + stylize("LESS", 'underline') + "\n");
+fs.readdirSync('mess').forEach(function (file) {
+    if (! /\.mss/.test(file)) { return }
 
-fs.readdirSync('test/less').forEach(function (file) {
-    if (! /\.less/.test(file)) { return }
+    toCSS('mess/' + file, function (err, less) {
+        var name = path.basename(file, '.mss');
 
-    toCSS('test/less/' + file, function (err, less) {
-        var name = path.basename(file, '.less');
-
-        fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
+        fs.readFile(path.join('xml', name) + '.xml',
+            'utf-8', function (e, css) {
+            if (e) console.log(e);
             sys.print("- " + name + ": ")
             if (less === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {
@@ -42,7 +34,7 @@ function toCSS(path, callback) {
     fs.readFile(path, 'utf-8', function (e, str) {
         if (e) { return callback(e) }
 
-        new(less.Parser)({
+        new(mess.Parser)({
             paths: [require('path').dirname(path)],
             optimization: 0
         }).parse(str, function (err, tree) {

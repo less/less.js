@@ -9,7 +9,7 @@ var mess = require('lib/mess');
 sys.puts("\n" + stylize("MESS", 'underline') + "\n");
 
 fs.readdirSync('mess').forEach(function (file) {
-    if (! /\.mss/.test(file)) { return }
+    if (! /\.mss$/.test(file)) { return }
 
     toCSS('mess/' + file, function (err, mess_result) {
         var name = path.basename(file, '.mss');

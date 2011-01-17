@@ -2,8 +2,10 @@
   line-color: #000;
 }
 
-#world .brown {
-  line-color: #f00;
+#world {
+  .brown {
+    line-color: #f00;
+  }
 }
 
 #world .one .two .three {

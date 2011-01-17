@@ -11,18 +11,19 @@ sys.puts("\n" + stylize("MESS", 'underline') + "\n");
 fs.readdirSync('mess').forEach(function (file) {
     if (! /\.mss/.test(file)) { return }
 
-    toCSS('mess/' + file, function (err, less) {
+    toCSS('mess/' + file, function (err, mess_result) {
         var name = path.basename(file, '.mss');
 
         fs.readFile(path.join('xml', name) + '.xml',
             'utf-8', function (e, css) {
             if (e) console.log(e);
             sys.print("- " + name + ": ")
-            if (less === css) { sys.print(stylize('OK', 'green')) }
+            if (mess_result === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {
                 sys.print(stylize("ERROR: " + (err && err.message), 'red'));
             } else {
                 sys.print(stylize("FAIL", 'yellow'));
+                sys.print(mess_result);
             }
             sys.puts("");
         });

@@ -101,6 +101,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
                         try {
                             require('eyes').inspect(tree.toAST());
                         } catch (e) {
+                            console.log(e);
                             console.log(tree.toAST());
                         }
                     }

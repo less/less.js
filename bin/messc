@@ -95,8 +95,17 @@ fs.readFile(input, 'utf-8', function (e, data) {
                 process.exit(1);
             } else {
                 try {
-                    css = tree.toCSS({ compress: options.compress });
-                    sys.print(css);
+                    css = tree.toCSS({ compress: options.compress, returnErrors: true });
+
+                    if (Array.isArray(css)) {
+                        for (var i = 0; i < css.length; i++) {
+                            mess.writeError(css[i], options);
+                        }
+                        process.exit(2);
+                    }
+                    else {
+                        sys.print(css);
+                    }
                 } catch (e) {
                     mess.writeError(e, options);
                     process.exit(2);

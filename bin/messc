@@ -31,6 +31,8 @@ args = args.filter(function (arg) {
             break;
         case 'j':
             options.json = true;
+        case 'd':
+            options.debug = true;
         case 's':
         case 'silent':
             options.silent = true;
@@ -95,6 +97,13 @@ fs.readFile(input, 'utf-8', function (e, data) {
                 process.exit(1);
             } else {
                 try {
+                    if (options.debug) {
+                        try {
+                            require('eyes').inspect(tree.toAST());
+                        } catch (e) {
+                            console.log(tree.toAST());
+                        }
+                    }
                     css = tree.toCSS({ compress: options.compress });
                     sys.print(css);
                 } catch (e) {

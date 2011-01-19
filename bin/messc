@@ -43,6 +43,10 @@ args = args.filter(function (arg) {
             sys.puts("Options:");
             sys.puts("  -j\tParse JSON map manifest");
             process.exit(0);
+        case 'l':
+        case 'layers':
+            options.layers = true;
+            break;
         case 'x':
         case 'compress':
             options.compress = true;
@@ -73,7 +77,32 @@ fs.readFile(input, 'utf-8', function (e, data) {
         process.exit(1);
     }
 
-    if (options.json) {
+    if (options.layers) {
+        // Loads layer definitions from a .layers file in the same directory
+        // as the .mss file with the same basename.
+        var layerFile = input.replace(/\.\w+$/, '.layers');
+
+        fs.readFile(layerFile, 'utf-8', function(err, layers) {
+            if (err) {
+                sys.puts("messc: " + err.message);
+                process.exit(1);
+            }
+
+            var m = '{ "Stylesheet": [{ "id": "' + input +'", "data": "' + data.replace(/\n/g, '\\n') + '" }], "Layer": ' + layers + ' }';
+            new mess.Renderer({
+                paths: [path.dirname(input)],
+                optimization: options.optimization,
+                filename: input
+            }).render(m, function(err, output) {
+                if (err) {
+                    mess.writeError(err, options);
+                    process.exit(1);
+                } else {
+                    sys.puts(output);
+                }
+            });
+        });
+    } else if (options.json) {
         new(mess.Renderer)({
             paths: [path.dirname(input)],
             optimization: options.optimization,

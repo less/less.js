@@ -94,22 +94,22 @@ fs.readFile(input, 'utf-8', function (e, data) {
         }).parse(data, function (err, tree) {
             if (err) {
                 mess.writeError(err, options);
-                process.exit(1);
+                // process.exit(1);
             } else {
                 try {
-                    if (options.debug) {
-                        try {
-                            require('eyes').inspect(tree.toAST());
-                        } catch (e) {
-                            console.log(e);
-                            console.log(tree.toAST());
-                        }
-                    }
-                    css = tree.toCSS({ compress: options.compress });
-                    sys.print(css);
+                    // if (options.debug) {
+                    //     try {
+                    //         require('eyes').inspect(tree.toAST());
+                    //     } catch (e) {
+                    //         console.log(e);
+                    //         console.log(tree.toAST());
+                    //     }
+                    // }
+                    var mss = tree.toMSS({ compress: options.compress });
+                    sys.print(mss);
                 } catch (e) {
                     mess.writeError(e, options);
-                    process.exit(2);
+                    // process.exit(2);
                 }
             }
         });

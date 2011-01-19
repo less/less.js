@@ -1,8 +1,8 @@
 #
 # Run all tests
 #
-test: 
-	node test/less-test.js
+test:
+	@@node test/mess-test.js
 
 #
 # Run benchmark

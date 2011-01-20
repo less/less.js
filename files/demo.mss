@@ -12,6 +12,7 @@
 
 #countries, #world {
   polygon-fill:#F0F;
+  polygon-opacity: 0.5;
 }
 
 

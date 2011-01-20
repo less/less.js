@@ -51,7 +51,7 @@ exports['test compilation'] = function(beforeExit) {
                             return;
                         }
 
-                        console.log(stylize("SUCCESS", 'green') + ': ' + stylize(file, 'underline') + ' passed test.');
+                        // console.log(stylize("SUCCESS", 'green') + ': ' + stylize(file, 'underline') + ' passed test.');
                     }
                 });
             }
@@ -72,8 +72,7 @@ exports['test compilation'] = function(beforeExit) {
                                 try {
                                     assert.deepEqual(resultXML, messXML);
                                 } catch (e) {
-                                    assert.ok(false, 'XML output for ' + stylize(file, 'underline') + ' differs expected XML.');
-                                    // console.log(stylize("FAIL", 'red') + ': ');
+                                    console.log(stylize("FAIL", 'red') + ': XML output for ' + stylize(file, 'underline') + ' differs expected XML.');
                                     console.log('    ' + stylize('actual', 'bold') + ' ' + sys.inspect(e.actual, false, null).replace(/\n/g, '\n           '));
                                     console.log('  ' + stylize('expected', 'bold') + ' ' + sys.inspect(e.expected, false, null).replace(/\n/g, '\n           '));
                                     console.log('');
@@ -81,7 +80,7 @@ exports['test compilation'] = function(beforeExit) {
                                     return;
                                 }
 
-                                console.log(stylize("SUCCESS", 'green') + ': ' + stylize(file, 'underline') + ' passed test.');
+                                // console.log(stylize("SUCCESS", 'green') + ': ' + stylize(file, 'underline') + ' passed test.');
                             });
                             messParser.parseString('<Map>' + mess_result + '</Map>');
                         });
@@ -91,10 +90,10 @@ exports['test compilation'] = function(beforeExit) {
             }
         });
     });
-    
+
     beforeExit(function() {
         if (failures) {
-            assert.ok(false, failures + ' compilations failed.');
+            assert.ok(false, failures + ' ' + (failures != 1 ? 'compilations' : 'compliation') + ' failed.');
         }
     });
 };

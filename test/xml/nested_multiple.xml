@@ -1,0 +1,12 @@
+<Style name="id-world-1">
+  <Rule>
+    <PolygonSymbolizer fill="#eeeeee"/>
+    <PolygonPatternSymbolizer file="test.png"/>
+  </Rule>
+</Style>
+
+<Style name="id-world-1*--:outerborder-1">
+  <Rule>
+    <LineSymbolizer stroke="#cccccc" stroke-width="0.5"/>
+  </Rule>
+</Style>

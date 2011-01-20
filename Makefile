@@ -2,7 +2,7 @@
 # Run all tests
 #
 test:
-	@@node test/mess-test.js
+	@@bin/expresso -I lib
 
 #
 # Run benchmark

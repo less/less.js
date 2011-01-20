@@ -11,7 +11,12 @@
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.2.4" },
   "dependencies"  : {
-    "underscore": ">= 1.0.3",
-    "step": ">= 0.0.3"
+    "underscore"  : ">= 1.0.3",
+    "step"        : ">= 0.0.3",
+    "zipfile"     : ">= 0.1.0",
+    // required for tests
+    "xml2js"      : ">= 0.1.0",
+    // node-srs required by renderer.js ensureSRS()
+    "srs"      : ">= 0.1.0"
   }
 }

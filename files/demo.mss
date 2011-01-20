@@ -13,3 +13,6 @@
 #countries, #world {
   polygon-fill:#F0F;
 }
+
+
+#countries, #countries.foo.bar.baz {}

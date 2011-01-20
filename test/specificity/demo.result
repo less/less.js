@@ -1,0 +1,10 @@
+[
+    ["#countries",".foo",".bar",".baz"],
+    ["#countries",".countries",".two"],
+    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}},{"key":"BLUE","op":{"value":"="},"val":{"value":"red","quote":"'","is":"string"}}]},
+    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]},
+    ["#countries"],
+    ["#world"],
+    ["#countries"],
+    ["#world"]
+]

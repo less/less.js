@@ -7,11 +7,7 @@ exports.files = function(dir, extension, callback) {
     extension = new RegExp('\\.' + extension + '$');
     fs.readdirSync(dir).forEach(function(filename) {
         if (extension.test(filename)) {
-            var file = path.join(dir, filename);
-            fs.readFile(file, 'utf-8', function (err, content) {
-                if (err) throw err;
-                callback(file, content);
-            });
+            callback(filename);
         }
     });
 };

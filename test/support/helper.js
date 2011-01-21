@@ -1,5 +1,6 @@
 var path = require('path'),
     fs = require('fs'),
+    assert = require('assert'),
     diff = require('./diff').diff;
 
 var helper = exports;
@@ -9,10 +10,17 @@ exports.files = function(dir, extension, callback) {
     extension = new RegExp('\\.' + extension + '$');
     fs.readdirSync(dir).forEach(function(filename) {
         if (extension.test(filename)) {
-            callback(filename);
+            callback(path.join(dir, filename));
         }
     });
 };
+
+exports.file = function(file, callback) {
+    fs.readFile(file, 'utf-8', function (err, content) {
+        if (err) throw err;
+        callback(content);
+    });
+}
 
 exports.json = function(file, callback) {
     fs.readFile(file, 'utf-8', function(err, content) {
@@ -38,7 +46,25 @@ exports.formatJSON = function(arr) {
     }).join(',\n    ') + '\n]';
 };
 
+exports.makePlain = function(obj) {
+    return JSON.parse(JSON.stringify(obj));
+};
 
+exports.compareToFile = function(value, originalFile, resultFile) {
+    helper.json(resultFile, function(json) {
+        try {
+            assert.deepEqual(value, json);
+        } catch (e) {
+            console.log(helper.stylize("Failure", 'red') + ': ' + helper.stylize(originalFile, 'underline') + ' differs from expected result.');
+            helper.showDifferences(e);
+            throw '';
+        }
+    });
+};
+
+exports.resultFile = function(file) {
+    return path.join(path.dirname(file), path.basename(file).replace(/\.\w+$/, '.result'));
+};
 
 
 // Stylize a string
@@ -53,4 +79,4 @@ exports.stylize = function(str, style) {
     };
     return '\033[' + styles[style][0] + 'm' + str +
            '\033[' + styles[style][1] + 'm';
-}
+};

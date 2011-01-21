@@ -7,49 +7,34 @@ var mess = require('mess');
 var tree = require('mess/tree');
 var helper = require('./support/helper');
 
-helper.files('specificity', 'mss', function(filename) {
-    var testName = 'test specificity/' + filename;
-    exports[testName] = function(beforeExit) {
-        var file = path.join(__dirname, 'specificity', filename);
-        fs.readFile(file, 'utf-8', function (err, content) {
-            if (err) throw err;
+function cleanupItem(item) {
+    // Remove indexes; we don't care about the exact byte number.
+    delete item.selector.index;
+    for (var i = 0; i < item.selector.filters.length; i++) {
+        delete item.selector.filters[i].index;
+    }
+    // Also flatten the elements array a bit, we only care about
+    // the actual selector.
+    item.selector.elements = item.selector.elements.map(function(el) {
+        return el.value;
+    });
+    return item.selector.filters.length ? item.selector : item.selector.elements;
+}
 
-            new(mess.Parser)({
+helper.files('specificity', 'mss', function(file) {
+    exports['test ' + file] = function(beforeExit) {
+        helper.file(file, function(content) {
+            new mess.Parser({
                 paths: [ path.dirname(file) ],
                 filename: file
             }).parse(content, function (err, tree) {
-                if (err) {
-                    console.log(err);
-                    assert.ok(false);
-                } else {
-                    var mss = tree.toMSS();
-                    mss = mss.map(function (item) {
-                        // Remove indexes; we don't care about the exact byte number.
-                        delete item.selector.index;
-                        for (var i = 0; i < item.selector.filters.length; i++) {
-                            delete item.selector.filters[i].index;
-                        }
-                        item.selector.elements = item.selector.elements.map(function(el) {
-                            return el.value;
-                        });
-                        return item.selector.filters.length ? item.selector : item.selector.elements;
-                    });
-
-                    // Make sure objects are plain objects.
-                    mss = JSON.parse(JSON.stringify(mss));
-
-                    var resultFile = path.join(path.dirname(file), path.basename(file, '.mss') + '.result');
-                    helper.json(resultFile, function(json) {
-
-                        try {
-                            assert.deepEqual(mss, json);
-                        } catch (e) {
-                            console.log(helper.stylize("Failure", 'red') + ': ' + helper.stylize(file, 'underline') + ' differs from expected result.');
-                            helper.showDifferences(e);
-                            throw '';
-                        }
-                    });
-                }
+                if (err) throw err;
+                
+                var mss = tree.toMSS();
+                mss = mss.map(cleanupItem);
+                mss = helper.makePlain(mss);
+                
+                helper.compareToFile(mss, file, helper.resultFile(file));
             });
         });
     }

@@ -103,7 +103,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
             });
         });
     } else if (options.json) {
-        new(mess.Renderer)({
+        new mess.Renderer({
             paths: [path.dirname(input)],
             optimization: options.optimization,
             filename: input
@@ -116,7 +116,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
             }
         });
     } else {
-        new(mess.Parser)({
+        new mess.Parser({
             paths: [path.dirname(input)],
             optimization: options.optimization,
             filename: input

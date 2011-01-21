@@ -1,6 +1,8 @@
 var path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    diff = require('./diff').diff;
 
+var helper = exports;
 
 exports.files = function(dir, extension, callback) {
     var dir = path.join(__dirname, '..', dir);
@@ -17,7 +19,24 @@ exports.json = function(file, callback) {
         if (err) throw err;
         callback(JSON.parse(content));
     });
-}
+};
+
+exports.showDifferences = function(e) {
+    var changes = diff(
+        helper.formatJSON(e.actual),
+        helper.formatJSON(e.expected)
+    );
+    
+    console.log(helper.stylize('actual:', 'bold') + '\n' + changes.del);
+    console.log(helper.stylize('expected:', 'bold') + '\n' + changes.ins);
+};
+
+
+exports.formatJSON = function(arr) {
+    return '[\n    ' + arr.map(function(t) {
+        return JSON.stringify(t);
+    }).join(',\n    ') + '\n]';
+};
 
 
 

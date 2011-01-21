@@ -45,8 +45,7 @@ helper.files('specificity', 'mss', function(filename) {
                             assert.deepEqual(mss, json);
                         } catch (e) {
                             console.log(helper.stylize("Failure", 'red') + ': ' + helper.stylize(file, 'underline') + ' differs from expected result.');
-                            console.log(helper.stylize('actual:', 'bold') + '\n' + formatJSON(e.actual));
-                            console.log(helper.stylize('expected:', 'bold') + '\n' + formatJSON(e.expected));
+                            helper.showDifferences(e);
                             throw '';
                         }
                     });
@@ -55,10 +54,3 @@ helper.files('specificity', 'mss', function(filename) {
         });
     }
 });
-
-
-function formatJSON(arr) {
-    return '[\n    ' + arr.map(function(t) {
-        return JSON.stringify(t);
-    }).join(',\n    ') + '\n]';
-}

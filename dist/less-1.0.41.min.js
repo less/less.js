@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.40
+// LESS - Leaner CSS v1.0.41
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier

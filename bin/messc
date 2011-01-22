@@ -31,6 +31,8 @@ args = args.filter(function (arg) {
             break;
         case 'j':
             options.json = true;
+        case 'd':
+            options.debug = true;
         case 's':
         case 'silent':
             options.silent = true;
@@ -41,6 +43,10 @@ args = args.filter(function (arg) {
             sys.puts("Options:");
             sys.puts("  -j\tParse JSON map manifest");
             process.exit(0);
+        case 'l':
+        case 'layers':
+            options.layers = true;
+            break;
         case 'x':
         case 'compress':
             options.compress = true;
@@ -71,8 +77,33 @@ fs.readFile(input, 'utf-8', function (e, data) {
         process.exit(1);
     }
 
-    if (options.json) {
-        new(mess.Renderer)({
+    if (options.layers) {
+        // Loads layer definitions from a .layers file in the same directory
+        // as the .mss file with the same basename.
+        var layerFile = input.replace(/\.\w+$/, '.layers');
+
+        fs.readFile(layerFile, 'utf-8', function(err, layers) {
+            if (err) {
+                sys.puts("messc: " + err.message);
+                process.exit(1);
+            }
+
+            var m = '{ "Stylesheet": [{ "id": "' + input +'", "data": "' + data.replace(/\n/g, '\\n') + '" }], "Layer": ' + layers + ' }';
+            new mess.Renderer({
+                paths: [path.dirname(input)],
+                optimization: options.optimization,
+                filename: input
+            }).render(m, function(err, output) {
+                if (err) {
+                    mess.writeError(err, options);
+                    process.exit(1);
+                } else {
+                    sys.puts(output);
+                }
+            });
+        });
+    } else if (options.json) {
+        new mess.Renderer({
             paths: [path.dirname(input)],
             optimization: options.optimization,
             filename: input
@@ -85,30 +116,29 @@ fs.readFile(input, 'utf-8', function (e, data) {
             }
         });
     } else {
-        new(mess.Parser)({
+        new mess.Parser({
             paths: [path.dirname(input)],
             optimization: options.optimization,
             filename: input
         }).parse(data, function (err, tree) {
             if (err) {
                 mess.writeError(err, options);
-                process.exit(1);
+                // process.exit(1);
             } else {
                 try {
-                    css = tree.toCSS({ compress: options.compress, returnErrors: true });
-
-                    if (Array.isArray(css)) {
-                        for (var i = 0; i < css.length; i++) {
-                            mess.writeError(css[i], options);
-                        }
-                        process.exit(2);
-                    }
-                    else {
-                        sys.print(css);
-                    }
+                    // if (options.debug) {
+                    //     try {
+                    //         require('eyes').inspect(tree.toAST());
+                    //     } catch (e) {
+                    //         console.log(e);
+                    //         console.log(tree.toAST());
+                    //     }
+                    // }
+                    var mss = tree.toMSS({ compress: options.compress });
+                    sys.print(mss);
                 } catch (e) {
                     mess.writeError(e, options);
-                    process.exit(2);
+                    // process.exit(2);
                 }
             }
         });

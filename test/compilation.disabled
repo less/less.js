@@ -115,10 +115,6 @@ function toCSS(filename, callback) {
                     callback(err);
                 } else {
                     try {
-                        // Reset the cache before compiling so we get the same
-                        // IDs each time.
-                        delete require('mess/tree').selector_cache;
-
                         css = tree.toCSS();
 
                         // Parse errors aren't thrown because we set returnErrors.

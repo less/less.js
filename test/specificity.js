@@ -30,6 +30,7 @@ helper.files('specificity', 'mss', function(file) {
 
                 var mss = tree.toList();
                 mss = helper.makePlain(mss, cleanupItem);
+
                 helper.compareToFile(mss, file, helper.resultFile(file));
             });
         });

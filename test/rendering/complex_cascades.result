@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+
+
+<Style name="world-polygon/__default__">
+  <Rule>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator>
+    <Filter>([NAME] = 'United States')</Filter>
+    <PolygonSymbolizer fill="#666666"/>
+  </Rule>
+  <Rule>
+    <MinScaleDenominator>12500000</MinScaleDenominator>
+    <Filter>([NAME] = 'Canada') and ([NAME] != 'United States')</Filter>
+    <PolygonSymbolizer fill="#eeeeee"/>
+  </Rule>
+  <Rule>
+    <MinScaleDenominator>12500000</MinScaleDenominator>
+    <Filter>([NAME] = 'United States') and ([NAME] != 'United States') and ([NAME] != 'Canada')</Filter>
+    <PolygonSymbolizer fill="#cccccc"/>
+  </Rule>
+  <Rule>
+    <MinScaleDenominator>12500000</MinScaleDenominator>
+    <Filter>([NAME] != 'United States') and ([NAME] != 'Canada') and ([NAME] != 'United States')</Filter>
+    <PolygonSymbolizer fill="#ffffff"/>
+  </Rule>
+</Style>
+<Style name="world-line/__default__">
+  <Rule>
+    
+    <Filter>([NAME] = 'Canada')</Filter>
+    <LineSymbolizer stroke-width="1"
+      stroke="#cccccc"/>
+  </Rule>
+  <Rule>
+    
+    <Filter>([NAME] != 'Canada')</Filter>
+    <LineSymbolizer stroke-width="0.5"
+      stroke="#ff0000"/>
+  </Rule>
+</Style>
+<Layer
+   id="world"
+   name="world"
+   srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+    <StyleName>world-line/__default__</StyleName>
+    <StyleName>world-polygon/__default__</StyleName>
+    <Datasource>
+       <Parameter name="file">/Users/kkaefer/Code/devseed/mess.js/data/cache/af08a2b537079e720a9293424a319a1e</Parameter>
+       <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+<Style name="countries-polygon/__default__">
+  <Rule>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator>
+    <Filter>([NAME] = 'United States')</Filter>
+    <PolygonSymbolizer fill="#aaffcc"/>
+  </Rule>
+  <Rule>
+    <MinScaleDenominator>12500000</MinScaleDenominator>
+    <Filter>([NAME] != 'United States')</Filter>
+    <PolygonSymbolizer fill="#cccccc"/>
+  </Rule>
+</Style>
+<Style name="countries-line/__default__">
+  <Rule>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator>
+    <LineSymbolizer stroke-width="0.5"/>
+  </Rule>
+  <Rule>
+    <MinScaleDenominator>12500000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="1"
+      stroke="#cccccc"/>
+  </Rule>
+</Style>
+<Layer
+   id="countries"
+   name="world"
+   srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+    <StyleName>countries-line/__default__</StyleName>
+    <StyleName>countries-polygon/__default__</StyleName>
+    <Datasource>
+       <Parameter name="file">/Users/kkaefer/Code/devseed/mess.js/data/cache/af08a2b537079e720a9293424a319a1e</Parameter>
+       <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+</Map>

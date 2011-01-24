@@ -30,7 +30,7 @@ helper.files('specificity', 'mss', function(file) {
             }).parse(content, function (err, tree) {
                 if (err) throw err;
                 
-                var mss = tree.toMSS();
+                var mss = tree.toList();
                 mss = mss.map(cleanupItem);
                 mss = helper.makePlain(mss);
                 

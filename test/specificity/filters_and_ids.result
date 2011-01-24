@@ -1,8 +1,8 @@
 [
-    {"elements":["#world","#countries"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]},
-    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}},{"range":[false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]}]},
-    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]},
-    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"Canada","quote":"'","is":"string"}}]},
-    {"elements":[],"filters":[{"range":[false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]}]},
-    {"elements":[],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]}
+    {"elements":["#world","#countries"],"attachment":"__default__","filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]},
+    {"elements":["#world"],"attachment":"__default__","filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}},{"range":[false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]}]},
+    {"elements":["#world"],"attachment":"__default__","filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]},
+    {"elements":["#world"],"attachment":"__default__","filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"Canada","quote":"'","is":"string"}}]},
+    {"elements":[],"attachment":"__default__","filters":[{"range":[false,false,false,false,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]}]},
+    {"elements":[],"attachment":"__default__","filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]}
 ]

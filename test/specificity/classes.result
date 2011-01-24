@@ -1,9 +1,9 @@
 [
-    [".foo",".bar",".baz"],
-    [".foo",".baz"],
-    [".baz",".foo"],
-    [".baz",".bar"],
-    [".baz"],
-    [".bar"],
-    [".foo"]
+    {"elements":[".foo",".bar",".baz"]},
+    {"elements":[".foo",".baz"]},
+    {"elements":[".baz",".foo"]},
+    {"elements":[".baz",".bar"]},
+    {"elements":[".baz"]},
+    {"elements":[".bar"]},
+    {"elements":[".foo"]}
 ]

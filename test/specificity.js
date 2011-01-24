@@ -7,18 +7,16 @@ var mess = require('mess');
 var tree = require('mess/tree');
 var helper = require('./support/helper');
 
-function cleanupItem(item) {
-    // Remove indexes; we don't care about the exact byte number.
-    delete item.selector.index;
-    for (var i = 0; i < item.selector.filters.length; i++) {
-        delete item.selector.filters[i].index;
-    }
-    // Also flatten the elements array a bit, we only care about
-    // the actual selector.
-    item.selector.elements = item.selector.elements.map(function(el) {
-        return el.value;
-    });
-    return item.selector.filters.length ? item.selector : item.selector.elements;
+function cleanupItem(key, value) {
+    if (!key) return value.map(function(item) { return item.selector });
+    else if (key === 'elements') return value.map(function(item) { return item.value; });
+    else if (key === 'filters' && !value.length) return undefined;
+    else if (key === 'attachment' && value === '__default__') return undefined;
+    else if (key === 'index') return undefined;
+    else if (key === 'range') return value.map(function(v) { return 0 + v; }).join('');
+    else if (key === 'op') return value.value;
+    else if (key === 'val') return value.value;
+    else return value;
 }
 
 helper.files('specificity', 'mss', function(file) {
@@ -29,11 +27,9 @@ helper.files('specificity', 'mss', function(file) {
                 filename: file
             }).parse(content, function (err, tree) {
                 if (err) throw err;
-                
-                var mss = tree.toMSS();
-                mss = mss.map(cleanupItem);
-                mss = helper.makePlain(mss);
-                
+
+                var mss = tree.toList();
+                mss = helper.makePlain(mss, cleanupItem);
                 helper.compareToFile(mss, file, helper.resultFile(file));
             });
         });

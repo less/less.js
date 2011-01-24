@@ -1,10 +1,10 @@
 [
-    ["#countries",".foo",".bar",".baz"],
-    ["#countries",".countries",".two"],
-    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}},{"key":"BLUE","op":{"value":"="},"val":{"value":"red","quote":"'","is":"string"}}]},
-    {"elements":["#world"],"filters":[{"key":"NAME","op":{"value":"="},"val":{"value":"United States","quote":"'","is":"string"}}]},
-    ["#countries"],
-    ["#world"],
-    ["#countries"],
-    ["#world"]
+    {"elements":["#countries",".foo",".bar",".baz"]},
+    {"elements":["#countries",".countries",".two"]},
+    {"elements":["#world"],"filters":[{"key":"NAME","op":"=","val":"United States"},{"key":"BLUE","op":"=","val":"red"}]},
+    {"elements":["#world"],"filters":[{"key":"NAME","op":"=","val":"United States"}]},
+    {"elements":["#countries"]},
+    {"elements":["#countries"]},
+    {"elements":["#world"]},
+    {"elements":["#world"]}
 ]

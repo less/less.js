@@ -46,8 +46,8 @@ exports.formatJSON = function(arr) {
     }).join(',\n    ') + '\n]';
 };
 
-exports.makePlain = function(obj) {
-    return JSON.parse(JSON.stringify(obj));
+exports.makePlain = function(obj, fn) {
+    return JSON.parse(JSON.stringify(obj, fn));
 };
 
 exports.compareToFile = function(value, originalFile, resultFile) {

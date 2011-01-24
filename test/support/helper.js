@@ -29,16 +29,15 @@ exports.json = function(file, callback) {
     });
 };
 
-exports.showDifferences = function(e) {
+exports.showDifferences = function(e, format) {
     var changes = diff(
-        helper.formatJSON(e.actual),
-        helper.formatJSON(e.expected)
+        (format || JSON.stringify)(e.actual),
+        (format || JSON.stringify)(e.expected)
     );
     
     console.log(helper.stylize('actual:', 'bold') + '\n' + changes.del);
     console.log(helper.stylize('expected:', 'bold') + '\n' + changes.ins);
 };
-
 
 exports.formatJSON = function(arr) {
     return '[\n    ' + arr.map(function(t) {
@@ -56,7 +55,7 @@ exports.compareToFile = function(value, originalFile, resultFile) {
             assert.deepEqual(value, json);
         } catch (e) {
             console.log(helper.stylize("Failure", 'red') + ': ' + helper.stylize(originalFile, 'underline') + ' differs from expected result.');
-            helper.showDifferences(e);
+            helper.showDifferences(e, helper.formatJSON);
             throw '';
         }
     });

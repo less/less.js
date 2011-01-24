@@ -46,7 +46,7 @@
     <StyleName>world-line/__default__</StyleName>
     <StyleName>world-polygon/__default__</StyleName>
     <Datasource>
-       <Parameter name="file">/Users/kkaefer/Code/devseed/mess.js/data/cache/af08a2b537079e720a9293424a319a1e</Parameter>
+       <Parameter name="file">false</Parameter>
        <Parameter name="type">shape</Parameter>
     </Datasource>
   </Layer>
@@ -81,7 +81,7 @@
     <StyleName>countries-line/__default__</StyleName>
     <StyleName>countries-polygon/__default__</StyleName>
     <Datasource>
-       <Parameter name="file">/Users/kkaefer/Code/devseed/mess.js/data/cache/af08a2b537079e720a9293424a319a1e</Parameter>
+       <Parameter name="file">false</Parameter>
        <Parameter name="type">shape</Parameter>
     </Datasource>
   </Layer>

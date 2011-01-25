@@ -1,5 +1,5 @@
-.ndistro_module_version
-data
-modules
-lib/node
-bin/*
+/.ndistro_module_version
+/data
+/modules
+/lib/node
+/bin/*

@@ -28,7 +28,7 @@ helper.files('specificity', 'mss', function(file) {
             }).parse(content, function (err, tree) {
                 if (err) throw err;
 
-                var mss = tree.toList();
+                var mss = tree.toList({});
                 mss = helper.makePlain(mss, cleanupItem);
 
                 helper.compareToFile(mss, file, helper.resultFile(file));

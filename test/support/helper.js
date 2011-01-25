@@ -1,6 +1,7 @@
 var path = require('path'),
     fs = require('fs'),
     assert = require('assert'),
+    crypto = require('crypto'),
     diff = require('./diff').diff;
 
 var helper = exports;
@@ -108,3 +109,11 @@ exports.rmrf = function rmrf(p) {
         if (err.errno !== process.ENOENT) throw err;
     }
 };
+
+exports.md5File = function(file, md5, context) {
+    fs.readFile(file, 'binary', function(err, data) {
+        var hash = crypto.createHash('md5').update(data).digest('hex');
+        assert.equal(hash, md5);
+        context.tests++;
+    });
+}

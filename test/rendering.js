@@ -29,6 +29,8 @@ helper.files('rendering', 'mml', function(file) {
                         resultParser.addListener('end', function(resultXML) {
                             var messParser = new xml2js.Parser();
                             messParser.addListener('end', function(messXML) {
+                                removeAbsoluteDatasources(messXML);
+
                                 completed = true;
                                 try {
                                     assert.deepEqual(messXML, resultXML);
@@ -37,7 +39,7 @@ helper.files('rendering', 'mml', function(file) {
                                     helper.showDifferences(e);
                                     throw '';
                                 }
-                                
+
                             });
                             messParser.parseString(output);
                         });
@@ -52,3 +54,15 @@ helper.files('rendering', 'mml', function(file) {
         });
     }
 });
+
+
+function removeAbsoluteDatasources(xml) {
+    xml.Layer.forEach(function(layer) {
+        layer.Datasource.Parameter.forEach(function(param) {
+            if (param.attr.name === 'file') {
+                param.text = "[absolute path]";
+            }
+        });
+    });
+
+}

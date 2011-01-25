@@ -4,13 +4,11 @@ var path = require('path'),
     fs = require('fs'),
     sys = require('sys');
 
-require.paths.unshift(path.join(__dirname, '..', 'lib'));
+require.paths.unshift(path.join(__dirname, '../lib'), path.join(__dirname, '../lib/node'));
 
 var mess = require('mess');
 var args = process.argv.slice(1);
 var options = {
-    compress: false,
-    optimization: 1,
     silent: false,
     json: false
 };
@@ -29,8 +27,6 @@ args = args.filter(function (arg) {
         case 'verbose':
             options.verbose = true;
             break;
-        case 'j':
-            options.json = true;
         case 'd':
             options.debug = true;
         case 's':
@@ -43,17 +39,6 @@ args = args.filter(function (arg) {
             sys.puts("Options:");
             sys.puts("  -j\tParse JSON map manifest");
             process.exit(0);
-        case 'l':
-        case 'layers':
-            options.layers = true;
-            break;
-        case 'x':
-        case 'compress':
-            options.compress = true;
-            break;
-        case 'O0': options.optimization = 0; break;
-        case 'O1': options.optimization = 1; break;
-        case 'O2': options.optimization = 2; break;
     }
 });
 
@@ -66,7 +51,7 @@ if (output && output[0] != '/') {
     output = path.join(process.cwd(), output);
 }
 
-if (! input) {
+if (!input) {
     sys.puts("messc: no input files");
     process.exit(1);
 }
@@ -77,70 +62,15 @@ fs.readFile(input, 'utf-8', function (e, data) {
         process.exit(1);
     }
 
-    if (options.layers) {
-        // Loads layer definitions from a .layers file in the same directory
-        // as the .mss file with the same basename.
-        var layerFile = input.replace(/\.\w+$/, '.layers');
-
-        fs.readFile(layerFile, 'utf-8', function(err, layers) {
-            if (err) {
-                sys.puts("messc: " + err.message);
-                process.exit(1);
-            }
-
-            var m = '{ "Stylesheet": [{ "id": "' + input +'", "data": "' + data.replace(/\n/g, '\\n') + '" }], "Layer": ' + layers + ' }';
-            new mess.Renderer({
-                paths: [path.dirname(input)],
-                optimization: options.optimization,
-                filename: input
-            }).render(m, function(err, output) {
-                if (err) {
-                    mess.writeError(err, options);
-                    process.exit(1);
-                } else {
-                    sys.puts(output);
-                }
-            });
-        });
-    } else if (options.json) {
-        new mess.Renderer({
-            paths: [path.dirname(input)],
-            optimization: options.optimization,
-            filename: input
-        }).render(data, function (err, output) {
-            if (err) {
-                mess.writeError(err, options);
-                process.exit(1);
-            } else {
-                sys.puts(output);
-            }
-        });
-    } else {
-        new mess.Parser({
-            paths: [path.dirname(input)],
-            optimization: options.optimization,
-            filename: input
-        }).parse(data, function (err, tree) {
-            if (err) {
-                mess.writeError(err, options);
-                // process.exit(1);
-            } else {
-                try {
-                    // if (options.debug) {
-                    //     try {
-                    //         require('eyes').inspect(tree.toAST());
-                    //     } catch (e) {
-                    //         console.log(e);
-                    //         console.log(tree.toAST());
-                    //     }
-                    // }
-                    var mss = tree.toMSS({ compress: options.compress });
-                    sys.print(mss);
-                } catch (e) {
-                    mess.writeError(e, options);
-                    // process.exit(2);
-                }
-            }
-        });
-    }
+    new mess.Renderer({
+        filename: input,
+        local_data_dir: path.dirname(input),
+    }).render(data, function(err, output) {
+        if (err) {
+            mess.writeError(err, options);
+            process.exit(1);
+        } else {
+            sys.puts(output);
+        }
+    });
 });

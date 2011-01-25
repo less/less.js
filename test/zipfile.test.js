@@ -9,10 +9,9 @@ exports['test_unzip_remote'] = function(beforeExit) {
     var env = {
         data_dir: path.join(__dirname, 'zipfile')
     };
-    new External(env, remote, function(err, result) {
+    new External(env, remote).on('complete', function(err, result) {
         if (err) throw err;
         assert.ok(result instanceof External);
-        assert.ok(/test\/zipfile\/95807c1308eb96804e2ed4fd9d89146f$/.test(result.path()));
 
         fs.stat(result.path(), function(err, stats) {
             if (err) throw err;

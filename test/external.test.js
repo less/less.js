@@ -28,7 +28,7 @@ exports['test External with remote file'] = function(beforeExit) {
     var context = { tests: 0 };
     beforeExit(function() { assert.equal(context.tests, 1); });
 
-    new External(env, 'http://tilemill-data.s3.amazonaws.com/ipsum.json')
+    new External(env, 'http://tilemill-data.s3.amazonaws.com/test_data/ipsum.json')
         .on('complete', function(external) {
             assert.ok(external instanceof External)
             helper.md5File(external.path(), '651ea0ff31786e9be9012112b21573be', context);
@@ -54,13 +54,13 @@ exports['test External with remote zipfile'] = function(beforeExit) {
     var context = { tests: 0 };
     beforeExit(function() { assert.equal(context.tests, 5); });
 
-    new External(env, 'http://cascadenik-sampledata.s3.amazonaws.com/world_borders.zip')
+    new External(env, 'http://tilemill-data.s3.amazonaws.com/test_data/shape_demo.zip')
         .on('complete', function(external) {
             assert.ok(external instanceof External)
             helper.isDirectory(external.path(), context);
-            helper.md5File(path.join(external.path(), 'world_borders.dbf'), 'bc1a1765c8f90741fad9fabfdd4c22ae', context);
-            helper.md5File(path.join(external.path(), 'world_borders.prj'), 'e729936bf5360b37a15365fc295a1901', context);
-            helper.md5File(path.join(external.path(), 'world_borders.shp'), 'c4e81b62a8d726b5f2aa9591b3d37795', context);
-            helper.md5File(path.join(external.path(), 'world_borders.shx'), '88e1eeb44c63baa5ff37558033d11b1f', context);
+            helper.md5File(path.join(external.path(), 'world_borders.dbf'), '575521efe28ff68ecd5e7606e326fd2b', context);
+            helper.md5File(path.join(external.path(), 'world_borders.prj'), 'be918e3fd426824bae21eba8a79b1257', context);
+            helper.md5File(path.join(external.path(), 'world_borders.shp'), '30d9b1709ba596f092abea49f4f9401b', context);
+            helper.md5File(path.join(external.path(), 'world_borders.shx'), '535cb8568177f7ab95ab823cd6c16eb8', context);
         });
 }

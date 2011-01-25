@@ -36,8 +36,8 @@ exports.showDifferences = function(e, format) {
         (format || JSON.stringify)(e.expected)
     );
     
-    console.log(helper.stylize('actual:', 'bold') + '\n' + changes.del);
-    console.log(helper.stylize('expected:', 'bold') + '\n' + changes.ins);
+    console.warn(helper.stylize('actual:', 'bold') + '\n' + changes.del);
+    console.warn(helper.stylize('expected:', 'bold') + '\n' + changes.ins);
 };
 
 exports.formatJSON = function(arr) {
@@ -55,7 +55,7 @@ exports.compareToFile = function(value, originalFile, resultFile) {
         try {
             assert.deepEqual(value, json);
         } catch (e) {
-            console.log(helper.stylize("Failure", 'red') + ': ' + helper.stylize(originalFile, 'underline') + ' differs from expected result.');
+            console.warn(helper.stylize("Failure", 'red') + ': ' + helper.stylize(originalFile, 'underline') + ' differs from expected result.');
             helper.showDifferences(e, helper.formatJSON);
             throw '';
         }

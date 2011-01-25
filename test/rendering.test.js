@@ -37,7 +37,7 @@ helper.files('rendering', 'mml', function(file) {
                                 try {
                                     assert.deepEqual(messXML, resultXML);
                                 } catch (e) {
-                                    console.log(helper.stylize("Failure", 'red') + ': ' + helper.stylize(file, 'underline') + ' differs from expected result.');
+                                    console.warn(helper.stylize("Failure", 'red') + ': ' + helper.stylize(file, 'underline') + ' differs from expected result.');
                                     helper.showDifferences(e);
                                     throw '';
                                 }
@@ -53,10 +53,11 @@ helper.files('rendering', 'mml', function(file) {
 
         beforeExit(function() {
             if (!completed && renderResult) {
-                console.log(helper.stylize('renderer produced:', 'bold'));
-                console.log(renderResult);
+                console.warn(helper.stylize('renderer produced:', 'bold'));
+                console.warn(renderResult);
+            } else {
+                assert.ok(completed, 'Rendering finished.');
             }
-            assert.ok(completed, 'Rendering finished.');
         });
     }
 });

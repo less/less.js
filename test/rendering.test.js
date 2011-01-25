@@ -55,9 +55,8 @@ helper.files('rendering', 'mml', function(file) {
             if (!completed && renderResult) {
                 console.warn(helper.stylize('renderer produced:', 'bold'));
                 console.warn(renderResult);
-            } else {
-                assert.ok(completed, 'Rendering finished.');
             }
+            assert.ok(completed, 'Rendering finished.');
         });
     }
 });
@@ -71,5 +70,4 @@ function removeAbsoluteDatasources(xml) {
             }
         });
     });
-
 }

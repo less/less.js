@@ -79,3 +79,32 @@ exports.stylize = function(str, style) {
     return '\033[' + styles[style][0] + 'm' + str +
            '\033[' + styles[style][1] + 'm';
 };
+
+
+exports.isDirectory = function(dir, context) {
+    fs.stat(dir, function(err, stats) {
+        if (err) throw err;
+        assert.ok(stats.isDirectory());
+        context.tests++;
+    });
+};
+
+exports.isFile = function(file, context) {
+    fs.stat(file, function(err, stats) {
+        if (err) throw err;
+        assert.ok(stats.isFile());
+        context.tests++;
+    });
+};
+
+exports.rmrf = function rmrf(p) {
+    try {
+        if (fs.statSync(p).isDirectory()) {
+            fs.readdirSync(p).forEach(function(file) { rmrf(path.join(p, file)); });
+            fs.rmdirSync(p);
+        }
+        else fs.unlinkSync(p);
+    } catch(err) {
+        if (err.errno !== process.ENOENT) throw err;
+    }
+};

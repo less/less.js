@@ -11,17 +11,12 @@
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <Filter>([NAME] = 'Canada') and ([NAME] != 'United States')</Filter>
+    <Filter>([NAME] = 'Canada')</Filter>
     <PolygonSymbolizer fill="#eeeeee"/>
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <Filter>([NAME] = 'United States') and ([NAME] != 'United States') and ([NAME] != 'Canada')</Filter>
-    <PolygonSymbolizer fill="#cccccc"/>
-  </Rule>
-  <Rule>
-    <MinScaleDenominator>12500000</MinScaleDenominator>
-    <Filter>([NAME] != 'United States') and ([NAME] != 'Canada') and ([NAME] != 'United States')</Filter>
+    <Filter>([NAME] != 'United States') and ([NAME] != 'Canada')</Filter>
     <PolygonSymbolizer fill="#ffffff"/>
   </Rule>
 </Style>

@@ -3,3 +3,5 @@
 #
 test:
 	@@bin/expresso -I lib
+
+.PHONY: test

@@ -11,6 +11,7 @@ var helper = require('./support/helper');
 helper.files('rendering', 'mml', function(file) {
     exports['test rendering ' + file] = function(beforeExit) {
         var completed = false;
+        var renderResult;
 
         helper.file(file, function(mml) {
             new mess.Renderer({
@@ -22,6 +23,7 @@ helper.files('rendering', 'mml', function(file) {
                 if (err) {
                     throw err;
                 } else {
+                    renderResult = output;
                     var result = helper.resultFile(file);
                     helper.file(result, function(result) {
                         // Parse the XML file.
@@ -50,6 +52,10 @@ helper.files('rendering', 'mml', function(file) {
         });
 
         beforeExit(function() {
+            if (!completed && renderResult) {
+                console.log(helper.stylize('renderer produced:', 'bold'));
+                console.log(renderResult);
+            }
             assert.ok(completed, 'Rendering finished.');
         });
     }
@@ -57,9 +63,9 @@ helper.files('rendering', 'mml', function(file) {
 
 
 function removeAbsoluteDatasources(xml) {
-    xml.Layer.forEach(function(layer) {
+    (Array.isArray(xml.Layer) ? xml.Layer : [ xml.Layer ]).forEach(function(layer) {
         layer.Datasource.Parameter.forEach(function(param) {
-            if (param.attr.name === 'file') {
+            if (param.attr && param.attr.name === 'file') {
                 param.text = "[absolute path]";
             }
         });

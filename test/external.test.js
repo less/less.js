@@ -18,8 +18,7 @@ exports['test External with local file'] = function(beforeExit) {
     beforeExit(function() { assert.equal(context.tests, 1); });
 
     new External(env, 'style.mss')
-        .on('complete', function(err, external) {
-            if (err) throw err;
+        .on('complete', function(external) {
             assert.ok(external instanceof External)
             helper.md5File(external.path(), '7e659de8be9aacf42c356774a60adf00', context);
         });
@@ -30,8 +29,7 @@ exports['test External with remote file'] = function(beforeExit) {
     beforeExit(function() { assert.equal(context.tests, 1); });
 
     new External(env, 'http://tilemill-data.s3.amazonaws.com/ipsum.json')
-        .on('complete', function(err, external) {
-            if (err) throw err;
+        .on('complete', function(external) {
             assert.ok(external instanceof External)
             helper.md5File(external.path(), '651ea0ff31786e9be9012112b21573be', context);
         });
@@ -42,8 +40,7 @@ exports['test External with local zipfile'] = function(beforeExit) {
     beforeExit(function() { assert.equal(context.tests, 5); });
 
     new External(env, 'shapes.zip').on('complete',
-        function(err, external) {
-            if (err) throw err;
+        function(external) {
             assert.ok(external instanceof External)
             helper.isDirectory(external.path(), context);
             helper.md5File(path.join(external.path(), 'world_borders.dbf'), '5dd220a6470ac525a5dbd8fce728c8c6', context);
@@ -58,8 +55,7 @@ exports['test External with remote zipfile'] = function(beforeExit) {
     beforeExit(function() { assert.equal(context.tests, 5); });
 
     new External(env, 'http://cascadenik-sampledata.s3.amazonaws.com/world_borders.zip')
-        .on('complete', function(err, external) {
-            if (err) throw err;
+        .on('complete', function(external) {
             assert.ok(external instanceof External)
             helper.isDirectory(external.path(), context);
             helper.md5File(path.join(external.path(), 'world_borders.dbf'), 'bc1a1765c8f90741fad9fabfdd4c22ae', context);

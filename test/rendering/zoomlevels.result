@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+
+
+<Style name="world-polygon/__default__">
+  <Rule>
+    <MinScaleDenominator>50000000</MinScaleDenominator>
+    <PolygonSymbolizer fill="#ffff00"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>1500000</MaxScaleDenominator><MinScaleDenominator>750000</MinScaleDenominator>
+    <PolygonSymbolizer fill="#000000"/>
+  </Rule>
+</Style>
+<Layer
+   id="world"
+   name="world"
+   srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+    <StyleName>world-polygon/__default__</StyleName>
+    <Datasource>
+       <Parameter name="file">[absolute path]</Parameter>
+       <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+<Style name="countries-line/__default__">
+  <Rule>
+    <MaxScaleDenominator>100000</MaxScaleDenominator>
+    <LineSymbolizer stroke-width="0.25"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>200000</MaxScaleDenominator><MinScaleDenominator>100000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.3"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>400000</MaxScaleDenominator><MinScaleDenominator>200000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.4"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>750000</MaxScaleDenominator><MinScaleDenominator>400000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.5"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>1500000</MaxScaleDenominator><MinScaleDenominator>750000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.6"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>3000000</MaxScaleDenominator><MinScaleDenominator>1500000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.7"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>6500000</MaxScaleDenominator><MinScaleDenominator>3000000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.8"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator><MinScaleDenominator>6500000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="0.9"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>25000000</MaxScaleDenominator><MinScaleDenominator>12500000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="1"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>100000000</MaxScaleDenominator><MinScaleDenominator>25000000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="1.25"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>200000000</MaxScaleDenominator><MinScaleDenominator>100000000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="1.5"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>500000000</MaxScaleDenominator><MinScaleDenominator>200000000</MinScaleDenominator>
+    <LineSymbolizer stroke-width="2"/>
+  </Rule>
+</Style>
+<Layer
+   id="countries"
+   name="countries"
+   srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+    <StyleName>countries-line/__default__</StyleName>
+    <Datasource>
+       <Parameter name="file">[absolute path]</Parameter>
+       <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+</Map>

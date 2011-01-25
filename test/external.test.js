@@ -6,7 +6,7 @@ var path = require('path'),
 
 var env = {
     data_dir: path.join(__dirname, 'data'),
-    local_data_dir: path.join(__dirname, 'external')
+    local_data_dir: path.join(__dirname, 'local')
 };
 
 // Delete the data directory first to start with a clean slate.

@@ -10,25 +10,28 @@
     <PolygonSymbolizer fill="#666666"/>
   </Rule>
   <Rule>
-    <MinScaleDenominator>12500000</MinScaleDenominator>
+    
     <Filter>([NAME] = 'Canada')</Filter>
     <PolygonSymbolizer fill="#eeeeee"/>
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <Filter>([NAME] != 'United States') and ([NAME] != 'Canada')</Filter>
+    <Filter>([NAME] = 'United States')</Filter>
+    <PolygonSymbolizer fill="#cccccc"/>
+  </Rule>
+  <Rule>
+    
+    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States')</Filter>
     <PolygonSymbolizer fill="#ffffff"/>
   </Rule>
 </Style>
 <Style name="world-line/__default__">
   <Rule>
-
     <Filter>([NAME] = 'Canada')</Filter>
     <LineSymbolizer stroke-width="1"
       stroke="#cccccc"/>
   </Rule>
   <Rule>
-
     <Filter>([NAME] != 'Canada')</Filter>
     <LineSymbolizer stroke-width="0.5"
       stroke="#ff0000"/>
@@ -54,6 +57,10 @@
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
+    <PolygonSymbolizer fill="#cccccc"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator>
     <Filter>([NAME] != 'United States')</Filter>
     <PolygonSymbolizer fill="#cccccc"/>
   </Rule>
@@ -61,8 +68,8 @@
 <Style name="countries-line/__default__">
   <Rule>
     <MaxScaleDenominator>12500000</MaxScaleDenominator>
-    <LineSymbolizer stroke-width="0.5"
-       stroke="#cccccc"/>
+    <LineSymbolizer stroke="#cccccc"
+      stroke-width="0.5"/>
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>

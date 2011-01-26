@@ -32,12 +32,16 @@ helper.files('rendering', 'mml', function(file) {
                             var messParser = new xml2js.Parser();
                             messParser.addListener('end', function(messXML) {
                                 removeAbsoluteDatasources(messXML);
+                                removeAbsoluteImages(messXML);
 
                                 completed = true;
                                 try {
                                     assert.deepEqual(messXML, resultXML);
                                 } catch (e) {
-                                    console.warn(helper.stylize("Failure", 'red') + ': ' + helper.stylize(file, 'underline') + ' differs from expected result.');
+                                    console.warn(
+                                        helper.stylize("Failure", 'red') + ': '
+                                        + helper.stylize(file, 'underline')
+                                        + ' differs from expected result.');
                                     helper.showDifferences(e);
                                     throw '';
                                 }
@@ -61,6 +65,22 @@ helper.files('rendering', 'mml', function(file) {
     }
 });
 
+
+function removeAbsoluteImages(xml) {
+    (Array.isArray(xml.Style) ? xml.Style : [ xml.Style ]).forEach(function(style) {
+        if (style && style.Rule) {
+            for (i in style.Rule) {
+                if (style.Rule[i].attr) {
+                    for (j in style.Rule[i].attr) {
+                        if (j == 'file' && style.Rule[i].attr[j][0] == '/') {
+                            style.Rule[i].attr[j] = "[absolute path]";
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 
 function removeAbsoluteDatasources(xml) {
     (Array.isArray(xml.Layer) ? xml.Layer : [ xml.Layer ]).forEach(function(layer) {

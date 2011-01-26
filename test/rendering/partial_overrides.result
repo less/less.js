@@ -20,7 +20,7 @@
   </Rule>
   <Rule>
     <MaxScaleDenominator>1500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States') and ([POP] &gt; 100000000)</Filter>
+    <Filter>([NAME] != 'Canada') and ([POP] &gt; 100000000) and ([NAME] != 'United States')</Filter>
     <LineSymbolizer stroke="#ff0000"
       stroke-opacity="0.7"
       stroke-width="20"/>
@@ -48,7 +48,7 @@
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States') and ([POP] &lt;= 100000000)</Filter>
+    <Filter>([NAME] != 'Canada') and ([POP] &lt;= 100000000) and ([NAME] != 'United States')</Filter>
     <LineSymbolizer stroke-opacity="0.4"
       stroke-width="5"/>
   </Rule>

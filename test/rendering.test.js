@@ -1,8 +1,7 @@
 var path = require('path'),
     sys = require('sys'),
     assert = require('assert'),
-    fs = require('fs'),
-    xml2js = require('xml2js');
+    fs = require('fs');
 
 var mess = require('mess');
 var tree = require('mess/tree');
@@ -25,69 +24,30 @@ helper.files('rendering', 'mml', function(file) {
                 } else {
                     renderResult = output;
                     var result = helper.resultFile(file);
-                    helper.file(result, function(result) {
-                        // Parse the XML file.
-                        var resultParser = new xml2js.Parser();
-                        resultParser.addListener('end', function(resultXML) {
-                            var messParser = new xml2js.Parser();
-                            messParser.addListener('end', function(messXML) {
-                                removeAbsoluteDatasources(messXML);
-                                removeAbsoluteImages(messXML);
-
-                                completed = true;
-                                try {
-                                    assert.deepEqual(messXML, resultXML);
-                                } catch (e) {
-                                    console.warn(
-                                        helper.stylize("Failure", 'red') + ': '
-                                        + helper.stylize(file, 'underline')
-                                        + ' differs from expected result.');
-                                    helper.showDifferences(e);
-                                    throw '';
-                                }
-
-                            });
-                            messParser.parseString(output);
-                        });
-                        resultParser.parseString(result);
-                    });
+                    helper.compareToXMLFile(result, output, function(err) {
+                        completed = true;
+                        if (err) {
+                            console.warn(
+                                helper.stylize("Failure", 'red') + ': '
+                                + helper.stylize(file, 'underline')
+                                + ' differs from expected result.');
+                            helper.showDifferences(err);
+                            throw '';
+                        }
+                    }, [ 
+                        helper.removeAbsoluteImages,
+                        helper.removeAbsoluteDatasources
+                    ]);
                 }
             });
         });
 
         beforeExit(function() {
             if (!completed && renderResult) {
-                console.warn(helper.stylize('renderer produced:', 'bold'));
-                console.warn(renderResult);
+                // console.warn(helper.stylize('renderer produced:', 'bold'));
+                // console.warn(renderResult);
             }
             assert.ok(completed, 'Rendering finished.');
         });
     }
 });
-
-
-function removeAbsoluteImages(xml) {
-    (Array.isArray(xml.Style) ? xml.Style : [ xml.Style ]).forEach(function(style) {
-        if (style && style.Rule) {
-            for (i in style.Rule) {
-                if (style.Rule[i].attr) {
-                    for (j in style.Rule[i].attr) {
-                        if (j == 'file' && style.Rule[i].attr[j][0] == '/') {
-                            style.Rule[i].attr[j] = "[absolute path]";
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function removeAbsoluteDatasources(xml) {
-    (Array.isArray(xml.Layer) ? xml.Layer : [ xml.Layer ]).forEach(function(layer) {
-        layer.Datasource.Parameter.forEach(function(param) {
-            if (param.attr && param.attr.name === 'file') {
-                param.text = "[absolute path]";
-            }
-        });
-    });
-}

@@ -1,8 +1,8 @@
 [
     {"elements":["#world","#countries"],"filters":[{"key":"NAME","op":"=","val":"United States"}]},
-    {"elements":["#world"],"filters":[{"key":"NAME","op":"=","val":"United States"},{"range":"0000001111111111111111"}]},
+    {"elements":["#world"],"filters":[{"key":"NAME","op":"=","val":"United States"}],"zoom":{"range":"0000001111111111111111","specificity":1}},
     {"elements":["#world"],"filters":[{"key":"NAME","op":"=","val":"United States"}]},
     {"elements":["#world"],"filters":[{"key":"NAME","op":"=","val":"Canada"}]},
-    {"elements":[],"filters":[{"range":"0000001111111111111111"}]},
+    {"elements":[],"zoom":{"range":"0000001111111111111111","specificity":1}},
     {"elements":[],"filters":[{"key":"NAME","op":"=","val":"United States"}]}
 ]

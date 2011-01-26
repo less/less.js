@@ -2,6 +2,7 @@ var path = require('path'),
     fs = require('fs'),
     assert = require('assert'),
     crypto = require('crypto'),
+    xml2js = require('xml2js'),
     diff = require('./diff').diff;
 
 var helper = exports;
@@ -62,6 +63,30 @@ exports.compareToFile = function(value, originalFile, resultFile) {
     });
 };
 
+exports.compareToXMLFile = function(filename, second, callback, processors) {
+    helper.file(filename, function(first) {
+        // Parse the XML file.
+        var firstParser = new xml2js.Parser();
+        firstParser.addListener('end', function(firstXML) {
+            var secondParser = new xml2js.Parser();
+            secondParser.addListener('end', function(secondXML) {
+                processors.forEach(function(processor) {
+                    processor(secondXML);
+                });
+        
+                try {
+                    assert.deepEqual(secondXML, firstXML);
+                    callback(null);
+                } catch (err) {
+                    callback(err);
+                }
+            });
+            secondParser.parseString(second);
+        });
+        firstParser.parseString(first);
+    });
+}
+
 exports.resultFile = function(file) {
     return path.join(path.dirname(file), path.basename(file).replace(/\.\w+$/, '.result'));
 };
@@ -117,3 +142,30 @@ exports.md5File = function(file, md5, context) {
         context.tests++;
     });
 }
+
+
+helper.removeAbsoluteImages = function(xml) {
+    (Array.isArray(xml.Style) ? xml.Style : [ xml.Style ]).forEach(function(style) {
+        if (style && style.Rule) {
+            for (i in style.Rule) {
+                if (style.Rule[i].attr) {
+                    for (j in style.Rule[i].attr) {
+                        if (j == 'file' && style.Rule[i].attr[j][0] == '/') {
+                            style.Rule[i].attr[j] = "[absolute path]";
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+
+helper.removeAbsoluteDatasources = function(xml) {
+    (Array.isArray(xml.Layer) ? xml.Layer : [ xml.Layer ]).forEach(function(layer) {
+        layer.Datasource.Parameter.forEach(function(param) {
+            if (param.attr && param.attr.name === 'file') {
+                param.text = "[absolute path]";
+            }
+        });
+    });
+};

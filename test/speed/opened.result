@@ -1,0 +1,2014 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+
+
+<Style name="data-polygon/__default__">
+  <Rule>
+    <Filter>([Dist_ID] = 304)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 915)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 914)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 913)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 912)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 911)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 910)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 909)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 908)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 907)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 906)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 905)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 904)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 903)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 902)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 901)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 807)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 806)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 805)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 804)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 803)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 802)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 801)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 705)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 704)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 703)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 702)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 701)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 622)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 621)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 620)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 619)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 618)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 617)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 616)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 615)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 614)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 613)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 612)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 611)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 610)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 609)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 608)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 607)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 606)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 605)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 604)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 603)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 602)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 601)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 507)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 506)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 505)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 504)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 503)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 502)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 501)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 409)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 408)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 407)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 406)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 405)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 404)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 403)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 402)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 401)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3405)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3404)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3403)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3402)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3401)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3316)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3315)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3314)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3313)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3312)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3311)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3310)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3309)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3308)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3307)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3306)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3305)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3304)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3303)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3302)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3301)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3213)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3212)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3211)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3210)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3209)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3208)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3207)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3206)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3205)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3204)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3203)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3202)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3201)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3111)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3110)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3109)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3108)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3107)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3106)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3105)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3104)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3103)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3102)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3101)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 310)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 309)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 308)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 307)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 306)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 305)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1001)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1617)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1701)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1702)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1703)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1704)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1705)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1706)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1707)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1801)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1802)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1803)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1804)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1805)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1806)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1807)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1808)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1809)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1810)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1811)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1812)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1813)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1814)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1815)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1816)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1901)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1902)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1903)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1904)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1905)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1906)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1907)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2001)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2002)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2003)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2004)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2005)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2006)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2007)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 201)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 202)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 203)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 204)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 205)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 206)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 207)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2101)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2102)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2103)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2104)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2105)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2106)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2107)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2108)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2109)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2110)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2201)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2202)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2203)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2204)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2205)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2206)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2207)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2208)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2209)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2301)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2302)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2303)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2304)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2305)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2401)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2402)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2403)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2404)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2405)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2406)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2407)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2408)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2409)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2410)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2411)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2501)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2502)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2503)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2504)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2505)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2506)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2507)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2508)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2509)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2510)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2511)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2512)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2513)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2514)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2515)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2516)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2517)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2518)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2519)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2601)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2602)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2603)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2604)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2605)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2606)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2607)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2608)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2609)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2610)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2611)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2612)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2613)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2701)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2702)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2703)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2704)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2705)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2706)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2707)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2708)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2709)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2710)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2711)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2801)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2802)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2803)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2804)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2805)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2806)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2807)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2808)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2809)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2810)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2811)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2812)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2813)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2814)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2901)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2902)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2903)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2904)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2905)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2906)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 2907)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3001)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3002)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3003)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3004)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3005)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3006)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3007)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3008)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3009)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 301)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3010)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3011)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3012)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3013)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3014)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3015)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3016)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 302)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 303)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1616)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1615)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1614)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1613)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1612)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1611)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1610)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1609)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1608)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1607)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1606)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1605)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1604)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1603)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1602)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1601)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1528)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1527)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1526)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1525)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1524)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1523)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1522)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1521)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1520)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1519)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1518)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1517)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1516)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1515)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1514)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1513)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1512)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1511)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1510)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1509)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1508)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1507)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1506)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1505)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1504)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1503)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1502)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1501)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1408)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1407)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1406)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1405)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1404)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1403)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1402)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1401)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1315)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1314)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1313)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1312)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1311)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1310)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1309)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1308)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1307)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1306)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1305)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1304)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1303)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1302)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1301)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1211)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1210)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1209)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1208)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1207)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1206)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1205)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1204)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1203)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1202)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1201)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 115)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 114)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 113)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 112)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1119)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1118)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1117)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1116)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1115)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1114)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1113)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1112)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1111)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1110)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 111)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1109)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1108)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#666666"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1107)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1106)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1105)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1104)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1103)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff7733"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1102)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1101)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 110)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 109)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 108)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 107)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 106)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 105)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 104)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 103)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 102)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 101)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1007)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1006)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1005)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1004)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1003)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1002)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+</Style>
+<Layer
+   id="data"
+   name="data"
+   srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+    <StyleName>data-polygon/__default__</StyleName>
+    <Datasource>
+       <Parameter name="file">/tmp/c11386e73c3f38120c5bd19ff19de9c6/District_Boundaries.shp</Parameter>
+       <Parameter name="type">shape</Parameter>
+    </Datasource>
+  </Layer>
+
+</Map>

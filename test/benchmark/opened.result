@@ -5,9 +5,9 @@
 
 <Style name="data-polygon/__default__">
   <Rule>
-    <Filter>([Dist_ID] = 304)</Filter>
+    <Filter>([Dist_ID] = 1704)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ffffff"/>
+      fill="#ffbbaa"/>
   </Rule>
   <Rule>
     <Filter>([Dist_ID] = 915)</Filter>
@@ -590,34 +590,39 @@
       fill="#ffffff"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 1001)</Filter>
+    <Filter>([Dist_ID] = 304)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
       fill="#ffffff"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 1617)</Filter>
+    <Filter>([Dist_ID] = 303)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ee3300"/>
+      fill="#ff9966"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 1701)</Filter>
+    <Filter>([Dist_ID] = 302)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
       fill="#ffddcc"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 1702)</Filter>
+    <Filter>([Dist_ID] = 3016)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ffbbaa"/>
+      fill="#ff9966"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 1703)</Filter>
+    <Filter>([Dist_ID] = 3015)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ffddcc"/>
+      fill="#ff9966"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 1704)</Filter>
+    <Filter>([Dist_ID] = 3014)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ffbbaa"/>
+      fill="#ff9966"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 3013)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ff9966"/>
   </Rule>
   <Rule>
     <Filter>([Dist_ID] = 1705)</Filter>
@@ -1380,34 +1385,29 @@
       fill="#ffbbaa"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 3013)</Filter>
-    <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ff9966"/>
-  </Rule>
-  <Rule>
-    <Filter>([Dist_ID] = 3014)</Filter>
-    <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ff9966"/>
-  </Rule>
-  <Rule>
-    <Filter>([Dist_ID] = 3015)</Filter>
-    <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ff9966"/>
-  </Rule>
-  <Rule>
-    <Filter>([Dist_ID] = 3016)</Filter>
-    <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ff9966"/>
-  </Rule>
-  <Rule>
-    <Filter>([Dist_ID] = 302)</Filter>
+    <Filter>([Dist_ID] = 104)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
       fill="#ffddcc"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 303)</Filter>
+    <Filter>([Dist_ID] = 1703)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ff9966"/>
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1702)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffbbaa"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1701)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffddcc"/>
+  </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1617)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ee3300"/>
   </Rule>
   <Rule>
     <Filter>([Dist_ID] = 1616)</Filter>
@@ -1950,11 +1950,6 @@
       fill="#ffddcc"/>
   </Rule>
   <Rule>
-    <Filter>([Dist_ID] = 104)</Filter>
-    <PolygonSymbolizer fill-opacity="0.6"
-      fill="#ffddcc"/>
-  </Rule>
-  <Rule>
     <Filter>([Dist_ID] = 103)</Filter>
     <PolygonSymbolizer fill-opacity="0.6"
       fill="#ffddcc"/>
@@ -1999,6 +1994,11 @@
     <PolygonSymbolizer fill-opacity="0.6"
       fill="#ffddcc"/>
   </Rule>
+  <Rule>
+    <Filter>([Dist_ID] = 1001)</Filter>
+    <PolygonSymbolizer fill-opacity="0.6"
+      fill="#ffffff"/>
+  </Rule>
 </Style>
 <Layer
    id="data"
@@ -2006,7 +2006,7 @@
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
     <StyleName>data-polygon/__default__</StyleName>
     <Datasource>
-       <Parameter name="file">/tmp/c11386e73c3f38120c5bd19ff19de9c6/District_Boundaries.shp</Parameter>
+       <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>
     </Datasource>
   </Layer>

@@ -76,6 +76,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
 
     new mess.Renderer({
         filename: input,
+        debug: options.debug,
         local_data_dir: path.dirname(input),
     }).render(data, function(err, output) {
         if (err) {
@@ -88,7 +89,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
                 sys.puts(output);
             } else {
                 var duration = (+new Date) - start;
-                console.log('Benchmark: ' + (duration / 1000) + 'ms');
+                console.log('Benchmark: ' + (duration) + 'ms');
             }
         }
     });

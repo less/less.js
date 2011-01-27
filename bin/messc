@@ -79,7 +79,9 @@ fs.readFile(input, 'utf-8', function (e, data) {
         local_data_dir: path.dirname(input),
     }).render(data, function(err, output) {
         if (err) {
-            mess.writeError(err, options);
+            err.forEach(function(e) {
+                mess.writeError(e, options);
+            });
             process.exit(1);
         } else {
             if (!options.benchmark) {

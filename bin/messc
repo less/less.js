@@ -24,14 +24,21 @@ args = args.filter(function (arg) {
         case 'version':
             sys.puts("messc " + mess.version.join('.') + " (MESS Compiler) [JavaScript]");
             process.exit(0);
+            break;
         case 'verbose':
             options.verbose = true;
             break;
         case 'd':
+        case 'debug':
             options.debug = true;
+            break;
         case 's':
         case 'silent':
             options.silent = true;
+            break;
+        case 'b':
+        case 'benchmark':
+            options.benchmark = true;
             break;
         case 'h':
         case 'help':
@@ -39,6 +46,7 @@ args = args.filter(function (arg) {
             sys.puts("Options:");
             sys.puts("  -j\tParse JSON map manifest");
             process.exit(0);
+            break;
     }
 });
 
@@ -62,6 +70,10 @@ fs.readFile(input, 'utf-8', function (e, data) {
         process.exit(1);
     }
 
+    if (options.benchmark) {
+        var start = +new Date;
+    }
+
     new mess.Renderer({
         filename: input,
         local_data_dir: path.dirname(input),
@@ -70,7 +82,12 @@ fs.readFile(input, 'utf-8', function (e, data) {
             mess.writeError(err, options);
             process.exit(1);
         } else {
-            sys.puts(output);
+            if (!options.benchmark) {
+                sys.puts(output);
+            } else {
+                var duration = (+new Date) - start;
+                console.log('Benchmark: ' + (duration / 1000) + 'ms');
+            }
         }
     });
 });

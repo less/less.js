@@ -3,7 +3,7 @@
     marker-width: 2;
     marker-height: 2;
     marker-fill: #222;
-    marker-fill-opacity: 0.8;
+    marker-opacity: 0.8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: 0.8;
@@ -17,7 +17,7 @@
     marker-width: 5;
     marker-height: 5;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -32,7 +32,7 @@
     marker-width: 8;
     marker-height: 8;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -47,7 +47,7 @@
     marker-width: 11;
     marker-height: 11;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -62,7 +62,7 @@
     marker-width: 14;
     marker-height: 14;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -77,7 +77,7 @@
     marker-width: 17;
     marker-height: 17;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -92,7 +92,7 @@
     marker-width: 20;
     marker-height: 20;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -107,7 +107,7 @@
     marker-width: 23;
     marker-height: 23;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -122,7 +122,7 @@
     marker-width: 26;
     marker-height: 26;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -137,7 +137,7 @@
     marker-width: 29;
     marker-height: 29;
     marker-fill: #222;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 0;
     marker-line-color: #222;
     marker-line-opacity: .8;
@@ -152,7 +152,7 @@
     marker-width: 4;
     marker-height: 4;
     marker-fill: #fff;
-    marker-fill-opacity: .8;
+    marker-opacity: .8;
     marker-line-width: 2;
     marker-line-color: #444;
     marker-line-opacity: .8;

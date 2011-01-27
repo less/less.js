@@ -13,9 +13,13 @@ function cleanupItem(key, value) {
     else if (key === 'filters' && !value.length) return undefined;
     else if (key === 'attachment' && value === '__default__') return undefined;
     else if (key === 'index') return undefined;
-    else if (key === 'range') return value.map(function(v) { return 0 + v; }).join('');
+    else if (key === 'zoom') {
+        if (value == tree.Zoom.all) return void null;
+        else return tree.Zoom.toString(value);
+    }
     else if (key === 'op') return value.value;
     else if (key === 'val') return value.value;
+    else if (key === 'conditions' && value == 0) return void null;
     else return value;
 }
 

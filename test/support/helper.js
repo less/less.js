@@ -18,11 +18,11 @@ exports.files = function(dir, extension, callback) {
 };
 
 exports.file = function(file, callback) {
-    fs.readFile(file, 'utf-8', function (err, content) {
+    fs.readFile(file, 'utf-8', function(err, content) {
         if (err) throw err;
         callback(content);
     });
-}
+};
 
 exports.json = function(file, callback) {
     fs.readFile(file, 'utf-8', function(err, content) {
@@ -36,7 +36,7 @@ exports.showDifferences = function(e, format) {
         (format || JSON.stringify)(e.actual),
         (format || JSON.stringify)(e.expected)
     );
-    
+
     console.warn(helper.stylize('actual:', 'bold') + '\n' + changes.del);
     console.warn(helper.stylize('expected:', 'bold') + '\n' + changes.ins);
 };
@@ -56,7 +56,9 @@ exports.compareToFile = function(value, originalFile, resultFile) {
         try {
             assert.deepEqual(value, json);
         } catch (e) {
-            console.warn(helper.stylize("Failure", 'red') + ': ' + helper.stylize(originalFile, 'underline') + ' differs from expected result.');
+            console.warn(helper.stylize('Failure', 'red')
+                + ': ' + helper.stylize(originalFile, 'underline')
+                + ' differs from expected result.');
             helper.showDifferences(e, helper.formatJSON);
             throw '';
         }
@@ -73,7 +75,7 @@ exports.compareToXMLFile = function(filename, second, callback, processors) {
                 processors.forEach(function(processor) {
                     processor(secondXML);
                 });
-        
+
                 try {
                     assert.deepEqual(secondXML, firstXML);
                     callback(null);
@@ -85,7 +87,7 @@ exports.compareToXMLFile = function(filename, second, callback, processors) {
         });
         firstParser.parseString(first);
     });
-}
+};
 
 exports.resultFile = function(file) {
     return path.join(path.dirname(file), path.basename(file).replace(/\.\w+$/, '.result'));
@@ -95,12 +97,12 @@ exports.resultFile = function(file) {
 // Stylize a string
 exports.stylize = function(str, style) {
     var styles = {
-        'bold'      : [1,  22],
-        'inverse'   : [7,  27],
-        'underline' : [4,  24],
-        'yellow'    : [33, 39],
-        'green'     : [32, 39],
-        'red'       : [31, 39]
+        'bold' : [1, 22],
+        'inverse' : [7, 27],
+        'underline' : [4, 24],
+        'yellow' : [33, 39],
+        'green' : [32, 39],
+        'red' : [31, 39]
     };
     return '\033[' + styles[style][0] + 'm' + str +
            '\033[' + styles[style][1] + 'm';
@@ -130,7 +132,7 @@ exports.rmrf = function rmrf(p) {
             fs.rmdirSync(p);
         }
         else fs.unlinkSync(p);
-    } catch(err) {
+    } catch (err) {
         if (err.errno !== process.ENOENT) throw err;
     }
 };
@@ -141,23 +143,25 @@ exports.md5File = function(file, md5, context) {
         assert.equal(hash, md5);
         context.tests++;
     });
-}
+};
 
 helper.removeErrorFilename = function(error) {
     error.forEach(function(e) {
-        e.filename = "[absolute path]";
+        e.filename = '[absolute path]';
     });
     return error;
 };
 
 helper.removeAbsoluteImages = function(xml) {
-    (Array.isArray(xml.Style) ? xml.Style : [ xml.Style ]).forEach(function(style) {
+    (Array.isArray(xml.Style) ?
+        xml.Style :
+        [xml.Style]).forEach(function(style) {
         if (style && style.Rule) {
             for (i in style.Rule) {
                 if (style.Rule[i].attr) {
                     for (j in style.Rule[i].attr) {
                         if (j == 'file' && style.Rule[i].attr[j][0] == '/') {
-                            style.Rule[i].attr[j] = "[absolute path]";
+                            style.Rule[i].attr[j] = '[absolute path]';
                         }
                     }
                 }
@@ -167,10 +171,12 @@ helper.removeAbsoluteImages = function(xml) {
 };
 
 helper.removeAbsoluteDatasources = function(xml) {
-    (Array.isArray(xml.Layer) ? xml.Layer : [ xml.Layer ]).forEach(function(layer) {
+    (Array.isArray(xml.Layer) ?
+     xml.Layer :
+     [xml.Layer]).forEach(function(layer) {
         layer.Datasource.Parameter.forEach(function(param) {
             if (param.attr && param.attr.name === 'file') {
-                param.text = "[absolute path]";
+                param.text = '[absolute path]';
             }
         });
     });

@@ -44,8 +44,8 @@ helper.files('rendering', 'mml', function(file) {
 
         beforeExit(function() {
             if (!completed && renderResult) {
-                // console.warn(helper.stylize('renderer produced:', 'bold'));
-                // console.warn(renderResult);
+                console.warn(helper.stylize('renderer produced:', 'bold'));
+                console.warn(renderResult);
             }
             assert.ok(completed, 'Rendering finished.');
         });

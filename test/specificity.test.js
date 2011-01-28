@@ -10,11 +10,13 @@ var helper = require('./support/helper');
 function cleanupItem(key, value) {
     if (!key) return value.map(function(item) { return item.selector });
     else if (key === 'elements') return value.map(function(item) { return item.value; });
-    else if (key === 'filters' && !value.length) return undefined;
+    else if (key === 'filters') {
+        if (Object.keys(value).length) return Object.keys(value);
+    }
     else if (key === 'attachment' && value === '__default__') return undefined;
     else if (key === 'index') return undefined;
     else if (key === 'zoom') {
-        if (value == tree.Zoom.all) return void null;
+        if (value == tree.Zoom.all) return undefined;
         else return tree.Zoom.toString(value);
     }
     else if (key === 'op') return value.value;

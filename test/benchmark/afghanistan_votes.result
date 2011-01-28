@@ -3,7 +3,7 @@
 <Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
 
 
-<Style name="data-markers/__default__">
+<Style name="data-markers">
   <Rule>
     <Filter>([_votes_total_null] = 0) and ([votes_total] &gt;= 312547.80000000005) and ([votes_total] &lt;= 347275)</Filter>
     <MarkersSymbolizer meta-output="votes_name, votes_description"
@@ -289,7 +289,7 @@
    id="data"
    name="data"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>data-markers/__default__</StyleName>
+    <StyleName>data-markers</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">ogr</Parameter>

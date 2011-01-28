@@ -6,7 +6,7 @@
   <Font face_name="Georgia Regular"/>
   <Font face_name="Arial Italic"/>
 </FontSet>
-<Style name="world-text/__default__">
+<Style name="world-text">
   <Rule>
     
     <TextSymbolizer fontset_name="fontset-0"
@@ -18,7 +18,7 @@
    id="world"
    name="world"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>world-text/__default__</StyleName>
+    <StyleName>world-text</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>

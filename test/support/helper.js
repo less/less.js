@@ -143,6 +143,12 @@ exports.md5File = function(file, md5, context) {
     });
 }
 
+helper.removeErrorFilename = function(error) {
+    error.forEach(function(e) {
+        e.filename = "[absolute path]";
+    });
+    return error;
+};
 
 helper.removeAbsoluteImages = function(xml) {
     (Array.isArray(xml.Style) ? xml.Style : [ xml.Style ]).forEach(function(style) {

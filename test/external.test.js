@@ -64,3 +64,14 @@ exports['test External with remote zipfile'] = function(beforeExit) {
             helper.md5File(path.join(external.path(), 'world_borders.shx'), '535cb8568177f7ab95ab823cd6c16eb8', context);
         });
 };
+
+exports['test External with remote KML file'] = function(beforeExit) {
+    var context = { tests: 0 };
+    beforeExit(function() { assert.equal(context.tests, 1); });
+
+    new External(env, 'http://tilemill-data.s3.amazonaws.com/couchsurf.kml')
+        .on('complete', function(external) {
+            assert.ok(external instanceof External);
+            helper.md5File(external.path(), 'f8aea6d693a48dabdc7ea3586cce57f7', context);
+        });
+};

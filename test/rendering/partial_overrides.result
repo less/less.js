@@ -12,6 +12,13 @@
       stroke-opacity="0.5"/>
   </Rule>
   <Rule>
+    <MaxScaleDenominator>1500000</MaxScaleDenominator>
+    <Filter>([NAME] != 'Canada') and ([POP] &gt; 100000000) and ([NAME] != 'United States')</Filter>
+    <LineSymbolizer stroke="#ff0000"
+      stroke-opacity="0.7"
+      stroke-width="20"/>
+  </Rule>
+  <Rule>
     <MinScaleDenominator>1500000</MinScaleDenominator>
     <Filter>([NAME] != 'Canada') and ([POP] &gt; 100000000)</Filter>
     <LineSymbolizer stroke="#ff0000"
@@ -20,21 +27,14 @@
   </Rule>
   <Rule>
     <MaxScaleDenominator>1500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([POP] &gt; 100000000) and ([NAME] != 'United States')</Filter>
-    <LineSymbolizer stroke="#ff0000"
-      stroke-opacity="0.7"
-      stroke-width="20"/>
-  </Rule>
-  <Rule>
-    <MaxScaleDenominator>12500000</MaxScaleDenominator><MinScaleDenominator>1500000</MinScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([POP] &lt;= 100000000)</Filter>
+    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States') and ([POP] &lt;= 100000000)</Filter>
     <LineSymbolizer stroke-width="5"
       stroke="#ff0000"
       stroke-opacity="0.7"/>
   </Rule>
   <Rule>
-    <MaxScaleDenominator>1500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States') and ([POP] &lt;= 100000000)</Filter>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator><MinScaleDenominator>1500000</MinScaleDenominator>
+    <Filter>([NAME] != 'Canada') and ([POP] &lt;= 100000000)</Filter>
     <LineSymbolizer stroke-width="5"
       stroke="#ff0000"
       stroke-opacity="0.7"/>

@@ -15,6 +15,7 @@ function cleanupItem(key, value) {
     }
     else if (key === 'attachment' && value === '__default__') return undefined;
     else if (key === 'index') return undefined;
+    else if (key === 'filterID') return undefined;
     else if (key === 'zoom') {
         if (value == tree.Zoom.all) return undefined;
         else return tree.Zoom.toString(value);

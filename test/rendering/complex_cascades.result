@@ -20,7 +20,7 @@
   </Rule>
   <Rule>
     
-    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States')</Filter>
+    <Filter>([NAME] != 'United States') and ([NAME] != 'Canada')</Filter>
     <PolygonSymbolizer fill="#ffffff"/>
   </Rule>
 </Style>
@@ -55,12 +55,12 @@
     <PolygonSymbolizer fill="#aaffcc"/>
   </Rule>
   <Rule>
-    <MinScaleDenominator>12500000</MinScaleDenominator>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator>
+    <Filter>([NAME] != 'United States')</Filter>
     <PolygonSymbolizer fill="#cccccc"/>
   </Rule>
   <Rule>
-    <MaxScaleDenominator>12500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'United States')</Filter>
+    <MinScaleDenominator>12500000</MinScaleDenominator>
     <PolygonSymbolizer fill="#cccccc"/>
   </Rule>
 </Style>

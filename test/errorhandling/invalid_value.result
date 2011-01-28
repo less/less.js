@@ -1,0 +1,1 @@
+[{"message":"Invalid value for polygon-opacity, a valid float is expected. #ff0000 was given.","index":19,"type":"syntax","filename":"[absolute path]","line":2,"column":2,"extract":["#world[zoom=5] {","  polygon-opacity: #f00;","}"]}]

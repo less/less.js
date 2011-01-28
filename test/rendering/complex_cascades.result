@@ -10,12 +10,6 @@
     <PolygonSymbolizer fill="#666666"/>
   </Rule>
   <Rule>
-    <MinScaleDenominator>12500000</MinScaleDenominator>
-    <Filter>([NAME] = 'Canada')</Filter>
-    <PolygonSymbolizer fill="#eeeeee"/>
-  </Rule>
-  <Rule>
-    <MaxScaleDenominator>12500000</MaxScaleDenominator>
     <Filter>([NAME] = 'Canada')</Filter>
     <PolygonSymbolizer fill="#eeeeee"/>
   </Rule>

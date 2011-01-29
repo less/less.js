@@ -489,4 +489,11 @@ exports['test soundness for <='] = function() {
         'a': { key: 'TOTAL', op:lte, val: '3' },
         'b': { key: 'TOTAL', op:lte, val: '2' }
     }), '<=3 <=2');
-} ;
+};
+
+exports['test soundness for large number strings'] = function() {
+    assert.ok(tree.Filter.sound({
+        'a': { key: 'TOTAL', op:gt, val: '69457.4' },
+        'b': { key: 'TOTAL', op:lt, val: '104184.6' }
+    }), '>69457.5 <104184.6');
+}

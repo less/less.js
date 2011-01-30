@@ -80,9 +80,14 @@ fs.readFile(input, 'utf-8', function (e, data) {
         local_data_dir: path.dirname(input),
     }).render(data, function(err, output) {
         if (err) {
-            err.forEach(function(e) {
-                mess.writeError(e, options);
-            });
+            if (Array.isArray(err)) {
+                err.forEach(function(e) {
+                    mess.writeError(e, options);
+                });
+            } else {
+                throw err;
+            }
+            
             process.exit(1);
         } else {
             if (!options.benchmark) {

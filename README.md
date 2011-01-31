@@ -57,16 +57,19 @@ Instead of the name attribute of the TextSymbolizer and ShieldSymbolizer being a
 </table>
 
 ## Mapnik2
+_new_
 
 `mess.js` is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2). Compatibility with Mapnik 0.7.x is not planned.
 
 ## Rasters and Buildings
+_new_
 
 Rasters are supported in mess.js - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
 
 The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `mess.js`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.js`), so new Mapnik features can be quickly implemented here.
 
 ## Variables & Expressions
+_new_
 
 `mess.js` inherits from its basis in [less.js](http://lesscss.org/) some new features in CSS. One can define variables in stylesheets, and use expressions to modify them.
 
@@ -82,8 +85,39 @@ The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also
     }
 
 ## FontSets
+_new_
 
 By defining multiple fonts in a `text-face-name` definition, you create [FontSets](http://trac.mapnik.org/wiki/FontSet) in `mess.js`. These are useful for supporting multiple character sets and fallback fonts for distributed styles.
+
+<table>
+  <tr>
+    <th>mess</th><th>XML</th>
+    </tr>
+    <tr>
+      <td>
+
+    <pre>#world {
+  text-name: "[NAME]";
+  text-size: 11;
+  text-face-name: "Georgia Regular", "Arial Italic";
+}</pre>
+
+</td><td>
+<pre>&lt;FontSet name=&quot;fontset-0&quot;&gt;
+  &lt;Font face_name=&quot;Georgia Regular&quot;/&gt;
+  &lt;Font face_name=&quot;Arial Italic&quot;/&gt;
+&lt;/FontSet&gt;
+&lt;Style name=&quot;world-text&quot;&gt;
+  &lt;Rule&gt;
+    &lt;TextSymbolizer fontset_name=&quot;fontset-0&quot;
+      size=&quot;11&quot;
+      name=&quot;[NAME]&quot;/&gt;
+  &lt;/Rule&gt;
+&lt;/Style&gt;</pre>
+</td>
+<tr>
+</table>
+
 
 
 ## Credits

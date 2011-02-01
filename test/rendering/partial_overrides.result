@@ -3,13 +3,20 @@
 <Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
 
 
-<Style name="world-line/__default__">
+<Style name="world-line">
   <Rule>
     <MaxScaleDenominator>1500000</MaxScaleDenominator>
     <Filter>([NAME] = 'United States')</Filter>
     <LineSymbolizer stroke="#ff0000"
       stroke-width="20"
       stroke-opacity="0.5"/>
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>1500000</MaxScaleDenominator>
+    <Filter>([NAME] != 'Canada') and ([POP] &gt; 100000000) and ([NAME] != 'United States')</Filter>
+    <LineSymbolizer stroke="#ff0000"
+      stroke-opacity="0.7"
+      stroke-width="20"/>
   </Rule>
   <Rule>
     <MinScaleDenominator>1500000</MinScaleDenominator>
@@ -20,21 +27,14 @@
   </Rule>
   <Rule>
     <MaxScaleDenominator>1500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([POP] &gt; 100000000) and ([NAME] != 'United States')</Filter>
-    <LineSymbolizer stroke="#ff0000"
-      stroke-opacity="0.7"
-      stroke-width="20"/>
-  </Rule>
-  <Rule>
-    <MaxScaleDenominator>12500000</MaxScaleDenominator><MinScaleDenominator>1500000</MinScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([POP] &lt;= 100000000)</Filter>
+    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States') and ([POP] &lt;= 100000000)</Filter>
     <LineSymbolizer stroke-width="5"
       stroke="#ff0000"
       stroke-opacity="0.7"/>
   </Rule>
   <Rule>
-    <MaxScaleDenominator>1500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'Canada') and ([NAME] != 'United States') and ([POP] &lt;= 100000000)</Filter>
+    <MaxScaleDenominator>12500000</MaxScaleDenominator><MinScaleDenominator>1500000</MinScaleDenominator>
+    <Filter>([NAME] != 'Canada') and ([POP] &lt;= 100000000)</Filter>
     <LineSymbolizer stroke-width="5"
       stroke="#ff0000"
       stroke-opacity="0.7"/>
@@ -74,7 +74,7 @@
    id="world"
    name="world"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>world-line/__default__</StyleName>
+    <StyleName>world-line</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>

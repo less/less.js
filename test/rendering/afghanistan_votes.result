@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+
+
+<Style name="data-markers">
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 312547.80000000005) and ([votes_total] &lt;= 347275)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="29"
+      width="29"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 277820.60000000003) and ([votes_total] &lt; 312547.80000000005)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="26"
+      width="26"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 243093.40000000002) and ([votes_total] &lt; 277820.60000000003)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="23"
+      width="23"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 208366.2) and ([votes_total] &lt; 243093.40000000002)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="20"
+      width="20"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 173639) and ([votes_total] &lt; 208366.2)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="17"
+      width="17"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 138911.8) and ([votes_total] &lt; 173639)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="14"
+      width="14"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 104184.59999999999) and ([votes_total] &lt; 138911.8)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="11"
+      width="11"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 69457.4) and ([votes_total] &lt; 104184.59999999999)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="8"
+      width="8"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 34730.2) and ([votes_total] &lt; 69457.4)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="5"
+      width="5"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '0') and ([votes_total] &gt;= 3) and ([votes_total] &lt; 34730.2)</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#222222"
+      stroke-width="0"
+      opacity="0.8"
+      fill="#222222"
+      height="2"
+      width="2"
+      allow_overlap="true"/>
+  </Rule>
+  <Rule>
+    <Filter>([_votes_total_null] = '1')</Filter>
+    <MarkersSymbolizer meta-output="votes_name, votes_description"
+      meta-writer="meta1"
+      type="ellipse"
+      stroke-opacity="0.8"
+      stroke="#444444"
+      stroke-width="2"
+      opacity="0.8"
+      fill="#ffffff"
+      height="4"
+      width="4"
+      allow_overlap="true"/>
+  </Rule>
+</Style>
+<Layer
+   id="data"
+   name="data"
+   srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
+    <StyleName>data-markers</StyleName>
+    <Datasource>
+       <Parameter name="file">[absolute path]</Parameter>
+       <Parameter name="type">ogr</Parameter>
+       <Parameter name="layer">OGRGeoJSON</Parameter>
+    </Datasource>
+  </Layer>
+
+</Map>

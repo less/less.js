@@ -5,8 +5,53 @@ Is a stylesheet renderer for Mapnik. It's an evolution of the [Cascadenik](https
 ## MML
 _incompatibility_
 
-* MML files are assumed to be JSON, not XML
+* MML files are assumed to be JSON, not XML. The files are near-identical to the XML files accepted by Cascadenik, just translated into JSON.
+* Like Cascadenik, you can also include remote stylesheets, by including their URLs as simple strings in the Stylesheet array.
 
+<table>
+  <tr>
+  <th>Cascadenik</th>
+  <th>Mess.js</th>
+  </tr>
+  <td>
+<pre>&lt;Stylesheet&gt;&lt;![CDATA[
+        Map
+        {
+            map-bgcolor: #69f;
+        }
+
+        Layer
+        {
+            line-width: 1;
+            line-color: #696;
+            polygon-fill: #6f9;
+        }
+    ]]&gt;&lt;/Stylesheet&gt;
+    &lt;Layer srs=&quot;+proj=latlong +ellps=WGS84 +datum=WGS84 +no_defs&quot;&gt;
+        &lt;Datasource&gt;
+            &lt;Parameter name=&quot;type&quot;&gt;shape&lt;/Parameter&gt;
+            &lt;Parameter name=&quot;file&quot;&gt;world_borders&lt;/Parameter&gt;
+        &lt;/Datasource&gt;
+    &lt;/Layer&gt;
+&lt;/Map&gt;</pre>
+  </td>
+  <td>
+<pre>{
+    "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
+    "Stylesheet": [{"id":"style.mss","data":"Map {\n  background-color: #fff;\n}\n\n#world {\n  line-color: #ccc;\n  line-width: 0.5;\n  polygon-fill: #eee;\n}"}],
+    "Layer": [{
+        "id": "world",
+        "name": "world",
+        "srs": "+proj=latlong +ellps=WGS84 +datum=WGS84 +no_defs",
+        "Datasource": {
+            "file": "world_borders",
+            "type": "shape"
+        }
+    }]
+}</pre>
+  </td>
+  </tr>
+</table>
 
 ## Attachments
 _new_
@@ -32,7 +77,7 @@ This brings us to another _incompatibility_: `line-inline` and `line-outline` ha
 ## text-name
 _incompatibility_
 
-Instead of the name attribute of the TextSymbolizer and ShieldSymbolizer being a part of the selector, it is a property of a rule. Thus the evaluation is less complex and one can use expressions in names.
+Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wiki/TextSymbolizer) and [ShieldSymbolizer](http://trac.mapnik.org/wiki/ShieldSymbolizer) being a part of the selector, it is a property of a rule. Thus the evaluation is less complex and one can use expressions in names.
 
 <table>
   <tr>
@@ -84,6 +129,35 @@ _new_
       line-color: darken(@mybackground, 10%);
     }
 
+## Nested Styles
+_new_
+
+`mess.js` also inherits nesting of rules from less.js.
+
+    /* Applies to all layers with .land class */
+    .land {
+      line-color: #ccc;
+      line-width: 0.5;
+      polygon-fill: #eee;
+      /* Applies to #lakes.land */
+      #lakes {
+        polygon-fill: #000;
+      }
+    }
+
+This can be a convenient way to group style changes by zoom level:
+
+    [zoom > 1] {
+      /* Applies to all layers at zoom > 1 */
+      polygon-gamma: 0.3;
+      #world {
+        polygon-fill: #323;
+      }
+      #lakes {
+        polygon-fill: #144;
+      }
+    }
+
 ## FontSets
 _new_
 
@@ -118,12 +192,9 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 <tr>
 </table>
 
-
-
 ## Credits
 
 `mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier. It depends on [underscore.js](https://github.com/documentcloud/underscore/).
-
 
 ## Usage
 

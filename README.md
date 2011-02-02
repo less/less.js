@@ -8,6 +8,8 @@ Follow the directions to install [node-zipfile](https://github.com/springmeyer/n
 
     npm install mess
 
+_note: possibly broken on ubuntu_
+
 ## MML
 _incompatibility_
 
@@ -193,17 +195,6 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 <tr>
 </table>
 
-## Credits
-
-`mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
-
-It depends on
-
-* [underscore.js](https://github.com/documentcloud/underscore/)
-* [zipfile](https://github.com/springmeyer/node-zipfile)
-* [srs](https://github.com/springmeyer/node-srs)
-* [step](https://github.com/creationix/step)
-* [xml2js](https://github.com/maqr/node-xml2js)
 
 ## Usage
 
@@ -235,6 +226,19 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
                 sys.puts(output);
             }
         });
+
+## Credits
+
+`mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
+
+It depends on
+
+* [underscore.js](https://github.com/documentcloud/underscore/)
+* [zipfile](https://github.com/springmeyer/node-zipfile)
+* [srs](https://github.com/springmeyer/node-srs)
+* [step](https://github.com/creationix/step)
+* [xml2js](https://github.com/maqr/node-xml2js)
+
 
 ## Authors
 

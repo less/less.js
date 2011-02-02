@@ -3,7 +3,7 @@
 <Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
 
 
-<Style name="world-polygon">
+<Style name="world" filter-mode="first">
   <Rule>
     <MinScaleDenominator>50000000</MinScaleDenominator>
     <PolygonSymbolizer fill="#ffff00"/>
@@ -17,14 +17,14 @@
    id="world"
    name="world"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>world-polygon</StyleName>
+    <StyleName>world</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>
     </Datasource>
   </Layer>
 
-<Style name="countries-line">
+<Style name="countries" filter-mode="first">
   <Rule>
     <MaxScaleDenominator>100000</MaxScaleDenominator>
     <LineSymbolizer stroke-width="0.25"/>
@@ -66,7 +66,7 @@
     <LineSymbolizer stroke-width="1.25"/>
   </Rule>
   <Rule>
-    <MaxScaleDenominator>100000000</MaxScaleDenominator><MinScaleDenominator>50000000</MinScaleDenominator>
+    <MaxScaleDenominator>100000000</MaxScaleDenominator><MinScaleDenominator>25000000</MinScaleDenominator>
     <LineSymbolizer stroke-width="1.25"/>
   </Rule>
   <Rule>
@@ -82,7 +82,7 @@
    id="countries"
    name="countries"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>countries-line</StyleName>
+    <StyleName>countries</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>

@@ -2,84 +2,70 @@
 <!DOCTYPE Map[]>
 <Map  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
 
-<Style name="world-polygon" filter-mode="first">
+<Style name="world" filter-mode="first">
   <Rule>
     <MaxScaleDenominator>12500000</MaxScaleDenominator>
     <Filter>([NAME] = 'United States')</Filter>
     <PolygonSymbolizer fill="#666666"/>
-  </Rule>
-  <Rule>
-    <Filter>([NAME] = 'Canada')</Filter>
-    <PolygonSymbolizer fill="#eeeeee"/>
+    <LineSymbolizer stroke="#ff0000" stroke-width="0.5" />
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
     <Filter>([NAME] = 'United States')</Filter>
     <PolygonSymbolizer fill="#cccccc"/>
+    <LineSymbolizer stroke="#ff0000" stroke-width="0.5" />
   </Rule>
-  <Rule>
-    <Filter>([NAME] != 'United States') and ([NAME] != 'Canada')</Filter>
-    <PolygonSymbolizer fill="#ffffff"/>
-  </Rule>
-</Style>
-<Style name="world-line" filter-mode="first">
   <Rule>
     <Filter>([NAME] = 'Canada')</Filter>
-    <LineSymbolizer stroke-width="1"
-      stroke="#cccccc"/>
+    <PolygonSymbolizer fill="#eeeeee"/>
+    <LineSymbolizer stroke="#cccccc" stroke-width="1" />
   </Rule>
   <Rule>
-    <Filter>([NAME] != 'Canada')</Filter>
-    <LineSymbolizer stroke-width="0.5"
-      stroke="#ff0000"/>
+    <PolygonSymbolizer fill="#ffffff"/>
+    <LineSymbolizer stroke="#ff0000" stroke-width="0.5" />
   </Rule>
 </Style>
 <Layer
    id="world"
    name="world"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>world-line</StyleName>
-    <StyleName>world-polygon</StyleName>
+    <StyleName>world</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>
     </Datasource>
   </Layer>
 
-<Style name="countries-polygon" filter-mode="first">
+<Style name="countries" filter-mode="first">
   <Rule>
     <MaxScaleDenominator>12500000</MaxScaleDenominator>
     <Filter>([NAME] = 'United States')</Filter>
-    <PolygonSymbolizer fill="#aaffcc"/>
-  </Rule>
-  <Rule>
-    <MaxScaleDenominator>12500000</MaxScaleDenominator>
-    <Filter>([NAME] != 'United States')</Filter>
-    <PolygonSymbolizer fill="#cccccc"/>
+    <PolygonSymbolizer fill="#aaffcc" />
+    <LineSymbolizer stroke-width="0.5" stroke="#cccccc" />
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <PolygonSymbolizer fill="#cccccc"/>
+    <Filter>([NAME] = 'United States')</Filter>
+    <PolygonSymbolizer fill="#eeeeee" />
+    <LineSymbolizer stroke="#cccccc" stroke-width="1" />
   </Rule>
-</Style>
-<Style name="countries-line" filter-mode="first">
   <Rule>
     <MaxScaleDenominator>12500000</MaxScaleDenominator>
-    <LineSymbolizer stroke="#cccccc"
-      stroke-width="0.5"/>
+    <LineSymbolizer stroke-width="0.5" stroke="#cccccc" />
+    <PolygonSymbolizer fill="#eeeeee" />
   </Rule>
   <Rule>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <LineSymbolizer stroke-width="1"
-      stroke="#cccccc"/>
+    <PolygonSymbolizer fill="#eeeeee" />
+    <LineSymbolizer stroke="#cccccc" stroke-width="1" />
   </Rule>
 </Style>
+
 <Layer
    id="countries"
    name="world"
    srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs">
-    <StyleName>countries-line</StyleName>
-    <StyleName>countries-polygon</StyleName>
+    <StyleName>countries</StyleName>
     <Datasource>
        <Parameter name="file">[absolute path]</Parameter>
        <Parameter name="type">shape</Parameter>

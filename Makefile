@@ -11,6 +11,6 @@ test:
 endif
 
 doc:
-	docco lib/mess/*.js
+	docco lib/mess/*.js lib/mess/tree/*.js
 
 .PHONY: test

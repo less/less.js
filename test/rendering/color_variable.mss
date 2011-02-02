@@ -1,0 +1,3 @@
+#world {
+  polygon-fill: @green;
+}

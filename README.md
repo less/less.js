@@ -193,9 +193,34 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 
 ## Usage
 
-Using the binary
+#### Using the binary
 
     messc map_file.json
+
+#### Using the code
+
+Currently `mess.js` is designed to be invoked from [node.js](http://nodejs.org/).
+The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
+
+    // defined variables:
+    // - input (the name or identifier of the file being parsed)
+    // - data (a string containing the MML or an object of MML)
+    var mess = require('mess');
+    
+    new mess.Renderer({
+            filename: input,
+            local_data_dir: path.dirname(input),
+        }).render(data, function(err, output) {
+            if (err) {
+                if (Array.isArray(err)) {
+                    err.forEach(function(e) {
+                        mess.writeError(e, options);
+                    });
+                } else { throw err; }
+            } else {
+                sys.puts(output);
+            }
+        });
 
 ## Authors
 

@@ -1,9 +1,9 @@
 [
-    {"elements":[".foo",".bar",".baz"]},
-    {"elements":[".foo",".baz"]},
-    {"elements":[".baz",".foo"]},
-    {"elements":[".baz",".bar"]},
-    {"elements":[".baz"]},
-    {"elements":[".bar"]},
-    {"elements":[".foo"]}
+    {"elements":[".foo",".bar",".baz"],"specificity":[0,3,0,29]},
+    {"elements":[".foo",".baz"],"specificity":[0,2,0,68]},
+    {"elements":[".baz",".foo"],"specificity":[0,2,0,55]},
+    {"elements":[".baz",".bar"],"specificity":[0,2,0,0]},
+    {"elements":[".baz"],"specificity":[0,1,0,47]},
+    {"elements":[".bar"],"specificity":[0,1,0,21]},
+    {"elements":[".foo"],"specificity":[0,1,0,13]}
 ]

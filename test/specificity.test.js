@@ -8,20 +8,18 @@ var tree = require('mess/tree');
 var helper = require('./support/helper');
 
 function cleanupItem(key, value) {
-    if (!key) return value.map(function(item) { return item.selector });
+    if (key === 'rules') return;
+    else if (key === 'ruleIndex') return;
     else if (key === 'elements') return value.map(function(item) { return item.value; });
     else if (key === 'filters') {
-        if (Object.keys(value).length) return Object.keys(value);
+        var arr = [];
+        for (var id in value) arr.push(id + value[id].val);
+        if (arr.length) return arr;
     }
-    else if (key === 'attachment' && value === '__default__') return undefined;
-    else if (key === 'index') return undefined;
+    else if (key === 'attachment' && value === '__default__') return;
     else if (key === 'zoom') {
-        if (value == tree.Zoom.all) return undefined;
-        else return tree.Zoom.toString(value);
+        if (value != tree.Zoom.all) return tree.Zoom.toString(value);
     }
-    else if (key === 'op') return value.value;
-    else if (key === 'val') return value.value;
-    else if (key === 'conditions' && value == 0) return void null;
     else return value;
 }
 

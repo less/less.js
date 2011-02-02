@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.40
+// LESS - Leaner CSS v1.0.41
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -1829,14 +1829,14 @@ tree.mixin.Definition = function (name, params, rules) {
     this.rules = rules;
     this._lookups = {};
     this.required = params.reduce(function (count, p) {
-        if (p.name && !p.value) { return count + 1 }
-        else                    { return count }
+        if (!p.name || (p.name && !p.value)) { return count + 1 }
+        else                                 { return count }
     }, 0);
     this.parent = tree.Ruleset.prototype;
     this.frames = [];
 };
 tree.mixin.Definition.prototype = {
-    toCSS:     function () { return "" },
+    toCSS:     function ()     { return "" },
     variable:  function (name) { return this.parent.variable.call(this, name) },
     variables: function ()     { return this.parent.variables.call(this) },
     find:      function ()     { return this.parent.find.apply(this, arguments) },
@@ -1862,7 +1862,8 @@ tree.mixin.Definition.prototype = {
     match: function (args, env) {
         var argsLength = (args && args.length) || 0, len;
 
-        if (argsLength < this.required) { return false }
+        if (argsLength < this.required)                               { return false }
+        if ((this.required > 0) && (argsLength > this.params.length)) { return false }
 
         len = Math.min(argsLength, this.arity);
 

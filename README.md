@@ -2,56 +2,58 @@
 
 Is a stylesheet renderer for Mapnik. It's an evolution of the [Cascadenik](https://github.com/mapnik/Cascadenik) idea and language, with an emphasis on speed and flexibility.
 
+## Installation
+
+Follow the directions to install [node-zipfile](https://github.com/springmeyer/node-zipfile) and then:
+
+    npm install mess
+
+_note: possibly broken on ubuntu_
+
 ## MML
 _incompatibility_
 
 * MML files are assumed to be JSON, not XML. The files are near-identical to the XML files accepted by Cascadenik, just translated into JSON.
 * Like Cascadenik, you can also include remote stylesheets, by including their URLs as simple strings in the Stylesheet array.
 
-<table>
-  <tr>
-  <th>Cascadenik</th>
-  <th>Mess.js</th>
-  </tr>
-  <td>
-<pre>&lt;Stylesheet&gt;&lt;![CDATA[
-        Map
-        {
-            map-bgcolor: #69f;
-        }
+mess.js MML:
 
-        Layer
-        {
-            line-width: 1;
-            line-color: #696;
-            polygon-fill: #6f9;
-        }
-    ]]&gt;&lt;/Stylesheet&gt;
-    &lt;Layer srs=&quot;+proj=latlong +ellps=WGS84 +datum=WGS84 +no_defs&quot;&gt;
-        &lt;Datasource&gt;
-            &lt;Parameter name=&quot;type&quot;&gt;shape&lt;/Parameter&gt;
-            &lt;Parameter name=&quot;file&quot;&gt;world_borders&lt;/Parameter&gt;
-        &lt;/Datasource&gt;
-    &lt;/Layer&gt;
+    {
+        "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
+        "Stylesheet": [{"id":"style.mss","data":"Map {\n  background-color: #fff;\n}\n\n#world {\n  line-color: #ccc;\n  line-width: 0.5;\n  polygon-fill: #eee;\n}"}],
+        "Layer": [{
+            "id": "world",
+            "name": "world",
+            "srs": "+proj=latlong +ellps=WGS84 +datum=WGS84 +no_defs",
+            "Datasource": {
+                "file": "world_borders",
+                "type": "shape"
+            }
+        }]
+    }
+
+Cascadenik MML
+
+<pre>&lt;Stylesheet&gt;&lt;![CDATA[
+    Map
+    {
+        map-bgcolor: #69f;
+    }
+
+    Layer
+    {
+        line-width: 1;
+        line-color: #696;
+        polygon-fill: #6f9;
+    }
+]]&gt;&lt;/Stylesheet&gt;
+&lt;Layer srs=&quot;+proj=latlong +ellps=WGS84 +datum=WGS84 +no_defs&quot;&gt;
+    &lt;Datasource&gt;
+        &lt;Parameter name=&quot;type&quot;&gt;shape&lt;/Parameter&gt;
+        &lt;Parameter name=&quot;file&quot;&gt;world_borders&lt;/Parameter&gt;
+    &lt;/Datasource&gt;
+&lt;/Layer&gt;
 &lt;/Map&gt;</pre>
-  </td>
-  <td>
-<pre>{
-    "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
-    "Stylesheet": [{"id":"style.mss","data":"Map {\n  background-color: #fff;\n}\n\n#world {\n  line-color: #ccc;\n  line-width: 0.5;\n  polygon-fill: #eee;\n}"}],
-    "Layer": [{
-        "id": "world",
-        "name": "world",
-        "srs": "+proj=latlong +ellps=WGS84 +datum=WGS84 +no_defs",
-        "Datasource": {
-            "file": "world_borders",
-            "type": "shape"
-        }
-    }]
-}</pre>
-  </td>
-  </tr>
-</table>
 
 ## Attachments
 _new_
@@ -85,13 +87,13 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
     <th>mess.js</th>
   </tr>
   <tr>
-    <td>
+    <td valign='top'>
       <pre>
 #world NAME {
   text-face-name: "Arial";
 }</pre>
     </td>
-    <td>
+    <td valign='top'>
       <pre>
 #world {
   text-name: "NAME";
@@ -168,7 +170,7 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
     <th>mess</th><th>XML</th>
     </tr>
     <tr>
-      <td>
+    <td valign='top'>
 
     <pre>#world {
   text-name: "[NAME]";
@@ -176,7 +178,8 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
   text-face-name: "Georgia Regular", "Arial Italic";
 }</pre>
 
-</td><td>
+</td>
+<td valign='top'>
 <pre>&lt;FontSet name=&quot;fontset-0&quot;&gt;
   &lt;Font face_name=&quot;Georgia Regular&quot;/&gt;
   &lt;Font face_name=&quot;Arial Italic&quot;/&gt;
@@ -192,15 +195,50 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 <tr>
 </table>
 
-## Credits
-
-`mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier. It depends on [underscore.js](https://github.com/documentcloud/underscore/).
 
 ## Usage
 
-Using the binary
+#### Using the binary
 
     messc map_file.json
+
+#### Using the code
+
+Currently `mess.js` is designed to be invoked from [node.js](http://nodejs.org/).
+The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
+
+    // defined variables:
+    // - input (the name or identifier of the file being parsed)
+    // - data (a string containing the MML or an object of MML)
+    var mess = require('mess');
+    
+    new mess.Renderer({
+            filename: input,
+            local_data_dir: path.dirname(input),
+        }).render(data, function(err, output) {
+            if (err) {
+                if (Array.isArray(err)) {
+                    err.forEach(function(e) {
+                        mess.writeError(e, options);
+                    });
+                } else { throw err; }
+            } else {
+                sys.puts(output);
+            }
+        });
+
+## Credits
+
+`mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
+
+It depends on
+
+* [underscore.js](https://github.com/documentcloud/underscore/)
+* [zipfile](https://github.com/springmeyer/node-zipfile)
+* [srs](https://github.com/springmeyer/node-srs)
+* [step](https://github.com/creationix/step)
+* [xml2js](https://github.com/maqr/node-xml2js)
+
 
 ## Authors
 

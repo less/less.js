@@ -10,4 +10,7 @@ test:
 	bin/expresso -I lib test/${only}.test.js
 endif
 
+doc:
+	docco lib/mess/*.js lib/mess/tree/*.js
+
 .PHONY: test

@@ -64,14 +64,14 @@ if (!input) {
     process.exit(1);
 }
 
+if (options.benchmark) {
+    var start = +new Date;
+}
+
 fs.readFile(input, 'utf-8', function (e, data) {
     if (e) {
         sys.puts("messc: " + e.message);
         process.exit(1);
-    }
-
-    if (options.benchmark) {
-        var start = +new Date;
     }
 
     new mess.Renderer({

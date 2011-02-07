@@ -20,7 +20,11 @@ helper.files('rendering', 'mml', function(file) {
                 filename: file
             }).render(mml, function (err, output) {
                 if (err) {
-                    throw err;
+                    if (Array.isArray(err)){
+                        err.forEach(carto.writeError);
+                    } else {
+                        throw err;
+                    }
                 } else {
                     renderResult = output;
                     var result = helper.resultFile(file);

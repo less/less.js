@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+var path = require('path'),
+    fs = require('fs'),
+    _ = require('underscore')._,
+    sys = require('sys');
+
+var carto = require('../lib/carto');
+
+var tm_tmpl = fs.readFileSync(path.join(__dirname, 'tmlanguage_template.js'), 'utf-8');
+var color_names = _.keys(carto.tree.Reference.data.colors);
+var property_names = carto.tree.Reference.selectors;
+var keyword_names = _.reduce(carto.tree.Reference.data.symbolizers,
+    function(memo, s) {
+    for (var i in s) {
+        if (_.isArray(s[i].type)) {
+            memo = memo.concat(s[i].type);
+        }
+    }
+    return memo;
+}, []);
+
+fs.writeFile('carto.tmLanguage', _.template(tm_tmpl, {
+    color_names: color_names.join('|'),
+    keyword_names: keyword_names.join('|'),
+    property_names: property_names.join('|')
+}), function(err) {
+    if (!err) console.log('tmLanguage created');
+});

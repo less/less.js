@@ -231,12 +231,17 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
 
 `mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
 
-It depends on
+It depends on:
 
 * [underscore.js](https://github.com/documentcloud/underscore/)
 * [zipfile](https://github.com/springmeyer/node-zipfile)
 * [srs](https://github.com/springmeyer/node-srs)
 * [step](https://github.com/creationix/step)
+
+Only for running tests:
+
+* [expresso](https://github.com/visionmedia/expresso)
+* [sax-js](https://github.com/isaacs/sax-js/)
 * [xml2js](https://github.com/maqr/node-xml2js)
 
 

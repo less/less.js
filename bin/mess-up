@@ -8,9 +8,9 @@ var xml2js = require('xml2js'),
 
 require.paths.unshift(path.join(__dirname, '../lib'), path.join(__dirname, '../lib/node'));
 
-var mess = require('mess');
+var mess = require('mess'),
+    args = process.argv.slice(1);
 
-var args = process.argv.slice(1);
 var options = {
     silent: false,
     json: false
@@ -44,45 +44,80 @@ if (output && output[0] != '/') {
     output = path.join(process.cwd(), output);
 }
 
+function upStyle(s) {
+    this.name = s['@'].name;
+    this.rules = [];
+}
+
+upStyle.prototype.toMSS = function() {
+    return '.' + this.name
+        + ' {\n'
+        + this.rules.join('\n');
+        + '}';
+}
+
 function upRule(xmlRule) {
     this.filters = xmlRule.Filter ? this.upFilter(xmlRule.Filter) : [];
+    this.rules = this.upSymbolizers(xmlRule);
 }
 
 upRule.prototype.upFilter = function(xmlFilter) {
-    var filters = [];
-    console.log(xmlFilters);
-    var opXML = {
-        '<=': '&lt;=',
-        '>=': '&gt;=',
-        '=>': '&gt;=',
-        '!=': '!=',
-        '<': '&lt;',
-        '>': '&gt;',
-        '=': '='
-    };
-    var opre = new RegExp('(' + _.keys(opXML).join('|') + ')');
-    filters = xmlFilters.map(function(f) {
-        var element = f.match(/\[(\w+)\]/)[1];
-        var operator = f.match(opre)[1];
-        return element + ' ' + operator;
+    var xmlFilters = xmlFilter.match(/(\(.*?\))/g);
+    return _.flatten(xmlFilters.map(function(f) {
+        return f.replace(/\[(\w+)\]/, "$1").replace(/\)|\(/g, "");
+    }));
+};
+
+upRule.prototype.upSymbolizers = function(xmlRule) {
+    var css_rules = [];
+    var symnames = _.map(_.keys(mess.tree.Reference.data.symbolizers), function(symbolizer) {
+        return [symbolizer.charAt(0).toUpperCase() +
+            symbolizer.slice(1).replace(/\-./, function(str) {
+                return str[1].toUpperCase();
+            }) + 'Symbolizer', mess.tree.Reference.data.symbolizers[symbolizer]];
     });
-    console.log(filters);
-    return filters;
-}
+    var symmap = _.reduce(symnames, function(memo, s) {
+        memo[s[0]] = s[1];
+        return memo;
+    }, {});
+    var cssmap = function(symbolizer, name) {
+        return symmap[symbolizer][name].css;
+    }
+    for (var i in xmlRule) {
+        if (i in symmap) {
+            for (var j in xmlRule[i]['@']) {
+                if (symmap[i][j].type == 'uri') {
+                    css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i]['@'][j] + '");');
+                } else {
+                    css_rules.push(cssmap(i, j) + ': "' + xmlRule[i]['@'][j] + '";');
+                }
+            }
+        }
+    }
+    return css_rules;
+};
+
 
 upRule.prototype.toMSS = function() {
-    return this.filters.join('');
+    return '  ' + this.filters.map(function(f) {
+        return '[' + f + ']';
+    }).join('')
+    + ' {\n    '
+    + this.rules.join('\n    ')
+    + '\n  }';
 }
 
 fs.readFile(input, 'utf-8', function (e, data) {
-    var rules = [];
+    var styles = [];
     var firstParser = new xml2js.Parser();
     firstParser.addListener('end', function(mapnik_xml) {
         mapnik_xml.Style.forEach(function(s) {
+            var newStyle = new upStyle(s);
             s.Rule.forEach(function(r) {
-                rules.push((new upRule(r)).toMSS());
+                newStyle.rules.push((new upRule(r)).toMSS());
             });
+            styles.push(newStyle.toMSS());
         });
+        console.log(styles.join('\n'));
     }).parseString(data);
-    console.log(rules);
 });

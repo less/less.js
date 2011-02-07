@@ -2,7 +2,7 @@ var path = require('path'),
     fs = require('fs'),
     assert = require('assert'),
     crypto = require('crypto'),
-    xml2js = require('xml2js'),
+    sax = require('sax'),
     diff = require('./diff').diff;
 
 var helper = exports;
@@ -65,13 +65,32 @@ exports.compareToFile = function(value, originalFile, resultFile) {
     });
 };
 
+exports.parseXML = function(xml, callback) {
+    var parser = sax.parser(true);
+    var tree = [ {} ];
+
+    parser.onopentag = function(node) {
+        if (!(node.name in tree[0])) tree[0][node.name] = [];
+        tree[0][node.name].push(node.attributes);
+        tree.unshift(node.attributes);
+    };
+
+    parser.onclosetag = function() {
+        tree.shift();
+        if (tree.length === 1) callback(tree[0]);
+    };
+
+    parser.ontext = parser.oncdata = function(text) {
+        if (text.trim()) tree[0].text = (tree[0].text || '') + text;
+    };
+
+    parser.write(xml.toString());
+};
+
 exports.compareToXMLFile = function(filename, second, callback, processors) {
     helper.file(filename, function(first) {
-        // Parse the XML file.
-        var firstParser = new xml2js.Parser();
-        firstParser.addListener('end', function(firstXML) {
-            var secondParser = new xml2js.Parser();
-            secondParser.addListener('end', function(secondXML) {
+        helper.parseXML(first, function(firstXML) {
+            helper.parseXML(second, function(secondXML) {
                 processors.forEach(function(processor) {
                     processor(secondXML);
                 });
@@ -83,9 +102,7 @@ exports.compareToXMLFile = function(filename, second, callback, processors) {
                     callback(err);
                 }
             });
-            secondParser.parseString(second);
         });
-        firstParser.parseString(first);
     });
 };
 
@@ -153,31 +170,29 @@ helper.removeErrorFilename = function(error) {
 };
 
 helper.removeAbsoluteImages = function(xml) {
-    (Array.isArray(xml.Style) ?
-        xml.Style :
-        [xml.Style]).forEach(function(style) {
-        if (style && style.Rule) {
-            for (i in style.Rule) {
-                if (style.Rule[i].attr) {
-                    for (j in style.Rule[i].attr) {
-                        if (j == 'file' && style.Rule[i].attr[j][0] == '/') {
-                            style.Rule[i].attr[j] = '[absolute path]';
-                        }
-                    }
+    xml.Map.forEach(function(map) {
+        if (map.Style) map.Style.forEach(function(style) {
+            style.Rule.forEach(function(rule) {
+                if (rule.PolygonPatternSymbolizer) {
+                    rule.PolygonPatternSymbolizer.forEach(function(symbolizer) {
+                        symbolizer.file = '[absolute path]';
+                    });
                 }
-            }
-        }
+            });
+        });
     });
 };
 
 helper.removeAbsoluteDatasources = function(xml) {
-    (Array.isArray(xml.Layer) ?
-     xml.Layer :
-     [xml.Layer]).forEach(function(layer) {
-        layer.Datasource.Parameter.forEach(function(param) {
-            if (param.attr && param.attr.name === 'file') {
-                param.text = '[absolute path]';
-            }
+    xml.Map.forEach(function(map) {
+        map.Layer.forEach(function(layer) {
+            layer.Datasource.forEach(function(datasource) {
+                datasource.Parameter.forEach(function(param) {
+                    if (param.name === 'file') {
+                        param.text = '[absolute path]';
+                    }
+                });
+            });
         });
     });
 };

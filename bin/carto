@@ -6,7 +6,7 @@ var path = require('path'),
 
 require.paths.unshift(path.join(__dirname, '../lib'), path.join(__dirname, '../lib/node'));
 
-var mess = require('carto');
+var carto = require('carto');
 var args = process.argv.slice(1);
 var options = {
     silent: false,
@@ -22,7 +22,7 @@ args = args.filter(function (arg) {
     switch (arg) {
         case 'v':
         case 'version':
-            sys.puts("messc " + mess.version.join('.') + " (MESS Compiler) [JavaScript]");
+            sys.puts("cartoc " + carto.version.join('.') + " (MESS Compiler) [JavaScript]");
             process.exit(0);
             break;
         case 'verbose':
@@ -42,7 +42,7 @@ args = args.filter(function (arg) {
             break;
         case 'h':
         case 'help':
-            sys.puts("Usage: messc source");
+            sys.puts("Usage: carto source");
             sys.puts("Options:");
             sys.puts("  -j\tParse JSON map manifest");
             process.exit(0);
@@ -60,7 +60,7 @@ if (output && output[0] != '/') {
 }
 
 if (!input) {
-    sys.puts("messc: no input files");
+    sys.puts("carto: no input files");
     process.exit(1);
 }
 
@@ -70,11 +70,11 @@ if (options.benchmark) {
 
 fs.readFile(input, 'utf-8', function (e, data) {
     if (e) {
-        sys.puts("messc: " + e.message);
+        sys.puts("carto: " + e.cartoage);
         process.exit(1);
     }
 
-    new mess.Renderer({
+    new carto.Renderer({
         filename: input,
         debug: options.debug,
         local_data_dir: path.dirname(input),
@@ -82,7 +82,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
         if (err) {
             if (Array.isArray(err)) {
                 err.forEach(function(e) {
-                    mess.writeError(e, options);
+                    carto.writeError(e, options);
                 });
             } else {
                 throw err;

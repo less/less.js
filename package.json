@@ -1,13 +1,13 @@
 {
-  "name"          : "mess",
+  "name"          : "carto",
   "description"   : "Mapnik Stylesheet Compiler",
-  "url"           : "https://github.com/developmentseed/mess.js",
+  "url"           : "https://github.com/mapbox/carto",
   "keywords"      : ["mapnik", "maps", "css"],
   "author"        : "Tom MacWright <macwright@gmail.com>, Konstantin Käfer, Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
   "version"       : "0.1.0",
-  "bin"           : { "messc": "./bin/messc" },
-  "main"          : "./lib/mess/index",
+  "bin"           : { "carto": "./bin/carto" },
+  "main"          : "./lib/carto/index",
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.2.4" },
   "dependencies"  : {
@@ -17,6 +17,9 @@
     // required for tests
     "xml2js"      : ">= 0.1.0",
     // node-srs required by renderer.js ensureSRS()
-    "srs"      : ">= 0.1.0"
+    "srs"      : ">= 0.1.0",
+    "node-get" : ">= 0.0.2",
+    "step"     : ">= 0.0.3",
+    "expresso" : ">= 0.0.0"
   }
 }

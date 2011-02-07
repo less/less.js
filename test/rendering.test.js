@@ -3,8 +3,8 @@ var path = require('path'),
     assert = require('assert'),
     fs = require('fs');
 
-var mess = require('mess');
-var tree = require('mess/tree');
+var carto = require('carto');
+var tree = require('carto/tree');
 var helper = require('./support/helper');
 
 helper.files('rendering', 'mml', function(file) {
@@ -13,7 +13,7 @@ helper.files('rendering', 'mml', function(file) {
         var renderResult;
 
         helper.file(file, function(mml) {
-            new mess.Renderer({
+            new carto.Renderer({
                 paths: [ path.dirname(file) ],
                 data_dir: path.join(__dirname, '../data'),
                 local_data_dir: path.join(__dirname, 'rendering'),

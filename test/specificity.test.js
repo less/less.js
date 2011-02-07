@@ -3,8 +3,8 @@ var path = require('path'),
     assert = require('assert'),
     fs = require('fs');
 
-var mess = require('mess');
-var tree = require('mess/tree');
+var carto = require('carto');
+var tree = require('carto/tree');
 var helper = require('./support/helper');
 
 function cleanupItem(key, value) {
@@ -26,7 +26,7 @@ function cleanupItem(key, value) {
 helper.files('specificity', 'mss', function(file) {
     exports['test ' + file] = function(beforeExit) {
         helper.file(file, function(content) {
-            new mess.Parser({
+            new carto.Parser({
                 paths: [ path.dirname(file) ],
                 filename: file
             }).parse(content, function (err, tree) {

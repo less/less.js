@@ -1,4 +1,4 @@
-# mess.js
+# carto
 
 Is a stylesheet renderer for Mapnik. It's an evolution of the [Cascadenik](https://github.com/mapnik/Cascadenik) idea and language, with an emphasis on speed and flexibility.
 
@@ -6,7 +6,7 @@ Is a stylesheet renderer for Mapnik. It's an evolution of the [Cascadenik](https
 
 Follow the directions to install [node-zipfile](https://github.com/springmeyer/node-zipfile) and then:
 
-    npm install mess
+    npm install carto
 
 _note: possibly broken on ubuntu_
 
@@ -16,7 +16,7 @@ _incompatibility_
 * MML files are assumed to be JSON, not XML. The files are near-identical to the XML files accepted by Cascadenik, just translated into JSON.
 * Like Cascadenik, you can also include remote stylesheets, by including their URLs as simple strings in the Stylesheet array.
 
-mess.js MML:
+carto.js MML:
 
     {
         "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
@@ -58,9 +58,9 @@ Cascadenik MML
 ## Attachments
 _new_
 
-In CSS, a certain object can only have one instance of a property. A `<div>` has a specific border width and color, rules that match better than others (#id instead of .class) override previous definitions. `mess.js` acts the same way normally for the sake of familiarity and organization, but Mapnik itself is more powerful.
+In CSS, a certain object can only have one instance of a property. A `<div>` has a specific border width and color, rules that match better than others (#id instead of .class) override previous definitions. `carto.js` acts the same way normally for the sake of familiarity and organization, but Mapnik itself is more powerful.
 
-Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSymbolizer) and multiple copies of other attributes. This ability is useful in drawing line outlines, like in the case of road borders or 'glow' effects around coasts. `mess.js` makes this accessible by allowing attachments to styles:
+Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSymbolizer) and multiple copies of other attributes. This ability is useful in drawing line outlines, like in the case of road borders or 'glow' effects around coasts. `carto.js` makes this accessible by allowing attachments to styles:
 
     #world {
       line-color: #fff;
@@ -72,7 +72,7 @@ Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSym
         line-width: 6;
         }
 
-Attachments are optional: if you don't define them, mess.js does overriding of styles just like Cascadenik.
+Attachments are optional: if you don't define them, carto.js does overriding of styles just like Cascadenik.
 
 This brings us to another _incompatibility_: `line-inline` and `line-outline` have been removed from the language, because attachments are capable of the same trick.
 
@@ -84,7 +84,7 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
 <table>
   <tr>
     <th>cascadenik</th>
-    <th>mess.js</th>
+    <th>carto.js</th>
   </tr>
   <tr>
     <td valign='top'>
@@ -106,19 +106,19 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
 ## Mapnik2
 _new_
 
-`mess.js` is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2). Compatibility with Mapnik 0.7.x is not planned.
+`carto.js` is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2). Compatibility with Mapnik 0.7.x is not planned.
 
 ## Rasters and Buildings
 _new_
 
-Rasters are supported in mess.js - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
+Rasters are supported in carto.js - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
 
-The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `mess.js`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.js`), so new Mapnik features can be quickly implemented here.
+The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `carto.js`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.js`), so new Mapnik features can be quickly implemented here.
 
 ## Variables & Expressions
 _new_
 
-`mess.js` inherits from its basis in [less.js](http://lesscss.org/) some new features in CSS. One can define variables in stylesheets, and use expressions to modify them.
+`carto.js` inherits from its basis in [less.js](http://lesscss.org/) some new features in CSS. One can define variables in stylesheets, and use expressions to modify them.
 
     @mybackground: #2B4D2D;
     
@@ -134,7 +134,7 @@ _new_
 ## Nested Styles
 _new_
 
-`mess.js` also inherits nesting of rules from less.js.
+`carto.js` also inherits nesting of rules from less.js.
 
     /* Applies to all layers with .land class */
     .land {
@@ -163,11 +163,11 @@ This can be a convenient way to group style changes by zoom level:
 ## FontSets
 _new_
 
-By defining multiple fonts in a `text-face-name` definition, you create [FontSets](http://trac.mapnik.org/wiki/FontSet) in `mess.js`. These are useful for supporting multiple character sets and fallback fonts for distributed styles.
+By defining multiple fonts in a `text-face-name` definition, you create [FontSets](http://trac.mapnik.org/wiki/FontSet) in `carto.js`. These are useful for supporting multiple character sets and fallback fonts for distributed styles.
 
 <table>
   <tr>
-    <th>mess</th><th>XML</th>
+    <th>carto</th><th>XML</th>
     </tr>
     <tr>
     <td valign='top'>
@@ -200,26 +200,26 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 
 #### Using the binary
 
-    messc map_file.json
+    cartoc map_file.json
 
 #### Using the code
 
-Currently `mess.js` is designed to be invoked from [node.js](http://nodejs.org/).
+Currently `carto.js` is designed to be invoked from [node.js](http://nodejs.org/).
 The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
 
     // defined variables:
     // - input (the name or identifier of the file being parsed)
     // - data (a string containing the MML or an object of MML)
-    var mess = require('mess');
+    var carto = require('carto');
     
-    new mess.Renderer({
+    new carto.Renderer({
             filename: input,
             local_data_dir: path.dirname(input),
         }).render(data, function(err, output) {
             if (err) {
                 if (Array.isArray(err)) {
                     err.forEach(function(e) {
-                        mess.writeError(e, options);
+                        carto.writeError(e, options);
                     });
                 } else { throw err; }
             } else {
@@ -229,7 +229,7 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
 
 ## Credits
 
-`mess.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
+`carto.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
 
 It depends on:
 

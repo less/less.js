@@ -14,7 +14,7 @@
 	<key>keyEquivalent</key>
 	<string>^~@p</string>
 	<key>name</key>
-	<string>preview</string>
+	<string>Preview</string>
 	<key>output</key>
 	<string>showAsHTML</string>
 	<key>scope</key>

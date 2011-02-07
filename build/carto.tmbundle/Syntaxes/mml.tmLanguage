@@ -29,8 +29,10 @@
                          \s*    # some optional space
                          [}\]]  # and the close of an object or array
                        )</string>
+	<key>keyEquivalent</key>
+	<string>^~M</string>
 	<key>name</key>
-	<string>mml</string>
+	<string>Carto MML</string>
 	<key>patterns</key>
 	<array>
 		<dict>

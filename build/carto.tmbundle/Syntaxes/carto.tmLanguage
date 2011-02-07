@@ -12,8 +12,10 @@
 	<string>/\*\*(?!\*)|\{\s*($|/\*(?!.*?\*/.*\S))</string>
 	<key>foldingStopMarker</key>
 	<string>(?&lt;!\*)\*\*/|^\s*\}</string>
+	<key>keyEquivalent</key>
+	<string>^~C</string>
 	<key>name</key>
-	<string>carto</string>
+	<string>Carto</string>
 	<key>patterns</key>
 	<array>
 		<dict>

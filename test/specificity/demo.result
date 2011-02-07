@@ -1,10 +1,10 @@
 [
     {"elements":["#countries",".foo",".bar",".baz"],"specificity":[1,3,0,241]},
-    {"elements":["#countries",".countries",".two"],"specificity":[1,2,0,118]},
+    {"elements":["#countries",".countries",".two"],"specificity":[1,2,0,149]},
     {"elements":["#world"],"filters":["NAME=United States","BLUE=red"],"specificity":[1,0,2,90]},
-    {"elements":["#world"],"filters":["NAME=United States"],"specificity":[1,0,1,39]},
+    {"elements":["#world"],"filters":["NAME=United States"],"specificity":[1,0,1,66]},
     {"elements":["#countries"],"specificity":[1,0,0,241]},
-    {"elements":["#countries"],"specificity":[1,0,0,171]},
-    {"elements":["#world"],"specificity":[1,0,0,171]},
-    {"elements":["#world"],"specificity":[1,0,0,0]}
+    {"elements":["#countries"],"specificity":[1,0,0,194]},
+    {"elements":["#world"],"specificity":[1,0,0,194]},
+    {"elements":["#world"],"specificity":[1,0,0,11]}
 ]

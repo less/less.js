@@ -113,7 +113,7 @@ _new_
 
 Rasters are supported in carto.js - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
 
-The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `carto.js`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.js`), so new Mapnik features can be quickly implemented here.
+The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `carto.js`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.json`), so new Mapnik features can be quickly implemented here.
 
 ## Variables & Expressions
 _new_

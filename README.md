@@ -181,12 +181,12 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 </td>
 <td valign='top'>
 <pre>&lt;FontSet name=&quot;fontset-0&quot;&gt;
-  &lt;Font face_name=&quot;Georgia Regular&quot;/&gt;
-  &lt;Font face_name=&quot;Arial Italic&quot;/&gt;
+  &lt;Font face-name=&quot;Georgia Regular&quot;/&gt;
+  &lt;Font face-name=&quot;Arial Italic&quot;/&gt;
 &lt;/FontSet&gt;
 &lt;Style name=&quot;world-text&quot;&gt;
   &lt;Rule&gt;
-    &lt;TextSymbolizer fontset_name=&quot;fontset-0&quot;
+    &lt;TextSymbolizer fontset-name=&quot;fontset-0&quot;
       size=&quot;11&quot;
       name=&quot;[NAME]&quot;/&gt;
   &lt;/Rule&gt;

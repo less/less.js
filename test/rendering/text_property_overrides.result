@@ -7,21 +7,21 @@
   <Rule>
     <MaxScaleDenominator>6500000</MaxScaleDenominator>
     <MinScaleDenominator>3000000</MinScaleDenominator>
-    <TextSymbolizer size="12" name="[COUNTRY]" face_name="DejaVu Sans Book" fill="#000000" />
+    <TextSymbolizer size="12" name="[COUNTRY]" face-name="DejaVu Sans Book" fill="#000000" />
   </Rule>
   <Rule>
     <MaxScaleDenominator>12500000</MaxScaleDenominator>
     <MinScaleDenominator>6500000</MinScaleDenominator>
-    <TextSymbolizer size="11" name="[COUNTRY]" face_name="DejaVu Sans Book" fill="#000000" />
+    <TextSymbolizer size="11" name="[COUNTRY]" face-name="DejaVu Sans Book" fill="#000000" />
   </Rule>
   <Rule>
     <MaxScaleDenominator>25000000</MaxScaleDenominator>
     <MinScaleDenominator>12500000</MinScaleDenominator>
-    <TextSymbolizer size="10" name="[COUNTRY]" face_name="DejaVu Sans Book" fill="#000000" />
+    <TextSymbolizer size="10" name="[COUNTRY]" face-name="DejaVu Sans Book" fill="#000000" />
   </Rule>
   <Rule>
     <MaxScaleDenominator>50000000</MaxScaleDenominator>
-    <TextSymbolizer size="9" name="[COUNTRY]" face_name="DejaVu Sans Book" fill="#000000" />
+    <TextSymbolizer size="9" name="[COUNTRY]" face-name="DejaVu Sans Book" fill="#000000" />
   </Rule>
 </Style>
 <Layer

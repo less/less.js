@@ -1,3 +1,3 @@
 #world {
-  polygon-fill: @green;
+  polygon-fill: green;
 }

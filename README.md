@@ -200,7 +200,7 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 
 #### Using the binary
 
-    cartoc map_file.json
+    carto map_file.json
 
 #### Using the code
 

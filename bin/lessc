@@ -2,7 +2,8 @@
 
 var path = require('path'),
     fs = require('fs'),
-    sys = require('sys');
+    sys = require('sys'),
+    util = require('util');
 
 require.paths.unshift(path.join(__dirname, '..', 'lib'));
 
@@ -40,6 +41,10 @@ args = args.filter(function (arg) {
         case 'compress':
             options.compress = true;
             break;
+        case 'w':
+        case 'watch':
+            options.watch = true;
+            break;
         case 'O0': options.optimization = 0; break;
         case 'O1': options.optimization = 1; break;
         case 'O2': options.optimization = 2; break;
@@ -62,7 +67,7 @@ if (! input) {
     process.exit(1);
 }
 
-fs.readFile(input, 'utf-8', function (e, data) {
+var processLessFile = function (e, data) {
     if (e) {
         sys.puts("lessc: " + e.message);
         process.exit(1);
@@ -91,4 +96,15 @@ fs.readFile(input, 'utf-8', function (e, data) {
             }
         }
     });
-});
+};
+
+if (options.watch) {
+    fs.watchFile(input, function (curr, prev) {
+        if (+curr.mtime > +prev.mtime) {
+            fs.readFile(input, 'utf-8', processLessFile);
+            util.log("Change detected... Updated");
+        }
+    });
+} else {
+    fs.readFile(input, 'utf-8', processLessFile);
+}

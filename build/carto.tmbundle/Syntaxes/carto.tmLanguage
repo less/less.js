@@ -22,7 +22,7 @@
 			<key>match</key>
 			<string>\b(Map)\b</string>
 			<key>name</key>
-			<string>keyword.control.mss.elements</string>
+			<string>keyword.control.carto.elements</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -30,14 +30,14 @@
 			<key>end</key>
 			<string>"</string>
 			<key>name</key>
-			<string>string.quoted.double.mss</string>
+			<string>string.quoted.double.carto</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>match</key>
 					<string>\\.</string>
 					<key>name</key>
-					<string>constant.character.escaped.mss</string>
+					<string>constant.character.escaped.carto</string>
 				</dict>
 			</array>
 		</dict>
@@ -47,14 +47,14 @@
 			<key>end</key>
 			<string>'</string>
 			<key>name</key>
-			<string>string.quoted.single.mss</string>
+			<string>string.quoted.single.carto</string>
 			<key>patterns</key>
 			<array>
 				<dict>
 					<key>match</key>
 					<string>\\.</string>
 					<key>name</key>
-					<string>constant.character.escaped.mss</string>
+					<string>constant.character.escaped.carto</string>
 				</dict>
 			</array>
 		</dict>
@@ -64,18 +64,140 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.entity.mss</string>
+					<string>punctuation.definition.entity.carto</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.attribute-name.class.mss</string>
+					<string>entity.other.class.carto</string>
 				</dict>
 			</dict>
 			<key>match</key>
 			<string>(\.)([a-zA-Z0-9_-]+)</string>
 			<key>name</key>
-			<string>meta.selector.class.mss</string>
+			<string>meta.selector.class.carto</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.carto</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>keyword.control.id.carto</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(#)([a-zA-Z0-9_-]+)</string>
+			<key>name</key>
+			<string>meta.selector.id.carto</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.carto</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.other.attachment.carto</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(::)([a-zA-Z0-9_/-]+)\b</string>
+			<key>name</key>
+			<string>meta.selector.attachment.carto</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.carto</string>
+				</dict>
+				<key>10</key>
+				<dict>
+					<key>name</key>
+					<string>string.quoted.attribute-value.carto</string>
+				</dict>
+				<key>11</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.carto</string>
+				</dict>
+				<key>12</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.carto</string>
+				</dict>
+				<key>13</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.carto</string>
+				</dict>
+				<key>14</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.carto</string>
+				</dict>
+				<key>15</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.carto</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>meta.tag.zoomfilter.carto</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>variable.other.carto</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.carto</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.carto</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.carto</string>
+				</dict>
+				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.carto</string>
+				</dict>
+				<key>8</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.separator.operator.carto</string>
+				</dict>
+				<key>9</key>
+				<dict>
+					<key>name</key>
+					<string>constant.numeric.carto</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(\[)\s*(?:(zoom)|((")(?:[^"\\]|\\.)*(")|(')(?:[^'\\]|\\.)*(')|[a-zA-Z0-9_][a-zA-Z0-9_-]*))\s*(!?=|&gt;=?|&lt;=?)\s*(?:(\d+)|((")(?:[^"\\]|\\.)*(")|(')(?:[^'\\]|\\.)*(')|[a-zA-Z0-9_][a-zA-Z0-9_-]*))\s*(\])</string>
+			<key>name</key>
+			<string>meta.attribute-selector.carto</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -85,32 +207,13 @@
 			<key>end</key>
 			<string>\)</string>
 			<key>name</key>
-			<string>support.function.any-method.builtin.mss</string>
+			<string>support.function.any-method.builtin.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b</string>
 			<key>name</key>
-			<string>constant.other.rgb-value.mss</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.entity.mss</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>entity.other.attribute-name.id</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(#)([a-zA-Z0-9_-]+)</string>
-			<key>name</key>
-			<string>meta.selector.id.mss</string>
+			<string>constant.other.rgb-value.carto</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -118,19 +221,19 @@
 			<key>end</key>
 			<string>\*/</string>
 			<key>name</key>
-			<string>comment.block.mss</string>
+			<string>comment.block.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>(-|\+)?\s*[0-9]+(\.[0-9]+)?</string>
 			<key>name</key>
-			<string>constant.numeric.mss</string>
+			<string>constant.numeric.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>(?&lt;=[\d])(px)\b|%</string>
 			<key>name</key>
-			<string>keyword.unit.mss</string>
+			<string>keyword.unit.carto</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -138,101 +241,18 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.entity.mss</string>
+					<string>keyword.control.at-rule.import.carto</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.attachment.mss</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(::)([a-zA-Z0-9_/-]+)\b</string>
-			<key>name</key>
-			<string>meta.selector.attachment.mss</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.entity.mss</string>
-				</dict>
-				<key>10</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.end.mss</string>
-				</dict>
-				<key>11</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.entity.mss</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>meta.tag.mss.zoomfilter</string>
-				</dict>
-				<key>3</key>
-				<dict>
-					<key>name</key>
-					<string>variable.other.less</string>
-				</dict>
-				<key>4</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.separator.operator.mss</string>
-				</dict>
-				<key>5</key>
-				<dict>
-					<key>name</key>
-					<string>constant.numeric.mss</string>
-				</dict>
-				<key>6</key>
-				<dict>
-					<key>name</key>
-					<string>string.quoted.attribute-value.mss</string>
-				</dict>
-				<key>7</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.begin.mss</string>
-				</dict>
-				<key>8</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.end.mss</string>
-				</dict>
-				<key>9</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.string.begin.mss</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(\[)\s*(?:(zoom)|(\w+?))\s*(!?=|&gt;=?|&lt;=?)\s*(?:(\d+)|((")(?:[^"\\]|\\.)*(")|(')(?:[^'\\]|\\.)*(')|[a-zA-Z0-9_][a-zA-Z0-9_-]*))\s*(\])</string>
-			<key>name</key>
-			<string>meta.attribute-selector.mss</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>keyword.control.at-rule.import.mss</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.keyword.mss</string>
+					<string>punctuation.definition.keyword.carto</string>
 				</dict>
 			</dict>
 			<key>match</key>
 			<string>^\s*((@)import\b)</string>
 			<key>name</key>
-			<string>meta.at-rule.import.mss</string>
+			<string>meta.at-rule.import.carto</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -240,17 +260,17 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.type.property-name.mss</string>
+					<string>support.type.property-name.carto</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>\b(background-color|background-image|srs|buffer|||font-directory|polygon-fill|polygon-gamma|polygon-opacity|polygon-meta-output|polygon-meta-writer|line-color|line-width|line-opacity|line-join|line-cap|line-gamma|line-dasharray|line-meta-output|line-meta-writer|marker-file|marker-opacity|marker-line-color|marker-line-width|marker-line-opacity|marker-placement|marker-type|marker-width|marker-height|marker-fill|marker-allow-overlap|marker-spacing|marker-max-error|marker-transform|marker-meta-output|marker-meta-writer|shield-name|shield-face-name|shield-size|shield-fill|shield-min-distance|shield-spacing|shield-spacing|shield-line-spacing|shield-file|shield-width|shield-height|shield-type|shield-text-dx|shield-text-dy|shield-dx|shield-dy|shield-meta-output|shield-meta-writer|line-pattern-file|line-pattern-width|line-pattern-height|line-pattern-type|line-pattern-meta-output|line-pattern-meta-writer|polygon-pattern-file|polygon-pattern-width|polygon-pattern-height|polygon-pattern-type|polygon-pattern-meta-output|polygon-pattern-meta-writer|raster-opacity|raster-mode|raster-scaling|point-file|point-width|point-height|point-type|point-allow-overlap|point-placement|point-meta-output|point-meta-writer|text-name|text-face-name|text-size|text-ratio|text-wrap-width|text-spacing|text-character-spacing|text-line-spacing|text-label-position-tolerance|text-max-char-angle-delta|text-fill|text-halo-fill|text-halo-radius|text-dx|text-dy|text-avoid-edges|text-min-distance|text-min-padding|text-allow-overlap|text-placement|text-transform|text-meta-output|text-meta-writer|building-fill|building-fill-opacity|building-height)\s*:</string>
+			<string>\b(background-color|background-image|srs|buffer|font-directory|polygon-fill|polygon-gamma|polygon-opacity|polygon-meta-output|polygon-meta-writer|line-color|line-width|line-opacity|line-join|line-cap|line-gamma|line-dasharray|line-meta-output|line-meta-writer|marker-file|marker-opacity|marker-line-color|marker-line-width|marker-line-opacity|marker-placement|marker-type|marker-width|marker-height|marker-fill|marker-allow-overlap|marker-spacing|marker-max-error|marker-transform|marker-meta-output|marker-meta-writer|shield-name|shield-face-name|shield-size|shield-fill|shield-min-distance|shield-spacing|shield-spacing|shield-line-spacing|shield-file|shield-width|shield-height|shield-type|shield-text-dx|shield-text-dy|shield-dx|shield-dy|shield-meta-output|shield-meta-writer|line-pattern-file|line-pattern-width|line-pattern-height|line-pattern-type|line-pattern-meta-output|line-pattern-meta-writer|polygon-pattern-file|polygon-pattern-width|polygon-pattern-height|polygon-pattern-type|polygon-pattern-meta-output|polygon-pattern-meta-writer|raster-opacity|raster-mode|raster-scaling|point-file|point-width|point-height|point-type|point-allow-overlap|point-placement|point-meta-output|point-meta-writer|text-name|text-face-name|text-size|text-ratio|text-wrap-width|text-spacing|text-character-spacing|text-line-spacing|text-label-position-tolerance|text-max-char-angle-delta|text-fill|text-halo-fill|text-halo-radius|text-dx|text-dy|text-avoid-edges|text-min-distance|text-min-padding|text-allow-overlap|text-placement|text-transform|text-meta-output|text-meta-writer|building-fill|building-fill-opacity|building-height)\s*:</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(miter|round|bevel|butt|round|square|point|line|arrow|ellipse|png|jpg|svg|normal|grain_merge|grain_merge2|multiply|multiply2|divide|divide2|screen|hard_light|fast|bilinear|bilinear8|centroid|interior|point|line|vertex|interior|none|uppercase|lowercase)\b</string>
 			<key>name</key>
-			<string>support.constant.property-value.mss</string>
+			<string>meta.property-value.carto</string>
 		</dict>
 		<dict>
 			<key>comment</key>
@@ -258,19 +278,19 @@
 			<key>match</key>
 			<string>\b(aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|grey|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen|transparent)\b</string>
 			<key>name</key>
-			<string>support.constant.color.w3c-standard-color-name.mss</string>
+			<string>constant.color.w3c-standard-color-name.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(saturate|desaturate|lighten|darken|grayscale)\b</string>
 			<key>name</key>
-			<string>support.function.any-method.builtin.less</string>
+			<string>support.function.any-method.builtin.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(rgb|rgba|hsl|hsla|url)\b</string>
 			<key>name</key>
-			<string>support.function.any-method.builtin.mss</string>
+			<string>support.function.any-method.builtin.carto</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -278,7 +298,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.function.less</string>
+					<string>support.function.carto</string>
 				</dict>
 			</dict>
 			<key>match</key>
@@ -290,19 +310,19 @@
 			<key>end</key>
 			<string>$\n?</string>
 			<key>name</key>
-			<string>comment.line.double-slash.less</string>
+			<string>comment.line.double-slash.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>@[a-zA-Z0-9_-][\w-]*</string>
 			<key>name</key>
-			<string>variable.other.less</string>
+			<string>variable.other.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\$|%|&amp;|\*|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|&lt;=|&gt;=|&lt;&lt;=|&gt;&gt;=|&gt;&gt;&gt;=|&lt;&gt;|&lt;|&gt;|!|&amp;&amp;|\|\||\?\:|\*=|(?&lt;!\()/=|%=|\+=|\-=|&amp;=|\^=|\/\b</string>
 			<key>name</key>
-			<string>keyword.operator.less</string>
+			<string>keyword.operator.carto</string>
 		</dict>
 		<dict>
 			<key>match</key>

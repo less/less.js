@@ -3,3 +3,4 @@
 /modules
 /lib/node
 /bin/*
+/test/data

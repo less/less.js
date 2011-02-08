@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var xml2js = require('xml2js'),
+var sax = require('sax'),
     fs = require('fs'),
     _ = require('underscore')._,
     path = require('path'),
@@ -16,23 +16,40 @@ var options = {
     json: false
 };
 
+xml2tree = function(xml, callback) {
+    var parser = sax.parser(true);
+    var tree = [ {} ];
+    parser.onopentag = function(node) {
+        if (!(node.name in tree[0])) tree[0][node.name] = [];
+        tree[0][node.name].push(node.attributes);
+        tree.unshift(node.attributes);
+    };
+
+    parser.onclosetag = function() {
+        tree.shift();
+        if (tree.length === 1) callback(tree[0]);
+    };
+
+    parser.ontext = parser.oncdata = function(text) {
+        if (text.trim()) tree[0].text = (tree[0].text || '') + text;
+    };
+
+    parser.write(xml.toString());
+}
+
 args = args.filter(function (arg) {
     var match;
 
     if (match = arg.match(/^--?([a-z][0-9a-z-]*)$/i)) { arg = match[1] }
     else { return arg }
 
-/*
     switch (arg) {
         case 'h':
         case 'help':
-            sys.puts("Usage: messc source");
-            sys.puts("Options:");
-            sys.puts("  -j\tParse JSON map manifest");
+            sys.puts("Usage: cartox source");
             process.exit(0);
             break;
     }
-    */
 });
 
 var input = args[1];
@@ -45,15 +62,15 @@ if (output && output[0] != '/') {
 }
 
 function upStyle(s) {
-    this.name = s['@'].name;
+    this.name = s.name;
     this.rules = [];
 }
 
 upStyle.prototype.toMSS = function() {
     return '.' + this.name
         + ' {\n'
-        + this.rules.join('\n');
-        + '}';
+        + this.rules.join('\n')
+        + '\n}';
 }
 
 function upRule(xmlRule) {
@@ -62,7 +79,7 @@ function upRule(xmlRule) {
 }
 
 upRule.prototype.upFilter = function(xmlFilter) {
-    var xmlFilters = xmlFilter.match(/(\(.*?\))/g);
+    var xmlFilters = xmlFilter[0].text.match(/(\(.*?\))/g);
     return _.flatten(xmlFilters.map(function(f) {
         return f.replace(/\[(\w+)\]/, "$1").replace(/\)|\(/g, "");
     }));
@@ -85,11 +102,11 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
     }
     for (var i in xmlRule) {
         if (i in symmap) {
-            for (var j in xmlRule[i]['@']) {
+            for (var j in xmlRule[i][0]) {
                 if (symmap[i][j].type == 'uri') {
-                    css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i]['@'][j] + '");');
+                    css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i][0][j] + '");');
                 } else {
-                    css_rules.push(cssmap(i, j) + ': "' + xmlRule[i]['@'][j] + '";');
+                    css_rules.push(cssmap(i, j) + ': "' + xmlRule[i][0][j] + '";');
                 }
             }
         }
@@ -107,17 +124,37 @@ upRule.prototype.toMSS = function() {
     + '\n  }';
 }
 
+function upDatasource(ds) {
+    var params = {};
+    ds[0].Parameter.forEach(function(param) {
+        params[param.name] = param.text;
+    });
+    return params;
+}
+
 fs.readFile(input, 'utf-8', function (e, data) {
     var styles = [];
-    var firstParser = new xml2js.Parser();
-    firstParser.addListener('end', function(mapnik_xml) {
-        mapnik_xml.Style.forEach(function(s) {
+    var document = {};
+    var layers = [];
+    xml2tree(data, function(mapnik_xml) {
+        mapnik_xml.Map[0].Style.forEach(function(s) {
             var newStyle = new upStyle(s);
             s.Rule.forEach(function(r) {
                 newStyle.rules.push((new upRule(r)).toMSS());
             });
             styles.push(newStyle.toMSS());
         });
-        console.log(styles.join('\n'));
-    }).parseString(data);
+        mapnik_xml.Map[0].Layer.forEach(function(l) {
+            var newLayer = {
+                name: l.name,
+                class: l.name + '_style',
+                srs: l.srs
+                };
+            newLayer.Datasource = upDatasource(l.Datasource);
+            layers.push(newLayer);
+        });
+        document.Stylesheet = [{ id: 'gen', data: styles.join('') }];
+        document.Layer = layers;
+        console.log(JSON.stringify(document));
+    });
 });

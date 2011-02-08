@@ -1,4 +1,4 @@
-/**
+/**	
 	Node TestServer for running the less.js tests inside a browser
 */
 var http	= require('http'),
@@ -24,6 +24,9 @@ http.createServer(function (request, response) {
 		switch (fileExt){
 			case '.less':
 				contentType = 'text/less';
+				break;
+			case '.css':
+				contentType = 'text/css';
 				break;
 			case '.js':
 				contentType = 'application/javascript';

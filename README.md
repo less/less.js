@@ -227,6 +227,10 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
             }
         });
 
+## TextMate bundle
+
+There's a TextMate bundle that offers syntax highlighting for `.mss` and `.mml` files in the `build` directory. To install, download or clone this repository, then double-click on the `carto.tmbundle` icon in that folder.
+
 ## Credits
 
 `carto.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.

@@ -21,9 +21,9 @@ var keyword_names = _.reduce(carto.tree.Reference.data.symbolizers,
 }, []);
 
 fs.writeFile('carto.tmLanguage', _.template(tm_tmpl, {
-    color_names: color_names.join('|'),
-    keyword_names: keyword_names.join('|'),
-    property_names: property_names.join('|')
+    color_names: color_names.filter(function(a) { return a; }).join('|'),
+    keyword_names: keyword_names.filter(function(a) { return a; }).join('|'),
+    property_names: property_names.filter(function(a) { return a; }).join('|')
 }), function(err) {
     if (!err) console.log('tmLanguage created');
 });

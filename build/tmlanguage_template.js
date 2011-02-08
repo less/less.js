@@ -4,112 +4,120 @@
 	foldingStartMarker = '/\*\*(?!\*)|\{\s*($|/\*(?!.*?\*/.*\S))';
 	foldingStopMarker = '(?<!\*)\*\*/|^\s*\}';
 	patterns = (
-		{	name = 'keyword.control.mss.elements';
+		{	name = 'keyword.control.carto.elements';
 			match = '\b(Map)\b';
 		},
-		{	name = 'string.quoted.double.mss';
+		{	name = 'string.quoted.double.carto';
 			begin = '"';
 			end = '"';
 			patterns = (
-				{	name = 'constant.character.escaped.css';
+				{	name = 'constant.character.escaped.carto';
 					match = '\\.';
 				},
 			);
 		},
-		{	name = 'string.quoted.single.mss';
+		{	name = 'string.quoted.single.carto';
 			begin = "'";
 			end = "'";
 			patterns = (
-				{	name = 'constant.character.escaped.mss';
+				{	name = 'constant.character.escaped.carto';
 					match = '\\.';
 				},
 			);
 		},
-		{	match = '(\.[a-zA-Z0-9_-]+)[\s,{;]';
-			captures = { 1 = { name = 'entity.other.attribute-name.class.mss'; }; };
+		{	name = 'meta.selector.class.carto';
+			match = '(\.)([a-zA-Z0-9_-]+)';
+			captures = {
+				1 = { name = 'punctuation.definition.entity.carto'; };
+				2 = { name = 'entity.other.class.carto'; };
+			};
 		},
-		{	name = 'support.function.any-method.builtin.css';
+		{	name = 'meta.selector.id.carto';
+			match = '(#)([a-zA-Z0-9_-]+)';
+			captures = {
+				1 = { name = 'punctuation.definition.entity.carto'; };
+				2 = { name = 'keyword.control.id.carto'; };
+			};
+		},
+		{	name = 'meta.selector.attachment.carto';
+			match = '(::)([a-zA-Z0-9_/-]+)\b';
+			captures = {
+				1 = { name = 'punctuation.definition.entity.carto'; };
+				2 = { name = 'entity.other.attachment.carto'; };
+			};
+		},
+		{	name = 'meta.attribute-selector.carto';
+			match = '(\[)\s*(?:(zoom)|((")(?:[^"\\]|\\.)*(")|('')(?:[^''\\]|\\.)*('')|[a-zA-Z0-9_][a-zA-Z0-9_-]*))\s*(!?=|>=?|<=?)\s*(?:(\d+)|((")(?:[^"\\]|\\.)*(")|('')(?:[^''\\]|\\.)*('')|[a-zA-Z0-9_][a-zA-Z0-9_-]*))\s*(\])';
+			captures = {
+				1 = { name = 'punctuation.definition.entity.carto'; };
+				2 = { name = 'meta.tag.zoomfilter.carto'; };
+				3 = { name = 'variable.other.carto'; };
+				4 = { name = 'punctuation.definition.string.begin.carto'; };
+				5 = { name = 'punctuation.definition.string.end.carto'; };
+				6 = { name = 'punctuation.definition.string.begin.carto'; };
+				7 = { name = 'punctuation.definition.string.end.carto'; };
+				8 = { name = 'punctuation.separator.operator.carto'; };
+				9 = { name = 'constant.numeric.carto'; };
+				10 = { name = 'string.quoted.attribute-value.carto'; };
+				11 = { name = 'punctuation.definition.string.begin.carto'; };
+				12 = { name = 'punctuation.definition.string.end.carto'; };
+				13 = { name = 'punctuation.definition.string.begin.carto'; };
+				14 = { name = 'punctuation.definition.string.end.carto'; };
+				15 = { name = 'punctuation.definition.entity.carto'; };
+			};
+		},
+		{	name = 'support.function.any-method.builtin.carto';
 			contentName = 'variable.parameter.url';
 			begin = 'url\(';
 			end = '\)';
 		},
-		{	name = 'constant.other.rgb-value.css';
+		{	name = 'constant.other.rgb-value.carto';
 			match = '(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b';
 		},
-		{	name = 'meta.selector.css';
-			match = '#[a-zA-Z0-9_-]+';
-			captures = { 0 = { name = 'entity.other.attribute-name.id'; }; };
-		},
-		{	name = 'comment.block.css';
+		{	name = 'comment.block.carto';
 			begin = '/\*';
 			end = '\*/';
 		},
-		{	name = 'constant.numeric.css';
+		{	name = 'constant.numeric.carto';
 			match = '(-|\+)?\s*[0-9]+(\.[0-9]+)?';
 		},
-		{	name = 'keyword.unit.css';
-			match = '(?<=[\d])(px|pt|cm|mm|in|em|ex|pc)\b|%';
+		{	name = 'keyword.unit.carto';
+			match = '(?<=[\d])(px)\b|%';
 		},
-		{	name = 'entity.other.attribute-name.pseudo-element.css';
-			match = '(:+)\b(after|before|first-child|first-letter|first-line|selection)\b';
-			captures = { 1 = { name = 'punctuation.definition.entity.css'; }; };
-		},
-		{	name = 'entity.other.attribute-name.pseudo-class.css';
-			match = '(:)\b(active|hover|link|visited|focus)\b';
-			captures = { 1 = { name = 'punctuation.definition.entity.css'; }; };
-		},
-		{	name = 'meta.attribute-selector.css';
-			match = '(?i)(\[)\s*(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)(?:\s*([~|^$*]?=)\s*(?:(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)|((?>([''"])(?:[^\\]|\\.)*?(\6)))))?\s*(\])';
-			captures = {
-				1 = { name = 'punctuation.definition.entity.css'; };
-				2 = { name = 'entity.other.attribute-name.attribute.css'; };
-				3 = { name = 'punctuation.separator.operator.css'; };
-				4 = { name = 'string.unquoted.attribute-value.css'; };
-				5 = { name = 'string.quoted.double.attribute-value.css'; };
-				6 = { name = 'punctuation.definition.string.begin.css'; };
-				7 = { name = 'punctuation.definition.string.end.css'; };
-			};
-		},
-		{	name = 'meta.at-rule.import.css';
+		{	name = 'meta.at-rule.import.carto';
 			match = '^\s*((@)import\b)';
 			captures = {
-				1 = { name = 'keyword.control.at-rule.import.css'; };
-				2 = { name = 'punctuation.definition.keyword.css'; };
+				1 = { name = 'keyword.control.at-rule.import.carto'; };
+				2 = { name = 'punctuation.definition.keyword.carto'; };
 			};
 		},
 		{	match = '\b(<%= property_names %>)\s*:';
-			captures = { 1 = { name = 'support.type.property-name.css'; }; };
+			captures = { 1 = { name = 'support.type.property-name.carto'; }; };
 		},
-		{	name = 'support.constant.property-value.css';
+		{	name = 'meta.property-value.carto';
 			match = '\b(<%= keyword_names %>)\b';
 		},
-		{	name = 'support.constant.color.w3c-standard-color-name.css';
+		{	name = 'constant.color.w3c-standard-color-name.carto';
 			comment = 'http://www.w3.org/TR/CSS21/syndata.html#value-def-color';
 			match = '\b(<%= color_names %>)\b';
 		},
-		{	name = 'support.function.any-method.builtin.less';
+		{	name = 'support.function.any-method.builtin.carto';
 			match = '\b(saturate|desaturate|lighten|darken|grayscale)\b';
 		},
-		{	name = 'support.function.any-method.builtin.css';
+		{	name = 'support.function.any-method.builtin.carto';
 			match = '\b(rgb|rgba|hsl|hsla|url)\b';
 		},
-		{	match = '(-(?:webkit|moz|khtml|o|icab)-(?:gradient|linear-gradient))';
-			captures = { 1 = { name = 'support.function.any-method.vendor.css'; }; };
-		},
-		{	name = 'support.function.any-method.webkit.gradient.css';
-			match = '\b(color-stop|from|to)\b';
-		},
 		{	match = '(\.[a-zA-Z0-9_-]+)\s*(;|\()';
-			captures = { 1 = { name = 'support.function.less'; }; };
+			captures = { 1 = { name = 'support.function.carto'; }; };
 		},
-		{	name = 'comment.line.double-slash.less';
+		{	name = 'comment.line.double-slash.carto';
 			begin = '//';
 			end = '$\n?';
 		},
-		{	name = 'variable.other.less';
+		{	name = 'variable.other.carto';
 			match = '@[a-zA-Z0-9_-][\w-]*';
 		},
-		{	name = 'keyword.operator.less';
+		{	name = 'keyword.operator.carto';
 			match = '\$|%|&|\*|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\|\||\?\:|\*=|(?<!\()/=|%=|\+=|\-=|&=|\^=|\/\b';
 		},
 		{	name = 'meta.brace.curly.js';

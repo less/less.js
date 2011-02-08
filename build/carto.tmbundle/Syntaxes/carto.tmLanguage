@@ -37,7 +37,7 @@
 					<key>match</key>
 					<string>\\.</string>
 					<key>name</key>
-					<string>constant.character.escaped.css</string>
+					<string>constant.character.escaped.mss</string>
 				</dict>
 			</array>
 		</dict>
@@ -64,11 +64,18 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
+					<string>punctuation.definition.entity.mss</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
 					<string>entity.other.attribute-name.class.mss</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(\.[a-zA-Z0-9_-]+)[\s,{;]</string>
+			<string>(\.)([a-zA-Z0-9_-]+)</string>
+			<key>name</key>
+			<string>meta.selector.class.mss</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -78,27 +85,32 @@
 			<key>end</key>
 			<string>\)</string>
 			<key>name</key>
-			<string>support.function.any-method.builtin.css</string>
+			<string>support.function.any-method.builtin.mss</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b</string>
 			<key>name</key>
-			<string>constant.other.rgb-value.css</string>
+			<string>constant.other.rgb-value.mss</string>
 		</dict>
 		<dict>
 			<key>captures</key>
 			<dict>
-				<key>0</key>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.mss</string>
+				</dict>
+				<key>2</key>
 				<dict>
 					<key>name</key>
 					<string>entity.other.attribute-name.id</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>#[a-zA-Z0-9_-]+</string>
+			<string>(#)([a-zA-Z0-9_-]+)</string>
 			<key>name</key>
-			<string>meta.selector.css</string>
+			<string>meta.selector.id.mss</string>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -106,19 +118,19 @@
 			<key>end</key>
 			<string>\*/</string>
 			<key>name</key>
-			<string>comment.block.css</string>
+			<string>comment.block.mss</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>(-|\+)?\s*[0-9]+(\.[0-9]+)?</string>
 			<key>name</key>
-			<string>constant.numeric.css</string>
+			<string>constant.numeric.mss</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(?&lt;=[\d])(px|pt|cm|mm|in|em|ex|pc)\b|%</string>
+			<string>(?&lt;=[\d])(px)\b|%</string>
 			<key>name</key>
-			<string>keyword.unit.css</string>
+			<string>keyword.unit.mss</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -126,71 +138,82 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.entity.css</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(:+)\b(after|before|first-child|first-letter|first-line|selection)\b</string>
-			<key>name</key>
-			<string>entity.other.attribute-name.pseudo-element.css</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.entity.css</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(:)\b(active|hover|link|visited|focus)\b</string>
-			<key>name</key>
-			<string>entity.other.attribute-name.pseudo-class.css</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.entity.css</string>
+					<string>punctuation.definition.entity.mss</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.attribute-name.attribute.css</string>
+					<string>entity.other.attachment.mss</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(::)([a-zA-Z0-9_/-]+)\b</string>
+			<key>name</key>
+			<string>meta.selector.attachment.mss</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.mss</string>
+				</dict>
+				<key>10</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.mss</string>
+				</dict>
+				<key>11</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.entity.mss</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>meta.tag.mss.zoomfilter</string>
 				</dict>
 				<key>3</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.separator.operator.css</string>
+					<string>variable.other.less</string>
 				</dict>
 				<key>4</key>
 				<dict>
 					<key>name</key>
-					<string>string.unquoted.attribute-value.css</string>
+					<string>punctuation.separator.operator.mss</string>
 				</dict>
 				<key>5</key>
 				<dict>
 					<key>name</key>
-					<string>string.quoted.double.attribute-value.css</string>
+					<string>constant.numeric.mss</string>
 				</dict>
 				<key>6</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.css</string>
+					<string>string.quoted.attribute-value.mss</string>
 				</dict>
 				<key>7</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.css</string>
+					<string>punctuation.definition.string.begin.mss</string>
+				</dict>
+				<key>8</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.end.mss</string>
+				</dict>
+				<key>9</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.string.begin.mss</string>
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>(?i)(\[)\s*(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)(?:\s*([~|^$*]?=)\s*(?:(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)|((?&gt;(['"])(?:[^\\]|\\.)*?(\6)))))?\s*(\])</string>
+			<string>(\[)\s*(?:(zoom)|(\w+?))\s*(!?=|&gt;=?|&lt;=?)\s*(?:(\d+)|((")(?:[^"\\]|\\.)*(")|(')(?:[^'\\]|\\.)*(')|[a-zA-Z0-9_][a-zA-Z0-9_-]*))\s*(\])</string>
 			<key>name</key>
-			<string>meta.attribute-selector.css</string>
+			<string>meta.attribute-selector.mss</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -198,18 +221,18 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>keyword.control.at-rule.import.css</string>
+					<string>keyword.control.at-rule.import.mss</string>
 				</dict>
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.keyword.css</string>
+					<string>punctuation.definition.keyword.mss</string>
 				</dict>
 			</dict>
 			<key>match</key>
 			<string>^\s*((@)import\b)</string>
 			<key>name</key>
-			<string>meta.at-rule.import.css</string>
+			<string>meta.at-rule.import.mss</string>
 		</dict>
 		<dict>
 			<key>captures</key>
@@ -217,7 +240,7 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>support.type.property-name.css</string>
+					<string>support.type.property-name.mss</string>
 				</dict>
 			</dict>
 			<key>match</key>
@@ -227,7 +250,7 @@
 			<key>match</key>
 			<string>\b(miter|round|bevel|butt|round|square|point|line|arrow|ellipse|png|jpg|svg|normal|grain_merge|grain_merge2|multiply|multiply2|divide|divide2|screen|hard_light|fast|bilinear|bilinear8|centroid|interior|point|line|vertex|interior|none|uppercase|lowercase)\b</string>
 			<key>name</key>
-			<string>support.constant.property-value.css</string>
+			<string>support.constant.property-value.mss</string>
 		</dict>
 		<dict>
 			<key>comment</key>
@@ -235,7 +258,7 @@
 			<key>match</key>
 			<string>\b(aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|grey|green|greenyellow|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen|transparent)\b</string>
 			<key>name</key>
-			<string>support.constant.color.w3c-standard-color-name.css</string>
+			<string>support.constant.color.w3c-standard-color-name.mss</string>
 		</dict>
 		<dict>
 			<key>match</key>
@@ -247,25 +270,7 @@
 			<key>match</key>
 			<string>\b(rgb|rgba|hsl|hsla|url)\b</string>
 			<key>name</key>
-			<string>support.function.any-method.builtin.css</string>
-		</dict>
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>support.function.any-method.vendor.css</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(-(?:webkit|moz|khtml|o|icab)-(?:gradient|linear-gradient))</string>
-		</dict>
-		<dict>
-			<key>match</key>
-			<string>\b(color-stop|from|to)\b</string>
-			<key>name</key>
-			<string>support.function.any-method.webkit.gradient.css</string>
+			<string>support.function.any-method.builtin.mss</string>
 		</dict>
 		<dict>
 			<key>captures</key>

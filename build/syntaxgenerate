@@ -7,7 +7,6 @@ var path = require('path'),
 
 var carto = require('../lib/carto');
 
-var tm_tmpl = fs.readFileSync(path.join(__dirname, 'tmlanguage_template.js'), 'utf-8');
 var color_names = _.keys(carto.tree.Reference.data.colors);
 var property_names = carto.tree.Reference.selectors;
 var keyword_names = _.reduce(carto.tree.Reference.data.symbolizers,
@@ -20,10 +19,26 @@ var keyword_names = _.reduce(carto.tree.Reference.data.symbolizers,
     return memo;
 }, []);
 
+// TextMate
+// --------
+// Generate TextMate tmLanguage file for use in bundle
+var tm_tmpl = fs.readFileSync(path.join(__dirname, 'tmlanguage_template.js'), 'utf-8');
 fs.writeFile('carto.tmLanguage', _.template(tm_tmpl, {
     color_names: color_names.filter(function(a) { return a; }).join('|'),
     keyword_names: keyword_names.filter(function(a) { return a; }).join('|'),
     property_names: property_names.filter(function(a) { return a; }).join('|')
 }), function(err) {
     if (!err) console.log('tmLanguage created');
+});
+
+// VIM
+// ---
+// Generate carto.syntax
+var tm_tmpl = fs.readFileSync(path.join(__dirname, 'vimsyntax_template.js'), 'utf-8');
+fs.writeFile('vim-carto/syntax/carto.vim', _.template(tm_tmpl, {
+    color_names: color_names.filter(function(a) { return a; }).join('\\|'),
+    keyword_names: keyword_names.filter(function(a) { return a; }).join('\\|'),
+    property_names: property_names.filter(function(a) { return a; }).join('\\|')
+}), function(err) {
+    if (!err) console.log('carto.vim created');
 });

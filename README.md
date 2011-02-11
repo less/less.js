@@ -241,12 +241,12 @@ It depends on:
 * [zipfile](https://github.com/springmeyer/node-zipfile)
 * [srs](https://github.com/springmeyer/node-srs)
 * [step](https://github.com/creationix/step)
+* [node-get](https://github.com/tmcw/node-get)
 
 Only for running tests:
 
 * [expresso](https://github.com/visionmedia/expresso)
 * [sax-js](https://github.com/isaacs/sax-js/)
-* [xml2js](https://github.com/maqr/node-xml2js)
 
 
 ## Authors

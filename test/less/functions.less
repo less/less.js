@@ -20,6 +20,8 @@
   format: %("rgb(%d, %d, %d)", @r, 128, 64);
   format-string: %("hello %s", "world");
   eformat: e(%("rgb(%d, %d, %d)", @r, 128, 64));
+  @theurl: %("/%s/path?r=%d&x=y", "base", @r);
+  background: url(@theurl);
 
   hue: hue(hsl(98, 12%, 95%));
   saturation: saturation(hsl(98, 12%, 95%));

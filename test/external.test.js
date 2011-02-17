@@ -75,3 +75,13 @@ exports['test External with remote KML file'] = function(beforeExit) {
             helper.md5File(external.path(), 'f8aea6d693a48dabdc7ea3586cce57f7', context);
         });
 };
+
+exports['test External with DS_Store'] = function(beforeExit) {
+    new External(env, 'http://tilemill-testing.s3.amazonaws.com/carto/station_circles_bad.zip')
+        .on('complete', function(external) {
+            assert.ok(external instanceof External);
+            external.findDataFile(function(err, file) {
+                assert.eql('station_circles.shp', path.basename(file), 'The non-dot file was chosen');
+            });
+        });
+};

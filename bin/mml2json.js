@@ -14,10 +14,13 @@ fs.readFile(process.ARGV[2], 'utf-8', function(err, data) {
 
     // Replace entities.
     var entities = {};
-    data.match(/<!ENTITY([^>]|"([^"]|\\")*")+>/g).forEach(function(entity) {
-        var parts = entity.match(/^<!ENTITY\s+(\w+)\s+"(.+)">$/);
-        entities['&' + parts[1] + ';'] = parts[2];
-    });
+    var match = data.match(/<!ENTITY([^>]|"([^"]|\\")*")+>/g)
+    if (match != null) {
+        match.forEach(function(entity) {
+          var parts = entity.match(/^<!ENTITY\s+(\w+)\s+"(.+)">$/);
+          entities['&' + parts[1] + ';'] = parts[2];
+        });
+    }
     data = data.replace(/&\w+;/g, function(entity) {
         return entities[entity];
     });

@@ -1,3 +1,4 @@
 #data {
-line-widt: 1;
+    raster-opacity: 1;
+    raster-mode: multiply2;
 }

@@ -56,6 +56,12 @@ var input = args[1];
 if (input && input[0] != '/') {
     input = path.join(process.cwd(), input);
 }
+
+if (!input) {
+    sys.puts("cartox: no input files");
+    process.exit(1);
+}
+
 var output = args[2];
 if (output && output[0] != '/') {
     output = path.join(process.cwd(), output);
@@ -103,6 +109,10 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
     for (var i in xmlRule) {
         if (i in symmap) {
             for (var j in xmlRule[i][0]) {
+                if (j == 'CssParameter') {
+                    sys.puts("cartox: no support for CssParameter, please upgrade your xml to Mapnik 2.0 syntax first");
+                    process.exit(1);
+                }
                 if (symmap[i][j].type == 'uri') {
                     css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i][0][j] + '");');
                 } else {
@@ -136,6 +146,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
     var styles = [];
     var document = {};
     var layers = [];
+    if (e) throw e;
     xml2tree(data, function(mapnik_xml) {
         mapnik_xml.Map[0].Style.forEach(function(s) {
             var newStyle = new upStyle(s);

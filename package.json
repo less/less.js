@@ -6,7 +6,10 @@
   "author"        : "Tom MacWright <macwright@gmail.com>, Konstantin Käfer, Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
   "version"       : "0.1.1",
-  "bin"           : { "carto": "./bin/carto" },
+  "bin"           : { "carto": "./bin/carto",
+                      "cartox": "./bin/cartox",
+                      "mml2json.js": "./bin/mml2json"
+                    },
   "main"          : "./lib/carto/index",
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.2.4" },

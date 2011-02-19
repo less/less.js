@@ -105,3 +105,11 @@ body {
     #id-mixin();
     #id-mixin;
 }
+
+.mixin-arguments () {
+  border: @arguments;
+}
+
+.arguments {
+  .mixin-arguments(1px, solid, black);
+}

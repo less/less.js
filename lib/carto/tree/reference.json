@@ -648,6 +648,17 @@
                 "doc": "Displace text by fixed amount, in pixels, +/- along the Y axis.  A positive value will shift the text down",
                 "default-value": 0
             },
+            "vertical-alignment": {
+                "css": "text-vertical-alignment",
+                "type": [
+                  "top",
+                  "middle",
+                  "bottom"
+                ],
+                "doc": "Position of label relative to point position.",
+                "default-value": "middle",
+                "default-meaning": "Default affected by value of dy; 'bottom' for dy>0, 'top' for dy<0."
+            },
             "avoid-edges": {
                 "css": "text-avoid-edges",
                 "doc": "Tell positioning algorithm to avoid labeling near intersection edges.",

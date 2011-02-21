@@ -115,6 +115,8 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
                 }
                 if (symmap[i][j].type == 'uri') {
                     css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i][0][j] + '");');
+                } else if (symmap[i][j].type == 'float' || symmap[i][j].type == 'color') {
+                    css_rules.push(cssmap(i, j) + ': ' + xmlRule[i][0][j] + ';');
                 } else {
                     css_rules.push(cssmap(i, j) + ': "' + xmlRule[i][0][j] + '";');
                 }
@@ -126,12 +128,16 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
 
 
 upRule.prototype.toMSS = function() {
-    return '  ' + this.filters.map(function(f) {
-        return '[' + f + ']';
-    }).join('')
-    + ' {\n    '
-    + this.rules.join('\n    ')
-    + '\n  }';
+    if (this.filters.length) {
+        return '  ' + this.filters.map(function(f) {
+            return '[' + f + ']';
+        }).join('')
+        + ' {\n    '
+        + this.rules.join('\n    ')
+        + '\n  }\n';
+    } else {
+        return this.rules.join('\n    ');
+    }
 }
 
 function upDatasource(ds) {
@@ -164,7 +170,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
             newLayer.Datasource = upDatasource(l.Datasource);
             layers.push(newLayer);
         });
-        document.Stylesheet = [{ id: 'gen', data: styles.join('') }];
+        document.Stylesheet = [{ id: 'gen', data: styles.join('\n') }];
         document.Layer = layers;
         console.log(JSON.stringify(document));
     });

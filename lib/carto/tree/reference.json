@@ -546,6 +546,13 @@
                 ],
                 "default-value": "centroid"
             },
+            "transform": {
+                "css": "point-transform",
+                "type": "string",
+                "default-value": "",
+                "default-meaning": "No transformation",
+                "doc": "SVG transformation definition"
+            },
             "meta-output": {
                 "css": "point-meta-output",
                 "type": "string",

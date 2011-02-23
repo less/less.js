@@ -237,7 +237,7 @@
                     "line"
                 ]
             },
-            "type": {
+            "marker-type": {
                 "css": "marker-type",
                 "type": [
                     "arrow",
@@ -700,7 +700,8 @@
                 "type": [
                     "none",
                     "uppercase",
-                    "lowercase"
+                    "lowercase",
+                    "capitalize"
                 ],
                 "doc": "Transform the case of the characters",
                 "default-value": "none"

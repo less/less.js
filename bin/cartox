@@ -80,15 +80,28 @@ upStyle.prototype.toMSS = function() {
 }
 
 function upRule(xmlRule) {
-    this.filters = xmlRule.Filter ? this.upFilter(xmlRule.Filter) : [];
+    this.filters = xmlRule.Filter ? this.upFilter(xmlRule.Filter[0].text) : [];
     this.rules = this.upSymbolizers(xmlRule);
 }
 
 upRule.prototype.upFilter = function(xmlFilter) {
-    var xmlFilters = xmlFilter[0].text.match(/(\(.*?\))/g);
-    return _.flatten(xmlFilters.map(function(f) {
-        return f.replace(/\[(\w+)\]/, "$1").replace(/\)|\(/g, "");
-    }));
+    var filters = [];
+    var thisfilter = [];
+    var xmlTok = xmlFilter.split(/\s+/);
+    var curTok = '';
+    for (var i in xmlTok) {
+        curTok = xmlTok[i].replace(/(\[|\]|\)|\()/g, '');
+        if (curTok == 'and') {
+            filters.push(thisfilter);
+            thisfilter = [];
+        } else {
+            thisfilter.push(curTok);
+        }
+    }
+    if (thisfilter) filters.push(thisfilter);
+    return filters.map(function(f) {
+        return f.join(' ');
+    });
 };
 
 upRule.prototype.upSymbolizers = function(xmlRule) {
@@ -115,7 +128,7 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
                 }
                 if (symmap[i][j].type == 'uri') {
                     css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i][0][j] + '");');
-                } else if (symmap[i][j].type == 'float' || symmap[i][j].type == 'color') {
+                } else if (['float', 'color', 'boolean'].indexOf(symmap[i][j].type) !== -1 || _.isArray(symmap[i][j].type)) {
                     css_rules.push(cssmap(i, j) + ': ' + xmlRule[i][0][j] + ';');
                 } else {
                     css_rules.push(cssmap(i, j) + ': "' + xmlRule[i][0][j] + '";');
@@ -161,10 +174,12 @@ fs.readFile(input, 'utf-8', function (e, data) {
             });
             styles.push(newStyle.toMSS());
         });
+        styles = styles.reverse();
         mapnik_xml.Map[0].Layer.forEach(function(l) {
+            var additional_classes = l.StyleName ? ' ' + l.StyleName.map(function(s) { return s.text; }).join(' ') : '';
             var newLayer = {
                 name: l.name,
-                class: l.name + '_style',
+                class: l.name + '_style' + additional_classes,
                 srs: l.srs
                 };
             newLayer.Datasource = upDatasource(l.Datasource);

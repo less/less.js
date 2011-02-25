@@ -8,7 +8,7 @@ var sax = require('sax'),
 
 require.paths.unshift(path.join(__dirname, '../lib'), path.join(__dirname, '../lib/node'));
 
-var mess = require('carto'),
+var carto = require('carto'),
     args = process.argv.slice(1);
 
 var options = {
@@ -77,16 +77,36 @@ upStyle.prototype.toMSS = function() {
         + ' {\n'
         + this.rules.join('\n')
         + '\n}';
-}
+};
 
 function upRule(xmlRule) {
     this.filters = xmlRule.Filter ? this.upFilter(xmlRule.Filter[0].text) : [];
+    this.zooms = (xmlRule.MaxScaleDenominator || xmlRule.MinScaleDenomintor)
+        ? this.upZoom(xmlRule) : [];
     this.rules = this.upSymbolizers(xmlRule);
 }
+
+upRule.prototype.upZoom = function(xmlRule) {
+    var zoomFilters = [];
+    var findZoom = function(denom) {
+        for (var i in carto.tree.Zoom.ranges) {
+            if (carto.tree.Zoom.ranges[i] == denom) return i;
+        }
+    };
+
+    if (xmlRule.MaxScaleDenominator) {
+        zoomFilters.push('[zoom >= ' + findZoom(xmlRule.MaxScaleDenominator[0].text) + ']');
+    }
+    if (xmlRule.MinScaleDenominator) {
+        zoomFilters.push('[zoom <= ' + findZoom(xmlRule.MinScaleDenominator[0].text) + ']');
+    }
+    return zoomFilters;
+};
 
 upRule.prototype.upFilter = function(xmlFilter) {
     var filters = [];
     var thisfilter = [];
+    var invert = false;
     var xmlTok = xmlFilter.split(/\s+/);
     var curTok = '';
     for (var i in xmlTok) {
@@ -94,6 +114,11 @@ upRule.prototype.upFilter = function(xmlFilter) {
         if (curTok == 'and') {
             filters.push(thisfilter);
             thisfilter = [];
+        } else if (curTok == 'not') {
+            invert = true;
+        } else if (invert && (['='].indexOf(curTok) !== -1)) {
+            thisfilter.push('!=');
+            invert = false;
         } else {
             thisfilter.push(curTok);
         }
@@ -106,11 +131,11 @@ upRule.prototype.upFilter = function(xmlFilter) {
 
 upRule.prototype.upSymbolizers = function(xmlRule) {
     var css_rules = [];
-    var symnames = _.map(_.keys(mess.tree.Reference.data.symbolizers), function(symbolizer) {
+    var symnames = _.map(_.keys(carto.tree.Reference.data.symbolizers), function(symbolizer) {
         return [symbolizer.charAt(0).toUpperCase() +
             symbolizer.slice(1).replace(/\-./, function(str) {
                 return str[1].toUpperCase();
-            }) + 'Symbolizer', mess.tree.Reference.data.symbolizers[symbolizer]];
+            }) + 'Symbolizer', carto.tree.Reference.data.symbolizers[symbolizer]];
     });
     var symmap = _.reduce(symnames, function(memo, s) {
         memo[s[0]] = s[1];
@@ -123,12 +148,14 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
         if (i in symmap) {
             for (var j in xmlRule[i][0]) {
                 if (j == 'CssParameter') {
-                    sys.puts("cartox: no support for CssParameter, please upgrade your xml to Mapnik 2.0 syntax first");
+                    sys.error("cartox: no support for CssParameter, please upgrade your xml to Mapnik 2.0 syntax first");
                     process.exit(1);
                 }
-                if (symmap[i][j].type == 'uri') {
+                if (!symmap[i][j]) {
+                    sys.error('Property ' + j + ' not yet supported');
+                } else if (symmap[i][j].type == 'uri') {
                     css_rules.push(cssmap(i, j) + ': url("' + xmlRule[i][0][j] + '");');
-                } else if (['float', 'color', 'boolean'].indexOf(symmap[i][j].type) !== -1 || _.isArray(symmap[i][j].type)) {
+                } else if (['float', 'color', 'boolean', 'numbers'].indexOf(symmap[i][j].type) !== -1 || _.isArray(symmap[i][j].type)) {
                     css_rules.push(cssmap(i, j) + ': ' + xmlRule[i][0][j] + ';');
                 } else {
                     css_rules.push(cssmap(i, j) + ': "' + xmlRule[i][0][j] + '";');
@@ -141,15 +168,18 @@ upRule.prototype.upSymbolizers = function(xmlRule) {
 
 
 upRule.prototype.toMSS = function() {
-    if (this.filters.length) {
+    if (this.filters.length || this.zooms.length) {
         return '  ' + this.filters.map(function(f) {
             return '[' + f + ']';
-        }).join('')
-        + ' {\n    '
+        }).join('') +
+        this.zooms.map(function(f) {
+            return f;
+        }).join('') +
+        ' {\n    '
         + this.rules.join('\n    ')
         + '\n  }\n';
     } else {
-        return this.rules.join('\n    ');
+        '    ' + this.rules.join('\n    ');
     }
 }
 
@@ -185,8 +215,19 @@ fs.readFile(input, 'utf-8', function (e, data) {
             newLayer.Datasource = upDatasource(l.Datasource);
             layers.push(newLayer);
         });
-        document.Stylesheet = [{ id: 'gen', data: styles.join('\n') }];
-        document.Layer = layers;
-        console.log(JSON.stringify(document));
+        if (output) {
+            document.Stylesheet = [output.replace('mml', 'mss')];
+            document.Layer = layers;
+            fs.writeFile(output, JSON.stringify(document), 'utf8', function(err) {
+                sys.error('write MML');
+            });
+            fs.writeFile(output.replace('mml', 'mss'), styles.join('\n\n'), 'utf8', function(err) {
+                sys.error('write MSS');
+            });
+        } else {
+            document.Stylesheet = [{ id: 'gen', data: styles.join('\n') }];
+            document.Layer = layers;
+            console.log(JSON.stringify(document));
+        }
     });
 });

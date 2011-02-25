@@ -53,3 +53,6 @@ body {
   color: red;
   color: red;
 }
+.arguments {
+  border: 1px solid black;
+}

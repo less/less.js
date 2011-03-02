@@ -5,7 +5,7 @@
   "keywords"      : ["mapnik", "maps", "css"],
   "author"        : "Tom MacWright <macwright@gmail.com>, Konstantin Käfer, Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
-  "version"       : "0.1.1",
+  "version"       : "0.1.2",
   "bin"           : { "carto": "./bin/carto",
                       "cartox": "./bin/cartox",
                       "mml2json.js": "./bin/mml2json"

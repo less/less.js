@@ -14,14 +14,12 @@
 .two {
   zero: 0;
   one: 1;
-  one-req: 1;
   two: 2;
   three: 3;
 }
 .three {
   zero: 0;
   one: 1;
-  one-req: 1;
   two: 2;
   three-req: 3;
   three: 3;
@@ -41,15 +39,11 @@
   border-left: 4px;
 }
 .only-right {
-  both: 330;
   right: 33;
 }
 .only-left {
-  both: 330;
   left: 33;
 }
 .left-right {
   both: 330;
-  left: 33;
-  right: 33;
 }

@@ -38,7 +38,11 @@ var tm_tmpl = fs.readFileSync(path.join(__dirname, 'vimsyntax_template.js'), 'ut
 fs.writeFile('vim-carto/syntax/carto.vim', _.template(tm_tmpl, {
     color_names: color_names.filter(function(a) { return a; }).join('\\|'),
     keyword_names: keyword_names.filter(function(a) { return a; }).join('\\|'),
-    property_names: property_names.filter(function(a) { return a; }).join('\\|')
+    property_names: property_names.filter(function(a) {
+        return a;
+    }).map(function(a) {
+        return a.replace(/\-/g, '\\-');
+    }).join('\\|')
 }), function(err) {
     if (!err) console.log('carto.vim created');
 });

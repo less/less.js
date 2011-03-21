@@ -16,6 +16,8 @@
   spin-n: #bf4055;
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
+  format-multiple: "hello earth 2";
+  format-url-encode: "red is %23ff0000";
   eformat: rgb(32, 128, 64);
   hue: 98;
   saturation: 12%;

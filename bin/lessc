@@ -87,6 +87,7 @@ var processLessFile = function (e, data) {
                 if (output) {
                     fd = fs.openSync(output, "w");
                     fs.writeSync(fd, css, 0, "utf8");
+                    util.log("Wrote file: "+output);
                 } else {
                     sys.print(css);
                 }
@@ -105,6 +106,5 @@ if (options.watch) {
             util.log("Change detected... Updated");
         }
     });
-} else {
-    fs.readFile(input, 'utf-8', processLessFile);
 }
+fs.readFile(input, 'utf-8', processLessFile);

@@ -67,17 +67,20 @@ if (! input) {
     process.exit(1);
 }
 
-var processLessFile = function (e, data) {
+var processLessFile = function (e, data, callback) {
     if (e) {
         sys.puts("lessc: " + e.message);
         process.exit(1);
     }
 
-    new(less.Parser)({
+    var env = {
         paths: [path.dirname(input)],
+        imports: [],
         optimization: options.optimization,
         filename: input
-    }).parse(data, function (err, tree) {
+    }
+
+    new(less.Parser)(env).parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);
         } else {
@@ -93,16 +96,34 @@ var processLessFile = function (e, data) {
             } catch (e) {
                 less.writeError(e, options);
             }
+            callback(null, env.imports);
         }
     });
 };
 
-if (options.watch) {
-    fs.watchFile(input, function (curr, prev) {
-        if (+curr.mtime > +prev.mtime) {
-            fs.readFile(input, 'utf-8', processLessFile);
-            util.log("Change detected... Updated");
-        }
+var watching = {};
+
+var change = function (curr, prev) {
+  if (+curr.mtime > +prev.mtime) {
+    process.nextTick(function() {
+      util.log("Change detected... Updated");
+      processInput()
     });
+  }
 }
-fs.readFile(input, 'utf-8', processLessFile);
+
+var processInput = function() {
+  fs.readFile(input, 'utf-8', function(err, fd) {
+    processLessFile(err, fd, function(err, imports) {
+      if (options.watch) {
+        (imports.concat([input])).forEach(function(file) {
+          if (!watching[file]) {
+            fs.watchFile(file, change);
+            watching[file] = true;
+          }
+        });
+      }
+    });
+  });
+}
+processInput();

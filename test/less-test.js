@@ -1,6 +1,7 @@
 var path = require('path'),
     fs = require('fs'),
-    sys = require('sys');
+    sys = require('sys'),
+    assert = require('assert');
 
 var less = require(path.join(__dirname,'..','lib','less'));
 
@@ -43,6 +44,18 @@ var errors = {
 
 Object.keys(errors).forEach(function(file) {
   toError(file, errors[file]);
+});
+
+less.render('.class { width: 1 + 1 }', function(e, css) {
+  sys.print("- render: ");
+  try {
+    assert.ifError(e);
+    assert.equal(css, ".class {\n  width: 2;\n}\n");
+    sys.print(stylize('OK', 'green'));
+  } catch(e) {
+    sys.print(stylize('FAIL: was '+css, 'yellow'));
+  }
+  sys.puts('');
 });
 
 function toCSS(path, callback) {

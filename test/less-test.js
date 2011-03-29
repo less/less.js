@@ -16,13 +16,13 @@ less.tree.functions.color = function (str) {
 
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
-fs.readdirSync('test/less').forEach(function (file) {
+fs.readdirSync(path.join(__dirname, 'less')).forEach(function (file) {
     if (! /\.less/.test(file)) { return }
 
-    toCSS('test/less/' + file, function (err, less) {
+    toCSS(path.join(__dirname, 'less', file), function (err, less) {
         var name = path.basename(file, '.less');
 
-        fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
+        fs.readFile(path.join(__dirname, 'css', name) + '.css', 'utf-8', function (e, css) {
             sys.print("- " + name + ": ")
             if (less === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {
@@ -33,6 +33,16 @@ fs.readdirSync('test/less').forEach(function (file) {
             sys.puts("");
         });
     });
+});
+
+var errors = { 
+  'javascript': "JavaScript evaluation error: 'ReferenceError: blah is not defined'"
+, 'import-missing': "File 'import/import-test-missing.less' wasn't found"
+, 'parse-error': "Missing closing `}`"
+}
+
+Object.keys(errors).forEach(function(file) {
+  toError(file, errors[file]);
 });
 
 function toCSS(path, callback) {
@@ -57,6 +67,22 @@ function toCSS(path, callback) {
         });
     });
 }
+
+function toError(file, msg) {
+    toCSS(path.join(__dirname, 'errors', file+'.less'), function (err, output) {
+        var name = path.basename(file, '.less');
+        sys.print("- " + 'errors/'+ name + ": ");
+        if (!err) {
+            sys.print(stylize('FAIL: expected an error: msg', 'yellow'));
+        } else if (err.message != msg) {
+          sys.print(stylize('FAIL: expected error: '+msg+', was: \n', 'yellow'));
+          less.writeError(err);
+        } else {
+          sys.print(stylize('OK', 'green'));
+        }
+        sys.puts('');
+    });
+};
 
 // Stylize a string
 function stylize(str, style) {

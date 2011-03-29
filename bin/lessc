@@ -80,7 +80,6 @@ var processLessFile = function (e, data) {
     }).parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);
-            process.exit(1);
         } else {
             try {
                 css = tree.toCSS({ compress: options.compress });
@@ -93,7 +92,6 @@ var processLessFile = function (e, data) {
                 }
             } catch (e) {
                 less.writeError(e, options);
-                process.exit(2);
             }
         }
     });

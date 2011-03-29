@@ -1,7 +1,8 @@
 var path = require('path'),
     fs = require('fs'),
     sys = require('sys'),
-    assert = require('assert');
+    assert = require('assert'),
+    inspect = require('util').inspect;
 
 var less = require(path.join(__dirname,'..','lib','less'));
 
@@ -58,21 +59,38 @@ less.render('.class { width: 1 + 1 }', function(e, css) {
   sys.puts('');
 });
 
+toCSS(path.join(__dirname, 'less', 'import.less'), function (err, less, imports) {
+  sys.print("- track imports: ");
+  try {
+    expected = ["import/import-test-c.less", "import/import-test-b.less",
+      "import/import-test-a.less"]
+    expected = expected.map(function(e) { return path.join(__dirname,'less',e) })
+
+    assert.deepEqual(expected, imports);
+    sys.print(stylize('OK', 'green'));
+  } catch(e) {
+    sys.print(stylize('FAIL: was '+inspect(imports)+'\nwanted'+inspect(expected), 'yellow'));
+  }
+  sys.puts('');
+});
+
 function toCSS(path, callback) {
     var tree, css;
     fs.readFile(path, 'utf-8', function (e, str) {
         if (e) { return callback(e) }
 
-        new(less.Parser)({
+        var env = {
             paths: [require('path').dirname(path)],
+            imports: [],
             optimization: 0
-        }).parse(str, function (err, tree) {
+        }
+        new(less.Parser)(env).parse(str, function (err, tree) {
             if (err) {
                 callback(err);
             } else {
                 try {
                     css = tree.toCSS();
-                    callback(null, css);
+                    callback(null, css, env.imports);
                 } catch (e) {
                     callback(e);
                 }

@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+      "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <link rel="stylesheet" href="include/qunit.css" type="text/css"/>
+		<link rel="stylesheet/less" type="text/css" href="less/colors.less">
+		<link rel="stylesheet/less" type="text/css" href="less/css.less">
+		<link rel="stylesheet/less" type="text/css" href="less/css-3.less">
+		<link rel="stylesheet/less" type="text/css" href="less/css-escapes.less">
+		<link rel="stylesheet/less" type="text/css" href="less/javascript.less">
+		<link rel="stylesheet/less" type="text/css" href="less/lazy-eval.less">
+		<link rel="stylesheet/less" type="text/css" href="less/mixins-closure.less">
+		<link rel="stylesheet/less" type="text/css" href="less/mixins-nested.less">
+		<link rel="stylesheet/less" type="text/css" href="less/mixins-pattern.less">
+		<link rel="stylesheet/less" type="text/css" href="less/mixins.less">
+		<link rel="stylesheet/less" type="text/css" href="less/operations.less">
+		<link rel="stylesheet/less" type="text/css" href="less/parens.less">
+		<link rel="stylesheet/less" type="text/css" href="less/rulesets.less">
+		<link rel="stylesheet/less" type="text/css" href="less/scope.less">
+		<link rel="stylesheet/less" type="text/css" href="less/selectors.less">
+		<link rel="stylesheet/less" type="text/css" href="less/strings.less">
+		<link rel="stylesheet/less" type="text/css" href="less/whitespace.less">
+    <script type="text/javascript" src="include/jquery.min.js"></script>
+    <script type="text/javascript" src="include/qunit.js"></script>
+    <script type="text/javascript" src="/dist/less-1.0.41.js"></script>
+    <script type="text/javascript">
+      // --- Unittest Code goes here ---
+		  // Failing tests:
+		  //<link rel="stylesheet/less" type="text/css" href="less/comments.less">
+		  //<link rel="stylesheet/less" type="text/css" href="less/mixins-args.less">
+		  //<link rel="stylesheet/less" type="text/css" href="less/variables.less">
+		  $('style').each(function(index) {
+				 var style = $(this);
+				 if ((style.attr('id').match(/^less/)) && (style.attr('id') != 'less:error-message')) {
+				   var name = style.attr('id').slice(15);
+					 name = name==="css" ? "css-browser" : name
+					 name = name==="css-3" ? "css-3-browser" : name
+					 $.get("css/"+name+".css", function(expected) {
+						 var css = style.text();
+						 //expected = expected.replace(/(url\("?)(?!(d|(http)))/g,
+						 // "$1http://localhost:3000/test/less/$2");
+						 test(name, function() {
+							 equals(css, expected);
+						 });
+					 });
+			  	}
+		 });
+		 test("a simple test", function() {
+				 ok(true, "smoke cleared");
+		 });
+    </script>
+  </head>
+  <body>
+    <h1 id="qunit-header">QUnit example</h1>
+    <h2 id="qunit-banner"></h2>
+    <h2 id="qunit-userAgent"></h2>
+    <ol id="qunit-tests">
+    </ol>
+  </body>
+</html>

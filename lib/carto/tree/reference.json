@@ -453,6 +453,12 @@
                 "default-meaning": "auto-detected",
                 "doc": "The type of image file, e.g. png"
             },
+            "alignment": {
+                "css": "polygon-pattern-alignment",
+                "type": ["local","global"],
+                "default-value": "local",
+                "doc": "Specify whether to align pattern fills to the layer or to the map."
+            },
             "meta-output": {
                 "css": "polygon-pattern-meta-output",
                 "type": "string",

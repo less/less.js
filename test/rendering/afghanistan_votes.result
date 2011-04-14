@@ -14,7 +14,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -28,7 +28,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -42,7 +42,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -56,7 +56,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -70,7 +70,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -84,7 +84,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -98,7 +98,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -112,7 +112,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -126,7 +126,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -140,7 +140,7 @@
       stroke-width="0"
       stroke="#222222"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>
@@ -154,7 +154,7 @@
       stroke-width="2"
       stroke="#444444"
       stroke-opacity="0.8"
-      type="ellipse"
+      marker-type="ellipse"
       meta-writer="meta1"
       meta-output="votes_name, votes_description"/>
   </Rule>

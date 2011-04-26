@@ -1,4 +1,6 @@
 {
+    "version": "1.0.0",
+
     "style": {
         "name": {
         },
@@ -70,12 +72,12 @@
                 "type": "uri",
                 "default-value": "0",
                 "default-meaning": "No buffer will be used",
-                "description": "Extra tolerance around the map (in pixels) used to ensure labels crossing tile boundaries are equally rendered in each tile (e.g. cut in each tile). Not intended to be used in combination with 'avoid-edges'."
+                "description": "Extra tolerance around the map (in pixels) used to ensure labels crossing tile boundaries are equally rendered in each tile (e.g. cut in each tile). Not intended to be used in combination with \"avoid-edges\"."
             },
             "paths-from-xml": {
                 "css": "",
                 "api": "",
-                "default-value": "true",
+                "default-value": true,
                 "default-meaning": "Paths read from XML will be interpreted from the location of the XML",
                 "type": "boolean",
                 "doc": "value to control whether paths in the XML will be interpreted from the location of the XML or from the working directory of the program that calls load_map()"
@@ -291,7 +293,8 @@
             "name": {
                 "css": "shield-name",
                 "type": "string",
-                "required": true
+                "required": true,
+                "doc": "Value to use for a shield\"s text label. Data columns are specified using brackets like [column_name]"
             },
             "face-name": {
                 "css": "shield-face-name",
@@ -338,12 +341,6 @@
                 "type": "uri",
                 "default-value": "none",
                 "doc": "Image file to render behind the shield text"
-            },
-            "type": {
-                "css": "shield-type",
-                "type": ["png", "jpg", "svg"],
-                "default-meaning": "auto-detected",
-                "doc": "The file type of the shield image"
             },
             "dx": {
                 "css": "shield-text-dx",
@@ -399,24 +396,6 @@
                 "type": "uri",
                 "doc": "An image file to be repeated and warped along a line"
             },
-            "width": {
-                "css": "line-pattern-width",
-                "type": "float",
-                "doc": "Width in pixels to scale the pattern image to",
-                "default-meaning": "native width of the image"
-            },
-            "height": {
-                "css": "line-pattern-height",
-                "type": "float",
-                "doc": "Height in pixels to scale the pattern image to",
-                "default-meaning": "native height of the image"
-            },
-            "type": {
-                "css": "line-pattern-type",
-                "type": "none",
-                "default-meaning": "auto-detected",
-                "doc": "The type of image file, e.g. png"
-            },
             "meta-output": {
                 "css": "line-pattern-meta-output",
                 "type": "string",
@@ -434,24 +413,6 @@
                 "css": "polygon-pattern-file",
                 "type": "uri",
                 "doc": "Image to use as a repeated pattern fill within a polygon"
-            },
-            "width": {
-                "css": "polygon-pattern-width",
-                "type": "float",
-                "doc": "Width in pixels to scale the pattern image to",
-                "default-meaning": "native width of the image"
-            },
-            "height": {
-                "css": "polygon-pattern-height",
-                "type": "float",
-                "doc": "Height in pixels to scale the pattern image to",
-                "default-meaning": "native height of the image"
-            },
-            "type": {
-                "css": "polygon-pattern-type",
-                "type": "none",
-                "default-meaning": "auto-detected",
-                "doc": "The type of image file, e.g. png"
             },
             "alignment": {
                 "css": "polygon-pattern-alignment",
@@ -508,29 +469,18 @@
                 "type": "uri",
                 "doc": "Image file to represent a point"
             },
-            "width": {
-                "css": "point-width",
-                "type": "float",
-                "default-meaning": "native width of the image",
-                "doc": "Width in pixels to scale the point image to"
-            },
-            "height": {
-                "css": "point-height",
-                "type": "float",
-                "default-meaning": "native height of the image",
-                "doc": "Height in pixels to scale the point image to"
-            },
-            "type": {
-                "css": "point-type",
-                "type": "none",
-                "default-meaning": "auto-detected",
-                "doc": "The type of image file, e.g. png"
-            },
             "allow-overlap": {
                 "css": "point-allow-overlap",
                 "type": "boolean",
                 "default-value": "false",
                 "default-meaning": "do not allow overlap"
+            },
+            "ignore-placement": {
+                "css": "point-ignore-placement",
+                "type": "boolean",
+                "default-value": false,
+                "default-meaning": "do not store the bbox of this point in the collision detector cache",
+                "doc": "value to control whether the placement of the feature will prevent the placement of other features"
             },
             "placement": {
                 "css": "point-placement",
@@ -563,7 +513,8 @@
             "name": {
                 "css": "text-name",
                 "type": "string",
-                "required": true
+                "required": true,
+                "doc": "Value to use for a text label. Data columns are specified using brackets like [column_name]"
             },
             "face-name": {
                 "css": "text-face-name",
@@ -658,7 +609,7 @@
                 ],
                 "doc": "Position of label relative to point position.",
                 "default-value": "middle",
-                "default-meaning": "Default affected by value of dy; 'bottom' for dy>0, 'top' for dy<0."
+                "default-meaning": "Default affected by value of dy; \"bottom\" for dy>0, \"top\" for dy<0."
             },
             "avoid-edges": {
                 "css": "text-avoid-edges",

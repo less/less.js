@@ -1,7 +1,0 @@
-node 0.2.3
-module isaacs sax-js v0.1.1
-module documentcloud underscore 1.1.4
-module visionmedia expresso 0.7.2
-module creationix step v0.0.3
-module springmeyer node-zipfile
-module tmcw node-get

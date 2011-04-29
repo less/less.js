@@ -248,6 +248,13 @@ Only for running tests:
 * [expresso](https://github.com/visionmedia/expresso)
 * [sax-js](https://github.com/isaacs/sax-js/)
 
+## Changelog
+
+### 0.1.4
+
+* Fix bug in which SRS autodetection broke error handling
+* Update carto
+
 
 ## Authors
 

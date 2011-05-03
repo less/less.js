@@ -1,27 +1,49 @@
 {
-  "name"          : "carto",
-  "description"   : "Mapnik Stylesheet Compiler",
-  "url"           : "https://github.com/mapbox/carto",
-  "keywords"      : ["mapnik", "maps", "css"],
-  "author"        : "Tom MacWright <macwright@gmail.com>, Konstantin Käfer, Alexis Sellier <self@cloudhead.net>",
-  "contributors"  : [],
-  "version"       : "0.1.4",
-  "bin"           : {
+  "name": "carto",
+  "description": "Mapnik Stylesheet Compiler",
+  "url": "https://github.com/mapbox/carto",
+  "repositories": [{
+    "type": "git",
+    "url": "http://github.com/mapbox/carto.git" 
+  }],
+  "keywords": [
+    "mapnik",
+    "maps",
+    "css",
+    "stylesheets"
+  ],
+  "contributors": [
+    "Tom MacWright <macwright@gmail.com>",
+    "Konstantin Käfer",
+    "Alexis Sellier <self@cloudhead.net>"
+  ],
+  "version": "0.1.5",
+  "licenses": [{
+    "type": "Apache"
+  }],
+  "bin": {
     "carto": "./bin/carto",
     "cartox": "./bin/cartox",
     "mml2json.js": "./bin/mml2json.js"
   },
-  "main"          : "./lib/carto/index",
-  "directories"   : { "test": "./test" },
-  "engines"       : { "node": ">=0.2.4" },
-  "dependencies"  : {
+  "main": "./lib/carto/index",
+  "directories": {
+    "test": "./test"
+  },
+  "engines": {
+    "node": ">=0.2.4"
+  },
+  "dependencies": {
     "underscore": ">= 1.0.3",
     "step": ">= 0.0.3",
     "zipfile": ">= 0.1.0",
     "xml2js": ">= 0.1.0",
-    "srs"      : ">= 0.1.0",
-    "get" : ">= 0.1.0",
-    "step"     : ">= 0.0.3",
-    "expresso" : ">= 0.0.0"
+    "srs": ">= 0.1.0",
+    "get": ">= 0.1.0",
+    "step": ">= 0.0.3"
+  },
+  "devDependencies": {
+    "expresso" : ">= 0.7.6",
+    "docco" : ">= 0.2.0"
   }
 }

@@ -250,6 +250,12 @@ Only for running tests:
 
 ## Changelog
 
+### 0.1.5
+
+* Using npm devDependencies in place of ndistro
+* Updated package.json format
+* Fixes tests
+
 ### 0.1.4
 
 * Fix bug in which SRS autodetection broke error handling

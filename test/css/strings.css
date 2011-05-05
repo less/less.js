@@ -14,3 +14,9 @@
   empty: '';
   semi-colon: ';';
 }
+#one-line {
+  image: url(http://tooks.com);
+}
+#crazy {
+  image: url(http://), "}", url("http://}");
+}

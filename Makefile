@@ -2,8 +2,8 @@
 # Run all tests
 #
 
-expresso = ./node_modules/expresso/bin/expresso
-docco = ./node_modules/docco/bin/docco
+expresso = ./node_modules/.bin/expresso
+docco = ./node_modules/.bin/docco
 
 ifndef only
 test:

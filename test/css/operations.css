@@ -35,3 +35,12 @@
   color: #222222;
   border-color: #222222;
 }
+.negations {
+  variable: -4px;
+  variable1: 0px;
+  variable2: 0px;
+  variable3: 8px;
+  variable4: 0px;
+  paren: -4px;
+  paren2: 16px;
+}

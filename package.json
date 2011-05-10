@@ -4,7 +4,7 @@
   "url": "https://github.com/mapbox/carto",
   "repositories": [{
     "type": "git",
-    "url": "http://github.com/mapbox/carto.git" 
+    "url": "http://github.com/mapbox/carto.git"
   }],
   "keywords": [
     "mapnik",
@@ -43,7 +43,7 @@
     "step": ">= 0.0.3"
   },
   "devDependencies": {
-    "expresso" : ">= 0.7.6",
-    "docco" : ">= 0.2.0"
+    "expresso" : "= 0.7.x",
+    "docco" : "= 0.2.x"
   }
 }

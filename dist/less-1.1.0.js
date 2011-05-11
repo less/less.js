@@ -2,7 +2,7 @@
 // LESS - Leaner CSS v1.1.0
 // http://lesscss.org
 // 
-// Copyright (c) 2010, Alexis Sellier
+// Copyright (c) 2009-2011, Alexis Sellier
 // Licensed under the Apache 2.0 License.
 //
 (function (window, undefined) {

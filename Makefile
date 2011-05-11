@@ -2,15 +2,21 @@
 # Run all tests
 #
 
+expresso = ./node_modules/.bin/expresso
+docco = ./node_modules/.bin/docco
+
+lint:
+	./node_modules/.bin/jshint lib/carto/*.js lib/carto/tree/*.js
+
 ifndef only
 test:
-	bin/expresso -I lib test/*.test.js
+	$(expresso) -I lib test/*.test.js
 else
 test:
-	bin/expresso -I lib test/${only}.test.js
+	$(expresso) -I lib test/${only}.test.js
 endif
 
 doc:
-	docco lib/carto/*.js lib/carto/tree/*.js
+	$(docco) lib/carto/*.js lib/carto/tree/*.js
 
 .PHONY: test

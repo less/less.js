@@ -231,6 +231,11 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
 
 There's a TextMate bundle that offers syntax highlighting for `.mss` and `.mml` files in the `build` directory. To install, download or clone this repository, then double-click on the `carto.tmbundle` icon in that folder.
 
+The TextMate bundle **requires** [node-mapnik](https://github.com/mapnik/node-mapnik) and Carto installed globally - the versions that are installed locally in TileMill or other tools can't be automatically discovered.
+
+    npm install mapnik -g
+    npm install carto -g
+
 ## Credits
 
 `carto.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
@@ -247,6 +252,19 @@ Only for running tests:
 
 * [expresso](https://github.com/visionmedia/expresso)
 * [sax-js](https://github.com/isaacs/sax-js/)
+
+## Changelog
+
+### 0.1.5
+
+* Using npm devDependencies in place of ndistro
+* Updated package.json format
+* Fixes tests
+
+### 0.1.4
+
+* Fix bug in which SRS autodetection broke error handling
+* Update carto
 
 
 ## Authors

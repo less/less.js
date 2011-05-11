@@ -12,3 +12,6 @@
 .vars {
   width: 8;
 }
+.escape-interpol {
+  width: hello world;
+};

@@ -14,3 +14,7 @@
     @var: `4 + 4`;
     width: @var;
 }
+.escape-interpol {
+    @world: "world";
+    width: ~`"hello" + " " + "@{world}"`;
+}

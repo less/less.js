@@ -16,3 +16,6 @@
   url: url('Trebuchet');
   multi: something 'A', B, C, 'Trebuchet';
 }
+.variable-names {
+  name: 'hello';
+}

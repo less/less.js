@@ -5,10 +5,19 @@
 	<key>beforeRunningCommand</key>
 	<string>nop</string>
 	<key>command</key>
-	<string># just to remind you of some useful environment variables
-# see Help / Environment Variables for the full list
+    <strong>
+#!/usr/bin/env ruby
 
-"mapnik-render.js" "$TM_FILEPATH" "/tmp/test.png"</string>
+nvmdir = File.expand_path('~/.nvm')
+if File.directory?nvmdir then
+    cartos = Dir.glob(nvmdir + '/*/bin/mapnik-render.js')
+    carto = cartos.pop() if cartos
+    node = carto.gsub('/bin/mapnik-render.js', '/bin/node')
+end
+if carto
+    `#{node} #{carto} #{ENV['TM_FILEPATH']} /tmp/test.png`
+end
+</string>
 	<key>input</key>
 	<string>none</string>
 	<key>keyEquivalent</key>

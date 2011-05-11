@@ -2329,6 +2329,7 @@ require('less/tree').find = function (obj, fun) {
 
 var isFileProtocol = (location.protocol === 'file:'    ||
                       location.protocol === 'chrome:'  ||
+                      location.protocol === 'chrome-extension:'  ||
                       location.protocol === 'resource:');
 
 less.env = less.env || (location.hostname == '127.0.0.1' ||
@@ -2447,7 +2448,11 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
 
     // Stylesheets in IE don't always return the full path
     if (! /^(https?|file):/.test(href)) {
-        href = url.slice(0, url.lastIndexOf('/') + 1) + href;
+        if (href.charAt(0) == "/") {
+            href = window.location.protocol + "//" + window.location.host + href;
+        } else {
+            href = url.slice(0, url.lastIndexOf('/') + 1) + href;
+        }
     }
 
     xhr(sheet.href, sheet.type, function (data, lastModified) {

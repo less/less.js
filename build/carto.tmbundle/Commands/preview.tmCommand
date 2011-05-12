@@ -5,17 +5,23 @@
 	<key>beforeRunningCommand</key>
 	<string>nop</string>
 	<key>command</key>
-    <strong>
-#!/usr/bin/env ruby
+    <string>#!/usr/bin/env ruby
 
 nvmdir = File.expand_path('~/.nvm')
+localdir = "/usr/local/bin/"
 if File.directory?nvmdir then
     cartos = Dir.glob(nvmdir + '/*/bin/mapnik-render.js')
     carto = cartos.pop() if cartos
     node = carto.gsub('/bin/mapnik-render.js', '/bin/node')
+elsif File.exist?localdir + "mapnik-render.js"
+    carto = localdir + "mapnik-render.js"
+    node = localdir + "node"
 end
+
 if carto
     `#{node} #{carto} #{ENV['TM_FILEPATH']} /tmp/test.png`
+else
+    puts 'node and mapnik-render.js could not be found'
 end
 </string>
 	<key>input</key>

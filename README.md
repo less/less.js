@@ -255,6 +255,10 @@ Only for running tests:
 
 ## Changelog
 
+### 0.1.6
+
+* Fixed bug caused by jshint testing
+
 ### 0.1.5
 
 * Using npm devDependencies in place of ndistro

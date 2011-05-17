@@ -38,7 +38,7 @@ helper.files('rendering', 'mml', function(file) {
                             helper.showDifferences(err);
                             throw '';
                         }
-                    }, [ 
+                    }, [
                         helper.removeAbsoluteImages,
                         helper.removeAbsoluteDatasources
                     ]);

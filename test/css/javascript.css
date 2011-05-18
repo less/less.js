@@ -2,6 +2,7 @@
   js: 42;
   js: 2;
   js: "hello world";
+  js: 1, 2, 3;
   title: "node";
   ternary: true;
 }
@@ -14,4 +15,8 @@
 }
 .escape-interpol {
   width: hello world;
-};
+}
+.arrays {
+  ary: "1, 2, 3";
+  ary: "1, 2, 3";
+}

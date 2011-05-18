@@ -255,7 +255,11 @@ Only for running tests:
 
 ## Changelog
 
-### 0.1.6 & 0.1.7
+### 0.1.9
+
+* Variables in filters.
+
+### 0.1.6 & 0.1.8
 
 * Fixed bug caused by jshint testing
 

@@ -30,3 +30,9 @@
   url4: "http://lesscss.org/hello";
   url5: "http://lesscss.org/54.4";
 }
+.mix-mul-class {
+  color: blue;
+  color: red;
+  color: blue;
+  color: orange;
+}

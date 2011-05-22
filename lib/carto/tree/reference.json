@@ -580,6 +580,13 @@
                 "default-value": "#000000",
                 "type": "color"
             },
+            "opacity": {
+                "css": "text-opacity",
+                "doc": "A number from 0 to 1 specifying the opacity for the text",
+                "default-value": 1.0,
+                "default-meaning": "Fully opaque",
+                "type": "float"
+            },
             "halo-fill": {
                 "css": "text-halo-fill",
                 "docs": "Color of the text halo",

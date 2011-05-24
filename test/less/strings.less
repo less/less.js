@@ -35,3 +35,15 @@
   @var5: 54.4px;
   url5: "http://lesscss.org/@{var5}";
 }
+
+// multiple calls with string interpolation
+
+.mix-mul (@a: green) {
+    color: ~"@{a}";
+}
+.mix-mul-class {
+    .mix-mul(blue);
+    .mix-mul(red);
+    .mix-mul(blue);
+    .mix-mul(orange);
+}

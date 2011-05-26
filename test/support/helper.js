@@ -3,7 +3,10 @@ var path = require('path'),
     assert = require('assert'),
     crypto = require('crypto'),
     sax = require('sax'),
-    diff = require('./diff').diff;
+    diff = require('./diff').diff,
+    constants = ((!process.ENOENT) >= 1) ?
+        require('constants') :
+        { ENOENT: process.ENOENT };
 
 var helper = exports;
 
@@ -150,7 +153,7 @@ exports.rmrf = function rmrf(p) {
         }
         else fs.unlinkSync(p);
     } catch (err) {
-        if (err.errno !== process.ENOENT) throw err;
+        if (err.errno !== constants.ENOENT) throw err;
     }
 };
 

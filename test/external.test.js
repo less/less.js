@@ -1,4 +1,4 @@
-var External = require('..').External;
+var External = require('../lib/carto').External;
 var path = require('path'),
     assert = require('assert'),
     fs = require('fs'),

@@ -3,8 +3,8 @@ var path = require('path'),
     assert = require('assert'),
     fs = require('fs');
 
-var carto = require('..');
-var tree = require('..').tree;
+var carto = require('../lib/carto');
+var tree = require('../lib/carto').tree;
 var helper = require('./support/helper');
 
 function cleanupItem(key, value) {

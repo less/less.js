@@ -19,3 +19,6 @@
 .variable-names {
   name: 'hello';
 }
+.alpha {
+  filter: alpha(opacity=42);
+}

@@ -255,6 +255,10 @@ Only for running tests:
 
 ## Changelog
 
+### 0.1.10
+
+* Optional-file datasources - allows string argument to OGR
+
 ### 0.1.9
 
 * Variables in filters.

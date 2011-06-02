@@ -74,6 +74,14 @@
                 "default-meaning": "No buffer will be used",
                 "description": "Extra tolerance around the map (in pixels) used to ensure labels crossing tile boundaries are equally rendered in each tile (e.g. cut in each tile). Not intended to be used in combination with \"avoid-edges\"."
             },
+            "base": {
+                "css": "base",
+                "api": "",
+                "default-value": "",
+                "default-meaning": "This base path defaults to an empty string meaning that any relative paths to files referenced in styles or layers will be interpreted relative to the application process.",
+                "type": "string",
+                "doc": "Any relative paths used to reference files will be understood as relative to this directory path if the map is loaded from an in memory object rather than from the filesystem. If the map is loaded from the filesystem and this option is not provided it will be set to the directory of the stylesheet."
+            },
             "paths-from-xml": {
                 "css": "",
                 "api": "",
@@ -105,8 +113,8 @@
                 "api": "fill",
                 "type": "color",
                 "availability": "0.5.1",
-                "default-value": "rgb(128,128,128)",
-                "default-meaning": "grey",
+                "default-value": "rgba(128,128,128,1)",
+                "default-meaning": "gray and fully opaque (alpha = 1), same as rgb(128,128,128)",
                 "doc": "Fill color to assign to a polygon"
             },
             "gamma": {
@@ -141,8 +149,9 @@
         "line": {
             "stroke": {
                 "css": "line-color",
-                "default-value": "black",
+                "default-value": "rgba(0,0,0,1)",
                 "type": "color",
+                "default-meaning": "black and fully opaque (alpha = 1), same as rgb(0,0,0)",
                 "doc": "The color of a drawn line"
             },
             "stroke-width": {
@@ -192,6 +201,13 @@
                 "css": "line-dasharray",
                 "type": "numbers",
                 "doc": "A pair of length values [a,b], where (a) is the dash length and (b) is the gap length respectively. More than two values are supported for more complex patterns.",
+                "default-value": "none",
+                "default-meaning": "solid line"
+            },
+            "stroke-dash-offset": {
+                "css": "line-dash-offset",
+                "type": "numbers",
+                "doc": "valid parameter but not currently used in renderers",
                 "default-value": "none",
                 "default-meaning": "solid line"
             },
@@ -313,6 +329,16 @@
                 "type": "color",
                 "doc": "The color of the shield text"
             },
+            "placement": {
+                "css": "shield-placement",
+                "type": [
+                    "point",
+                    "line",
+                    "vertex",
+                    "interior"
+                ],
+                "default-value": "point"
+            },
             "minimum-distance": {
                 "css": "shield-min-distance",
                 "type": "float",
@@ -326,7 +352,7 @@
                 "doc": "The spacing between repeated occurrences of the same shield on a line"
             },
             "character-spacing": {
-                "css": "shield-spacing",
+                "css": "shield-character-spacing",
                 "type": "float",
                 "default-value": 0,
                 "doc": "Horizontal spacing between characters (in pixels). Currently works for point placement only, not line placement."
@@ -376,18 +402,6 @@
                 "css": "shield-meta-writer",
                 "type": "string",
                 "default-value": ""
-            },
-            "shield-dx": {
-                "css": "shield-dx",
-                "type": "float",
-                "doc": "Displace shield by fixed amount, in pixels, +/- along the X axis.  A positive value will shift the shield right",
-                "default-value": 0
-            },
-            "shield-dx": {
-                "css": "shield-dx",
-                "type": "float",
-                "doc": "Displace shield by fixed amount, in pixels, +/- along the Y axis.  A positive value will shift the shield down",
-                "default-value": 0
             }
         },
         "line-pattern": {
@@ -459,7 +473,11 @@
                 "type": [
                     "fast",
                     "bilinear",
-                    "bilinear8"
+                    "bilinear8",
+                    "bicubic",
+                    "spline16",
+                    "gaussian",
+                    "lanczos"
                 ]
             }
         },

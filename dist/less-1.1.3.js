@@ -2453,7 +2453,21 @@ function loadStyles() {
         if (styles[i].type.match(typePattern)) {
             new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
                 styles[i].type      = 'text/css';
-                styles[i].innerHTML = tree.toCSS();
+                try {
+                    //First test this without running toCSS();
+                    //in case it doesn't work, we only want to run toCSS() once.
+                    //It should only be a problem with IE versions prior to 9.
+                    styles[i].innerHTML += "";
+                    styles[i].innerHTML = tree.toCSS();
+                }
+                catch (e) {
+                    if ( styles[i].styleSheet ) {
+                        styles[i].styleSheet.cssText = tree.toCSS();
+                    }
+                    else {
+                        log("Could not add CSS to style object.");
+                    }
+                }
             });
         }
     }

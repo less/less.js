@@ -1,5 +1,5 @@
 //
-// LESS - Leaner CSS v1.0.43
+// LESS - Leaner CSS v1.0.44
 // http://lesscss.org
 // 
 // Copyright (c) 2010, Alexis Sellier
@@ -1171,9 +1171,14 @@ less.Parser = function Parser(env) {
             // such as a Color, or a Variable
             //
             operand: function () {
-                return $(this.sub) || $(this.entities.dimension) ||
-                       $(this.entities.color) || $(this.entities.variable) ||
-                       $(this.entities.call);
+                var negate, p = input.charAt(i + 1);
+
+                if (input.charAt(i) === '-' && (p === '@' || p === '(')) { negate = $('-') }
+                var o = $(this.sub) || $(this.entities.dimension) ||
+                        $(this.entities.color) || $(this.entities.variable) ||
+                        $(this.entities.call);
+                return negate ? new(tree.Operation)('*', [new(tree.Dimension)(-1), o])
+                              : o;
             },
 
             //
@@ -1341,16 +1346,33 @@ tree.functions = {
     e: function (str) {
         return new(tree.Anonymous)(str instanceof tree.JavaScript ? str.evaluated : str);
     },
+    escape: function (str) {
+        return new(tree.Anonymous)(encodeURI(str.value).replace(/=/g, "%3D").replace(/:/g, "%3A").replace(/#/g, "%23").replace(/;/g, "%3B").replace(/\(/g, "%28").replace(/\)/g, "%29"));
+    },
     '%': function (quoted /* arg, arg, ...*/) {
         var args = Array.prototype.slice.call(arguments, 1),
             str = quoted.value;
 
         for (var i = 0; i < args.length; i++) {
-            str = str.replace(/%s/,    args[i].value)
-                     .replace(/%[da]/, args[i].toCSS());
+            str = str.replace(/%[sda]/i, function(token) {
+                var value = token.match(/s/i) ? args[i].value : args[i].toCSS();
+                return token.match(/[A-Z]$/) ? encodeURIComponent(value) : value;
+            });
         }
         str = str.replace(/%%/g, '%');
         return new(tree.Quoted)('"' + str + '"', str);
+    },
+    round: function (n) {
+        if (n instanceof tree.Dimension) {
+            return new(tree.Dimension)(Math.round(number(n)), n.unit);
+        } else if (typeof(n) === 'number') {
+            return Math.round(n);
+        } else {
+	    throw {
+                error: "RuntimeError",
+                message: "math functions take numbers as parameters"
+            };
+        }
     }
 };
 
@@ -1457,6 +1479,11 @@ tree.Color = function (rgb, a) {
         this.rgb = rgb;
     } else if (rgb.length == 6) {
         this.rgb = rgb.match(/.{2}/g).map(function (c) {
+            return parseInt(c, 16);
+        });
+    } else if (rgb.length == 8) {
+        this.alpha = parseInt(rgb.substring(0,2), 16) / 255.0;
+        this.rgb = rgb.substr(2).match(/.{2}/g).map(function (c) {
             return parseInt(c, 16);
         });
     } else {

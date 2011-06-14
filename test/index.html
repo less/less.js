@@ -17,11 +17,13 @@
         };
         (new carto.Parser(parse_env)).parse(style,
         function(err, ruleset) {
-          for (var i in ruleset.rules) {
-            for (var j in ruleset.rules[i].rules) {
-              document.getElementById('output').innerHTML += ruleset.rules[i].rules[j].eval(parse_env).toXML(parse_env) + ' ';
-            }
-          }
+          var definition = ruleset.toList(parse_env);
+          console.log(definition);
+          // for (var i in ruleset.rules) {
+          //   for (var j in ruleset.rules[i].rules) {
+          //     document.getElementById('output').innerHTML += ruleset.rules[i].rules[j].eval(parse_env).toXML(parse_env) + ' ';
+          //   }
+          // }
         });
       });
     }

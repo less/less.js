@@ -46,7 +46,7 @@
         },
         "clear-label-cache": {
         }
-    }, 
+    },
     "symbolizers" : {
         "map": {
             "background-color": {
@@ -671,6 +671,21 @@
                     "interior"
                 ],
                 "default-value": "point"
+            },
+            "placement-type": {
+                "css": "text-placement-type",
+                "doc": "Re-position and/or re-size text to avoid overlaps. \"simple\" for basic algorithm (using text-placements string,) \"dummy\" to turn this feature off.",
+                "type": [
+                    "dummy",
+                    "simple"
+                ],
+                "default-value": "dummy"
+            },
+            "placements": {
+                "css": "text-placements",
+                "type": "string",
+                "default-value": "",
+                "doc": "If \"placement-type\" is set to \"simple\", use this \"POSITIONS,[SIZES]\" string. See TextSymbolizer docs for format."
             },
             "text-transform": {
                 "css": "text-transform",

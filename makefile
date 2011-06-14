@@ -4,6 +4,7 @@
 
 expresso = ./node_modules/.bin/mocha
 docco = ./node_modules/.bin/docco
+uglify = ./node_modules/.bin/uglify
 
 lint:
 	./node_modules/.bin/jshint lib/carto/*.js lib/carto/tree/*.js
@@ -20,5 +21,10 @@ check: test
 
 doc:
 	$(docco) lib/carto/*.js lib/carto/tree/*.js
+
+dist/carto.js:
+	cat browser/*.js lib/carto/parser.js lib/carto/tree.js lib/carto/tree/*.js > dist/carto.js
+
+dist: dist/carto.js
 
 .PHONY: test

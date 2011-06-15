@@ -1,0 +1,37 @@
+{
+  "_center":{
+    "lat":9.6670287275154,
+    "lon":2.1441808591201,
+    "zoom":5
+  },
+  "_format":"png",
+  "_interactivity":false,
+  "srs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
+  "Stylesheet":[
+    "fontset-duplication.mss"
+  ],
+  "Layer":[
+    {
+      "id":"city",
+      "name":"city",
+      "srs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs",
+      "class":"",
+      "Datasource":{
+        "file":"http://tilemill-data.s3.amazonaws.com/natural-earth-10m-1.3.0/populated_places_simple.zip",
+        "type":"shape"
+      },
+      "geometry":"point"
+    },
+    {
+      "id":"country-label",
+      "name":"country-label",
+      "srs":"",
+      "class":"",
+      "Datasource":{
+        "file":"http://dl.dropbox.com/u/2398828/world-labels2.zip",
+        "type":"shape"
+      },
+      "geometry":"point"
+    }
+  ]
+}

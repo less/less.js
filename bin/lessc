@@ -11,13 +11,14 @@ var args = process.argv.slice(1);
 var options = {
     compress: false,
     optimization: 1,
-    silent: false
+    silent: false,
+    paths: []
 };
 
 args = args.filter(function (arg) {
     var match;
 
-    if (match = arg.match(/^--?([a-z][0-9a-z-]*)$/i)) { arg = match[1] }
+    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]+))?$/i)) { arg = match[1] }
     else { return arg }
 
     switch (arg) {
@@ -39,6 +40,16 @@ args = args.filter(function (arg) {
         case 'x':
         case 'compress':
             options.compress = true;
+            break;
+        case 'include-path':
+            options.paths = match[2].split(':')
+                .map(function(p) {
+                    if (p && p[0] == '/') {
+                        return path.join(path.dirname(input), p);
+                    } else if (p) {
+                        return path.join(process.cwd(), p);
+                    }
+                });
             break;
         case 'O0': options.optimization = 0; break;
         case 'O1': options.optimization = 1; break;
@@ -69,7 +80,7 @@ fs.readFile(input, 'utf-8', function (e, data) {
     }
 
     new(less.Parser)({
-        paths: [path.dirname(input)],
+        paths: [path.dirname(input)].concat(options.paths),
         optimization: options.optimization,
         filename: input
     }).parse(data, function (err, tree) {

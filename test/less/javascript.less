@@ -2,15 +2,26 @@
     js: `42`;
     js: `1 + 1`;
     js: `"hello world"`;
-    sigkill: `process.SIGKILL`;
+    js: `[1, 2, 3]`;
+    title: `process.title`;
     ternary: `(1 + 1 == 2 ? true : false)`;
 }
 .scope {
     @foo: 42;
     var: `this.foo.toJS()`;
-    escaped: e(`2 + 5 + 'px'`);
+    escaped: ~`2 + 5 + 'px'`;
 }
 .vars {
     @var: `4 + 4`;
     width: @var;
+}
+.escape-interpol {
+    @world: "world";
+    width: ~`"hello" + " " + @{world}`;
+}
+.arrays {
+    @ary:  1, 2, 3;
+    @ary2: 1  2  3;
+    ary: `@{ary}.join(', ')`;
+    ary: `@{ary2}.join(', ')`;
 }

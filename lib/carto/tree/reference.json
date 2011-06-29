@@ -449,6 +449,15 @@
                 "default-value": "local",
                 "doc": "Specify whether to align pattern fills to the layer or to the map."
             },
+            "gamma": {
+                "css": "polygon-pattern-gamma",
+                "api": "gamma",
+                "type": "float",
+                "default-value": 1,
+                "default-meaning": "fully antialiased",
+                "range": "0-1",
+                "doc": "Level of antialiasing of polygon pattern edges"
+            },
             "meta-output": {
                 "css": "polygon-pattern-meta-output",
                 "type": "string",

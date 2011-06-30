@@ -351,6 +351,21 @@
                 "default-value": 0,
                 "doc": "The spacing between repeated occurrences of the same shield on a line"
             },
+            "halo-fill": {
+                "css": "shield-halo-fill",
+                "docs": "Color of the text halo",
+                "type": "color",
+                "default-value": "#FFFFFF",
+                "default-meaning": "white",
+                "doc": "Specifies the color of the halo around the text."
+            },
+            "halo-radius": {
+                "css": "shield-halo-radius",
+                "doc": "Specify the radius of the halo in pixels",
+                "default-value": 0,
+                "default-meaning": "no halo",
+                "type": "float"
+            },
             "character-spacing": {
                 "css": "shield-character-spacing",
                 "type": "float",
@@ -433,6 +448,15 @@
                 "type": ["local","global"],
                 "default-value": "local",
                 "doc": "Specify whether to align pattern fills to the layer or to the map."
+            },
+            "gamma": {
+                "css": "polygon-pattern-gamma",
+                "api": "gamma",
+                "type": "float",
+                "default-value": 1,
+                "default-meaning": "fully antialiased",
+                "range": "0-1",
+                "doc": "Level of antialiasing of polygon pattern edges"
             },
             "meta-output": {
                 "css": "polygon-pattern-meta-output",

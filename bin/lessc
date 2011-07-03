@@ -9,6 +9,7 @@ require.paths.unshift(path.join(__dirname, '..', 'lib'));
 var less = require('less');
 var args = process.argv.slice(1);
 var options = {
+    depends: false,
     compress: false,
     optimization: 1,
     silent: false,
@@ -41,6 +42,9 @@ args = args.filter(function (arg) {
         case 'compress':
             options.compress = true;
             break;
+	case 'depends':
+            options.depends = true;
+            break;
         case 'include-path':
             options.paths = match[2].split(':')
                 .map(function(p) {
@@ -58,10 +62,12 @@ args = args.filter(function (arg) {
 });
 
 var input = args[1];
+var inputbase = args[1];
 if (input && input[0] != '/') {
     input = path.join(process.cwd(), input);
 }
 var output = args[2];
+var outputbase = args[2];
 if (output && output[0] != '/') {
     output = path.join(process.cwd(), output);
 }
@@ -79,26 +85,37 @@ fs.readFile(input, 'utf-8', function (e, data) {
         process.exit(1);
     }
 
+    if (options.depends) {
+        // output the target filename, needs to be specified on the command line (no stdout)
+        sys.print(outputbase + ": ");
+    }
+
     new(less.Parser)({
         paths: [path.dirname(input)].concat(options.paths),
         optimization: options.optimization,
+        import: options.depends ? function(importname) { sys.print(path.join(path.dirname(inputbase),  importname) + " "); } : null,
         filename: input
     }).parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);
             process.exit(1);
         } else {
-            try {
-                css = tree.toCSS({ compress: options.compress });
-                if (output) {
-                    fd = fs.openSync(output, "w");
-                    fs.writeSync(fd, css, 0, "utf8");
-                } else {
-                    sys.print(css);
+            if (options.depends) {
+                // finish the dependency line
+                sys.print("\n");
+            } else {
+                try {
+                    css = tree.toCSS({ compress: options.compress });
+                    if (output) {
+                        fd = fs.openSync(output, "w");
+                        fs.writeSync(fd, css, 0, "utf8");
+                    } else {
+                        sys.print(css);
+                    }
+                } catch (e) {
+                    less.writeError(e, options);
+                    process.exit(2);
                 }
-            } catch (e) {
-                less.writeError(e, options);
-                process.exit(2);
             }
         }
     });

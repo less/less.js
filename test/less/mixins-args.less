@@ -106,10 +106,13 @@ body {
     #id-mixin;
 }
 
-.mixin-arguments () {
-  border: @arguments;
+.mixin-arguments (@width: 0px) {
+    border: @arguments;
 }
 
 .arguments {
-  .mixin-arguments(1px, solid, black);
+    .mixin-arguments(1px, solid, black);
+}
+.arguments2 {
+    .mixin-arguments();
 }

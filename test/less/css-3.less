@@ -53,3 +53,16 @@ form[data-disabled] {
 p::before {
   color: black;
 }
+
+
+.mixin(@a,@b) {
+    li:nth-child(@a),
+    li:nth-child(@b) {
+        border:2px solid blue;
+    }
+}
+
+@linenum:2;
+ul:nth-child(@linenum) {
+    .mixin(4, 5);
+}

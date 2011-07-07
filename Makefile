@@ -29,6 +29,7 @@ less:
 	      build/ecma-5.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
+	      ${SRC}/colors.js\
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
 	      ${SRC}/browser.js >> ${DIST}

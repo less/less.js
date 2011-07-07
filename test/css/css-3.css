@@ -40,3 +40,6 @@ form[data-disabled] {
 p::before {
   color: black;
 }
+ul:nth-child(2) li:nth-child(4), ul:nth-child(2) li:nth-child(5) {
+  border: 2px solid blue;
+}

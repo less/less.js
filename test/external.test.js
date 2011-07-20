@@ -72,7 +72,7 @@ exports['test External with remote KML file'] = function(beforeExit) {
     new External(env, 'http://tilemill-data.s3.amazonaws.com/couchsurf.kml')
         .on('complete', function(external) {
             assert.ok(external instanceof External);
-            helper.md5File(external.path(), 'f8aea6d693a48dabdc7ea3586cce57f7', context);
+            helper.md5File(external.path(), '96b31a84f667007a2296edd78fb77c28', context);
         });
 };
 

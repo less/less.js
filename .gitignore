@@ -1,6 +1,3 @@
-/.ndistro_module_version
 /data
-/modules
-/lib/node
 /bin/*
 /test/data

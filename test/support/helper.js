@@ -1,4 +1,5 @@
 var path = require('path'),
+    _ = require('underscore'),
     fs = require('fs'),
     assert = require('assert'),
     crypto = require('crypto'),
@@ -32,6 +33,17 @@ exports.json = function(file, callback) {
         if (err) throw err;
         callback(JSON.parse(content));
     });
+};
+
+exports.mml = function(file) {
+    var mml = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    mml.Stylesheet = _(mml.Stylesheet).map(function(s) {
+        return {
+            id: s,
+            data: fs.readFileSync(path.join(path.dirname(file), s), 'utf-8')
+        };
+    });
+    return mml;
 };
 
 exports.showDifferences = function(e, format) {

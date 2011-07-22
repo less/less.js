@@ -5219,7 +5219,7 @@
 </Style>
 <Layer
       name="country-label"
-   srs="+proj=longlat +ellps=WGS84 +no_defs">
+   srs="">
     <StyleName>country-label</StyleName>
     <Datasource>
        <Parameter name="file"><![CDATA[[absolute path]]]></Parameter>

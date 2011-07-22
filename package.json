@@ -36,16 +36,11 @@
     "test": "./test"
   },
   "engines": {
-    "node": ">=0.2.4"
+    "node": "~ 0.4.0"
   },
   "dependencies": {
-    "underscore": ">= 1.0.3",
-    "step": ">= 0.0.3",
-    "zipfile": ">= 0.1.0",
-    "xml2js": ">= 0.1.0",
-    "srs": ">= 0.1.0",
-    "get": ">= 0.1.0",
-    "step": ">= 0.0.3"
+    "underscore": "1.1.x",
+    "xml2js": ">= 0.1.0"
   },
   "devDependencies": {
     "expresso" : "= 0.7.x",
@@ -53,7 +48,7 @@
     "jshint" : "= 0.2.x"
   },
   "scripts": {
-    "pretest": "npm install --dev",
-    "test": "make test"
+    "pretest": "which expresso || npm install --dev",
+    "test": "which expresso | sh"
   }
 }

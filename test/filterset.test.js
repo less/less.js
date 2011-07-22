@@ -1,6 +1,6 @@
 var assert = require('assert');
-var tree = require('carto/tree');
-require('carto/tree/filterset');
+var tree = require('../lib/carto/tree.js');
+require('../lib/carto/tree/filterset');
 
 exports['test filterset addable'] = function() {
     var f = new tree.Filterset;

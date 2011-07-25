@@ -247,10 +247,10 @@ Only for running tests:
 
 ## Changelog
 
-### 0.2.x
+### 0.2.0
 
-* Remove all external handling
-* All errors are now handled as Error objects
+* Removed all external handling - see http://github.com/mapbox/millstone.git for localizing/caching MML objects with external references.
+* All errors are now handled as Error objects.
 
 ### 0.1.14
 

@@ -32,23 +32,21 @@
     "mml2json.js": "./bin/mml2json.js"
   },
   "main": "./lib/carto/index",
-  "directories": {
-    "test": "./test"
-  },
   "engines": {
-    "node": "~ 0.4.0"
+    "node": "0.4.x"
   },
   "dependencies": {
     "underscore": "1.1.x",
     "xml2js": ">= 0.1.0"
   },
   "devDependencies": {
-    "expresso" : "= 0.7.x",
-    "docco" : "= 0.3.x",
-    "jshint" : "= 0.2.x"
+    "expresso": "0.8.x",
+    "docco": "0.3.x",
+    "jshint": "0.2.x",
+    "sax": "0.1.x"
   },
   "scripts": {
-    "pretest": "which expresso || npm install --dev",
-    "test": "which expresso | sh"
+    "pretest": "npm install --dev",
+    "test": "expresso"
   }
 }

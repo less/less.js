@@ -1,1 +1,3 @@
-[{"message":"variable @something is undefined","index":33,"type":"runtime","filename":"[absolute path]","line":2,"column":16,"extract":["#world[zoom=5] {","  polygon-fill: @something;","}"]}]
+undefined_variable.mss:2:16 variable @something is undefined
+undefined_variable.mss:3:14 variable @something is undefined
+undefined_variable.mss:4:22 variable @something is undefined

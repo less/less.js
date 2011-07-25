@@ -1,1 +1,1 @@
-[{"message":"Unrecognized selector: polygonopacity","index":41,"type":"syntax","filename":"[absolute path]","line":3,"column":2,"extract":["  polygon-fill: #f00;","  polygonopacity: 0.5;","}"]}]
+invalid_property.mss:3:2 Unrecognized rule: polygonopacity

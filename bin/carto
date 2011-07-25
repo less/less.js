@@ -4,8 +4,6 @@ var path = require('path'),
     fs = require('fs'),
     sys = require('sys');
 
-require.paths.unshift(path.join(__dirname, '../lib'), path.join(__dirname, '../lib/node'));
-
 var carto = require('carto');
 var args = process.argv.slice(1);
 var options = {};
@@ -56,23 +54,21 @@ fs.readFile(input, 'utf-8', function (err, data) {
         sys.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
         process.exit(1);
     }
+    try {
+        data = JSON.parse(data);
+    } catch(err) {
+        sys.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+        process.exit(1);
+    }
 
     try {
         new carto.Renderer({
             filename: input,
-            benchmark: options.benchmark,
-            local_data_dir: path.dirname(input),
+            benchmark: options.benchmark
         }).render(data, function(err, output) {
             if (err) {
-                if (Array.isArray(err)) {
-                    err.forEach(function(e) {
-                        carto.writeError(e, options);
-                    });
-                } else {
-                    console.log(err);
-                    throw err;
-                }
-
+                console.log(err);
+                throw err;
                 process.exit(1);
             } else {
                 if (!options.benchmark) {

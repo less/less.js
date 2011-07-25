@@ -4,17 +4,13 @@ Is a stylesheet renderer for Mapnik. It's an evolution of the [Cascadenik](https
 
 ## Installation
 
-Follow the directions to install [node-zipfile](https://github.com/springmeyer/node-zipfile) and then:
-
     npm install carto
-
-_note: possibly broken on ubuntu_
 
 ## MML
 _incompatibility_
 
 * MML files are assumed to be JSON, not XML. The files are near-identical to the XML files accepted by Cascadenik, just translated into JSON.
-* Like Cascadenik, you can also include remote stylesheets, by including their URLs as simple strings in the Stylesheet array.
+* Carto will not embed files or download URLs for you. Stylesheets should be embedded directly into your MML JSON and any datasources should be paths (relative or absolute) that would be acceptable in Mapnik XML.
 
 carto.js MML:
 
@@ -243,10 +239,6 @@ The TextMate bundle **requires** [node-mapnik](https://github.com/mapnik/node-ma
 It depends on:
 
 * [underscore.js](https://github.com/documentcloud/underscore/)
-* [zipfile](https://github.com/springmeyer/node-zipfile)
-* [srs](https://github.com/springmeyer/node-srs)
-* [step](https://github.com/creationix/step)
-* [node-get](https://github.com/tmcw/node-get)
 
 Only for running tests:
 
@@ -254,6 +246,11 @@ Only for running tests:
 * [sax-js](https://github.com/isaacs/sax-js/)
 
 ## Changelog
+
+### 0.2.x
+
+* Remove all external handling
+* All errors are now handled as Error objects
 
 ### 0.1.14
 

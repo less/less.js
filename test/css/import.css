@@ -1,6 +1,7 @@
 @import "import-test-d.css";
 #import {
   color: red;
+  background-image: url("import/relative.png");
 }
 .mixin {
   height: 10px;

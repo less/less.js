@@ -247,6 +247,10 @@ Only for running tests:
 
 ## Changelog
 
+### 0.2.1
+
+* Accept valid Map properties directly from input mml object.
+
 ### 0.2.0
 
 * Removed all external handling - see http://github.com/mapbox/millstone.git for localizing/caching MML objects with external references.

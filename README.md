@@ -196,6 +196,9 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 
 #### Using the binary
 
+Install `millstone` to enable support for localizing external resources (URLs and local files) referenced in your mml file.
+
+    npm install millstone
     carto map_file.json
 
 #### Using the code
@@ -246,6 +249,10 @@ Only for running tests:
 * [sax-js](https://github.com/isaacs/sax-js/)
 
 ## Changelog
+
+### 0.2.2
+
+* Update `carto` to use `millstone` if available.
 
 ### 0.2.1
 

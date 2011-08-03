@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-var path = require('path'),
-    fs = require('fs'),
-    sys = require('sys');
+var path = require('path');
+var fs = require('fs');
+var sys = require('sys');
 
 var carto = require('carto');
 var args = process.argv.slice(1);
@@ -49,18 +49,34 @@ if (options.benchmark) {
     var start = +new Date;
 }
 
-fs.readFile(input, 'utf-8', function (err, data) {
-    if (err) {
-        sys.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
-        process.exit(1);
-    }
-    try {
-        data = JSON.parse(data);
-    } catch(err) {
-        sys.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
-        process.exit(1);
-    }
+try {
+    var data = fs.readFileSync(input, 'utf-8');
+} catch(err) {
+    sys.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+    process.exit(1);
+}
 
+try {
+    data = JSON.parse(data);
+} catch(err) {
+    sys.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+    process.exit(1);
+}
+
+if (!require.resolve('millstone')) {
+    console.warn('carto: Millstone not found. Externals will not be resolved.');
+    return compile(null, data);
+} else {
+    var millstone = require('millstone');
+    millstone.resolve({
+        mml: data,
+        base: path.dirname(input),
+        cache: path.join(path.dirname(input), 'cache')
+    }, compile);
+}
+
+function compile(err, data) {
+    if (err) throw err;
     try {
         new carto.Renderer({
             filename: input,
@@ -82,4 +98,4 @@ fs.readFile(input, 'utf-8', function (err, data) {
     } catch (e) {
         sys.error(e);
     }
-});
+};

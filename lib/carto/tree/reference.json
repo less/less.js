@@ -722,6 +722,16 @@
                 "doc": "Transform the case of the characters",
                 "default-value": "none"
             },
+            "justify-alignment": {
+                "css": "text-align",
+                "type": [
+                    "left",
+                    "right",
+                    "center"
+                ],
+                "doc": "Set the text alignment.",
+                "default-value": "center"
+            },
             "meta-output": {
                 "css": "text-meta-output",
                 "type": "string",

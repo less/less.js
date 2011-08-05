@@ -63,11 +63,18 @@ try {
     process.exit(1);
 }
 
-if (!require.resolve('millstone')) {
+var millstone = null;
+
+try {
+    require.resolve('millstone');
+} catch (err) {
+    var millstone = require('millstone');
+}
+
+if (!millstone) {
     console.warn('carto: Millstone not found. Externals will not be resolved.');
     return compile(null, data);
 } else {
-    var millstone = require('millstone');
     millstone.resolve({
         mml: data,
         base: path.dirname(input),

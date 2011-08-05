@@ -63,13 +63,12 @@ try {
     process.exit(1);
 }
 
-var millstone = null;
+var millstone = undefined;
 
 try {
     require.resolve('millstone');
-} catch (err) {
-    var millstone = require('millstone');
-}
+    millstone = require('millstone');
+} catch (err) {}
 
 if (!millstone) {
     console.warn('carto: Millstone not found. Externals will not be resolved.');

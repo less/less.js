@@ -2,14 +2,14 @@
   color: #998899;
 }
 .scope1 {
-  color: blue;
-  border-color: black;
+  color: #0000ff;
+  border-color: #000000;
 }
 .scope1 .scope2 {
-  color: blue;
+  color: #0000ff;
 }
 .scope1 .scope2 .scope3 {
-  color: red;
-  border-color: black;
-  background-color: white;
+  color: #ff0000;
+  border-color: #000000;
+  background-color: #ffffff;
 }

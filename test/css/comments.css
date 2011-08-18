@@ -45,8 +45,8 @@
   }
 */
 .selector, .lots, .comments {
-  color: grey, /* blue */ orange;
+  color: #808080, /* blue */ #ffa500;
 }
 #last {
-  color: blue;
+  color: #0000ff;
 }

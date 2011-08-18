@@ -103,8 +103,8 @@
                 "type": "uri",
                 "api": "",
                 "default-value": "none",
-                "default-meaning": "No fonts will be registered",
-                "doc": "Path to a directory which holds fonts which should be registered when the Map is loaded"
+                "default-meaning": "No map-specific fonts will be registered",
+                "doc": "Path to a directory which holds fonts which should be registered when the Map is loaded (in addition to any fonts that may be automatically registered)."
             }
         },
         "polygon": {

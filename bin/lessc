@@ -18,6 +18,11 @@ var options = {
 args = args.filter(function (arg) {
     var match;
 
+    if (match = arg.match(/^-I(.+)$/)) {
+        options.paths.push(match[1]);
+        return false;
+    }
+
     if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]+))?$/i)) { arg = match[1] }
     else { return arg }
 

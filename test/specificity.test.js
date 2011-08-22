@@ -26,17 +26,15 @@ function cleanupItem(key, value) {
 helper.files('specificity', 'mss', function(file) {
     exports['test ' + file] = function(beforeExit) {
         helper.file(file, function(content) {
-            new carto.Parser({
+            var tree = (new carto.Parser({
                 paths: [ path.dirname(file) ],
                 filename: file
-            }).parse(content, function (err, tree) {
-                if (err) throw err;
+            })).parse(content);
 
-                var mss = tree.toList({});
-                mss = helper.makePlain(mss, cleanupItem);
+            var mss = tree.toList({});
+            mss = helper.makePlain(mss, cleanupItem);
 
-                helper.compareToFile(mss, file, helper.resultFile(file));
-            });
+            helper.compareToFile(mss, file, helper.resultFile(file));
         });
     }
 });

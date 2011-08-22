@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-var path = require('path');
-var fs = require('fs');
-var sys = require('sys');
+var path = require('path'),
+    fs = require('fs'),
+    sys = require('sys'),
+    carto = require('carto');
 
-var carto = require('carto');
 var args = process.argv.slice(1);
 var options = {};
 
@@ -102,6 +102,10 @@ function compile(err, data) {
             }
         });
     } catch (e) {
-        sys.error(e);
+        if (e.stack) {
+            sys.error(e.stack);
+        } else {
+            sys.error(e);
+        }
     }
 };

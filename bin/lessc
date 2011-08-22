@@ -12,7 +12,8 @@ var options = {
     compress: false,
     optimization: 1,
     silent: false,
-    paths: []
+    paths: [],
+    color: true
 };
 
 args = args.filter(function (arg) {
@@ -45,6 +46,9 @@ args = args.filter(function (arg) {
         case 'x':
         case 'compress':
             options.compress = true;
+            break;
+        case 'no-color':
+            options.color = false;
             break;
         case 'include-path':
             options.paths = match[2].split(':')

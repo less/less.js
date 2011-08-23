@@ -7,13 +7,16 @@ var path = require('path'),
 require.paths.unshift(path.join(__dirname, '..', 'lib'));
 
 var less = require('less');
+var bless = require('bless');
 var args = process.argv.slice(1);
 var options = {
     compress: false,
     optimization: 1,
     silent: false,
     paths: [],
-    color: true
+    color: true,
+    bless: false,
+    cleanup: true
 };
 
 args = args.filter(function (arg) {
@@ -60,6 +63,14 @@ args = args.filter(function (arg) {
                     }
                 });
             break;
+        case 'b':
+        case 'bless':
+            options.bless = true;
+            break;
+        case 'n':
+        case 'no-cleanup':
+            options.cleanup = false;
+            break;
         case 'O0': options.optimization = 0; break;
         case 'O1': options.optimization = 1; break;
         case 'O2': options.optimization = 2; break;
@@ -99,11 +110,48 @@ var parseLessFile = function (e, data) {
         } else {
             try {
                 css = tree.toCSS({ compress: options.compress });
-                if (output) {
-                    fd = fs.openSync(output, "w");
-                    fs.writeSync(fd, css, 0, "utf8");
+                if (options.bless) {
+                    output = output ? output : input;
+                    new(bless.Parser)({
+                        input: css,
+                        filename: output,
+                        options: options
+                    }).parse(css, function (err, files) {
+                        if (err) {
+                            throw err;
+                            process.exit(1);
+                        } else {
+                            try {
+                                for (i in files) {
+                                    var file = files[i];
+                                    fd = fs.openSync(file.filename, "w");
+                                    fs.writeSync(fd, file.content, 0, "utf8");
+                                }
+
+                                if(options.cleanup) {
+                                    bless.Parser.cleanup(output, function(err) {
+                                        if (err) throw err;
+                                    });
+                                }
+                            } catch (e) {
+                                throw e;
+                                process.exit(2);
+                            }
+                        }
+                    });
                 } else {
-                    sys.print(css);
+                    if (output) {
+                        fd = fs.openSync(output, "w");
+                        fs.writeSync(fd, css, 0, "utf8");
+                        
+                        if(options.cleanup) {
+                            bless.Parser.cleanup(output, function(err) {
+                                if (err) throw err;
+                            });
+                        }
+                    } else {
+                        sys.print(css);
+                    }
                 }
             } catch (e) {
                 less.writeError(e, options);

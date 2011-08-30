@@ -82,10 +82,12 @@ exports.compareToFile = function(value, originalFile, resultFile) {
 
 exports.parseXML = function(xml, callback) {
     var parser = sax.parser(true);
+    var i = 0;
     var tree = [ {} ];
 
     parser.onopentag = function(node) {
         if (!(node.name in tree[0])) tree[0][node.name] = [];
+        node.attributes.__order__ = i++;
         tree[0][node.name].push(node.attributes);
         tree.unshift(node.attributes);
     };

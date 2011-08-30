@@ -5,8 +5,8 @@
 
 <Style name="world" filter-mode="first">
   <Rule>
-    <LineSymbolizer stroke-width="2"/>
     <PolygonSymbolizer fill="#ffffff"/>
+    <LineSymbolizer stroke-width="2"/>
   </Rule>
 </Style>
 <Layer

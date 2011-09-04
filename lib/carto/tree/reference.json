@@ -685,7 +685,7 @@
                 "type": "float",
                 "doc": "Only place labels when the path is at least that many pixels long.",
                 "default-value": 0,
-                "default-meaning": "always place labels",
+                "default-meaning": "always place labels"
             },
             "allow-overlap": {
                 "css": "text-allow-overlap",

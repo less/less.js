@@ -683,9 +683,9 @@
             "minimum-path-length": {
                 "css": "text-min-path-length",
                 "type": "float",
-                "doc": "Only place labels when the path is at least that many pixels long.",
                 "default-value": 0,
-                "default-meaning": "always place labels"
+                "default-meaning": "place labels on all paths",
+                "doc": "Place labels only on paths longer than this value."
             },
             "allow-overlap": {
                 "css": "text-allow-overlap",

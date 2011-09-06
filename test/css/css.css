@@ -66,9 +66,17 @@ p + h1 {
   background-image: url(images/image.jpg);
   background: -webkit-gradient(linear, left top, left bottom, from(red), to(blue));
   margin: ;
+  filter: alpha(opacity=100);
 }
 #important {
   color: red !important;
   width: 100%!important;
   height: 20px ! important;
+}
+#data-uri {
+  background: url(data:image/png;charset=utf-8;base64,
+    kiVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD/
+    k//+l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4U
+    kg9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC);
+  background-image: url(data:image/x-png,f9difSSFIIGFIFJD1f982FSDKAA9==);
 }

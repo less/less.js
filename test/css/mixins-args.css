@@ -53,3 +53,9 @@ body {
   color: red;
   color: red;
 }
+.arguments {
+  border: 1px solid black;
+}
+.arguments2 {
+  border: 0px;
+}

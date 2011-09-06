@@ -44,6 +44,9 @@
     color: grey;
   }
 */
+.selector, .lots, .comments {
+  color: grey, /* blue */ orange;
+}
 #last {
   color: blue;
 }

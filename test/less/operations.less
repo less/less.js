@@ -45,3 +45,14 @@
     border-color: #333333 / 3 + #111; // #222222
   }
 }
+
+.negations {
+    @var: 4px;
+    variable: -@var; // 4
+    variable1: -@var + @var; // 0
+    variable2: @var + -@var; // 0
+    variable3: @var - -@var; // 8
+    variable4: -@var - -@var; // 0
+    paren: -(@var); // -4px
+    paren2: -(2 + 2) * -@var; // 16
+}

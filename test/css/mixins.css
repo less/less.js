@@ -48,3 +48,17 @@
 .direct {
   border-style: dotted;
 }
+.bo {
+  border: 1px;
+}
+.ar.bo.ca {
+  color: black;
+}
+.jo.ki {
+  background: none;
+}
+.extended {
+  border: 1px;
+  color: black;
+  background: none;
+}

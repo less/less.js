@@ -38,8 +38,7 @@ less:
 min: less
 	@@echo minifying...
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
-	@@java -jar build/compiler.jar\
-		     --js ${DIST} >> ${DIST_MIN}
+	@@uglifyjs ${DIST} >> ${DIST_MIN}
 
 clean:
 	git rm dist/*

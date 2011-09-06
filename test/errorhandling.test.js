@@ -23,7 +23,7 @@ helper.files('errorhandling', 'mml', function(file) {
             // @TODO for some reason, fs.readFile includes an additional \n
             // at the end of read files. Determine why.
             fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
-                assert.deepEqual(output, data.substr(0, data.length - 1));
+                if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
             });
         });
 

@@ -277,7 +277,7 @@
             "allow-overlap": {
                 "css": "marker-allow-overlap",
                 "type": "boolean",
-                "default-value": "false",
+                "default-value": false,
                 "default-meaning": "do not allow overlap"
             },
             "spacing": {
@@ -407,6 +407,47 @@
                 "doc": "Displace shield by fixed amount, in pixels, +/- along the Y axis.  A positive value will shift the text down",
                 "default-value": 0
             },
+            "opacity": {
+                "css": "shield-opacity",
+                "type": "float",
+                "doc": "(Default 1.0) - opacity of the image used for the shield",
+                "default-value": 1
+            },
+            "text-opacity": {
+                "css": "shield-text-opacity",
+                "type": "float",
+                "doc": "(Default 1.0) - opacity of the text placed on top of the shield",
+                "default-value": 1
+            },
+            "horizontal-alignment": {
+                "css": "shield-horizontal-alignment",
+                "type": "string",
+                "doc": "The shield's horizontal alignment from its centerpoint",
+                "default": "middle"
+            },
+            "text-transform": {
+                "css": "shield-text-transform",
+                "type": [
+                    "none",
+                    "uppercase",
+                    "lowercase",
+                    "capitalize"
+                ],
+                "doc": "Transform the case of the characters",
+                "default-value": "none"
+            },
+            "no-text": {
+                "css": "shield-no-text",
+                "type": "boolean",
+                "doc": "Whether the shield should make room for a text label.",
+                "default": "false"
+            },
+            "justify-alignment": {
+                "css": "shield-justify-alignment",
+                "type": "string",
+                "doc": "Define how text in a shield's label is justified",
+                "default": "middle"
+            },
             "meta-output": {
                 "css": "shield-meta-output",
                 "type": "string",
@@ -514,7 +555,7 @@
             "allow-overlap": {
                 "css": "point-allow-overlap",
                 "type": "boolean",
-                "default-value": "false",
+                "default-value": false,
                 "default-meaning": "do not allow overlap"
             },
             "ignore-placement": {
@@ -690,7 +731,7 @@
             "allow-overlap": {
                 "css": "text-allow-overlap",
                 "type": "boolean",
-                "default-value": "false",
+                "default-value": false,
                 "default-meaning": "do not allow overlap"
             },
             "placement": {

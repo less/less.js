@@ -339,6 +339,12 @@
                 ],
                 "default-value": "point"
             },
+            "avoid-edges": {
+                "css": "shield-avoid-edges",
+                "doc": "Tell positioning algorithm to avoid labeling near intersection edges.",
+                "type": "boolean",
+                "default": false
+            },
             "minimum-distance": {
                 "css": "shield-min-distance",
                 "type": "float",

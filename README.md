@@ -11,6 +11,7 @@ _incompatibility_
 
 * MML files are assumed to be JSON, not XML. The files are near-identical to the XML files accepted by Cascadenik, just translated into JSON.
 * Carto will not embed files or download URLs for you. Stylesheets should be embedded directly into your MML JSON and any datasources should be paths (relative or absolute) that would be acceptable in Mapnik XML.
+  The [millstone project](https://github.com/mapbox/millstone) aims to fill this need.
 
 carto.js MML:
 

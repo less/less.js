@@ -357,6 +357,18 @@
                 "default-value": 0,
                 "doc": "The spacing between repeated occurrences of the same shield on a line"
             },
+            "wrap-width": {
+                "css": "shield-wrap-width",
+                "type": "float",
+                "default-value": 0,
+                "doc": "Length before wrapping long names."
+            },
+            "wrap-character": {
+                "css": "shield-wrap-character",
+                "type": "string",
+                "default-value": " ",
+                "doc": "Use this character instead of a space to wrap long names."
+            },
             "halo-fill": {
                 "css": "shield-halo-fill",
                 "docs": "Color of the text halo",
@@ -635,6 +647,12 @@
                 "css": "text-wrap-width",
                 "doc": "Length of a chunk of text in characters before wrapping text",
                 "type": "float"
+            },
+            "wrap-character": {
+                "css": "text-wrap-character",
+                "type": "string",
+                "default-value": " ",
+                "doc": "Use this character instead of a space to wrap long text."
             },
             "spacing": {
                 "css": "text-spacing",

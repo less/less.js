@@ -221,6 +221,15 @@
                 "css": "line-meta-writer",
                 "type": "string",
                 "default-value": ""
+            },
+            "rasterizer" {
+                "css": "line-rasterizer",
+                "type": [
+                    "full",
+                    "fast"
+                ],
+                "default-value": "full",
+                "doc": "Exposes an alternate AGG rendering method that sacrifices some accuracy for speed."
             }
         },
         "markers": {

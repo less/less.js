@@ -222,7 +222,7 @@
                 "type": "string",
                 "default-value": ""
             },
-            "rasterizer" {
+            "rasterizer": {
                 "css": "line-rasterizer",
                 "type": [
                     "full",

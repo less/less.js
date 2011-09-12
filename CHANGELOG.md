@@ -1,5 +1,10 @@
 ## Changelog
 
+### 0.3.0 (NOT YET RELEASED)
+
+* Add "name/" prefix for creating multiple instances of a symbolizer in the same
+  attachment
+
 ### 0.2.3
 
 * Fixes many bugs

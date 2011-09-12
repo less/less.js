@@ -52,7 +52,7 @@ Cascadenik MML
 &lt;/Layer&gt;
 &lt;/Map&gt;</pre>
 
-## Attachments
+## Attachments and Instances
 _new_
 
 In CSS, a certain object can only have one instance of a property. A `<div>` has a specific border width and color, rules that match better than others (#id instead of .class) override previous definitions. `carto.js` acts the same way normally for the sake of familiarity and organization, but Mapnik itself is more powerful.
@@ -72,6 +72,17 @@ Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSym
 Attachments are optional: if you don't define them, carto.js does overriding of styles just like Cascadenik.
 
 This brings us to another _incompatibility_: `line-inline` and `line-outline` have been removed from the language, because attachments are capable of the same trick.
+
+While attachments allow creating implicit "layers" with the same data, using **instances** allows you to create multiple symbolizers in the same style/layer:
+
+    #roads {
+      casing/line-width: 6;
+      casing/line-color: #333;
+      line-width: 4;
+      line-color: #666;
+      }
+
+This makes Mapnik first draw the line of color #333 with a width of 6, and then immediately afterwards, it draws the same line again with width 4 and color #666. Contrast that to attachments: Mapnik would first draw all casings before proceeding to the actual lines.
 
 ## text-name
 _incompatibility_

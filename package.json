@@ -3,11 +3,11 @@
   "description"   : "Leaner CSS",
   "url"           : "http://lesscss.org",
   "keywords"      : ["css", "parser", "lesscss", "browser"],
-  "author"        : "Alexis Sellier <self@cloudhead.net>",
+  "author"        : ["Alexis Sellier <self@cloudhead.net>", "Ahmed Wahed. <oneofone@gmail.com"],
   "contributors"  : [],
   "version"       : "1.1.4",
   "bin"           : { "lessc": "./bin/lessc" },
-  "main"          : "./lib/less/index",
+  "main"          : "./lib/index",
   "directories"   : { "test": "./test" },
-  "engines"       : { "node": ">=0.4.0" }
+  "engines"       : { "node": ">=0.5.0" }
 }

@@ -1,6 +1,6 @@
 {
   "name"          : "less",
-  "description"   : "Leaner CSS",
+  "description"   : "Leaner CSS (node 0.5.x version)",
   "url"           : "http://lesscss.org",
   "keywords"      : ["css", "parser", "lesscss", "browser"],
   "author"        : ["Alexis Sellier <self@cloudhead.net>", "Ahmed Wahed. <oneofone@gmail.com"],

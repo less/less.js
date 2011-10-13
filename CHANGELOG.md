@@ -4,6 +4,8 @@
 
 * Add "name/" prefix for creating multiple instances of a symbolizer in the same
   attachment
+* Only output <Layer> tag when there's at least one style
+* Sort styles by location of first rule's index
 
 ### 0.2.3
 

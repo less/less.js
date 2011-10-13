@@ -202,7 +202,7 @@ helper.removeAbsoluteImages = function(xml) {
 
 helper.removeAbsoluteDatasources = function(xml) {
     xml.Map.forEach(function(map) {
-        map.Layer.forEach(function(layer) {
+        if (map.Layer) map.Layer.forEach(function(layer) {
             layer.Datasource.forEach(function(datasource) {
                 datasource.Parameter.forEach(function(param) {
                     if (param.name === 'file') {

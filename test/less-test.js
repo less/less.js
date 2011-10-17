@@ -42,21 +42,20 @@ function toCSS(path, callback) {
     fs.readFile(path, 'utf-8', function (e, str) {
         if (e) { return callback(e) }
 
-        new(less.Parser)({
-            paths: [require('path').dirname(path)],
-            optimization: 0
-        }).parse(str, function (err, tree) {
-            if (err) {
+        try {
+            var root = new(less.Parser)({
+                paths: [require('path').dirname(path)],
+                optimization: 0
+            }).parse(str);
+
+            root.toCSS().then(function(css) {
+                callback(null, css);
+            }, function(err) {
                 callback(err);
-            } else {
-                try {
-                    css = tree.toCSS();
-                    callback(null, css);
-                } catch (e) {
-                    callback(e);
-                }
-            }
-        });
+            });
+        } catch (err) {
+            callback(err);
+        }
     });
 }
 

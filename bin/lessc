@@ -88,29 +88,27 @@ var parseLessFile = function (e, data) {
         process.exit(1);
     }
 
-    new(less.Parser)({
-        paths: [path.dirname(input)].concat(options.paths),
-        optimization: options.optimization,
-        filename: input
-    }).parse(data, function (err, tree) {
-        if (err) {
-            less.writeError(err, options);
-            process.exit(1);
-        } else {
-            try {
-                css = tree.toCSS({ compress: options.compress });
-                if (output) {
-                    fd = fs.openSync(output, "w");
-                    fs.writeSync(fd, css, 0, "utf8");
-                } else {
-                    sys.print(css);
-                }
-            } catch (e) {
-                less.writeError(e, options);
-                process.exit(2);
+    try {
+        var root = new(less.Parser)({
+            paths: [path.dirname(input)].concat(options.paths),
+            optimization: options.optimization,
+            filename: input
+        }).parse(data);
+        root.toCSS({ compress: options.compress }).then(function(css) {
+            if (output) {
+                fd = fs.openSync(output, "w");
+                fs.writeSync(fd, css, 0, "utf8");
+            } else {
+                sys.print(css);
             }
-        }
-    });
+        }, function(e) {
+            less.writeError(e, options);
+            process.exit(2);
+        });
+    } catch (e) {
+        less.writeError(e, options);
+        process.exit(1);
+    }
 };
 
 if (input != '-') {

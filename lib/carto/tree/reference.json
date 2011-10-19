@@ -631,6 +631,7 @@
                 "css": "text-name",
                 "type": "string",
                 "required": true,
+                "serialization": "content",
                 "doc": "Value to use for a text label. Data columns are specified using brackets like [column_name]"
             },
             "face-name": {

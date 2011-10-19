@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.4.0
+
+* Switches text-symbolizer syntax to new-style for Mapnik 2.0
+
 ### 0.3.0
 
 * Add "name/" prefix for creating multiple instances of a symbolizer in the same

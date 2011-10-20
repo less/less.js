@@ -1,6 +1,6 @@
 /bin/*
-npm_modules
-test/errorhandling/layers
-test/errorhandling/geography
-test/errorhandling/geography
-test/rendering/cache
+/npm_modules
+/test/errorhandling/layers
+/test/errorhandling/geography
+/test/errorhandling/geography
+/test/rendering/cache

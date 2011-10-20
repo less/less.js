@@ -7,41 +7,41 @@
   <Rule>
     <MaxScaleDenominator>400000</MaxScaleDenominator>
     <Filter>([area] &gt; 16000000)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>200000</MaxScaleDenominator>
     <Filter>([area] &gt; 4000000)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>100000</MaxScaleDenominator>
     <Filter>([area] &gt; 1000000)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>50000</MaxScaleDenominator>
     <Filter>([area] &gt; 500000)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>25000</MaxScaleDenominator>
     <Filter>([area] &gt; 250000)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>12500</MaxScaleDenominator>
     <Filter>([area] &gt; 125000)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>5000</MaxScaleDenominator>
     <Filter>([area] &gt; 62500)</Filter>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
   <Rule>
     <MaxScaleDenominator>2500</MaxScaleDenominator>
-    <TextSymbolizer name="[name]" face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" />
+    <TextSymbolizer face-name="Helvetica" halo-fill="#ffffff" halo-radius="2" placement="interior" size="11" wrap-width="20" >[name]</TextSymbolizer>
   </Rule>
 </Style>
 <Layer name="world"

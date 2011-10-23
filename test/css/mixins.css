@@ -59,6 +59,14 @@
 }
 .extended {
   border: 1px;
-  color: black;
   background: none;
+}
+.topbar {
+  color: red;
+}
+.topbar .fill {
+  background-color: #222;
+}
+body > header {
+  color: red;
 }

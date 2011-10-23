@@ -47,15 +47,25 @@
 }
 
 .bo {
-    border: 1px;
+  border: 1px;
 }
 .ar.bo.ca {
-    color: black;
+  color: black;
 }
 .jo.ki {
-    background: none;
+  background: none;
 }
 .extended {
-    .bo;
-    .jo.ki;
+  .bo;
+  .jo.ki;
+}
+
+.topbar {
+  color: red;
+}
+.topbar .fill {
+  background-color: #222;
+}
+body > header {
+  .topbar;
 }

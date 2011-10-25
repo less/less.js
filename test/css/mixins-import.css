@@ -1,14 +1,17 @@
 .a {
+  mixed: 20;
   foo: 'bar';
   mixed: 25;
   main: 'yes';
 }
 .b {
+  mixed: 20;
   foo: 'bar';
   mixed: 25;
   main: 'yes';
 }
 #main {
+  mixed: 20;
   foo: 'bar';
   mixed: 25;
   main: 'yes';

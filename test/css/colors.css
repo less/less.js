@@ -7,6 +7,9 @@
 #yelow #rgba {
   color: rgba(255, 238, 170, 0.1);
 }
+#yelow #argb {
+  color: #1affeeaa;
+}
 #blue #short {
   color: #00f;
 }
@@ -15,6 +18,9 @@
 }
 #blue #rgba {
   color: rgba(0, 0, 255, 0.1);
+}
+#blue #argb {
+  color: #1a0000ff;
 }
 #alpha #hsla {
   color: rgba(61, 45, 41, 0.6);

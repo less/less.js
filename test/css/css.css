@@ -80,3 +80,6 @@ p + h1 {
     kg9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC);
   background-image: url(data:image/x-png,f9difSSFIIGFIFJD1f982FSDKAA9==);
 }
+#svg-data-uri {
+  background: transparent url('data:image/svg+xml, <svg version="1.1"><g></g></svg>');
+}

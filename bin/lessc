@@ -12,11 +12,17 @@ var options = {
     compress: false,
     optimization: 1,
     silent: false,
-    paths: []
+    paths: [],
+    color: true
 };
 
 args = args.filter(function (arg) {
     var match;
+
+    if (match = arg.match(/^-I(.+)$/)) {
+        options.paths.push(match[1]);
+        return false;
+    }
 
     if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]+))?$/i)) { arg = match[1] }
     else { return arg }
@@ -41,6 +47,9 @@ args = args.filter(function (arg) {
         case 'compress':
             options.compress = true;
             break;
+        case 'no-color':
+            options.color = false;
+            break;
         case 'include-path':
             options.paths = match[2].split(':')
                 .map(function(p) {
@@ -58,7 +67,7 @@ args = args.filter(function (arg) {
 });
 
 var input = args[1];
-if (input && input[0] != '/') {
+if (input && input[0] != '/' && input != '-') {
     input = path.join(process.cwd(), input);
 }
 var output = args[2];
@@ -73,7 +82,7 @@ if (! input) {
     process.exit(1);
 }
 
-fs.readFile(input, 'utf-8', function (e, data) {
+var parseLessFile = function (e, data) {
     if (e) {
         sys.puts("lessc: " + e.message);
         process.exit(1);
@@ -102,4 +111,20 @@ fs.readFile(input, 'utf-8', function (e, data) {
             }
         }
     });
-});
+};
+
+if (input != '-') {
+    fs.readFile(input, 'utf-8', parseLessFile);
+} else {
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+
+    var buffer = '';
+    process.stdin.on('data', function(data) {
+        buffer += data;
+    });
+
+    process.stdin.on('end', function() {
+        parseLessFile(false, buffer);
+    });
+}

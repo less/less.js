@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.4.3
+
+* Fixes serialization bug with invalid selectors.
+
 ### 0.4.0
 
 * Switches text-symbolizer syntax to new-style for Mapnik 2.0

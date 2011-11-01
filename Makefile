@@ -1,7 +1,7 @@
 #
 # Run all tests
 #
-test: 
+test:
 	node test/less-test.js
 
 #
@@ -13,15 +13,15 @@ benchmark:
 #
 # Build less.js
 #
-SRC = lib/less
+NAME = less-clean
+SRC = lib/
 HEADER = build/header.js
-VERSION = `cat package.json | grep version \
-														| grep -o '[0-9]\.[0-9]\.[0-9]\+'`
+VERSION = `git describe | sed -e 's/^\w//'`
 DIST = dist/less-${VERSION}.js
 RHINO = dist/less-rhino-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
-
 less:
+	@@echo v${VERSION}
 	@@mkdir -p dist
 	@@touch ${DIST}
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST}
@@ -51,16 +51,15 @@ rhino:
 min: less
 	@@echo minifying...
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
-	@@uglifyjs ${DIST} >> ${DIST_MIN}
+	@@closure --js ${DIST} >> ${DIST_MIN} || uglifyjs ${DIST} >> ${DIST_MIN}
 
 clean:
-	git rm dist/*
+	rm -f -v dist/*
 
 dist: clean min
-	git add dist/*
-	git commit -a -m "(dist) build ${VERSION}"
-	git archive master --prefix=less/ -o less-${VERSION}.tar.gz
-	npm publish less-${VERSION}.tar.gz
+	git commit -a
+	git archive clean --prefix=less/ -o ${NAME}-${VERSION}.tar.gz
+	npm publish ${NAME}-${VERSION}.tar.gz
 
 stable:
 	npm tag less ${VERSION} stable

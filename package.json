@@ -1,13 +1,13 @@
 {
-  "name"          : "less",
-  "description"   : "Leaner CSS (node 0.5.x version)",
+  "name"          : "less-clean",
+  "description"   : "Leaner CSS",
   "url"           : "http://lesscss.org",
   "keywords"      : ["css", "parser", "lesscss", "browser"],
-  "author"        : ["Alexis Sellier <self@cloudhead.net>", "Ahmed Wahed. <oneofone@gmail.com"],
-  "contributors"  : [],
-  "version"       : "1.1.4",
+  "author"        : ["Alexis Sellier <self@cloudhead.net>"],
+  "contributors"  : ["Ahmed Wahed. <oneofone@gmail.com"],
+  "version"       : "1.1.5-pre",
   "bin"           : { "lessc": "./bin/lessc" },
   "main"          : "./lib/index",
   "directories"   : { "test": "./test" },
-  "engines"       : { "node": ">=0.5.0" }
+  "engines"       : { "node": ">=0.4.8" }
 }

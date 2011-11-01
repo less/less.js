@@ -1,10 +1,8 @@
 var path = require('path'),
     fs = require('fs'),
-    sys = require('sys');
+    util = require('util');
 
-require.paths.unshift(__dirname, path.join(__dirname, '..'));
-
-var less = require('lib/less');
+var less = require('../lib/index');
 var file = path.join(__dirname, 'benchmark.less');
 
 if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
@@ -12,7 +10,7 @@ if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
 fs.readFile(file, 'utf8', function (e, data) {
     var tree, css, start, end, total;
 
-    sys.puts("Bechmarking...\n", path.basename(file) + " (" +
+    util.puts("Bechmarking...\n", path.basename(file) + " (" +
              parseInt(data.length / 1024) + " KB)", "");
 
     start = new(Date);
@@ -22,7 +20,7 @@ fs.readFile(file, 'utf8', function (e, data) {
 
         total = end - start;
 
-        sys.puts("Parsing: " +
+        util.puts("Parsing: " +
                  total + " ms (" +
                  parseInt(1000 / total *
                  data.length / 1024) + " KB\/s)");
@@ -31,13 +29,13 @@ fs.readFile(file, 'utf8', function (e, data) {
         css = tree.toCSS();
         end = new(Date);
 
-        sys.puts("Generation: " + (end - start) + " ms (" +
+        util.puts("Generation: " + (end - start) + " ms (" +
                  parseInt(1000 / (end - start) *
                  data.length / 1024) + " KB\/s)");
 
         total += end - start;
 
-        sys.puts("Total: " + total + "ms (" +
+        util.puts("Total: " + total + "ms (" +
                  parseInt(1000 / total * data.length / 1024) + " KB/s)");
 
         if (err) {

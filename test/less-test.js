@@ -1,10 +1,8 @@
 var path = require('path'),
     fs = require('fs'),
-    sys = require('sys');
+    util = require('util');
 
-require.paths.unshift(__dirname, path.join(__dirname, '..'));
-
-var less = require('lib/less');
+var less = require('../lib/index');
 
 less.tree.functions.add = function (a, b) {
     return new(less.tree.Dimension)(a.value + b.value);
@@ -16,7 +14,7 @@ less.tree.functions.color = function (str) {
     if (str.value === "evil red") { return new(less.tree.Color)("600") }
 }
 
-sys.puts("\n" + stylize("LESS", 'underline') + "\n");
+util.puts("\n" + stylize("LESS", 'underline') + "\n");
 
 fs.readdirSync('test/less').forEach(function (file) {
     if (! /\.less/.test(file)) { return }
@@ -25,14 +23,14 @@ fs.readdirSync('test/less').forEach(function (file) {
         var name = path.basename(file, '.less');
 
         fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
-            sys.print("- " + name + ": ")
-            if (less === css) { sys.print(stylize('OK', 'green')) }
+            util.print("- " + name + ": ")
+            if (less === css) { util.print(stylize('OK', 'green')) }
             else if (err) {
-                sys.print(stylize("ERROR: " + (err && err.message), 'red'));
+                util.print(stylize("ERROR: " + (err && err.message), 'red'));
             } else {
-                sys.print(stylize("FAIL", 'yellow'));
+                util.print(stylize("FAIL", 'yellow'));
             }
-            sys.puts("");
+            util.puts("");
         });
     });
 });

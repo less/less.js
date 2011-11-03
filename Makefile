@@ -16,7 +16,7 @@ benchmark:
 NAME = less-clean
 SRC = lib/
 HEADER = build/header.js
-VERSION = `git describe | sed -e 's/^\w//'`
+VERSION = `git describe --tag | sed -e 's/^\w//'`
 DIST = dist/less-${VERSION}.js
 RHINO = dist/less-rhino-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
@@ -59,10 +59,10 @@ clean:
 dist: clean min
 	git commit -a
 	git archive clean --prefix=less/ -o ${NAME}-${VERSION}.tar.gz
-	npm publish ${NAME}-${VERSION}.tar.gz
+	#npm publish ${NAME}-${VERSION}.tar.gz
 
 stable:
-	npm tag less ${VERSION} stable
+	npm tag ${NAME} ${VERSION} stable
 
 
 .PHONY: test benchmark

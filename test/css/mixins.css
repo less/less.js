@@ -48,6 +48,9 @@
 .direct {
   border-style: dotted;
 }
+.bo, .bar {
+  width: 100%;
+}
 .bo {
   border: 1px;
 }
@@ -58,7 +61,10 @@
   background: none;
 }
 .extended {
+  width: 100%;
   border: 1px;
-  color: black;
   background: none;
+}
+.foo .bar {
+  width: 100%;
 }

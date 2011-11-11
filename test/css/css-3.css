@@ -43,3 +43,36 @@ p::before {
 #issue322 {
   -webkit-animation: anim2 7s infinite ease-in-out;
 }
+@-webkit-keyframes testframes {
+  0% {
+    bottom: 0px;
+  }
+  60% {
+    bottom: 60px;
+  }
+  100% {
+    bottom: 100px;
+  }
+}
+@-moz-keyframes testframes {
+  0% {
+    bottom: 0px;
+  }
+  60% {
+    bottom: 60px;
+  }
+  100% {
+    bottom: 100px;
+  }
+}
+@keyframes testframes {
+  0% {
+    bottom: 0px;
+  }
+  60% {
+    bottom: 60px;
+  }
+  100% {
+    bottom: 100px;
+  }
+}

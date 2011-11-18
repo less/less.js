@@ -19,6 +19,7 @@ VERSION = `cat package.json | grep version \
 														| grep -o '[0-9]\.[0-9]\.[0-9]\+'`
 DIST = dist/less-${VERSION}.js
 RHINO = dist/less-rhino-${VERSION}.js
+RHINO_EMBED = dist/less-rhino-embed-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
 
 less:
@@ -45,8 +46,22 @@ rhino:
 	      ${SRC}/functions.js\
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
+	      ${SRC}/rhino-common.js\
 	      ${SRC}/rhino.js > ${RHINO}
 	@@echo ${RHINO} built.
+
+rhino-embed:
+	@@mkdir -p dist
+	@@touch ${RHINO_EMBED}
+	@@cat build/require-rhino.js\
+	      build/ecma-5.js\
+	      ${SRC}/parser.js\
+	      ${SRC}/functions.js\
+	      ${SRC}/tree/*.js\
+	      ${SRC}/tree.js\
+	      ${SRC}/rhino-common.js\
+	      ${SRC}/rhino-embed.js > ${RHINO_EMBED}
+	@@echo ${RHINO_EMBED} built.
 
 min: less
 	@@echo minifying...

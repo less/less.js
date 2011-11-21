@@ -14,6 +14,8 @@
 .vars {
     @var: `4 + 4`;
     width: @var;
+    @var2: ~`2 + 2 + 'px'`;
+    width: @var2 * 2;
 }
 .escape-interpol {
     @world: "world";

@@ -4,6 +4,7 @@
   height: undefined("self");
   border-width: 5;
   variable: 11;
+  padding: 5%;
 }
 #built-in {
   escaped: -Some::weird(#thing, y);

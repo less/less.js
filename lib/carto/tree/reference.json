@@ -366,6 +366,10 @@
                 "default-value": 0,
                 "doc": "The spacing between repeated occurrences of the same shield on a line"
             },
+            "minimum-padding": {
+                "css": "shield-min-padding",
+                "type": "float"
+            },
             "wrap-width": {
                 "css": "shield-wrap-width",
                 "type": "float",

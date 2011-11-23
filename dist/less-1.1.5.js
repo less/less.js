@@ -145,7 +145,7 @@ if (typeof environment === "object" && ({}).toString.call(environment) === "[obj
     // Node.js
     less = exports,
     tree = require('./tree');
-    less.mode = 'rhino';
+    less.mode = 'node';
 } else {
     // Browser
     if (typeof(window.less) === 'undefined') { window.less = {} }
@@ -2348,7 +2348,7 @@ tree.URL = function (val, paths) {
         this.attrs = val;
     } else {
         // Add the base path if the URL is relative and we are in the browser
-        if (!/^(?:https?:\/\/|file:\/\/|data:)?/.test(val.value) && paths.length > 0 && typeof(window) !== 'undefined') {
+        if (less.mode === 'browser' && !/^(?:https?:\/\/|file:\/\/|data:|\/)/.test(val.value) && paths.length > 0) {
             val.value = paths[0] + (val.value.charAt(0) === '/' ? val.value.slice(1) : val.value);
         }
         this.value = val;

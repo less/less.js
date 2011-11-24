@@ -14,6 +14,8 @@
   greyscale: #2e2e2e;
   spin-p: #bf6a40;
   spin-n: #bf4055;
+  contrast-white: #000000;
+  contrast-black: #ffffff;
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
   format-multiple: "hello earth 2";

@@ -65,11 +65,11 @@ args = args.filter(function (arg) {
 });
 
 var input = args[1];
-if (input && input[0] != '/' && input != '-') {
+if (input && input[0] != '/' && input != '-' && input[1] != ':') {
     input = path.join(process.cwd(), input);
 }
 var output = args[2];
-if (output && output[0] != '/') {
+if (output && output[0] != '/' && input[1] != ':') {
     output = path.join(process.cwd(), output);
 }
 

@@ -19,3 +19,8 @@
     float: none;
   }
 }
+@media screen and (min-width:42) {
+  div {
+    color: #222;
+  }
+}

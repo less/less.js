@@ -3,6 +3,7 @@
 @import url(http://fonts.googleapis.com/css?family=Open+Sans);
 #import {
   color: red;
+  background-image: url("import/relative.png");
 }
 .mixin {
   height: 10px;

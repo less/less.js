@@ -8,6 +8,7 @@ var less = require('../lib/less');
 var args = process.argv.slice(1);
 var options = {
     compress: false,
+    yuicompress: false,
     optimization: 1,
     silent: false,
     paths: [],
@@ -44,6 +45,9 @@ args = args.filter(function (arg) {
         case 'x':
         case 'compress':
             options.compress = true;
+            break;
+        case 'yui-compress':
+            options.yuicompress = true;
             break;
         case 'no-color':
             options.color = false;
@@ -96,7 +100,10 @@ var parseLessFile = function (e, data) {
             process.exit(1);
         } else {
             try {
-                css = tree.toCSS({ compress: options.compress });
+                css = tree.toCSS({
+                    compress: options.compress,
+                    yuicompress: options.yuicompress
+                });
                 if (output) {
                     fd = fs.openSync(output, "w");
                     fs.writeSync(fd, css, 0, "utf8");

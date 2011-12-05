@@ -1,0 +1,19 @@
+.clearfix {
+  *zoom: 1;
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
+    height: 0;
+  }
+}
+
+.foo {
+  +.clearfix;
+  color: red;
+}
+
+.bar {
+  +.clearfix;
+  color: blue;
+}

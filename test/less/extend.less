@@ -1,0 +1,27 @@
+.error {
+  border: 1px #f00;
+  background: #fdd;
+}
+.error.intrusion {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+.intrusion .error {
+  display: none;
+}
+.badError {
+  +.error;
+  border-width: 3px;
+}
+
+.foo .bar, .foo .baz {
+    display: none;
+}
+
+.ext1 .ext2 {
+    +.foo;
+}
+
+.ext3, .ext4 {
+    +.foo;
+}

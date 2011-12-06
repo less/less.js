@@ -20,6 +20,14 @@
   }
 }
 @media screen and (min-width:42) {
+  @import "import-test-d.css";
+  #import {
+    color: red;
+  }
+  .mixin {
+    height: 10px;
+    color: red;
+  }
   div {
     color: #222;
   }

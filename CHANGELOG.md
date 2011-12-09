@@ -1,6 +1,6 @@
 ## Changelog
 
-### 0.4.4
+### 0.4.5
 
 * Fixes text-name with HTML entities
 * Fixes function calls with incorrect number of arguments

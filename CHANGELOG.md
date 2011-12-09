@@ -1,5 +1,11 @@
 ## Changelog
 
+### 0.4.4
+
+* Fixes text-name with HTML entities
+* Fixes function calls with incorrect number of arguments
+* Fixes invalid code segments not having eval
+
 ### 0.4.3
 
 * Fixes serialization bug with invalid selectors.

@@ -51,7 +51,8 @@ rhino:
 
 min: less
 	@@echo minifying...
-	@@uglifyjs ${DIST} >> ${DIST_MIN}
+	@@uglifyjs ${DIST} > ${DIST_MIN}
+	@@echo ${DIST_MIN} built.
 
 clean:
 	git rm dist/*

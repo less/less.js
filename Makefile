@@ -51,7 +51,6 @@ rhino:
 
 min: less
 	@@echo minifying...
-	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
 	@@uglifyjs ${DIST} >> ${DIST_MIN}
 
 clean:

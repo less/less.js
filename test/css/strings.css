@@ -31,8 +31,8 @@
   url5: "http://lesscss.org/54.4";
 }
 .mix-mul-class {
-  color: blue;
-  color: red;
-  color: blue;
-  color: orange;
+  color: #0000ff;
+  color: #ff0000;
+  color: #0000ff;
+  color: #ffa500;
 }

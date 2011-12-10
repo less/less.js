@@ -64,7 +64,7 @@ p + h1 {
   width: .1em;
   background-color: #009998;
   background-image: url(images/image.jpg);
-  background: -webkit-gradient(linear, left top, left bottom, from(red), to(blue));
+  background: -webkit-gradient(linear, left top, left bottom, from(#ff0000), to(#0000ff));
   margin: ;
   filter: alpha(opacity=100);
 }

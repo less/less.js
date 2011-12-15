@@ -24,6 +24,7 @@
   lightness: 95%;
   rounded: 11;
   roundedpx: 3px;
+  percentage: 20%;
 }
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);

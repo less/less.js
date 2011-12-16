@@ -22,3 +22,9 @@
 .ext4 .baz {
   display: none;
 }
+div.ext5,
+.ext6 > .ext5,
+div.ext7,
+.ext6 > .ext7 {
+  width: 100px;
+}

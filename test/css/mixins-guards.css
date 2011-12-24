@@ -1,0 +1,20 @@
+.light1 {
+  color: white;
+  margin: 1px;
+}
+.light2 {
+  color: black;
+  margin: 1px;
+}
+.max1 {
+  width: 6;
+}
+.max2 {
+  width: 8;
+}
+.glob1 {
+  margin: auto auto;
+}
+.default1 {
+  content: default;
+}

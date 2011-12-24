@@ -1,0 +1,46 @@
+
+// Stacking, functions..
+
+.light (@a) ? lightness(@a) > 50% {
+  color: white;
+}
+.light (@a) ? lightness(@a) < 50% {
+  color: black;
+}
+.light (@a) {
+  margin: 1px;
+}
+
+.light1 { .light(#ddd) }
+.light2 { .light(#444) }
+
+// Arguments against each other
+
+.max (@a, @b) ? @a > @b {
+  width: @a;
+}
+.max (@a, @b) ? @a < @b {
+  width: @b;
+}
+
+.max1 { .max(3, 6) }
+.max2 { .max(8, 1) }
+
+// Globals inside guards
+
+@g: auto;
+
+.glob (@a) ? @a = @g {
+  margin: @a @g;
+}
+
+.glob1 { .glob(auto) }
+
+// Scope and default values
+
+@a: auto;
+
+.default (@a: inherit) ? @a = inherit {
+  content: default;
+}
+.default1 { .default }

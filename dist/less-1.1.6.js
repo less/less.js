@@ -2066,6 +2066,12 @@ tree.JavaScript.prototype = {
                     index: this.index };
         }
         if (typeof(result) === 'string') {
+            var match;
+            if (match = /^(-?\d*\.?\d+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|rad|grad|turn)?/.exec(result)) {
+                return new (tree.Dimension)(match[1], match[2]);
+            } else if (match = /^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})/.exec(result)) {
+                return new(tree.Color)(match[1]);
+            }
             return new(tree.Quoted)('"' + result + '"', result, this.escaped, this.index);
         } else if (Array.isArray(result)) {
             return new(tree.Anonymous)(result.join(', '));

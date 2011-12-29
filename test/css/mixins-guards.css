@@ -15,6 +15,18 @@
 .glob1 {
   margin: auto auto;
 }
+.ops1 {
+  height: gt-or-eq;
+  height: lt-or-eq;
+}
+.ops2 {
+  height: gt-or-eq;
+  height: not-eq;
+}
+.ops3 {
+  height: lt-or-eq;
+  height: not-eq;
+}
 .default1 {
   content: default;
 }

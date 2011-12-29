@@ -33,8 +33,22 @@
 .glob (@a) when (@a = @g) {
   margin: @a @g;
 }
-
 .glob1 { .glob(auto) }
+
+// Other operators
+
+.ops (@a) when (@a >= 0) {
+  height: gt-or-eq;
+}
+.ops (@a) when (@a =< 0) {
+  height: lt-or-eq;
+}
+.ops (@a) when (@a != 0) {
+  height: not-eq;
+}
+.ops1 { .ops(0) }
+.ops2 { .ops(1) }
+.ops3 { .ops(-1) }
 
 // Scope and default values
 

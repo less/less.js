@@ -1,10 +1,10 @@
 
 // Stacking, functions..
 
-.light (@a) ? lightness(@a) > 50% {
+.light (@a) when (lightness(@a) > 50%) {
   color: white;
 }
-.light (@a) ? lightness(@a) < 50% {
+.light (@a) when (lightness(@a) < 50%) {
   color: black;
 }
 .light (@a) {
@@ -16,10 +16,10 @@
 
 // Arguments against each other
 
-.max (@a, @b) ? @a > @b {
+.max (@a, @b) when (@a > @b) {
   width: @a;
 }
-.max (@a, @b) ? @a < @b {
+.max (@a, @b) when (@a < @b) {
   width: @b;
 }
 
@@ -30,7 +30,7 @@
 
 @g: auto;
 
-.glob (@a) ? @a = @g {
+.glob (@a) when (@a = @g) {
   margin: @a @g;
 }
 
@@ -40,7 +40,7 @@
 
 @a: auto;
 
-.default (@a: inherit) ? @a = inherit {
+.default (@a: inherit) when (@a = inherit) {
   content: default;
 }
 .default1 { .default }

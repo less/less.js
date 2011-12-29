@@ -58,3 +58,14 @@
   content: default;
 }
 .default1 { .default }
+
+// true & false keywords
+.test (@a) when (@a) {
+    content: "true.";
+}
+.test (@a) when (!@a) {
+    content: "false.";
+}
+
+.test1 { .test(true) }
+.test2 { .test(false) }

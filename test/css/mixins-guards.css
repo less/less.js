@@ -30,3 +30,9 @@
 .default1 {
   content: default;
 }
+.test1 {
+  content: "true.";
+}
+.test2 {
+  content: "false.";
+}

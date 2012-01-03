@@ -43,7 +43,7 @@
 .ops (@a) when (@a =< 0) {
   height: lt-or-eq;
 }
-.ops (@a) when (@a != 0) {
+.ops (@a) when (@a ^= 0) {
   height: not-eq;
 }
 .ops1 { .ops(0) }
@@ -63,7 +63,7 @@
 .test (@a) when (@a) {
     content: "true.";
 }
-.test (@a) when (!@a) {
+.test (@a) when not (@a) {
     content: "false.";
 }
 
@@ -86,5 +86,9 @@
 .bool () when (false), (false), (true)                       { content: false, false, true } // TRUE
 .bool () when (false), (false) and (true), (false)           { content: false, false and true, false } // FALSE
 .bool () when (false), (true) and (true) and (true), (false) { content: false, true and true and true, false } // TRUE
+.bool () when not (false)                                    { content: not false }
+.bool () when not (true) and not (false)                     { content: not true and not false }
+.bool () when not (true) and not (true)                      { content: not true and not true }
+.bool () when not (false) and (false), not (false)           { content: not false and false, not false }
 
 .bool1 { .bool }

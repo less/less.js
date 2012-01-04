@@ -9,6 +9,7 @@ var path = require('path'),
 var less = require('../lib/less');
 var args = process.argv.slice(1);
 var options = {
+    depends: false,
     compress: false,
     yuicompress: false,
     optimization: 1,
@@ -68,6 +69,10 @@ args = args.filter(function (arg) {
         case 'compress':
             options.compress = true;
             break;
+        case 'M':
+        case 'depends':
+            options.depends = true;
+            break;
         case 'yui-compress':
             options.yuicompress = true;
             break;
@@ -125,10 +130,12 @@ if (!continueProcessing) {
 }
 
 var input = args[1];
+var inputbase = args[1];
 if (input && input != '-') {
     input = path.resolve(process.cwd(), input);
 }
 var output = args[2];
+var outputbase = args[2];
 if (output) {
     output = path.resolve(process.cwd(), output);
 }
@@ -155,6 +162,11 @@ var ensureDirectory = function (filepath) {
     }
 };
 
+if (options.depends) {
+    // output the target filename, needs to be specified on the command line (no stdout)
+    sys.print(outputbase + ": ");
+}
+
 var parseLessFile = function (e, data) {
     if (e) {
         sys.puts("lessc: " + e.message);
@@ -165,12 +177,15 @@ var parseLessFile = function (e, data) {
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
 
-    new(less.Parser)(options)
-        .parse(data, function (err, tree) {
+    var parser = new(less.Parser)(options);
+    parser.parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);
             currentErrorcode = 1;
             return;
+        } else if (options.depends) {
+            // todo - loop through the imports
+            // sys.print(path.resolve(path.dirname(env.parentPath),importname)
         } else if(!options.lint) {
             try {
                 var css = tree.toCSS({

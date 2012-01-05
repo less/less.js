@@ -238,14 +238,23 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
             }
         });
 
-## TextMate bundle
+## Syntax Highlighting
 
-There's a TextMate bundle that offers syntax highlighting for `.mss` and `.mml` files in the `build` directory. To install, download or clone this repository, then double-click on the `carto.tmbundle` icon in that folder.
+There's a TextMate and vim bundle that offers syntax highlighting for `.mss` and `.mml` files in the `build` directory.
+
+### TextMate bundle
+
+To install, download or clone this repository, then double-click on the `carto.tmbundle` icon in that folder.
 
 The TextMate bundle **requires** [node-mapnik](https://github.com/mapnik/node-mapnik) and Carto installed globally - the versions that are installed locally in TileMill or other tools can't be automatically discovered.
 
     npm install mapnik -g
     npm install carto -g
+
+### Vim
+
+To install, download or clone this repository, then add the `vim-carto`
+directory located at `build/vim-carto` to your `~/.vim` file.
 
 ## Credits
 

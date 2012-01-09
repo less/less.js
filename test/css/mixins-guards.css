@@ -45,3 +45,14 @@
 .test5 {
   content: "false.";
 }
+.bool1 {
+  content: true and true;
+  content: true;
+  content: false, true;
+  content: false and true and true, true;
+  content: false, true and true;
+  content: false, false, true;
+  content: false, true and true and true, false;
+  content: not false;
+  content: not false and false, not false;
+}

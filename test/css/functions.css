@@ -27,6 +27,17 @@
   percentage: 20%;
   color: #ff0011;
 }
+#built-in .is-a {
+  color: true;
+  color: true;
+  color: true;
+  keyword: true;
+  number: true;
+  string: true;
+  pixel: true;
+  percent: true;
+  em: true;
+}
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);
 }

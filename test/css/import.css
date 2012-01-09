@@ -16,3 +16,8 @@
   width: 10px;
   height: 30%;
 }
+@media screen and (max-width: 600px) {
+  body {
+    width: 100%;
+  }
+}

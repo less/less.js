@@ -30,6 +30,18 @@
   roundedpx: round(10px / 3);
   percentage: percentage(10px / 50);
   color: color("#ff0011");
+
+  .is-a {
+    color: iscolor(#ddd);
+    color: iscolor(red);
+    color: iscolor(rgb(0, 0, 0));
+    keyword: iskeyword(hello);
+    number: isnumber(32);
+    string: isstring("hello");
+    pixel: ispixel(32px);
+    percent: ispercentage(32%);
+    em: isem(32em);
+  }
 }
 
 #alpha {

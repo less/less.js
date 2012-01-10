@@ -138,7 +138,8 @@ var less, tree;
 if (typeof environment === "object" && ({}).toString.call(environment) === "[object Environment]") {
     // Rhino
     // Details on how to detect Rhino: https://github.com/ringo/ringojs/issues/88
-    less = {};
+    if (typeof(window) === 'undefined') { less = {} }
+    else                                { less = window.less = {} }
     tree = less.tree = {};
     less.mode = 'rhino';
 } else if (typeof(window) === 'undefined') {
@@ -208,6 +209,7 @@ less.Parser = function Parser(env) {
         queue: [],                      // Files which haven't been imported yet
         files: {},                      // Holds the imported parse trees
         mime:  env && env.mime,         // MIME type of .less files
+        error: null,                    // Error in parsing/evaluating an import
         push: function (path, callback) {
             var that = this;
             this.queue.push(path);
@@ -215,11 +217,12 @@ less.Parser = function Parser(env) {
             //
             // Import a file asynchronously
             //
-            less.Parser.importer(path, this.paths, function (root) {
+            less.Parser.importer(path, this.paths, function (e, root) {
                 that.queue.splice(that.queue.indexOf(path), 1); // Remove the path from the queue
                 that.files[path] = root;                        // Store the root
 
-                callback(root);
+                if (e && !that.error) { that.error = e }
+                callback(e, root);
 
                 if (that.queue.length === 0) { finish() }       // Call `finish` if we're done importing
             }, env);
@@ -338,7 +341,7 @@ less.Parser = function Parser(env) {
 
         this.type = e.type || 'SyntaxError';
         this.message = e.message;
-        this.filename = env.filename;
+        this.filename = e.filename || env.filename;
         this.index = e.index;
         this.line = typeof(line) === 'number' ? line + 1 : null;
         this.callLine = e.call && (getLocation(e.call) + 1);
@@ -499,6 +502,9 @@ less.Parser = function Parser(env) {
                     } catch (e) {
                         throw new(LessError)(e, env);
                     }
+
+                    if (parser.imports.error) { throw parser.imports.error }
+
                     if (options.yuicompress && less.mode === 'node') {
                         return require('./cssmin').compressor.cssmin(css);
                     } else if (options.compress) {
@@ -896,10 +902,11 @@ less.Parser = function Parser(env) {
                 // the `{...}` block.
                 //
                 definition: function () {
-                    var name, params = [], match, ruleset, param, value, cond, memo;
-
+                    var name, params = [], match, ruleset, param, value, cond;
                     if ((input.charAt(i) !== '.' && input.charAt(i) !== '#') ||
                         peek(/^[^{]*(;|})/)) return;
+
+                    save();
 
                     if (match = $(/^([#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+)\s*\(/)) {
                         name = match[1];
@@ -921,8 +928,6 @@ less.Parser = function Parser(env) {
                         }
                         expect(')');
 
-                        memo = i;
-
                         if ($(/^when/)) { // Guard
                             cond = expect(this.conditions, 'expected condition');
                         }
@@ -931,6 +936,8 @@ less.Parser = function Parser(env) {
 
                         if (ruleset) {
                             return new(tree.mixin.Definition)(name, params, ruleset, cond);
+                        } else {
+                            restore();
                         }
                     }
                 }
@@ -2203,10 +2210,7 @@ tree.Import = function (path, imports, features) {
 
     // Only pre-compile .less files
     if (! this.css) {
-        imports.push(this.path, function (root) {
-            if (! root) {
-                throw new(Error)("Error parsing " + that.path);
-            }
+        imports.push(this.path, function (e, root) {
             that.root = root;
         });
     }

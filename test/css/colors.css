@@ -46,3 +46,13 @@
 #00ff00 {
   color: #00ff00;
 }
+.lightenblue {
+  color: #3333ff;
+}
+.darkenblue {
+  color: #0000cc;
+}
+.unknowncolors {
+  color: blue2;
+  border: 2px solid superred;
+}

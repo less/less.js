@@ -6,7 +6,7 @@
   color: blue;
   width: 10px;
   height: 99%;
-  border: 2px dotted black;
+  border: 2px dotted #000000;
 }
 .one-arg {
   width: 15px;
@@ -54,8 +54,11 @@ body {
   color: red;
 }
 .arguments {
-  border: 1px solid black;
+  border: 1px solid #000000;
 }
 .arguments2 {
   border: 0px;
+}
+.edge-case {
+  border: "{";
 }

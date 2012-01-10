@@ -30,6 +30,7 @@ less:
 	      build/ecma-5.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
+	      ${SRC}/colors.js\
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
 	      ${SRC}/browser.js >> ${DIST}
@@ -50,8 +51,8 @@ rhino:
 
 min: less
 	@@echo minifying...
-	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
-	@@uglifyjs ${DIST} >> ${DIST_MIN}
+	@@uglifyjs ${DIST} > ${DIST_MIN}
+	@@echo ${DIST_MIN} built.
 
 clean:
 	git rm dist/*

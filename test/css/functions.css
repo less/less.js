@@ -16,6 +16,8 @@
   spin-n: #bf4055;
   contrast-white: #000000;
   contrast-black: #ffffff;
+  contrast-light: #111111;
+  contrast-dark: #eeeeee;
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
   format-multiple: "hello earth 2";

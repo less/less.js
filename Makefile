@@ -54,6 +54,10 @@ min: less
 	@@uglifyjs ${DIST} > ${DIST_MIN}
 	@@echo ${DIST_MIN} built.
 
+server: less
+	cp dist/less-${VERSION}.js test/html/
+	cd test/html && python -m SimpleHTTPServer
+
 clean:
 	git rm dist/*
 

@@ -2708,7 +2708,7 @@ for (var i = 0; i < links.length; i++) {
 }
 
 
-less.refresh = function (reload) {
+less.refresh = function (reload, id) {
     var startTime, endTime;
     startTime = endTime = new(Date);
 
@@ -2722,35 +2722,39 @@ less.refresh = function (reload) {
         log("css for " + sheet.href + " generated in " + (new(Date) - endTime) + 'ms');
         (env.remaining === 0) && log("css generated in " + (new(Date) - startTime) + 'ms');
         endTime = new(Date);
-    }, reload);
+    }, reload, id);
 
-    loadStyles();
+    loadStyles(id);
 };
 less.refreshStyles = loadStyles;
 
 less.refresh(less.env === 'development');
 
-function loadStyles() {
+function loadStyles(id) {
     var styles = document.getElementsByTagName('style');
     for (var i = 0; i < styles.length; i++) {
         if (styles[i].type.match(typePattern)) {
-            new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
-                var css = tree.toCSS();
-                var style = styles[i];
-                try {
-                    style.innerHTML = css;
-                } catch (_) {
-                    style.styleSheets.cssText = css;
-                }
-                style.type = 'text/css';
-            });
+			if(id === undefined || styles[i].id == id) {
+				new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
+					var css = tree.toCSS();
+					var style = styles[i];
+					try {
+						style.innerHTML = css;
+					} catch (_) {
+						style.styleSheets.cssText = css;
+					}
+					style.type = 'text/css';
+				});
+			}
         }
     }
 }
 
 function loadStyleSheets(callback, reload) {
     for (var i = 0; i < less.sheets.length; i++) {
-        loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1));
+		if(id === undefined || less.sheets[i].id == id) {
+			loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1));
+		}
     }
 }
 

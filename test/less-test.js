@@ -35,6 +35,29 @@ fs.readdirSync('test/less').forEach(function (file) {
     });
 });
 
+fs.readdirSync('test/js').forEach(function(file) {
+    if (! /\.js$/.test(file)) { return }
+
+    var name = path.basename(file, '.js');
+    var tests = require(__dirname + '/js/' + file);
+    var testName;
+    var error;
+    sys.print("- " + name + ": ")
+    for (testName in tests) {
+        try {
+            tests[testName]();
+        } catch (err) {
+            error = err;
+            sys.print(stylize("ERROR: [" + testName + "] " + (err.message || err.toString()), 'red'));
+            break;
+        }
+    }
+    if (!error) {
+        sys.print(stylize('OK', 'green'));
+    }
+    sys.puts("");
+});
+
 function toCSS(path, callback) {
     var tree, css;
     fs.readFile(path, 'utf-8', function (e, str) {

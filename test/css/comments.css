@@ -44,7 +44,9 @@
     color: grey;
   }
 */
-.selector, .lots, .comments {
+.selector,
+.lots,
+.comments {
   color: #808080, /* blue */ #ffa500;
   -webkit-border-radius: 2px /* webkit only */;
   -moz-border-radius: 8px /* moz only with operation */;

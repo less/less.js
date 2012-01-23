@@ -13,7 +13,9 @@
 .whitespace {
   color: white ;
 }
-.white, .space, .mania {
+.white,
+.space,
+.mania {
   color: white;
 }
 .no-semi-column {

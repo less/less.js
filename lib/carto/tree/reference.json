@@ -112,7 +112,6 @@
                 "css": "polygon-fill",
                 "api": "fill",
                 "type": "color",
-                "availability": "0.5.1",
                 "default-value": "rgba(128,128,128,1)",
                 "default-meaning": "gray and fully opaque (alpha = 1), same as rgb(128,128,128)",
                 "doc": "Fill color to assign to a polygon"
@@ -121,7 +120,6 @@
                 "css": "polygon-gamma",
                 "api": "gamma",
                 "type": "float",
-                "availability": "0.7.0",
                 "default-value": 1,
                 "default-meaning": "fully antialiased",
                 "range": "0-1",
@@ -191,7 +189,6 @@
                 "css": "line-gamma",
                 "api": "gamma",
                 "type": "float",
-                "availability": "2.0.0",
                 "default-value": 1,
                 "default-meaning": "fully antialiased",
                 "range": "0-1",
@@ -291,7 +288,7 @@
             },
             "spacing": {
                 "css": "marker-spacing",
-                "docs": "Space between repeated labels",
+                "doc": "Space between repeated labels",
                 "type": "float"
             },
             "max-error": {
@@ -319,6 +316,7 @@
                 "css": "shield-name",
                 "type": "string",
                 "required": true,
+                "serialization": "content",
                 "doc": "Value to use for a shield\"s text label. Data columns are specified using brackets like [column_name]"
             },
             "face-name": {
@@ -384,7 +382,6 @@
             },
             "halo-fill": {
                 "css": "shield-halo-fill",
-                "docs": "Color of the text halo",
                 "type": "color",
                 "default-value": "#FFFFFF",
                 "default-meaning": "white",
@@ -710,7 +707,6 @@
             },
             "halo-fill": {
                 "css": "text-halo-fill",
-                "docs": "Color of the text halo",
                 "type": "color",
                 "default-value": "#FFFFFF",
                 "default-meaning": "white",
@@ -771,6 +767,11 @@
                 "type": "boolean",
                 "default-value": false,
                 "default-meaning": "do not allow overlap"
+            },
+            "orientation": {
+                "css": "text-orientation",
+                "type": "float",
+                "doc": "Rotate the text."
             },
             "placement": {
                 "css": "text-placement",
@@ -998,3 +999,4 @@
         "transparent":  [0, 0, 0, 0]
     }
 }
+

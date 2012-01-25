@@ -71,5 +71,13 @@
   alpha: rgba(153, 94, 51, 0.6);
 }
 #blendmodes {
+  multiply: #ed0000;
+  screen: #f600f6;
+  overlay: #ed0000;
   softlight: #ff0000;
+  hardlight: #0000ed;
+  difference: #f600f6;
+  exclusion: #f600f6;
+  average: #7b007b;
+  negation: #d73131;
 }

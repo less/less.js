@@ -41,3 +41,6 @@
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);
 }
+#blendmodes {
+  softlight: #ff0000;
+}

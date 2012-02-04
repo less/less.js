@@ -43,9 +43,17 @@
   .mixin();
 }
 
+.kwargs {
+  .mixina(@color: blue, @style: bold, @width: 10% * 9);
+}
+
+.args-and-kwargs {
+  .mixina(dotted, @width: 10px, @color: white)
+}
+
 .var-args {
   @var: 9;
-  .mixin(@var, @var * 2);
+  .mixin(@var, @b: @var * 2);
 }
 
 .multi-mix {

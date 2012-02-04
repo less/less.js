@@ -42,7 +42,8 @@ function toCSS(path, callback) {
 
         new(less.Parser)({
             paths: [require('path').dirname(path)],
-            optimization: 0
+            optimization: 0,
+            filename: require('path').basename(path)
         }).parse(str, function (err, tree) {
             if (err) {
                 callback(err);

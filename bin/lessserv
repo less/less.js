@@ -1,0 +1,163 @@
+#!/usr/bin/env node
+
+var path = require('path'),
+    fs = require('fs'),
+    sys = require('util'),
+    os = require('os');
+
+var less = require('../lib/less');
+var args = process.argv.slice(1);
+var options = {
+    compress:false,
+    yuicompress:false,
+    optimization:1,
+    silent:false,
+    paths:[],
+    color:true,
+    path:process.cwd(),
+    msg:false
+};
+
+args = args.filter(function (arg) {
+    var match;
+
+    if (match = arg.match(/^-I(.+)$/)) {
+        options.paths.push(match[1]);
+        return false;
+    }
+
+    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]+))?$/i)) {
+        arg = match[1]
+    }
+    else {
+        return arg
+    }
+
+    switch (arg) {
+        case 'v':
+        case 'version':
+            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
+            process.exit(0);
+        case 'verbose':
+            options.verbose = true;
+            break;
+        case 's':
+        case 'silent':
+            options.silent = true;
+            break;
+        case 'h':
+        case 'help':
+            sys.puts("usage: lessc source [destination]");
+            process.exit(0);
+        case 'x':
+        case 'compress':
+            options.compress = true;
+            break;
+        case 'yui-compress':
+            options.yuicompress = true;
+            break;
+        case 'no-color':
+            options.color = false;
+            break;
+        case 'p':
+        case 'path':
+            options.path = match[2];
+            break;
+        case 'include-path':
+            options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
+                .map(function (p) {
+                    if (p) {
+                        return path.resolve(process.cwd(), p);
+                    }
+                });
+            break;
+        case 'O0':
+            options.optimization = 0;
+            break;
+        case 'O1':
+            options.optimization = 1;
+            break;
+        case 'O2':
+            options.optimization = 2;
+            break;
+    }
+});
+
+var input = args[1];
+if (input && input != '-') {
+    input = path.resolve(process.cwd(), input);
+}
+var output = args[2];
+if (output) {
+    output = path.resolve(process.cwd(), output);
+}
+
+var css, fd, tree;
+
+function _processLessFileHandler(data, errorCallback, okCallback) {
+    new (less.Parser)({
+        paths:[path.dirname(input)].concat(options.paths),
+        optimization:options.optimization,
+        filename:input
+    }).parse(data, function (err, tree) {
+        if (err) {
+            errorCallback(500, JSON.stringify(err));
+        } else {
+            try {
+                css = tree.toCSS({
+                    compress:options.compress,
+                    yuicompress:options.yuicompress
+                });
+                okCallback(css);
+            } catch (e) {
+                errorCallback(500, JSON.stringify(e));
+            }
+        }
+    });
+}
+
+function processLessFile(input, errorCallback, okCallback) {
+    input = path.resolve(input);
+    if (input.indexOf(options.path) != 0) {
+        errorCallback(500, 'We are not serving urls with .. in path');
+        return;
+    }
+    path.exists(input, function(exists) {
+        if (!exists) {
+            errorCallback(404, 'Path ' + input + ' does not exists');
+        } else {
+            fs.readFile(input, 'utf-8', function (e, data) {
+                if (e) {
+                    errorCallback(500, 'Error reading file: ' + input);
+                } else {
+                    _processLessFileHandler(data, errorCallback, okCallback);
+                }
+            });
+        }
+    });
+}
+
+function _writeResponse(res, code, text) {
+    res.writeHead(code, {'Content-Type':'text/css'});
+    res.end(text);
+}
+
+var http = require('http');
+options.path = path.normalize(options.path);
+http.createServer(
+    function (req, res) {
+        input = options.path + req.url;
+        processLessFile(
+            input,
+            function (code, msg) {
+                console.log('Error serving ' + req.url + ': ' + msg)
+                _writeResponse(res, code, 'Error');
+            },
+            function (data) {
+                _writeResponse(res, 200, data);
+            }
+        );
+    }).listen(1337, "127.0.0.1");
+console.log('Server running at http://127.0.0.1:1337/');
+
+

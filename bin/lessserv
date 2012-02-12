@@ -25,6 +25,10 @@ args = args.filter(function (arg) {
         options.paths.push(match[1]);
         return false;
     }
+    if (match = arg.match(/^\--path=(.+)$/)) {
+        options.path = match[1];
+        return false;
+    }
 
     if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]+))?$/i)) {
         arg = match[1]
@@ -58,10 +62,6 @@ args = args.filter(function (arg) {
             break;
         case 'no-color':
             options.color = false;
-            break;
-        case 'p':
-        case 'path':
-            options.path = match[2];
             break;
         case 'include-path':
             options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
@@ -144,6 +144,7 @@ function _writeResponse(res, code, text) {
 
 var http = require('http');
 options.path = path.normalize(options.path);
+console.log('path' + options.path)
 http.createServer(
     function (req, res) {
         input = options.path + req.url;

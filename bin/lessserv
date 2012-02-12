@@ -144,6 +144,7 @@ function _writeResponse(res, code, text) {
 
 var http = require('http');
 options.path = path.normalize(options.path);
+options.paths.push(options.path);
 console.log('path' + options.path)
 http.createServer(
     function (req, res) {

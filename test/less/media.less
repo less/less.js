@@ -5,7 +5,7 @@
 
 @media print {
     .class {
-        color: blue;    
+        color: blue;
         .sub {
             width: @var;
         }
@@ -28,4 +28,10 @@
     body {
         max-width: 480px;
     }
+}
+
+body {
+  @media print {
+    padding: 20px;
+  }
 }

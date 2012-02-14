@@ -25,3 +25,8 @@
     max-width: 480px;
   }
 }
+@media print {
+  body {
+    padding: 20px;
+  }
+}

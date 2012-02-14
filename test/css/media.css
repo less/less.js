@@ -29,4 +29,7 @@
   body {
     padding: 20px;
   }
+  body  header {
+    background-color: red;
+  }
 }

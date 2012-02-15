@@ -28,7 +28,6 @@
   }],
   "bin": {
     "carto": "./bin/carto",
-    "cartox": "./bin/cartox",
     "mml2json.js": "./bin/mml2json.js"
   },
   "main": "./lib/carto/index",

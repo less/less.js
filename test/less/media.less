@@ -53,3 +53,23 @@ body {
         }
     }
 }
+
+.mediaMixin(@fallback: 200px) {
+    background: black;
+
+    @media handheld {
+        background: white;
+
+        @media (max-width: @fallback) {
+            background: red;
+        }
+    }
+}
+
+.a {
+  .mediaMixin(100px);
+}
+
+.b {
+  .mediaMixin();
+}

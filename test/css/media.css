@@ -48,3 +48,29 @@
     width: 100%;
   }
 }
+.a {
+  background: black;
+}
+@media handheld {
+  .a {
+    background: white;
+  }
+}
+@media handheld and (max-width: 100px) {
+  .a {
+    background: red;
+  }
+}
+.b {
+  background: black;
+}
+@media handheld {
+  .b {
+    background: white;
+  }
+}
+@media handheld and (max-width: 200px) {
+  .b {
+    background: red;
+  }
+}

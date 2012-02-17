@@ -31,11 +31,25 @@
 }
 
 body {
-  @media print {
-    padding: 20px;
+    @media print {
+        padding: 20px;
 
-    header {
-      background-color: red;
+        header {
+            background-color: red;
+        }
+
+        @media (orientation:landscape) {
+            margin-left: 20px;
+        }
     }
-  }
+}
+
+body {
+    @media a, b and c {
+        width: 95%;
+
+        @media x, y {
+            width: 100%;
+        }
+    }
 }

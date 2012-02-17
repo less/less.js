@@ -33,3 +33,18 @@
     background-color: red;
   }
 }
+@media print and (orientation: landscape) {
+  body {
+    margin-left: 20px;
+  }
+}
+@media a, b and c {
+  body {
+    width: 95%;
+  }
+}
+@media a and x, b and c and x, a and y, b and c and y {
+  body {
+    width: 100%;
+  }
+}

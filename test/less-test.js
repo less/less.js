@@ -29,6 +29,14 @@ fs.readdirSync('test/less').forEach(function (file) {
                 sys.print(stylize("ERROR: " + (err && err.message), 'red'));
             } else {
                 sys.print(stylize("FAIL", 'yellow'));
+                
+                require('diff').diffLines(css, less).forEach(function(item) {
+                  if(item.added || item.removed) {
+                    sys.print(stylize(item.value, item.added ? 'green' : 'red'));
+                  } else {
+                    sys.print(item.value);
+                  }
+                })
             }
             sys.puts("");
         });

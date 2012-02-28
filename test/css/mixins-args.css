@@ -55,13 +55,17 @@ body {
 }
 .arguments {
   border: 1px solid #000000;
+  width: 1px;
 }
 .arguments2 {
   border: 0px;
+  width: 0px;
 }
 .arguments3 {
   border: 0px;
+  width: 0px;
 }
 .edge-case {
   border: "{";
+  width: "{";
 }

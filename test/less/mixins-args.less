@@ -106,8 +106,9 @@ body {
     #id-mixin;
 }
 
-.mixin-arguments (@width: 0px) {
+.mixin-arguments (@width: 0px, ...) {
     border: @arguments;
+    width: @width;
 }
 
 .arguments {

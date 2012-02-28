@@ -73,3 +73,7 @@ body {
 .b {
   .mediaMixin();
 }
+@smartphone: ~"only screen and (max-width: 200px)";
+@media @smartphone {
+  width: 480px;
+}

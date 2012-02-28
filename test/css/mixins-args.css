@@ -59,6 +59,9 @@ body {
 .arguments2 {
   border: 0px;
 }
+.arguments3 {
+  border: 0px;
+}
 .edge-case {
   border: "{";
 }

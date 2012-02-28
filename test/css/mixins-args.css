@@ -65,6 +65,10 @@ body {
   border: 0px;
   width: 0px;
 }
+.arguments4 {
+  border: 4 2;
+  width: 4;
+}
 .edge-case {
   border: "{";
   width: "{";

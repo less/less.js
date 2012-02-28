@@ -121,12 +121,13 @@ body {
     .mixin-arguments;
 }
 
-.mixin-arguments2 (@width, ...) {
+.mixin-arguments2 (@width, @rest...) {
     border: @arguments;
+    rest: @rest;
     width: @width;
 }
 .arguments4 {
-    .mixin-arguments2(4, 2);
+    .mixin-arguments2(0, 1, 2, 3, 4);
 }
 
 // Edge cases

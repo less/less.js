@@ -32,7 +32,7 @@
   },
   "main": "./lib/carto/index",
   "engines": {
-    "node": "0.4.x"
+    "node": ">=0.4.x"
   },
   "dependencies": {
     "underscore": "1.1.x",

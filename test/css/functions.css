@@ -26,6 +26,7 @@
   roundedpx: 3px;
   percentage: 20%;
   color: #ff0011;
+  mix: #800080;
 }
 #built-in .is-a {
   color: true;

@@ -1,5 +1,11 @@
 ## Changelog
 
+### 0.4.6
+
+* Node >=v0.6.x compatibility
+* Dropped cartox
+* Updated reference.json
+
 ### 0.4.5
 
 * Fixes text-name with HTML entities

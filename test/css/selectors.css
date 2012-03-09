@@ -55,3 +55,15 @@ p a span {
 .qux .foo .baz .biz {
   display: none;
 }
+.other ::fnord {
+  color: #ff0000;
+}
+.other::fnord {
+  color: #ff0000;
+}
+.other ::bnord {
+  color: #ff0000;
+}
+.other::bnord {
+  color: #ff0000;
+}

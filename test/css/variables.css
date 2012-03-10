@@ -25,6 +25,17 @@
 .alpha {
   filter: alpha(opacity=42);
 }
-}
 .testPollution {
   a: 'pollution';
+}
+.units {
+  width: 1px;
+  z-index: 1;
+  square-pixel: 1px*px;
+  odd-unit: 2em*px/cm;
+  percentage: 500%;
+  pixels: 500px;
+  conversion-metric-a: 30mm;
+  conversion-metric-b: 3cm;
+  conversion-imperial: 3in;
+}

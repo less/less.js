@@ -5,7 +5,7 @@
 
 @media print {
     .class {
-        color: blue;    
+        color: blue;
         .sub {
             width: @var;
         }
@@ -28,4 +28,52 @@
     body {
         max-width: 480px;
     }
+}
+
+body {
+    @media print {
+        padding: 20px;
+
+        header {
+            background-color: red;
+        }
+
+        @media (orientation:landscape) {
+            margin-left: 20px;
+        }
+    }
+}
+
+body {
+    @media a, b and c {
+        width: 95%;
+
+        @media x, y {
+            width: 100%;
+        }
+    }
+}
+
+.mediaMixin(@fallback: 200px) {
+    background: black;
+
+    @media handheld {
+        background: white;
+
+        @media (max-width: @fallback) {
+            background: red;
+        }
+    }
+}
+
+.a {
+  .mediaMixin(100px);
+}
+
+.b {
+  .mediaMixin();
+}
+@smartphone: ~"only screen and (max-width: 200px)";
+@media @smartphone {
+  width: 480px;
 }

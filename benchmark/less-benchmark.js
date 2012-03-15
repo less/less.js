@@ -10,7 +10,7 @@ if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
 fs.readFile(file, 'utf8', function (e, data) {
     var tree, css, start, end, total;
 
-    sys.puts("Bechmarking...\n", path.basename(file) + " (" +
+    sys.puts("Benchmarking...\n", path.basename(file) + " (" +
              parseInt(data.length / 1024) + " KB)", "");
 
     start = new(Date);

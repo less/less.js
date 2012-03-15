@@ -1,26 +1,24 @@
 .zero {
+  variadic: true;
   zero: 0;
   one: 1;
   two: 2;
   three: 3;
 }
 .one {
-  zero: 0;
+  variadic: true;
   one: 1;
   one-req: 1;
   two: 2;
   three: 3;
 }
 .two {
-  zero: 0;
-  one: 1;
+  variadic: true;
   two: 2;
   three: 3;
 }
 .three {
-  zero: 0;
-  one: 1;
-  two: 2;
+  variadic: true;
   three-req: 3;
   three: 3;
 }

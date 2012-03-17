@@ -3146,7 +3146,6 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
             filename: href
         }).parse(sheet.innerHTML, function (e, root) { 
             if (e) { 
-                debugger;
                 return error(e, href) 
             }
             try { 

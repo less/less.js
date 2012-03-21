@@ -4,6 +4,8 @@
   content: "#*%:&^,)!.(~*})";
   empty: "";
   brackets: "{" "}";
+  escapes: "\"hello\" \\world";
+  escapes2: "\"llo";
 }
 #comments {
   content: "/* hello */ // not-so-secret";

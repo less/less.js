@@ -27,7 +27,8 @@ td {
   margin: 0;
   padding: 0;
 }
-td, input {
+td,
+input {
   line-height: 1em;
 }
 a {
@@ -42,12 +43,27 @@ div a {
 p a span {
   color: yellow;
 }
-.foo .bar .qux, .foo .baz .qux {
+.foo .bar .qux,
+.foo .baz .qux {
   display: block;
 }
-.qux .foo .bar, .qux .foo .baz {
+.qux .foo .bar,
+.qux .foo .baz {
   display: inline;
 }
-.qux .foo .bar .biz, .qux .foo .baz .biz {
+.qux .foo .bar .biz,
+.qux .foo .baz .biz {
   display: none;
+}
+.other ::fnord {
+  color: #ff0000;
+}
+.other::fnord {
+  color: #ff0000;
+}
+.other ::bnord {
+  color: #ff0000;
+}
+.other::bnord {
+  color: #ff0000;
 }

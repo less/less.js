@@ -27,6 +27,7 @@ less:
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST}
 	@@echo "(function (window, undefined) {" >> ${DIST}
 	@@cat build/require.js\
+	      build/amd.js\
 	      build/ecma-5.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
@@ -53,6 +54,10 @@ min: less
 	@@echo minifying...
 	@@uglifyjs ${DIST} > ${DIST_MIN}
 	@@echo ${DIST_MIN} built.
+
+server: less
+	cp dist/less-${VERSION}.js test/html/
+	cd test/html && python -m SimpleHTTPServer
 
 clean:
 	git rm dist/*

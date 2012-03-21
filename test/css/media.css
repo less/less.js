@@ -5,7 +5,8 @@
   .class .sub {
     width: 42;
   }
-  .top, header > h1 {
+  .top,
+  header > h1 {
     color: #444444;
   }
 }
@@ -23,4 +24,56 @@
   body {
     max-width: 480px;
   }
+}
+@media print {
+  body {
+    padding: 20px;
+  }
+  body header {
+    background-color: red;
+  }
+}
+@media print and (orientation: landscape) {
+  body {
+    margin-left: 20px;
+  }
+}
+@media a, b and c {
+  body {
+    width: 95%;
+  }
+}
+@media a and x, b and c and x, a and y, b and c and y {
+  body {
+    width: 100%;
+  }
+}
+.a {
+  background: black;
+}
+@media handheld {
+  .a {
+    background: white;
+  }
+}
+@media handheld and (max-width: 100px) {
+  .a {
+    background: red;
+  }
+}
+.b {
+  background: black;
+}
+@media handheld {
+  .b {
+    background: white;
+  }
+}
+@media handheld and (max-width: 200px) {
+  .b {
+    background: red;
+  }
+}
+@media only screen and (max-width: 200px) {
+  width: 480px;
 }

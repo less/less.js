@@ -48,7 +48,8 @@
 .direct {
   border-style: dotted;
 }
-.bo, .bar {
+.bo,
+.bar {
   width: 100%;
 }
 .bo {

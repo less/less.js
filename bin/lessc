@@ -2,7 +2,8 @@
 
 var path = require('path'),
     fs = require('fs'),
-    sys = require('util');
+    sys = require('util'),
+    os = require('os');
 
 var less = require('../lib/less');
 var args = process.argv.slice(1);
@@ -12,7 +13,8 @@ var options = {
     optimization: 1,
     silent: false,
     paths: [],
-    color: true
+    color: true,
+    strictImports: false
 };
 
 args = args.filter(function (arg) {
@@ -38,6 +40,9 @@ args = args.filter(function (arg) {
         case 'silent':
             options.silent = true;
             break;
+        case 'strict-imports':
+            options.strictImports = true;
+            break;
         case 'h':
         case 'help':
             sys.puts("usage: lessc source [destination]");
@@ -53,12 +58,10 @@ args = args.filter(function (arg) {
             options.color = false;
             break;
         case 'include-path':
-            options.paths = match[2].split(':')
+            options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
                 .map(function(p) {
-                    if (p && p[0] == '/') {
-                        return path.join(path.dirname(input), p);
-                    } else if (p) {
-                        return path.join(process.cwd(), p);
+                    if (p) {
+                      return path.resolve(process.cwd(), p);
                     }
                 });
             break;
@@ -69,12 +72,12 @@ args = args.filter(function (arg) {
 });
 
 var input = args[1];
-if (input && input[0] != '/' && input != '-' && input[1] != ':') {
-    input = path.join(process.cwd(), input);
+if (input && input != '-') {
+    input = path.resolve(process.cwd(), input);
 }
 var output = args[2];
-if (output && output[0] != '/' && input[1] != ':') {
-    output = path.join(process.cwd(), output);
+if (output) {
+    output = path.resolve(process.cwd(), output);
 }
 
 var css, fd, tree;
@@ -93,7 +96,8 @@ var parseLessFile = function (e, data) {
     new(less.Parser)({
         paths: [path.dirname(input)].concat(options.paths),
         optimization: options.optimization,
-        filename: input
+        filename: input,
+        strictImports: options.strictImports
     }).parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);

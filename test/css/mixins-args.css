@@ -55,10 +55,22 @@ body {
 }
 .arguments {
   border: 1px solid #000000;
+  width: 1px;
 }
 .arguments2 {
   border: 0px;
+  width: 0px;
+}
+.arguments3 {
+  border: 0px;
+  width: 0px;
+}
+.arguments4 {
+  border: 0 1 2 3 4;
+  rest: 1 2 3 4;
+  width: 0;
 }
 .edge-case {
   border: "{";
+  width: "{";
 }

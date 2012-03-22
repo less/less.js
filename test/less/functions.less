@@ -19,8 +19,12 @@
   spin-n: spin(hsl(30, 50%, 50%), -40);
   contrast-white: contrast(#fff);
   contrast-black: contrast(#000);
-  contrast-light: contrast(#fff, #eeeeee, #111111);
-  contrast-dark: contrast(#000, #eeeeee, #111111);
+  contrast-light: contrast(#fff, #111111, #eeeeee);
+  contrast-dark: contrast(#000, #111111, #eeeeee);
+  contrast-light-thresh: contrast(#fff, #111111, #eeeeee, 0.5);
+  contrast-dark-thresh: contrast(#000, #111111, #eeeeee, 0.5);
+  contrast-high-thresh: contrast(#555, #111111, #eeeeee, 0.6);
+  contrast-low-thresh: contrast(#555, #111111, #eeeeee, 0.1);
   format: %("rgb(%d, %d, %d)", @r, 128, 64);
   format-string: %("hello %s", "world");
   format-multiple: %("hello %s %d", "earth", 2);

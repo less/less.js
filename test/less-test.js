@@ -16,13 +16,13 @@ less.tree.functions._color = function (str) {
 
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
-fs.readdirSync('test/less').forEach(function (file) {
+fs.readdirSync(__dirname + '/less').forEach(function (file) {
     if (! /\.less/.test(file)) { return }
 
-    toCSS('test/less/' + file, function (err, less) {
+    toCSS(__dirname + '/less/' + file, function (err, less) {
         var name = path.basename(file, '.less');
 
-        fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
+        fs.readFile(path.join(__dirname + '/css', name) + '.css', 'utf-8', function (e, css) {
             sys.print("- " + name + ": ")
             if (less === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {

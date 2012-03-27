@@ -29,8 +29,8 @@
 }
 #built-in .is-a {
   color: true;
-  color: true;
-  color: true;
+  color1: true;
+  color2: true;
   keyword: true;
   number: true;
   string: true;

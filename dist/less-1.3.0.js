@@ -226,11 +226,15 @@ less.Parser = function Parser(env) {
             //
             less.Parser.importer(path, this.paths, function (e, root, contents) {
                 that.queue.splice(that.queue.indexOf(path), 1); // Remove the path from the queue
+
+                var imported = path in that.files;
+
                 that.files[path] = root;                        // Store the root
                 that.contents[path] = contents;
 
                 if (e && !that.error) { that.error = e }
-                callback(e, root);
+
+                callback(e, root, imported);
 
                 if (that.queue.length === 0) { finish() }       // Call `finish` if we're done importing
             }, env);
@@ -1192,11 +1196,12 @@ less.Parser = function Parser(env) {
             //
             "import": function () {
                 var path, features, index = i;
-                if ($(/^@import\s+/) &&
-                    (path = $(this.entities.quoted) || $(this.entities.url))) {
+                var dir = $(/^@import(?:-(once))?\s+/);
+
+                if (dir && (path = $(this.entities.quoted) || $(this.entities.url))) {
                     features = $(this.mediaFeatures);
                     if ($(';')) {
-                        return new(tree.Import)(path, imports, features, index);
+                        return new(tree.Import)(path, imports, features, (dir[1] === 'once'), index);
                     }
                 }
             },
@@ -2241,9 +2246,10 @@ tree.Expression.prototype = {
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
-tree.Import = function (path, imports, features, index) {
+tree.Import = function (path, imports, features, once, index) {
     var that = this;
 
+    this.once = once;
     this.index = index;
     this._path = path;
     this.features = features && new(tree.Value)(features);
@@ -2259,8 +2265,9 @@ tree.Import = function (path, imports, features, index) {
 
     // Only pre-compile .less files
     if (! this.css) {
-        imports.push(this.path, function (e, root) {
+        imports.push(this.path, function (e, root, imported) {
             if (e) { e.index = index }
+            if (imported && that.once) that.skip = imported;
             that.root = root || new(tree.Ruleset)([], []);
         });
     }
@@ -2287,6 +2294,8 @@ tree.Import.prototype = {
     },
     eval: function (env) {
         var ruleset, features = this.features && this.features.eval(env);
+
+        if (this.skip) return [];
 
         if (this.css) {
             return this;
@@ -2861,6 +2870,7 @@ tree.Ruleset.prototype = {
     toCSS: function (context, env) {
         var css = [],      // The CSS output
             rules = [],    // node.Rule instances
+           _rules = [],    //
             rulesets = [], // node.Ruleset instances
             paths = [],    // Current selectors
             selector,      // The fully rendered selector
@@ -2910,7 +2920,15 @@ tree.Ruleset.prototype = {
                     return p.map(function (s) {
                         return s.toCSS(env);
                     }).join('').trim();
-                }).join( env.compress ? ',' : ',\n');
+                }).join(env.compress ? ',' : ',\n');
+
+                // Remove duplicates
+                for (var i = rules.length - 1; i >= 0; i--) {
+                    if (_rules.indexOf(rules[i]) === -1) {
+                        _rules.unshift(rules[i]);
+                    }
+                }
+                rules = _rules;
 
                 css.push(selector,
                         (env.compress ? '{' : ' {\n  ') +
@@ -3277,22 +3295,21 @@ function extractId(href) {
 }
 
 function createCSS(styles, sheet, lastModified) {
-    var css;
-
     // Strip the query-string
     var href = sheet.href ? sheet.href.replace(/\?.*$/, '') : '';
 
     // If there is no title set, use the filename, minus the extension
     var id = 'less:' + (sheet.title || extractId(href));
 
-    // If the stylesheet doesn't exist, create a new node
-    if ((css = document.getElementById(id)) === null) {
-        css = document.createElement('style');
-        css.type = 'text/css';
-        css.media = sheet.media || 'screen';
-        css.id = id;
-        document.getElementsByTagName('head')[0].appendChild(css);
-    }
+    // If this has already been inserted into the DOM, we may need to replace it
+    var oldCss = document.getElementById(id);
+    var keepOldCss = false;
+
+    // Create a new stylesheet node for insertion or (if necessary) replacement
+    var css = document.createElement('style');
+    css.setAttribute('type', 'text/css');
+    css.setAttribute('media', sheet.media || 'screen');
+    css.id = id;
 
     if (css.styleSheet) { // IE
         try {
@@ -3301,15 +3318,22 @@ function createCSS(styles, sheet, lastModified) {
             throw new(Error)("Couldn't reassign styleSheet.cssText.");
         }
     } else {
-        (function (node) {
-            if (css.childNodes.length > 0) {
-                if (css.firstChild.nodeValue !== node.nodeValue) {
-                    css.replaceChild(node, css.firstChild);
-                }
-            } else {
-                css.appendChild(node);
-            }
-        })(document.createTextNode(styles));
+        css.appendChild(document.createTextNode(styles));
+
+        // If new contents match contents of oldCss, don't replace oldCss
+        keepOldCss = (oldCss !== null && oldCss.childNodes.length > 0 && css.childNodes.length > 0 &&
+            oldCss.firstChild.nodeValue === css.firstChild.nodeValue);
+    }
+
+    var head = document.getElementsByTagName('head')[0];
+
+    // If there is no oldCss, just append; otherwise, only append if we need
+    // to replace oldCss with an updated stylesheet
+    if (oldCss === null) {
+        head.appendChild(css);
+    } else if (keepOldCss === false) {
+        head.appendChild(css);
+        head.removeChild(oldCss);
     }
 
     // Don't update the local store if the file wasn't modified

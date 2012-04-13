@@ -10,9 +10,9 @@
 
 */
 
-/*  
+/*
  * Comment Test
- * 
+ *
  * - cloudhead (http://cloudhead.net)
  *
  */
@@ -35,15 +35,15 @@
 /* @group Variables
 ------------------- */
 #comments /* boo */ {
-  /**/ // An empty comment 
+  /**/ // An empty comment
   color: red; /* A C-style comment */
   background-color: orange; // A little comment
   font-size: 12px;
-  
+
   /* lost comment */ content: @var;
-  
+
   border: 1px solid black;
-  
+
   // padding & margin //
   padding: 0; // }{ '"
   margin: 2em;
@@ -57,6 +57,8 @@
 
 .selector /* .with */, .lots, /* of */ .comments {
   color: grey, /* blue */ orange;
+  -webkit-border-radius: 2px /* webkit only */;
+  -moz-border-radius: 2px * 4 /* moz only with operation */;
 }
 
 #last { color: blue }

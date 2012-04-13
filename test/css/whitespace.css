@@ -13,18 +13,20 @@
 .whitespace {
   color: white ;
 }
-.white, .space, .mania {
+.white,
+.space,
+.mania {
   color: white;
 }
 .no-semi-column {
-  color: white;
+  color: #ffffff;
 }
 .no-semi-column {
   color: white;
   white-space: pre;
 }
 .no-semi-column {
-  border: 2px solid white;
+  border: 2px solid #ffffff;
 }
 .newlines {
   background: the,

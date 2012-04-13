@@ -8,9 +8,9 @@
     Comment
 
 */
-/*  
+/*
  * Comment Test
- * 
+ *
  * - cloudhead (http://cloudhead.net)
  *
  */
@@ -44,9 +44,13 @@
     color: grey;
   }
 */
-.selector, .lots, .comments {
-  color: grey, /* blue */ orange;
+.selector,
+.lots,
+.comments {
+  color: #808080, /* blue */ #ffa500;
+  -webkit-border-radius: 2px /* webkit only */;
+  -moz-border-radius: 8px /* moz only with operation */;
 }
 #last {
-  color: blue;
+  color: #0000ff;
 }

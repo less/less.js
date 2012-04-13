@@ -27,9 +27,11 @@ less:
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST}
 	@@echo "(function (window, undefined) {" >> ${DIST}
 	@@cat build/require.js\
+	      build/amd.js\
 	      build/ecma-5.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
+	      ${SRC}/colors.js\
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
 	      ${SRC}/browser.js >> ${DIST}
@@ -50,8 +52,12 @@ rhino:
 
 min: less
 	@@echo minifying...
-	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST_MIN}
-	@@uglifyjs ${DIST} >> ${DIST_MIN}
+	@@uglifyjs ${DIST} > ${DIST_MIN}
+	@@echo ${DIST_MIN} built.
+
+server: less
+	cp dist/less-${VERSION}.js test/html/
+	cd test/html && python -m SimpleHTTPServer
 
 clean:
 	git rm dist/*

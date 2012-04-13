@@ -1,10 +1,8 @@
 var path = require('path'),
     fs = require('fs'),
-    sys = require('sys');
+    sys = require('util');
 
-require.paths.unshift(__dirname, path.join(__dirname, '..'));
-
-var less = require('lib/less');
+var less = require('../lib/less');
 
 less.tree.functions.add = function (a, b) {
     return new(less.tree.Dimension)(a.value + b.value);
@@ -12,7 +10,7 @@ less.tree.functions.add = function (a, b) {
 less.tree.functions.increment = function (a) {
     return new(less.tree.Dimension)(a.value + 1);
 }
-less.tree.functions.color = function (str) {
+less.tree.functions._color = function (str) {
     if (str.value === "evil red") { return new(less.tree.Color)("600") }
 }
 

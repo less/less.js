@@ -14,7 +14,8 @@ var options = {
     silent: false,
     paths: [],
     color: true,
-    strictImports: false
+    strictImports: false,
+    watch: false
 };
 
 args = args.filter(function (arg) {
@@ -56,6 +57,10 @@ args = args.filter(function (arg) {
             break;
         case 'no-color':
             options.color = false;
+            break;
+        case 'w':
+        case 'watch':
+            options.watch = true;
             break;
         case 'include-path':
             options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
@@ -124,6 +129,13 @@ var parseLessFile = function (e, data) {
 
 if (input != '-') {
     fs.readFile(input, 'utf-8', parseLessFile);
+    if (options.watch) {
+        fs.watchFile(path.dirname(input), function(cur, prev) {
+            if (cur.mtime != prev.mtime) {
+                fs.readFile(input, "utf8", parseLessFile);
+            }
+        });
+    }
 } else {
     process.stdin.resume();
     process.stdin.setEncoding('utf8');

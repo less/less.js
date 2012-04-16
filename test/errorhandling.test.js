@@ -1,5 +1,4 @@
 var path = require('path'),
-    sys = require('sys'),
     assert = require('assert'),
     fs = require('fs');
 

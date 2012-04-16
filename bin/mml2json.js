@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 
 var xml2js = require('xml2js'),
-    fs = require('fs'),
-    sys = require('sys');
+    fs = require('fs');
 
-if (!process.ARGV[2]) {
+if (!process.argv[2]) {
     console.log('Please specify a XML file.');
     process.exit(1);
 }
 
-fs.readFile(process.ARGV[2], 'utf-8', function(err, data) {
+fs.readFile(process.argv[2], 'utf-8', function(err, data) {
     if (err) throw err;
 
     // Replace entities.

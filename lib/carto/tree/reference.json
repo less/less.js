@@ -449,7 +449,12 @@
             },
             "horizontal-alignment": {
                 "css": "shield-horizontal-alignment",
-                "type": "string",
+                "type": [
+                    "left",
+                    "middle",
+                    "right",
+                    "auto"
+                ],
                 "doc": "The shield's horizontal alignment from its centerpoint",
                 "default": "middle"
             },
@@ -808,6 +813,17 @@
                 ],
                 "doc": "Transform the case of the characters",
                 "default-value": "none"
+            },
+            "horizontal-alignment": {
+                "css": "text-horizontal-alignment",
+                "type": [
+                    "left",
+                    "middle",
+                    "right",
+                    "auto"
+                ],
+                "doc": "The text's horizontal alignment from its centerpoint",
+                "default": "middle"
             },
             "justify-alignment": {
                 "css": "text-align",

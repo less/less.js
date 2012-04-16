@@ -1,5 +1,11 @@
 ## Changelog
 
+### 0.4.7
+
+* Removed deprecation warnings re: sys/util
+* Updated reference.json
+* Updated underscore dependency
+
 ### 0.4.6
 
 * Node >=v0.6.x compatibility

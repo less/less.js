@@ -1,6 +1,6 @@
 .comma-delimited {
   background: url(bg.jpg) no-repeat, url(bg.png) repeat-x top left, url(bg);
-  text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
+  text-shadow: -1px -1px 1px #ff0000, 6px 5px 5px #ffff00;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset, 0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
 }
 @font-face {
@@ -25,7 +25,9 @@ ul.comma > li:not(:only-child)::after {
 ol.comma > li:nth-last-child(2)::after {
   color: white;
 }
-li:nth-child(4n+1), li:nth-child(-5n), li:nth-child(-n+2) {
+li:nth-child(4n+1),
+li:nth-child(-5n),
+li:nth-child(-n+2) {
   color: white;
 }
 a[href^="http://"] {

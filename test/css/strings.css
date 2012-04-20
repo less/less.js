@@ -4,6 +4,8 @@
   content: "#*%:&^,)!.(~*})";
   empty: "";
   brackets: "{" "}";
+  escapes: "\"hello\" \\world";
+  escapes2: "\"llo";
 }
 #comments {
   content: "/* hello */ // not-so-secret";
@@ -31,8 +33,8 @@
   url5: "http://lesscss.org/54.4";
 }
 .mix-mul-class {
-  color: blue;
-  color: red;
-  color: blue;
-  color: orange;
+  color: #0000ff;
+  color: #ff0000;
+  color: #000000;
+  color: #ffa500;
 }

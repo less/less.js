@@ -226,11 +226,15 @@ less.Parser = function Parser(env) {
             //
             less.Parser.importer(path, this.paths, function (e, root, contents) {
                 that.queue.splice(that.queue.indexOf(path), 1); // Remove the path from the queue
+
+                var imported = path in that.files;
+
                 that.files[path] = root;                        // Store the root
                 that.contents[path] = contents;
 
                 if (e && !that.error) { that.error = e }
-                callback(e, root);
+
+                callback(e, root, imported);
 
                 if (that.queue.length === 0) { finish() }       // Call `finish` if we're done importing
             }, env);
@@ -1192,11 +1196,12 @@ less.Parser = function Parser(env) {
             //
             "import": function () {
                 var path, features, index = i;
-                if ($(/^@import\s+/) &&
-                    (path = $(this.entities.quoted) || $(this.entities.url))) {
+                var dir = $(/^@import(?:-(once))?\s+/);
+
+                if (dir && (path = $(this.entities.quoted) || $(this.entities.url))) {
                     features = $(this.mediaFeatures);
                     if ($(';')) {
-                        return new(tree.Import)(path, imports, features, index);
+                        return new(tree.Import)(path, imports, features, (dir[1] === 'once'), index);
                     }
                 }
             },
@@ -1566,6 +1571,33 @@ tree.functions = {
         var alpha = color1.alpha * p + color2.alpha * (1 - p);
 
         return new(tree.Color)(rgb, alpha);
+    },
+    blend: function (mode, color1, color2, alpha) {
+    	var rgb1 = [color1.rgb[0],
+    	           color1.rgb[1],
+    	           color1.rgb[2]];
+    	           
+    	var rgb2 = [color2.rgb[0],
+    	           color2.rgb[1],
+    	           color2.rgb[2]];
+    	
+    	// Thanks to jswidget.com for sharing the blending algorithms used by many image processing programs. 
+    	// http://jswidget.com/blog/category/image-blending-algorithm/
+    	//
+    	var modes = {
+    		multiply : function (color1, color2) {
+    			return color2 * color1 / 255;
+    		},
+    		screen : function (color1, color2) {
+    			return color2 + color1 - color2 * color1 / 255;
+    		},
+    		overlay : function (color1, color2) {
+    			return (color1 < 128) ? (2 * color2 * color1 / 255) : (255 - 2 * (255 - color2) * (255 - color1) / 255);
+    		}
+    	}
+    	
+    	return (Object.keys(modes).join().indexOf(mode.value) < 0) ? this.rgba(rgb2[0], rgb2[1], rgb2[2], alpha || 1.0) : this.rgba(modes[mode.value](rgb1[0],rgb2[0]), modes[mode.value](rgb1[1],rgb2[1]), modes[mode.value](rgb1[2],rgb2[2]), alpha || 1.0);
+    	
     },
     greyscale: function (color) {
         return this.desaturate(color, new(tree.Dimension)(100));
@@ -2241,9 +2273,10 @@ tree.Expression.prototype = {
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
-tree.Import = function (path, imports, features, index) {
+tree.Import = function (path, imports, features, once, index) {
     var that = this;
 
+    this.once = once;
     this.index = index;
     this._path = path;
     this.features = features && new(tree.Value)(features);
@@ -2259,8 +2292,9 @@ tree.Import = function (path, imports, features, index) {
 
     // Only pre-compile .less files
     if (! this.css) {
-        imports.push(this.path, function (e, root) {
+        imports.push(this.path, function (e, root, imported) {
             if (e) { e.index = index }
+            if (imported && that.once) that.skip = imported;
             that.root = root || new(tree.Ruleset)([], []);
         });
     }
@@ -2287,6 +2321,8 @@ tree.Import.prototype = {
     },
     eval: function (env) {
         var ruleset, features = this.features && this.features.eval(env);
+
+        if (this.skip) return [];
 
         if (this.css) {
             return this;
@@ -2861,6 +2897,7 @@ tree.Ruleset.prototype = {
     toCSS: function (context, env) {
         var css = [],      // The CSS output
             rules = [],    // node.Rule instances
+           _rules = [],    //
             rulesets = [], // node.Ruleset instances
             paths = [],    // Current selectors
             selector,      // The fully rendered selector
@@ -2910,7 +2947,15 @@ tree.Ruleset.prototype = {
                     return p.map(function (s) {
                         return s.toCSS(env);
                     }).join('').trim();
-                }).join( env.compress ? ',' : ',\n');
+                }).join(env.compress ? ',' : ',\n');
+
+                // Remove duplicates
+                for (var i = rules.length - 1; i >= 0; i--) {
+                    if (_rules.indexOf(rules[i]) === -1) {
+                        _rules.unshift(rules[i]);
+                    }
+                }
+                rules = _rules;
 
                 css.push(selector,
                         (env.compress ? '{' : ' {\n  ') +

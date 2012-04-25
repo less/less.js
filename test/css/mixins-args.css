@@ -22,6 +22,12 @@
   width: 5px;
   height: 49%;
 }
+.kwargs {
+  border: 90% bold #0000ff;
+}
+.args-and-kwargs {
+  border: 10px dotted #ffffff;
+}
 .var-args {
   width: 45;
   height: 17%;

@@ -26,6 +26,10 @@
   roundedpx: 3px;
   percentage: 20%;
   color: #ff0011;
+  mix: #ff3300;
+  mix-0: #ffff00;
+  mix-100: #ff0000;
+  mix-weightless: #ff8000;
 }
 #built-in .is-a {
   color: true;

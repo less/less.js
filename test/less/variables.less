@@ -23,6 +23,19 @@
   quotes: @q;
 }
 
+@vv1: var;
+@vv2: vv1;
+@vv3: vv2;
+@@@vv3: var;
+
+@vn: 1;
+@vnv: vn;
+
+.variable-variable{
+  width: @@vnv;
+  url: url('@{var}');
+}
+
 .redefinition {
     @var: 4;
     @var: 2;

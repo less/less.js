@@ -7,6 +7,10 @@
   font-family: "Trebuchet MS", Verdana, sans-serif;
   quotes: "~" "~";
 }
+.variable-variables{
+  width: 1;
+  url: url('var');
+}
 .redefinition {
   three: 3;
 }

@@ -28,12 +28,7 @@ fs.readdirSync('test/less').forEach(function (file) {
             else if (err) {
                 sys.print(stylize("ERROR: " + (err && err.message), 'red'));
             } else {
-                if(name == 'variables'){
-                    sys.print(stylize("\n" + css, 'yellow'));
-                    sys.print(stylize("\n" + less, 'green'));
-                }else{
-                    sys.print(stylize("FAIL", 'yellow'));
-                }
+                sys.print(stylize("FAIL", 'yellow'));
             }
             sys.puts("");
         });

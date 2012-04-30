@@ -15,6 +15,7 @@
 
 @quotes: "~" "~";
 @q: @quotes;
+@onePixel: 1px;
 
 .variables {
   height: @b + @x + 0px; // 24px
@@ -44,9 +45,24 @@
     @name: 'var';
     name: @@name;
 }
+
 .alpha {
     @var: 42;
     filter: alpha(opacity=@var);
+}
+
+.units {
+  width: @onePixel;
+  z-index: @onePixel / @onePixel;
+  square-pixel: @onePixel * @onePixel * @onePixel / @onePixel;
+  odd-unit: @onePixel * 4em / 2cm;
+  percentage: 10 * 50%;
+  pixels: 50px * 10;
+  conversion-metric-a: 20mm + 1cm;
+  conversion-metric-b: 1cm + 20mm;
+  conversion-imperial: 1in + 72pt + 6pc;
+  custom-unit: 42octocats * 10cheeseburgers;
+  custom-unit-cancelling: 8cats / 4cats;
 }
 
 a:nth-child(@a) {

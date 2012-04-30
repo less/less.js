@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.4.10
+
+* Updated reference.json
+
 ### 0.4.9
 
 * Render TileJSON, Mapnik options to Mapnik XML parameters.

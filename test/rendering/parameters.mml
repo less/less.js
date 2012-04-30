@@ -1,0 +1,28 @@
+{
+    "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+    "bounds": [-180,-85,180,85],
+    "center": [-78,40,8],
+    "name": "Parameters",
+    "description": "Mapnik parameter test.",
+    "legend": "<p>This is HTML.</p>",
+    "attribution": "<a href='http://openstreetmap.org'>OpenStreetMap</a>",
+    "template": "<b>{{NAME}}</b>",
+    "minzoom": 0,
+    "maxzoom": 12,
+    "version": "1.0.0",
+    "format": "png",
+    "interactivity": {
+        "layer": "world",
+        "fields": ["NAME"]
+    },
+    "omitted": "Omitted property.",
+    "Stylesheet": [],
+    "Layer": [{
+        "name": "world",
+        "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+        "Datasource": {
+            "file": "http://tilemill-data.s3.amazonaws.com/test_data/shape_demo.zip",
+            "type": "shape"
+        }
+    }]
+}

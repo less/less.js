@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.4.8
+
+* Updated reference.json
+
 ### 0.4.7
 
 * Removed deprecation warnings re: sys/util

@@ -2,7 +2,7 @@
 # Run all tests
 #
 
-expresso = ./node_modules/.bin/expresso
+expresso = ./node_modules/.bin/mocha
 docco = ./node_modules/.bin/docco
 
 lint:
@@ -10,10 +10,10 @@ lint:
 
 ifndef only
 test:
-	@NODE_PATH=./lib:$NODE_PATH $(expresso) -I lib test/*.test.js
+	@NODE_PATH=./lib:$NODE_PATH $(expresso) -R spec -I lib test/*.test.js
 else
 test:
-	@NODE_PATH=./lib:$NODE_PATH $(expresso) -I lib test/${only}.test.js
+	@NODE_PATH=./lib:$NODE_PATH $(expresso) -R spec -I lib test/${only}.test.js
 endif
 
 doc:

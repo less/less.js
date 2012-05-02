@@ -2,7 +2,8 @@ var assert = require('assert');
 var tree = require('../lib/carto/tree.js');
 require('../lib/carto/tree/filterset');
 
-exports['test filterset addable'] = function() {
+describe('Filtersets', function() {
+it('should add filters correctly', function() {
     var f = new tree.Filterset;
     assert.ok(true === f.addable({ key: 'TOTAL', op: '=',  val: '11' }), '=11');
     assert.ok(true === f.addable({ key: 'TOTAL', op: '!=', val: '90' }), '!=90');
@@ -151,10 +152,10 @@ exports['test filterset addable'] = function() {
     assert.ok(null  === f.addable({ key: 'TOTAL', op: '>=', val:  9  }), '<=11 >9 !=10 >=9');
     assert.ok(false === f.addable({ key: 'TOTAL', op: '<',  val:  9  }), '<=11 >9 !=10 <9');
     assert.ok(false === f.addable({ key: 'TOTAL', op: '<=', val:  9  }), '<=11 >9 !=10 <=9');
-};
+});
 
 
-exports['test filterset add'] = function() {
+it('should add filtersets', function() {
     var f = new tree.Filterset; f.add({ key: 'TOTAL', op: '=',  val: '11' });
     assert.deepEqual(f, { 'TOTAL=':   { key: 'TOTAL', op: '=',  val: '11' }});
     var f = new tree.Filterset; f.add({ key: 'TOTAL', op: '!=', val: '4' });
@@ -226,4 +227,5 @@ exports['test filterset add'] = function() {
 
 
     // TODO: some more adding tests.
-};
+});
+});

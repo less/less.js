@@ -22,8 +22,9 @@ function cleanupItem(key, value) {
     else return value;
 }
 
+describe('Specificity', function() {
 helper.files('specificity', 'mss', function(file) {
-    exports['test ' + file] = function(beforeExit) {
+    it('should handle spec correctly in ' + file, function(done) {
         helper.file(file, function(content) {
             var tree = (new carto.Parser({
                 paths: [ path.dirname(file) ],
@@ -34,6 +35,8 @@ helper.files('specificity', 'mss', function(file) {
             mss = helper.makePlain(mss, cleanupItem);
 
             helper.compareToFile(mss, file, helper.resultFile(file));
+            done();
         });
-    }
+    });
+});
 });

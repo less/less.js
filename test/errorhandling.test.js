@@ -6,8 +6,9 @@ var carto = require('../lib/carto');
 var tree = require('../lib/carto/tree');
 var helper = require('./support/helper');
 
+describe('Error handling', function() {
 helper.files('errorhandling', 'mml', function(file) {
-    exports['errorhandling ' + path.basename(file)] = function(beforeExit) {
+    it('should handle errors in ' + path.basename(file), function(done) {
         var completed = false;
         var renderResult;
         var mml = helper.mml(file);
@@ -36,15 +37,7 @@ helper.files('errorhandling', 'mml', function(file) {
             });
         }
 
-
-        beforeExit(function() {
-            /*
-            if (!completed && renderResult) {
-                console.warn(helper.stylize('renderer produced:', 'bold'));
-                console.warn(renderResult);
-            }
-            assert.ok(completed, 'Rendering finished.');
-            */
-        });
-    }
+        done();
+    });
+});
 });

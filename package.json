@@ -39,13 +39,13 @@
     "xml2js": "~0.1.13"
   },
   "devDependencies": {
-    "expresso": "0.9.x",
+    "mocha": "1.0.x",
     "docco": "0.3.x",
     "jshint": "0.2.x",
     "sax": "0.1.x"
   },
   "scripts": {
     "pretest": "npm install --dev",
-    "test": "expresso"
+    "test": "mocha"
   }
 }

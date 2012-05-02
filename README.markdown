@@ -3,7 +3,7 @@ less.js with blend modes
 
 **Using less version 1.3.0**
 
-This fork of less.js is identical to the cloudhead, with the addition of common blending modes used in image processing programs, like Photoshop. The three most common blend modes have been supplied, which should cover most use-cases. More modes could easily be added, if there is an interest.
+This fork of less.js is identical to the master, with the addition of common blending modes used in image processing programs, like Photoshop. The three most common blend modes have been supplied, which should cover most use-cases. More modes could easily be added, if there is an interest.
 
 For more information on less.js in general, please view [the official project page](http://lesscss.org).
 

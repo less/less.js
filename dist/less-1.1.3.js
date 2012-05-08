@@ -1033,7 +1033,7 @@ less.Parser = function Parser(env) {
                 }
             },
             rule: function () {
-                var name, value, c = input.charAt(i), important, match;
+                var name, value, c = input.charAt(i), important, isDefault, match;
                 save();
 
                 if (c === '.' || c === '#' || c === '&') { return }
@@ -1048,9 +1048,10 @@ less.Parser = function Parser(env) {
                         value = $(this.value);
                     }
                     important = $(this.important);
+                    isDefault = $(this.isDefault);
 
                     if (value && $(this.end)) {
-                        return new(tree.Rule)(name, value, important, memo);
+                        return new(tree.Rule)(name, value, important, memo, isDefault);
                     } else {
                         furthest = i;
                         restore();
@@ -1144,6 +1145,11 @@ less.Parser = function Parser(env) {
             important: function () {
                 if (input.charAt(i) === '!') {
                     return $(/^! *important/);
+                }
+            },
+            isDefault: function () {
+                if (input.charAt(i) === '!') {
+                    return $(/^! *default/);
                 }
             },
             sub: function () {
@@ -2020,7 +2026,7 @@ tree.Quoted.prototype = {
 })(require('less/tree'));
 (function (tree) {
 
-tree.Rule = function (name, value, important, index) {
+tree.Rule = function (name, value, important, index, isDefault) {
     this.name = name;
     this.value = (value instanceof tree.Value) ? value : new(tree.Value)([value]);
     this.important = important ? ' ' + important.trim() : '';
@@ -2028,6 +2034,7 @@ tree.Rule = function (name, value, important, index) {
 
     if (name.charAt(0) === '@') {
         this.variable = true;
+        this.isDefault = isDefault;
     } else { this.variable = false }
 };
 tree.Rule.prototype.toCSS = function (env) {
@@ -2040,7 +2047,7 @@ tree.Rule.prototype.toCSS = function (env) {
 };
 
 tree.Rule.prototype.eval = function (context) {
-    return new(tree.Rule)(this.name, this.value.eval(context), this.important, this.index);
+    return new(tree.Rule)(this.name, this.value.eval(context), this.important,this.index,this.isDefault);
 };
 
 tree.Shorthand = function (a, b) {
@@ -2101,7 +2108,6 @@ tree.Ruleset.prototype = {
         // Evaluate everything else
         for (var i = 0, rule; i < ruleset.rules.length; i++) {
             rule = ruleset.rules[i];
-
             if (! (rule instanceof tree.mixin.Definition)) {
                 ruleset.rules[i] = rule.eval ? rule.eval(env) : rule;
             }
@@ -2120,7 +2126,8 @@ tree.Ruleset.prototype = {
         else {
             return this._variables = this.rules.reduce(function (hash, r) {
                 if (r instanceof tree.Rule && r.variable === true) {
-                    hash[r.name] = r;
+                    if (!(r.isDefault && hash[r.name]))
+                        hash[r.name] = r;
                 }
                 return hash;
             }, {});

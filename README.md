@@ -203,6 +203,33 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 <tr>
 </table>
 
+## Filters
+
+Carto supports a variety of filter styles:
+
+Numeric comparisons:
+
+```
+#world[population > 100]
+#world[population < 100]
+#world[population >= 100]
+#world[population <= 100]
+```
+
+General comparisons:
+
+```
+#world[population = 100]
+#world[population != 100]
+```
+
+
+String comparisons:
+
+```
+/* a regular expression over name */
+#world[name =~ "A.*"]
+```
 
 ## Usage
 

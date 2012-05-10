@@ -48,6 +48,15 @@
         }
     },
     "symbolizers" : {
+        "*": {
+            "image-filters": {
+                "css": "image-filters",
+                "default-value": "none",
+                "default-meaning": "no filters",
+                "type": "imagefilters",
+                "doc": "A list of image filters. Currently supported are agg-stack-blur, emboss, blur, gray, sobel, edge-detect, x-gradient, y-gradient, sharpen"
+            }
+        },
         "map": {
             "background-color": {
                 "css": "background-color",

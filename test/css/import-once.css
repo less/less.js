@@ -1,0 +1,9 @@
+@import "import-test-d.css";
+
+.mixin {
+  height: 10px;
+  color: #ff0000;
+}
+#import {
+  color: #ff0000;
+}

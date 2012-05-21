@@ -1,16 +1,21 @@
 # carto
 
-Is a stylesheet renderer for Mapnik. It's an evolution of the [Cascadenik](https://github.com/mapnik/Cascadenik) idea and language, with an emphasis on speed and flexibility.
+Is a stylesheet renderer for Mapnik. It's an evolution of the
+[Cascadenik](https://github.com/mapnik/Cascadenik) idea and language,
+with an emphasis on speed and flexibility.
 
-## Installation
+## Reference Documentation
 
-    npm install carto
+* [mapbox.com/carto](http://mapbox.com/carto/)
 
 ## MML
 _incompatibility_
 
-* MML files are assumed to be JSON, not XML. The files are near-identical to the XML files accepted by Cascadenik, just translated into JSON.
-* Carto will not embed files or download URLs for you. Stylesheets should be embedded directly into your MML JSON and any datasources should be paths (relative or absolute) that would be acceptable in Mapnik XML.
+* MML files are assumed to be JSON, not XML. The files are near-identical
+  to the XML files accepted by Cascadenik, just translated into JSON.
+* Carto will not embed files or download URLs for you. Stylesheets should
+  be embedded directly into your MML JSON and any datasources should be
+  paths (relative or absolute) that would be acceptable in Mapnik XML.
   The [millstone project](https://github.com/mapbox/millstone) aims to fill this need.
 
 carto.js MML:
@@ -231,16 +236,26 @@ String comparisons:
 #world[name =~ "A.*"]
 ```
 
-## Usage
+## Developers
 
-#### Using the binary
+#### Installation
+
+If you're using [TileMill](http://mapbox.com/tilemill/), you're already
+using Carto and don't need to do a thing.
+
+If you're a developer-type and want to use the `carto` binary with
+`node.js` (and you have [npm](http://npmjs.org/) installed),
+
+    npm install carto
+
+#### From the binary
 
 Install `millstone` to enable support for localizing external resources (URLs and local files) referenced in your mml file.
 
     npm install millstone
     carto map_file.json
 
-#### Using the code
+#### From code
 
 Currently `carto.js` is designed to be invoked from [node.js](http://nodejs.org/).
 The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
@@ -265,19 +280,6 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
             }
         });
 
-## Syntax Highlighting
-
-There's a TextMate and vim bundle that offers syntax highlighting for `.mss` and `.mml` files in the `build` directory.
-
-### TextMate bundle
-
-To install, download or clone this repository, then double-click on the `carto.tmbundle` icon in that folder.
-
-The TextMate bundle **requires** [node-mapnik](https://github.com/mapnik/node-mapnik) and Carto installed globally - the versions that are installed locally in TileMill or other tools can't be automatically discovered.
-
-    npm install mapnik -g
-    npm install carto -g
-
 ### Vim
 
 To install, download or clone this repository, then add the `vim-carto`
@@ -293,7 +295,7 @@ It depends on:
 
 Only for running tests:
 
-* [expresso](https://github.com/visionmedia/expresso)
+* [mocha](https://github.com/visionmedia/mocha)
 * [sax-js](https://github.com/isaacs/sax-js/)
 
 ## Authors

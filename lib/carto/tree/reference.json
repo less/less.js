@@ -103,12 +103,15 @@
             "background-image": {
                 "css": "background-image",
                 "type": "uri",
+                "default-value": "",
+                "default-meaning": "transparent",
+                "doc": "An image that is repeated below all features on a map as a background.",
                 "description": "Map Background image"
             },
             "srs": {
                 "css": "srs",
                 "type": "string",
-                "description": "Map spatial reference (proj4 string)"
+                "doc": "Map spatial reference (proj4 string)"
             },
             "buffer-size": {
                 "css": "buffer",
@@ -116,7 +119,7 @@
                 "type": "uri",
                 "default-value": "0",
                 "default-meaning": "No buffer will be used",
-                "description": "Extra tolerance around the map (in pixels) used to ensure labels crossing tile boundaries are equally rendered in each tile (e.g. cut in each tile). Not intended to be used in combination with \"avoid-edges\"."
+                "doc": "Extra tolerance around the map (in pixels) used to ensure labels crossing tile boundaries are equally rendered in each tile (e.g. cut in each tile). Not intended to be used in combination with \"avoid-edges\"."
             },
             "base": {
                 "css": "base",
@@ -172,6 +175,7 @@
             "fill-opacity": {
                 "css": "polygon-opacity",
                 "type": "float",
+                "doc": "The opacity of the polygon",
                 "default-value": 1,
                 "default-meaning": "opaque"
             },
@@ -294,26 +298,34 @@
         "markers": {
             "file": {
                 "css": "marker-file",
+                "doc": "An SVG file that this marker shows at each placement. If no file is given, the marker will show an ellipse.",
+                "default-value": "",
+                "default-meaning": "An ellipse or circle, if width equals height",
                 "type": "uri"
             },
             "opacity": {
                 "css": "marker-opacity",
+                "doc": "The overall opacity of the marker",
                 "default-value": 1,
                 "default-meaning": "opaque",
                 "type": "float"
             },
             "stroke": {
                 "css": "marker-line-color",
+                "doc": "The color of the stroke around a marker shape.",
+                "default-value": "black",
                 "type": "color"
             },
             "stroke-width": {
                 "css": "marker-line-width",
+                "doc": "The width of the stroke around a marker shape, in pixels. This is positioned on the boundary, so high values can cover the area itself.",
                 "type": "float"
             },
             "stroke-opacity": {
                 "css": "marker-line-opacity",
                 "default-value": 1,
                 "default-meaning": "opaque",
+                "doc": "The opacity of a line",
                 "type": "float"
             },
             "placement": {
@@ -321,32 +333,42 @@
                 "type": [
                     "point",
                     "line"
-                ]
+                ],
+                "default-value": "line"
             },
             "marker-type": {
                 "css": "marker-type",
                 "type": [
                     "arrow",
                     "ellipse"
-                ]
+                ],
+                "default-value": "ellipse",
+                "doc": "The default marker-type. If a SVG file is not given as the marker-file parameter, the renderer provides either an arrow or an ellipse (a circle if height is equal to width)"
             },
             "width": {
                 "css": "marker-width",
+                "default-value": 5,
+                "doc": "The height of the marker, if using one of the default types.",
                 "type": "float"
             },
             "height": {
                 "css": "marker-height",
+                "default-value": 5,
+                "doc": "The height of the marker, if using one of the default types.",
                 "type": "float"
             },
             "fill": {
                 "css": "marker-fill",
+                "default-value": "blue",
+                "doc": "The color of the area of the marker.",
                 "type": "color"
             },
             "allow-overlap": {
                 "css": "marker-allow-overlap",
                 "type": "boolean",
                 "default-value": false,
-                "default-meaning": "do not allow overlap"
+                "doc": "Control whether overlapping markers are shown or hidden.",
+                "default-meaning": "Do not allow makers to overlap with each other - overlapping markers will not be shown."
             },
             "ignore-placement": {
                 "css": "marker-ignore-placement",
@@ -358,14 +380,20 @@
             "spacing": {
                 "css": "marker-spacing",
                 "doc": "Space between repeated labels",
+                "default-value": 100,
                 "type": "float"
             },
             "max-error": {
                 "css": "marker-max-error",
-                "type": "float"
+                "type": "float",
+                "default-value": 0.2,
+                "doc": "The maximum difference between actual marker placement and the marker-spacing parameter. Setting a high value can allow the renderer to try to resolve placement conflicts with other symbolizers."
             },
             "transform": {
                 "css": "marker-transform",
+                "doc": "An SVG transformation definition",
+                "default-value": "",
+                "default-meaning": "no transformation",
                 "type": "string"
             },
             "meta-output": {
@@ -393,6 +421,7 @@
                 "type": "string",
                 "validate": "font",
                 "doc": "Font name and style to use for the shield text",
+                "default-value": "",
                 "required": true
             },
             "size": {
@@ -413,13 +442,14 @@
                     "vertex",
                     "interior"
                 ],
-                "default-value": "point"
+                "default-value": "point",
+                "doc": "How this shield should be placed. Point placement attempts to place it on top of points, line places along lines multiple times per feature, vertex places on the vertexes of polygons, and interior attempts to place inside of polygons."
             },
             "avoid-edges": {
                 "css": "shield-avoid-edges",
                 "doc": "Tell positioning algorithm to avoid labeling near intersection edges.",
                 "type": "boolean",
-                "default": false
+                "default-value": false
             },
             "minimum-distance": {
                 "css": "shield-min-distance",
@@ -435,6 +465,7 @@
             },
             "minimum-padding": {
                 "css": "shield-min-padding",
+                "default-value": 0,
                 "type": "float"
             },
             "wrap-width": {
@@ -525,7 +556,7 @@
                     "auto"
                 ],
                 "doc": "The shield's horizontal alignment from its centerpoint",
-                "default": "middle"
+                "default-value": "middle"
             },
             "text-transform": {
                 "css": "shield-text-transform",
@@ -542,13 +573,13 @@
                 "css": "shield-no-text",
                 "type": "boolean",
                 "doc": "Whether the shield should make room for a text label.",
-                "default": "false"
+                "default-value": "false"
             },
             "justify-alignment": {
                 "css": "shield-justify-alignment",
                 "type": "string",
                 "doc": "Define how text in a shield's label is justified",
-                "default": "middle"
+                "default-value": "middle"
             },
             "meta-output": {
                 "css": "shield-meta-output",
@@ -566,6 +597,8 @@
             "file": {
                 "css": "line-pattern-file",
                 "type": "uri",
+                "default-value": "none",
+                "required": true,
                 "doc": "An image file to be repeated and warped along a line"
             },
             "meta-output": {
@@ -584,6 +617,8 @@
             "file": {
                 "css": "polygon-pattern-file",
                 "type": "uri",
+                "default-value": "none",
+                "required": true,
                 "doc": "Image to use as a repeated pattern fill within a polygon"
             },
             "alignment": {
@@ -618,7 +653,8 @@
                 "css": "raster-opacity",
                 "default-value": 1,
                 "default-meaning": "opaque",
-                "type": "float"
+                "type": "float",
+                "doc": "The opacity of the raster symbolizer on top of other symbolizers."
             },
             "mode": {
                 "css": "raster-mode",
@@ -633,7 +669,15 @@
                     "divide2",
                     "screen",
                     "hard_light"
-                ]
+                ],
+                "doc": "The blending technique used to overlay this raster image on the layer below. Normal simply covers the layer. Grain merge adds the two layers together and subtracts 128 from the value, making the resulting area sometimes high-contrast. Screen often gives a lighter, washed-out appearance. Multiply multiplies the pixels, giving a high-contrast result. Divide divides the upper layer by the lower layer, making a lighter version."
+            },
+            "filter-factor": {
+                "css": "raster-filter-factor",
+                "default-value": -1,
+                "default-meaning": "Allow the datasource to choose appropriate downscaling.",
+                "type": "float",
+                "doc": "This is used by the Raster or Gdal datasources to pre-downscale images using overviews. Higher numbers can sometimes cause much better scaled image output, at the cost of speed."
             },
             "scaling": {
                 "css": "raster-scaling",
@@ -645,20 +689,25 @@
                     "spline16",
                     "gaussian",
                     "lanczos"
-                ]
+                ],
+                "default-value": "fast",
+                "doc": "The scaling algorithm used to making different resolution versions of this raster layer. Bilinear is a good compromise between speed and accuracy, while lanczos gives the highest quality."
             }
         },
         "point": {
             "file": {
                 "css": "point-file",
                 "type": "uri",
+                "required": true,
+                "default-value": "none",
                 "doc": "Image file to represent a point"
             },
             "allow-overlap": {
                 "css": "point-allow-overlap",
                 "type": "boolean",
                 "default-value": false,
-                "default-meaning": "do not allow overlap"
+                "doc": "Control whether overlapping points are shown or hidden.",
+                "default-meaning": "Do not allow points to overlap with each other - overlapping markers will not be shown."
             },
             "ignore-placement": {
                 "css": "point-ignore-placement",
@@ -680,6 +729,7 @@
                     "centroid",
                     "interior"
                 ],
+                "doc": "How this point should be placed. Centroid calculates the geometric center of a polygon, which can be outside of it, while interior always places inside of a polygon.",
                 "default-value": "centroid"
             },
             "transform": {
@@ -706,6 +756,7 @@
                 "css": "text-name",
                 "type": "string",
                 "required": true,
+                "default-value": "",
                 "serialization": "content",
                 "doc": "Value to use for a text label. Data columns are specified using brackets like [column_name]"
             },
@@ -725,12 +776,14 @@
             "text-ratio": {
                 "css": "text-ratio",
                 "doc": "Define the amount of text (of the total) present on successive lines when wrapping occurs",
+                "default-value": 0,
                 "type": "float",
                 "type": "none"
             },
             "wrap-width": {
                 "css": "text-wrap-width",
                 "doc": "Length of a chunk of text in characters before wrapping text",
+                "default-value": 0,
                 "type": "float"
             },
             "wrap-character": {
@@ -758,6 +811,7 @@
             },
             "label-position-tolerance": {
                 "css": "text-label-position-tolerance",
+                "default-value": 0,
                 "type": "float"
             },
             "max-char-angle-delta": {
@@ -819,10 +873,12 @@
             "avoid-edges": {
                 "css": "text-avoid-edges",
                 "doc": "Tell positioning algorithm to avoid labeling near intersection edges.",
+                "default-value": false,
                 "type": "boolean"
             },
             "minimum-distance": {
                 "css": "text-min-distance",
+                "doc": "Minimum permitted distance to the next text symbolizer.",
                 "type": "float"
             },
             "minimum-padding": {
@@ -840,7 +896,8 @@
                 "css": "text-allow-overlap",
                 "type": "boolean",
                 "default-value": false,
-                "default-meaning": "do not allow overlap"
+                "doc": "Control whether overlapping text is shown or hidden.",
+                "default-meaning": "Do not allow text to overlap with other text - overlapping markers will not be shown."
             },
             "orientation": {
                 "css": "text-orientation",
@@ -892,7 +949,7 @@
                     "auto"
                 ],
                 "doc": "The text's horizontal alignment from its centerpoint",
-                "default": "middle"
+                "default-value": "middle"
             },
             "justify-alignment": {
                 "css": "text-align",
@@ -919,18 +976,21 @@
         "building": {
             "fill": {
                 "css": "building-fill",
-                "default": "#FFFFFF",
+                "default-value": "#FFFFFF",
+                "doc": "The color of the buildings walls.",
                 "type": "color"
             },
             "fill-opacity": {
                 "css": "building-fill-opacity",
                 "type": "float",
-                "default": "1.0"
+                "doc": "The opacity of the building as a whole, including all walls.",
+                "default-value": 1
             },
             "height": {
                 "css": "building-height",
+                "doc": "The height of the building in pixels.",
                 "type": "float",
-                "default": "0"
+                "default-value": "0"
             }
         }
     },

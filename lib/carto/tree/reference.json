@@ -49,34 +49,9 @@
                 "default-value": "src-over",
                 "default-meaning": "add the current layer on top of other layers",
                 "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
-                "type": ["clear",
-                    "src",
-                    "dst",
-                    "src-over",
-                    "dst-over",
-                    "src-in",
-                    "dst-in",
-                    "src-out",
-                    "dst-out",
-                    "src-atop",
-                    "dst-atop",
-                    "xor",
-                    "plus",
-                    "minus",
-                    "multiply",
-                    "screen",
-                    "overlay",
-                    "darken",
-                    "lighten",
-                    "color-dodge",
-                    "color-burn",
-                    "hard-light",
-                    "soft-light",
-                    "difference",
-                    "exclusion",
-                    "contrast",
-                    "invert",
-                    "invert-rgb"
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
                 ]
             }
         },
@@ -175,6 +150,16 @@
                 "default-meaning": "no smoothing",
                 "range": "0-1",
                 "doc": "Amount of smoothing applied"
+            },
+            "comp-op": {
+                "css": "polygon-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "line": {
@@ -258,6 +243,16 @@
                 ],
                 "default-value": "full",
                 "doc": "Exposes an alternate AGG rendering method that sacrifices some accuracy for speed."
+            },
+            "comp-op": {
+                "css": "line-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "markers": {
@@ -360,6 +355,16 @@
                 "default-value": "",
                 "default-meaning": "no transformation",
                 "type": "string"
+            },
+            "comp-op": {
+                "css": "marker-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "shield": {
@@ -534,6 +539,16 @@
                 "type": "string",
                 "doc": "Define how text in a shield's label is justified",
                 "default-value": "middle"
+            },
+            "comp-op": {
+                "css": "shield-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "line-pattern": {
@@ -543,6 +558,16 @@
                 "default-value": "none",
                 "required": true,
                 "doc": "An image file to be repeated and warped along a line"
+            },
+            "comp-op": {
+                "css": "line-pattern-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "polygon-pattern": {
@@ -567,6 +592,16 @@
                 "default-meaning": "fully antialiased",
                 "range": "0-1",
                 "doc": "Level of antialiasing of polygon pattern edges"
+            },
+            "comp-op": {
+                "css": "polygon-pattern-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "raster": {
@@ -581,15 +616,8 @@
                 "css": "raster-mode",
                 "default-value": "normal",
                 "type": [
-                    "normal",
-                    "grain_merge",
-                    "grain_merge2",
-                    "multiply",
-                    "multiply2",
-                    "divide",
-                    "divide2",
-                    "screen",
-                    "hard_light"
+                    "normal", "grain_merge", "grain_merge2", "multiply", "multiply2", "divide",
+                    "divide2", "screen", "hard_light"
                 ],
                 "doc": "The blending technique used to overlay this raster image on the layer below. Normal simply covers the layer. Grain merge adds the two layers together and subtracts 128 from the value, making the resulting area sometimes high-contrast. Screen often gives a lighter, washed-out appearance. Multiply multiplies the pixels, giving a high-contrast result. Divide divides the upper layer by the lower layer, making a lighter version."
             },
@@ -603,13 +631,7 @@
             "scaling": {
                 "css": "raster-scaling",
                 "type": [
-                    "fast",
-                    "bilinear",
-                    "bilinear8",
-                    "bicubic",
-                    "spline16",
-                    "gaussian",
-                    "lanczos"
+                    "fast", "bilinear", "bilinear8", "bicubic", "spline16", "gaussian", "lanczos"
                 ],
                 "default-value": "fast",
                 "doc": "The scaling algorithm used to making different resolution versions of this raster layer. Bilinear is a good compromise between speed and accuracy, while lanczos gives the highest quality."
@@ -620,6 +642,16 @@
                 "default-meaning": "Reprojection mesh will be 1/16 of the resolution of the source image",
                 "type": "integer",
                 "doc": "A reduced resolution mesh is used for raster reprojection, and the total image size is divided by the mesh-size to determine the quality of that mesh. Values for mesh-size larger than the default will result in faster reprojection but might lead to distortion."
+            },
+            "comp-op": {
+                "css": "raster-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "point": {
@@ -666,6 +698,16 @@
                 "default-value": "",
                 "default-meaning": "No transformation",
                 "doc": "SVG transformation definition"
+            },
+            "comp-op": {
+                "css": "point-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "text": {
@@ -877,6 +919,16 @@
                 ],
                 "doc": "Set the text alignment.",
                 "default-value": "center"
+            },
+            "comp-op": {
+                "css": "text-composite-operation",
+                "default-value": "src-over",
+                "default-meaning": "add the current layer on top of other layers",
+                "doc": "Composite operation. This defines how this layer should behave relative to layers atop or below it.",
+                "type": ["clear", "src", "dst", "src-over", "dst-over", "src-in", "dst-in", "src-out", "dst-out", "src-atop", "dst-atop",
+                    "xor", "plus", "minus", "multiply", "screen", "overlay", "darken", "lighten",
+                    "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "contrast", "invert", "invert-rgb"
+                ]
             }
         },
         "building": {

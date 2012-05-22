@@ -7,18 +7,6 @@
         "filter-mode": {
         }
     },
-    "meta-writer": {
-        "name": {
-        },
-        "type": {
-        },
-        "file": {
-        },
-        "default-output": {
-        },
-        "output-empty": {
-        }
-    },
     "font-set": {
         "name": {
         },
@@ -187,18 +175,6 @@
                 "default-meaning": "no smoothing",
                 "range": "0-1",
                 "doc": "Amount of smoothing applied"
-            },
-            "meta-output": {
-                "css": "polygon-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "polygon-meta-writer",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter specified"
             }
         },
         "line": {
@@ -274,17 +250,6 @@
                 "range": "0-1",
                 "doc": "Amount of smoothing applied"
             },
-            "meta-output": {
-                "css": "line-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "line-meta-writer",
-                "type": "string",
-                "default-value": ""
-            },
             "rasterizer": {
                 "css": "line-rasterizer",
                 "type": [
@@ -347,13 +312,13 @@
             },
             "width": {
                 "css": "marker-width",
-                "default-value": 5,
+                "default-value": 10,
                 "doc": "The height of the marker, if using one of the default types.",
                 "type": "float"
             },
             "height": {
                 "css": "marker-height",
-                "default-value": 5,
+                "default-value": 10,
                 "doc": "The height of the marker, if using one of the default types.",
                 "type": "float"
             },
@@ -395,17 +360,6 @@
                 "default-value": "",
                 "default-meaning": "no transformation",
                 "type": "string"
-            },
-            "meta-output": {
-                "css": "marker-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "marker-meta-writer",
-                "type": "string",
-                "default-value": "none"
             }
         },
         "shield": {
@@ -580,17 +534,6 @@
                 "type": "string",
                 "doc": "Define how text in a shield's label is justified",
                 "default-value": "middle"
-            },
-            "meta-output": {
-                "css": "shield-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "shield-meta-writer",
-                "type": "string",
-                "default-value": ""
             }
         },
         "line-pattern": {
@@ -600,17 +543,6 @@
                 "default-value": "none",
                 "required": true,
                 "doc": "An image file to be repeated and warped along a line"
-            },
-            "meta-output": {
-                "css": "line-pattern-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "line-pattern-meta-writer",
-                "type": "string",
-                "default-value": ""
             }
         },
         "polygon-pattern": {
@@ -635,17 +567,6 @@
                 "default-meaning": "fully antialiased",
                 "range": "0-1",
                 "doc": "Level of antialiasing of polygon pattern edges"
-            },
-            "meta-output": {
-                "css": "polygon-pattern-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "polygon-pattern-meta-writer",
-                "type": "string",
-                "default-value": ""
             }
         },
         "raster": {
@@ -692,6 +613,13 @@
                 ],
                 "default-value": "fast",
                 "doc": "The scaling algorithm used to making different resolution versions of this raster layer. Bilinear is a good compromise between speed and accuracy, while lanczos gives the highest quality."
+            },
+            "mesh-size": {
+                "css": "raster-mesh-size",
+                "default-value": 16,
+                "default-meaning": "Reprojection mesh will be 1/16 of the resolution of the source image",
+                "type": "integer",
+                "doc": "A reduced resolution mesh is used for raster reprojection, and the total image size is divided by the mesh-size to determine the quality of that mesh. Values for mesh-size larger than the default will result in faster reprojection but might lead to distortion."
             }
         },
         "point": {
@@ -738,17 +666,6 @@
                 "default-value": "",
                 "default-meaning": "No transformation",
                 "doc": "SVG transformation definition"
-            },
-            "meta-output": {
-                "css": "point-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "point-meta-writer",
-                "type": "string",
-                "default-value": ""
             }
         },
         "text": {
@@ -960,17 +877,6 @@
                 ],
                 "doc": "Set the text alignment.",
                 "default-value": "center"
-            },
-            "meta-output": {
-                "css": "text-meta-output",
-                "type": "string",
-                "default-value": "",
-                "default-meaning": "No MetaWriter Output"
-            },
-            "meta-writer": {
-                "css": "text-meta-writer",
-                "type": "string",
-                "default-value": ""
             }
         },
         "building": {

@@ -70,6 +70,7 @@ function toCSS(path, callback) {
 // Stylize a string
 function stylize(str, style) {
     var styles = {
+        'reset'     : [0,   0],
         'bold'      : [1,  22],
         'inverse'   : [7,  27],
         'underline' : [4,  24],

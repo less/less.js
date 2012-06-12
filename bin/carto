@@ -24,12 +24,17 @@ args = args.filter(function (arg) {
         case 'benchmark':
             options.benchmark = true;
             break;
+        case 'n':
+        case 'nolocalizing':
+            options.nolocalizing = true;
+            break;
 
         default:
             sys.puts("Usage: carto <source MML file>");
             sys.puts("Options:");
             sys.puts("  -v   --version      Parse JSON map manifest");
             sys.puts("  -b   --benchmark    Outputs total compile time");
+            sys.puts("  -n   --nolocalizing Don't invoke millstone to localize data files");
             process.exit(0);
             break;
     }
@@ -70,8 +75,14 @@ try {
     millstone = require('millstone');
 } catch (err) {}
 
-if (!millstone) {
-    console.warn('carto: Millstone not found. Externals will not be resolved.');
+if (options.nolocalizing || !millstone) {
+    if (!options.nolocalizing)
+        console.warn('carto: Millstone not found. Externals will not be resolved.');
+    data.Stylesheet = data.Stylesheet.map(function(x) {
+        return { id: x, data: fs.readFileSync(path.join(path.dirname(input), x), 'utf8') }
+    });
+    return compile(null, data);
+} else if (!millstone) {
     return compile(null, data);
 } else {
     millstone.resolve({

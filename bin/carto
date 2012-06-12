@@ -6,7 +6,7 @@ var path = require('path'),
     carto = require('carto');
 
 var args = process.argv.slice(1);
-var options = {};
+var options = { nosymlink:false };
 
 args = args.filter(function (arg) {
     var match;
@@ -25,8 +25,8 @@ args = args.filter(function (arg) {
             options.benchmark = true;
             break;
         case 'n':
-        case 'nolocalizing':
-            options.nolocalizing = true;
+        case 'nosymlink':
+            options.nosymlink = true;
             break;
 
         default:
@@ -34,7 +34,7 @@ args = args.filter(function (arg) {
             sys.puts("Options:");
             sys.puts("  -v   --version      Parse JSON map manifest");
             sys.puts("  -b   --benchmark    Outputs total compile time");
-            sys.puts("  -n   --nolocalizing Don't invoke millstone to localize data files");
+            sys.puts("  -n   --nosymlink    Use absolute paths instead of symlinking files");
             process.exit(0);
             break;
     }
@@ -73,24 +73,17 @@ var millstone = undefined;
 try {
     require.resolve('millstone');
     millstone = require('millstone');
-} catch (err) {}
-
-if (options.nolocalizing || !millstone) {
-    if (!options.nolocalizing)
-        console.warn('carto: Millstone not found. Externals will not be resolved.');
-    data.Stylesheet = data.Stylesheet.map(function(x) {
-        return { id: x, data: fs.readFileSync(path.join(path.dirname(input), x), 'utf8') }
-    });
-    return compile(null, data);
-} else if (!millstone) {
-    return compile(null, data);
-} else {
-    millstone.resolve({
-        mml: data,
-        base: path.dirname(input),
-        cache: path.join(path.dirname(input), 'cache')
-    }, compile);
+} catch (err) {
+    sys.puts('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
+    process.exit(1);
 }
+
+millstone.resolve({
+    mml: data,
+    base: path.dirname(input),
+    cache: path.join(path.dirname(input), 'cache'),
+   nosymlink: options.nosymlink
+}, compile);
 
 function compile(err, data) {
     if (err) throw err;

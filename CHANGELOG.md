@@ -4,6 +4,8 @@
 
 * Now uses the [mapnik-reference](https://github.com/mapnik/mapnik-reference) npm module
   instead of copying `reference.json` when it's updated
+* Adds a second parameter to `carto.Renderer` - an object which has a key `mapnik_version`
+  that specifies the version of Mapnik this stylesheet should target.
 
 ### 0.4.10
 

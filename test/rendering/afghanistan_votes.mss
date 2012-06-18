@@ -8,8 +8,6 @@
     marker-line-color: #222;
     marker-line-opacity: 0.8;
     marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
 }
  
 #data[_votes_total_null = 0][votes_total >= 34730.2][votes_total <= 69457.4] {
@@ -22,8 +20,6 @@
     marker-line-color: #222;
     marker-line-opacity: .8;
     marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
 }
  
  
@@ -37,8 +33,6 @@
     marker-line-color: #222;
     marker-line-opacity: .8;
     marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
 }
  
  
@@ -52,8 +46,6 @@
     marker-line-color: #222;
     marker-line-opacity: .8;
     marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
 }
  
  
@@ -67,8 +59,6 @@
     marker-line-color: #222;
     marker-line-opacity: .8;
     marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
 }
  
  
@@ -82,81 +72,4 @@
     marker-line-color: #222;
     marker-line-opacity: .8;
     marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
-}
- 
- 
-#data[_votes_total_null = 0][votes_total >= 208366.2][votes_total <= 243093.40000000002] {
-    marker-allow-overlap: true;
-    marker-width: 20;
-    marker-height: 20;
-    marker-fill: #222;
-    marker-opacity: .8;
-    marker-line-width: 0;
-    marker-line-color: #222;
-    marker-line-opacity: .8;
-    marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
-}
- 
- 
-#data[_votes_total_null = 0][votes_total >= 243093.40000000002][votes_total <= 277820.60000000003] {
-    marker-allow-overlap: true;
-    marker-width: 23;
-    marker-height: 23;
-    marker-fill: #222;
-    marker-opacity: .8;
-    marker-line-width: 0;
-    marker-line-color: #222;
-    marker-line-opacity: .8;
-    marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
-}
- 
- 
-#data[_votes_total_null = 0][votes_total >= 277820.60000000003][votes_total <= 312547.80000000005] {
-    marker-allow-overlap: true;
-    marker-width: 26;
-    marker-height: 26;
-    marker-fill: #222;
-    marker-opacity: .8;
-    marker-line-width: 0;
-    marker-line-color: #222;
-    marker-line-opacity: .8;
-    marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
-}
- 
- 
-#data[_votes_total_null = 0][votes_total >= 312547.80000000005][votes_total <= 347275] {
-    marker-allow-overlap: true;
-    marker-width: 29;
-    marker-height: 29;
-    marker-fill: #222;
-    marker-opacity: .8;
-    marker-line-width: 0;
-    marker-line-color: #222;
-    marker-line-opacity: .8;
-    marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
-}
- 
- 
-#data[_votes_total_null = 1] {
-    marker-allow-overlap: true;
-    marker-width: 4;
-    marker-height: 4;
-    marker-fill: #fff;
-    marker-opacity: .8;
-    marker-line-width: 2;
-    marker-line-color: #444;
-    marker-line-opacity: .8;
-    marker-type: ellipse;
-    marker-meta-writer: "meta1";
-    marker-meta-output: "votes_name, votes_description";
 }

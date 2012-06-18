@@ -1,5 +1,7 @@
 # carto
 
+[![Build Status](https://secure.travis-ci.org/mapbox/carto.png)](http://travis-ci.org/mapbox/carto)
+
 Is a stylesheet renderer for Mapnik. It's an evolution of the
 [Cascadenik](https://github.com/mapnik/Cascadenik) idea and language,
 with an emphasis on speed and flexibility.

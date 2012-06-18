@@ -1,5 +1,6 @@
 {
   "name": "carto",
+  "version": "0.5.0",
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
   "repositories": [{
@@ -22,7 +23,6 @@
     "Konstantin Käfer",
     "Alexis Sellier <self@cloudhead.net>"
   ],
-  "version": "0.4.10",
   "licenses": [{
     "type": "Apache"
   }],

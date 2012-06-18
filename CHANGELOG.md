@@ -1,5 +1,10 @@
 ## Changelog
 
+### 0.5.0
+
+* Now uses the [mapnik-reference](https://github.com/mapnik/mapnik-reference) npm module
+  instead of copying `reference.json` when it's updated
+
 ### 0.4.10
 
 * Updated reference.json

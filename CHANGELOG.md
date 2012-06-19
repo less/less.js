@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.7.0
+
+* Support an `opacity` property on any style that is a style-level property
+
 ### 0.6.0
 
 * Bump `mapnik-reference` dependency to 1.0.0 to allow for using `buffer-size` in the

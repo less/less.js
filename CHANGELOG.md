@@ -1,5 +1,10 @@
 ## Changelog
 
+### 0.6.0
+
+* Bump `mapnik-reference` dependency to 1.0.0 to allow for using `buffer-size` in the
+  `Map` element.
+
 ### 0.5.0
 
 * Now uses the [mapnik-reference](https://github.com/mapnik/mapnik-reference) npm module

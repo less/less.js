@@ -6,7 +6,7 @@ var path = require('path'),
     carto = require('carto');
 
 var args = process.argv.slice(1);
-var options = {};
+var options = { nosymlink:false };
 
 args = args.filter(function (arg) {
     var match;
@@ -24,12 +24,17 @@ args = args.filter(function (arg) {
         case 'benchmark':
             options.benchmark = true;
             break;
+        case 'n':
+        case 'nosymlink':
+            options.nosymlink = true;
+            break;
 
         default:
             sys.puts("Usage: carto <source MML file>");
             sys.puts("Options:");
             sys.puts("  -v   --version      Parse JSON map manifest");
             sys.puts("  -b   --benchmark    Outputs total compile time");
+            sys.puts("  -n   --nosymlink    Use absolute paths instead of symlinking files");
             process.exit(0);
             break;
     }
@@ -68,18 +73,17 @@ var millstone = undefined;
 try {
     require.resolve('millstone');
     millstone = require('millstone');
-} catch (err) {}
-
-if (!millstone) {
-    console.warn('carto: Millstone not found. Externals will not be resolved.');
-    return compile(null, data);
-} else {
-    millstone.resolve({
-        mml: data,
-        base: path.dirname(input),
-        cache: path.join(path.dirname(input), 'cache')
-    }, compile);
+} catch (err) {
+    sys.puts('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
+    process.exit(1);
 }
+
+millstone.resolve({
+    mml: data,
+    base: path.dirname(input),
+    cache: path.join(path.dirname(input), 'cache'),
+   nosymlink: options.nosymlink
+}, compile);
 
 function compile(err, data) {
     if (err) throw err;

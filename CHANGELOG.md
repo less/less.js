@@ -1,5 +1,9 @@
 ## Changelog
 
+### 0.8.0
+
+* Supports function syntax for transforms, optionally with variables and arguments.
+
 ### 0.7.0
 
 * Support an `opacity` property on any style that is a style-level property

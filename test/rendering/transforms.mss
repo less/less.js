@@ -1,4 +1,5 @@
+@trans: 2;
 #world {
   point-file: url(foo.png);
-  point-transform: translate(2, 2);
+  point-transform: translate(@trans * 2, @trans);
 }

@@ -16,6 +16,8 @@ test:
 	@NODE_PATH=./lib:$NODE_PATH $(expresso) -R spec -I lib test/${only}.test.js
 endif
 
+check: test
+
 doc:
 	$(docco) lib/carto/*.js lib/carto/tree/*.js
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map[]>
+<Map srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over" maximum-extent="-20037508.34,-20037508.34,20037508.34,20037508.34">
+
+<FontSet name="fontset-0">
+  <Font face-name="Georgia Regular"/>
+  <Font face-name="Arial Italic"/>
+</FontSet>
+<Style name="world" filter-mode="first" >
+  <Rule>
+    <TextSymbolizer size="1" fontset-name="fontset-0" ><![CDATA[hello ]]></TextSymbolizer>
+  </Rule>
+</Style>
+<Layer name="world"
+  srs="+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over">
+    <StyleName>world</StyleName>
+    <Datasource>
+       <Parameter name="file"><![CDATA[[absolute path]]]></Parameter>
+       <Parameter name="type"><![CDATA[shape]]></Parameter>
+    </Datasource>
+  </Layer>
+
+</Map>

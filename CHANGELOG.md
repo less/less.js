@@ -1,5 +1,14 @@
 ## Changelog
 
+## 0.9.0
+
+* Adds the modulus operator `%` as an option
+* Adds a new field-type like `[FIELD]` instead of "[FIELD"
+
+### 0.8.0
+
+* Supports function syntax for transforms, optionally with variables and arguments.
+
 ### 0.7.0
 
 * Support an `opacity` property on any style that is a style-level property

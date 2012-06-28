@@ -1,4 +1,4 @@
-# carto
+# CartoCSS
 
 [![Build Status](https://secure.travis-ci.org/mapbox/carto.png)](http://travis-ci.org/mapbox/carto)
 
@@ -15,7 +15,7 @@ _incompatibility_
 
 * MML files are assumed to be JSON, not XML. The files are near-identical
   to the XML files accepted by Cascadenik, just translated into JSON.
-* Carto will not embed files or download URLs for you. Stylesheets should
+* CartoCSS will not embed files or download URLs for you. Stylesheets should
   be embedded directly into your MML JSON and any datasources should be
   paths (relative or absolute) that would be acceptable in Mapnik XML.
   The [millstone project](https://github.com/mapbox/millstone) aims to fill this need.
@@ -212,7 +212,7 @@ By defining multiple fonts in a `text-face-name` definition, you create [FontSet
 
 ## Filters
 
-Carto supports a variety of filter styles:
+CartoCSS supports a variety of filter styles:
 
 Numeric comparisons:
 
@@ -243,7 +243,7 @@ String comparisons:
 #### Installation
 
 If you're using [TileMill](http://mapbox.com/tilemill/), you're already
-using Carto and don't need to do a thing.
+using CartoCSS and don't need to do a thing.
 
 If you're a developer-type and want to use the `carto` binary with
 `node.js` (and you have [npm](http://npmjs.org/) installed),

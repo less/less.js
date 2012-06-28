@@ -9,18 +9,13 @@
 ### 0.7.1
 
 * Updated mapnik-reference to `~2.2.1`
-
 * Added support for `status` parameter on layers.
-
 * Command line `carto` program gained `--nosymlink` option to pass to millstone to use absolute paths instead of symlinking files.
-
 * Removed unsupported mixin code.
->>>>>>> b165c2080d0b876278222078fa322450e148cc41
 
 ### 0.7.0
 
 * Updated mapnik-reference to `~2.1.0`
-
 * Support an `opacity` property on any style that is a style-level property
 
 ### 0.6.0

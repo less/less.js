@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.8.1
+
+* Bump `mapnik-reference` dependency to ~3.1.0 to pull in new properties.
+
 ## 0.8.0
 
 * Adds the modulus operator `%` as an option

@@ -35,7 +35,7 @@ less:
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
 	      ${SRC}/browser.js >> ${DIST}
-	@@echo "})(window);" >> ${DIST}
+	@@echo "})(typeof window === 'undefined' ? undefined : window);" >> ${DIST}
 	@@echo ${DIST} built.
 
 rhino:

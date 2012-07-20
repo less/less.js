@@ -20,6 +20,10 @@
     body { max-width: @base * 60; }
 }
 
+@media all and (device-aspect-ratio: 16/9) {
+   body { max-width: 800px; }
+}
+
 @media all and (orientation:portrait) {
     aside { float: none; }
 }

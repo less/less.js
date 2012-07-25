@@ -11,19 +11,7 @@
 
 var carto_initialize = function(carto, uri, callback) {
     reqwest(uri, function (resp) {
-        carto.tree.Reference.data = resp;
-        // regenerate cache
-        carto.tree.Reference.selectors = (function() {
-            var list = [];
-            for (var i in tree.Reference.data.symbolizers) {
-                for (var j in tree.Reference.data.symbolizers[i]) {
-                    if (tree.Reference.data.symbolizers[i][j].hasOwnProperty('css')) {
-                        list.push(tree.Reference.data.symbolizers[i][j].css);
-                    }
-                }
-            }
-            return list;
-        })();
-        callback(carto);
+        window.carto['mapnik-reference'] = resp;
+        callback();
     });
 };    

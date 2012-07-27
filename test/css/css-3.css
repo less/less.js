@@ -10,6 +10,9 @@
 .other {
   -moz-transform: translate(0, 11em) rotate(-90deg);
 }
+.item[data-cra_zy-attr1b-ut3=bold] {
+  font-weight: bold;
+}
 p:not([class*="lead"]) {
   color: black;
 }

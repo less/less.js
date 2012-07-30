@@ -65,3 +65,20 @@
 .foo .bar {
   .bar;
 }
+.has_parents() {
+  & .underParents {
+    color: red;
+  }
+}
+.has_parents();
+.parent {
+  .has_parents();
+}
+.margin_between(@above, @below) {
+     * + & { margin-top: @above; }
+     legend + & { margin-top: 0; }
+     & + * { margin-top: @below; }
+}
+h1 { .margin_between(25px, 10px); }
+h2 { .margin_between(20px, 8px); }
+h3 { .margin_between(15px, 5px); }

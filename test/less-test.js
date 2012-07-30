@@ -24,6 +24,7 @@ fs.readdirSync('test/less').forEach(function (file) {
 
         fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
             sys.print("- " + name + ": ")
+            css = css && css.replace(/\r\n/g, '\n');
             if (less === css) { sys.print(stylize('OK', 'green')) }
             else if (err) {
                 sys.print(stylize("ERROR: " + (err && err.message), 'red'));

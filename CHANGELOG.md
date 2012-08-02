@@ -1,5 +1,11 @@
 ## Changelog
 
+## 0.9.0
+
+* Bump `mapnik-reference` dependency to ~4.0.0 to pull in new properties.
+* Adapted to `comp-op` rename upstream in `mapnik-reference`.
+* Adapted to `transform` rename upstream in `mapnik-reference` and Mapnik.
+
 ## 0.8.1
 
 * Bump `mapnik-reference` dependency to ~3.1.0 to pull in new properties.
@@ -7,7 +13,7 @@
 ## 0.8.0
 
 * Adds the modulus operator `%` as an option
-* Adds a new field-type like `[FIELD]` instead of "[FIELD"
+* Adds a new field-type like `[FIELD]` instead of "[FIELD]"
 * Supports function syntax for transforms, optionally with variables and arguments.
 
 ### 0.7.1

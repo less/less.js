@@ -5,7 +5,7 @@
 
 <Style name="data" filter-mode="first">
   <Rule>
-    <RasterSymbolizer opacity="1" mode="hard-light" />
+    <RasterSymbolizer opacity="1" comp-op="hard-light" />
   </Rule>
 </Style>
 <Layer

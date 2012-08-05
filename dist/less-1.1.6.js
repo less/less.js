@@ -2656,26 +2656,49 @@ less.poll = less.poll || (isFileProtocol ? 1000 : 1500);
 //
 // Watch mode
 //
-less.watch   = function () { return this.watchMode = true };
-less.unwatch = function () { return this.watchMode = false };
-
-if (less.env === 'development') {
-    less.optimization = 0;
-
-    if (/!watch/.test(location.hash)) {
-        less.watch();
-    }
-    less.watchTimer = setInterval(function () {
-        if (less.watchMode) {
-            loadStyleSheets(function (root, sheet, env) {
-                if (root) {
-                    createCSS(root.toCSS(), sheet, env.lastModified);
-                }
-            });
+less.watch = function () {
+    // If watch() is called and development mode is not enabled
+    // Then development mode should be implicitly enabled.
+    if (less.env !== 'development' && !less.watchMode) {
+        less._origEnv = less.env;
+        if (less.watchTimer !== undefined) {
+            clearInterval(less.watchTimer);
         }
-    }, less.poll);
-} else {
-    less.optimization = 3;
+        less.env = 'development';
+        less.checkEnv();
+    }
+    return (less.watchMode = true);
+};
+
+less.unwatch = function () {
+    if (less._origEnv !== undefined) {
+        less.env = less._origEnv;
+    }
+    return (less.watchMode = false);
+};
+
+less.checkEnv = function () {
+    if (less.env === 'development') {
+        less.optimization = 0;
+        less.watchTimer = setInterval(function () {
+            if (less.watchMode) {
+                loadStyleSheets(function (root, sheet, env) {
+                    if (root) {
+                        createCSS(root.toCSS(), sheet, env.lastModified);
+                    }
+                });
+            }
+        }, less.poll);
+    } else {
+        less.optimization = 3;
+    }
+    return true;
+};
+
+less.checkEnv();
+
+if (/!watch/.test(location.hash) && !less.watchMode) {
+    less.watch();
 }
 
 var cache;

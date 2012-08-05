@@ -29,7 +29,7 @@ fs.readdirSync('test/less').forEach(function (file) {
             else if (err) {
                 sys.print(stylize("ERROR: " + (err && err.message), 'red'));
             } else {
-                sys.print(stylize("FAIL", 'yellow'));
+                sys.print(stylize("FAIL", 'yellow') + '\n');
                 
                 require('diff').diffLines(css, less).forEach(function(item) {
                   if(item.added || item.removed) {

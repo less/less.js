@@ -30,11 +30,11 @@ args = args.filter(function (arg) {
             break;
 
         default:
-            sys.puts("Usage: carto <source MML file>");
-            sys.puts("Options:");
-            sys.puts("  -v   --version      Parse JSON map manifest");
-            sys.puts("  -b   --benchmark    Outputs total compile time");
-            sys.puts("  -n   --nosymlink    Use absolute paths instead of symlinking files");
+            util.puts("Usage: carto <source MML file>");
+            util.puts("Options:");
+            util.puts("  -v   --version      Parse JSON map manifest");
+            util.puts("  -b   --benchmark    Outputs total compile time");
+            util.puts("  -n   --nosymlink    Use absolute paths instead of symlinking files");
             process.exit(0);
             break;
     }
@@ -74,7 +74,7 @@ try {
     require.resolve('millstone');
     millstone = require('millstone');
 } catch (err) {
-    sys.puts('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
+    util.puts('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
     process.exit(1);
 }
 

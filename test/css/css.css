@@ -61,6 +61,7 @@ p + h1 {
   margin: 0;
   padding: 1px 0 2px 0;
   font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
+  font: 0/0 a;
 }
 .misc {
   -moz-border-radius: 2px;

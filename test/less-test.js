@@ -47,24 +47,33 @@ fs.readdirSync('test/less').forEach(function (file) {
 fs.readdirSync('test/less/errors').forEach(function (file) {
     if (! /\.less/.test(file)) { return }
 
-    toCSS('test/less/errors/' + file, function (err, less) {
+    toCSS('test/less/errors/' + file, function (err, compiledLess) {
         var name = path.basename(file, '.less');
 
         fs.readFile(path.join('test/less/errors', name) + '.txt', 'utf-8', function (e, expectedErr) {
-            sys.print("- error/" + name + ": ")
-            if (err.message === expectedErr) { sys.print(stylize('OK', 'green')) }
-            else if (!err) {
-                sys.print(stylize("No Error", 'red'));
-            } else {
-                sys.print(stylize("FAIL", 'yellow') + '\n');
+            sys.print("- error/" + name + ": ");
+            if (!err) {
+                if (compiledLess) {
+                    sys.print(stylize("No Error", 'red'));
+                } else {
+                    sys.print(stylize("No Error, No Output", 'red'));
+                }
                 
-                require('diff').diffLines(expectedErr, err.message).forEach(function(item) {
-                  if(item.added || item.removed) {
-                    sys.print(stylize(item.value, item.added ? 'green' : 'red'));
-                  } else {
-                    sys.print(item.value);
-                  }
-                })
+            } else {
+                var errMessage = less.formatError(err);
+                if (errMessage === expectedErr) {
+                    sys.print(stylize('OK', 'green'));                    
+                } else {
+                    sys.print(stylize("FAIL", 'yellow') + '\n');
+                
+                    require('diff').diffLines(expectedErr, errMessage).forEach(function(item) {
+                      if(item.added || item.removed) {
+                        sys.print(stylize(item.value, item.added ? 'green' : 'red'));
+                      } else {
+                        sys.print(item.value);
+                      }
+                    })
+                }
             }
             sys.puts("");
         });

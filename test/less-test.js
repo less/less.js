@@ -44,6 +44,33 @@ fs.readdirSync('test/less').forEach(function (file) {
     });
 });
 
+fs.readdirSync('test/less/errors').forEach(function (file) {
+    if (! /\.less/.test(file)) { return }
+
+    toCSS('test/less/errors/' + file, function (err, less) {
+        var name = path.basename(file, '.less');
+
+        fs.readFile(path.join('test/less/errors', name) + '.txt', 'utf-8', function (e, expectedErr) {
+            sys.print("- error/" + name + ": ")
+            if (err.message === expectedErr) { sys.print(stylize('OK', 'green')) }
+            else if (!err) {
+                sys.print(stylize("No Error", 'red'));
+            } else {
+                sys.print(stylize("FAIL", 'yellow') + '\n');
+                
+                require('diff').diffLines(expectedErr, err.message).forEach(function(item) {
+                  if(item.added || item.removed) {
+                    sys.print(stylize(item.value, item.added ? 'green' : 'red'));
+                  } else {
+                    sys.print(item.value);
+                  }
+                })
+            }
+            sys.puts("");
+        });
+    });
+});
+
 function toCSS(path, callback) {
     var tree, css;
     fs.readFile(path, 'utf-8', function (e, str) {

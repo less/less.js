@@ -1,3 +1,2 @@
-NameError: .mixin-not-defined is undefined in test\less\errors\mixin-not-defined.less:1:102
-10 
-11 .mixin-not-defined();
+ParseError: Syntax Error on line 1 in test\less\errors\parse-error-curly-bracket.less:1:0
+1 }}

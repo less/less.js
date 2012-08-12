@@ -99,3 +99,12 @@ p + h1 {
 #svg-data-uri {
   background: transparent url('data:image/svg+xml, <svg version="1.1"><g></g></svg>');
 }
+
+.def-font(@name) {
+    @font-face {
+        font-family: @name
+    }
+}
+
+.def-font(font-a);
+.def-font(font-b);

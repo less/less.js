@@ -88,3 +88,9 @@ p + h1 {
 #svg-data-uri {
   background: transparent url('data:image/svg+xml, <svg version="1.1"><g></g></svg>');
 }
+@font-face {
+  font-family: font-a;
+}
+@font-face {
+  font-family: font-b;
+}

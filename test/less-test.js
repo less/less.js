@@ -59,7 +59,8 @@ fs.readdirSync('test/less/errors').forEach(function (file) {
     toCSS('test/less/errors/' + file, function (err, compiledLess) {
         fs.readFile(path.join('test/less/errors', name) + '.txt', 'utf-8', function (e, expectedErr) {
             sys.print("- error/" + name + ": ");
-            expectedErr = expectedErr.replace("{path}", path.join(process.cwd(), "/test/less/errors/"));
+            expectedErr = expectedErr.replace("{path}", path.join(process.cwd(), "/test/less/errors/"))
+                .replace(/\r\n/g, '\n');
             if (!err) {
                 if (compiledLess) {
                     sys.print(stylize("No Error", 'red'));

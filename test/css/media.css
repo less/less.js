@@ -43,6 +43,32 @@
     margin-left: 20px;
   }
 }
+@media screen {
+  .sidebar {
+    width: 300px;
+  }
+}
+@media screen and (orientation: landscape) {
+  .sidebar {
+    width: 500px;
+  }
+}
+@media a {
+  
+}
+@media a and b {
+  .first .second .third {
+    width: 300px;
+  }
+  .first .second .fourth {
+    width: 3;
+  }
+}
+@media a and b and c {
+  .first .second .third {
+    width: 500px;
+  }
+}
 @media a, b and c {
   body {
     width: 95%;

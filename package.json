@@ -40,13 +40,13 @@
     "xml2js": "~0.1.13"
   },
   "devDependencies": {
-    "mocha": "1.0.x",
+    "mocha": "1.3.x",
     "docco": "0.3.x",
     "jshint": "0.2.x",
     "sax": "0.1.x"
   },
   "scripts": {
     "pretest": "npm install",
-    "test": "mocha"
+    "test": "mocha -R spec"
   }
 }

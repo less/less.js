@@ -5,7 +5,7 @@
 
 <Style name="world" filter-mode="first" >
   <Rule>
-    <PointSymbolizer file="foo.png" transform="scale(10*[POP2005],[POP2005])" />
+    <PointSymbolizer file="foo.png" transform="scale(10*[POP2005],[POP2005]), rotate(10,1,-1)" />
   </Rule>
 </Style>
 <Layer name="world"

@@ -111,7 +111,7 @@ var parseLessFile = function (e, data) {
                 if (output) {
                     fd = fs.openSync(output, "w");
                     fs.writeSync(fd, css, 0, "utf8");
-					fs.closeSync(fd);
+                    fs.closeSync(fd);
                 } else {
                     sys.print(css);
                 }

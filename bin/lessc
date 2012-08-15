@@ -45,7 +45,7 @@ args = args.filter(function (arg) {
             break;
         case 'h':
         case 'help':
-            sys.puts("usage: lessc source [destination]");
+            require('../lib/less/lessc_helper').printUsage();
             process.exit(0);
         case 'x':
         case 'compress':

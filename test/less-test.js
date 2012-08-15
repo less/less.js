@@ -3,6 +3,7 @@ var path = require('path'),
     sys = require('util');
 
 var less = require('../lib/less');
+var stylize = require('../lib/less/lessc_helper').stylize;
 
 var oneTestOnly = process.argv[2];
 
@@ -111,19 +112,4 @@ function toCSS(path, callback) {
             }
         });
     });
-}
-
-// Stylize a string
-function stylize(str, style) {
-    var styles = {
-        'reset'     : [0,   0],
-        'bold'      : [1,  22],
-        'inverse'   : [7,  27],
-        'underline' : [4,  24],
-        'yellow'    : [33, 39],
-        'green'     : [32, 39],
-        'red'       : [31, 39]
-    };
-    return '\033[' + styles[style][0] + 'm' + str +
-           '\033[' + styles[style][1] + 'm';
 }

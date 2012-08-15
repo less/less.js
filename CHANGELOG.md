@@ -1,5 +1,13 @@
 ## Changelog
 
+## 0.9.1
+
+Tagged Aug 15, 2012
+
+* Improved error handling for different target `mapnik-reference` versions (strk)
+* Bump `mapnik-reference` dependency to ~4.0.3
+* Fixed handling of image-filter syntax as per [Mapnik changes](https://github.com/mapnik/mapnik/issues/1384)
+
 ## 0.9.0
 
 * Bump `mapnik-reference` dependency to ~4.0.0 to pull in new properties.

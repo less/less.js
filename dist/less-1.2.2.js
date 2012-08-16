@@ -1,7 +1,7 @@
 //
 // LESS - Leaner CSS v1.2.2
 // http://lesscss.org
-// 
+//
 // Copyright (c) 2009-2011, Alexis Sellier
 // Licensed under the Apache 2.0 License.
 //
@@ -679,7 +679,7 @@ less.Parser = function Parser(env) {
                 keyword: function () {
                     var k;
 
-                    if (k = $(/^[_A-Za-z-][_A-Za-z0-9-]*/)) { 
+                    if (k = $(/^[_A-Za-z-][_A-Za-z0-9-]*/)) {
                         if (tree.colors.hasOwnProperty(k)) {
                             // detect named color
                             return new(tree.Color)(tree.colors[k].slice(1));
@@ -2754,7 +2754,7 @@ tree.Ruleset.prototype = {
                     rules.push(rule.value.toString());
                 }
             }
-        } 
+        }
 
         rulesets = rulesets.join('');
 
@@ -3029,6 +3029,16 @@ for (var i = 0; i < links.length; i++) {
     }
 }
 
+//
+// Get all <style> tags with the 'type' attribute set to "stylesheet/less"
+//
+var styles = document.getElementsByTagName('style');
+for (var i = 0; i < styles.length; i++) {
+    if (styles[i].type === 'stylesheet/less') {
+        styles[i].lessId = "#in-page-style-"+(i+1);
+        less.sheets.push(styles[i]);
+    }
+}
 
 less.refresh = function (reload) {
     var startTime, endTime;
@@ -3077,53 +3087,75 @@ function loadStyleSheets(callback, reload) {
 }
 
 function loadStyleSheet(sheet, callback, reload, remaining) {
-    var url       = window.location.href.replace(/[#?].*$/, '');
-    var href      = sheet.href.replace(/\?.*$/, '');
-    var css       = cache && cache.getItem(href);
-    var timestamp = cache && cache.getItem(href + ':timestamp');
-    var styles    = { css: css, timestamp: timestamp };
-
-    // Stylesheets in IE don't always return the full path
-    if (! /^(https?|file):/.test(href)) {
-        if (href.charAt(0) == "/") {
-            href = window.location.protocol + "//" + window.location.host + href;
-        } else {
-            href = url.slice(0, url.lastIndexOf('/') + 1) + href;
+    if (sheet.href!==undefined) {
+        var url       = window.location.href.replace(/[#?].*$/, '');
+        var href      = sheet.href.replace(/\?.*$/, '');
+        var css       = cache && cache.getItem(href);
+        var timestamp = cache && cache.getItem(href + ':timestamp');
+        var styles    = { css: css, timestamp: timestamp };
+        // Stylesheets in IE don't always return the full path
+        if (! /^(https?|file):/.test(href)) {
+            if (href.charAt(0) == "/") {
+                href = window.location.protocol + "//" + window.location.host + href;
+            } else {
+                href = url.slice(0, url.lastIndexOf('/') + 1) + href;
+            }
         }
-    }
-    var filename = href.match(/([^\/]+)$/)[1];
+        var filename = href.match(/([^\/]+)$/)[1];
 
-    xhr(sheet.href, sheet.type, function (data, lastModified) {
-        if (!reload && styles && lastModified &&
-           (new(Date)(lastModified).valueOf() ===
-            new(Date)(styles.timestamp).valueOf())) {
-            // Use local copy
-            createCSS(styles.css, sheet);
-            callback(null, null, data, sheet, { local: true, remaining: remaining });
-        } else {
-            // Use remote copy (re-parse)
-            try {
-                new(less.Parser)({
-                    optimization: less.optimization,
-                    paths: [href.replace(/[\w\.-]+$/, '')],
-                    mime: sheet.type,
-                    filename: filename
-                }).parse(data, function (e, root) {
-                    if (e) { return error(e, href) }
-                    try {
-                        callback(e, root, data, sheet, { local: false, lastModified: lastModified, remaining: remaining });
-                        removeNode(document.getElementById('less-error-message:' + extractId(href)));
-                    } catch (e) {
-                        error(e, href);
-                    }
-                });
+        xhr(sheet.href, sheet.type, function (data, lastModified) {
+            if (!reload && styles && lastModified &&
+               (new(Date)(lastModified).valueOf() ===
+                new(Date)(styles.timestamp).valueOf())) {
+                // Use local copy
+                createCSS(styles.css, sheet);
+                callback(null, null, data, sheet, { local: true, remaining: remaining });
+            } else {
+                // Use remote copy (re-parse)
+                try {
+                    new(less.Parser)({
+                        optimization: less.optimization,
+                        paths: [href.replace(/[\w\.-]+$/, '')],
+                        mime: sheet.type,
+                        filename: filename
+                    }).parse(data, function (e, root) {
+                        if (e) { return error(e, href) }
+                        try {
+                            callback(e, root, data, sheet, { local: false, lastModified: lastModified, remaining: remaining });
+                            removeNode(document.getElementById('less-error-message:' + extractId(href)));
+                        } catch (e) {
+                            error(e, href);
+                        }
+                    });
+                } catch (e) {
+                    error(e, href);
+                }
+            }
+        }, function (status, url) {
+            throw new(Error)("Couldn't load " + url + " (" + status + ")");
+        });
+    }
+    else {
+        //style
+        sheet.href=sheet.lessId;
+        var href=sheet.href;
+        new(less.Parser)({
+            optimization: less.optimization,
+            mime: sheet.type,
+            paths: [href.replace(/[\w\.-]+$/, '')],
+            filename: href
+        }).parse(sheet.innerHTML, function (e, root) { 
+            if (e) { 
+                return error(e, href) 
+            }
+            try { 
+                callback(e, root, sheet.innerHTML, sheet, { local: false, lastModified: new Date(), remaining: 0 });
+                removeNode(document.getElementById('less-error-message:' + extractId(href)));
             } catch (e) {
                 error(e, href);
             }
-        }
-    }, function (status, url) {
-        throw new(Error)("Couldn't load " + url + " (" + status + ")");
-    });
+        });
+    }
 }
 
 function extractId(href) {

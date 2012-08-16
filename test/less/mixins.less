@@ -82,3 +82,12 @@
 h1 { .margin_between(25px, 10px); }
 h2 { .margin_between(20px, 8px); }
 h3 { .margin_between(15px, 5px); }
+
+.mixin_def(@url, @position){
+    background-image: @url;
+    background-position: @position;
+}
+.error{
+  @s: "/";
+  .mixin_def( "@{s}a.png", center center);
+}

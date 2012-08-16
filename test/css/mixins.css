@@ -102,3 +102,7 @@ legend + h3 {
 h3 + * {
   margin-top: 5px;
 }
+.error {
+  background-image: "/a.png";
+  background-position: center center;
+}

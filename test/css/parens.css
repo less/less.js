@@ -9,6 +9,7 @@
   width: 96;
   height: 113;
   margin: 12;
+  border-radius: 8px / 7px;
 }
 .nested-parens {
   width: 71;

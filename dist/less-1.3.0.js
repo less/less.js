@@ -3010,7 +3010,7 @@ tree.URL = function (val, paths) {
         this.attrs = val;
     } else {
         // Add the base path if the URL is relative and we are in the browser
-        if (typeof(window) !== 'undefined' && !/^(?:https?:\/\/|file:\/\/|data:|\/)/.test(val.value) && paths.length > 0) {
+        if (typeof(window) !== 'undefined' && !/^(?:https?:\/\/|file:\/\/|data:|\/|qrc:)/.test(val.value) && paths.length > 0) {
             val.value = paths[0] + (val.value.charAt(0) === '/' ? val.value.slice(1) : val.value);
         }
         this.value = val;
@@ -3102,7 +3102,8 @@ tree.jsify = function (obj) {
 var isFileProtocol = (location.protocol === 'file:'    ||
                       location.protocol === 'chrome:'  ||
                       location.protocol === 'chrome-extension:'  ||
-                      location.protocol === 'resource:');
+                      location.protocol === 'resource:' ||
+                      location.protocol === 'qrc:');
 
 less.env = less.env || (location.hostname == '127.0.0.1' ||
                         location.hostname == '0.0.0.0'   ||
@@ -3225,7 +3226,7 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     var styles    = { css: css, timestamp: timestamp };
 
     // Stylesheets in IE don't always return the full path
-    if (! /^(https?|file):/.test(href)) {
+    if (! /^(https?|file|qrc):/.test(href)) {
         if (href.charAt(0) == "/") {
             href = window.location.protocol + "//" + window.location.host + href;
         } else {

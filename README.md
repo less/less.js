@@ -1,5 +1,5 @@
-less.js
-=======
+less.js with qrc://
+===================
 
 The **dynamic** stylesheet language.
 

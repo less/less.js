@@ -2066,6 +2066,12 @@ tree.JavaScript.prototype = {
                     index: this.index };
         }
         if (typeof(result) === 'string') {
+            var match;
+            if (match = /^(-?\d*\.?\d+)(px|%|em|pc|ex|in|deg|s|ms|pt|cm|mm|rad|grad|turn)?/.exec(result)) {
+                return new (tree.Dimension)(match[1], match[2]);
+            } else if (match = /^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})/.exec(result)) {
+                return new(tree.Color)(match[1]);
+            }
             return new(tree.Quoted)('"' + result + '"', result, this.escaped, this.index);
         } else if (Array.isArray(result)) {
             return new(tree.Anonymous)(result.join(', '));
@@ -2702,7 +2708,7 @@ for (var i = 0; i < links.length; i++) {
 }
 
 
-less.refresh = function (reload) {
+less.refresh = function (reload, id) {
     var startTime, endTime;
     startTime = endTime = new(Date);
 
@@ -2716,35 +2722,39 @@ less.refresh = function (reload) {
         log("css for " + sheet.href + " generated in " + (new(Date) - endTime) + 'ms');
         (env.remaining === 0) && log("css generated in " + (new(Date) - startTime) + 'ms');
         endTime = new(Date);
-    }, reload);
+    }, reload, id);
 
-    loadStyles();
+    loadStyles(id);
 };
 less.refreshStyles = loadStyles;
 
 less.refresh(less.env === 'development');
 
-function loadStyles() {
+function loadStyles(id) {
     var styles = document.getElementsByTagName('style');
     for (var i = 0; i < styles.length; i++) {
         if (styles[i].type.match(typePattern)) {
-            new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
-                var css = tree.toCSS();
-                var style = styles[i];
-                try {
-                    style.innerHTML = css;
-                } catch (_) {
-                    style.styleSheets.cssText = css;
-                }
-                style.type = 'text/css';
-            });
+			if(id === undefined || styles[i].id == id) {
+				new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
+					var css = tree.toCSS();
+					var style = styles[i];
+					try {
+						style.innerHTML = css;
+					} catch (_) {
+						style.styleSheets.cssText = css;
+					}
+					style.type = 'text/css';
+				});
+			}
         }
     }
 }
 
 function loadStyleSheets(callback, reload) {
     for (var i = 0; i < less.sheets.length; i++) {
-        loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1));
+		if(id === undefined || less.sheets[i].id == id) {
+			loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1));
+		}
     }
 }
 

@@ -2487,6 +2487,19 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     });
 }
 
+//API method to dynamically load less.js
+less.loadStyleSheet = function (path, callback) {
+  loadStyleSheet({ href: path, title: path, type: 'text/css' },
+                 function (root, sheet, env) {
+                    if (root) {
+                      createCSS(root.toCSS(), sheet, env.lastModified);
+                    }
+                    if (callback) {
+                      callback();
+                    }
+                  }, true)
+};
+
 function extractId(href) {
     return href.replace(/^[a-z]+:\/\/?[^\/]+/, '' )  // Remove protocol & domain
                .replace(/^\//,                 '' )  // Remove root /

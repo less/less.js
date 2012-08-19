@@ -1,20 +1,35 @@
-less.js
-=======
+less.js + blending modes
+========================
 
-The **dynamic** stylesheet language.
+The **dynamic** stylesheet language, powered with blending modes.
 
-<http://lesscss.org>
+The full credits for the original project of LESS goes to Alexis Sellier, more information: <http://lesscss.org>.
 
 about
 -----
 
-This is the JavaScript, and now official, stable version of LESS.
+This is the JavaScript stable version of LESS with some blending modes (such those from Photoshop, GIMP or Fireworks).
 
-For more information, visit <http://lesscss.org>.
+These blending methods are implemented as LESS operations.
+
+blending modes
+--------------
+
+**list of implemented blending modes**
+
+ * multiply
+ * screen
+ * overlay
+ * softlight
+ * hardlight
+ * difference
+ * exclusion
+ * average
+ * negation
 
 license
 -------
 
 See `LICENSE` file.
 
-> Copyright (c) 2009-2011 Alexis Sellier
+> Copyright (c) 2012 Rubens Mariuzzo

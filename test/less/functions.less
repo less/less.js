@@ -48,6 +48,9 @@
   hue: hue(hsl(98, 12%, 95%));
   saturation: saturation(hsl(98, 12%, 95%));
   lightness: lightness(hsl(98, 12%, 95%));
+  red: red(#f00);
+  green: green(#0f0);
+  blue: blue(#00f);
   rounded: round(@r/3);
   roundedpx: round(10px / 3);
   percentage: percentage(10px / 50);
@@ -73,4 +76,16 @@
 
 #alpha {
   alpha: darken(hsla(25, 50%, 50%, 0.6), 10%);
+}
+
+#blendmodes {
+  multiply: multiply(#f60000, #f60000);
+  screen: screen(#f60000, #0000f6);
+  overlay: overlay(#f60000, #0000f6);
+  softlight: softlight(#f60000, #ffffff);
+  hardlight: hardlight(#f60000, #0000f6);
+  difference: difference(#f60000, #0000f6);
+  exclusion: exclusion(#f60000, #0000f6);
+  average: average(#f60000, #0000f6);
+  negation: negation(#f60000, #313131);
 }

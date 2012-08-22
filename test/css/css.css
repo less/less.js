@@ -51,8 +51,8 @@ p + h1 {
 }
 #shorthands {
   border: 1px solid #000;
-  font: 12px/16px Arial;
-  font: 100%/16px Arial;
+  font: 12px / 16px Arial;
+  font: 100% / 16px Arial;
   margin: 1px 0;
   padding: 0 auto;
   background: url("http://www.lesscss.org/spec.html") no-repeat 0 4px;
@@ -60,8 +60,8 @@ p + h1 {
 #more-shorthands {
   margin: 0;
   padding: 1px 0 2px 0;
-  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
-  font: 0/0 a;
+  font: normal small / 20px 'Trebuchet MS', Verdana, sans-serif;
+  font: 0 / 0 a;
 }
 .misc {
   -moz-border-radius: 2px;

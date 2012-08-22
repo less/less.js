@@ -72,3 +72,8 @@ body {
   border: "{";
   width: "{";
 }
+.slash-vs-math {
+  border-radius: 2px/5px;
+  border-radius: 5px/10px;
+  border-radius: 6px;
+}

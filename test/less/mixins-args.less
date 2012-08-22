@@ -129,6 +129,15 @@ body {
     .mixin-arguments("{");
 }
 
+// Division vs. Literal Slash
+.border-radius(@r: 2px/5px) {
+  border-radius: @r;
+}
+.slash-vs-math {
+  .border-radius();
+  .border-radius(5px/10px);
+  .border-radius((3px * 2px));
+}
 // semi-colon vs comma for delimiting
 
 .mixin-takes-one(@a) {

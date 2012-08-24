@@ -113,12 +113,3 @@ p a span {
 .other::bnord {
   color: #ff0000;
 }
-.a .b {
-  color: red;
-}
-.a.c {
-  color: black;
-}
-.a :nth-child(3) {
-  color: purple;
-}

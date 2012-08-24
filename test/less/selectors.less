@@ -107,16 +107,3 @@ a {
   ::bnord {color: red }
   &::bnord {color: red }
 }
-
-.a {
-  (~".b") {
-    color: red;
-  }
-  &(~".c") {
-    color: black;
-  }
-  @d: 3;
-  :nth-child(@d) {
-    color: purple;
-  }
-}

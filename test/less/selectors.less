@@ -107,3 +107,24 @@ a {
   ::bnord {color: red }
   &::bnord {color: red }
 }
+// selector interpolation - depreciated
+@theme: ~"blood";
+(~".@{theme}") {
+  color: red;
+}
+@selector: ~".@{theme}";
+@{selector} {
+  color:red;
+}
+@{selector}red {
+  color: green;
+}
+.red {
+  #@{theme}.@{theme}&.black {
+    color:black;
+  }
+}
+@num: 3;
+:nth-child(@{num}):nth-child(@num) {
+	second-use: depreciated;
+}

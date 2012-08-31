@@ -12,6 +12,7 @@ var options = {
     yuicompress: false,
     optimization: 1,
     silent: false,
+    lint: false,
     paths: [],
     color: true,
     strictImports: false
@@ -45,6 +46,10 @@ args = args.filter(function (arg) {
         case 's':
         case 'silent':
             options.silent = true;
+            break;
+        case 'l':
+        case 'lint':
+            options.lint = true;
             break;
         case 'strict-imports':
             options.strictImports = true;
@@ -117,7 +122,7 @@ var parseLessFile = function (e, data) {
             less.writeError(err, options);
             currentErrorcode = 1;
             return;
-        } else {
+        } else if(!options.lint) {
             try {
                 css = tree.toCSS({
                     compress: options.compress,

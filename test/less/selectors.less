@@ -108,10 +108,11 @@ a {
   &::bnord {color: red }
 }
 // selector interpolation - depreciated
-@theme: ~"blood";
+@theme: blood;
 (~".@{theme}") {
   color: red;
 }
+// selector interpolation - new format
 @selector: ~".@{theme}";
 @{selector} {
   color:red;

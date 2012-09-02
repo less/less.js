@@ -126,5 +126,5 @@ p a span {
   color: black;
 }
 :nth-child(3):nth-child(3) {
-  second-use: depreciated;
+  second-use: deprecated;
 }

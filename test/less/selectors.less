@@ -107,11 +107,12 @@ a {
   ::bnord {color: red }
   &::bnord {color: red }
 }
-// selector interpolation - depreciated
-@theme: ~"blood";
+// selector interpolation - deprecated
+@theme: blood;
 (~".@{theme}") {
   color: red;
 }
+// selector interpolation - new format
 @selector: ~".@{theme}";
 @{selector} {
   color:red;
@@ -126,5 +127,5 @@ a {
 }
 @num: 3;
 :nth-child(@{num}):nth-child(@num) {
-	second-use: depreciated;
+	second-use: deprecated;
 }

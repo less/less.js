@@ -1,5 +1,12 @@
 ## Changelog
 
+## 0.9.2
+
+Tagged Sept 6, 2012
+
+* Bump `mapnik-reference` dependency to ~5.0.0
+* Better support for unsigned types in certain Mapnik styling properties
+
 ## 0.9.1
 
 Tagged Aug 15, 2012

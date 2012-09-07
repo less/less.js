@@ -5,7 +5,7 @@
 
 <Style name="world" filter-mode="first" >
   <Rule>
-    <TextSymbolizer size="11" spacing="12" face-name="Foo" ><![CDATA[[FOO]]]></TextSymbolizer>
+    <TextSymbolizer size="10.5" text-ratio="2" wrap-width="5" spacing="12" face-name="Foo" ><![CDATA[[FOO]]]></TextSymbolizer>
   </Rule>
 </Style>
 <Layer name="world"

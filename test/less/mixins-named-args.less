@@ -1,6 +1,7 @@
 .mixin (@a: 1px, @b: 50%) {
   width: @a * 5;
   height: @b - 1%;
+  args: @arguments;
 }
 .mixin (@a: 1px, @b: 50%) when (@b > 75%){
   text-align: center;
@@ -14,6 +15,10 @@
 .class {
   @var: 20%;
   .mixin(@b: @var);
+}
+
+.all-args-wrong-args {
+  .mixin(@b: 10%, @a: 2px);
 }
 
 .mixin2 (@a: 1px, @b: 50%, @c: 50) {

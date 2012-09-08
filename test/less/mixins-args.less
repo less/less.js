@@ -128,3 +128,27 @@ body {
 .edge-case {
     .mixin-arguments("{");
 }
+
+// semi-colon vs comma for delimiting
+
+.mixin-takes-one(@a) {
+    one: @a;
+}
+
+.mixin-takes-two(@a, @b) {
+    one: @a;
+	two: @b;
+}
+
+.comma-vs-semi-colon {
+    .mixin-takes-two(@a : a; @b : b, c);
+	.mixin-takes-two(@a : d, e; @b : f);
+	.mixin-takes-one(@a: g);
+	.mixin-takes-one(@a : h;);
+	.mixin-takes-one(i);
+	.mixin-takes-one(j;);
+	.mixin-takes-two(k, l);
+	.mixin-takes-one(m, n;);
+	.mixin-takes-two(o, p; q);
+	.mixin-takes-two(r, s; t;);
+}

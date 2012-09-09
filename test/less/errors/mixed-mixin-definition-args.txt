@@ -1,3 +1,0 @@
-ParseError: Syntax Error on line 1 in {path}mixed-mixin-definition-args.less:1:10
-1 .mixin(@a : 4; @b : 4, @c: 3) {
-2     will: fail;

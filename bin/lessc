@@ -75,7 +75,7 @@ args = args.filter(function (arg) {
         case 'O1': options.optimization = 1; break;
         case 'O2': options.optimization = 2; break;
         case 'line-numbers':
-            options.dumpLineNumbers = true;
+            options.dumpLineNumbers = match[2];
             break;
     }
 });

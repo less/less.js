@@ -46,7 +46,7 @@ runTestSet(null, "errors/", function(name, err, compiledLess) {
         sys.puts("");
     });});
     
-runTestSet({dumpLineNumbers: true}, "debug/");
+runTestSet({dumpLineNumbers: 'comments'}, "debug/comments/");
     
 function runTestSet(options, foldername, verifyFunction) {
     foldername = foldername || "";

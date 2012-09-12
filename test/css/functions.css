@@ -53,6 +53,10 @@
   roundedpx-three: 3.333px;
   percentage: 20%;
   color: #ff0011;
+  tint: #fbfaf6;
+  tint-percent: #fbfaf6;
+  shade: #1e1c18;
+  shade-percent: #1e1c18;
   mix: #ff3300;
   mix-0: #ffff00;
   mix-100: #ff0000;

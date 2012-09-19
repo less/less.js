@@ -45,10 +45,15 @@ runTestSet(null, "errors/", function(name, err, compiledLess) {
         }
         sys.puts("");
     });});
-    
-runTestSet({dumpLineNumbers: 'comments'}, "debug/comments/");
-    
-function runTestSet(options, foldername, verifyFunction) {
+
+runTestSet({dumpLineNumbers: 'comments'}, "debug/", null,
+           function(name) { return name + '-comments'; });
+runTestSet({dumpLineNumbers: 'mediaquery'}, "debug/", null,
+           function(name) { return name + '-mediaquery'; });
+runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
+           function(name) { return name + '-all'; });
+
+function runTestSet(options, foldername, verifyFunction, nameModifier) {
     foldername = foldername || "";
 
     fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
@@ -65,9 +70,10 @@ function runTestSet(options, foldername, verifyFunction) {
             if (verifyFunction) {
                 return verifyFunction(name, err, less);
             }
-        
-            fs.readFile(path.join('test/css', name) + '.css', 'utf-8', function (e, css) {
-                sys.print("- " + name + ": ")
+            var css_name = name;
+            if(nameModifier) css_name=nameModifier(name);
+            fs.readFile(path.join('test/css', css_name) + '.css', 'utf-8', function (e, css) {
+                sys.print("- " + css_name + ": ")
                 
                 css = css && doReplacements(css, 'test/less/' + foldername);
                 if (less === css) { ok('OK'); }

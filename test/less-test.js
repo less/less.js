@@ -25,7 +25,7 @@ sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
 runTestSet();
 
-runTestSet(null, "errors/", function(name, err, compiledLess) {
+runTestSet(null, "errors/", function(name, err, compiledLess, doReplacements) {
     fs.readFile(path.join('test/less/', name) + '.txt', 'utf-8', function (e, expectedErr) {
         sys.print("- " + name + ": ");
         expectedErr = doReplacements(expectedErr, 'test/less/errors/');
@@ -44,7 +44,12 @@ runTestSet(null, "errors/", function(name, err, compiledLess) {
             }
         }
         sys.puts("");
-    });});
+    });}, null, function(input, directory) {
+        return input.replace(
+            "{path}", path.join(process.cwd(), "/test/less/errors/"))
+            .replace("{pathrel}", path.join("test", "less", "errors/"))
+            .replace(/\r\n/g, '\n');
+    });
 
 runTestSet({dumpLineNumbers: 'comments'}, "debug/", null,
            function(name) { return name + '-comments'; });
@@ -53,8 +58,17 @@ runTestSet({dumpLineNumbers: 'mediaquery'}, "debug/", null,
 runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
 
-function runTestSet(options, foldername, verifyFunction, nameModifier) {
+function globalReplacements(input, directory) {
+    return input.replace(/\{path\}/g, path.join(process.cwd(), directory))
+            .replace(/\{pathimport\}/g, path.join(process.cwd(), directory + "import/"))
+            .replace(/\r\n/g, '\n');
+}
+
+function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements) {
     foldername = foldername || "";
+
+    if(!doReplacements)
+        doReplacements = globalReplacements;
 
     fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
         if (! /\.less/.test(file)) { return }
@@ -68,7 +82,7 @@ function runTestSet(options, foldername, verifyFunction, nameModifier) {
         toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
             if (verifyFunction) {
-                return verifyFunction(name, err, less);
+                return verifyFunction(name, err, less, doReplacements);
             }
             var css_name = name;
             if(nameModifier) css_name=nameModifier(name);
@@ -86,14 +100,6 @@ function runTestSet(options, foldername, verifyFunction, nameModifier) {
             });
         });
     });
-}
-
-function doReplacements(input, directory) {
-    return input.replace(/\{path\}/g, path.join(process.cwd(), directory))
-            .replace(/\{pathimport\}/g, path.join(process.cwd(), directory + "import/"))
-            .replace("{path}", path.join(process.cwd(), "/test/less/errors/"))
-            .replace("{pathrel}", path.join("test", "less", "errors/"))
-            .replace(/\r\n/g, '\n');
 }
 
 function diff(left, right) {

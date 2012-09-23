@@ -88,6 +88,8 @@ if (input && input != '-') {
 var output = args[2];
 if (output) {
     output = path.resolve(process.cwd(), output);
+} else if (input && input != '-' && path.extname(input) == '.less' && output != '-'){
+    output = path.dirname(input) + '/' + path.basename(input, '.less') + '.css'
 }
 
 if (! input) {

@@ -86,10 +86,11 @@ if (input && input != '-') {
     input = path.resolve(process.cwd(), input);
 }
 var output = args[2];
+var separator = path.sep || '/';
 if (output) {
     output = path.resolve(process.cwd(), output);
 } else if (input && input != '-' && path.extname(input) == '.less' && output != '-'){
-    output = path.dirname(input) + '/' + path.basename(input, '.less') + '.css'
+    output = path.dirname(input) + separator + path.basename(input, '.less') + '.css'
 }
 
 if (! input) {

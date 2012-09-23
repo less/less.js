@@ -18,3 +18,7 @@
 \62\6c\6f \63 \6B \0071 \000075o\74 e {
   color: silver;
 }
+[ng\:cloak],
+ng\:form {
+  display: none;
+}

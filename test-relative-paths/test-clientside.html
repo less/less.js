@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Test case for relative paths</title>
+		<link rel="stylesheet/less" href="static/less/main.less">
+		<script>var less = { env: 'development' };</script>
+		<script src="../dist/less-1.3.0.js"></script>
+	</head>
+
+	<body>
+		<h1>Client-side test case for relative paths</a></h1>
+
+		<h2>Test 1: imports of .css</h2>
+		<p>Expected result: the background of the page should be green.</p>
+
+		<h2>Test 2: background-image url</h2>
+		<div id="logo"></div>
+		<p>Expected result: the LESS logo should appear above.</p>
+
+		<h2>Test 3: @font-face url</h2>
+		<div id="secret">abcdef</div>
+		<p>Expected result: the text above should be a series of "X".</p>
+	</body>
+</html>

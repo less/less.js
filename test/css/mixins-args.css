@@ -65,6 +65,7 @@ body {
 }
 .arguments4 {
   border: 0 1 2 3 4;
+  commas: 0, 1, 2, 3, 4;
   rest: 1 2 3 4;
   width: 0;
 }

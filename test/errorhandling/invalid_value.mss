@@ -1,3 +1,5 @@
 #world[zoom=5] {
-  polygon-opacity: #f00;
+  text-face-name: 2;
+  line-rasterizer: 'full';
+  text-name: 'foo';
 }

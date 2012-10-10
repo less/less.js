@@ -20,7 +20,7 @@ _incompatibility_
   paths (relative or absolute) that would be acceptable in Mapnik XML.
   The [millstone project](https://github.com/mapbox/millstone) aims to fill this need.
 
-carto.js MML:
+CartoCSS MML:
 
     {
         "srs": "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
@@ -60,9 +60,9 @@ Cascadenik MML
 ## Attachments and Instances
 _new_
 
-In CSS, a certain object can only have one instance of a property. A `<div>` has a specific border width and color, rules that match better than others (#id instead of .class) override previous definitions. `carto.js` acts the same way normally for the sake of familiarity and organization, but Mapnik itself is more powerful.
+In CSS, a certain object can only have one instance of a property. A `<div>` has a specific border width and color, rules that match better than others (#id instead of .class) override previous definitions. `CartoCSS` acts the same way normally for the sake of familiarity and organization, but Mapnik itself is more powerful.
 
-Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSymbolizer) and multiple copies of other attributes. This ability is useful in drawing line outlines, like in the case of road borders or 'glow' effects around coasts. `carto.js` makes this accessible by allowing attachments to styles:
+Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSymbolizer) and multiple copies of other attributes. This ability is useful in drawing line outlines, like in the case of road borders or 'glow' effects around coasts. `CartoCSS` makes this accessible by allowing attachments to styles:
 
     #world {
       line-color: #fff;
@@ -74,7 +74,7 @@ Layers in Mapnik can have multiple [borders](http://trac.mapnik.org/wiki/LineSym
         line-width: 6;
         }
 
-Attachments are optional: if you don't define them, carto.js does overriding of styles just like Cascadenik.
+Attachments are optional: if you don't define them, CartoCSS does overriding of styles just like Cascadenik.
 
 This brings us to another _incompatibility_: `line-inline` and `line-outline` have been removed from the language, because attachments are capable of the same trick.
 
@@ -97,7 +97,7 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
 <table>
   <tr>
     <th>cascadenik</th>
-    <th>carto.js</th>
+    <th>CartoCSS</th>
   </tr>
   <tr>
     <td valign='top'>
@@ -124,9 +124,9 @@ CartoCSS is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2).
 ## Rasters and Buildings
 _new_
 
-Rasters are supported in carto.js - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
+Rasters are supported in CartoCSS - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
 
-The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `carto.js`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.json`), so new Mapnik features can be quickly implemented here.
+The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `CartoCSS`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.json`), so new Mapnik features can be quickly implemented here.
 
 ## Variables & Expressions
 _new_
@@ -177,7 +177,7 @@ This can be a convenient way to group style changes by zoom level:
 
 _new_
 
-By defining multiple fonts in a `text-face-name` definition, you create [FontSets](http://trac.mapnik.org/wiki/FontSet) in `carto.js`. These are useful for supporting multiple character sets and fallback fonts for distributed styles.
+By defining multiple fonts in a `text-face-name` definition, you create [FontSets](http://trac.mapnik.org/wiki/FontSet) in `CartoCSS`. These are useful for supporting multiple character sets and fallback fonts for distributed styles.
 
 <table>
   <tr>

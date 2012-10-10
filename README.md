@@ -39,13 +39,11 @@ carto.js MML:
 Cascadenik MML
 
 <pre>&lt;Stylesheet&gt;&lt;![CDATA[
-    Map
-    {
+    Map {
         map-bgcolor: #69f;
     }
 
-    Layer
-    {
+    Layer {
         line-width: 1;
         line-color: #696;
         polygon-fill: #6f9;
@@ -121,7 +119,7 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
 ## Mapnik2
 _new_
 
-`carto.js` is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2). Compatibility with Mapnik 0.7.x is not planned.
+CartoCSS is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2). Compatibility with Mapnik 0.7.x is not planned.
 
 ## Rasters and Buildings
 _new_
@@ -133,7 +131,7 @@ The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also
 ## Variables & Expressions
 _new_
 
-`carto.js` inherits from its basis in [less.js](http://lesscss.org/) some new features in CSS. One can define variables in stylesheets, and use expressions to modify them.
+CartoCSS inherits from its basis in [less.js](http://lesscss.org/) some new features in CSS. One can define variables in stylesheets, and use expressions to modify them.
 
     @mybackground: #2B4D2D;
     
@@ -149,7 +147,7 @@ _new_
 ## Nested Styles
 _new_
 
-`carto.js` also inherits nesting of rules from less.js.
+CartoCSS also inherits nesting of rules from less.js.
 
     /* Applies to all layers with .land class */
     .land {
@@ -176,6 +174,7 @@ This can be a convenient way to group style changes by zoom level:
     }
 
 ## FontSets
+
 _new_
 
 By defining multiple fonts in a `text-face-name` definition, you create [FontSets](http://trac.mapnik.org/wiki/FontSet) in `carto.js`. These are useful for supporting multiple character sets and fallback fonts for distributed styles.
@@ -259,7 +258,7 @@ Install `millstone` to enable support for localizing external resources (URLs an
 
 #### From code
 
-Currently `carto.js` is designed to be invoked from [node.js](http://nodejs.org/).
+Currently CartoCSS is designed to be invoked from [node.js](http://nodejs.org/).
 The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
 
     // defined variables:
@@ -289,7 +288,7 @@ directory located at `build/vim-carto` to your `~/.vim` file.
 
 ## Credits
 
-`carto.js` is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
+CartoCSS is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
 
 It depends on:
 

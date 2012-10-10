@@ -14,7 +14,8 @@ var options = {
     silent: false,
     paths: [],
     color: true,
-    strictImports: false
+    strictImports: false,
+    rootpath: ''
 };
 var continueProcessing = true,
     currentErrorcode;
@@ -74,6 +75,10 @@ args = args.filter(function (arg) {
         case 'O0': options.optimization = 0; break;
         case 'O1': options.optimization = 1; break;
         case 'O2': options.optimization = 2; break;
+        case 'rp':
+        case 'rootpath':
+            options.rootpath = path.normalize(match[2] + '/');
+            break;
     }
 });
 
@@ -111,6 +116,7 @@ var parseLessFile = function (e, data) {
         paths: [path.dirname(input)].concat(options.paths),
         optimization: options.optimization,
         filename: input,
+        rootpath: options.rootpath,
         strictImports: options.strictImports
     }).parse(data, function (err, tree) {
         if (err) {

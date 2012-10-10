@@ -95,7 +95,6 @@ function toCSS(path, callback) {
     var tree, css;
     fs.readFile(path, 'utf-8', function (e, str) {
         if (e) { return callback(e) }
-
         new(less.Parser)({
             paths: [require('path').dirname(path)],
             optimization: 0,

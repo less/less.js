@@ -1,5 +1,17 @@
 ## Changelog
 
+## 0.9.3
+
+* Allows `text-face-name` properties to be unquoted
+* Detects inline Format XML tags in `text-name` and passes such output
+  straight to XML for advanced text names.
+* Fixes bugs around concatenation of strings in expressions
+* Fixes parsing of comments in between selectors
+* Fixes parsing of whitespace in calls
+* Improved error messages for unknown properties - advises user on
+  the property name most closely matching the incorrect input.
+* Improved errors for calls, advises user on number of arguments
+
 ## 0.9.2
 
 Tagged Sept 6, 2012

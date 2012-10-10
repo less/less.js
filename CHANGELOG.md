@@ -11,6 +11,7 @@
 * Improved error messages for unknown properties - advises user on
   the property name most closely matching the incorrect input.
 * Improved errors for calls, advises user on number of arguments
+* Fixes instance inheritance - thanks @gravitystorm!
 
 ## 0.9.2
 

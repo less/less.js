@@ -75,6 +75,9 @@ args = args.filter(function (arg) {
         case 'O0': options.optimization = 0; break;
         case 'O1': options.optimization = 1; break;
         case 'O2': options.optimization = 2; break;
+        case 'line-numbers':
+            options.dumpLineNumbers = match[2];
+            break;
         case 'rp':
         case 'rootpath':
             options.rootpath = path.normalize(match[2] + '/');
@@ -117,7 +120,8 @@ var parseLessFile = function (e, data) {
         optimization: options.optimization,
         filename: input,
         rootpath: options.rootpath,
-        strictImports: options.strictImports
+        strictImports: options.strictImports,
+        dumpLineNumbers: options.dumpLineNumbers
     }).parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);

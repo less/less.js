@@ -1,3 +1,28 @@
+# 1.3.1
+
+2012-10-18
+
+- Support for comment and @media debugging statements
+- bug fix for async access in chrome extensions
+- new functions tint, shade, multiply, screen, overlay, hardlight, difference, exclusion, average, negation, softlight, red, green, blue, contrast
+- allow escaped characters in attributes
+- in selectors support @{a} directly, e.g. .a.@{a} { color: black; }
+- add fraction parameter to round function
+- much better support for & selector
+- preserve order of link statements client side
+- lessc has better help
+- rhino version fixed
+- fix bugs in clientside error handling
+- support dpi, vmin, vm, dppx, dpcm units
+- Fix ratios in media statements
+- in mixin guards allow comparing colors and strings
+- support for -*-keyframes (for -khtml but now supports any)
+- in mix function, default weight to 50%
+- support @import-once
+- remove duplicate rules in output
+- implement named parameters when calling mixins
+- many numerous bug fixes
+
 # 1.3.0
 
 2012-03-10

@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
-var path = require('path'),
-    fs = require('fs'),
-    util = require('util'),
-    carto = require('carto');
+var path = require('path');
+var fs = require('fs');
+var util = require('util');
+var carto = require('carto');
+
+var url = require('url');
+var _ = require('underscore');
+var existsSync = require('fs').existsSync || require('path').existsSync
 
 var args = process.argv.slice(1);
 var options = { nosymlink:false };
@@ -28,7 +32,6 @@ args = args.filter(function (arg) {
         case 'nosymlink':
             options.nosymlink = true;
             break;
-
         default:
             util.puts("Usage: carto <source MML file>");
             util.puts("Options:");
@@ -54,36 +57,17 @@ if (options.benchmark) {
     var start = +new Date;
 }
 
-try {
-    var data = fs.readFileSync(input, 'utf-8');
-} catch(err) {
-    util.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+var ext = path.extname(input);
+
+if (!ext) {
+    util.puts("carto: please pass either a .mml file or .mss file");
     process.exit(1);
 }
 
-try {
-    data = JSON.parse(data);
-} catch(err) {
-    util.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+if (!existsSync(input)) {
+    util.puts("carto: file does not exist: '" + input + "'");
     process.exit(1);
 }
-
-var millstone = undefined;
-
-try {
-    require.resolve('millstone');
-    millstone = require('millstone');
-} catch (err) {
-    util.puts('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
-    process.exit(1);
-}
-
-millstone.resolve({
-    mml: data,
-    base: path.dirname(input),
-    cache: path.join(path.dirname(input), 'cache'),
-   nosymlink: options.nosymlink
-}, compile);
 
 function compile(err, data) {
     if (err) throw err;
@@ -113,3 +97,55 @@ function compile(err, data) {
         }
     }
 };
+
+try {
+    var data = fs.readFileSync(input, 'utf-8');
+} catch(err) {
+    util.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+    process.exit(1);
+}
+
+if (ext == '.mml') {
+    try {
+        data = JSON.parse(data);
+    } catch(err) {
+        util.puts("carto: " + err.message.replace(/^[A-Z]+, /, ''));
+        process.exit(1);
+    }
+
+    var millstone = undefined;
+    try {
+        require.resolve('millstone');
+        millstone = require('millstone');
+    } catch (err) {
+        util.puts('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
+        process.exit(1);
+    }
+    millstone.resolve({
+        mml: data,
+        base: path.dirname(input),
+        cache: path.join(path.dirname(input), 'cache'),
+       nosymlink: options.nosymlink
+    }, compile);
+} else if (ext == '.mss') {
+    var env = _({}).defaults({
+        benchmark: false,
+        validation_data: false,
+        effects: []
+    });
+    var output = [];
+    var parser = (carto.Parser(env)).parse(data);
+    var rules = parser.toList(env);
+    var inherited = carto.inheritRules(rules,env);
+    var sorted = carto.sortStyles(inherited,env);
+        _(sorted).each(function(rule) {
+            var style = new carto.tree.Style('layer', rule.attachment, rule);
+            if (style) {
+                // env.effects can be modified by this call
+                output.push(style.toXML(env));
+            }
+        });
+    console.log(output.join('\n'));
+} else {
+    util.puts("carto: please pass either a .mml file or .mss file");
+}

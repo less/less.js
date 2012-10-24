@@ -91,3 +91,9 @@ h3 { .margin_between(15px, 5px); }
   @s: "/";
   .mixin_def( "@{s}a.png", center center);
 }
+.recursion() {
+  color: black;
+}
+.recursion {
+  .recursion();
+}

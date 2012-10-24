@@ -106,3 +106,6 @@ h3 + * {
   background-image: "/a.png";
   background-position: center center;
 }
+.recursion {
+  color: black;
+}

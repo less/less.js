@@ -129,7 +129,7 @@ if (ext == '.mml') {
     }, compile);
 } else if (ext == '.mss') {
     var env = _({}).defaults({
-        benchmark: false,
+        benchmark: options.benchmark,
         validation_data: false,
         effects: []
     });
@@ -145,7 +145,12 @@ if (ext == '.mml') {
                 output.push(style.toXML(env));
             }
         });
-    console.log(output.join('\n'));
+    if (!options.benchmark) {
+        util.puts(output.join('\n'));
+    } else {
+        var duration = (+new Date) - start;
+        console.log('TOTAL: ' + (duration) + 'ms');
+    }
 } else {
     util.puts("carto: please pass either a .mml file or .mss file");
 }

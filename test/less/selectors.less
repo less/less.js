@@ -129,3 +129,8 @@ a {
 :nth-child(@{num}):nth-child(@num) {
 	second-use: deprecated;
 }
+.test {
+  &:nth-child(odd):not(:nth-child(3)) {
+    color: #ff0000;
+  }
+}

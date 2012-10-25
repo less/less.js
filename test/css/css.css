@@ -73,6 +73,9 @@ p + h1 {
   margin: ;
   filter: alpha(opacity=100);
 }
+.misc .nested-multiple {
+  multiple-semi-colons: yes;
+}
 #important {
   color: red !important;
   width: 100%!important;

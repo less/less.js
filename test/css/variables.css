@@ -25,9 +25,6 @@
 .alpha {
   filter: alpha(opacity=42);
 }
-a:nth-child(2) {
-  border: 1px;
 }
 .testPollution {
   a: 'pollution';
-}

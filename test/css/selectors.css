@@ -116,18 +116,15 @@ p a span {
 .blood {
   color: red;
 }
-.blood {
-  color: red;
-}
 .bloodred {
   color: green;
 }
 #blood.blood.red.black {
   color: black;
 }
-:nth-child(3):nth-child(3) {
-  second-use: deprecated;
+:nth-child(3) {
+  selector: interpolated;
 }
-.test:nth-child(odd):not( :nth-child(3)) {
+.test:nth-child(odd):not(:nth-child(3)) {
   color: #ff0000;
 }

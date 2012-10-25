@@ -15,3 +15,24 @@
   border: 9;
   boxer: 9;
 }
+.class .inner {
+  test: 1;
+}
+.class .inner {
+  test: 2 !important;
+}
+.class .inner {
+  test: 3;
+}
+.class .inner {
+  test: 4 !important;
+}
+.class .inner {
+  test: 5;
+}
+.class .inner {
+  test: 0 !important;
+}
+.class .inner {
+  test: 9;
+}

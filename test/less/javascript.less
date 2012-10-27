@@ -3,8 +3,10 @@
     js: `1 + 1`;
     js: `"hello world"`;
     js: `[1, 2, 3]`;
-    title: `process.title`;
+    title: `typeof process.title`;
     ternary: `(1 + 1 == 2 ? true : false)`;
+    multiline: `(function(){var x = 1 + 1;
+           return x})()`;
 }
 .scope {
     @foo: 42;

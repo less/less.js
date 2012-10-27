@@ -92,3 +92,22 @@
 .bool () when not (false) and (false), not (false)           { content: not false and false, not false }
 
 .bool1 { .bool }
+
+.colorguard(@col) when (@col = red)							{ content: is @col; }
+.colorguard(@col) when not (blue = @col)					{ content: is not blue its @col; }
+.colorguard(@col)											{}
+.colorguardtest {
+    .colorguard(red);
+	.colorguard(blue);
+	.colorguard(purple);
+}
+
+.stringguard(@str) when (@str = "theme1")					{ content: is theme1; }
+.stringguard(@str) when not ("theme2" = @str)				{ content: is not theme2; }
+.stringguard(@str) when (~"theme1" = @str)					{ content: is theme1 no quotes; }
+.stringguard(@str)											{}
+.stringguardtest {
+    .stringguard("theme1");
+	.stringguard("theme2");
+	.stringguard(theme1);
+}

@@ -56,3 +56,13 @@
   content: not false;
   content: not false and false, not false;
 }
+.colorguardtest {
+  content: is #ff0000;
+  content: is not #0000ff its #ff0000;
+  content: is not #0000ff its #800080;
+}
+.stringguardtest {
+  content: is theme1;
+  content: is not theme2;
+  content: is theme1 no quotes;
+}

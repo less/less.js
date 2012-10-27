@@ -9,6 +9,10 @@
 }
 .other {
   -moz-transform: translate(0, 11em) rotate(-90deg);
+  transform: rotateX(45deg);
+}
+.item[data-cra_zy-attr1b-ut3=bold] {
+  font-weight: bold;
 }
 p:not([class*="lead"]) {
   color: black;
@@ -55,4 +59,40 @@ p::before {
   100% {
     border: 3px;
   }
+}
+@keyframes fontbulger1 {
+  to {
+    font-size: 15px;
+  }
+  from,
+  to {
+    font-size: 12px;
+  }
+  0%,
+  100% {
+    font-size: 12px;
+  }
+}
+.units {
+  font: 1.2rem/2rem;
+  font: 8vw/9vw;
+  font: 10vh/12vh;
+  font: 12vm/15vm;
+  font: 12vmin/15vmin;
+  font: 1.2ch/1.5ch;
+}
+@supports ( box-shadow: 2px 2px 2px black ) or
+          ( -moz-box-shadow: 2px 2px 2px black ) {
+  .outline {
+    box-shadow: 2px 2px 2px black;
+    -moz-box-shadow: 2px 2px 2px black;
+  }
+}
+@-x-document url-prefix(""github.com"") {
+  h1 {
+    color: red;
+  }
+}
+@viewport {
+  font-size: 10px;
 }

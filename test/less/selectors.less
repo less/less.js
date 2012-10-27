@@ -41,8 +41,62 @@ a {
     .qux & {
       display: inline;
     }
+	.qux& {
+	  display: inline-block;
+	}
     .qux & .biz {
       display: none;
+    }
+  }
+}
+
+.b {
+ &.c {
+  .a& {
+   color: red;
+  }
+ }
+}
+
+.b {
+ .c & {
+  &.a {
+   color: red;
+  }
+ }
+}
+
+.p {
+  .foo &.bar {
+    color: red;
+  }
+}
+
+.p {
+  .foo&.bar {
+    color: red;
+  }
+}
+
+.foo {
+  .foo + & {
+    background: amber;
+  }
+  & + & {
+    background: amber;
+  }
+}
+
+.foo, .bar {
+  & + & {
+    background: amber;
+  }
+}
+
+.foo, .bar {
+  a, b {
+    & > & {
+      background: amber;
     }
   }
 }
@@ -52,4 +106,31 @@ a {
 .other {
   ::bnord {color: red }
   &::bnord {color: red }
+}
+// selector interpolation - deprecated
+@theme: blood;
+(~".@{theme}") {
+  color: red;
+}
+// selector interpolation - new format
+@selector: ~".@{theme}";
+@{selector} {
+  color:red;
+}
+@{selector}red {
+  color: green;
+}
+.red {
+  #@{theme}.@{theme}&.black {
+    color:black;
+  }
+}
+@num: 3;
+:nth-child(@{num}):nth-child(@num) {
+	second-use: deprecated;
+}
+.test {
+  &:nth-child(odd):not(:nth-child(3)) {
+    color: #ff0000;
+  }
 }

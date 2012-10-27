@@ -1,9 +1,6 @@
 @import "import-test-d.css";
 
-.mixin {
-  height: 10px;
-  color: #ff0000;
-}
+@import "../import-test-d.css";
 #import {
   color: #ff0000;
 }

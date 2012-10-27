@@ -1,3 +1,4 @@
+@x: red;
 @x: blue;
 @z: transparent;
 @mix: none;
@@ -5,7 +6,7 @@
 .mixin {
   @mix: #989;
 }
-
+@mix: blue;
 .tiny-scope {
   color: @mix; // #989
   .mixin;
@@ -30,3 +31,14 @@
     }
   }
 }
+
+#namespace {
+  .scoped_mixin() {
+    @local-will-be-made-global: green;
+    .scope {
+      scoped-val: @local-will-be-made-global;
+	}
+  }
+}
+
+#namespace > .scoped_mixin();

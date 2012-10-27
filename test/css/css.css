@@ -61,6 +61,7 @@ p + h1 {
   margin: 0;
   padding: 1px 0 2px 0;
   font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
+  font: 0/0 a;
 }
 .misc {
   -moz-border-radius: 2px;
@@ -83,7 +84,17 @@ p + h1 {
     k//+l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4U
     kg9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC);
   background-image: url(data:image/x-png,f9difSSFIIGFIFJD1f982FSDKAA9==);
+  background-image: url(http://fonts.googleapis.com/css?family=\"Rokkitt\":\(400\),700);
 }
 #svg-data-uri {
   background: transparent url('data:image/svg+xml, <svg version="1.1"><g></g></svg>');
+}
+@font-face {
+  font-family: font-a;
+}
+@font-face {
+  font-family: font-b;
+}
+.æøå {
+  margin: 0;
 }

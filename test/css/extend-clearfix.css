@@ -1,7 +1,11 @@
-.clearfix, .foo, .bar {
+.clearfix,
+.foo,
+.bar {
   *zoom: 1;
 }
-.clearfix:after, .foo:after, .bar:after {
+.clearfix:after,
+.foo:after,
+.bar:after {
   content: '';
   display: block;
   clear: both;

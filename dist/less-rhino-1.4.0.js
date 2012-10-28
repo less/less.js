@@ -647,7 +647,8 @@ less.Parser = function Parser(env) {
                 var node, root = [];
 
                 while ((node = $(this.mixin.definition) || $(this.rule)    ||  $(this.ruleset) ||
-                               $(this.mixin.call)       || $(this.comment) ||  $(this.directive))
+                               $(this.mixin.call)       || $(this.comment) ||  $(this.directive) ||
+                               $(this.extend))
                                || $(/^[\s\n]+/) || $(/^;+/)) {
                     node && root.push(node);
                 }
@@ -909,8 +910,25 @@ less.Parser = function Parser(env) {
                 if ((a = $(this.entity)) && $('/') && (b = $(this.entity))) {
                     return new(tree.Shorthand)(a, b);
                 }
-
+                
                 restore();
+            },
+
+            //
+            // extend
+            //
+            extend: function() {
+                var elements = [], e, args, index = i;
+
+                if (input.charAt(i) !== '+') { return; }
+
+                while (e = $(/^\+\+[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/)) {
+                    elements.push(new(tree.Element)(null, e.slice(2), i));
+                }
+
+                if (elements.length > 0 && ($(';') || peek('}'))) {
+                    return new(tree.Extend)(elements, index);
+                }
             },
 
             //
@@ -2730,6 +2748,62 @@ tree.Expression.prototype = {
 
 })(require('../tree'));
 (function (tree) {
+
+tree.Extend = function Extend(elements, index) {
+    this.selector = new(tree.Selector)(elements);
+    this.index = index;
+};
+
+tree.Extend.prototype.eval = function Extend_eval(env) {
+    var selfSelectors = findSelfSelectors(env.selectors),
+        targetValue = this.selector.elements[0].value;
+
+    env.frames.forEach(function(frame) {
+        frame.rulesets().forEach(function(rule) {
+            rule.selectors.forEach(function(selector) {
+                selector.elements.forEach(function(element, idx) {
+                    if (element.value === targetValue) {
+                        selfSelectors.forEach(function(_selector) {
+                            _selector.elements[0] = new tree.Element(
+                                element.combinator,
+                                _selector.elements[0].value,
+                                _selector.elements[0].index
+                            );
+                            rule.selectors.push(new tree.Selector(
+                                selector.elements
+                                    .slice(0, idx)
+                                    .concat(_selector.elements)
+                                    .concat(selector.elements.slice(idx + 1))
+                            ));
+                        });
+                    }
+                });
+            });
+        });
+    });
+    return this;
+};
+
+function findSelfSelectors(selectors) {
+    var ret = [];
+
+    (function loop(elem, i) {
+        if (selectors[i] && selectors[i].length) {
+            selectors[i].forEach(function(s) {
+                loop(s.elements.concat(elem), i + 1);
+            });
+        }
+        else {
+            ret.push({ elements: elem });
+        }
+    })([], 0);
+
+    return ret;
+}
+
+
+})(require('../tree'));
+(function (tree) {
 //
 // CSS @import node
 //
@@ -3384,6 +3458,12 @@ tree.Ruleset.prototype = {
         // push the current ruleset to the frames stack
         env.frames.unshift(ruleset);
 
+        // currrent selectors
+        if (!env.selectors) {
+            env.selectors = [];
+        }
+        env.selectors.unshift(this.selectors);
+
         // Evaluate imports
         if (ruleset.root || ruleset.allowImports || !ruleset.strictImports) {
             for (var i = 0; i < ruleset.rules.length; i++) {
@@ -3428,6 +3508,7 @@ tree.Ruleset.prototype = {
 
         // Pop the stack
         env.frames.shift();
+        env.selectors.shift();
         
         if (env.mediaBlocks) {
             for(var i = mediaBlockCount; i < env.mediaBlocks.length; i++) {
@@ -3464,12 +3545,9 @@ tree.Ruleset.prototype = {
         return this.variables()[name];
     },
     rulesets: function () {
-        if (this._rulesets) { return this._rulesets }
-        else {
-            return this._rulesets = this.rules.filter(function (r) {
-                return (r instanceof tree.Ruleset) || (r instanceof tree.mixin.Definition);
-            });
-        }
+        return this.rules.filter(function (r) {
+            return (r instanceof tree.Ruleset) || (r instanceof tree.mixin.Definition);
+        });
     },
     find: function (selector, self) {
         self = self || this;

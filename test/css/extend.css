@@ -1,12 +1,15 @@
-.error, .badError {
+.error,
+.badError {
   border: 1px #f00;
   background: #fdd;
 }
-.error.intrusion, .badError.intrusion {
+.error.intrusion,
+.badError.intrusion {
   font-size: 1.3em;
   font-weight: bold;
 }
-.intrusion .error, .intrusion .badError {
+.intrusion .error,
+.intrusion .badError {
   display: none;
 }
 .badError {

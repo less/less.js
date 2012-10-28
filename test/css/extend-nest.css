@@ -1,8 +1,12 @@
-.sidebar, .sidebar2, .type1 .sidebar3 {
+.sidebar,
+.sidebar2,
+.type1 .sidebar3 {
   width: 300px;
   background: red;
 }
-.sidebar .box, .sidebar2 .box, .type1 .sidebar3 .box {
+.sidebar .box,
+.sidebar2 .box,
+.type1 .sidebar3 .box {
   background: #FFF;
   border: 1px solid #000;
   margin: 10px 0;

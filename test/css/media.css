@@ -174,3 +174,22 @@
     background: red;
   }
 }
+body {
+  background: red;
+}
+@media (max-width: 500px) {
+  body {
+    background: green;
+  }
+}
+@media (max-width: 1000px) {
+  body {
+    background: red;
+    background: blue;
+  }
+}
+@media (max-width: 1000px) and (max-width: 500px) {
+  body {
+    background: green;
+  }
+}

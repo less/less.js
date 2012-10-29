@@ -177,3 +177,23 @@ body {
     background: red;
   }
 }
+
+.bg() {
+    background: red;
+
+    @media (max-width: 500px) {
+        background: green;
+    }
+}
+
+body {
+    .bg();
+}
+
+@bpMedium: 1000px;
+@media (max-width: @bpMedium) {
+    body {        
+        .bg();
+        background: blue;
+    }
+}

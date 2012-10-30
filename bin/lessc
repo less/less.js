@@ -10,6 +10,7 @@ var args = process.argv.slice(1);
 var options = {
     compress: false,
     yuicompress: false,
+    cssinclude: false,
     optimization: 1,
     silent: false,
     paths: [],
@@ -59,6 +60,9 @@ args = args.filter(function (arg) {
             break;
         case 'yui-compress':
             options.yuicompress = true;
+            break;
+        case 'css-include':
+            options.cssinclude = true;
             break;
         case 'no-color':
             options.color = false;
@@ -124,8 +128,10 @@ var parseLessFile = function (e, data) {
         } else {
             try {
                 css = tree.toCSS({
+                    paths: [path.dirname(input)].concat(options.paths),
                     compress: options.compress,
-                    yuicompress: options.yuicompress
+                    yuicompress: options.yuicompress,
+                    cssinclude: options.cssinclude
                 });
                 if (output) {
                     fd = fs.openSync(output, "w");

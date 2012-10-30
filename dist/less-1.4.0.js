@@ -767,7 +767,8 @@ less.Parser = function Parser(env) {
                     return $(this.entities.ratio) ||
                            $(this.entities.dimension) ||
                            $(this.entities.color) ||
-                           $(this.entities.quoted);
+                           $(this.entities.quoted) ||
+                           $(this.entities.unicodeDescriptor);
                 },
 
                 // Assignments are argument entities for calls.
@@ -869,6 +870,19 @@ less.Parser = function Parser(env) {
                   if (value = $(/^(\d+\/\d+)/)) {
                     return new(tree.Ratio)(value[1]);
                   }
+                },
+                
+                //
+                // A unicode descriptor, as is used in unicode-range
+                //
+                // U+0??  or U+00A1-00A9
+                //
+                unicodeDescriptor: function () {
+                    var ud;
+                    
+                    if (ud = $(/^U\+[0-9a-fA-F?]+(\-[0-9a-fA-F?]+)?/)) {
+                        return new(tree.UnicodeDescriptor)(ud[0]);
+                    }
                 },
 
                 //
@@ -1115,7 +1129,7 @@ less.Parser = function Parser(env) {
             //
             entity: function () {
                 return $(this.entities.literal) || $(this.entities.variable) || $(this.entities.url) ||
-                       $(this.entities.call)    || $(this.entities.keyword)  || $(this.entities.javascript) ||
+                       $(this.entities.call)    || $(this.entities.keyword)  ||$(this.entities.javascript) ||
                        $(this.comment);
             },
 
@@ -1218,9 +1232,6 @@ less.Parser = function Parser(env) {
 
                 if (elements.length > 0) { return new(tree.Selector)(elements) }
             },
-            tag: function () {
-                return $(/^[A-Za-z][A-Za-z-]*[0-9]?/) || $('*');
-            },
             attribute: function () {
                 var attr = '', key, val, op;
 
@@ -1318,12 +1329,13 @@ less.Parser = function Parser(env) {
                 
                 save();
                 
-                var dir = $(/^@import(?:-(once))?\s+/);
+                var dir = $(/^@import(?:-(once|multiple))?\s+/);
 
                 if (dir && (path = $(this.entities.quoted) || $(this.entities.url))) {
                     features = $(this.mediaFeatures);
                     if ($(';')) {
-                        return new(tree.Import)(path, imports, features, (dir[1] === 'once'), index);
+                        var importOnce = dir[1] !== 'multiple';
+                        return new(tree.Import)(path, imports, features, importOnce, index);
                     }
                 }
                 
@@ -2988,10 +3000,6 @@ tree.Media.prototype = {
             env.mediaPath = [];
         }
         
-        var blockIndex = env.mediaBlocks.length;
-        env.mediaPath.push(this);
-        env.mediaBlocks.push(this);
-
         var media = new(tree.Media)([], []);
         if(this.debugInfo) {
             this.ruleset.debugInfo = this.debugInfo;
@@ -2999,11 +3007,13 @@ tree.Media.prototype = {
         }
         media.features = this.features.eval(env);
         
+        env.mediaPath.push(media);
+        env.mediaBlocks.push(media);
+        
         env.frames.unshift(this.ruleset);
         media.ruleset = this.ruleset.eval(env);
         env.frames.shift();
         
-        env.mediaBlocks[blockIndex] = media;
         env.mediaPath.pop();
 
         return env.mediaPath.length === 0 ? media.evalTop(env) :
@@ -3111,7 +3121,7 @@ tree.mixin.Call.prototype = {
                 for (m = 0; m < mixins.length; m++) {
                     isRecursive = false;
                     for(f = 0; f < env.frames.length; f++) {
-                        if (mixins[m] === (env.frames[f].originalRuleset || env.frames[f])) {
+                        if ((!(mixins[m] instanceof tree.mixin.Definition)) && mixins[m] === (env.frames[f].originalRuleset || env.frames[f])) {
                             isRecursive = true;
                             break;
                         }
@@ -3896,6 +3906,19 @@ tree.Selector.prototype.toCSS = function (env) {
 })(require('../tree'));
 (function (tree) {
 
+tree.UnicodeDescriptor = function (value) {
+    this.value = value;
+};
+tree.UnicodeDescriptor.prototype = {
+    toCSS: function (env) {
+        return this.value;
+    },
+    eval: function () { return this }
+};
+
+})(require('../tree'));
+(function (tree) {
+
 tree.URL = function (val, paths) {
     this.value = val;
     this.paths = paths;
@@ -3951,12 +3974,24 @@ tree.Variable.prototype = {
         if (name.indexOf('@@') == 0) {
             name = '@' + new(tree.Variable)(name.slice(1)).eval(env).value;
         }
+        
+        if (this.evaluating) {
+            throw { type: 'Name',
+                    message: "Recursive variable definition for " + name,
+                    filename: this.file,
+                    index: this.index };
+        }
+        
+        this.evaluating = true;
 
         if (variable = tree.find(env.frames, function (frame) {
             if (v = frame.variable(name)) {
                 return v.value.eval(env);
             }
-        })) { return variable }
+        })) { 
+            this.evaluating = false;
+            return variable;
+        }
         else {
             throw { type: 'Name',
                     message: "variable " + name + " is undefined",

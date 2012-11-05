@@ -654,9 +654,8 @@ less.Parser = function Parser(env) {
             primary: function () {
                 var node, root = [];
 
-                while ((node = $(this.mixin.definition) || $(this.rule)    ||  $(this.ruleset) ||
-                               $(this.mixin.call)       || $(this.comment) ||  $(this.directive) ||
-                               $(this.extend))
+                while ((node = $(this.extend) || $(this.mixin.definition) || $(this.rule)    ||  $(this.ruleset) ||
+                               $(this.mixin.call)       || $(this.comment) ||  $(this.directive))
                                || $(/^[\s\n]+/) || $(/^;+/)) {
                     node && root.push(node);
                 }
@@ -942,15 +941,15 @@ less.Parser = function Parser(env) {
             extend: function() {
                 var elements = [], e, args, index = i;
 
-                if (input.charAt(i) !== '+') { return; }
+                if (!$(/^&:extend\(/)) { return; }
 
-                while (e = $(/^\+\+[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/)) {
-                    elements.push(new(tree.Element)(null, e.slice(2), i));
+                while (e = $(/^[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/)) {
+                    elements.push(new(tree.Element)(null, e, i));
                 }
+                
+                expect(/^\);/);
 
-                if (elements.length > 0 && ($(';') || peek('}'))) {
-                    return new(tree.Extend)(elements, index);
-                }
+                return new(tree.Extend)(elements, index);
             },
 
             //

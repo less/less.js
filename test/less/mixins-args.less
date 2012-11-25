@@ -19,6 +19,9 @@
 
 #hidden {
   .hidden;
+}
+
+#hidden1 {
   .hidden();
 }
 
@@ -96,18 +99,9 @@ body {
 }
 #var-inside { .var-inside; }
 
-// # mixins
-
-#id-mixin () {
-    color: red;
-}
-.id-class {
-    #id-mixin();
-    #id-mixin;
-}
-
-.mixin-arguments (@width: 0px) {
+.mixin-arguments (@width: 0px, ...) {
     border: @arguments;
+    width: @width;
 }
 
 .arguments {
@@ -115,4 +109,46 @@ body {
 }
 .arguments2 {
     .mixin-arguments();
+}
+.arguments3 {
+    .mixin-arguments;
+}
+
+.mixin-arguments2 (@width, @rest...) {
+    border: @arguments;
+    rest: @rest;
+    width: @width;
+}
+.arguments4 {
+    .mixin-arguments2(0, 1, 2, 3, 4);
+}
+
+// Edge cases
+
+.edge-case {
+    .mixin-arguments("{");
+}
+
+// semi-colon vs comma for delimiting
+
+.mixin-takes-one(@a) {
+    one: @a;
+}
+
+.mixin-takes-two(@a; @b) {
+    one: @a;
+	two: @b;
+}
+
+.comma-vs-semi-colon {
+    .mixin-takes-two(@a : a; @b : b, c);
+	.mixin-takes-two(@a : d, e; @b : f);
+	.mixin-takes-one(@a: g);
+	.mixin-takes-one(@a : h;);
+	.mixin-takes-one(i);
+	.mixin-takes-one(j;);
+	.mixin-takes-two(k, l);
+	.mixin-takes-one(m, n;);
+	.mixin-takes-two(o, p; q);
+	.mixin-takes-two(r, s; t;);
 }

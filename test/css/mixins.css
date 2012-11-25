@@ -48,7 +48,8 @@
 .direct {
   border-style: dotted;
 }
-.bo, .bar {
+.bo,
+.bar {
   width: 100%;
 }
 .bo {
@@ -67,4 +68,44 @@
 }
 .foo .bar {
   width: 100%;
+}
+.underParents {
+  color: red;
+}
+.parent .underParents {
+  color: red;
+}
+* + h1 {
+  margin-top: 25px;
+}
+legend + h1 {
+  margin-top: 0;
+}
+h1 + * {
+  margin-top: 10px;
+}
+* + h2 {
+  margin-top: 20px;
+}
+legend + h2 {
+  margin-top: 0;
+}
+h2 + * {
+  margin-top: 8px;
+}
+* + h3 {
+  margin-top: 15px;
+}
+legend + h3 {
+  margin-top: 0;
+}
+h3 + * {
+  margin-top: 5px;
+}
+.error {
+  background-image: "/a.png";
+  background-position: center center;
+}
+.test-rec .recursion {
+  color: black;
 }

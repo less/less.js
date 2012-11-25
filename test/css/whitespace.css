@@ -13,7 +13,9 @@
 .whitespace {
   color: white ;
 }
-.white, .space, .mania {
+.white,
+.space,
+.mania {
   color: white;
 }
 .no-semi-column {
@@ -33,4 +35,8 @@
   border: 2px
           solid
           black;
+}
+.sel .newline_ws .tab_ws {
+  color: white;
+  background-position: 45 -23;
 }

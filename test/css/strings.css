@@ -4,6 +4,8 @@
   content: "#*%:&^,)!.(~*})";
   empty: "";
   brackets: "{" "}";
+  escapes: "\"hello\" \\world";
+  escapes2: "\"llo";
 }
 #comments {
   content: "/* hello */ // not-so-secret";
@@ -33,6 +35,6 @@
 .mix-mul-class {
   color: #0000ff;
   color: #ff0000;
-  color: #0000ff;
+  color: #000000;
   color: #ffa500;
 }

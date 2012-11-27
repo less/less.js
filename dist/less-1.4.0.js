@@ -654,7 +654,7 @@ less.Parser = function Parser(env) {
             primary: function () {
                 var node, root = [];
 
-                while ((node = $(this.extend) || $(this.mixin.definition) || $(this.rule)    ||  $(this.ruleset) ||
+                while ((node = $(this.extendRule) || $(this.mixin.definition) || $(this.rule)    ||  $(this.ruleset) ||
                                $(this.mixin.call)       || $(this.comment) ||  $(this.directive))
                                || $(/^[\s\n]+/) || $(/^;+/)) {
                     node && root.push(node);
@@ -934,24 +934,35 @@ less.Parser = function Parser(env) {
                 
                 restore();
             },
-
+            
             //
-            // extend
+            // extend syntax - used to extend selectors
             //
-            extend: function() {
+            extend: function(isRule) {
                 var elements = [], e, args, index = i;
 
-                if (!$(/^&:extend\(/)) { return; }
+                if (!$(isRule ? /^&:extend\(/ : /^:extend\(/)) { return; }
 
                 while (e = $(/^[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/)) {
                     elements.push(new(tree.Element)(null, e, i));
                 }
                 
-                expect(/^\);/);
+                expect(/^\)/);
+                
+                if (isRule) {
+                    expect(/^;/);
+                }
 
                 return new(tree.Extend)(elements, index);
             },
 
+            //
+            // extendRule - used in a rule to extend all the parent selectors
+            //
+            extendRule: function() {
+                return this.extend(true);
+            },
+            
             //
             // Mixins
             //
@@ -1221,15 +1232,20 @@ less.Parser = function Parser(env) {
             // Selectors are made out of one or more Elements, see above.
             //
             selector: function () {
-                var sel, e, elements = [], c, match;
+                var sel, e, elements = [], c, match, extend;
 
-                while (e = $(this.element)) {
+                while ((extend = $(this.extend)) || (e = $(this.element))) {
+                    if (!e) {
+                        break;
+                    }
                     c = input.charAt(i);
                     elements.push(e)
+                    e = null;
                     if (c === '{' || c === '}' || c === ';' || c === ',' || c === ')') { break }
                 }
 
-                if (elements.length > 0) { return new(tree.Selector)(elements) }
+                if (elements.length > 0) { return new(tree.Selector)(elements, extend) }
+                if (extend) { error("Extend must be used to extend a selector"); }
             },
             attribute: function () {
                 var attr = '', key, val, op;
@@ -1851,6 +1867,9 @@ tree.functions = {
         }
         str = str.replace(/%%/g, '%');
         return new(tree.Quoted)('"' + str + '"', str);
+    },
+    unit: function (val, unit) {
+        return new(tree.Dimension)(val.value, unit ? unit.toCSS() : "");
     },
     round: function (n, f) {
         var fraction = typeof(f) === "undefined" ? 0 : f.value;
@@ -2495,13 +2514,17 @@ tree.Dimension.prototype = {
 
     compare: function (other) {
         if (other instanceof tree.Dimension) {
-            var a = this.unify().value, b = other.unify().value;
+            var a = this.unify(), b = other.unify(),
+                aValue = a.value, bValue = b.value;
 
-            if (b > a) {
+            if (bValue > aValue) {
                 return -1;
-            } else if (b < a) {
+            } else if (bValue < aValue) {
                 return 1;
             } else {
+                if (!b.unit.isEmpty() && a.unit.compare(b) !== 0) {
+                    return -1;
+                }
                 return 0;
             }
         } else {
@@ -2576,6 +2599,10 @@ tree.Unit.prototype = {
       css += "/" + this.denominator[i];
     }
     return css;
+  },
+  
+  compare: function (other) {
+    return this.is(other.toCSS()) ? 0 : -1;
   },
 
   is: function (unitString) {
@@ -2773,8 +2800,8 @@ tree.Extend = function Extend(elements, index) {
     this.index = index;
 };
 
-tree.Extend.prototype.eval = function Extend_eval(env) {
-    var selfSelectors = findSelfSelectors(env.selectors),
+tree.Extend.prototype.eval = function Extend_eval(env, selectors) {
+    var selfSelectors = findSelfSelectors(selectors || env.selectors),
         targetValue = this.selector.elements[0].value;
 
     env.frames.forEach(function(frame) {
@@ -3108,7 +3135,7 @@ tree.mixin.Call = function (elements, args, index, filename, important) {
 };
 tree.mixin.Call.prototype = {
     eval: function (env) {
-        var mixins, args, rules = [], match = false, i, m, f, isRecursive, isOneFound;
+        var mixins, mixin, args, rules = [], match = false, i, m, f, isRecursive, isOneFound;
 
         args = this.arguments && this.arguments.map(function (a) {
             return { name: a.name, value: a.value.eval(env) };
@@ -3118,9 +3145,10 @@ tree.mixin.Call.prototype = {
             if ((mixins = env.frames[i].find(this.selector)).length > 0) {
                 isOneFound = true;
                 for (m = 0; m < mixins.length; m++) {
+                    mixin = mixins[m];
                     isRecursive = false;
                     for(f = 0; f < env.frames.length; f++) {
-                        if ((!(mixins[m] instanceof tree.mixin.Definition)) && mixins[m] === (env.frames[f].originalRuleset || env.frames[f])) {
+                        if ((!(mixin instanceof tree.mixin.Definition)) && mixin === (env.frames[f].originalRuleset || env.frames[f])) {
                             isRecursive = true;
                             break;
                         }
@@ -3128,14 +3156,16 @@ tree.mixin.Call.prototype = {
                     if (isRecursive) {
                         continue;
                     }
-                    if (mixins[m].match(args, env)) {
-                        try {
-                            Array.prototype.push.apply(
-                                  rules, mixins[m].eval(env, this.arguments, this.important).rules);
-                            match = true;
-                        } catch (e) {
-                            throw { message: e.message, index: this.index, filename: this.filename, stack: e.stack };
+                    if (mixin.matchArgs(args, env)) {
+                        if (!mixin.matchCondition || mixin.matchCondition(args, env)) {
+                            try {
+                                Array.prototype.push.apply(
+                                      rules, mixin.eval(env, this.arguments, this.important).rules);
+                            } catch (e) {
+                                throw { message: e.message, index: this.index, filename: this.filename, stack: e.stack };
+                            }
                         }
+                        match = true;
                     }
                 }
                 if (match) {
@@ -3265,7 +3295,13 @@ tree.mixin.Definition.prototype = {
         ruleset.originalRuleset = this;
         return ruleset;
     },
-    match: function (args, env) {
+    matchCondition: function (args, env) {
+        if (this.condition && !this.condition.eval({
+            frames: [this.evalParams(env, args, [])].concat(env.frames)
+        }))                                                           { return false }
+        return true;
+    },
+    matchArgs: function (args, env) {
         var argsLength = (args && args.length) || 0, len, frame;
 
         if (! this.variadic) {
@@ -3273,10 +3309,6 @@ tree.mixin.Definition.prototype = {
             if (argsLength > this.params.length)                          { return false }
             if ((this.required > 0) && (argsLength > this.params.length)) { return false }
         }
-
-        if (this.condition && !this.condition.eval({
-            frames: [this.evalParams(env, args, [])].concat(env.frames)
-        }))                                                           { return false }
 
         len = Math.min(argsLength, this.arity);
 
@@ -3513,6 +3545,14 @@ tree.Ruleset.prototype = {
             }
         }
         ruleset.rules = rules;
+        
+        if (this.selectors) {
+            for (var i = 0; i < this.selectors.length; i++) {
+                if (this.selectors[i].extend) {
+                    this.selectors[i].extend.eval(env, [[this.selectors[i]]].concat(env.selectors.slice(1)));
+                }
+            }
+        }
 
         // Evaluate everything else
         for (var i = 0, rule; i < ruleset.rules.length; i++) {
@@ -3544,7 +3584,7 @@ tree.Ruleset.prototype = {
                     }
                 }), this.strictImports);
     },
-    match: function (args) {
+    matchArgs: function (args) {
         return !args || args.length === 0;
     },
     variables: function () {
@@ -3858,8 +3898,9 @@ tree.Ruleset.prototype = {
 })(require('../tree'));
 (function (tree) {
 
-tree.Selector = function (elements) {
+tree.Selector = function (elements, extend) {
     this.elements = elements;
+    this.extend = extend;
 };
 tree.Selector.prototype.match = function (other) {
     var len  = this.elements.length,
@@ -3880,7 +3921,7 @@ tree.Selector.prototype.match = function (other) {
 tree.Selector.prototype.eval = function (env) {
     return new(tree.Selector)(this.elements.map(function (e) {
         return e.eval(env);
-    }));
+    }), this.extend);
 };
 tree.Selector.prototype.toCSS = function (env) {
     if (this._css) { return this._css }

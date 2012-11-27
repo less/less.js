@@ -31,3 +31,20 @@ div.ext7,
 .ext6 > .ext7 {
   width: 100px;
 }
+.ext,
+.a .c,
+.b .c {
+  test: 1;
+}
+.a,
+.b {
+  test: 2;
+}
+.a .c,
+.b .c {
+  test: 3;
+}
+.a .c .d,
+.b .c .d {
+  test: 4;
+}

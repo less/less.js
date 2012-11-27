@@ -34,14 +34,20 @@ div.ext5,
 .ext7:extend(.ext5) {
 }
 
+.ext {
+  test: 1;
+}
 // same as 
 // .a .c:extend(.ext)
 // .b .c:extend(.ext)
 // .a .c .d
 // .b .c .d
 .a, .b {
+  test: 2;
   .c:extend(.ext) {
+    test: 3;
     .d {
+      test: 4;
     }
   }
 }

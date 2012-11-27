@@ -89,3 +89,7 @@ body {
   one: r, s;
   two: t;
 }
+#named-conflict {
+  four: a, 11, 12, 13;
+  four: a, 21, 22, 23;
+}

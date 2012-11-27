@@ -93,6 +93,19 @@
 
 .bool1 { .bool }
 
+.equality-unit-test(@num) when (@num = 1%) {
+  test: fail;
+}
+.equality-unit-test(@num) when (@num = 2) {
+  test: pass;
+}
+.equality-unit-test(@num) {
+}
+.equality-units {
+  .equality-unit-test(1px);
+  .equality-unit-test(2px);
+}
+
 .colorguard(@col) when (@col = red)							{ content: is @col; }
 .colorguard(@col) when not (blue = @col)					{ content: is not blue its @col; }
 .colorguard(@col)											{}

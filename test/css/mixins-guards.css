@@ -56,6 +56,9 @@
   content: not false;
   content: not false and false, not false;
 }
+.equality-units {
+  test: pass;
+}
 .colorguardtest {
   content: is #ff0000;
   content: is not #0000ff its #ff0000;

@@ -61,10 +61,14 @@
 .jo.ki {
   background: none;
 }
+.amp.support {
+  color: orange;
+}
 .extended {
   width: 100%;
   border: 1px;
   background: none;
+  color: orange;
 }
 .foo .bar {
   width: 100%;

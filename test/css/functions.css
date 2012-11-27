@@ -42,6 +42,8 @@
   format-multiple: "hello earth 2";
   format-url-encode: "red is %23ff0000";
   eformat: rgb(32, 128, 64);
+  unitless: 12;
+  unit: 14em;
   hue: 98;
   saturation: 12%;
   lightness: 95%;

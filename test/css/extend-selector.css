@@ -1,0 +1,33 @@
+.error,
+.badError {
+  border: 1px #f00;
+  background: #fdd;
+}
+.error.intrusion,
+.badError.intrusion {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+.intrusion .error,
+.intrusion .badError {
+  display: none;
+}
+.badError {
+  border-width: 3px;
+}
+.foo .bar,
+.foo .baz,
+.ext1 .ext2 .bar,
+.ext1 .ext2 .baz,
+.ext3 .bar,
+.ext3 .baz,
+.ext4 .bar,
+.ext4 .baz {
+  display: none;
+}
+div.ext5,
+.ext6 > .ext5,
+div.ext7,
+.ext6 > .ext7 {
+  width: 100px;
+}

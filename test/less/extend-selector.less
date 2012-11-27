@@ -1,0 +1,47 @@
+.error {
+  border: 1px #f00;
+  background: #fdd;
+}
+.error.intrusion {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+.intrusion .error {
+  display: none;
+}
+.badError:extend(.error) {
+  border-width: 3px;
+}
+
+.foo .bar, .foo .baz {
+    display: none;
+}
+
+.ext1 .ext2
+    :extend(.foo) {
+}
+
+.ext3:extend(.foo),
+.ext4:extend(.foo) {
+}
+
+div.ext5,
+.ext6 > .ext5 {
+    width: 100px;
+}
+
+.should-not-exist-in-output,
+.ext7:extend(.ext5) {
+}
+
+// same as 
+// .a .c:extend(.ext)
+// .b .c:extend(.ext)
+// .a .c .d
+// .b .c .d
+.a, .b {
+  .c:extend(.ext) {
+    .d {
+    }
+  }
+}

@@ -59,8 +59,13 @@ runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
 
 function globalReplacements(input, directory) {
-    return input.replace(/\{path\}/g, path.join(process.cwd(), directory))
-            .replace(/\{pathimport\}/g, path.join(process.cwd(), directory + "import/"))
+    var p = path.join(process.cwd(), directory);
+    var pesc = p.replace(/[.:\/]/g, '\\$&');
+
+    return input.replace(/\{path\}/g, p)
+            .replace(/\{pathesc\}/g, pesc)
+            .replace(/\{pathimport\}/g, p+"import/")
+            .replace(/\{pathimportesc\}/g, pesc + "import\\/")
             .replace(/\r\n/g, '\n');
 }
 

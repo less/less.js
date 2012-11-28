@@ -97,3 +97,19 @@ p::before {
 @viewport {
   font-size: 10px;
 }
+@namespace foo url(http://www.example.com);
+foo | h1 {
+  color: #0000ff;
+}
+foo | * {
+  color: #ffff00;
+}
+| h1 {
+  color: #ff0000;
+}
+* | h1 {
+  color: #008000;
+}
+h1 {
+  color: #008000;
+}

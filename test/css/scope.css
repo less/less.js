@@ -16,3 +16,15 @@
 .scope {
   scoped-val: #008000;
 }
+.heightIsSet {
+  height: 1024px;
+}
+.useHeightInMixinCall {
+  mixin-height: 1024px;
+}
+.imported {
+  exists: true;
+}
+.testImported {
+  exists: true;
+}

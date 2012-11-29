@@ -42,3 +42,20 @@
 }
 
 #namespace > .scoped_mixin();
+
+.setHeight(@h) { @height: 1024px; }
+.useHeightInMixinCall(@h) { .useHeightInMixinCall { mixin-height: @h; } }
+@mainHeight: 50%;
+.setHeight(@mainHeight);
+.heightIsSet { height: @height; }
+.useHeightInMixinCall(@height);
+
+.importRuleset() {
+  .imported {
+    exists: true;
+  }
+}
+.importRuleset();
+.testImported {
+  .imported;
+}

@@ -59,3 +59,21 @@
 .testImported {
   .imported;
 }
+
+@parameterDefault: 'top level';
+@anotherVariable: 'top level';
+//mixin uses top-level variables
+.mixinNoParam(@parameter: @parameterDefault) when (@parameter = 'top level') {
+  default: @parameter;
+  scope: @anotherVariable;
+  sub-scope-only: @subScopeOnly;
+}
+
+#allAreUsedHere {
+  //redefine top-level variables in different scope
+  @parameterDefault: 'inside';
+  @anotherVariable: 'inside';
+  @subScopeOnly: 'inside';
+  //use the mixin
+  .mixinNoParam();
+}

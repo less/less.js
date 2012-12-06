@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.9.4
+
+* Fixes nesting of regex calls
+
 ## 0.9.3
 
 * Allows `text-face-name` properties to be unquoted

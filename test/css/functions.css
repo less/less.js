@@ -54,6 +54,9 @@
   rounded-two: 10.67;
   roundedpx: 3px;
   roundedpx-three: 3.333px;
+  rounded-percentage: 10%;
+  ceil: 11px;
+  floor: 12px;
   percentage: 20%;
   color: #ff0011;
   tint: #898989;

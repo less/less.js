@@ -61,5 +61,15 @@
   -moz-border-radius: 2px * 4 /* moz only with operation */;
 }
 
+.mixin_def_with_colors(@a: white, // in
+       @b: 1px //put in @b - causes problems! --->
+	   ) // the
+	   when (@a = white) {
+	.test {
+	    color: @b;
+	}
+}
+.mixin_def_with_colors();
+
 #last { color: blue }
 //

@@ -101,7 +101,12 @@ if (! input) {
     return;
 }
 
-var css, fd, tree;
+var ensureDirectory = function (filepath) {
+    var dir = path.dirname(filepath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+};
 
 var parseLessFile = function (e, data) {
     if (e) {
@@ -123,14 +128,13 @@ var parseLessFile = function (e, data) {
             return;
         } else {
             try {
-                css = tree.toCSS({
+                var css = tree.toCSS({
                     compress: options.compress,
                     yuicompress: options.yuicompress
                 });
                 if (output) {
-                    fd = fs.openSync(output, "w");
-                    fs.writeSync(fd, css, 0, "utf8");
-                    fs.closeSync(fd);
+                    ensureDirectory(output);
+                    fs.writeFileSync(output, css, 'utf8');
                 } else {
                     sys.print(css);
                 }
@@ -144,7 +148,7 @@ var parseLessFile = function (e, data) {
 };
 
 if (input != '-') {
-    fs.readFile(input, 'utf-8', parseLessFile);
+    fs.readFile(input, 'utf8', parseLessFile);
 } else {
     process.stdin.resume();
     process.stdin.setEncoding('utf8');

@@ -136,6 +136,9 @@ var parseLessFile = function (e, data) {
                 if (output) {
                     ensureDirectory(output);
                     fs.writeFileSync(output, css, 'utf8');
+                    if (options.verbose) {
+                        console.log('lessc: wrote ' + output);
+                    }
                 } else {
                     sys.print(css);
                 }

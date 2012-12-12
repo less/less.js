@@ -102,8 +102,9 @@ if (! input) {
 }
 
 var ensureDirectory = function (filepath) {
-    var dir = path.dirname(filepath);
-    if (!fs.existsSync(dir)) {
+    var dir = path.dirname(filepath),
+        existsSync = fs.existsSync || path.existsSync;
+    if (!existsSync(dir)) {
         fs.mkdirSync(dir);
     }
 };

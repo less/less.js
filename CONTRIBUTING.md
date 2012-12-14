@@ -12,10 +12,10 @@
 
 ## Pull Requests
 
-Thankyou! Please take the team to read these guidelines
+Thankyou! Please take the time to read these guidelines
 
  - Consider adding a feature request first to see if people are pro or con
  - do not change the dist/ folder - we do this when releasing
- - tests - please add tests for your feature. use `make test` to see if they pass
+ - tests - please add tests for your work. use `make test` to see if they pass
  - spaces not tabs
  - end lines in semi-colons - loosely aim towards jslint standards

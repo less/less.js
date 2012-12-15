@@ -13,7 +13,6 @@
 .values {
   font-family: 'Trebuchet', 'Trebuchet', 'Trebuchet';
   color: #888888 !important;
-  url: url('Trebuchet');
   multi: something 'A', B, C, 'Trebuchet';
 }
 .variable-names {

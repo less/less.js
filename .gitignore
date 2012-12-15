@@ -3,3 +3,5 @@ node_modules
 *.flymake
 *~
 .#*
+test/browser/less.js
+test/browser/test-runner-main.htm

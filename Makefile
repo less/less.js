@@ -21,6 +21,8 @@ DIST = dist/less-${VERSION}.js
 RHINO = dist/less-rhino-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
 
+browser-prepare: DIST := test/browser/less.js
+
 less:
 	@@mkdir -p dist
 	@@touch ${DIST}
@@ -37,6 +39,15 @@ less:
 	      build/amd.js >> ${DIST}
 	@@echo "})(window);" >> ${DIST}
 	@@echo ${DIST} built.
+	
+browser-prepare: less
+	node test/browser-test-prepare.js
+	
+browser-test: browser-prepare
+	phantomjs test/browser/phantom-runner.js
+
+browser-test-server: browser-prepare
+	phantomjs test/browser/phantom-runner.js --no-tests
 
 rhino:
 	@@mkdir -p dist

@@ -1,13 +1,10 @@
 .comma-delimited {
-  background: url(bg.jpg) no-repeat, url(bg.png) repeat-x top left, url(bg);
   text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset,
     0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
 }
 @font-face {
   font-family: Headline;
-  src: local(Futura-Medium),
-       url(fonts.svg#MyGeometricModern) format("svg");
   unicode-range: U+??????, U+0???, U+0-7F, U+A5;
 }
 .other {
@@ -108,8 +105,9 @@ p::before {
   font-size: 10px;
 }
 @namespace foo url(http://www.example.com);
- foo|h1 { color: blue }
- foo|* { color: yellow }
- |h1 { color: red }
- *|h1 { color: green }
- h1 { color: green }
+
+foo|h1 { color: blue; }
+foo|* { color: yellow; }
+|h1 { color: red; }
+*|h1 { color: green; }
+h1 { color: green; }

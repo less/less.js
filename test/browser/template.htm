@@ -1,54 +1,9 @@
-<script type="text/javascript">
-/*if not async then phantomjs fails to run the webserver and the test concurrently*/
-less = { async: true,
-		functions: {
-			add: function (a, b) {
-				return new(less.tree.Dimension)(a.value + b.value);
-			},
-			increment: function (a) {
-				return new(less.tree.Dimension)(a.value + 1);
-			},
-			_color: function (str) {
-				if (str.value === "evil red") { return new(less.tree.Color)("600") }
-			}
-		}
-	};
-</script>
-<script src="http://localhost:8081/browser/less.js" type="text/javascript"></script>
 <script src="http://localhost:8081/browser/jasmine.js" type="text/javascript"></script>
 <script src="http://localhost:8081/browser/jasmine-html.js" type="text/javascript"></script>
+<script src="http://localhost:8081/browser/common.js" type="text/javascript"></script>
 <script src="http://localhost:8081/browser/runner-{runner-name}.js" type="text/javascript"></script>
+<script src="http://localhost:8081/browser/less.js" type="text/javascript"></script>
 <link rel="stylesheet"  type="text/css" href="http://localhost:8081/browser/jasmine.css"></link>
-  <script type="text/javascript">
-    (function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
-
-      var htmlReporter = new jasmine.HtmlReporter();
-
-      jasmineEnv.addReporter(htmlReporter);
-
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      };
-
-      var currentWindowOnload = window.onload;
-
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
-
-      function execJasmine() {
-	    setTimeout(function() {
-            jasmineEnv.execute();
-		}, 3000);
-      }
-
-    })();
-  </script>
 </head>
 <body>
 </body>

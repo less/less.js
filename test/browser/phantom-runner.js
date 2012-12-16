@@ -1,4 +1,4 @@
-var page = require('webpage').create();
+var webpage = require('webpage');
 var server = require('webserver').create();
 var system = require('system');
 var fs = require('fs');
@@ -63,10 +63,12 @@ function waitFor(testFx, onReady, timeOutMillis) {
             }
         }, 100); //< repeat check every 100ms
 };
-if (system.args.length != 2 && system.args[1] != "--no-tests") {
-    page.open("http://localhost:8081/browser/test-runner-main.htm", function (status) {
+
+function testPage(url) {
+    var page = webpage.create();
+    page.open(url, function (status) {
         if (status !== "success") {
-            console.log("Unable to access network");
+            console.log("Unable to access network - " + status);
             phantom.exit();
         } else {
             waitFor(function(){
@@ -100,8 +102,24 @@ if (system.args.length != 2 && system.args[1] != "--no-tests") {
                       return 0;
                     }
                 });
-                phantom.exit(exitCode);
+                testFinished(exitCode);
             });
         }
     });
+}
+
+var totalTests = 0,
+    totalFailed = 0,
+    totalDone = 0;
+
+function testFinished(failed) {
+    if (failed) { totalFailed++; }
+    totalDone++;
+    if (totalDone === totalTests) { phantom.exit(totalFailed > 0 ? 1 : 0); }
+}
+
+if (system.args.length != 2 && system.args[1] != "--no-tests") {
+    totalTests = 2;
+    testPage("http://localhost:8081/browser/test-runner-main.htm");
+    testPage("http://localhost:8081/browser/test-runner-browser.htm");
 }

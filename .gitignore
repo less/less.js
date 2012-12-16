@@ -4,4 +4,4 @@ node_modules
 *~
 .#*
 test/browser/less.js
-test/browser/test-runner-main.htm
+test/browser/test-runner-*.htm

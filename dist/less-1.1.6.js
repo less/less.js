@@ -2701,6 +2701,23 @@ for (var i = 0; i < links.length; i++) {
     }
 }
 
+//
+// With this function, it's possible to alter variables and re-render CSS without reloading less-files
+// session_cache value is set at row 2784
+//
+// Usage: less.modifyVars({'@color': 'red'});
+//
+var session_cache = '';
+less.modifyVars = function(record) {
+    var str = session_cache;
+    for (name in record) {
+        str += ((name.slice(0,1) === '@')? '' : '@') + name +': '+ 
+                ((record[name].slice(-1) === ';')? record[name] : record[name] +';');
+    }
+    new(less.Parser)().parse(str, function (e, root) {
+        createCSS(root.toCSS(), less.sheets[less.sheets.length - 1]);
+    });
+};
 
 less.refresh = function (reload) {
     var startTime, endTime;
@@ -2765,6 +2782,9 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
     }
 
     xhr(sheet.href, sheet.type, function (data, lastModified) {
+        // Store data this session
+        session_cache += data.replace(/@import .+?;/ig, '');
+        
         if (!reload && styles && lastModified &&
            (new(Date)(lastModified).valueOf() ===
             new(Date)(styles.timestamp).valueOf())) {

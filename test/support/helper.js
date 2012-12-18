@@ -46,6 +46,10 @@ exports.mml = function(file) {
     return mml;
 };
 
+exports.mss = function(file) {
+    return fs.readFileSync(file, 'utf-8');
+};
+
 exports.showDifferences = function(e, format) {
     var changes = diff(
         (format || JSON.stringify)(e.actual),

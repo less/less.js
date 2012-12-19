@@ -3,12 +3,10 @@
   "version": "0.9.4",
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
-  "repositories": [
-    {
-      "type": "git",
-      "url": "http://github.com/mapbox/carto.git"
-    }
-  ],
+  "repositories": [{
+    "type": "git",
+    "url": "http://github.com/mapbox/carto.git"
+  }],
   "author": {
     "name": "MapBox",
     "url": "http://mapbox.com/",
@@ -25,11 +23,9 @@
     "Konstantin Käfer",
     "Alexis Sellier <self@cloudhead.net>"
   ],
-  "licenses": [
-    {
+  "licenses": [{
       "type": "Apache"
-    }
-  ],
+  }],
   "bin": {
     "carto": "./bin/carto",
     "mml2json.js": "./bin/mml2json.js"

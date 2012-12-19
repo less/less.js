@@ -1,0 +1,3 @@
+#countries {
+  polygon-fill: green;
+}}

@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "mocha": "1.3.x",
-    "docco": "0.3.x",
     "jshint": "0.2.x",
     "sax": "0.1.x"
   },

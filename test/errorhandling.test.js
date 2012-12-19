@@ -49,19 +49,22 @@ helper.files('errorhandling', 'mml', function(file) {
 
 describe('Error handling mss', function() {
 helper.files('errorhandling', 'mss', function(file) {
-    it('should handle errors in ' + path.basename(file), function(done) {
+    var basename = path.basename(file);
+    if (basename == 'multi_stylesheets_a.mss') {
+        return;
+    }
+    it('should handle errors in ' + basename, function(done) {
         var completed = false;
         var renderResult;
-        console.log(file)
         var mss = helper.mss(file);
         try {
             new carto.Renderer({
                 paths: [ path.dirname(file) ],
                 data_dir: path.join(__dirname, '../data'),
                 local_data_dir: path.join(__dirname, 'rendering'),
-                // note: we call basename here so that the expected error result
+                // note: we use the basename here so that the expected error result
                 // will match if the style was loaded from mml
-                filename: path.basename(file)
+                filename: basename
             }).renderMSS(mss, function (err) {
                 if (!err) {
                     console.warn("*** <--- WARNING invalid error handling test found (" + file + "): all error handling tests should throw errors!");

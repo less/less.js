@@ -109,6 +109,7 @@ function compileMSS(err, data) {
     }
     try {
         var renderer = new carto.Renderer({
+            filename: path.basename(input),
             benchmark: options.benchmark
         });
         renderer.renderMSS(data, function(err, output) {

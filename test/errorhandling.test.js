@@ -59,7 +59,9 @@ helper.files('errorhandling', 'mss', function(file) {
                 paths: [ path.dirname(file) ],
                 data_dir: path.join(__dirname, '../data'),
                 local_data_dir: path.join(__dirname, 'rendering'),
-                filename: file
+                // note: we call basename here so that the expected error result
+                // will match if the style was loaded from mml
+                filename: path.basename(file)
             }).renderMSS(mss, function (err) {
                 if (!err) {
                     console.warn("*** <--- WARNING invalid error handling test found (" + file + "): all error handling tests should throw errors!");

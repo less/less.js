@@ -16,6 +16,8 @@
 @quotes: "~" "~";
 @q: @quotes;
 
+@property: "border-radius";
+
 .variables {
   height: @b + @x + 0px; // 24px
   color: @c;
@@ -50,4 +52,9 @@
 
 a:nth-child(@a) {
     border: 1px;
+}
+
+div {
+  ~"-webkit-@{property}": 5px;
+  ~"@{property}": 5px;
 }

@@ -21,6 +21,7 @@ helper.files('errorhandling', 'mml', function(file) {
             }).render(mml, function (err) {
                 if (!err) {
                     console.warn("*** <--- WARNING invalid error handling test found (" + file + "): all error handling tests should throw errors!");
+                    done();
                 } else {
                     var result = helper.resultFile(file);
                     var output = err.message;
@@ -28,6 +29,7 @@ helper.files('errorhandling', 'mml', function(file) {
                     // at the end of read files. Determine why.
                     fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
                         if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
+                        done();
                     });
                 }
             });
@@ -38,10 +40,9 @@ helper.files('errorhandling', 'mml', function(file) {
             // at the end of read files. Determine why.
             fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
                 if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
+                done();
             });
         }
-
-        done();
     });
 });
 });
@@ -62,13 +63,15 @@ helper.files('errorhandling', 'mss', function(file) {
             }).renderMSS(mss, function (err) {
                 if (!err) {
                     console.warn("*** <--- WARNING invalid error handling test found (" + file + "): all error handling tests should throw errors!");
-                } else {
+                    done();
+               } else {
                     var result = helper.resultFile(file);
                     var output = err.message;
                     // @TODO for some reason, fs.readFile includes an additional \n
                     // at the end of read files. Determine why.
                     fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
                         if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
+                        done();
                     });
                 }
             });
@@ -79,9 +82,9 @@ helper.files('errorhandling', 'mss', function(file) {
             // at the end of read files. Determine why.
             fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
                 if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
+                done();
             });
         }
-        done();
     });
 });
 });

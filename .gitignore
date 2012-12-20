@@ -1,1 +1,4 @@
 /node_modules
+.DS_Store
+test/rendering/layers/
+test/rendering/cache/

@@ -68,16 +68,51 @@ if (!existsSync(input)) {
     process.exit(1);
 }
 
-function compile(err, data) {
+function compileMML(err, data) {
     if (err) {
         console.error(err);
         process.exit(1);
     }
     try {
-        new carto.Renderer({
+        var renderer = new carto.Renderer({
             filename: input,
             benchmark: options.benchmark
-        }).render(data, function(err, output) {
+        });
+        renderer.render(data, function(err, output) {
+            if (err) {
+                console.error(err);
+                throw err;
+                process.exit(1);
+            } else {
+                if (!options.benchmark) {
+                    console.log(output);
+                } else {
+                    var duration = (+new Date) - start;
+                    console.log('TOTAL: ' + (duration) + 'ms');
+                }
+            }
+        });
+    } catch (e) {
+        if (e.stack) {
+            console.error(e.stack);
+        } else {
+            console.error(e);
+        }
+        process.exit(1);
+    }
+};
+
+function compileMSS(err, data) {
+    if (err) {
+        console.error(err);
+        process.exit(1);
+    }
+    try {
+        var renderer = new carto.Renderer({
+            filename: path.basename(input),
+            benchmark: options.benchmark
+        });
+        renderer.renderMSS(data, function(err, output) {
             if (err) {
                 console.error(err);
                 throw err;
@@ -129,31 +164,9 @@ if (ext == '.mml') {
         base: path.dirname(input),
         cache: path.join(path.dirname(input), 'cache'),
        nosymlink: options.nosymlink
-    }, compile);
+    }, compileMML);
 } else if (ext == '.mss') {
-    var env = _({}).defaults({
-        benchmark: options.benchmark,
-        validation_data: false,
-        effects: []
-    });
-    var output = [];
-    var parser = (carto.Parser(env)).parse(data);
-    var rules = parser.toList(env);
-    var inherited = carto.inheritRules(rules,env);
-    var sorted = carto.sortStyles(inherited,env);
-        _(sorted).each(function(rule) {
-            var style = new carto.tree.Style('layer', rule.attachment, rule);
-            if (style) {
-                // env.effects can be modified by this call
-                output.push(style.toXML(env));
-            }
-        });
-    if (!options.benchmark) {
-        console.log(output.join('\n'));
-    } else {
-        var duration = (+new Date) - start;
-        console.error('TOTAL: ' + (duration) + 'ms');
-    }
+    compileMSS(null,data);
 } else {
     console.log("carto: please pass either a .mml file or .mss file");
 }

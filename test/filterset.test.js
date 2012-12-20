@@ -35,10 +35,10 @@ describe('Filtersets', function() {
             f.add({ key: 'TOTAL', op: '=', val: '11' });
             assert.ok(null  === f.addable({ key: 'TOTAL', op: '=',  val: '11' }), '=11 =11');
             assert.ok(null  === f.addable({ key: 'TOTAL', op: '!=', val: '90' }), '=11 !=90');
-            assert.ok(null  === f.addable({ key: 'TOTAL', op: '>',  val:  9  }), '=11 >9');
-            assert.ok(null  === f.addable({ key: 'TOTAL', op: '>=', val:  9  }), '=11 >=9');
-            assert.ok(null  === f.addable({ key: 'TOTAL', op: '<', val:   90  }), '=11 <90');
-            assert.ok(null  === f.addable({ key: 'TOTAL', op: '<=', val:  90  }), '=11 <=90');
+            assert.ok(null  === f.addable({ key: 'TOTAL', op: '>',  val:  '9'  }), '=11 >9');
+            assert.ok(null  === f.addable({ key: 'TOTAL', op: '>=', val:  '9'  }), '=11 >=9');
+            assert.ok(null  === f.addable({ key: 'TOTAL', op: '<', val:   '90'  }), '=11 <90');
+            assert.ok(null  === f.addable({ key: 'TOTAL', op: '<=', val:  '90'  }), '=11 <=90');
             assert.ok(false === f.addable({ key: 'TOTAL', op: '=',  val: '90' }), '=11 =90');
             assert.ok(false === f.addable({ key: 'TOTAL', op: '!=',  val: '11' }), '=11 !=11');
             assert.ok(false === f.addable({ key: 'TOTAL', op: '>',  val:  90  }), '=11 >90');

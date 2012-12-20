@@ -1,7 +1,7 @@
 {
   "name"          : "less",
   "description"   : "Leaner CSS",
-  "url"           : "http://lesscss.org",
+  "homepage"      : "http://lesscss.org",
   "keywords"      : ["css", "parser", "lesscss", "browser"],
   "author"        : "Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
@@ -9,9 +9,15 @@
   "bin"           : { "lessc": "./bin/lessc" },
   "main"          : "./lib/less/index",
   "directories"   : { "test": "./test" },
-  "engines"       : { "node": ">=0.4.0" },
-  "devDependencies" : { "diff": "~1.0.2" },
+  "engines"       : { "node": ">=0.4.2" },
+  "optionalDependencies" : { "ycssmin": ">=1.0.1" },
+  "devDependencies" : { "diff": "~1.0" },
   "scripts": {
    "test": "make test"
+  },
+  "bugs": { "url" : "https://github.com/cloudhead/less.js/issues"},
+  "repository" :
+  { "type" : "git",
+    "url" : "https://github.com/cloudhead/less.js.git"
   }
 }

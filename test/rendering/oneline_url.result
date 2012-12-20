@@ -1,5 +1,0 @@
-<Style name="layer" filter-mode="first" >
-  <Rule>
-    <MarkersSymbolizer file="http://upload.wikimedia.org/wikipedia/commons/7/72/Cup_of_coffee.svg" />
-  </Rule>
-</Style>

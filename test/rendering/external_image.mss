@@ -1,3 +1,3 @@
 #world {
-  polygon-pattern-file: url('http://www.inkycircus.com/jargon/images/grass_by_conformity.jpg');
+  polygon-pattern-file: url('http://a.tile.openstreetmap.org/0/0/0.png');
 }

@@ -25,24 +25,30 @@ helper.files('rendering', 'mml', function(file) {
                     throw err;
                 }
             } else {
-                renderResult = output;
                 var result = helper.resultFile(file);
+                renderResult = output;
                 helper.compareToXMLFile(result, output, function(err) {
                     completed = true;
                     if (err) {
+                        // disabled since it can break on large diffs
+                        /*
                         console.warn(
                             helper.stylize("Failure", 'red') + ': ' +
                             helper.stylize(file, 'underline') +
                             ' differs from expected result.');
                         helper.showDifferences(err);
                         throw '';
+                        */
+                        var actual = file + '.actual.xml';
+                        fs.writeFileSync(actual,output);
+                        throw new Error('failed: ' + actual + ' not equal to expected: ' + result);
                     }
+                    done();
                 }, [
                     helper.removeAbsoluteImages,
                     helper.removeAbsoluteDatasources
                 ]);
             }
-            done();
         });
 
         // beforeExit(function() {

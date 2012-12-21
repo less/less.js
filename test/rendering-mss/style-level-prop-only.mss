@@ -1,0 +1,3 @@
+#landcover {
+  opacity:.5;
+}

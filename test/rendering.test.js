@@ -29,6 +29,7 @@ helper.files('rendering', 'mml', function(file) {
                 renderResult = output;
                 helper.compareToXMLFile(result, output, function(err) {
                     completed = true;
+                    var actual = file + '.actual.xml';
                     if (err) {
                         // disabled since it can break on large diffs
                         /*
@@ -39,9 +40,13 @@ helper.files('rendering', 'mml', function(file) {
                         helper.showDifferences(err);
                         throw '';
                         */
-                        var actual = file + '.actual.xml';
                         fs.writeFileSync(actual,output);
                         throw new Error('failed: ' + actual + ' not equal to expected: ' + result);
+                    } else {
+                        // cleanup any actual renders that no longer fail
+                        try {
+                          fs.unlinkSync(actual);
+                        } catch (err) {}
                     }
                     done();
                 }, [

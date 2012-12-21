@@ -17,7 +17,7 @@ function cleanupItem(key, value) {
     }
     else if (key === 'attachment' && value === '__default__') return;
     else if (key === 'zoom') {
-        if (value != tree.Zoom.all) return tree.Zoom.toString(value);
+        if (value != tree.Zoom.all) return (new tree.Zoom()).setZoom(value).toString();
     }
     else return value;
 }

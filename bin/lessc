@@ -117,7 +117,7 @@ var parseLessFile = function (e, data) {
     }
 
     new(less.Parser)({
-        paths: [path.dirname(input)].concat(options.paths),
+        paths: [].concat(options.paths,path.dirname(input)),
         optimization: options.optimization,
         filename: input,
         strictImports: options.strictImports,

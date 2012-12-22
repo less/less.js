@@ -7,7 +7,7 @@ var carto = require('../lib/carto');
 var tree = require('../lib/carto/tree');
 var helper = require('./support/helper');
 
-/*
+
 
 describe('Rendering mss', function() {
 helper.files('rendering-mss', 'mss', function(file) {
@@ -43,4 +43,3 @@ helper.files('rendering-mss', 'mss', function(file) {
 });
 });
 
-*/

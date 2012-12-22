@@ -27,9 +27,10 @@ helper.files('rendering', 'mml', function(file) {
             } else {
                 var result = helper.resultFile(file);
                 renderResult = output;
-                helper.compareToXMLFile(result, output, function(err) {
+                helper.compareToXMLFile(result, output, function(err,expected_json,actual_json) {
                     completed = true;
-                    var actual = file + '.actual.xml';
+                    var actual = file.replace(path.extname(file),'') + '-actual.json';
+                    var expected = file.replace(path.extname(file),'') + '-expected.json';
                     if (err) {
                         // disabled since it can break on large diffs
                         /*
@@ -40,12 +41,14 @@ helper.files('rendering', 'mml', function(file) {
                         helper.showDifferences(err);
                         throw '';
                         */
-                        fs.writeFileSync(actual,output);
+                        fs.writeFileSync(actual,JSON.stringify(actual_json,null,4));
+                        fs.writeFileSync(expected,JSON.stringify(expected_json,null,4));
                         throw new Error('failed: ' + actual + ' not equal to expected: ' + result);
                     } else {
                         // cleanup any actual renders that no longer fail
                         try {
                           fs.unlinkSync(actual);
+                          fs.unlinkSync(expected);
                         } catch (err) {}
                     }
                     done();

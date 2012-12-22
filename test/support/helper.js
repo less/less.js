@@ -120,7 +120,7 @@ exports.compareToXMLFile = function(filename, second, callback, processors) {
                     assert.deepEqual(secondXML, firstXML);
                     callback(null);
                 } catch (err) {
-                    callback(err);
+                    callback(err,secondXML, firstXML);
                 }
             });
         });

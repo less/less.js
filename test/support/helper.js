@@ -70,20 +70,6 @@ exports.makePlain = function(obj, fn) {
     return JSON.parse(JSON.stringify(obj, fn));
 };
 
-exports.compareToFile = function(value, originalFile, resultFile) {
-    helper.json(resultFile, function(json) {
-        try {
-            assert.deepEqual(value, json);
-        } catch (e) {
-            console.warn(helper.stylize('Failure', 'red')
-                + ': ' + helper.stylize(originalFile, 'underline')
-                + ' differs from expected result.');
-            helper.showDifferences(e, helper.formatJSON);
-            throw '';
-        }
-    });
-};
-
 exports.parseXML = function(xml, callback) {
     var parser = sax.parser(true);
     var i = 0;

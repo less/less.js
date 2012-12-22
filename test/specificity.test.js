@@ -33,8 +33,21 @@ helper.files('specificity', 'mss', function(file) {
 
             var mss = tree.toList({});
             mss = helper.makePlain(mss, cleanupItem);
-
-            helper.compareToFile(mss, file, helper.resultFile(file));
+            var json = JSON.parse(fs.readFileSync(helper.resultFile(file)));
+            var actual = file.replace(path.extname(file),'') + '-actual.json';
+            var expected = file.replace(path.extname(file),'') + '-expected.json';
+            try {
+              assert.deepEqual(mss, json);
+              // cleanup any actual renders that no longer fail
+              try {
+                fs.unlinkSync(actual);
+                fs.unlinkSync(expected);
+              } catch (err) {}
+            } catch (err) {
+                fs.writeFileSync(actual,JSON.stringify(mss,null,4));
+                fs.writeFileSync(expected,JSON.stringify(json,null,4));
+                throw new Error('failed: ' + actual + ' not equal to expected: ' + expected);
+            }
             done();
         });
     });

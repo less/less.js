@@ -18,10 +18,6 @@
     <MinScaleDenominator>50000000</MinScaleDenominator>
     <MarkersSymbolizer height="1" />
   </Rule>
-  <Rule>
-    <MaxScaleDenominator>750000</MaxScaleDenominator>
-    <MarkersSymbolizer height="4" />
-  </Rule>
 </Style>
 <Layer
       name="world"

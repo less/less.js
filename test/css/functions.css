@@ -97,3 +97,6 @@
   average: #7b007b;
   negation: #d73131;
 }
+#data-uri {
+  background-image: url(data:image/jpeg;base64,bm90IGFjdHVhbGx5IGEganBlZyBmaWxlCg==);
+}

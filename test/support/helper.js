@@ -180,10 +180,12 @@ helper.removeAbsoluteImages = function(xml) {
     xml.Map.forEach(function(map) {
         if (map.Style) map.Style.forEach(function(style) {
             style.Rule.forEach(function(rule) {
-                if (rule.PolygonPatternSymbolizer) {
-                    rule.PolygonPatternSymbolizer.forEach(function(symbolizer) {
-                        symbolizer.file = '[absolute path]';
-                    });
+                for (var symbolizer in rule) {
+                    for (var i = 0; i < rule[symbolizer].length; i++) {
+                        if (rule[symbolizer][i].file) {
+                            rule[symbolizer][i].file = '[absolute path]';
+                        }
+                    }
                 }
             });
         });

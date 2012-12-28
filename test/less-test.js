@@ -57,6 +57,7 @@ runTestSet({dumpLineNumbers: 'mediaquery'}, "debug/", null,
            function(name) { return name + '-mediaquery'; });
 runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
+runTestSet({relativeUrls: false}, "static-urls/");
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),

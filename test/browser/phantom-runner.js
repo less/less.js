@@ -73,7 +73,8 @@ function testPage(url) {
         } else {
             waitFor(function(){
                 return page.evaluate(function(){
-                    return document.body.querySelector('.symbolSummary .pending') === null &&
+                    return document.body && document.body.querySelector && 
+                        document.body.querySelector('.symbolSummary .pending') === null &&
                         document.body.querySelector('.results') !== null;
                 });
             }, function(){
@@ -108,6 +109,16 @@ function testPage(url) {
     });
 }
 
+function scanDirectory(path, regex) {
+    var files = [];
+    fs.list(path).forEach(function (file) {
+        if (file.match(regex)) {
+            files.push(file);
+        }
+    });
+    return files;
+};
+
 var totalTests = 0,
     totalFailed = 0,
     totalDone = 0;
@@ -119,7 +130,10 @@ function testFinished(failed) {
 }
 
 if (system.args.length != 2 && system.args[1] != "--no-tests") {
-    totalTests = 2;
-    testPage("http://localhost:8081/browser/test-runner-main.htm");
-    testPage("http://localhost:8081/browser/test-runner-browser.htm");
+    var files = scanDirectory("test/browser/", /^test-runner-.+\.htm$/);
+    totalTests = files.length;
+    console.log("found " + files.length + " tests");
+    files.forEach(function(file) {
+        testPage("http://localhost:8081/browser/" + file);
+        });
 }

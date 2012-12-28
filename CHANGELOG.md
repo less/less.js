@@ -1,3 +1,40 @@
+# 1.3.2
+
+2012-12-28
+
+ - browser and server url re-writing is now aligned to not re-write (previous lessc behaviour)
+ - url-rewriting can be made to re-write to be relative to the entry file using the relative-urls option (less.relativeUrls option)
+ - rootpath option can be used to add a base path to every url
+ - Support mixin argument seperator of ';' so you can pass comma seperated values. e.g. `.mixin(23px, 12px;);`
+ - Fix lots of problems with named arguments in corner cases, not behaving as expected
+ - hsv, hsva, unit functions
+ - fixed lots more bad error messages
+ - fix `@import-once` to use the full path, not the relative one for determining if an import has been imported already
+ - support `:not(:nth-child(3))`
+ - mixin guards take units into account
+ - support unicode descriptors (`U+00A1-00A9`)
+ - support calling mixins with a stack when using `&` (broken in 1.3.1)
+ - support `@namespace` and namespace combinators
+ - when using % with colour functions, take into account a colour is out of 256
+ - when doing maths with a % do not divide by 100 and keep the unit
+ - allow url to contain % (e.g. %20 for a space)
+ - if a mixin guard stops execution a default mixin is not required
+ - units are output in strings (use the unit function if you need to get the value without unit)
+ - do not infinite recurse when mixins call mixins of the same name
+ - fix issue on important on mixin calls
+ - fix issue with multiple comments being confused
+ - tolerate multiple semi-colons on rules
+ - ignore subsequant `@charset`
+ - syncImport option for node.js to read files syncronously
+ - write the output directory if it is missing
+ - change dependency on cssmin to ycssmin
+ - lessc can load files over http
+ - allow calling less.watch() in non dev mode
+ - don't cache in dev mode
+ - less files cope with query parameters better
+ - sass debug statements are now chrome compatible
+ - modifyVars function added to re-render with different root variables
+
 # 1.3.1
 
 2012-10-18

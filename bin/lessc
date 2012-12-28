@@ -15,7 +15,8 @@ var options = {
     paths: [],
     color: true,
     strictImports: false,
-    rootpath: ''
+    rootpath: '',
+    relativeUrls: false
 };
 var continueProcessing = true,
     currentErrorcode;
@@ -65,12 +66,17 @@ args = args.filter(function (arg) {
             options.color = false;
             break;
         case 'include-path':
-            options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
-                .map(function(p) {
-                    if (p) {
-                        return path.resolve(process.cwd(), p);
-                    }
-                });
+            if (!match[2]) {
+                sys.puts("include-path option requires a parameter");
+                continueProcessing = false;
+            } else {
+                options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
+                    .map(function(p) {
+                        if (p) {
+                            return path.resolve(process.cwd(), p);
+                        }
+                    });
+            }
             break;
         case 'O0': options.optimization = 0; break;
         case 'O1': options.optimization = 1; break;
@@ -80,7 +86,16 @@ args = args.filter(function (arg) {
             break;
         case 'rp':
         case 'rootpath':
-            options.rootpath = path.normalize(match[2] + '/');
+            if (!match[2]) {
+                sys.puts("rootpath option requires a parameter");
+                continueProcessing = false;
+            } else {
+                options.rootpath = path.normalize(match[2] + '/').replace('\\', '/');
+            }
+            break;
+        case "ru":
+        case "relative-urls":
+            options.relativeUrls = true;
             break;
     }
 });
@@ -126,6 +141,7 @@ var parseLessFile = function (e, data) {
         optimization: options.optimization,
         filename: input,
         rootpath: options.rootpath,
+        relativeUrls: options.relativeUrls,
         strictImports: options.strictImports,
         dumpLineNumbers: options.dumpLineNumbers
     }).parse(data, function (err, tree) {

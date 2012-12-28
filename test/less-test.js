@@ -23,7 +23,7 @@ less.tree.functions._color = function (str) {
 
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
-runTestSet();
+runTestSet({relativeUrls: true});
 
 runTestSet(null, "errors/", function(name, err, compiledLess, doReplacements) {
     fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {

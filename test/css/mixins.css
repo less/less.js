@@ -113,3 +113,9 @@ h3 + * {
 .test-rec .recursion {
   color: black;
 }
+.button {
+  padding-left: 44px;
+}
+.button.large {
+  padding-left: 40em;
+}

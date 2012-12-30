@@ -67,21 +67,14 @@ min: less
 	@@uglifyjs ${DIST} > ${DIST_MIN}
 	@@echo ${DIST_MIN} built.
 
-server: less
-	cp dist/less-${VERSION}.js test/html/
-	cd test/html && python -m SimpleHTTPServer
-
-clean:
-	git rm dist/*
-
-dist: clean min
+dist: min rhino
 	git add dist/*
 	git commit -a -m "(dist) build ${VERSION}"
 	git archive master --prefix=less/ -o less-${VERSION}.tar.gz
 	npm publish less-${VERSION}.tar.gz
 
 stable:
-	npm tag less ${VERSION} stable
+	npm tag less@${VERSION} stable
 
 
 .PHONY: test benchmark

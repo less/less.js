@@ -1,3 +1,10 @@
+# 1.3.3
+
+2012-12-30
+
+ - Fix critical bug with mixin call if using multiple brackets
+ - when using the filter contrast function, the function is passed through if the first argument is not a color
+
 # 1.3.2
 
 2012-12-28

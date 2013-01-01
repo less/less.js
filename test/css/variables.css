@@ -7,10 +7,14 @@
   font-family: "Trebuchet MS", Verdana, sans-serif;
   quotes: "~" "~";
 }
-.redefinition {
+.redef {
+  zero: 0;
+}
+.redef .inition {
   three: 3;
 }
 .values {
+  minus-one: -1;
   font-family: 'Trebuchet', 'Trebuchet', 'Trebuchet';
   color: #888888 !important;
   multi: something 'A', B, C, 'Trebuchet';
@@ -23,4 +27,7 @@
 }
 a:nth-child(2) {
   border: 1px;
+}
+.testPollution {
+  a: 'pollution';
 }

@@ -119,7 +119,7 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
 ## Mapnik2
 _new_
 
-CartoCSS is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2). Compatibility with Mapnik 0.7.x is not planned.
+CartoCSS is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2).
 
 ## Rasters and Buildings
 _new_
@@ -247,7 +247,7 @@ using CartoCSS and don't need to do a thing.
 If you're a developer-type and want to use the `carto` binary with
 `node.js` (and you have [npm](http://npmjs.org/) installed),
 
-    npm install carto
+    npm install -g carto
 
 #### From the binary
 

@@ -7,6 +7,8 @@ var carto = require('../lib/carto');
 var tree = require('../lib/carto/tree');
 var helper = require('./support/helper');
 
+
+
 describe('Rendering mss', function() {
 helper.files('rendering-mss', 'mss', function(file) {
     it('should render mss ' + path.basename(file) + ' correctly', function(done) {
@@ -35,30 +37,9 @@ helper.files('rendering-mss', 'mss', function(file) {
                 var expected_data = fs.readFileSync(expected).toString();
                 assert.equal(output,expected_data);
                 done();
-                /*
-                helper.compareToXMLFile(result, output, function(err) {
-                    completed = true;
-                    if (err) {
-                        console.warn(
-                            helper.stylize("Failure", 'red') + ': ' +
-                            helper.stylize(file, 'underline') +
-                            ' differs from expected result.');
-                        helper.showDifferences(err);
-                        throw '';
-                        done();
-                    } else { done(); }
-                });
-                */
             }
         });
-
-        // beforeExit(function() {
-        //     if (!completed && renderResult) {
-        //         console.warn(helper.stylize('renderer produced:', 'bold'));
-        //         console.warn(renderResult);
-        //     }
-        //     assert.ok(completed, 'Rendering finished.');
-        // });
     });
 });
 });
+

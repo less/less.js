@@ -12,12 +12,12 @@ function cleanupItem(key, value) {
     else if (key === 'elements') return value.map(function(item) { return item.value; });
     else if (key === 'filters') {
         var arr = [];
-        for (var id in value) arr.push(id + value[id].val);
+        for (var id in value.filters) arr.push(id + value.filters[id].val);
         if (arr.length) return arr;
     }
     else if (key === 'attachment' && value === '__default__') return;
     else if (key === 'zoom') {
-        if (value != tree.Zoom.all) return tree.Zoom.toString(value);
+        if (value != tree.Zoom.all) return (new tree.Zoom()).setZoom(value).toString();
     }
     else return value;
 }
@@ -33,8 +33,21 @@ helper.files('specificity', 'mss', function(file) {
 
             var mss = tree.toList({});
             mss = helper.makePlain(mss, cleanupItem);
-
-            helper.compareToFile(mss, file, helper.resultFile(file));
+            var json = JSON.parse(fs.readFileSync(helper.resultFile(file)));
+            var actual = file.replace(path.extname(file),'') + '-actual.json';
+            var expected = file.replace(path.extname(file),'') + '-expected.json';
+            try {
+              assert.deepEqual(mss, json);
+              // cleanup any actual renders that no longer fail
+              try {
+                fs.unlinkSync(actual);
+                fs.unlinkSync(expected);
+              } catch (err) {}
+            } catch (err) {
+                fs.writeFileSync(actual,JSON.stringify(mss,null,4));
+                fs.writeFileSync(expected,JSON.stringify(json,null,4));
+                throw new Error('failed: ' + actual + ' not equal to expected: ' + expected);
+            }
             done();
         });
     });

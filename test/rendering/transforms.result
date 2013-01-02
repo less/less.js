@@ -5,7 +5,7 @@
 
 <Style name="world" filter-mode="first" >
   <Rule>
-    <PointSymbolizer file="foo.png" transform="translate(4,2)" />
+    <PointSymbolizer file="[absolute path]" transform="translate(4,2)" />
   </Rule>
 </Style>
 <Layer name="world"

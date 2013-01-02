@@ -5,7 +5,19 @@
 
 <Style name="world" filter-mode="first" >
   <Rule>
-    <PointSymbolizer file="[absolute path]" transform="scale(10*[POP2005],[POP2005]), rotate(10,1,-1)" />
+    <Filter>([BAR] &gt; [HI])</Filter>
+    <PolygonSymbolizer fill="#ffffff" />
+    <LineSymbolizer stroke="#ff0000" stroke-width="5" />
+  </Rule>
+  <Rule>
+    <Filter>([BAR] = [HI])</Filter>
+    <PolygonSymbolizer fill="#ffffff" />
+    <LineSymbolizer stroke="#ff0000" stroke-width="5" />
+  </Rule>
+  <Rule>
+    <Filter>([FOO] = [BAR])</Filter>
+    <PolygonSymbolizer fill="#ffffff" />
+    <LineSymbolizer stroke="#ff0000" stroke-width="0.5" />
   </Rule>
 </Style>
 <Layer name="world"

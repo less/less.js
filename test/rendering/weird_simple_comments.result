@@ -5,7 +5,10 @@
 
 <Style name="world" filter-mode="first" >
   <Rule>
-    <PointSymbolizer file="[absolute path]" transform="scale(10*[POP2005],[POP2005]), rotate(10,1,-1)" />
+    <MarkersSymbolizer file="[absolute path]" />
+    <MarkersSymbolizer file="[absolute path]" />
+    <MarkersSymbolizer file="[absolute path]" />
+    <MarkersSymbolizer file="[absolute path]" />
   </Rule>
 </Style>
 <Layer name="world"

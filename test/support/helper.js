@@ -70,20 +70,6 @@ exports.makePlain = function(obj, fn) {
     return JSON.parse(JSON.stringify(obj, fn));
 };
 
-exports.compareToFile = function(value, originalFile, resultFile) {
-    helper.json(resultFile, function(json) {
-        try {
-            assert.deepEqual(value, json);
-        } catch (e) {
-            console.warn(helper.stylize('Failure', 'red')
-                + ': ' + helper.stylize(originalFile, 'underline')
-                + ' differs from expected result.');
-            helper.showDifferences(e, helper.formatJSON);
-            throw '';
-        }
-    });
-};
-
 exports.parseXML = function(xml, callback) {
     var parser = sax.parser(true);
     var i = 0;
@@ -120,7 +106,7 @@ exports.compareToXMLFile = function(filename, second, callback, processors) {
                     assert.deepEqual(secondXML, firstXML);
                     callback(null);
                 } catch (err) {
-                    callback(err);
+                    callback(err,secondXML, firstXML);
                 }
             });
         });
@@ -194,10 +180,12 @@ helper.removeAbsoluteImages = function(xml) {
     xml.Map.forEach(function(map) {
         if (map.Style) map.Style.forEach(function(style) {
             style.Rule.forEach(function(rule) {
-                if (rule.PolygonPatternSymbolizer) {
-                    rule.PolygonPatternSymbolizer.forEach(function(symbolizer) {
-                        symbolizer.file = '[absolute path]';
-                    });
+                for (var symbolizer in rule) {
+                    for (var i = 0; i < rule[symbolizer].length; i++) {
+                        if (rule[symbolizer][i].file) {
+                            rule[symbolizer][i].file = '[absolute path]';
+                        }
+                    }
                 }
             });
         });

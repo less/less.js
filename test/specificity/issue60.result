@@ -1,6 +1,6 @@
 [
-    {"elements":["#world"],"filters":["OBJECTID=12"],"specificity":[1,0,1,131]},
-    {"elements":["#world"],"filters":["NET_INFLOW>-10000"],"specificity":[1,0,1,83]},
-    {"elements":["#world"],"filters":["NET_INFLOW>-30000"],"specificity":[1,0,1,35]},
+    {"elements":["#world"],"filters":["[OBJECTID]=12"],"specificity":[1,0,1,131]},
+    {"elements":["#world"],"filters":["[NET_INFLOW]>-10000"],"specificity":[1,0,1,83]},
+    {"elements":["#world"],"filters":["[NET_INFLOW]>-30000"],"specificity":[1,0,1,35]},
     {"elements":["#world"],"specificity":[1,0,0,0]}
 ]

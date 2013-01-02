@@ -20,20 +20,19 @@ helper.files('errorhandling', 'mml', function(file) {
                 filename: file
             }).render(mml, function (err) {
                 if (!err) {
-                    console.warn("*** <--- WARNING invalid error handling test found (" + file + "): all error handling tests should throw errors!");
-                    done();
-                } else {
-                    var result = helper.resultFile(file);
-                    var output = err.message;
-                    // @TODO for some reason, fs.readFile includes an additional \n
-                    // at the end of read files. Determine why.
-                    fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
-                        if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
-                        done();
-                    });
+                    throw new Error("*** invalid error handling test found: " + basename + ": all error handling tests should throw!");
                 }
+                var result = helper.resultFile(file);
+                var output = err.message;
+                // @TODO for some reason, fs.readFile includes an additional \n
+                // at the end of read files. Determine why.
+                fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
+                    if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
+                    done();
+                });
             });
         } catch(err) {
+            if (err.message.indexOf('***') > -1) throw err;
             var result = helper.resultFile(file);
             var output = err.message;
             // @TODO for some reason, fs.readFile includes an additional \n
@@ -67,20 +66,19 @@ helper.files('errorhandling', 'mss', function(file) {
                 filename: basename
             }).renderMSS(mss, function (err) {
                 if (!err) {
-                    console.warn("*** <--- WARNING invalid error handling test found (" + file + "): all error handling tests should throw errors!");
-                    done();
-               } else {
-                    var result = helper.resultFile(file);
-                    var output = err.message;
-                    // @TODO for some reason, fs.readFile includes an additional \n
-                    // at the end of read files. Determine why.
-                    fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
-                        if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
-                        done();
-                    });
+                    throw new Error("*** invalid error handling test found: " + basename + ": all error handling tests should throw!");
                 }
+                var result = helper.resultFile(file);
+                var output = err.message;
+                // @TODO for some reason, fs.readFile includes an additional \n
+                // at the end of read files. Determine why.
+                fs.readFile(helper.resultFile(file), 'utf8', function(err, data) {
+                    if (!err) assert.deepEqual(output, data.substr(0, data.length - 1));
+                    done();
+                });
             });
         } catch(err) {
+            if (err.message.indexOf('***') > -1) throw err;
             var result = helper.resultFile(file);
             var output = err.message;
             // @TODO for some reason, fs.readFile includes an additional \n

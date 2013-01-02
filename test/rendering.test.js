@@ -25,24 +25,38 @@ helper.files('rendering', 'mml', function(file) {
                     throw err;
                 }
             } else {
-                renderResult = output;
                 var result = helper.resultFile(file);
-                helper.compareToXMLFile(result, output, function(err) {
+                renderResult = output;
+                helper.compareToXMLFile(result, output, function(err,expected_json,actual_json) {
                     completed = true;
+                    var actual = file.replace(path.extname(file),'') + '-actual.json';
+                    var expected = file.replace(path.extname(file),'') + '-expected.json';
                     if (err) {
+                        // disabled since it can break on large diffs
+                        /*
                         console.warn(
                             helper.stylize("Failure", 'red') + ': ' +
                             helper.stylize(file, 'underline') +
                             ' differs from expected result.');
                         helper.showDifferences(err);
                         throw '';
+                        */
+                        fs.writeFileSync(actual,JSON.stringify(actual_json,null,4));
+                        fs.writeFileSync(expected,JSON.stringify(expected_json,null,4));
+                        throw new Error('failed: ' + actual + ' not equal to expected: ' + result);
+                    } else {
+                        // cleanup any actual renders that no longer fail
+                        try {
+                          fs.unlinkSync(actual);
+                          fs.unlinkSync(expected);
+                        } catch (err) {}
                     }
+                    done();
                 }, [
                     helper.removeAbsoluteImages,
                     helper.removeAbsoluteDatasources
                 ]);
             }
-            done();
         });
 
         // beforeExit(function() {

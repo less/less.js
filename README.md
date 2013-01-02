@@ -116,10 +116,10 @@ Instead of the name attribute of the [TextSymbolizer](http://trac.mapnik.org/wik
   </tr>
 </table>
 
-## Mapnik2
+## Mapnik
 _new_
 
-CartoCSS is only compatible with [Mapnik2](http://trac.mapnik.org/wiki/Mapnik2).
+CartoCSS is only compatible with Mapnik >= 2.x.x.
 
 ## Rasters and Buildings
 _new_

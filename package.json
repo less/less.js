@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "underscore": "~1.4.3",
-    "mapnik-reference": "~5.0.0",
+    "mapnik-reference": "~5.0.3",
     "xml2js": "~0.1.13"
   },
   "devDependencies": {

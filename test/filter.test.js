@@ -10,14 +10,14 @@ describe('Field', function() {
             var f = new tree.Filter(new tree.Field('foo'), '=', new tree.Dimension(1));
             assert.ok(f);
         });
-        it('can be evaluated', function() {
+        it('can be evuated', function() {
             var f = new tree.Filter(new tree.Field('foo'), '=', new tree.Dimension(1));
-            f.eval({});
+            f.ev({});
             assert.ok(f);
         });
         it('yields xml', function() {
             var f = new tree.Filter(new tree.Field('foo'), '=', new tree.Dimension(1));
-            f.eval({});
+            f.ev({});
             assert.equal(f.toXML({}), '[foo] = 1');
         });
     });

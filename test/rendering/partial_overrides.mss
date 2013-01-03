@@ -18,10 +18,6 @@
   line-color: #f00;
 }
 
-#world.m_5[NAME="United States"][NAME="Canada"] {
-  line-color: #f00;
-}
-
 #world.m_6[NAME!="Canada"][zoom > 5] {
   line-opacity: .7;
 }

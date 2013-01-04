@@ -109,3 +109,16 @@
   average: average(#f60000, #0000f6);
   negation: negation(#f60000, #313131);
 }
+
+#data-uri {
+  uri: data-uri('image/jpeg;base64', 'test/data/image.jpg');
+}
+
+#data-uri-guess {
+  uri: data-uri('test/data/image.jpg');
+}
+
+#data-uri-ascii {
+  uri-1: data-uri('text/html', 'test/data/page.html');
+  uri-2: data-uri('test/data/page.html');
+}

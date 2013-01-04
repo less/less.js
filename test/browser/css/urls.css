@@ -35,12 +35,12 @@
   url: url('http://localhost:8081/browser/less/Trebuchet');
 }
 #data-uri {
-  uri: url('test/data/image.jpg');
+  uri: url('http://localhost:8081/browser/less/test/data/image.jpg');
 }
 #data-uri-guess {
-  uri: url('test/data/image.jpg');
+  uri: url('http://localhost:8081/browser/less/test/data/image.jpg');
 }
 #data-uri-ascii {
-  uri-1: url('test/data/page.html');
-  uri-2: url('test/data/page.html');
+  uri-1: url('http://localhost:8081/browser/less/test/data/page.html');
+  uri-2: url('http://localhost:8081/browser/less/test/data/page.html');
 }

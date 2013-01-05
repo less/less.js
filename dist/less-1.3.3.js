@@ -2,7 +2,7 @@
 // LESS - Leaner CSS v1.3.3
 // http://lesscss.org
 // 
-// Copyright (c) 2009-2011, Alexis Sellier
+// Copyright (c) 2009-2013, Alexis Sellier
 // Licensed under the Apache 2.0 License.
 //
 (function (window, undefined) {
@@ -4075,7 +4075,7 @@ function extractUrlParts(url, baseUrl) {
     // urlParts[4] = filename
     // urlParts[5] = parameters
 
-    var urlPartsRegex = /^((?:[a-z-]+:)?\/\/(?:[^\/\?#]+\/)|([\/\\]))?((?:[^\/\\\?#]+[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/,
+    var urlPartsRegex = /^((?:[a-z-]+:)?\/\/(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/,
         urlParts = url.match(urlPartsRegex),
         returner = {}, directories = [], i, baseUrlParts;
 

@@ -1,6 +1,14 @@
 /*if not async then phantomjs fails to run the webserver and the test concurrently*/
 var less = { async: true };
 
+/* record log messages for testing */
+var logMessages = [],
+    realConsoleLog = console.log;
+console.log = function(msg) {
+    logMessages.push(msg);
+    realConsoleLog.call(console, msg);
+};
+
 var testLessEqualsInDocument = function() {
     var links = document.getElementsByTagName('link'),
         typePattern = /^text\/(x-)?less$/;

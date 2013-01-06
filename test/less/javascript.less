@@ -10,7 +10,7 @@
 }
 .scope {
     @foo: 42;
-    var: `this.foo.toJS()`;
+    var: `parseInt(this.foo.toJS())`;
     escaped: ~`2 + 5 + 'px'`;
 }
 .vars {

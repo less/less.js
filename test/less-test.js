@@ -58,6 +58,7 @@ runTestSet({dumpLineNumbers: 'mediaquery'}, "debug/", null,
 runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
 runTestSet({relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
+runTestSet({compress: true}, "compression/");
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),
@@ -171,7 +172,7 @@ function toCSS(options, path, callback) {
                 callback(err);
             } else {
                 try {
-                    css = tree.toCSS();
+                    css = tree.toCSS(options);
                     callback(null, css);
                 } catch (e) {
                     callback(e);

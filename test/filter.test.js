@@ -10,7 +10,7 @@ describe('Field', function() {
             var f = new tree.Filter(new tree.Field('foo'), '=', new tree.Dimension(1));
             assert.ok(f);
         });
-        it('can be evuated', function() {
+        it('can be evaluated', function() {
             var f = new tree.Filter(new tree.Field('foo'), '=', new tree.Dimension(1));
             f.ev({});
             assert.ok(f);

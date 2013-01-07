@@ -2,6 +2,7 @@
 
 var path = require('path'),
     fs = require('fs'),
+    mkdirp = require('mkdirp'),
     sys = require('util'),
     os = require('os');
 
@@ -123,9 +124,10 @@ if (! input) {
 
 var ensureDirectory = function (filepath) {
     var dir = path.dirname(filepath),
+        cmd = mkdirp && mkdirp.sync || fs.mkdirSync,
         existsSync = fs.existsSync || path.existsSync;
     if (!existsSync(dir)) {
-        fs.mkdirSync(dir);
+        cmd(dir);
     }
 };
 

@@ -10,7 +10,10 @@
   "main"          : "./lib/less/index",
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.4.2" },
-  "optionalDependencies" : { "ycssmin": ">=1.0.1" },
+  "optionalDependencies" : {
+    "mkdirp": "~0.3.4",
+    "ycssmin": ">=1.0.1"
+  },
   "devDependencies" : { "diff": "~1.0" },
   "scripts": {
    "test": "make test"

@@ -121,31 +121,12 @@
 }
 
 #padding-extraction {
-  // Four:
   @pad: 1px 2px 3px 4px;
-  top: top(@pad);
-  right: right(@pad);
-  bottom: bottom(@pad);
-  left: left(@pad);
-
-  // Three:
+  result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
   @pad: 1px 2px 3px;
-  top: top(@pad);
-  right: right(@pad);
-  bottom: bottom(@pad);
-  left: left(@pad);
-
-  // Two:
+  result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
   @pad: 1px 2px;
-  top: top(@pad);
-  right: right(@pad);
-  bottom: bottom(@pad);
-  left: left(@pad);
-
-  // One:
+  result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
   @pad: 1px;
-  top: top(@pad);
-  right: right(@pad);
-  bottom: bottom(@pad);
-  left: left(@pad);
+  result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
 }

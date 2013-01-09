@@ -125,5 +125,5 @@
 
 #extract {
   @anon: A B C 1 2 3;
-  result: extract(6, @anon) extract(5, @anon) extract(4, @anon) extract(3, @anon) extract(2, @anon) extract(1, @anon);
+  result: extract(@anon, 6) extract(@anon, 5) extract(@anon, 4) extract(@anon, 3) extract(@anon, 2) extract(@anon, 1);
 }

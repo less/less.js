@@ -97,6 +97,24 @@
   percent: true;
   em: true;
 }
+#built-in .padding-extract {
+  top: 1px;
+  right: 2px;
+  bottom: 3px;
+  left: 4px;
+  top: 1px;
+  right: 2px;
+  bottom: 3px;
+  left: 2px;
+  top: 1px;
+  right: 2px;
+  bottom: 1px;
+  left: 2px;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  left: 1px;
+}
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);
 }

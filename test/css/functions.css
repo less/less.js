@@ -120,3 +120,6 @@
   result: 1px 2px 1px 2px;
   result: 1px 1px 1px 1px;
 }
+#extract .by-index {
+  result: 3 2 1 C B A;
+}

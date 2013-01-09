@@ -141,4 +141,9 @@
     @pad: 1px;
     result: extract(top-left, @pad) extract(top-right, @pad) extract(bottom-right, @pad) extract(bottom-left, @pad);
   }
+
+  .by-index {
+    @anon: A B C 1 2 3;
+    result: extract(6, @anon) extract(5, @anon) extract(4, @anon) extract(3, @anon) extract(2, @anon) extract(1, @anon);
+  }
 }

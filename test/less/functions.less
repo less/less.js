@@ -121,29 +121,6 @@
 }
 
 #extract {
-  .padding {
-    @pad: 1px 2px 3px 4px;
-    result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
-    @pad: 1px 2px 3px;
-    result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
-    @pad: 1px 2px;
-    result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
-    @pad: 1px;
-    result: extract(top, @pad) extract(right, @pad) extract(bottom, @pad) extract(left, @pad);
-  }
-  .border-radius {
-    @pad: 1px 2px 3px 4px;
-    result: extract(top-left, @pad) extract(top-right, @pad) extract(bottom-right, @pad) extract(bottom-left, @pad);
-    @pad: 1px 2px 3px;
-    result: extract(top-left, @pad) extract(top-right, @pad) extract(bottom-right, @pad) extract(bottom-left, @pad);
-    @pad: 1px 2px;
-    result: extract(top-left, @pad) extract(top-right, @pad) extract(bottom-right, @pad) extract(bottom-left, @pad);
-    @pad: 1px;
-    result: extract(top-left, @pad) extract(top-right, @pad) extract(bottom-right, @pad) extract(bottom-left, @pad);
-  }
-
-  .by-index {
-    @anon: A B C 1 2 3;
-    result: extract(6, @anon) extract(5, @anon) extract(4, @anon) extract(3, @anon) extract(2, @anon) extract(1, @anon);
-  }
+  @anon: A B C 1 2 3;
+  result: extract(6, @anon) extract(5, @anon) extract(4, @anon) extract(3, @anon) extract(2, @anon) extract(1, @anon);
 }

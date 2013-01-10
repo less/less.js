@@ -108,18 +108,6 @@
   average: #7b007b;
   negation: #d73131;
 }
-#extract .padding {
-  result: 1px 2px 3px 4px;
-  result: 1px 2px 3px 2px;
-  result: 1px 2px 1px 2px;
-  result: 1px 1px 1px 1px;
-}
-#extract .border-radius {
-  result: 1px 2px 3px 4px;
-  result: 1px 2px 3px 2px;
-  result: 1px 2px 1px 2px;
-  result: 1px 1px 1px 1px;
-}
-#extract .by-index {
+#extract {
   result: 3 2 1 C B A;
 }

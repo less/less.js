@@ -119,3 +119,8 @@
   average: average(#f60000, #0000f6);
   negation: negation(#f60000, #313131);
 }
+
+#extract {
+  @anon: A B C 1 2 3;
+  result: extract(6, @anon) extract(5, @anon) extract(4, @anon) extract(3, @anon) extract(2, @anon) extract(1, @anon);
+}

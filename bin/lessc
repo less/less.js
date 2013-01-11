@@ -2,9 +2,9 @@
 
 var path = require('path'),
     fs = require('fs'),
-    mkdirp = require('mkdirp'),
     sys = require('util'),
-    os = require('os');
+    os = require('os'),
+    mkdirp;
 
 var less = require('../lib/less');
 var args = process.argv.slice(1);
@@ -129,9 +129,14 @@ if (! input) {
 
 var ensureDirectory = function (filepath) {
     var dir = path.dirname(filepath),
-        cmd = mkdirp && mkdirp.sync || fs.mkdirSync,
+        cmd,
         existsSync = fs.existsSync || path.existsSync;
     if (!existsSync(dir)) {
+        if (mkdirp === undefined) {
+            try {mkdirp = require('mkdirp');}
+            catch(e) { mkdirp = null; }
+        }
+        cmd = mkdirp && mkdirp.sync || fs.mkdirSync;
         cmd(dir);
     }
 };

@@ -2,7 +2,7 @@
 // LESS - Leaner CSS v1.4.0
 // http://lesscss.org
 // 
-// Copyright (c) 2009-2011, Alexis Sellier
+// Copyright (c) 2009-2013, Alexis Sellier
 // Licensed under the Apache 2.0 License.
 //
 (function (window, undefined) {
@@ -550,7 +550,7 @@ less.Parser = function Parser(env) {
                     }
 
                     try {
-                        var css = evaluate.call(this, { frames: frames })
+                        var css = evaluate.call(this, { frames: frames, compress: options.compress || false })
                                           .toCSS([], { compress: options.compress || false, dumpLineNumbers: env.dumpLineNumbers });
                     } catch (e) {
                         throw new(LessError)(e, env);
@@ -757,7 +757,7 @@ less.Parser = function Parser(env) {
 
                     if (! $(')')) return;
 
-                    if (name) { return new(tree.Call)(name, args, index, env.filename) }
+                    if (name) { return new(tree.Call)(name, args, index, env.filename, env.rootpath) }
                 },
                 arguments: function () {
                     var args = [], arg;
@@ -1321,7 +1321,7 @@ less.Parser = function Parser(env) {
                 if (c === '.' || c === '#' || c === '&') { return }
 
                 if (name = $(this.variable) || $(this.property)) {
-                    if ((name.charAt(0) != '@') && (match = /^([^@+\/'"*`(;{}-]*);/.exec(chunks[j]))) {
+                    if (!env.compress && (name.charAt(0) != '@') && (match = /^([^@+\/'"*`(;{}-]*);/.exec(chunks[j]))) {
                         i += match[0].length - 1;
                         value = new(tree.Anonymous)(match[1]);
                     } else if (name === "font") {
@@ -1900,19 +1900,32 @@ tree.functions = {
     unit: function (val, unit) {
         return new(tree.Dimension)(val.value, unit ? unit.toCSS() : "");
     },
+    convert: function (val, unit) {
+        return val.convertTo(unit.value);
+    },
     round: function (n, f) {
         var fraction = typeof(f) === "undefined" ? 0 : f.value;
-        return this._math(function(num) { return num.toFixed(fraction); }, n);
+        return this._math(function(num) { return num.toFixed(fraction); }, null, n);
     },
-    ceil: function (n) {
-        return this._math(Math.ceil, n);
+    pi: function () {
+        return new(tree.Dimension)(Math.PI);
     },
-    floor: function (n) {
-        return this._math(Math.floor, n);
+    mod: function(a, b) {
+        return new(tree.Dimension)(a.value % b.value, a.unit);
     },
-    _math: function (fn, n) {
+    pow: function(x, y) {
+        if (typeof x === "number" && typeof y === "number") {
+            x = new(tree.Dimension)(x);
+            y = new(tree.Dimension)(y);
+        } else if (!(x instanceof tree.Dimension) || !(y instanceof tree.Dimension)) {
+            throw { type: "Argument", message: "arguments must be numbers" };
+        }
+
+        return new(tree.Dimension)(Math.pow(x.value, y.value), x.unit);
+    },
+    _math: function (fn, unit, n) {
         if (n instanceof tree.Dimension) {
-            return new(tree.Dimension)(fn(parseFloat(n.value)), n.unit);
+            return new(tree.Dimension)(fn(parseFloat(n.value)), unit == null ? n.unit : unit);
         } else if (typeof(n) === 'number') {
             return fn(n);
         } else {
@@ -2025,8 +2038,64 @@ tree.functions = {
     },
     shade: function(color, amount) {
         return this.mix(this.rgb(0, 0, 0), color, amount);
+    },
+    extract: function(index, values) {
+        index = index.value - 1; // (1-based index)
+        return values.value[index];
+    },
+
+    "data-uri": function(mimetype, path) {
+
+        if (typeof window !== 'undefined') {
+            return new less.tree.URL(path || mimetype, this.rootpath).eval(this.env);
+        }
+
+        mimetype = mimetype.value;
+        path = (path && path.value);
+
+        var fs = require('fs');
+        var useBase64 = false;
+
+        // detect the mimetype if not given
+        if (arguments.length < 2) {
+            var mime = require('mime');
+            path = mimetype;
+            mimetype = mime.lookup(path);
+
+            // use base 64 unless it's an ASCII or UTF-8 format
+            var charset = mime.charsets.lookup(mimetype);
+            useBase64 = ['US-ASCII', 'UTF-8'].indexOf(charset) < 0;
+            if (useBase64) mimetype += ';base64';
+        }
+        else {
+            useBase64 = /;base64$/.test(mimetype)
+        }
+
+        var buf = fs.readFileSync(path);
+
+        buf = useBase64 ? buf.toString('base64')
+                        : encodeURIComponent(buf);
+
+        var uri = "'data:"+mimetype+','+buf+"'";
+        return new(tree.URL)(new(tree.Anonymous)(uri));
     }
 };
+
+var mathFunctions = [{name:"ceil"}, {name:"floor"}, {name: "sqrt"}, {name:"abs"},
+        {name:"tan", unit: ""}, {name:"sin", unit: ""}, {name:"cos", unit: ""},
+        {name:"atan", unit: "rad"}, {name:"asin", unit: "rad"}, {name:"acos", unit: "rad"}],
+    createMathFunction = function(name, unit) {
+        return function(n) {
+            if (unit != null) {
+                n = n.unify();
+            }
+            return this._math(Math[name], unit, n);
+        };
+    };
+
+for(var i = 0; i < mathFunctions.length; i++) {
+    tree.functions[mathFunctions[i].name] = createMathFunction(mathFunctions[i].name, mathFunctions[i].unit);
+}
 
 function hsla(color) {
     return tree.functions.hsla(color.h, color.s, color.l, color.a);
@@ -2056,6 +2125,13 @@ function number(n) {
 function clamp(val) {
     return Math.min(1, Math.max(0, val));
 }
+
+tree.functionCall = function(env, rootpath) {
+    this.env = env;
+    this.rootpath = rootpath;
+};
+
+tree.functionCall.prototype = tree.functions;
 
 })(require('./tree'));
 (function (tree) {
@@ -2277,11 +2353,12 @@ tree.Assignment.prototype = {
 //
 // A function call node.
 //
-tree.Call = function (name, args, index, filename) {
+tree.Call = function (name, args, index, filename, rootpath) {
     this.name = name;
     this.args = args;
     this.index = index;
     this.filename = filename;
+    this.rootpath = rootpath;
 };
 tree.Call.prototype = {
     //
@@ -2299,11 +2376,12 @@ tree.Call.prototype = {
     //
     eval: function (env) {
         var args = this.args.map(function (a) { return a.eval(env) }),
-            result;
+            result, func;
 
         if (this.name in tree.functions) { // 1.
             try {
-                result = tree.functions[this.name].apply(tree.functions, args);
+                func = new tree.functionCall(env, this.rootpath);
+                result = func[this.name].apply(func, args);
                 if (result != null) {
                     return result;
                 }
@@ -2359,17 +2437,31 @@ tree.Color.prototype = {
     // which has better compatibility with older browsers.
     // Values are capped between `0` and `255`, rounded and zero-padded.
     //
-    toCSS: function () {
+    toCSS: function (env, doNotCompress) {
+        var compress = env && env.compress && !doNotCompress;
         if (this.alpha < 1.0) {
             return "rgba(" + this.rgb.map(function (c) {
                 return Math.round(c);
-            }).concat(this.alpha).join(', ') + ")";
+            }).concat(this.alpha).join(',' + (compress ? '' : ' ')) + ")";
         } else {
-            return '#' + this.rgb.map(function (i) {
+            var color = this.rgb.map(function (i) {
                 i = Math.round(i);
                 i = (i > 255 ? 255 : (i < 0 ? 0 : i)).toString(16);
                 return i.length === 1 ? '0' + i : i;
             }).join('');
+
+            if (compress) {
+                color = color.split('');
+
+                // Convert color to short format
+                if (color[0] == color[1] && color[2] == color[3] && color[4] == color[5]) {
+                    color = color[0] + color[2] + color[4];
+                } else {
+                    color = color.join('');
+                }
+            }
+
+            return '#' + color;
         }
     },
 
@@ -2509,9 +2601,23 @@ tree.Dimension.prototype = {
     toColor: function () {
         return new(tree.Color)([this.value, this.value, this.value]);
     },
-    toCSS: function () {
-        return this.unit.isEmpty() ? this.value :
-          (String(this.value) + this.unit.toCSS());
+    toCSS: function (env) {
+        var value = this.value,
+            strValue = String(value);
+
+        if (env && env.compress) {
+            // Zero values doesn't need a unit
+            if (value === 0 && !this.unit.isAngle()) {
+                return strValue;
+            }
+
+            // Float values doesn't need a leading zero
+            if (value > 0 && value < 1) {
+                strValue = (strValue).substr(1);
+            }
+        }
+
+        return this.unit.isEmpty() ? strValue : (strValue + this.unit.toCSS());
     },
 
     // In an operation between two Dimensions,
@@ -2570,12 +2676,22 @@ tree.Dimension.prototype = {
     },
 
     unify: function () {
-      return this.convertTo({ length: 'm', duration: 's' });
+      return this.convertTo({ length: 'm', duration: 's', angle: 'rad' });
     },
 
     convertTo: function (conversions) {
       var value = this.value, unit = this.unit.clone(),
-          i, groupName, group, conversion, targetUnit;
+          i, groupName, group, conversion, targetUnit, derivedConversions = {};
+
+      if (typeof conversions === 'string') {
+          for(i in tree.UnitConversions) {
+              if (tree.UnitConversions[i].hasOwnProperty(conversions)) {
+                  derivedConversions = {};
+                  derivedConversions[i] = conversions;
+              }
+          }
+          conversions = derivedConversions;
+      }
 
       for (groupName in conversions) {
         if (conversions.hasOwnProperty(groupName)) {
@@ -2615,8 +2731,14 @@ tree.UnitConversions = {
     'pc': 0.0254 / 72 * 12
   },
   duration: {
-     's': 1,
+    's': 1,
     'ms': 0.001
+  },
+  angle: {
+    'rad': 1/(2*Math.PI),
+    'deg': 1/360,
+    'grad': 1/400,
+    'turn': 1
   }
 };
 
@@ -2644,6 +2766,10 @@ tree.Unit.prototype = {
 
   is: function (unitString) {
     return this.toCSS() === unitString;
+  },
+
+  isAngle: function () {
+    return tree.UnitConversions.angle.hasOwnProperty(this.toCSS());
   },
 
   isEmpty: function () {
@@ -3338,7 +3464,8 @@ tree.mixin.Definition.prototype = {
             this.parent.makeImportant.apply(this).rules : this.rules.slice(0);
 
         ruleset = new(tree.Ruleset)(null, rules).eval({
-            frames: [this, frame].concat(mixinFrames)
+            frames: [this, frame].concat(mixinFrames),
+            compress: env.compress
         });
         ruleset.originalRuleset = this;
         return ruleset;
@@ -3446,7 +3573,7 @@ tree.Quoted.prototype = {
         var value = this.value.replace(/`([^`]+)`/g, function (_, exp) {
             return new(tree.JavaScript)(exp, that.index, true).eval(env).value;
         }).replace(/@\{([\w-]+)\}/g, function (_, name) {
-            var v = new(tree.Variable)('@' + name, that.index).eval(env);
+            var v = new(tree.Variable)('@' + name, that.index).eval(env, true);
             return (v instanceof tree.Quoted) ? v.value : v.toCSS();
         });
         return new(tree.Quoted)(this.quote + value + this.quote, value, this.escaped, this.index);
@@ -3749,6 +3876,14 @@ tree.Ruleset.prototype = {
                 }
             }
         } 
+
+        // Remove last semicolon
+        if (env.compress && rules.length) {
+            rule = rules[rules.length - 1];
+            if (rule.charAt(rule.length - 1) === ';') {
+                rules[rules.length - 1] = rule.substring(0, rule.length - 1);
+            }
+        }
 
         rulesets = rulesets.join('');
 
@@ -4679,6 +4814,6 @@ function error(e, href) {
 //
 // Define Less as an AMD module.
 if (typeof define === "function" && define.amd) {
-    define("less", [], function () { return less; } );
+    define(function () { return less; } );
 }
 })(window);

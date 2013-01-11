@@ -23,6 +23,9 @@ DIST_MIN = dist/less-${VERSION}.min.js
 
 browser-prepare: DIST := test/browser/less.js
 
+alpha: DIST := dist/less-${VERSION}-alpha.js
+alpha: DIST_MIN := dist/less-${VERSION}-alpha.min.js
+
 less:
 	@@mkdir -p dist
 	@@touch ${DIST}
@@ -66,6 +69,12 @@ min: less
 	@@echo minifying...
 	@@uglifyjs ${DIST} > ${DIST_MIN}
 	@@echo ${DIST_MIN} built.
+
+alpha: min
+
+alpha-release: alpha
+	git add dist/*.js
+	git commit -m "Update alpha ${VERSION}"
 
 dist: min rhino
 	git add dist/*

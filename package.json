@@ -7,7 +7,7 @@
   "contributors"  : [],
   "version"       : "1.4.0",
   "bin"           : { "lessc": "./bin/lessc" },
-  "main"          : "./lib/less/index",
+  "main"          : "./dist/less-1.4.0-alpha.js",
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.4.2" },
   "optionalDependencies" : {

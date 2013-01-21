@@ -1,7 +1,7 @@
 #
 # Run all tests
 #
-test: 
+test:
 	node test/less-test.js
 
 #
@@ -15,11 +15,12 @@ benchmark:
 #
 SRC = lib/less
 HEADER = build/header.js
-VERSION = `cat package.json | grep version \
-														| grep -o '[0-9]\.[0-9]\.[0-9]\+'`
+VERSION = ${shell cat package.json | grep version \
+														| grep -o '[0-9]\.[0-9]\.[0-9]\+'}
 DIST = dist/less-${VERSION}.js
 RHINO = dist/less-rhino-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
+DIST_MAP = dist/less-${VERSION}.min.map
 
 browser-prepare: DIST := test/browser/less.js
 
@@ -42,10 +43,10 @@ less:
 	      build/amd.js >> ${DIST}
 	@@echo "})(window);" >> ${DIST}
 	@@echo ${DIST} built.
-	
+
 browser-prepare: less
 	node test/browser-test-prepare.js
-	
+
 browser-test: browser-prepare
 	phantomjs test/browser/phantom-runner.js
 
@@ -67,7 +68,10 @@ rhino:
 
 min: less
 	@@echo minifying...
-	@@uglifyjs ${DIST} > ${DIST_MIN}
+	@@cd ${dir ${DIST}} && \
+				../node_modules/uglify-js/bin/uglifyjs \
+				--source-map ${notdir ${DIST_MAP}} \
+		    ${notdir ${DIST}} > ${notdir ${DIST_MIN}}
 	@@echo ${DIST_MIN} built.
 
 alpha: min

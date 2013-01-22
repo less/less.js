@@ -38,6 +38,10 @@
   contrast-dark-thresh: #eeeeee;
   contrast-high-thresh: #eeeeee;
   contrast-low-thresh: #111111;
+  contrast-light-thresh-per: #111111;
+  contrast-dark-thresh-per: #eeeeee;
+  contrast-high-thresh-per: #eeeeee;
+  contrast-low-thresh-per: #111111;
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
   format-multiple: "hello earth 2";

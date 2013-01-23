@@ -4,8 +4,8 @@
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
   "repositories": [{
-    "type": "git",
-    "url": "http://github.com/mapbox/carto.git"
+      "type": "git",
+      "url": "http://github.com/mapbox/carto.git"
   }],
   "author": {
     "name": "MapBox",
@@ -37,7 +37,8 @@
   "dependencies": {
     "underscore": "~1.4.3",
     "mapnik-reference": "~5.0.3",
-    "xml2js": "~0.1.13"
+    "xml2js": "~0.1.13",
+    "optimist": "~0.3.5"
   },
   "devDependencies": {
     "mocha": "1.7.x",

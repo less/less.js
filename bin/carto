@@ -8,47 +8,33 @@ var path = require('path'),
 
 var existsSync = require('fs').existsSync || require('path').existsSync
 
-var args = process.argv.slice(1);
-var options = { nosymlink:false };
+var optimist = require('optimist')
+            .usage("Usage: $0 <source MML file>")
+            .options('h', {alias:'help', describe:'Display this help message'})
+            .options('v', {alias:'version', boolean:true, describe:'Display version information'})
+            .options('b', {alias:'benchmark', boolean:true, describe:'Outputs total compile time'})
+            .options('n', {alias:'nosymlink', boolean:true, describe:'Use absolute paths instead of symlinking files'})
+            .options('ppi', {describe:'Pixels per inch used to convert m, mm, cm, in, pt, pc to pixels', default:90.714});
 
-args = args.filter(function (arg) {
-    var match;
+var options = optimist.argv;
 
-    if (match = arg.match(/^--?([a-z][0-9a-z-]*)$/i)) { arg = match[1] }
-    else { return arg }
+if (options.help) {
+    optimist.showHelp();
+    process.exit(0);
+}
 
-    switch (arg) {
-        case 'v':
-        case 'version':
-            console.log("carto " + carto.version.join('.') + " (Carto map stylesheet compiler)");
-            process.exit(0);
-            break;
-        case 'b':
-        case 'benchmark':
-            options.benchmark = true;
-            break;
-        case 'n':
-        case 'nosymlink':
-            options.nosymlink = true;
-            break;
-        default:
-            console.log("Usage: carto <source MML file>");
-            console.log("Options:");
-            console.log("  -v   --version      Parse JSON map manifest");
-            console.log("  -b   --benchmark    Outputs total compile time");
-            console.log("  -n   --nosymlink    Use absolute paths instead of symlinking files");
-            process.exit(0);
-            break;
-    }
-});
+if (options.version) {
+    console.log("carto " + carto.version.join('.') + " (Carto map stylesheet compiler)");
+    process.exit(0);
+}
 
-var input = args[1];
+var input = options._[0];
 if (input && input[0] != '/') {
     input = path.join(process.cwd(), input);
 }
 
 if (!input) {
-    console.log("carto: no input files");
+    console.log("carto: no input files ('carto --help' for help)");
     process.exit(1);
 }
 
@@ -76,7 +62,8 @@ function compileMML(err, data) {
     try {
         var renderer = new carto.Renderer({
             filename: input,
-            benchmark: options.benchmark
+            benchmark: options.benchmark,
+            ppi: options.ppi
         });
         renderer.render(data, function(err, output) {
             if (err) {
@@ -110,7 +97,8 @@ function compileMSS(err, data) {
     try {
         var renderer = new carto.Renderer({
             filename: path.basename(input),
-            benchmark: options.benchmark
+            benchmark: options.benchmark,
+            ppi: options.ppi
         });
         renderer.renderMSS(data, function(err, output) {
             if (err) {

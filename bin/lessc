@@ -148,15 +148,11 @@ var parseLessFile = function (e, data) {
         return;
     }
 
-    new(less.Parser)({
-        paths: [path.dirname(input)].concat(options.paths),
-        optimization: options.optimization,
-        filename: input,
-        rootpath: options.rootpath,
-        relativeUrls: options.relativeUrls,
-        strictImports: options.strictImports,
-        dumpLineNumbers: options.dumpLineNumbers
-    }).parse(data, function (err, tree) {
+    options.paths = [path.dirname(input)].concat(options.paths);
+    options.filename = input;
+
+    new(less.Parser)(options)
+        .parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);
             currentErrorcode = 1;

@@ -38,6 +38,7 @@ less:
 	      ${SRC}/colors.js\
 	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
+	      ${SRC}/env.js\
 	      ${SRC}/browser.js\
 	      build/amd.js >> ${DIST}
 	@@echo "})(window);" >> ${DIST}
@@ -58,6 +59,7 @@ rhino:
 	@@cat build/require-rhino.js\
 	      build/ecma-5.js\
 	      ${SRC}/parser.js\
+	      ${SRC}/env.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/colors.js\
 	      ${SRC}/tree/*.js\

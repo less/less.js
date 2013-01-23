@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.10.0
+
+* Adds compatibility with screen units.
+
 ## 0.9.4
 
 * Fixes nesting of regex calls

@@ -20,6 +20,9 @@
   "scripts": {
    "test": "make test"
   },
+  "jam": {
+    "main": "./dist/less-1.4.0-alpha.js"
+  },
   "bugs": { "url" : "https://github.com/cloudhead/less.js/issues"},
   "repository" :
   { "type" : "git",

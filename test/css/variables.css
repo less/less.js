@@ -31,13 +31,13 @@
 .units {
   width: 1px;
   z-index: 1;
-  square-pixel: 1px*px;
-  odd-unit: 2em*px/cm;
+  square-pixel: 1px;
+  odd-unit: 2em;
   percentage: 500%;
   pixels: 500px;
   conversion-metric-a: 30mm;
   conversion-metric-b: 3cm;
   conversion-imperial: 3in;
-  custom-unit: 420cheeseburgers*octocats;
+  custom-unit: 420cheeseburgers;
   custom-unit-cancelling: 2;
 }

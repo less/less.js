@@ -7,7 +7,7 @@
   "contributors"  : [],
   "version"       : "1.4.0",
   "bin"           : { "lessc": "./bin/lessc" },
-  "main"          : "./dist/less-1.4.0-alpha.js",
+  "main"          : "./lib/less/index",
   "directories"   : { "test": "./test" },
   "engines"       : { "node": ">=0.4.2" },
   "optionalDependencies" : {
@@ -19,6 +19,9 @@
   "devDependencies" : { "diff": "~1.0" },
   "scripts": {
    "test": "make test"
+  },
+  "jam": {
+    "main": "./dist/less-1.4.0-alpha.js"
   },
   "bugs": { "url" : "https://github.com/cloudhead/less.js/issues"},
   "repository" :

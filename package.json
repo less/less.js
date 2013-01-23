@@ -6,6 +6,7 @@
   "author"        : "Alexis Sellier <self@cloudhead.net>",
   "contributors"  : [],
   "version"       : "1.4.0",
+  "jam"           : { "main": "./dist/less-1.4.0-alpha.js" },
   "bin"           : { "lessc": "./bin/lessc" },
   "main"          : "./lib/less/index",
   "directories"   : { "test": "./test" },

@@ -14,7 +14,7 @@ var optimist = require('optimist')
             .options('v', {alias:'version', boolean:true, describe:'Display version information'})
             .options('b', {alias:'benchmark', boolean:true, describe:'Outputs total compile time'})
             .options('n', {alias:'nosymlink', boolean:true, describe:'Use absolute paths instead of symlinking files'})
-            .options('dpi', {describe:'Dpi used to convert m, mm, cm, pt, pc to pixels', default:90.714});
+            .options('ppi', {describe:'Pixels per inch used to convert m, mm, cm, in, pt, pc to pixels', default:90.714});
 
 var options = optimist.argv;
 
@@ -63,7 +63,7 @@ function compileMML(err, data) {
         var renderer = new carto.Renderer({
             filename: input,
             benchmark: options.benchmark,
-            dpi: options.dpi
+            ppi: options.ppi
         });
         renderer.render(data, function(err, output) {
             if (err) {
@@ -98,7 +98,7 @@ function compileMSS(err, data) {
         var renderer = new carto.Renderer({
             filename: path.basename(input),
             benchmark: options.benchmark,
-            dpi:options.dpi
+            ppi: options.ppi
         });
         renderer.renderMSS(data, function(err, output) {
             if (err) {

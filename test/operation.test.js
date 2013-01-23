@@ -9,14 +9,14 @@ require('../lib/carto/tree/quoted');
 
 describe('Operation', function() {
     it('should work with percent', function() {
-        var env = { dpi:72, error:function(err) { console.log(err.message); } };
+        var env = { ppi:72, error:function(err) { console.log(err.message); } };
 
         var o = new tree.Operation("+", [ new tree.Dimension(2), new tree.Dimension(10, "%") ]);
         assert.equal(o.ev(env).value, 2.2);
     });
 
     it('should work with units', function() {
-        var env = { dpi:72, error:function(err) { console.log(err.message); } };
+        var env = { ppi:72, error:function(err) { console.log(err.message); } };
 
         var o = new tree.Operation("+", [ new tree.Dimension(2.54, 'cm'), new tree.Dimension(0.0254, 'm') ]);
         assert.equal(o.ev(env).value, 144);
@@ -28,8 +28,8 @@ describe('Operation', function() {
         assert.equal(o.ev(env).value, 144);
     });
 
-    it('should work with different dpi', function() {
-        var env = { dpi:300, error:function(err) { console.log(err.message); } };
+    it('should work with different ppi', function() {
+        var env = { ppi:300, error:function(err) { console.log(err.message); } };
 
         var o = new tree.Operation("+", [ new tree.Dimension(2.54, 'cm'), new tree.Dimension(0.0254, 'm') ]);
         assert.equal(o.ev(env).value, 600);

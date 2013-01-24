@@ -54,7 +54,7 @@
   eformat: e(%("rgb(%d, %d, %d)", @r, 128, 64));
   
   unitless: unit(12px);
-  unit: unit(13px + 1px, em);
+  unit: unit((13px + 1px), em);
 
   hue: hue(hsl(98, 12%, 95%));
   saturation: saturation(hsl(98, 12%, 95%));
@@ -65,10 +65,10 @@
   red: red(#f00);
   green: green(#0f0);
   blue: blue(#00f);
-  rounded: round(@r/3);
-  rounded-two: round(@r/3, 2);
-  roundedpx: round(10px / 3);
-  roundedpx-three: round(10px / 3, 3);
+  rounded: round((@r/3));
+  rounded-two: round((@r/3), 2);
+  roundedpx: round((10px / 3));
+  roundedpx-three: round((10px / 3), 3);
   rounded-percentage: round(10.2%);
   ceil: ceil(10.1px);
   floor: floor(12.9px);
@@ -85,7 +85,7 @@
   pow: pow(8px, 2);
   pow: pow(4, 3);
   pow: pow(3, 3em);
-  percentage: percentage(10px / 50);
+  percentage: percentage((10px / 50));
   color: color("#ff0011");
   tint: tint(#777777, 13);
   tint-full: tint(#777777, 100);

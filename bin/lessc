@@ -18,7 +18,8 @@ var options = {
     color: true,
     strictImports: false,
     rootpath: '',
-    relativeUrls: false
+    relativeUrls: false,
+    strictMaths: true
 };
 var continueProcessing = true,
     currentErrorcode;
@@ -103,6 +104,10 @@ args = args.filter(function (arg) {
         case "relative-urls":
             options.relativeUrls = true;
             break;
+        case "sm":
+        case "strict-maths-off":
+            options.strictMaths = false;
+            break;
     }
 });
 
@@ -161,7 +166,8 @@ var parseLessFile = function (e, data) {
             try {
                 var css = tree.toCSS({
                     compress: options.compress,
-                    yuicompress: options.yuicompress
+                    yuicompress: options.yuicompress,
+                    strictMaths: options.strictMaths
                 });
                 if (output) {
                     ensureDirectory(output);

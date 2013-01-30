@@ -108,6 +108,10 @@ args = args.filter(function (arg) {
         case "strict-maths-off":
             options.strictMaths = false;
             break;
+        case "su":
+        case "strict-units-off":
+            options.strictUnits = false;
+            break;
     }
 });
 
@@ -167,7 +171,8 @@ var parseLessFile = function (e, data) {
                 var css = tree.toCSS({
                     compress: options.compress,
                     yuicompress: options.yuicompress,
-                    strictMaths: options.strictMaths
+                    strictMaths: options.strictMaths,
+                    strictUnits: options.strictUnits
                 });
                 if (output) {
                     ensureDirectory(output);

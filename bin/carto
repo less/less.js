@@ -13,6 +13,7 @@ var optimist = require('optimist')
             .options('h', {alias:'help', describe:'Display this help message'})
             .options('v', {alias:'version', boolean:true, describe:'Display version information'})
             .options('b', {alias:'benchmark', boolean:true, describe:'Outputs total compile time'})
+            .options('l', {alias:'localize', boolean:true, default:false, describe:'Use millstone to localize resources when loading an MML'})
             .options('n', {alias:'nosymlink', boolean:true, describe:'Use absolute paths instead of symlinking files'})
             .options('ppi', {describe:'Pixels per inch used to convert m, mm, cm, in, pt, pc to pixels', default:90.714});
 
@@ -34,7 +35,7 @@ if (input && input[0] != '/') {
 }
 
 if (!input) {
-    console.log("carto: no input files ('carto --help' for help)");
+    console.log("carto: no input files ('carto -h or --help' for help)");
     process.exit(1);
 }
 
@@ -139,20 +140,27 @@ if (ext == '.mml') {
         process.exit(1);
     }
 
-    var millstone = undefined;
-    try {
-        require.resolve('millstone');
-        millstone = require('millstone');
-    } catch (err) {
-        console.error('carto: Millstone not found. ' + err.message.replace(/^[A-Z]+, /, ''));
-        process.exit(1);
+    if (options.localize) {
+        var millstone = undefined;
+        try {
+            require.resolve('millstone');
+            millstone = require('millstone');
+        } catch (err) {
+            console.error('carto: Millstone not found, required if localizing stylesheet resources. ' + err.message.replace(/^[A-Z]+, /, ''));
+            process.exit(1);
+        }
+        millstone.resolve({
+            mml: data,
+            base: path.dirname(input),
+            cache: path.join(path.dirname(input), 'cache'),
+           nosymlink: options.nosymlink
+        }, compileMML);
+    } else {
+        data.Stylesheet = data.Stylesheet.map(function(x) {
+            return { id: x, data: fs.readFileSync(path.join(path.dirname(input), x), 'utf8') }
+        });
+        compileMML(null,data);
     }
-    millstone.resolve({
-        mml: data,
-        base: path.dirname(input),
-        cache: path.join(path.dirname(input), 'cache'),
-       nosymlink: options.nosymlink
-    }, compileMML);
 } else if (ext == '.mss') {
     compileMSS(null,data);
 } else {

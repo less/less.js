@@ -61,8 +61,6 @@ p + h1 {
   font: normal small / 20px 'Trebuchet MS', Verdana, sans-serif;
   font: 0/0 a;
   border-radius: 5px / 10px;
-  background: url("img.jpg") center / 100px;
-  background: #ffffff url(image.png) center / 1px 100px repeat-x scroll content-box padding-box;
 }
 .misc {
   -moz-border-radius: 2px;

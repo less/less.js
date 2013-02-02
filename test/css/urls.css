@@ -7,6 +7,8 @@
 }
 #shorthands {
   background: url("http://www.lesscss.org/spec.html") no-repeat 0 4px;
+  background: url("img.jpg") center / 100px;
+  background: #ffffff url(image.png) center / 1px 100px repeat-x scroll content-box padding-box;
 }
 #misc {
   background-image: url(images/image.jpg);

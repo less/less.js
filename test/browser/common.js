@@ -45,7 +45,7 @@ var loadFile = function(href) {
         response = { loaded: false, text: ""};
     request.open('GET', href, true);
     request.onload = function(e) {
-        response.text = request.response;
+        response.text = request.response.replace(/\r/g, "");
         response.loaded = true;
     }
     request.send();

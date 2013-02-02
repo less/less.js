@@ -11,16 +11,19 @@
         }
     }
     .top, header > h1 {
-        color: #222 * 2;
+        color: (#222 * 2);
     }
 }
 
 @media screen {
     @base: 8;
-    body { max-width: @base * 60; }
+    body { max-width: (@base * 60); }
 }
 
-@media all and (device-aspect-ratio: 16/9) {
+@ratio_large: 16;
+@ratio_small: 9;
+
+@media all and (device-aspect-ratio: @ratio_large / @ratio_small) {
    body { max-width: 800px; }
 }
 

@@ -59,6 +59,7 @@ runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
 runTestSet({relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
 runTestSet({compress: true}, "compression/");
+runTestSet({strictUnits: false, strictMaths: false}, "legacy/");
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),

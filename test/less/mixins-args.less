@@ -1,6 +1,6 @@
 .mixin (@a: 1px, @b: 50%) {
-  width: @a * 5;
-  height: @b - 1%;
+  width: (@a * 5);
+  height: (@b - 1%);
 }
 
 .mixina (@style, @width, @color: black) {
@@ -45,7 +45,7 @@
 
 .var-args {
   @var: 9;
-  .mixin(@var, @var * 2);
+  .mixin(@var, (@var * 2));
 }
 
 .multi-mix {
@@ -54,7 +54,7 @@
 }
 
 .maxa(@arg1: 10, @arg2: #f00) {
-  padding: @arg1 * 2px;
+  padding: (@arg1 * 2px);
   color: @arg2;
 }
 
@@ -64,7 +64,7 @@ body {
 
 @glob: 5;
 .global-mixin(@a:2) {
-  width: @glob + @a;
+  width: (@glob + @a);
 }
 
 .scope-mix {
@@ -129,6 +129,15 @@ body {
     .mixin-arguments("{");
 }
 
+// Division vs. Literal Slash
+.border-radius(@r: 2px/5px) {
+  border-radius: @r;
+}
+.slash-vs-math {
+  .border-radius();
+  .border-radius(5px/10px);
+  .border-radius((3px * 2));
+}
 // semi-colon vs comma for delimiting
 
 .mixin-takes-one(@a) {

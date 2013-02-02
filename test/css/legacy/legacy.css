@@ -1,5 +1,8 @@
-.test-maths-and-units {
-  mix-units: 2px;
-  invalid-units: 1px;
-  test-division: 7em;
+@media (-o-min-device-pixel-ratio: 2/1) {
+  .test-maths-and-units {
+    font: ignores 0/0 rules;
+    mix-units: 2px;
+    invalid-units: 1px;
+    test-division: 7em;
+  }
 }

@@ -23,6 +23,7 @@ var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
 };
 
 createTestRunnerPage("", /javascript|urls/, "main");
+createTestRunnerPage("", null, "legacy", "legacy");
 createTestRunnerPage("browser", null, "browser");
 createTestRunnerPage("browser", null, "relative-urls", "relative-urls");
 createTestRunnerPage("browser", null, "rootpath", "rootpath");

@@ -16,8 +16,8 @@
   height-all: ((7 * 7) + (8 * 8));
   height-parts: ((7 * 7)) + ((8 * 8));
   margin-keep: (4 * (5 + 5) / 2) - (@var * 2);
-  margin-parts: ((4 * (5 + 5) / 2)) (- (@var * 2));
-  margin-all: ((4 * (5 + 5) / 2) - (@var * 2));
+  margin-parts: ((4 * (5 + 5) / 2)) - ((@var * 2));
+  margin-all: ((4 * (5 + 5) / 2) + (-(@var * 2)));
   border-radius-keep: 4px * (1 + 1) / @var + 3px;
   border-radius-parts: ((4px * (1 + 1))) / ((@var + 3px));
   border-radius-all: (4px * (1 + 1) / @var + 3px);

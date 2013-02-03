@@ -1,0 +1,4 @@
+SyntaxError: expected ')' got '-' in {path}parens-error-2.less:2:27
+1 .a {
+2   something: (12 * (13 + 5 -23));
+3 }

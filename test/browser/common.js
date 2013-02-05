@@ -10,13 +10,21 @@ console.log = function(msg) {
 };
 
 var testLessEqualsInDocument = function() {
+    testLessInDocument(testSheet);
+};
+
+var testLessErrorsInDocument = function() {
+    testLessInDocument(testErrorSheet);
+};
+
+var testLessInDocument = function(testFunc) {
     var links = document.getElementsByTagName('link'),
         typePattern = /^text\/(x-)?less$/;
 
     for (var i = 0; i < links.length; i++) {
         if (links[i].rel === 'stylesheet/less' || (links[i].rel.match(/stylesheet/) &&
            (links[i].type.match(typePattern)))) {
-            testSheet(links[i]);
+            testFunc(links[i]);
         }
     }
 };
@@ -36,6 +44,40 @@ var testSheet = function(sheet) {
         runs(function() {
             // use sheet to do testing
             expect(lessOutput).toEqual(expectedOutput.text);
+        });
+    });
+};
+
+var testErrorSheet = function(sheet) {
+    it(sheet.id + " should match an error", function() {
+        var lessHref =  sheet.href,
+            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
+            errorHref = lessHref.replace(/.less$/, ".txt"),
+            errorFile = loadFile(errorHref),
+            actualErrorElement = document.getElementById(id),
+            actualErrorMsg;
+
+        describe("the error", function() {
+            expect(actualErrorElement).not.toBe(null);
+        });
+            
+        actualErrorMsg = actualErrorElement.innerText
+                .replace(/\n\d+/g, function(lineNo) { return lineNo + " "; })
+                .replace("\nin ", " in ")
+                .replace("\n\n", "\n");
+
+        waitsFor(function() {
+            return errorFile.loaded;
+        }, "failed to load expected outout", 10000);
+        
+        runs(function() {
+            var errorTxt = errorFile.text
+                .replace("{path}", "")
+                .replace("{pathrel}", "");
+            expect(actualErrorMsg).toEqual(errorTxt);
+            if (errorTxt == actualErrorMsg) {
+                actualErrorElement.style.display = "none";
+            }
         });
     });
 };

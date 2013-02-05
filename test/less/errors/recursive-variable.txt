@@ -1,2 +1,2 @@
-NameError: Recursive variable definition for @bodyColor in {path}recursive-variable.less:1:19
+NameError: Recursive variable definition for @bodyColor in {path}recursive-variable.less on line 1, column 20:
 1 @bodyColor: darken(@bodyColor, 30%);

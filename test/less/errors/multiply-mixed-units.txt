@@ -1,2 +1,2 @@
-SyntaxError: Multiple units in dimension. Correct the units or use the unit function. Bad unit: em*px in {path}multiply-mixed-units.less:null:-1
+SyntaxError: Multiple units in dimension. Correct the units or use the unit function. Bad unit: em*px in {path}multiply-mixed-units.less on line null, column 0:
 1   error: (1px * 1em);

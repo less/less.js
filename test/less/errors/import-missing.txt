@@ -1,3 +1,4 @@
 FileError: 'file-does-not-exist.less' wasn't found.
- in {path}import-missing.less:1:0
-1 @import "file-does-not-exist.less";
+ in {path}import-missing.less on line 6, column 1:
+5 
+6 @import "file-does-not-exist.less";

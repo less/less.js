@@ -1,0 +1,26 @@
+.test1 {
+  transform: rotate(90deg) skew(30deg) scale(2, 4);
+}
+.test2 {
+  transform: rotate(90deg) skew(30deg);
+  transform: scaleX(45deg);
+}
+.test3 {
+  background: url(img1.png), url(img2.png);
+}
+.test4 {
+  transform: rotate(90deg) skew(30deg);
+  transform: scaleX(45deg);
+}
+.test5 {
+  transform: scaleX(45deg);
+  background: url(img1.png);
+}
+.test6 {
+  transform: rotate(90deg) skew(30deg);
+  transform: scale(2, 4) !important;
+}
+.test7 {
+  transform: rotate(90deg) skew(30deg);
+  transform: scale(2, 4) !important;
+}

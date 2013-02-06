@@ -1,0 +1,57 @@
+.first-transform() {
+  transform: rotate(90deg) skew(30deg) !merge();
+}
+.second-transform() {
+  transform: scale(2,4) !merge();
+}
+.third-transform() {
+  transform: scaleX(45deg);
+}
+.fourth-transform() {
+  transform: scaleX(45deg) !merge(,);
+}
+.fifth-transform() {
+  transform: scale(2,4) !important !merge();
+}
+.first-background() {
+  background: url(img1.png) !merge(,);
+}
+.second-background() {
+  background: url(img2.png) !merge(,);
+}
+
+.test1 {
+  // Can merge values with space separator 
+  .first-transform();
+  .second-transform();
+}
+.test2 {
+  // Wont merge values without !merge directive, for backwards compatibility with css
+  .first-transform();
+  .third-transform();
+}
+.test3 {
+  // Can merge values with explicit separator 
+  .first-background();
+  .second-background();
+}
+.test4 {
+  // Wont merge values from two sources with different seperators
+  .first-transform();
+  .fourth-transform();
+}
+.test5 {
+  // Wont merge values from two sources with the same seperators but different properties
+  .fourth-transform();
+  .first-background();
+}
+.test6 {
+  // Wont merge values from sources that merked as !important, for backwards compatibility with css 
+  .first-transform();
+  .fifth-transform();
+}
+.test7 {
+  // Wont merge values from mixins that merked as !important, for backwards compatibility with css 
+  .first-transform();
+  .second-transform() !important;
+}

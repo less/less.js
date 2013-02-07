@@ -1,23 +1,23 @@
 .first-transform() {
-  transform: rotate(90deg) skew(30deg) !merge();
+  transform: rotate(90deg) skew(30deg) !merge(space);
 }
 .second-transform() {
-  transform: scale(2,4) !merge();
+  transform: scale(2,4) !merge(space);
 }
 .third-transform() {
   transform: scaleX(45deg);
 }
 .fourth-transform() {
-  transform: scaleX(45deg) !merge(,);
+  transform: scaleX(45deg) !merge(comma);
 }
 .fifth-transform() {
-  transform: scale(2,4) !important !merge();
+  transform: scale(2,4) !important !merge(space);
 }
 .first-background() {
-  background: url(img1.png) !merge(,);
+  background: url(img1.png) !merge(comma);
 }
 .second-background() {
-  background: url(img2.png) !merge(,);
+  background: url(img2.png) !merge(comma);
 }
 
 .test1 {
@@ -31,7 +31,7 @@
   .third-transform();
 }
 .test3 {
-  // Can merge values with explicit separator 
+  // Can merge values with comma separator
   .first-background();
   .second-background();
 }
@@ -54,4 +54,8 @@
   // Wont merge values from mixins that merked as !important, for backwards compatibility with css 
   .first-transform();
   .second-transform() !important;
+}
+.test8 {
+  // Ignores !merge if no peers found
+  .second-transform();
 }

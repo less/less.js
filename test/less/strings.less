@@ -19,6 +19,11 @@
 #escaped {
   filter: ~"DX.Transform.MS.BS.filter(opacity=50)";
 }
+#escaped-unescape {
+  content: ~"\"hello\"";
+  color: ~'blue\\9';
+  slashes: ~"\"\\\\\"";
+}
 #one-line { image: url(http://tooks.com) }
 #crazy { image: url(http://), "}", url("http://}") }
 #interpolation {

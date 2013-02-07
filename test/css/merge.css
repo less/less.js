@@ -24,3 +24,6 @@
   transform: rotate(90deg) skew(30deg);
   transform: scale(2, 4) !important;
 }
+.test8 {
+  transform: scale(2, 4);
+}

@@ -25,8 +25,8 @@ fs.readFile(process.argv[2], 'utf-8', function(err, data) {
     });
 
     function addAttributes(obj) {
-        if (obj['@']) for (var key in obj['@']) obj[key] = obj['@'][key];
-        delete obj['@'];
+        if (obj['$']) for (var key in obj['$']) obj[key] = obj['$'][key];
+        delete obj['$'];
         return obj;
     }
     
@@ -35,7 +35,10 @@ fs.readFile(process.argv[2], 'utf-8', function(err, data) {
         else return obj;
     }
 
-    var parser = new xml2js.Parser();
+    var parser = new xml2js.Parser({
+        explicitRoot: false,
+        explicitArray: false
+    });
     parser.addListener('end', function(json) {
         console.log(JSON.stringify(json, function(key, value) {
             if (!key) {
@@ -52,7 +55,7 @@ fs.readFile(process.argv[2], 'utf-8', function(err, data) {
             else if (key === 'Datasource') {
                 value = addAttributes(value);
                 value.Parameter.forEach(function(parameter) {
-                    value[parameter['@'].name] = parameter['#'];
+                    value[parameter['$'].name] = parameter['_'];
                 });
                 delete value.Parameter;
                 return value;

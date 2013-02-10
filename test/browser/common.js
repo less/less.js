@@ -63,7 +63,7 @@ var testErrorSheet = function(sheet) {
             
         actualErrorMsg = actualErrorElement.innerText
                 .replace(/\n\d+/g, function(lineNo) { return lineNo + " "; })
-                .replace("\nin ", " in ")
+                .replace(/\n\s*in /g, " in ")
                 .replace("\n\n", "\n");
 
         waitsFor(function() {
@@ -73,7 +73,9 @@ var testErrorSheet = function(sheet) {
         runs(function() {
             var errorTxt = errorFile.text
                 .replace("{path}", "")
-                .replace("{pathrel}", "");
+                .replace("{pathrel}", "")
+                .replace("{pathhref}", "http://localhost:8081/less/errors/")
+                .replace("{404status}", " (404)");
             expect(actualErrorMsg).toEqual(errorTxt);
             if (errorTxt == actualErrorMsg) {
                 actualErrorElement.style.display = "none";

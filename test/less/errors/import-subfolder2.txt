@@ -1,2 +1,2 @@
-ParseError: missing opening `{` in {pathrel}parse-error-curly-bracket.less on line 1, column 2:
+ParseError: missing opening `{` in {pathrel}parse-error-curly-bracket.less on line 1, column 1:
 1 }}

@@ -48,6 +48,8 @@ runTestSet(null, "errors/", function(name, err, compiledLess, doReplacements) {
         return input.replace(
             "{path}", path.join(process.cwd(), "/test/less/errors/"))
             .replace("{pathrel}", path.join("test", "less", "errors/"))
+            .replace("{pathhref}", "")
+            .replace("{404status}", "")
             .replace(/\r\n/g, '\n');
     });
 

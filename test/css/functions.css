@@ -87,6 +87,8 @@
   shade: #686868;
   shade-full: #000000;
   shade-percent: #686868;
+  fade-out: rgba(255, 0, 0, 0.95);
+  fade-in: rgba(255, 0, 0, 0.9500000000000001);
   hsv: #4d2926;
   hsva: rgba(77, 40, 38, 0.2);
   mix: #ff3300;

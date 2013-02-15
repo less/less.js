@@ -232,7 +232,7 @@ less.Parser = function Parser(env) {
                 that.files[fullPath] = root;                        // Store the root
 
                 if (e && !that.error) { that.error = e; }
-
+                
                 callback(e, root, imported);
 
                 if (that.queue.length === 0) { finish(that.error); }       // Call `finish` if we're done importing
@@ -498,7 +498,7 @@ less.Parser = function Parser(env) {
             })([[]]);
 
             if (error) {
-                return callback(error, env);
+                return callback(new(LessError)(error, env));
             }
 
             // Start with the primary rule.
@@ -516,9 +516,10 @@ less.Parser = function Parser(env) {
                 var line, lines, column;
 
                 return function (options, variables) {
+                    options = options || {};
                     var importError,
                         evalEnv = new tree.evalEnv(options);
-
+                        
                     //
                     // Allows setting variables with a hash, so:
                     //
@@ -557,11 +558,6 @@ less.Parser = function Parser(env) {
                         throw new(LessError)(e, env);
                     }
 
-                    if ((importError = parser.imports.error)) { // Check if there was an error during importing
-                        if (importError instanceof LessError) throw importError;
-                        else                                  throw new(LessError)(importError, env);
-                    }
-
                     if (options.yuicompress && less.mode === 'node') {
                         return require('ycssmin').cssmin(css);
                     } else if (options.compress) {
@@ -589,7 +585,7 @@ less.Parser = function Parser(env) {
 
                 error = {
                     type: "Parse",
-                    message: "Syntax Error on line " + line,
+                    message: "Unrecognised input",
                     index: i,
                     filename: env.filename,
                     line: line,
@@ -601,15 +597,24 @@ less.Parser = function Parser(env) {
                     ]
                 };
             }
+            
+            finish = function (e) {
+                e = error || e || parser.imports.error;
+                
+                if (e) {
+                    if (!(e instanceof LessError)) {
+                        e = new(LessError)(e, env);
+                    }
 
-            if (this.imports.queue.length > 0) {
-                finish = function (e) {
-                    e = error || e;
-                    if (e) callback(e);
-                    else callback(null, root);
-                };
-            } else {
-                callback(error, root);
+                    callback(e);
+                }
+                else {
+                    callback(null, root);
+                }
+            };
+
+            if (this.imports.queue.length === 0) {
+                finish();
             }
         },
 
@@ -1503,10 +1508,11 @@ less.Parser = function Parser(env) {
                 }
             },
             sub: function () {
-                var e;
+                var a, e;
 
                 if ($('(')) {
-                    if (e = $(this.expression)) {
+                    if (a = $(this.addition)) {
+                        e = new(tree.Expression)([a]);
                         expect(')');
                         e.parens = true;
                         return e;
@@ -1639,11 +1645,7 @@ if (less.mode === 'browser' || less.mode === 'rhino') {
         // as we need this to evaluate the current stylesheet.
         loadStyleSheet(env.toSheet(path),
             function (e, root, data, sheet, _, path) {
-                if (e && typeof(env.errback) === "function") {
-                    env.errback.call(null, path, paths, callback, env);
-                } else {
-                    callback.call(null, e, root, path);
-                }
+                callback.call(null, e, root, path);
             }, true);
     };
 }
@@ -3003,7 +3005,8 @@ tree.Expression = function (value) { this.value = value; };
 tree.Expression.prototype = {
     eval: function (env) {
         var returnValue,
-            inParenthesis = this.parens && !this.parensInOp;
+            inParenthesis = this.parens && !this.parensInOp,
+            doubleParen = false;
         if (inParenthesis) {
             env.inParenthesis();
         }
@@ -3012,6 +3015,9 @@ tree.Expression.prototype = {
                 return e.eval(env);
             }));
         } else if (this.value.length === 1) {
+            if (this.value[0].parens && !this.value[0].parensInOp) {
+                doubleParen = true;
+            }
             returnValue = this.value[0].eval(env);
         } else {
             returnValue = this;
@@ -3019,7 +3025,7 @@ tree.Expression.prototype = {
         if (inParenthesis) {
             env.outOfParenthesis();
         }
-        if (this.parens && this.parensInOp && !(env.isMathsOn())) {
+        if (this.parens && this.parensInOp && !(env.isMathsOn()) && !doubleParen) {
             returnValue = new(tree.Paren)(returnValue);
         }
         return returnValue;
@@ -3127,7 +3133,7 @@ tree.Import = function (path, imports, features, once, index, rootpath) {
     // Only pre-compile .less files
     if (! this.css) {
         imports.push(this.path, function (e, root, imported) {
-            if (e) { e.index = index }
+            if (e) { e.index = index; }
             if (imported && that.once) that.skip = imported;
             that.root = root || new(tree.Ruleset)([], []);
         });
@@ -3628,12 +3634,12 @@ tree.Operation.prototype.eval = function (env) {
             if (this.op === '*' || this.op === '+') {
                 temp = b, b = a, a = temp;
             } else {
-                throw { name: "OperationError",
+                throw { type: "Operation",
                         message: "Can't substract or divide a color from a number" };
             }
         }
         if (!a.operate) {
-            throw { name: "OperationError",
+            throw { type: "Operation",
                     message: "Operation on an invalid type" };
         }
 
@@ -4281,7 +4287,7 @@ tree.URL.prototype = {
         var val = this.value.eval(ctx), rootpath;
 
         // Add the base path if the URL is relative
-        if (typeof val.value === "string" && !/^(?:[a-z-]+:|\/)/.test(val.value)) {
+        if (this.rootpath && typeof val.value === "string" && !/^(?:[a-z-]+:|\/)/.test(val.value)) {
             rootpath = this.rootpath;
             if (!val.quote) {
                 rootpath = rootpath.replace(/[\(\)'"\s]/g, function(match) { return "\\"+match; });
@@ -4289,7 +4295,7 @@ tree.URL.prototype = {
             val.value = rootpath + val.value;
         }
 
-        return new(tree.URL)(val, this.rootpath);
+        return new(tree.URL)(val, null);
     }
 };
 
@@ -4415,7 +4421,8 @@ tree.jsify = function (obj) {
         'dumpLineNumbers',  // option - whether to dump line numbers
         'compress',         // option - whether to compress
         'mime',             // browser only - mime type for sheet import
-        'entryPath'         // browser only, path of entry less file
+        'entryPath',        // browser only, path of entry less file
+        'rootFilename'      // browser only, href of the entry less file
     ];
 
     tree.parseEnv = function(options) {
@@ -4514,35 +4521,37 @@ if (dumpLineNumbers) {
 //
 // Watch mode
 //
-less.watch   = function () {	
-	if (!less.watchMode ){		
-		less.env = 'development';
-		initRunningMode();
-	}
-	return this.watchMode = true 
+less.watch   = function () {
+    if (!less.watchMode ){
+        less.env = 'development';
+         initRunningMode();
+    }
+    return this.watchMode = true 
 };
 
 less.unwatch = function () {clearInterval(less.watchTimer); return this.watchMode = false; };
 
 function initRunningMode(){
-	if (less.env === 'development') {		
-		less.optimization = 0;		
-		less.watchTimer = setInterval(function () {			
-			if (less.watchMode) {
-				loadStyleSheets(function (e, root, _, sheet, env) {
-					if (root) {
-						createCSS(root.toCSS(less), sheet, env.lastModified);
-					}
-				});
-			}
-		}, less.poll);
-	} else {
-		less.optimization = 3;
-	}
+    if (less.env === 'development') {
+        less.optimization = 0;
+        less.watchTimer = setInterval(function () {
+            if (less.watchMode) {
+                loadStyleSheets(function (e, root, _, sheet, env) {
+                    if (e) {
+                        error(e, sheet.href);
+                    } else if (root) {
+                        createCSS(root.toCSS(less), sheet, env.lastModified);
+                    }
+                });
+            }
+        }, less.poll);
+    } else {
+        less.optimization = 3;
+    }
 }
 
 if (/!watch/.test(location.hash)) {
-	less.watch();
+    less.watch();
 }
 
 var cache = null;
@@ -4574,13 +4583,17 @@ for (var i = 0; i < links.length; i++) {
 //
 var session_cache = '';
 less.modifyVars = function(record) {
-	var str = session_cache;
+    var str = session_cache;
     for (name in record) {
         str += ((name.slice(0,1) === '@')? '' : '@') + name +': '+ 
                 ((record[name].slice(-1) === ';')? record[name] : record[name] +';');
     }
     new(less.Parser)(new less.tree.parseEnv(less)).parse(str, function (e, root) {
-        createCSS(root.toCSS(less), less.sheets[less.sheets.length - 1]);
+        if (e) {
+            error(e, "session_cache");
+        } else {
+            createCSS(root.toCSS(less), less.sheets[less.sheets.length - 1]);
+        }
     });
 };
 
@@ -4589,6 +4602,9 @@ less.refresh = function (reload) {
     startTime = endTime = new(Date);
 
     loadStyleSheets(function (e, root, _, sheet, env) {
+        if (e) {
+            return error(e, sheet.href);
+        }
         if (env.local) {
             log("loading " + sheet.href + " from cache.");
         } else {
@@ -4614,6 +4630,9 @@ function loadStyles() {
             env.filename = document.location.href.replace(/#.*$/, '');
 
             new(less.Parser)(env).parse(styles[i].innerHTML || '', function (e, cssAST) {
+                if (e) {
+                    return error(e, "inline");
+                }
                 var css = cssAST.toCSS(less);
                 var style = styles[i];
                 style.type = 'text/css';
@@ -4752,21 +4771,27 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
                 env.contents[href] = data;  // Updating content cache
                 env.paths = [hrefParts.path];
                 env.filename = href;
+                env.rootFilename = env.rootFilename || href;
                 new(less.Parser)(env).parse(data, function (e, root) {
-                    if (e) { return error(e, href); }
+                    if (e) { return callback(e, null, null, sheet); }
                     try {
                         callback(e, root, data, sheet, { local: false, lastModified: lastModified, remaining: remaining }, href);
-                        removeNode(document.getElementById('less-error-message:' + extractId(href)));
+                        //TODO - there must be a better way? A generic less-to-css function that can both call error
+                        //and removeNode where appropriate
+                        //should also add tests
+                        if (env.rootFilename === href) {
+                            removeNode(document.getElementById('less-error-message:' + extractId(href)));
+                        }
                     } catch (e) {
-                        error(e, href);
+                        callback(e, null, null, sheet);
                     }
                 });
             } catch (e) {
-                error(e, href);
+                callback(e, null, null, sheet);
             }
         }
     }, function (status, url) {
-        throw new(Error)("Couldn't load " + url + " (" + status + ")");
+        callback({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")" }, null, null, sheet);
     });
 }
 
@@ -4886,35 +4911,35 @@ function log(str) {
     if (less.env == 'development' && typeof(console) !== "undefined") { console.log('less: ' + str) }
 }
 
-function error(e, href) {
-    var id = 'less-error-message:' + extractId(href);
+function error(e, rootHref) {
+    var id = 'less-error-message:' + extractId(rootHref || "");
     var template = '<li><label>{line}</label><pre class="{class}">{content}</pre></li>';
     var elem = document.createElement('div'), timer, content, error = [];
-    var filename = e.filename || href;
+    var filename = e.filename || rootHref;
     var filenameNoPath = filename.match(/([^\/]+(\?.*)?)$/)[1];
 
     elem.id        = id;
     elem.className = "less-error-message";
 
-    content = '<h3>'  + (e.message || 'There is an error in your .less file') +
+    content = '<h3>'  + (e.type || "Syntax") + "Error: " + (e.message || 'There is an error in your .less file') +
               '</h3>' + '<p>in <a href="' + filename   + '">' + filenameNoPath + "</a> ";
 
     var errorline = function (e, i, classname) {
-        if (e.extract[i]) {
-            error.push(template.replace(/\{line\}/, parseInt(e.line) + (i - 1))
+        if (e.extract[i] != undefined) {
+            error.push(template.replace(/\{line\}/, (parseInt(e.line) || 0) + (i - 1))
                                .replace(/\{class\}/, classname)
                                .replace(/\{content\}/, e.extract[i]));
         }
     };
 
-    if (e.stack) {
-        content += '<br/>' + e.stack.split('\n').slice(1).join('<br/>');
-    } else if (e.extract) {
+    if (e.extract) {
         errorline(e, 0, '');
         errorline(e, 1, 'line');
         errorline(e, 2, '');
         content += 'on line ' + e.line + ', column ' + (e.column + 1) + ':</p>' +
                     '<ul>' + error.join('') + '</ul>';
+    } else if (e.stack) {
+        content += '<br/>' + e.stack.split('\n').slice(1).join('<br/>');
     }
     elem.innerHTML = content;
 

@@ -56,11 +56,11 @@
     filter: alpha(opacity=@var);
 }
 
-// test current behaviour
 .polluteMixin() {
     @a: 'pollution';
 }
 .testPollution {
+    @a: 'no-pollution';
     a: @a;
 	.polluteMixin();
 	a: @a;

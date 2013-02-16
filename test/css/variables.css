@@ -26,7 +26,7 @@
   filter: alpha(opacity=42);
 }
 .testPollution {
-  a: 'pollution';
+  a: 'no-pollution';
 }
 .units {
   width: 1px;

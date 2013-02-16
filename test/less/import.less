@@ -2,6 +2,9 @@
 
 @import url(something.css) screen and (color) and (max-width: 600px);
 
+@var: 100px;
+@import url("file.css") (min-width:@var);
+
 #import-test {
   .mixin;
   width: 10px;

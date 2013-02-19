@@ -173,6 +173,7 @@ var parseLessFile = function (e, data) {
         } else if(!options.lint) {
             try {
                 var css = tree.toCSS({
+                    ieCompat: options.ieCompat,
                     compress: options.compress,
                     yuicompress: options.yuicompress,
                     strictMaths: options.strictMaths,

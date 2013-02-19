@@ -19,6 +19,7 @@ var options = {
     strictImports: false,
     rootpath: '',
     relativeUrls: false,
+    ieCompat: true,
     strictMaths: true
 };
 var continueProcessing = true,
@@ -71,6 +72,9 @@ args = args.filter(function (arg) {
             break;
         case 'no-color':
             options.color = false;
+            break;
+        case 'no-ie-compat':
+            options.ieCompat = false;
             break;
         case 'include-path':
             if (!match[2]) {

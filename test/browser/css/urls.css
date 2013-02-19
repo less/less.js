@@ -44,3 +44,6 @@
   uri-1: url('http://localhost:8081/browser/less/../../data/page.html');
   uri-2: url('http://localhost:8081/browser/less/../../data/page.html');
 }
+#data-uri-toobig {
+  uri: url('http://localhost:8081/browser/less/../../data/data-uri-fail.png');
+}

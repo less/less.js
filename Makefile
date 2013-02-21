@@ -40,6 +40,7 @@ less:
 	      ${SRC}/tree.js\
 	      ${SRC}/env.js\
 	      ${SRC}/visitor.js\
+	      ${SRC}/import-visitor.js\
 	      ${SRC}/browser.js\
 	      build/amd.js >> ${DIST}
 	@@echo "})(window);" >> ${DIST}
@@ -62,6 +63,7 @@ rhino:
 	      ${SRC}/parser.js\
 	      ${SRC}/env.js\
 	      ${SRC}/visitor.js\
+	      ${SRC}/import-visitor.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/colors.js\
 	      ${SRC}/tree/*.js\

@@ -17,4 +17,4 @@ license
 
 See `LICENSE` file.
 
-> Copyright (c) 2009-2011 Alexis Sellier
+> Copyright (c) 2009-2013 Alexis Sellier

@@ -21,3 +21,18 @@
   height: 10px;
   color: #ff0000;
 }
+@media screen and (max-width: 601px) {
+  #css {
+    color: yellow;
+  }
+}
+@media screen and (max-width: 602px) {
+  body {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 603px) {
+  #css {
+    color: yellow;
+  }
+}

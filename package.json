@@ -4,7 +4,7 @@
   "homepage"      : "http://lesscss.org",
   "keywords"      : ["css", "parser", "lesscss", "browser"],
   "author"        : "Alexis Sellier <self@cloudhead.net>",
-  "contributors"  : [],
+  "contributors"  : ["The Core Less Team"],
   "version"       : "1.4.0",
   "jam"           : { "main": "./dist/less-1.4.0-alpha.js" },
   "bin"           : { "lessc": "./bin/lessc" },

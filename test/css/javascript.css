@@ -13,6 +13,8 @@
 }
 .vars {
   width: 8;
+  width: 8px;
+  width: 8;
 }
 .escape-interpol {
   width: hello world;
@@ -20,4 +22,7 @@
 .arrays {
   ary: "1, 2, 3";
   ary1: "1, 2, 3";
+}
+.colors {
+  color: #000000;
 }

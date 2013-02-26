@@ -16,6 +16,10 @@
 .vars {
     @var: `4 + 4`;
     width: @var;
+    @var2: ~`2 + 2 + 'px'`;
+    width: @var2 * 2;
+    @var3: ~`"4"`;
+	width: @var3 * 2;
 }
 .escape-interpol {
     @world: "world";
@@ -26,4 +30,8 @@
     @ary2: 1  2  3;
     ary: `@{ary}.join(', ')`;
     ary1: `@{ary2}.join(', ')`;
+}
+.colors {
+    @color: ~`"#FFF"`;
+    color: darken(@color, 100%);
 }

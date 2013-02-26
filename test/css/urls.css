@@ -52,3 +52,6 @@
   uri-1: url('data:text/html,%3Ch1%3EThis%20page%20is%20100%25%20Awesome.%3C%2Fh1%3E%0A');
   uri-2: url('data:text/html,%3Ch1%3EThis%20page%20is%20100%25%20Awesome.%3C%2Fh1%3E%0A');
 }
+#data-uri-toobig {
+  uri: url('../data/data-uri-fail.png');
+}

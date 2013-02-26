@@ -13,12 +13,14 @@ var options = {
     yuicompress: false,
     optimization: 1,
     silent: false,
+    verbose: false,
     lint: false,
     paths: [],
     color: true,
     strictImports: false,
     rootpath: '',
     relativeUrls: false,
+    ieCompat: true,
     strictMaths: true
 };
 var continueProcessing = true,
@@ -71,6 +73,9 @@ args = args.filter(function (arg) {
             break;
         case 'no-color':
             options.color = false;
+            break;
+        case 'no-ie-compat':
+            options.ieCompat = false;
             break;
         case 'include-path':
             if (!match[2]) {
@@ -169,6 +174,9 @@ var parseLessFile = function (e, data) {
         } else if(!options.lint) {
             try {
                 var css = tree.toCSS({
+                    silent: options.silent,
+                    verbose: options.verbose,
+                    ieCompat: options.ieCompat,
                     compress: options.compress,
                     yuicompress: options.yuicompress,
                     strictMaths: options.strictMaths,

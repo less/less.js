@@ -1,0 +1,9 @@
+*.js text eol=lf
+lessc text eol=lf
+*.less text eol=lf
+*.css text eol=lf
+*.htm text eol=lf
+
+*.jpg binary
+*.png binary
+*.jpeg binary

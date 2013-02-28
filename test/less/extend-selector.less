@@ -9,7 +9,7 @@
 .intrusion .error {
   display: none;
 }
-.badError:extend(.error) {
+.badError:extend(.error all) {
   border-width: 3px;
 }
 
@@ -18,11 +18,11 @@
 }
 
 .ext1 .ext2
-    :extend(.foo) {
+    :extend(.foo all) {
 }
 
-.ext3:extend(.foo),
-.ext4:extend(.foo) {
+.ext3:extend(.foo all),
+.ext4:extend(.foo all) {
 }
 
 div.ext5,
@@ -31,20 +31,20 @@ div.ext5,
 }
 
 .should-not-exist-in-output,
-.ext7:extend(.ext5) {
+.ext7:extend(.ext5 all) {
 }
 
 .ext {
   test: 1;
 }
 // same as 
-// .a .c:extend(.ext)
-// .b .c:extend(.ext)
+// .a .c:extend(.ext all)
+// .b .c:extend(.ext all)
 // .a .c .d
 // .b .c .d
 .a, .b {
   test: 2;
-  .c:extend(.ext) {
+  .c:extend(.ext all) {
     test: 3;
     .d {
       test: 4;

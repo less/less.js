@@ -1,10 +1,12 @@
-//
-// LESS - Leaner CSS v1.4.0
-// http://lesscss.org
-// 
-// Copyright (c) 2009-2013, Alexis Sellier
-// Licensed under the Apache 2.0 License.
-//
+/*
+ * LESS - Leaner CSS v1.4.0
+ * http://lesscss.org
+ *
+ * Copyright (c) 2009-2013, Alexis Sellier
+ * Licensed under the Apache 2.0 License.
+ *
+ * @licence
+ */
 (function (window, undefined) {
 //
 // Stub out `require` in the browser
@@ -923,21 +925,31 @@ less.Parser = function Parser(env) {
             // extend syntax - used to extend selectors
             //
             extend: function(isRule) {
-                var elements = [], e, args, index = i;
+                var elements = [], e, args, index = i, option;
 
                 if (!$(isRule ? /^&:extend\(/ : /^:extend\(/)) { return; }
 
-                while (e = $(/^[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/)) {
+                while (true) {
+					option = $(/^(any|deep|all)(?=\s*\))/);
+					if (option) { break; }
+					e = $(/^[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/);
+					if (!e) { break; }
                     elements.push(new(tree.Element)(null, e, i));
                 }
-                
+				
                 expect(/^\)/);
+				
+				option = option && option[1];
+				
+				if (option != "all") {
+					error(":extend only supports the all option at the moment, please specify it after your selector, e.g. :extend(.a all)");
+				}
                 
                 if (isRule) {
                     expect(/^;/);
                 }
 
-                return new(tree.Extend)(elements, index);
+                return new(tree.Extend)(elements, option, index);
             },
 
             //
@@ -3087,8 +3099,9 @@ tree.Expression.prototype = {
 })(require('../tree'));
 (function (tree) {
 
-tree.Extend = function Extend(elements, index) {
+tree.Extend = function Extend(elements, option, index) {
     this.selector = new(tree.Selector)(elements);
+	this.option = option;
     this.index = index;
 };
 

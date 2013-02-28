@@ -10,7 +10,7 @@
   display: none;
 }
 .badError {
-  &:extend(.error);
+  &:extend(.error all);
   border-width: 3px;
 }
 
@@ -19,12 +19,12 @@
 }
 
 .ext1 .ext2 {
-    &:extend(.foo);
+    &:extend(.foo all);
 }
 
 .ext3,
 .ext4 {
-    &:extend(.foo);
+    &:extend(.foo all);
 }
 
 div.ext5,
@@ -33,5 +33,5 @@ div.ext5,
 }
 
 .ext7 {
-    &:extend(.ext5);
+    &:extend(.ext5 all);
 }

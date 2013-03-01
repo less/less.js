@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "underscore": "~1.4.3",
-    "mapnik-reference": "https://github.com/mapnik/mapnik-reference/archive/raster-colorizer.tar.gz",
+    "mapnik-reference": "https://github.com/mapnik/mapnik-reference/archive/master.tar.gz",
     "xml2js": "~0.2.4",
     "optimist": "~0.3.5"
   },

@@ -43,7 +43,7 @@ helper.files('rendering', 'mml', function(file) {
                         */
                         fs.writeFileSync(actual,JSON.stringify(actual_json,null,4));
                         fs.writeFileSync(expected,JSON.stringify(expected_json,null,4));
-                        throw new Error('failed: ' + actual + ' not equal to expected: ' + result);
+                        throw new Error('failed: xml ' + result + ' in json form does not match expected result:\n' + actual + ' (actual)\n' + expected + ' (expected)');
                     } else {
                         // cleanup any actual renders that no longer fail
                         try {

@@ -50,3 +50,8 @@
 #data-uri-toobig {
   uri: data-uri('../data/data-uri-fail.png');
 }
+.add_an_import(@file_to_import) {
+@import "@{file_to_import}";
+}
+
+.add_an_import("file.css");

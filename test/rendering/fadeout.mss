@@ -1,3 +1,3 @@
 #world {
-    marker-fill: fadeout(#000, 5j);
+    marker-fill: fadeout(#000, 50%);
 }

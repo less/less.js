@@ -30,6 +30,7 @@
     "carto": "./bin/carto",
     "mml2json.js": "./bin/mml2json.js"
   },
+  "man": "./man/carto.1",
   "main": "./lib/carto/index",
   "engines": {
     "node": ">=0.4.x"

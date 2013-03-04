@@ -36,3 +36,12 @@ div.ext5,
 .ext7 {
     &:extend(.ext5 all);
 }
+
+.ext8.ext9 {
+  result: pick-up-both;
+}
+.ext8.nomatch {
+  result: none;
+}
+
+.foo:extend(.ext8.ext9 all) {}

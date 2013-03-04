@@ -66,8 +66,8 @@ runTestSet({strictUnits: false, strictMaths: false}, "legacy/");
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),
         pathimport = path.join(process.cwd(), directory + "import/"),
-        pathesc = p.replace(/[.:\/]/g, '\\$&'),
-        pathimportesc = pathimport.replace(/[.:\/]/g, '\\$&');
+        pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a=='\\' ? '\/' : a); }),
+        pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a=='\\' ? '\/' : a); });
 
     return input.replace(/\{path\}/g, p)
             .replace(/\{pathesc\}/g, pathesc)

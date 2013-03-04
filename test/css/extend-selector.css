@@ -18,10 +18,10 @@
 .foo .bar,
 .foo .baz,
 .ext1 .ext2 .bar,
-.ext1 .ext2 .baz,
 .ext3 .bar,
-.ext3 .baz,
 .ext4 .bar,
+.ext1 .ext2 .baz,
+.ext3 .baz,
 .ext4 .baz {
   display: none;
 }

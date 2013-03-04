@@ -541,8 +541,15 @@ less.Parser = function Parser(env) {
                     }
 
                     try {
-                        var css = evaluate.call(this, evalEnv)
-                                          .toCSS([], {
+                        var evaldRoot = evaluate.call(this, evalEnv);
+
+                        new(tree.joinSelectorVisitor)()
+                            .run(evaldRoot);
+
+                        new(tree.processExtendsVisitor)()
+                            .run(evaldRoot);
+
+                        var css = evaldRoot.toCSS({
                                 compress: options.compress || false,
                                 dumpLineNumbers: env.dumpLineNumbers,
                                 strictUnits: options.strictUnits === false ? false : true});
@@ -607,7 +614,8 @@ less.Parser = function Parser(env) {
 
             if (env.processImports !== false) {
                 try {
-                    new tree.importVisitor(root, this.imports, finish);
+                    new tree.importVisitor(this.imports, finish)
+                        .run(root);
                 }
                 catch(e) {
                     error = e;
@@ -922,26 +930,26 @@ less.Parser = function Parser(env) {
                 if (!$(isRule ? /^&:extend\(/ : /^:extend\(/)) { return; }
 
                 while (true) {
-					option = $(/^(any|deep|all)(?=\s*\))/);
-					if (option) { break; }
-					e = $(/^[#.](?:[\w-]|\\(?:[a-fA-F0-9]{1,6} ?|[^a-fA-F0-9]))+/);
-					if (!e) { break; }
-                    elements.push(new(tree.Element)(null, e, i));
+                    option = $(/^(any|deep|all)(?=\s*\))/);
+                    if (option) { break; }
+                    e = $(this.element);
+                    if (!e) { break; }
+                    elements.push(e);
                 }
-				
+                
                 expect(/^\)/);
-				
-				option = option && option[1];
-				
-				if (option != "all") {
-					error(":extend only supports the all option at the moment, please specify it after your selector, e.g. :extend(.a all)");
-				}
+                
+                option = option && option[1];
+                
+                if (option != "all") {
+                    error(":extend only supports the all option at the moment, please specify it after your selector, e.g. :extend(.a all)");
+                }
                 
                 if (isRule) {
                     expect(/^;/);
                 }
 
-                return new(tree.Extend)(elements, option, index);
+                return new(tree.Extend)(new(tree.Selector)(elements), option, index);
             },
 
             //
@@ -1181,8 +1189,7 @@ less.Parser = function Parser(env) {
 
                 if (! e) {
                     if ($('(')) {
-                        if ((v = (//$(this.entities.variableCurly) || 
-                                $(this.selector))) && 
+                        if ((v = ($(this.selector))) &&
                                 $(')')) {
                             e = new(tree.Paren)(v);
                         }
@@ -1224,20 +1231,24 @@ less.Parser = function Parser(env) {
             // Selectors are made out of one or more Elements, see above.
             //
             selector: function () {
-                var sel, e, elements = [], c, match, extend;
+                var sel, e, elements = [], c, match, extend, extendList = [];
 
                 while ((extend = $(this.extend)) || (e = $(this.element))) {
-                    if (!e) {
-                        break;
+                    if (extend) {
+                        extendList.push(extend);
+                    } else {
+                        if (extendList.length) {
+                            error("Extend can only be used at the end of selector");
+                        }
+                        c = input.charAt(i);
+                        elements.push(e)
+                        e = null;
                     }
-                    c = input.charAt(i);
-                    elements.push(e)
-                    e = null;
                     if (c === '{' || c === '}' || c === ';' || c === ',' || c === ')') { break }
                 }
 
-                if (elements.length > 0) { return new(tree.Selector)(elements, extend) }
-                if (extend) { error("Extend must be used to extend a selector"); }
+                if (elements.length > 0) { return new(tree.Selector)(elements, extendList); }
+                if (extendList.length) { error("Extend must be used to extend a selector, it cannot be used on its own"); }
             },
             attribute: function () {
                 var attr = '', key, val, op;
@@ -3005,11 +3016,11 @@ tree.Directive.prototype = {
         this.ruleset = visitor.visit(this.ruleset);
         this.value = visitor.visit(this.value);
     },
-    toCSS: function (ctx, env) {
+    toCSS: function (env) {
         if (this.ruleset) {
             this.ruleset.root = true;
             return this.name + (env.compress ? '{' : ' {\n  ') +
-                   this.ruleset.toCSS(ctx, env).trim().replace(/\n/g, '\n  ') +
+                   this.ruleset.toCSS(env).trim().replace(/\n/g, '\n  ') +
                                (env.compress ? '}': '\n}\n');
         } else {
             return this.name + ' ' + this.value.toCSS() + ';\n';
@@ -3140,9 +3151,9 @@ tree.Expression.prototype = {
 })(require('../tree'));
 (function (tree) {
 
-tree.Extend = function Extend(elements, option, index) {
-    this.selector = new(tree.Selector)(elements);
-	this.option = option;
+tree.Extend = function Extend(selector, option, index) {
+    this.selector = selector;
+    this.option = option;
     this.index = index;
 };
 
@@ -3151,53 +3162,22 @@ tree.Extend.prototype = {
     accept: function (visitor) {
         this.selector = visitor.visit(this.selector);
     },
-    eval: function (env, selectors) {
-        var selfSelectors = findSelfSelectors(selectors || env.selectors),
-            targetValue = this.selector.elements[0].value;
+    eval: function (env) {
+        return new(tree.Extend)(this.selector.eval(env), this.option, this.index);
+    },
+    clone: function (env) {
+        return new(tree.Extend)(this.selector, this.option, this.index);
+    },
+    findSelfSelectors: function (selectors) {
+        var selfElements = [];
 
-        env.frames.forEach(function(frame) {
-            frame.rulesets().forEach(function(rule) {
-                rule.selectors.forEach(function(selector) {
-                    selector.elements.forEach(function(element, idx) {
-                        if (element.value === targetValue) {
-                            selfSelectors.forEach(function(_selector) {
-                                _selector.elements[0] = new tree.Element(
-                                    element.combinator,
-                                    _selector.elements[0].value,
-                                    _selector.elements[0].index
-                                );
-                                rule.selectors.push(new tree.Selector(
-                                    selector.elements
-                                        .slice(0, idx)
-                                        .concat(_selector.elements)
-                                        .concat(selector.elements.slice(idx + 1))
-                                ));
-                            });
-                        }
-                    });
-                });
-            });
-        });
-        return this;
+        for(i = 0; i < selectors.length; i++) {
+            selfElements = selfElements.concat(selectors[i].elements);
+        }
+
+        this.selfSelectors = [{ elements: selfElements }];
     }
 };
-
-function findSelfSelectors(selectors) {
-    var ret = [];
-
-    (function loop(elem, i) {
-        if (selectors[i] && selectors[i].length) {
-            selectors[i].forEach(function(s) {
-                loop(s.elements.concat(elem), i + 1);
-            });
-        }
-        else {
-            ret.push({ elements: elem });
-        }
-    })([], 0);
-
-    return ret;
-}
 
 })(require('../tree'));
 (function (tree) {
@@ -3386,12 +3366,11 @@ tree.Media.prototype = {
         this.features = visitor.visit(this.features);
         this.ruleset = visitor.visit(this.ruleset);
     },
-    toCSS: function (ctx, env) {
+    toCSS: function (env) {
         var features = this.features.toCSS(env);
 
-        this.ruleset.root = (ctx.length === 0 || ctx[0].multiMedia);
         return '@media ' + features + (env.compress ? '{' : ' {\n  ') +
-               this.ruleset.toCSS(ctx, env).trim().replace(/\n/g, '\n  ') +
+               this.ruleset.toCSS(env).trim().replace(/\n/g, '\n  ') +
                            (env.compress ? '}': '\n}\n');
     },
     eval: function (env) {
@@ -4003,14 +3982,6 @@ tree.Ruleset.prototype = {
             }
         }
         
-        if (this.selectors) {
-            for (var i = 0; i < this.selectors.length; i++) {
-                if (this.selectors[i].extend) {
-                    this.selectors[i].extend.eval(env, [[this.selectors[i]]].concat(env.selectors.slice(1)));
-                }
-            }
-        }
-
         // Evaluate everything else
         for (var i = 0, rule; i < ruleset.rules.length; i++) {
             rule = ruleset.rules[i];
@@ -4112,28 +4083,23 @@ tree.Ruleset.prototype = {
     //
     //     `context` holds an array of arrays.
     //
-    toCSS: function (context, env) {
+    toCSS: function (env) {
         var css = [],      // The CSS output
             rules = [],    // node.Rule instances
            _rules = [],    //
             rulesets = [], // node.Ruleset instances
-            paths = [],    // Current selectors
             selector,      // The fully rendered selector
             debugInfo,     // Line number debugging
             rule;
-
-        if (! this.root) {
-            this.joinSelectors(paths, context, this.selectors);
-        }
 
         // Compile rules and rulesets
         for (var i = 0; i < this.rules.length; i++) {
             rule = this.rules[i];
 
             if (rule.rules || (rule instanceof tree.Media)) {
-                rulesets.push(rule.toCSS(paths, env));
+                rulesets.push(rule.toCSS(env));
             } else if (rule instanceof tree.Directive) {
-                var cssValue = rule.toCSS(paths, env);
+                var cssValue = rule.toCSS(env);
                 // Output only the first @charset definition as such - convert the others
                 // to comments in case debug is enabled
                 if (rule.name === "@charset") {
@@ -4185,7 +4151,7 @@ tree.Ruleset.prototype = {
         } else {
             if (rules.length > 0) {
                 debugInfo = tree.debugInfo(env, this);
-                selector = paths.map(function (p) {
+                selector = this.paths.map(function (p) {
                     return p.map(function (s) {
                         return s.toCSS(env);
                     }).join('').trim();
@@ -4385,14 +4351,15 @@ tree.Ruleset.prototype = {
 })(require('../tree'));
 (function (tree) {
 
-tree.Selector = function (elements, extend) {
+tree.Selector = function (elements, extendList) {
     this.elements = elements;
-    this.extend = extend;
+    this.extendList = extendList || [];
 };
 tree.Selector.prototype = {
     type: "Selector",
     accept: function (visitor) {
         this.elements = visitor.visit(this.elements);
+        this.extendList = visitor.visit(this.extendList)
     },
     match: function (other) {
         var elements = this.elements,
@@ -4418,7 +4385,9 @@ tree.Selector.prototype = {
     eval: function (env) {
         return new(tree.Selector)(this.elements.map(function (e) {
             return e.eval(env);
-        }), this.extend);
+        }), this.extendList.map(function(extend) {
+            return extend.eval(env);
+        }));
     },
     toCSS: function (env) {
         if (this._css) { return this._css }
@@ -4579,7 +4548,7 @@ tree.debugInfo.asComment = function(ctx) {
 
 tree.debugInfo.asMediaQuery = function(ctx) {
     return '@media -sass-debug-info{filename{font-family:' +
-        ('file://' + ctx.debugInfo.fileName).replace(/[\/:.]/g, '\\$&') +
+        ('file://' + ctx.debugInfo.fileName).replace(/([.:/\\])/g, function(a){if(a=='\\') a = '\/'; return '\\' + a}) +
         '}line{font-family:\\00003' + ctx.debugInfo.lineNumber + '}}\n';
 };
 
@@ -4717,10 +4686,13 @@ tree.jsify = function (obj) {
 
             var funcName = "visit" + node.type,
                 func = this._implementation[funcName],
-                visitArgs;
+                visitArgs, newNode;
             if (func) {
                 visitArgs = {visitDeeper: true};
-                node = func.call(this._implementation, node, visitArgs);
+                newNode = func.call(this._implementation, node, visitArgs);
+                if (this._implementation.isReplacing) {
+                    node = newNode;
+                }
             }
             if ((!visitArgs || visitArgs.visitDeeper) && node && node.accept) {
                 node.accept(this);
@@ -4741,29 +4713,34 @@ tree.jsify = function (obj) {
                     newNodes.push(evald);
                 }
             }
-            return newNodes;
+            if (this._implementation.isReplacing) {
+                return newNodes;
+            }
+            return nodes;
         }
     };
 
 })(require('./tree'));(function (tree) {
-    tree.importVisitor = function(root, importer, finish, evalEnv) {
+    tree.importVisitor = function(importer, finish, evalEnv) {
         this._visitor = new tree.visitor(this);
         this._importer = importer;
         this._finish = finish;
         this.env = evalEnv || new tree.evalEnv();
         this.importCount = 0;
-
-        // process the contents
-        this._visitor.visit(root);
-
-        this.isFinished = true;
-
-        if (this.importCount === 0) {
-            this._finish();
-        }
     };
 
     tree.importVisitor.prototype = {
+        isReplacing: true,
+        run: function (root) {
+            // process the contents
+            this._visitor.visit(root);
+
+            this.isFinished = true;
+
+            if (this.importCount === 0) {
+                this._finish();
+            }
+        },
         visitImport: function (importNode, visitArgs) {
             var importVisitor = this,
                 evaldImportNode;
@@ -4798,7 +4775,8 @@ tree.jsify = function (obj) {
 
                         if (root) {
                             importNode.root = root;
-                            new(tree.importVisitor)(root, importVisitor._importer, subFinish, env);
+                            new(tree.importVisitor)(importVisitor._importer, subFinish, env)
+                                .run(root);
                         } else {
                             subFinish();
                         }
@@ -4839,6 +4817,223 @@ tree.jsify = function (obj) {
         },
         visitMediaOut: function (mediaNode) {
             this.env.frames.shift();
+        }
+    };
+
+})(require('./tree'));(function (tree) {
+    tree.joinSelectorVisitor = function() {
+        this.contexts = [[]];
+        this._visitor = new tree.visitor(this);
+    };
+
+    tree.joinSelectorVisitor.prototype = {
+        run: function (root) {
+            return this._visitor.visit(root);
+        },
+        visitRule: function (ruleNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+        visitMixinDefinition: function (mixinDefinitionNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+
+        visitRuleset: function (rulesetNode, visitArgs) {
+            var context = this.contexts[this.contexts.length - 1];
+            var paths = [];
+            this.contexts.push(paths);
+
+            if (! rulesetNode.root) {
+                rulesetNode.joinSelectors(paths, context, rulesetNode.selectors);
+                rulesetNode.paths = paths;
+            }
+        },
+        visitRulesetOut: function (rulesetNode) {
+            this.contexts.length = this.contexts.length - 1;
+        },
+        visitMedia: function (mediaNode, visitArgs) {
+            var context = this.contexts[this.contexts.length - 1];
+            mediaNode.ruleset.root = (context.length === 0 || context[0].multiMedia);
+        }
+    };
+
+})(require('./tree'));(function (tree) {
+    tree.extendFinderVisitor = function() {
+        this._visitor = new tree.visitor(this);
+        this.contexts = [];
+        this.allExtendsStack = [[]];
+    };
+
+    tree.extendFinderVisitor.prototype = {
+        run: function (root) {
+            root = this._visitor.visit(root);
+            root.allExtends = this.allExtendsStack[0];
+            return root;
+        },
+        visitRule: function (ruleNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+        visitMixinDefinition: function (mixinDefinitionNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+        visitRuleset: function (rulesetNode, visitArgs) {
+
+            if (rulesetNode.root) {
+                return;
+            }
+
+            var i, j, extend, allSelectorsExtendList = [], extendList;
+
+            // get &:extend(.a); rules which apply to all selectors in this ruleset
+            for(i = 0; i < rulesetNode.rules.length; i++) {
+                if (rulesetNode.rules[i] instanceof tree.Extend) {
+                    allSelectorsExtendList.push(rulesetNode.rules[i]);
+                }
+            }
+
+            // now find every selector and apply the extends that apply to all extends
+            // and the ones which apply to an individual extend
+            for(i = 0; i < rulesetNode.paths.length; i++) {
+                var selectorPath = rulesetNode.paths[i],
+                    selector = selectorPath[selectorPath.length-1];
+                extendList = selector.extendList.slice(0).concat(allSelectorsExtendList).map(function(allSelectorsExtend) {
+                    return allSelectorsExtend.clone();
+                });
+                for(j = 0; j < extendList.length; j++) {
+                    extend = extendList[j];
+                    extend.findSelfSelectors(selectorPath);
+                    this.allExtendsStack[this.allExtendsStack.length-1].push(extend);
+                }
+            }
+
+            this.contexts.push(rulesetNode.selectors);
+        },
+        visitRulesetOut: function (rulesetNode) {
+            if (!rulesetNode.root) {
+                this.contexts.length = this.contexts.length - 1;
+            }
+        },
+        visitMedia: function (mediaNode, visitArgs) {
+            mediaNode.allExtends = [];
+            this.allExtendsStack.push(mediaNode.allExtends);
+        },
+        visitMediaOut: function (mediaNode) {
+            this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        },
+        visitDirective: function (directiveNode, visitArgs) {
+            directiveNode.allExtends = [];
+            this.allExtendsStack.push(directiveNode.allExtends);
+        },
+        visitDirectiveOut: function (directiveNode) {
+            this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        }
+    };
+
+    tree.processExtendsVisitor = function() {
+        this._visitor = new tree.visitor(this);
+        this._searches
+    };
+
+    tree.processExtendsVisitor.prototype = {
+        run: function(root) {
+            var extendFinder = new tree.extendFinderVisitor();
+            extendFinder.run(root);
+            this.allExtendsStack = [root.allExtends];
+            return this._visitor.visit(root);
+        },
+        visitRule: function (ruleNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+        visitMixinDefinition: function (mixinDefinitionNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+        visitSelector: function (selectorNode, visitArgs) {
+            visitArgs.visitDeeper = false;
+        },
+        visitRuleset: function (rulesetNode, visitArgs) {
+            if (rulesetNode.root) {
+                return;
+            }
+            var i, j, k, selector, element, allExtends = this.allExtendsStack[this.allExtendsStack.length-1], selectorsToAdd = [];
+
+            for(k = 0; k < allExtends.length; k++) {
+                for(i = 0; i < rulesetNode.paths.length; i++) {
+                    selectorPath = rulesetNode.paths[i];
+                    var match = this.findMatch(allExtends[k], selectorPath);
+                    if (match) {
+                        selector = selectorPath[match.pathIndex];
+                        allExtends[k].selfSelectors.forEach(function(selfSelector) {
+                            var path = selectorPath.slice(0, match.pathIndex),
+                                firstElement = new tree.Element(
+                                match.initialCombinator,
+                                selfSelector.elements[0].value,
+                                selfSelector.elements[0].index
+                            );
+                            path.push(new tree.Selector(
+                                selector.elements
+                                    .slice(0, match.index)
+                                    .concat([firstElement])
+                                    .concat(selfSelector.elements.slice(1))
+                                    .concat(selector.elements.slice(match.index + match.length))
+                            ));
+                            path = path.concat(selectorPath.slice(match.endPathIndex + 1, selectorPath.length));
+                            selectorsToAdd.push(path);
+                        });
+                    }
+                }
+            }
+            rulesetNode.paths = rulesetNode.paths.concat(selectorsToAdd);
+        },
+        findMatch: function (extend, selectorPath) {
+            var i, j, k, l, targetElementIndex, element, hasMatch, potentialMatches = [], potentialMatch, matches = [];
+            for(k = 0; k < selectorPath.length; k++) {
+                selector = selectorPath[k];
+                for(i = 0; i < selector.elements.length; i++) {
+                    potentialMatches.push({pathIndex: k, index: i, matched: 0});
+
+                    for(l = 0; l < potentialMatches.length; l++) {
+                        potentialMatch = potentialMatches[l];
+                        targetElementIndex = i;
+                        for(j = potentialMatch.matched; j < extend.selector.elements.length && targetElementIndex < selector.elements.length; j++, targetElementIndex++) {
+                            potentialMatch.matched = j + 1;
+                            if (extend.selector.elements[j].value !== selector.elements[targetElementIndex].value ||
+                                (j > 0 && extend.selector.elements[j].combinator.value !== selector.elements[targetElementIndex].combinator.value)) {
+                                potentialMatch = null;
+                                break;
+                            }
+                        }
+                        if (potentialMatch) {
+                            if (potentialMatch.matched === extend.selector.elements.length) {
+                                potentialMatch.initialCombinator = selector.elements[i].combinator;
+                                potentialMatch.length = extend.selector.elements.length;
+                                potentialMatch.endPathIndex = k;
+                                return potentialMatch;
+                                potentialMatches.length = 0;
+                                matches.push(potentialMatch);
+                                break;
+                            }
+                        } else {
+                            potentialMatches.splice(l, 1);
+                            l--;
+                        }
+                    }
+                }
+            }
+            return null;
+            return matches;
+        },
+        visitRulesetOut: function (rulesetNode) {
+        },
+        visitMedia: function (mediaNode, visitArgs) {
+            this.allExtendsStack.push(mediaNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length-1]));
+        },
+        visitMediaOut: function (mediaNode) {
+            this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        },
+        visitDirective: function (directiveNode, visitArgs) {
+            this.allExtendsStack.push(directiveNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length-1]));
+        },
+        visitDirectiveOut: function (directiveNode) {
+            this.allExtendsStack.length = this.allExtendsStack.length - 1;
         }
     };
 

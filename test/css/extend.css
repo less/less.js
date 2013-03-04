@@ -46,6 +46,11 @@ div.ext7,
 .ext8.nomatch {
   result: none;
 }
-.ext8 .ext9 {
-  result: match-nested;
+.ext8 .ext9,
+.bar {
+  result: match-nested-bar;
+}
+.ext8.ext9,
+.foo {
+  result: match-nested-foo;
 }

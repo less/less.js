@@ -50,7 +50,12 @@ div.ext5,
 }
 .ext8 {
   .ext9 {
-    result: match-nested;
+    result: match-nested-bar;
+  }
+}
+.ext8 {
+  &.ext9 {
+    result: match-nested-foo;
   }
 }
 

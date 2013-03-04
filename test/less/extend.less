@@ -38,10 +38,21 @@ div.ext5,
 }
 
 .ext8.ext9 {
-  result: pick-up-both;
+  result: add-foo;
+}
+.ext8 .ext9,
+.ext8 + .ext9,
+.ext8 > .ext9 {
+  result: bar-matched;
 }
 .ext8.nomatch {
   result: none;
 }
+.ext8 {
+  .ext9 {
+    result: match-nested;
+  }
+}
 
 .foo:extend(.ext8.ext9 all) {}
+.bar:extend(.ext8 .ext9 all) {}

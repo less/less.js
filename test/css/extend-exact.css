@@ -32,3 +32,6 @@
 .dbl {
   prop: extend-double;
 }
+.e.e:hover {
+  hover: not-extended;
+}

@@ -26,10 +26,14 @@ div#id {
   color: grey;
 }
 @media print {
-  font-size: 3em;
+  * {
+    font-size: 3em;
+  }
 }
 @media screen {
-  font-size: 10px;
+  * {
+    font-size: 10px;
+  }
 }
 @font-face {
   font-family: 'Garamond Pro';

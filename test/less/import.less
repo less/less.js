@@ -14,8 +14,8 @@
 
 @import url("import/import-test-a.less");
 
-@import less "import/import-test-d.css" screen and (max-width: 601px);
+@import (less, multiple) "import/import-test-d.css" screen and (max-width: 601px);
 
-@import multiple "import/import-test-e" screen and (max-width: 602px);
+@import (multiple) "import/import-test-e" screen and (max-width: 602px);
 
 @import (less, multiple) url("import/import-test-d.css") screen and (max-width: 603px);

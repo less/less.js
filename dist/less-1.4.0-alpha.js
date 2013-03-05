@@ -941,10 +941,6 @@ less.Parser = function Parser(env) {
                 
                 option = option && option[1];
                 
-                if (option != "all") {
-                    error(":extend only supports the all option at the moment, please specify it after your selector, e.g. :extend(.a all)");
-                }
-                
                 if (isRule) {
                     expect(/^;/);
                 }
@@ -3155,6 +3151,25 @@ tree.Extend = function Extend(selector, option, index) {
     this.selector = selector;
     this.option = option;
     this.index = index;
+
+    switch(option) {
+        case "all":
+            this.deep = true;
+            this.any = true;
+        break;
+        case "deep":
+            this.deep = true;
+            this.any = false;
+        break;
+        case "any":
+            this.deep = false;
+            this.any = true;
+        break;
+        default:
+            this.deep = false;
+            this.any = false;
+        break;
+    }
 };
 
 tree.Extend.prototype = {
@@ -4958,24 +4973,51 @@ tree.jsify = function (obj) {
             for(k = 0; k < allExtends.length; k++) {
                 for(i = 0; i < rulesetNode.paths.length; i++) {
                     selectorPath = rulesetNode.paths[i];
-                    var match = this.findMatch(allExtends[k], selectorPath);
-                    if (match) {
-                        selector = selectorPath[match.pathIndex];
+                    var matches = this.findMatch(allExtends[k], selectorPath);
+                    if (matches.length) {
                         allExtends[k].selfSelectors.forEach(function(selfSelector) {
-                            var path = selectorPath.slice(0, match.pathIndex),
-                                firstElement = new tree.Element(
-                                match.initialCombinator,
-                                selfSelector.elements[0].value,
-                                selfSelector.elements[0].index
-                            );
-                            path.push(new tree.Selector(
-                                selector.elements
-                                    .slice(0, match.index)
-                                    .concat([firstElement])
-                                    .concat(selfSelector.elements.slice(1))
-                                    .concat(selector.elements.slice(match.index + match.length))
-                            ));
-                            path = path.concat(selectorPath.slice(match.endPathIndex + 1, selectorPath.length));
+                            var currentSelectorPathIndex = 0,
+                                currentSelectorPathElementIndex = 0,
+                                path = [];
+                            for(j = 0; j < matches.length; j++) {
+                                match = matches[j];
+                                var selector = selectorPath[match.pathIndex],
+                                    firstElement = new tree.Element(
+                                        match.initialCombinator,
+                                        selfSelector.elements[0].value,
+                                        selfSelector.elements[0].index
+                                    );
+
+                                if (match.pathIndex > currentSelectorPathIndex && currentSelectorPathElementIndex > 0) {
+                                    path[path.length-1].elements = path[path.length-1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
+                                    currentSelectorPathElementIndex = 0;
+                                    currentSelectorPathIndex++;
+                                }
+
+                                path = path.concat(selectorPath.slice(currentSelectorPathIndex, match.pathIndex));
+
+                                path.push(new tree.Selector(
+                                    selector.elements
+                                        .slice(currentSelectorPathElementIndex, match.index)
+                                        .concat([firstElement])
+                                        .concat(selfSelector.elements.slice(1))
+                                ));
+                                currentSelectorPathIndex = match.endPathIndex;
+                                currentSelectorPathElementIndex = match.endPathElementIndex;
+                                if (currentSelectorPathElementIndex >= selector.elements.length) {
+                                    currentSelectorPathElementIndex = 0;
+                                    currentSelectorPathIndex++;
+                                }
+                            }
+
+                            if (currentSelectorPathIndex < selectorPath.length && currentSelectorPathElementIndex > 0) {
+                                path[path.length-1].elements = path[path.length-1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
+                                currentSelectorPathElementIndex = 0;
+                                currentSelectorPathIndex++;
+                            }
+
+                            path = path.concat(selectorPath.slice(currentSelectorPathIndex, selectorPath.length));
+
                             selectorsToAdd.push(path);
                         });
                     }
@@ -4984,29 +5026,41 @@ tree.jsify = function (obj) {
             rulesetNode.paths = rulesetNode.paths.concat(selectorsToAdd);
         },
         findMatch: function (extend, selectorPath) {
-            var i, j, k, l, targetElementIndex, element, hasMatch, potentialMatches = [], potentialMatch, matches = [];
+            var i, k, l, element, hasMatch, potentialMatches = [], potentialMatch, matches = [];
             for(k = 0; k < selectorPath.length; k++) {
                 selector = selectorPath[k];
                 for(i = 0; i < selector.elements.length; i++) {
-                    potentialMatches.push({pathIndex: k, index: i, matched: 0});
+                    if (extend.any || (k == 0 && i == 0)) {
+                        potentialMatches.push({pathIndex: k, index: i, matched: 0, initialCombinator: selector.elements[i].combinator});
+                    }
 
                     for(l = 0; l < potentialMatches.length; l++) {
                         potentialMatch = potentialMatches[l];
-                        targetElementIndex = i;
-                        for(j = potentialMatch.matched; j < extend.selector.elements.length && targetElementIndex < selector.elements.length; j++, targetElementIndex++) {
-                            potentialMatch.matched = j + 1;
-                            if (extend.selector.elements[j].value !== selector.elements[targetElementIndex].value ||
-                                (j > 0 && extend.selector.elements[j].combinator.value !== selector.elements[targetElementIndex].combinator.value)) {
+
+                        var targetCombinator = selector.elements[i].combinator.value;
+                        if (targetCombinator == '' && i === 0) {
+                            targetCombinator = ' ';
+                        }
+                        if (extend.selector.elements[potentialMatch.matched].value !== selector.elements[i].value ||
+                            (potentialMatch.matched > 0 && extend.selector.elements[potentialMatch.matched].combinator.value !== targetCombinator)) {
+                            potentialMatch = null;
+                        } else {
+                            potentialMatch.matched++;
+                        }
+
+                        if (potentialMatch) {
+                            potentialMatch.finished = potentialMatch.matched === extend.selector.elements.length;
+                            if (potentialMatch.finished &&
+                                (!extend.deep && (i+1 < selector.elements.length ||
+                                    k+1 < selectorPath.length))) {
                                 potentialMatch = null;
-                                break;
                             }
                         }
                         if (potentialMatch) {
-                            if (potentialMatch.matched === extend.selector.elements.length) {
-                                potentialMatch.initialCombinator = selector.elements[i].combinator;
+                            if (potentialMatch.finished) {
                                 potentialMatch.length = extend.selector.elements.length;
                                 potentialMatch.endPathIndex = k;
-                                return potentialMatch;
+                                potentialMatch.endPathElementIndex = i+1; // index after end of match
                                 potentialMatches.length = 0;
                                 matches.push(potentialMatch);
                                 break;
@@ -5018,7 +5072,6 @@ tree.jsify = function (obj) {
                     }
                 }
             }
-            return null;
             return matches;
         },
         visitRulesetOut: function (rulesetNode) {

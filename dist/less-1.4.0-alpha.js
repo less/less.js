@@ -500,6 +500,7 @@ less.Parser = function Parser(env) {
             try {
                 root = new(tree.Ruleset)([], $(this.parsers.primary));
                 root.root = true;
+                root.firstRoot = true;
             } catch (e) {
                 return callback(new(LessError)(e, env));
             }
@@ -925,27 +926,34 @@ less.Parser = function Parser(env) {
             // extend syntax - used to extend selectors
             //
             extend: function(isRule) {
-                var elements = [], e, args, index = i, option;
+                var elements, e, index = i, option, extendList = [];
 
                 if (!$(isRule ? /^&:extend\(/ : /^:extend\(/)) { return; }
 
-                while (true) {
-                    option = $(/^(any|deep|all)(?=\s*\))/);
-                    if (option) { break; }
-                    e = $(this.element);
-                    if (!e) { break; }
-                    elements.push(e);
-                }
+                do {
+                    option = null;
+                    elements = [];
+                    while (true) {
+                        option = $(/^(all)(?=\s*(\)|,))/);
+                        if (option) { break; }
+                        e = $(this.element);
+                        if (!e) { break; }
+                        elements.push(e);
+                    }
+
+                    option = option && option[1];
+
+                    extendList.push(new(tree.Extend)(new(tree.Selector)(elements), option, index));
+
+                } while($(","))
                 
                 expect(/^\)/);
-                
-                option = option && option[1];
-                
+
                 if (isRule) {
                     expect(/^;/);
                 }
 
-                return new(tree.Extend)(new(tree.Selector)(elements), option, index);
+                return extendList;
             },
 
             //
@@ -971,7 +979,7 @@ less.Parser = function Parser(env) {
                 // selector for now.
                 //
                 call: function () {
-                    var elements = [], e, c, argsSemiColon = [], argsComma = [], args, delim, arg, nameLoop, expressions, isSemiColonSeperated, expressionContainsNamed, index = i, s = input.charAt(i), name, value, important = false;
+                    var elements = [], e, c, args, delim, arg, index = i, s = input.charAt(i), important = false;
 
                     if (s !== '.' && s !== '#') { return }
 
@@ -982,60 +990,11 @@ less.Parser = function Parser(env) {
                         c = $('>');
                     }
                     if ($('(')) {
-                        expressions = [];
-                        while (arg = $(this.expression)) {
-                            nameLoop = null;
-                            arg.throwAwayComments();
-                            value = arg;
-
-                            // Variable
-                            if (arg.value.length == 1) {
-                                var val = arg.value[0];
-                                if (val instanceof tree.Variable) {
-                                    if ($(':')) {
-                                        if (expressions.length > 0) {
-                                            if (isSemiColonSeperated) {
-                                                error("Cannot mix ; and , as delimiter types");
-                                            }
-                                            expressionContainsNamed = true;
-                                        }
-                                        value = expect(this.expression);
-                                        nameLoop = (name = val.name);
-                                    }
-                                }
-                            }
-                            
-                            expressions.push(value);
-                            
-                            argsComma.push({ name: nameLoop, value: value });
-                            
-                            if ($(',')) {
-                                continue;
-                            }
-                            
-                            if ($(';') || isSemiColonSeperated) {
-                            
-                                if (expressionContainsNamed) {
-                                    error("Cannot mix ; and , as delimiter types");
-                                }
-                            
-                                isSemiColonSeperated = true;
-                                                        
-                                if (expressions.length > 1) {
-                                    value = new(tree.Value)(expressions);
-                                }
-                                argsSemiColon.push({ name: name, value: value });
-                            
-                                name = null;
-                                expressions = [];
-                                expressionContainsNamed = false;
-                            }
-                        }
-
+                        args = this.mixin.args.call(this, true).args;
                         expect(')');
                     }
 
-                    args = isSemiColonSeperated ? argsSemiColon : argsComma;
+                    args = args || [];
 
                     if ($(this.important)) {
                         important = true;
@@ -1047,7 +1006,103 @@ less.Parser = function Parser(env) {
 
                     restore();
                 },
+                args: function (isCall) {
+                    var expressions = [], argsSemiColon = [], isSemiColonSeperated, argsComma = [], expressionContainsNamed, name, nameLoop, value, arg,
+                        returner = {args:null, variadic: false};
+                    while (true) {
+                        if (isCall) {
+                            arg = $(this.expression);
+                        } else {
+                            $(this.comment);
+                            if (input.charAt(i) === '.' && $(/^\.{3}/)) {
+                                returner.variadic = true;
+                                if ($(";") && !isSemiColonSeperated) {
+                                    isSemiColonSeperated = true;
+                                }
+                                (isSemiColonSeperated ? argsSemiColon : argsComma)
+                                    .push({ variadic: true });
+                                break;
+                            }
+                            arg = $(this.entities.variable) || $(this.entities.literal)
+                                || $(this.entities.keyword);
+                        }
 
+                        if (!arg) {
+                            break;
+                        }
+
+                        nameLoop = null;
+                        if (arg.throwAwayComments) {
+                            arg.throwAwayComments();
+                        }
+                        value = arg;
+                        var val = null;
+
+                        if (isCall) {
+                            // Variable
+                            if (arg.value.length == 1) {
+                                var val = arg.value[0];
+                            }
+                        } else {
+                            val = arg;
+                        }
+
+                        if (val && val instanceof tree.Variable) {
+                            if ($(':')) {
+                                if (expressions.length > 0) {
+                                    if (isSemiColonSeperated) {
+                                        error("Cannot mix ; and , as delimiter types");
+                                    }
+                                    expressionContainsNamed = true;
+                                }
+                                value = expect(this.expression);
+                                nameLoop = (name = val.name);
+                            } else if (!isCall && $(/^\.{3}/)) {
+                                returner.variadic = true;
+                                if ($(";") && !isSemiColonSeperated) {
+                                    isSemiColonSeperated = true;
+                                }
+                                (isSemiColonSeperated ? argsSemiColon : argsComma)
+                                    .push({ name: arg.name, variadic: true });
+                                break;
+                            } else if (!isCall) {
+                                name = nameLoop = val.name;
+                                value = null;
+                            }
+                        }
+
+                        if (value) {
+                            expressions.push(value);
+                        }
+
+                        argsComma.push({ name:nameLoop, value:value });
+
+                        if ($(',')) {
+                            continue;
+                        }
+
+                        if ($(';') || isSemiColonSeperated) {
+
+                            if (expressionContainsNamed) {
+                                error("Cannot mix ; and , as delimiter types");
+                            }
+
+                            isSemiColonSeperated = true;
+
+                            if (expressions.length > 1) {
+                                value = new (tree.Value)(expressions);
+                            }
+                            argsSemiColon.push({ name:name, value:value });
+
+                            name = null;
+                            expressions = [];
+                            expressionContainsNamed = false;
+                        }
+                    }
+
+                    returner.args = isSemiColonSeperated ? argsSemiColon : argsComma;
+                    return returner;
+                },
                 //
                 // A Mixin definition, with a list of parameters
                 //
@@ -1077,33 +1132,9 @@ less.Parser = function Parser(env) {
                     if (match = $(/^([#.](?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+)\s*\(/)) {
                         name = match[1];
 
-                        do {
-                            $(this.comment);
-                            if (input.charAt(i) === '.' && $(/^\.{3}/)) {
-                                variadic = true;
-                                params.push({ variadic: true });
-                                break;
-                            } else if (param = $(this.entities.variable) || $(this.entities.literal)
-                                                                         || $(this.entities.keyword)) {
-                                // Variable
-                                if (param instanceof tree.Variable) {
-                                    if ($(':')) {
-                                        value = expect(this.expression, 'expected expression');
-                                        params.push({ name: param.name, value: value });
-                                    } else if ($(/^\.{3}/)) {
-                                        params.push({ name: param.name, variadic: true });
-                                        variadic = true;
-                                        break;
-                                    } else {
-                                        params.push({ name: param.name });
-                                    }
-                                } else {
-                                    params.push({ value: param });
-                                }
-                            } else {
-                                break;
-                            }
-                        } while ($(',') || $(';'))
+                        var argInfo = this.mixin.args.call(this, false);
+                        params = argInfo.args;
+                        variadic = argInfo.variadic;
 
                         // .mixincall("@{a}");
                         // looks a bit like a mixin definition.. so we have to be nice and restore
@@ -1231,7 +1262,7 @@ less.Parser = function Parser(env) {
 
                 while ((extend = $(this.extend)) || (e = $(this.element))) {
                     if (extend) {
-                        extendList.push(extend);
+                        extendList.push.apply(extendList, extend);
                     } else {
                         if (extendList.length) {
                             error("Extend can only be used at the end of selector");
@@ -1319,7 +1350,7 @@ less.Parser = function Parser(env) {
                     important = $(this.important);
 
                     if (value && $(this.end)) {
-                        return new(tree.Rule)(name, value, important, memo);
+                        return new(tree.Rule)(name, value, important, memo, env.currentFileInfo);
                     } else {
                         furthest = i;
                         restore();
@@ -1342,18 +1373,53 @@ less.Parser = function Parser(env) {
 
                 save();
 
-                var dir = $(/^@import(?:-(once|multiple))?\s+/);
+                var dir = $(/^@import?\s+/);
+
+                var options = (dir ? $(this.importOptions) : null) || {};
 
                 if (dir && (path = $(this.entities.quoted) || $(this.entities.url))) {
                     features = $(this.mediaFeatures);
                     if ($(';')) {
                         features = features && new(tree.Value)(features);
-                        var importOnce = dir[1] !== 'multiple';
-                        return new(tree.Import)(path, features, importOnce, index, env.currentFileInfo);
+                        return new(tree.Import)(path, features, options, index, env.currentFileInfo);
                     }
                 }
 
                 restore();
+            },
+
+            importOptions: function() {
+                var o, options = {}, optionName, value;
+
+                // list of options, surrounded by parens
+                if (! $('(')) { return null; }
+                do {
+                    if (o = $(this.importOption)) {
+                        optionName = o;
+                        value = true;
+                        switch(optionName) {
+                            case "css":
+                                optionName = "less";
+                                value = false;
+                            break;
+                            case "once":
+                                optionName = "multiple";
+                                value = false;
+                            break;
+                        }
+                        options[optionName] = value;
+                        if (! $(',')) { break }
+                    }
+                } while (o);
+                expect(')');
+                return options;
+            },
+
+            importOption: function() {
+                var opt = $(/^(less|css|multiple|once)/);
+                if (opt) {
+                    return opt[1];
+                }
             },
 
             mediaFeature: function () {
@@ -1367,7 +1433,7 @@ less.Parser = function Parser(env) {
                         e = $(this.value);
                         if ($(')')) {
                             if (p && e) {
-                                nodes.push(new(tree.Paren)(new(tree.Rule)(p, e, null, i, true)));
+                                nodes.push(new(tree.Paren)(new(tree.Rule)(p, e, null, i, env.currentFileInfo, true)));
                             } else if (e) {
                                 nodes.push(new(tree.Paren)(e));
                             } else {
@@ -2798,7 +2864,7 @@ tree.Dimension.prototype = {
             } else if (bValue < aValue) {
                 return 1;
             } else {
-                if (!b.unit.isEmpty() && a.unit.compare(b) !== 0) {
+                if (!b.unit.isEmpty() && a.unit.compare(b.unit) !== 0) {
                     return -1;
                 }
                 return 0;
@@ -3154,20 +3220,12 @@ tree.Extend = function Extend(selector, option, index) {
 
     switch(option) {
         case "all":
-            this.deep = true;
-            this.any = true;
-        break;
-        case "deep":
-            this.deep = true;
-            this.any = false;
-        break;
-        case "any":
-            this.deep = false;
-            this.any = true;
+            this.allowBefore = true;
+            this.allowAfter = true;
         break;
         default:
-            this.deep = false;
-            this.any = false;
+            this.allowBefore = false;
+            this.allowAfter = false;
         break;
     }
 };
@@ -3208,18 +3266,22 @@ tree.Extend.prototype = {
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
-tree.Import = function (path, features, once, index, currentFileInfo) {
+tree.Import = function (path, features, options, index, currentFileInfo) {
     var that = this;
 
-    this.once = once;
+    this.options = options;
     this.index = index;
     this.path = path;
     this.features = features;
     this.currentFileInfo = currentFileInfo;
 
-    var pathValue = this.getPath();
-    if (pathValue) {
-        this.css = /css([\?;].*)?$/.test(pathValue);
+    if (this.options.less !== undefined) {
+        this.css = !this.options.less;
+    } else {
+        var pathValue = this.getPath();
+        if (pathValue && /css([\?;].*)?$/.test(pathValue)) {
+            this.css = true;
+        }
     }
 };
 
@@ -3251,14 +3313,14 @@ tree.Import.prototype = {
     getPath: function () {
         if (this.path instanceof tree.Quoted) {
             var path = this.path.value;
-            return (this.css || /(\.[a-z]*$)|([\?;].*)$/.test(path)) ? path : path + '.less';
+            return (this.css !== undefined || /(\.[a-z]*$)|([\?;].*)$/.test(path)) ? path : path + '.less';
         } else if (this.path instanceof tree.URL) {
             return this.path.value.value;
         }
         return null;
     },
     evalForImport: function (env) {
-        return new(tree.Import)(this.path.eval(env), this.features, this.once, this.index, this.currentFileInfo);
+        return new(tree.Import)(this.path.eval(env), this.features, this.options, this.index, this.currentFileInfo);
     },
     evalPath: function (env) {
         var path = this.path.eval(env);
@@ -3278,7 +3340,7 @@ tree.Import.prototype = {
         if (this.skip) { return []; }
 
         if (this.css) {
-            var newImport = new(tree.Import)(this.evalPath(env), features, this.once, this.index);
+            var newImport = new(tree.Import)(this.evalPath(env), features, this.options, this.index);
             if (!newImport.css && this.error) {
                 throw this.error;
             }
@@ -3876,11 +3938,12 @@ tree.Quoted.prototype = {
 })(require('../tree'));
 (function (tree) {
 
-tree.Rule = function (name, value, important, index, inline) {
+tree.Rule = function (name, value, important, index, currentFileInfo, inline) {
     this.name = name;
     this.value = (value instanceof tree.Value) ? value : new(tree.Value)([value]);
     this.important = important ? ' ' + important.trim() : '';
     this.index = index;
+    this.currentFileInfo = currentFileInfo;
     this.inline = inline || false;
 
     if (name.charAt(0) === '@') {
@@ -3911,7 +3974,7 @@ tree.Rule.prototype = {
             return new(tree.Rule)(this.name,
                               this.value.eval(env),
                               this.important,
-                              this.index, this.inline);
+                              this.index, this.currentFileInfo, this.inline);
         }
         finally {
             if (strictMathsBypass) {
@@ -3923,7 +3986,7 @@ tree.Rule.prototype = {
         return new(tree.Rule)(this.name,
                               this.value,
                               "!important",
-                              this.index, this.inline);
+                              this.index, this.currentFileInfo, this.inline);
     }
 };
 
@@ -3949,6 +4012,7 @@ tree.Ruleset.prototype = {
         
         ruleset.originalRuleset = this;
         ruleset.root = this.root;
+        ruleset.firstRoot = this.firstRoot;
         ruleset.allowImports = this.allowImports;
 
         if(this.debugInfo) {
@@ -4141,6 +4205,10 @@ tree.Ruleset.prototype = {
                 }
             } else {
                 if (rule.toCSS && !rule.variable) {
+                    if (this.firstRoot && rule instanceof tree.Rule) {
+                        throw { message: "properties must be inside selector blocks, they cannot be in the root.",
+                            index: rule.index, filename: rule.currentFileInfo ? rule.currentFileInfo.filename : null};
+                    }
                     rules.push(rule.toCSS(env));
                 } else if (rule.value && !rule.variable) {
                     rules.push(rule.value.toString());
@@ -4174,7 +4242,7 @@ tree.Ruleset.prototype = {
 
                 // Remove duplicates
                 for (var i = rules.length - 1; i >= 0; i--) {
-                    if (_rules.indexOf(rules[i]) === -1) {
+                    if (rules[i].slice(0, 2) === "/*" ||  _rules.indexOf(rules[i]) === -1) {
                         _rules.unshift(rules[i]);
                     }
                 }
@@ -4778,7 +4846,7 @@ tree.jsify = function (obj) {
                     var env = new tree.evalEnv(this.env, this.env.frames.slice(0));
                     this._importer.push(importNode.getPath(), importNode.currentFileInfo, function (e, root, imported) {
                         if (e && !e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
-                        if (imported && importNode.once) { importNode.skip = imported; }
+                        if (imported && !importNode.options.multiple) { importNode.skip = imported; }
 
                         var subFinish = function() {
                             importVisitor.importCount--;
@@ -4968,111 +5036,145 @@ tree.jsify = function (obj) {
             if (rulesetNode.root) {
                 return;
             }
-            var i, j, k, selector, element, allExtends = this.allExtendsStack[this.allExtendsStack.length-1], selectorsToAdd = [];
+            var matches, pathIndex, extendIndex, allExtends = this.allExtendsStack[this.allExtendsStack.length-1], selectorsToAdd = [], extendVisitor = this;
 
-            for(k = 0; k < allExtends.length; k++) {
-                for(i = 0; i < rulesetNode.paths.length; i++) {
-                    selectorPath = rulesetNode.paths[i];
-                    var matches = this.findMatch(allExtends[k], selectorPath);
+            // look at each selector path in the ruleset, find any extend matches and then copy, find and replace
+
+            for(extendIndex = 0; extendIndex < allExtends.length; extendIndex++) {
+                for(pathIndex = 0; pathIndex < rulesetNode.paths.length; pathIndex++) {
+
+                    selectorPath = rulesetNode.paths[pathIndex];
+                    matches = this.findMatch(allExtends[extendIndex], selectorPath);
+
                     if (matches.length) {
-                        allExtends[k].selfSelectors.forEach(function(selfSelector) {
-                            var currentSelectorPathIndex = 0,
-                                currentSelectorPathElementIndex = 0,
-                                path = [];
-                            for(j = 0; j < matches.length; j++) {
-                                match = matches[j];
-                                var selector = selectorPath[match.pathIndex],
-                                    firstElement = new tree.Element(
-                                        match.initialCombinator,
-                                        selfSelector.elements[0].value,
-                                        selfSelector.elements[0].index
-                                    );
 
-                                if (match.pathIndex > currentSelectorPathIndex && currentSelectorPathElementIndex > 0) {
-                                    path[path.length-1].elements = path[path.length-1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
-                                    currentSelectorPathElementIndex = 0;
-                                    currentSelectorPathIndex++;
-                                }
-
-                                path = path.concat(selectorPath.slice(currentSelectorPathIndex, match.pathIndex));
-
-                                path.push(new tree.Selector(
-                                    selector.elements
-                                        .slice(currentSelectorPathElementIndex, match.index)
-                                        .concat([firstElement])
-                                        .concat(selfSelector.elements.slice(1))
-                                ));
-                                currentSelectorPathIndex = match.endPathIndex;
-                                currentSelectorPathElementIndex = match.endPathElementIndex;
-                                if (currentSelectorPathElementIndex >= selector.elements.length) {
-                                    currentSelectorPathElementIndex = 0;
-                                    currentSelectorPathIndex++;
-                                }
-                            }
-
-                            if (currentSelectorPathIndex < selectorPath.length && currentSelectorPathElementIndex > 0) {
-                                path[path.length-1].elements = path[path.length-1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
-                                currentSelectorPathElementIndex = 0;
-                                currentSelectorPathIndex++;
-                            }
-
-                            path = path.concat(selectorPath.slice(currentSelectorPathIndex, selectorPath.length));
-
-                            selectorsToAdd.push(path);
+                        allExtends[extendIndex].selfSelectors.forEach(function(selfSelector) {
+                            selectorsToAdd.push(extendVisitor.extendSelector(matches, selfSelector));
                         });
                     }
                 }
             }
             rulesetNode.paths = rulesetNode.paths.concat(selectorsToAdd);
         },
-        findMatch: function (extend, selectorPath) {
-            var i, k, l, element, hasMatch, potentialMatches = [], potentialMatch, matches = [];
-            for(k = 0; k < selectorPath.length; k++) {
-                selector = selectorPath[k];
-                for(i = 0; i < selector.elements.length; i++) {
-                    if (extend.any || (k == 0 && i == 0)) {
-                        potentialMatches.push({pathIndex: k, index: i, matched: 0, initialCombinator: selector.elements[i].combinator});
+        findMatch: function (extend, haystackSelectorPath) {
+            //
+            // look through the haystack selector path to try and find the needle - extend.selector
+            // returns an array of selector matches that can then be replaced
+            //
+            var haystackSelectorIndex, hackstackSelector, hackstackElementIndex, haystackElement,
+                targetCombinator, i,
+                needleElements = extend.selector.elements,
+                potentialMatches = [], potentialMatch, matches = [];
+
+            // loop through the haystack elements
+            for(haystackSelectorIndex = 0; haystackSelectorIndex < haystackSelectorPath.length; haystackSelectorIndex++) {
+                hackstackSelector = haystackSelectorPath[haystackSelectorIndex];
+
+                for(hackstackElementIndex = 0; hackstackElementIndex < hackstackSelector.elements.length; hackstackElementIndex++) {
+
+                    haystackElement = hackstackSelector.elements[hackstackElementIndex];
+
+                    // if we allow elements before our match we can add a potential match every time. otherwise only at the first element.
+                    if (extend.allowBefore || (haystackSelectorIndex == 0 && hackstackElementIndex == 0)) {
+                        potentialMatches.push({pathIndex: haystackSelectorIndex, index: hackstackElementIndex, matched: 0, initialCombinator: haystackElement.combinator});
                     }
 
-                    for(l = 0; l < potentialMatches.length; l++) {
-                        potentialMatch = potentialMatches[l];
+                    for(i = 0; i < potentialMatches.length; i++) {
+                        potentialMatch = potentialMatches[i];
 
-                        var targetCombinator = selector.elements[i].combinator.value;
-                        if (targetCombinator == '' && i === 0) {
+                        // selectors add " " onto the first element. When we use & it joins the selectors together, but if we don't
+                        // then each selector in haystackSelectorPath has a space before it added in the toCSS phase. so we need to work out
+                        // what the resulting combinator will be
+                        targetCombinator = haystackElement.combinator.value;
+                        if (targetCombinator == '' && hackstackElementIndex === 0) {
                             targetCombinator = ' ';
                         }
-                        if (extend.selector.elements[potentialMatch.matched].value !== selector.elements[i].value ||
-                            (potentialMatch.matched > 0 && extend.selector.elements[potentialMatch.matched].combinator.value !== targetCombinator)) {
+
+                        // if we don't match, null our match to indicate failure
+                        if (needleElements[potentialMatch.matched].value !== haystackElement.value ||
+                            (potentialMatch.matched > 0 && needleElements[potentialMatch.matched].combinator.value !== targetCombinator)) {
                             potentialMatch = null;
                         } else {
                             potentialMatch.matched++;
                         }
 
+                        // if we are still valid and have finished, test whether we have elements after and whether these are allowed
                         if (potentialMatch) {
-                            potentialMatch.finished = potentialMatch.matched === extend.selector.elements.length;
+                            potentialMatch.finished = potentialMatch.matched === needleElements.length;
                             if (potentialMatch.finished &&
-                                (!extend.deep && (i+1 < selector.elements.length ||
-                                    k+1 < selectorPath.length))) {
+                                (!extend.allowAfter && (hackstackElementIndex+1 < hackstackSelector.elements.length || haystackSelectorIndex+1 < haystackSelectorPath.length))) {
                                 potentialMatch = null;
                             }
                         }
+                        // if null we remove, if not, we are still valid, so either push as a valid match or continue
                         if (potentialMatch) {
                             if (potentialMatch.finished) {
-                                potentialMatch.length = extend.selector.elements.length;
-                                potentialMatch.endPathIndex = k;
-                                potentialMatch.endPathElementIndex = i+1; // index after end of match
-                                potentialMatches.length = 0;
+                                potentialMatch.length = needleElements.length;
+                                potentialMatch.endPathIndex = haystackSelectorIndex;
+                                potentialMatch.endPathElementIndex = hackstackElementIndex + 1; // index after end of match
+                                potentialMatches.length = 0; // we don't allow matches to overlap, so start matching again
                                 matches.push(potentialMatch);
-                                break;
                             }
                         } else {
-                            potentialMatches.splice(l, 1);
-                            l--;
+                            potentialMatches.splice(i, 1);
+                            i--;
                         }
                     }
                 }
             }
             return matches;
+        },
+        extendSelector:function (matches, replacementSelector) {
+
+            //for a set of matches, replace each match with the replacement selector
+
+            var currentSelectorPathIndex = 0,
+                currentSelectorPathElementIndex = 0,
+                path = [],
+                matchIndex,
+                selector,
+                firstElement;
+
+            for (matchIndex = 0; matchIndex < matches.length; matchIndex++) {
+                match = matches[matchIndex];
+                selector = selectorPath[match.pathIndex];
+                firstElement = new tree.Element(
+                    match.initialCombinator,
+                    replacementSelector.elements[0].value,
+                    replacementSelector.elements[0].index
+                );
+
+                if (match.pathIndex > currentSelectorPathIndex && currentSelectorPathElementIndex > 0) {
+                    path[path.length - 1].elements = path[path.length - 1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
+                    currentSelectorPathElementIndex = 0;
+                    currentSelectorPathIndex++;
+                }
+
+                path = path.concat(selectorPath.slice(currentSelectorPathIndex, match.pathIndex));
+
+                path.push(new tree.Selector(
+                    selector.elements
+                        .slice(currentSelectorPathElementIndex, match.index)
+                        .concat([firstElement])
+                        .concat(replacementSelector.elements.slice(1))
+                ));
+                currentSelectorPathIndex = match.endPathIndex;
+                currentSelectorPathElementIndex = match.endPathElementIndex;
+                if (currentSelectorPathElementIndex >= selector.elements.length) {
+                    currentSelectorPathElementIndex = 0;
+                    currentSelectorPathIndex++;
+                }
+            }
+
+            if (currentSelectorPathIndex < selectorPath.length && currentSelectorPathElementIndex > 0) {
+                path[path.length - 1].elements = path[path.length - 1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
+                currentSelectorPathElementIndex = 0;
+                currentSelectorPathIndex++;
+            }
+
+            path = path.concat(selectorPath.slice(currentSelectorPathIndex, selectorPath.length));
+
+            return path;
         },
         visitRulesetOut: function (rulesetNode) {
         },

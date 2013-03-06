@@ -1,4 +1,4 @@
-SyntaxError: properties must be inside selector blocks, they cannot be in the root. in C:\git\less.js\test\less\errors\property-in-root.less on line 2, column 3:
+SyntaxError: properties must be inside selector blocks, they cannot be in the root. in {path}property-in-root.less on line 2, column 3:
 1 .a() {
 2   prop:1;
 3 }

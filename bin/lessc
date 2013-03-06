@@ -163,7 +163,10 @@ var ensureDirectory = function (filepath) {
 };
 
 if (options.depends) {
-    // output the target filename, needs to be specified on the command line (no stdout)
+    if (!outputbase) {
+        sys.print("option --depends requires an output path to be specified");
+        return;
+    }
     sys.print(outputbase + ": ");
 }
 
@@ -184,8 +187,10 @@ var parseLessFile = function (e, data) {
             currentErrorcode = 1;
             return;
         } else if (options.depends) {
-            // todo - loop through the imports
-            // sys.print(path.resolve(path.dirname(env.parentPath),importname)
+            for(var file in parser.imports.files) {
+                sys.print(file + " ")
+            }
+            sys.print("\n");
         } else if(!options.lint) {
             try {
                 var css = tree.toCSS({

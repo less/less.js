@@ -63,3 +63,19 @@ div.ext5,
 .bar:extend(.ext8 .ext9 all) {}
 .zap:extend(.ext8 + .ext9 all) {}
 .zoo:extend(.ext8 > .ext9 all) {}
+
+.aa {
+  color: black;
+  .dd {
+    background: red;
+  }
+}
+.bb:extend(.aa) {
+  background: red;
+  .bb {
+    color: black;
+  }
+}
+.cc:extend(.aa,.bb) {}
+.ee:extend(.dd all,.bb) {}
+.ff:extend(.dd,.bb all) {}

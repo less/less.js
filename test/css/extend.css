@@ -56,3 +56,22 @@ div.ext7,
 .foo {
   result: match-nested-foo;
 }
+.aa,
+.bb,
+.cc {
+  color: black;
+}
+.aa .dd,
+.aa .ee {
+  background: red;
+}
+.bb,
+.cc,
+.ee,
+.ff {
+  background: red;
+}
+.bb .bb,
+.ff .ff {
+  color: black;
+}

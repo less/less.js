@@ -102,3 +102,12 @@ body {
   defaults: 1px 1px 1px;
   defaults: 2px 2px 2px;
 }
+.selector {
+  margin: 2, 2, 2, 2;
+}
+.selector2 {
+  margin: 2, 2, 2, 2;
+}
+.selector3 {
+  margin: 4;
+}

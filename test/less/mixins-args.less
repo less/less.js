@@ -184,3 +184,22 @@ body {
   .mixin-default-arg();
   .mixin-default-arg(2px);
 }
+
+.mixin-comma-default1(@color; @padding; @margin: 2, 2, 2, 2) {
+  margin: @margin;
+}
+.selector {
+  .mixin-comma-default1(#33acfe; 4);
+}
+.mixin-comma-default2(@margin: 2, 2, 2, 2;) {
+  margin: @margin;
+}
+.selector2 {
+  .mixin-comma-default2();
+}
+.mixin-comma-default3(@margin: 2, 2, 2, 2) {
+  margin: @margin;
+}
+.selector3 {
+  .mixin-comma-default3(4,2,2,2);
+}

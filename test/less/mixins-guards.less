@@ -122,3 +122,16 @@
 	.stringguard("theme2");
 	.stringguard(theme1);
 }
+
+.mixin(...) {
+  catch:all;
+}
+.mixin(@var) when (@var=4) {
+  declare: 4;
+}
+.mixin(@var) when (@var=4px) {
+  declare: 4px;
+}
+#tryNumberPx {
+  .mixin(4px);
+}

@@ -69,3 +69,8 @@
   content: is not theme2;
   content: is theme1 no quotes;
 }
+#tryNumberPx {
+  catch: all;
+  declare: 4;
+  declare: 4px;
+}

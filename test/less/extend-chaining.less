@@ -46,3 +46,15 @@
 
 .w:extend(.w) {color: black;}
 .v.w.v:extend(.w all){}
+
+// classic circular references
+
+.x:extend(.z) {
+  color: x;
+}
+.y:extend(.x) {
+  color: y;
+}
+.z:extend(.y) {
+  color: z;
+}

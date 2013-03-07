@@ -36,3 +36,18 @@
 .v.w.v {
   color: black;
 }
+.x,
+.y,
+.z {
+  color: x;
+}
+.y,
+.z,
+.x {
+  color: y;
+}
+.z,
+.x,
+.y {
+  color: z;
+}

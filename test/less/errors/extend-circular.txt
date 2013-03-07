@@ -1,2 +1,0 @@
-SyntaxError: extend circular reference detected. One of the circular extends is currently: .x:extend( .z) in {path}extend-circular.less on line null, column 0:
-1 

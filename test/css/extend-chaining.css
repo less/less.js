@@ -51,3 +51,22 @@
 .y {
   color: z;
 }
+@media tv {
+  .ma,
+  .mb,
+  .mc {
+    color: black;
+  }
+  .md,
+  .ma,
+  .mb,
+  .mc {
+    color: white;
+  }
+}
+@media tv and plasma {
+  .me,
+  .mf {
+    background: red;
+  }
+}

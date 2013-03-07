@@ -58,3 +58,22 @@
 .z:extend(.y) {
   color: z;
 }
+
+// media queries - dont extend outside, do extend inside
+
+@media tv {
+  .ma:extend(.a,.b,.c,.d,.e,.f,.g,.h,.i,.j,.k,.l,.m,.n,.o,.p,.q,.r,.s,.t,.u,.v,.w,.x,.y,.z,.md) {
+    color: black;
+  }
+  .md {
+    color: white;
+  }
+  @media plasma {
+    .me, .mf {
+      &:extend(.mb,.md);
+      background: red;
+    }
+  }
+}
+.mb:extend(.ma) {};
+.mc:extend(.mb) {};

@@ -1,0 +1,26 @@
+// classic circular reference
+
+.x:extend(.z) {}
+.y:extend(.x) {}
+.z:extend(.y) {}
+
+//.x:extend(.z) {}
+//.y:extend(.x) {}
+//.z:extend(.y) {}
+//
+//.x:extend(.z),    <-- target 1
+///y:extend(.z) {}  <-- new 1
+//.y:extend(.x),
+//.z:extend(.x) {}  <-- new
+//.z:extend(.y),
+//.x:extend(.y) {}  <-- new
+//
+//.x:extend(.z),
+//.z:extend(.z),  <--- last iteration 1 - .parent = target 1 - .parent =
+///y:extend(.z) {}
+//.y:extend(.x),
+//.x:extend(.x),  <-- last  iteration
+//.z:extend(.x) {}
+//.z:extend(.y),  <-- potential match with 1 -> result in .z:extend(.y)
+//.y:extend(.y),    <-- last  iteration
+//.x:extend(.y) {}

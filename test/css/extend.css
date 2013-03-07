@@ -34,13 +34,13 @@ div.ext7,
   width: 100px;
 }
 .ext8.ext9,
-.foo {
+.fuu {
   result: add-foo;
 }
 .ext8 .ext9,
 .ext8 + .ext9,
 .ext8 > .ext9,
-.bar,
+.buu,
 .zap,
 .zoo {
   result: bar-matched;
@@ -49,15 +49,14 @@ div.ext7,
   result: none;
 }
 .ext8 .ext9,
-.bar {
+.buu {
   result: match-nested-bar;
 }
 .ext8.ext9,
-.foo {
+.fuu {
   result: match-nested-foo;
 }
 .aa,
-.bb,
 .cc {
   color: black;
 }

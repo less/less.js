@@ -1,12 +1,14 @@
 .sidebar,
 .sidebar2,
-.type1 .sidebar3 {
+.type1 .sidebar3,
+.type2.sidebar4 {
   width: 300px;
   background: red;
 }
 .sidebar .box,
 .sidebar2 .box,
-.type1 .sidebar3 .box {
+.type1 .sidebar3 .box,
+.type2.sidebar4 .box {
   background: #FFF;
   border: 1px solid #000;
   margin: 10px 0;
@@ -16,4 +18,7 @@
 }
 .type1 .sidebar3 {
   background: green;
+}
+.type2.sidebar4 {
+  background: red;
 }

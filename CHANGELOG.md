@@ -1,3 +1,28 @@
+# 1.4.0 Beta
+
+2013-03-07
+
+ - support for `:extends()` in selectors and `&:extends();` in ruleset
+ - maths is now only done inside brackets. This means font: statements, media queries and the calc function can use a simpler format without being escaped. Disable this with --strict-maths-off in lessc and strictMaths:false in JavaScript.
+ - units are calculated, e.g. 200cm+1m = 3m, 3px/1px = 3. If you use units inconsistently you will get an error. Suppress this error with --strict-units-off in lessc or strictUnits:false in JavaScript
+ - `(~"@var")` selector interpolation is removed. Use @{var} in selectors to have variable selectors
+ - default behaviour of import is to import each file once.
+ - You can specify options on imports to force it to behave as css or less `@import (less) "file.css"` will process the file as less
+ - variables in mixins no longer 'leak' into their calling scope
+ - added data-uri function which will inline an image into the output css. If ieCompat option is true and file is too large, it will fallback to a url()
+ - significant bug fixes to our debug options
+ - other parameters can be used as defaults in mixins e.g. .a(@a, @b:@a)
+ - an error is shown if properties are used outside of a ruleset
+ - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 3 
+ - added luma, hsvhue, hsvsaturation, hsvvalue functions
+ - added pow, pi, mod, tan, sin, cos, atan, asin, acos and sqrt math functions
+ - added convert function, e.g. convert(1rad, deg) => value in degrees
+ - lessc makes output directories if they don't exist
+ - lessc `@import` supports https and 301's
+ - lessc "-depends" option for lessc writes out the list of import files used in makefile format
+ - lessc "-lint" option just reports errors
+ - other bug fixes
+
 # 1.3.3
 
 2012-12-30

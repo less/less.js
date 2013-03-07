@@ -17,7 +17,10 @@
     "mkdirp": "~0.3.4",
     "ycssmin": ">=1.0.1"
   },
-  "devDependencies" : { "diff": "~1.0" },
+  "devDependencies" : {
+    "diff": "~1.0",
+    "uglify-js": "2.2.x"
+  },
   "scripts": {
    "test": "make test"
   },

@@ -13,6 +13,7 @@
   saturate: #203c31;
   desaturate: #29332f;
   greyscale: #2e2e2e;
+  hsl-clamp: #ffffff;
   spin-p: #bf6a40;
   spin-n: #bf4055;
   luma-white: 100%;

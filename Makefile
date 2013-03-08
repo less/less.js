@@ -26,6 +26,9 @@ browser-prepare: DIST := test/browser/less.js
 alpha: DIST := dist/less-${VERSION}-alpha.js
 alpha: DIST_MIN := dist/less-${VERSION}-alpha.min.js
 
+beta: DIST := dist/less-${VERSION}-beta.js
+beta: DIST_MIN := dist/less-${VERSION}-beta.min.js
+
 less:
 	@@mkdir -p dist
 	@@touch ${DIST}
@@ -81,6 +84,8 @@ min: less
 	@@echo ${DIST_MIN} built.
 
 alpha: min
+
+beta: min
 
 alpha-release: alpha
 	git add dist/*.js

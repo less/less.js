@@ -5,7 +5,7 @@
   "keywords"      : ["css", "parser", "lesscss", "browser"],
   "author"        : "Alexis Sellier <self@cloudhead.net>",
   "contributors"  : ["The Core Less Team"],
-  "version"       : "1.4.0",
+  "version"       : "1.4.0-b1",
   "jam"           : { "main": "./dist/less-1.4.0-beta.js" },
   "bin"           : { "lessc": "./bin/lessc" },
   "main"          : "./lib/less/index",

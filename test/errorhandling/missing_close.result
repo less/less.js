@@ -1,0 +1,11 @@
+Error: missing_close.mss:1:5 Missing closing ] of filter.
+    at makeError (/Users/tmcw/src/carto/lib/carto/parser.js:131:16)
+    at Object.carto.Parser.parser.parsers.filter (/Users/tmcw/src/carto/lib/carto/parser.js:579:35)
+    at $ (/Users/tmcw/src/carto/lib/carto/parser.js:50:24)
+    at Object.carto.Parser.parser.parsers.selector (/Users/tmcw/src/carto/lib/carto/parser.js:523:30)
+    at $ (/Users/tmcw/src/carto/lib/carto/parser.js:50:24)
+    at Object.carto.Parser.parser.parsers.ruleset (/Users/tmcw/src/carto/lib/carto/parser.js:615:28)
+    at $ (/Users/tmcw/src/carto/lib/carto/parser.js:50:24)
+    at Object.carto.Parser.parser.parsers.primary (/Users/tmcw/src/carto/lib/carto/parser.js:297:48)
+    at $ (/Users/tmcw/src/carto/lib/carto/parser.js:50:24)
+    at Object.carto.Parser.parser.parse (/Users/tmcw/src/carto/lib/carto/parser.js:227:41)

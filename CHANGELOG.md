@@ -2,7 +2,7 @@
 
 2013-03-07
 
- - support for `:extends()` in selectors and `&:extends();` in ruleset
+ - support for `:extend()` in selectors (e.g. `input:extend(.button) {}`) and `&:extend();` in ruleset (e.g. `input { &:extend(.button all); }`)
  - maths is now only done inside brackets. This means font: statements, media queries and the calc function can use a simpler format without being escaped. Disable this with --strict-maths-off in lessc and strictMaths:false in JavaScript.
  - units are calculated, e.g. 200cm+1m = 3m, 3px/1px = 3. If you use units inconsistently you will get an error. Suppress this error with --strict-units-off in lessc or strictUnits:false in JavaScript
  - `(~"@var")` selector interpolation is removed. Use @{var} in selectors to have variable selectors

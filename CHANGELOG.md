@@ -6,7 +6,7 @@
  - maths is now only done inside brackets. This means font: statements, media queries and the calc function can use a simpler format without being escaped. Disable this with --strict-maths-off in lessc and strictMaths:false in JavaScript.
  - units are calculated, e.g. 200cm+1m = 3m, 3px/1px = 3. If you use units inconsistently you will get an error. Suppress this error with --strict-units-off in lessc or strictUnits:false in JavaScript
  - `(~"@var")` selector interpolation is removed. Use @{var} in selectors to have variable selectors
- - default behaviour of import is to import each file once.
+ - default behaviour of import is to import each file once. `@import-once` has been removed.
  - You can specify options on imports to force it to behave as css or less `@import (less) "file.css"` will process the file as less
  - variables in mixins no longer 'leak' into their calling scope
  - added data-uri function which will inline an image into the output css. If ieCompat option is true and file is too large, it will fallback to a url()

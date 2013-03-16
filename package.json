@@ -1,29 +1,67 @@
 {
-  "name"          : "less",
-  "description"   : "Leaner CSS",
-  "homepage"      : "http://lesscss.org",
-  "keywords"      : ["css", "parser", "lesscss", "browser"],
-  "author"        : "Alexis Sellier <self@cloudhead.net>",
-  "contributors"  : ["The Core Less Team"],
-  "version"       : "1.4.0-b1",
-  "jam"           : { "main": "./dist/less-1.4.0-beta.js" },
-  "bin"           : { "lessc": "./bin/lessc" },
-  "main"          : "./lib/less/index",
-  "directories"   : { "test": "./test" },
-  "engines"       : { "node": ">=0.4.2" },
-  "optionalDependencies" : {
+  "name": "less",
+  "version": "1.4.0-b1",
+  "description": "Leaner CSS",
+  "homepage": "http://lesscss.org",
+  "author": "Alexis Sellier <self@cloudhead.net>",
+  "contributors": [
+    "The Core Less Team"
+  ],
+  "bugs": {
+    "url": "https://github.com/cloudhead/less.js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloudhead/less.js.git"
+  },
+  "bin": {
+    "lessc": "./bin/lessc"
+  },
+  "main": "./lib/less/index",
+  "directories": {
+    "test": "./test"
+  },
+  "jam": {
+    "main": "./dist/less-1.4.0-beta.js"
+  },
+  "engines": {
+    "node": ">=0.4.2"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "optionalDependencies": {
     "mime": "1.2.x",
-    "request":">=2.12.0",
+    "request": ">=2.12.0",
     "mkdirp": "~0.3.4",
     "ycssmin": ">=1.0.1"
   },
-  "devDependencies" : { "diff": "~1.0" },
-  "scripts": {
-   "test": "make test"
+  "devDependencies": {
+    "diff": "~1.0"
   },
-  "bugs": { "url" : "https://github.com/cloudhead/less.js/issues"},
-  "repository" :
-  { "type" : "git",
-    "url" : "https://github.com/cloudhead/less.js.git"
-  }
+  "keywords": [
+    "compile less",
+    "css nesting",
+    "css variable",
+    "css",
+    "gradients css",
+    "gradients css3",
+    "less compiler",
+    "less css",
+    "less mixins",
+    "less",
+    "less.js",
+    "lesscss",
+    "mixins",
+    "nested css",
+    "parser",
+    "preprocessor",
+    "bootstrap css",
+    "bootstrap less",
+    "style",
+    "styles",
+    "stylesheet",
+    "variables in css",
+    "css less"
+  ]
 }

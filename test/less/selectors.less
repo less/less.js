@@ -135,6 +135,9 @@ a {
 [prop*="val@{num}"],
 [|prop~="val@{num}"],
 [*|prop$="val@{num}"],
-[ns|prop^="val@{num}"] {
+[ns|prop^="val@{num}"],
+[@{num}^="val@{num}"],
+[@{num}=@{num}],
+[@{num}] {
   attributes: yes;
 }

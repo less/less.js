@@ -133,6 +133,9 @@ p a span {
 [prop*="val3"],
 [|prop~="val3"],
 [*|prop$="val3"],
-[ns|prop^="val3"] {
+[ns|prop^="val3"],
+[3^="val3"],
+[3=3],
+[3] {
   attributes: yes;
 }

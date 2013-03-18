@@ -21,6 +21,7 @@
  - lessc `@import` supports https and 301's
  - lessc "-depends" option for lessc writes out the list of import files used in makefile format
  - lessc "-lint" option just reports errors
+ - support for namespaces in attributes and selector interpolation in attributes
  - other bug fixes
 
 # 1.3.3

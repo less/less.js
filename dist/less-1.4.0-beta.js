@@ -614,13 +614,8 @@ less.Parser = function Parser(env) {
             };
 
             if (env.processImports !== false) {
-                try {
-                    new tree.importVisitor(this.imports, finish)
-                        .run(root);
-                }
-                catch(e) {
-                    error = e;
-                }
+                new tree.importVisitor(this.imports, finish)
+                    .run(root);
             } else {
                 finish();
             }
@@ -1282,16 +1277,17 @@ less.Parser = function Parser(env) {
 
                 if (! $('[')) return;
 
-                if (key = $(/^(?:[_A-Za-z0-9-]|\\.)+/) || $(this.entities.quoted)) {
-                    if ((op = $(/^[|~*$^]?=/)) &&
-                        (val = $(this.entities.quoted) || $(/^[\w-]+/))) {
-                        attr = [key, op, val.toCSS ? val.toCSS() : val].join('');
-                    } else { attr = key }
+                if (!(key = $(this.entities.variableCurly))) {
+                    key = expect(/^(?:[_A-Za-z0-9-\*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
                 }
 
-                if (! $(']')) return;
+                if ((op = $(/^[|~*$^]?=/))) {
+                    val = $(this.entities.quoted) || $(/^[\w-]+/) || $(this.entities.variableCurly);
+                }
 
-                if (attr) { return "[" + attr + "]" }
+                expect(']');
+
+                return new(tree.Attribute)(key, op, val);
             },
 
             //
@@ -3149,6 +3145,32 @@ tree.Element.prototype = {
     }
 };
 
+tree.Attribute = function (key, op, value) {
+    this.key = key;
+    this.op = op;
+    this.value = value;
+};
+tree.Attribute.prototype = {
+    type: "Attribute",
+    accept: function (visitor) {
+        this.value = visitor.visit(this.value);
+    },
+    eval: function (env) {
+        return new(tree.Attribute)(this.key.eval ? this.key.eval(env) : this.key,
+            this.op, (this.value && this.value.eval) ? this.value.eval(env) : this.value);
+    },
+    toCSS: function (env) {
+        var value = this.key.toCSS ? this.key.toCSS(env) : this.key;
+
+        if (this.op) {
+            value += this.op;
+            value += (this.value.toCSS ? this.value.toCSS(env) : this.value);
+        }
+
+        return '[' + value + ']';
+    }
+};
+
 tree.Combinator = function (value) {
     if (value === ' ') {
         this.value = ' ';
@@ -3968,9 +3990,16 @@ tree.Rule.prototype = {
     toCSS: function (env) {
         if (this.variable) { return "" }
         else {
-            return this.name + (env.compress ? ':' : ': ') +
+            try {
+                return this.name + (env.compress ? ':' : ': ') +
                    this.value.toCSS(env) +
                    this.important + (this.inline ? "" : ";");
+            }
+            catch(e) {
+                e.index = this.index;
+                e.filename = this.currentFileInfo.filename;
+                throw e;
+            }
         }
     },
     eval: function (env) {
@@ -4366,11 +4395,11 @@ tree.Ruleset.prototype = {
                             if (sel.length > 0) {
                                 newSelectorPath = sel.slice(0);
                                 lastSelector = newSelectorPath.pop();
-                                newJoinedSelector = new(tree.Selector)(lastSelector.elements.slice(0));
+                                newJoinedSelector = new(tree.Selector)(lastSelector.elements.slice(0), selector.extendList);
                                 newJoinedSelectorEmpty = false;
                             }
                             else {
-                                newJoinedSelector = new(tree.Selector)([]);
+                                newJoinedSelector = new(tree.Selector)([], selector.extendList);
                             }
 
                             //put together the parent selectors after the join
@@ -4420,7 +4449,7 @@ tree.Ruleset.prototype = {
     },
     
     mergeElementsOnToSelectors: function(elements, selectors) {
-        var i, sel;
+        var i, sel, extendList;
 
         if (selectors.length == 0) {
             selectors.push([ new(tree.Selector)(elements) ]);
@@ -4432,7 +4461,7 @@ tree.Ruleset.prototype = {
 
             // if the previous thing in sel is a parent this needs to join on to it
             if (sel.length > 0) {
-                sel[sel.length - 1] = new(tree.Selector)(sel[sel.length - 1].elements.concat(elements));
+                sel[sel.length - 1] = new(tree.Selector)(sel[sel.length - 1].elements.concat(elements), sel[sel.length - 1].extendList);
             }
             else {
                 sel.push(new(tree.Selector)(elements));
@@ -4824,13 +4853,19 @@ tree.jsify = function (obj) {
     tree.importVisitor.prototype = {
         isReplacing: true,
         run: function (root) {
-            // process the contents
-            this._visitor.visit(root);
+            var error;
+            try {
+                // process the contents
+                this._visitor.visit(root);
+            }
+            catch(e) {
+                error = e;
+            }
 
             this.isFinished = true;
 
             if (this.importCount === 0) {
-                this._finish();
+                this._finish(error);
             }
         },
         visitImport: function (importNode, visitArgs) {
@@ -4857,11 +4892,11 @@ tree.jsify = function (obj) {
                         if (e && !e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
                         if (imported && !importNode.options.multiple) { importNode.skip = imported; }
 
-                        var subFinish = function() {
+                        var subFinish = function(e) {
                             importVisitor.importCount--;
 
                             if (importVisitor.importCount === 0 && importVisitor.isFinished) {
-                                importVisitor._finish();
+                                importVisitor._finish(e);
                             }
                         };
 

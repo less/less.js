@@ -128,3 +128,11 @@ p a span {
 .test:nth-child(odd):not(:nth-child(3)) {
   color: #ff0000;
 }
+[prop],
+[prop="value3"],
+[prop*="val3"],
+[|prop~="val3"],
+[*|prop$="val3"],
+[ns|prop^="val3"] {
+  attributes: yes;
+}

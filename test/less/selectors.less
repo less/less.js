@@ -130,3 +130,11 @@ a {
     color: #ff0000;
   }
 }
+[prop],
+[prop="value@{num}"],
+[prop*="val@{num}"],
+[|prop~="val@{num}"],
+[*|prop$="val@{num}"],
+[ns|prop^="val@{num}"] {
+  attributes: yes;
+}

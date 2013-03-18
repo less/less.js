@@ -53,3 +53,13 @@
 }
 
 .nomatch :extend(.button2:hover) {}
+
+.amp-test-a,
+.amp-test-b {
+  .amp-test-c &.amp-test-d&.amp-test-e {
+    .amp-test-f&+&.amp-test-g:extend(.amp-test-h) {}
+  }
+}
+.amp-test-h {
+  test: extended by masses of selectors;
+}

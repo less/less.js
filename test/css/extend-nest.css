@@ -24,15 +24,34 @@
 }
 .button,
 .submit {
-    color: black;
+  color: black;
 }
 .button:hover,
 .submit:hover {
-    color: white;
+  color: white;
 }
 .button2 :hover {
-    nested: white;
+  nested: white;
 }
 .button2 :hover {
-    notnested: black;
+  notnested: black;
+}
+.amp-test-h,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-a.amp-test-d.amp-test-b.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-a.amp-test-e.amp-test-g,
+.amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e.amp-test-g {
+  test: extended by masses of selectors;
 }

@@ -22,3 +22,17 @@
 .type2.sidebar4 {
   background: red;
 }
+.button,
+.submit {
+    color: black;
+}
+.button:hover,
+.submit:hover {
+    color: white;
+}
+.button2 :hover {
+    nested: white;
+}
+.button2 :hover {
+    notnested: black;
+}

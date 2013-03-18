@@ -27,3 +27,29 @@
     background: red;
   }
 }
+
+.button {
+  color: black;
+  &:hover {
+    color: white;
+  }
+}
+.submit {
+  &:extend(.button);
+  &:hover:extend(.button:hover) {}
+}
+
+.nomatch {
+  &:hover:extend(.button :hover) {}
+}
+
+.button2 {
+  :hover {
+    nested: white;
+  }
+}
+.button2 :hover {
+  notnested: black;
+}
+
+.nomatch :extend(.button2:hover) {}

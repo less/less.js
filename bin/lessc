@@ -12,6 +12,7 @@ var options = {
     depends: false,
     compress: false,
     yuicompress: false,
+    max_line_len: -1,
     optimization: 1,
     silent: false,
     verbose: false,
@@ -75,6 +76,12 @@ args = args.filter(function (arg) {
             break;
         case 'yui-compress':
             options.yuicompress = true;
+            break;
+        case 'max-line-len':
+            options.max_line_len = parseInt(match[2], 10);
+            if (options.max_line_len <= 0) {
+              options.max_line_len = -1;
+            }
             break;
         case 'no-color':
             options.color = false;
@@ -199,6 +206,7 @@ var parseLessFile = function (e, data) {
                     ieCompat: options.ieCompat,
                     compress: options.compress,
                     yuicompress: options.yuicompress,
+                    max_line_len: options.max_line_len,
                     strictMaths: options.strictMaths,
                     strictUnits: options.strictUnits
                 });

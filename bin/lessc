@@ -107,7 +107,7 @@ args = args.filter(function (arg) {
                 sys.puts("rootpath option requires a parameter");
                 continueProcessing = false;
             } else {
-                options.rootpath = path.normalize(match[2] + '/').replace('\\', '/');
+                options.rootpath = match[2].replace(/\\/g, '/');
             }
             break;
         case "ru":

@@ -32,6 +32,15 @@ var continueProcessing = true,
 // so use this to set the exit code
 process.on('exit', function() { process.reallyExit(currentErrorcode) });
 
+var checkArgFunc = function(arg, option) {
+    if (!option) {
+        sys.puts(arg + " option requires a parameter");
+        continueProcessing = false;
+        return false;
+    }
+    return true;
+}
+
 args = args.filter(function (arg) {
     var match;
 
@@ -78,9 +87,11 @@ args = args.filter(function (arg) {
             options.yuicompress = true;
             break;
         case 'max-line-len':
-            options.max_line_len = parseInt(match[2], 10);
-            if (options.max_line_len <= 0) {
-              options.max_line_len = -1;
+            if (checkArgFunc(arg, match[2])) {
+                options.maxLineLen = parseInt(match[2], 10);
+                if (options.maxLineLen <= 0) {
+                  options.maxLineLen = -1;
+                }
             }
             break;
         case 'no-color':
@@ -90,10 +101,7 @@ args = args.filter(function (arg) {
             options.ieCompat = false;
             break;
         case 'include-path':
-            if (!match[2]) {
-                sys.puts("include-path option requires a parameter");
-                continueProcessing = false;
-            } else {
+            if (checkArgFunc(arg, match[2])) {
                 options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
                     .map(function(p) {
                         if (p) {
@@ -106,14 +114,13 @@ args = args.filter(function (arg) {
         case 'O1': options.optimization = 1; break;
         case 'O2': options.optimization = 2; break;
         case 'line-numbers':
-            options.dumpLineNumbers = match[2];
+            if (checkArgFunc(arg, match[2])) {
+                options.dumpLineNumbers = match[2];
+            }
             break;
         case 'rp':
         case 'rootpath':
-            if (!match[2]) {
-                sys.puts("rootpath option requires a parameter");
-                continueProcessing = false;
-            } else {
+            if (checkArgFunc(arg, match[2])) {
                 options.rootpath = match[2].replace(/\\/g, '/');
             }
             break;
@@ -206,7 +213,7 @@ var parseLessFile = function (e, data) {
                     ieCompat: options.ieCompat,
                     compress: options.compress,
                     yuicompress: options.yuicompress,
-                    max_line_len: options.max_line_len,
+                    maxLineLen: options.maxLineLen,
                     strictMaths: options.strictMaths,
                     strictUnits: options.strictUnits
                 });

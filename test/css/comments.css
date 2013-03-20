@@ -26,7 +26,8 @@
  */
 /* @group Variables
 ------------------- */
-#comments {
+#comments,
+.comments {
   /**/
   color: red;
   /* A C-style comment */

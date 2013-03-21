@@ -1,3 +1,14 @@
+@media only screen and (max-width: 200px) {
+  width: 480px;
+}
+@media (max-width: 1200px) {
+  /* a comment */
+}
+/*
+  The media statements - 1 is invalid (no selector) and 1 is just a comment
+  We should band invalid media queries solving the 1st case and not treat comments as rules,
+  solving the 2nd issue.
+*/
 .visible {
   color: red;
 }

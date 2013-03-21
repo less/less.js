@@ -44,3 +44,4 @@ createTestRunnerPage("browser", null, "relative-urls", "relative-urls");
 createTestRunnerPage("browser", null, "rootpath", "rootpath");
 createTestRunnerPage("browser", null, "rootpath-relative", "rootpath-relative");
 createTestRunnerPage("browser", null, "production");
+createTestRunnerPage("browser", null, "modify-vars", "modify-vars");

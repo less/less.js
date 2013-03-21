@@ -53,9 +53,6 @@
     width: 500px;
   }
 }
-@media a {
-  
-}
 @media a and b {
   .first .second .third {
     width: 300px;

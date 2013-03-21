@@ -1,11 +1,11 @@
-.a {
+.z {
   color: red;
   .c {
     color: green;
   }
 }
 .only-with-visible,
-.a {
+.z {
   color: green;
   &:hover {
     color: green;
@@ -22,6 +22,12 @@
 }
 
 & {
+  .hidden {
+    hidden: true;
+  }
+}
+
+@media tv {
   .hidden {
     hidden: true;
   }

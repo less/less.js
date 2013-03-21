@@ -1,3 +1,8 @@
+# 1.4.1 WIP
+
+- support for import inline option to include css that you do not want less to parse e.g. `@import (inline) "file.css";`
+- better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
+
 # 1.4.1
 
 2013-07-05
@@ -13,7 +18,7 @@
  - fix passing of strict maths option
 
 # 1.4.0 Beta 4
-
+ 
 2013-05-04
 
  - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.

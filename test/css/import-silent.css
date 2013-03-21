@@ -1,6 +1,35 @@
+.visible {
+  color: red;
+}
+.visible .c {
+  color: green;
+}
+.visible {
+  color: green;
+}
+.visible:hover {
+  color: green;
+}
+.visible {
+  color: green;
+}
+.only-with-visible + .visible,
+.visible + .only-with-visible,
+.visible + .visible {
+  color: green;
+}
+.only-with-visible + .visible .sub,
+.visible + .only-with-visible .sub,
+.visible + .visible .sub {
+  color: green;
+}
 .b {
   color: red;
+  color: green;
 }
 .b .c {
   color: green;
+}
+.visible {
+  extend: test;
 }

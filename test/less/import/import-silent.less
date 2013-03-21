@@ -4,8 +4,25 @@
     color: green;
   }
 }
-.d {
+.only-with-visible,
+.a {
+  color: green;
   &:hover {
-    color: purple;
+    color: green;
+  }
+  & {
+    color: green;
+  }
+  & + & {
+    color: green;
+    .sub {
+      color: green;
+    }
+  }
+}
+
+& {
+  .hidden {
+    hidden: true;
   }
 }

@@ -1,11 +1,11 @@
-@import (silent) url("import-once.less");
-@import (silent) url("css-3.less");
-@import (silent) url("media.less");
+@import (mute) url("import-once.less");
+@import (mute) url("css-3.less");
+@import (mute) url("media.less");
 /*
   The media statement above is invalid (no selector)
   We should ban invalid media queries with properties and no selector?
 */
-@import (silent) url("import/import-silent.less");
+@import (mute) url("import/import-mute.less");
 
 .b {
   .z();

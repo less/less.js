@@ -37,6 +37,18 @@
 .b .c {
   color: green;
 }
+.b:hover {
+  color: green;
+}
+.b {
+  color: green;
+}
+.b + .b {
+  color: green;
+}
+.b + .b .sub {
+  color: green;
+}
 .y {
   pulled-in: yes;
 }

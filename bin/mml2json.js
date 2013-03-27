@@ -29,7 +29,7 @@ fs.readFile(process.argv[2], 'utf-8', function(err, data) {
         delete obj['$'];
         return obj;
     }
-    
+
     function simplifyExternal(obj) {
         if (obj.src) return obj.src;
         else return obj;

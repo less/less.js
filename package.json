@@ -63,5 +63,11 @@
     "stylesheet",
     "variables in css",
     "css less"
+  ],
+  "licenses": [
+    {
+      "type": "Apache v2",
+      "url": "https://github.com/cloudhead/less.js/blob/master/LICENSE"
+    }
   ]
 }

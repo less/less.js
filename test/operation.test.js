@@ -12,7 +12,7 @@ describe('Operation', function() {
         var env = { ppi:72, error:function(err) { console.log(err.message); } };
 
         var o = new tree.Operation("+", [ new tree.Dimension(2), new tree.Dimension(10, "%") ]);
-        assert.equal(o.ev(env).value, 2.2);
+        assert.equal(o.ev(env).value, 2.1);
     });
 
     it('should work with units', function() {
@@ -21,10 +21,10 @@ describe('Operation', function() {
         var o = new tree.Operation("+", [ new tree.Dimension(2.54, 'cm'), new tree.Dimension(0.0254, 'm') ]);
         assert.equal(o.ev(env).value, 144);
 
-        var o = new tree.Operation("+", [ new tree.Dimension(25.4, 'mm'), new tree.Dimension(72, 'pt') ]);
+        o = new tree.Operation("+", [ new tree.Dimension(25.4, 'mm'), new tree.Dimension(72, 'pt') ]);
         assert.equal(o.ev(env).value, 144);
 
-        var o = new tree.Operation("+", [ new tree.Dimension(72, 'pt'), new tree.Dimension(6, 'pc') ]);
+        o = new tree.Operation("+", [ new tree.Dimension(72, 'pt'), new tree.Dimension(6, 'pc') ]);
         assert.equal(o.ev(env).value, 144);
     });
 
@@ -34,12 +34,10 @@ describe('Operation', function() {
         var o = new tree.Operation("+", [ new tree.Dimension(2.54, 'cm'), new tree.Dimension(0.0254, 'm') ]);
         assert.equal(o.ev(env).value, 600);
 
-        var o = new tree.Operation("+", [ new tree.Dimension(25.4, 'mm'), new tree.Dimension(72, 'pt') ]);
+        o = new tree.Operation("+", [ new tree.Dimension(25.4, 'mm'), new tree.Dimension(72, 'pt') ]);
         assert.equal(o.ev(env).value, 600);
 
-        var o = new tree.Operation("+", [ new tree.Dimension(72, 'pt'), new tree.Dimension(6, 'pc') ]);
+        o = new tree.Operation("+", [ new tree.Dimension(72, 'pt'), new tree.Dimension(6, 'pc') ]);
         assert.equal(o.ev(env).value, 600);
     });
-
-
 });

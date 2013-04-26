@@ -68,7 +68,7 @@
 
 .units {
   width: @onePixel;
-  z-index: (@onePixel / @onePixel);
+  same-unit-as-previously: (@onePixel / @onePixel);
   square-pixel-divided: (@onePixel * @onePixel / @onePixel);
   odd-unit: unit((@onePixel * 4em / 2cm));
   percentage: (10 * 50%);
@@ -77,5 +77,7 @@
   conversion-metric-b: (1cm + 20mm);
   conversion-imperial: (1in + 72pt + 6pc);
   custom-unit: (42octocats * 10);
-  custom-unit-cancelling: (8cats / 4cats);
+  custom-unit-cancelling: (8cats * 9dogs / 4cats);
+  mix-units: (1px + 1em);
+  invalid-units: (1px * 1px);
 }

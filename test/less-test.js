@@ -25,7 +25,7 @@ sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
 runTestSet({relativeUrls: true, silent: true});
 
-runTestSet(null, "errors/", function(name, err, compiledLess, doReplacements) {
+runTestSet({strictUnits: true}, "errors/", function(name, err, compiledLess, doReplacements) {
     fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
         sys.print("- " + name + ": ");
         expectedErr = doReplacements(expectedErr, 'test/less/errors/');
@@ -61,7 +61,7 @@ runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
 runTestSet({relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
 runTestSet({compress: true}, "compression/");
-runTestSet({strictUnits: false, strictMaths: false}, "legacy/");
+runTestSet({strictMaths: false}, "legacy/");
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),

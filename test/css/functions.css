@@ -107,6 +107,7 @@
   pixel: true;
   percent: true;
   em: true;
+  cat: true;
 }
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);

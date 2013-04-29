@@ -58,3 +58,15 @@ div.ext7,
 .c.rep_ace + .rep_ace .c {
   prop: copy-paste-replace;
 }
+.attributes [data="test"],
+.attributes .attributes .attribute-test {
+  extend: attributes;
+}
+.attributes [data],
+.attributes .attributes .attribute-test2 {
+  extend: attributes2;
+}
+.attributes [data="test3"],
+.attributes .attributes .attribute-test {
+  extend: attributes2;
+}

@@ -60,3 +60,25 @@ div.ext5,
   }
 }
 .rep_ace:extend(.replace all) {}
+
+.attributes {
+  [data="test"] {
+    extend: attributes;
+  }
+  .attribute-test {
+    &:extend([data="test"] all);
+  }
+  [data] {
+    extend: attributes2;
+  }
+  .attribute-test2 {
+    &:extend([data] all); //you could argue it should match [data="test"]... not for now though...
+  }
+  @attr-data: "test3";
+  [data=@{attr-data}] {
+    extend: attributes2;
+  }
+  .attribute-test {
+    &:extend([data="test3"] all);
+  }
+}

@@ -2,12 +2,17 @@ var path = require('path'),
     fs = require('fs'),
     sys = require('util');
 
+var readDirFilesSync = function(dir, regex, callback) {
+    fs.readdirSync(dir).forEach(function (file) {
+        if (! regex.test(file)) { return; }
+        callback(file);
+    });
+}
+
 var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
     var output = '<html><head>\n';
 
-    fs.readdirSync(path.join("test", dir, 'less', dir2 || "")).forEach(function (file) {
-        if (! /\.less/.test(file)) { return; }
-        
+    readDirFilesSync(path.join("test", dir, 'less', dir2 || ""), /\.less$/, function (file) {
         var name = path.basename(file, '.less'),
             id = (dir ? dir + '-' : "") + 'less-' + (dir2 ? dir2 + "-" : "") + name;
         
@@ -22,6 +27,15 @@ var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
     fs.writeFileSync(path.join('test/browser', 'test-runner-'+testSuiteName+'.htm'), output);
 };
 
+var removeFiles = function(dir, regex) {
+    readDirFilesSync(dir, regex, function(file) {
+        fs.unlinkSync(path.join(dir, file), function() {
+            console.log("Failed to delete " + file);
+        });
+    });
+}
+
+removeFiles("test/browser", /test-runner-[a-zA-Z-]*\.htm$/);
 createTestRunnerPage("", /javascript|urls/, "main");
 createTestRunnerPage("", null, "legacy", "legacy");
 createTestRunnerPage("", /javascript/, "errors", "errors");

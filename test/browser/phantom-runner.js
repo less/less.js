@@ -40,8 +40,9 @@ if (!listening) {
  * it can be passed in as a string (e.g.: "1 == 1" or "$('#bar').is(':visible')" or
  * as a callback function.
  * @param timeOutMillis the max amount of time to wait. If not specified, 3 sec is used.
+ * @param timeOutErrorMessage the error message if time out occurs
  */
-function waitFor(testFx, onReady, timeOutMillis) {
+function waitFor(testFx, onReady, timeOutMillis, timeOutErrorMessage) {
     var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 10001, //< Default Max Timeout is 10s
         start = new Date().getTime(),
         condition = false,
@@ -52,11 +53,10 @@ function waitFor(testFx, onReady, timeOutMillis) {
             } else {
                 if(!condition) {
                     // If condition still not fulfilled (timeout but condition is 'false')
-                    console.log("'waitFor()' timeout");
+                    console.log(timeOutErrorMessage || "'waitFor()' timeout");
                     phantom.exit(1);
                 } else {
                     // Condition fulfilled (timeout and/or condition is 'true')
-                    //console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
                     typeof(onReady) === "string" ? eval(onReady) : onReady(); //< Do what it's supposed to do once the condition is fulfilled
                     clearInterval(interval); //< Stop this interval
                 }
@@ -104,7 +104,9 @@ function testPage(url) {
                     }
                 });
                 testFinished(exitCode);
-            });
+            },
+            10000, // 10 second timeout
+            "Test failed waiting for jasmine results on page: " + url);
         }
     });
 }

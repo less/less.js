@@ -1,4 +1,16 @@
-# 1.4.0 Beta
+# 1.4.0 Beta 3
+
+2013-04-30
+
+ - strictUnits now defaults to false and the true case now gives more useful but less correct results, e.g. 2px/1px = 2px
+ - Process ./ when having relative paths
+ - add isunit function for mixin guards and non basic units
+ - extends recognise attributes
+ - exception errors extend the JavaScript Error
+ - remove es-5-shim as standard from the browser
+ - Fix path issues with windows/linux local paths
+
+# 1.4.0 Beta 1 & 2
 
 2013-03-07
 

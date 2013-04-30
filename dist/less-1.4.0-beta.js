@@ -15,126 +15,6 @@ function require(arg) {
     return window.less[arg.split('/')[1]];
 };
 
-
-// ecma-5.js
-//
-// -- kriskowal Kris Kowal Copyright (C) 2009-2010 MIT License
-// -- tlrobinson Tom Robinson
-// dantman Daniel Friesen
-
-//
-// Array
-//
-if (!Array.isArray) {
-    Array.isArray = function(obj) {
-        return Object.prototype.toString.call(obj) === "[object Array]" ||
-               (obj instanceof Array);
-    };
-}
-if (!Array.prototype.forEach) {
-    Array.prototype.forEach =  function(block, thisObject) {
-        var len = this.length >>> 0;
-        for (var i = 0; i < len; i++) {
-            if (i in this) {
-                block.call(thisObject, this[i], i, this);
-            }
-        }
-    };
-}
-if (!Array.prototype.map) {
-    Array.prototype.map = function(fun /*, thisp*/) {
-        var len = this.length >>> 0;
-        var res = new Array(len);
-        var thisp = arguments[1];
-
-        for (var i = 0; i < len; i++) {
-            if (i in this) {
-                res[i] = fun.call(thisp, this[i], i, this);
-            }
-        }
-        return res;
-    };
-}
-if (!Array.prototype.filter) {
-    Array.prototype.filter = function (block /*, thisp */) {
-        var values = [];
-        var thisp = arguments[1];
-        for (var i = 0; i < this.length; i++) {
-            if (block.call(thisp, this[i])) {
-                values.push(this[i]);
-            }
-        }
-        return values;
-    };
-}
-if (!Array.prototype.reduce) {
-    Array.prototype.reduce = function(fun /*, initial*/) {
-        var len = this.length >>> 0;
-        var i = 0;
-
-        // no value to return if no initial value and an empty array
-        if (len === 0 && arguments.length === 1) throw new TypeError();
-
-        if (arguments.length >= 2) {
-            var rv = arguments[1];
-        } else {
-            do {
-                if (i in this) {
-                    rv = this[i++];
-                    break;
-                }
-                // if array contains no values, no initial value to return
-                if (++i >= len) throw new TypeError();
-            } while (true);
-        }
-        for (; i < len; i++) {
-            if (i in this) {
-                rv = fun.call(null, rv, this[i], i, this);
-            }
-        }
-        return rv;
-    };
-}
-if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function (value /*, fromIndex */ ) {
-        var length = this.length;
-        var i = arguments[1] || 0;
-
-        if (!length)     return -1;
-        if (i >= length) return -1;
-        if (i < 0)       i += length;
-
-        for (; i < length; i++) {
-            if (!Object.prototype.hasOwnProperty.call(this, i)) { continue }
-            if (value === this[i]) return i;
-        }
-        return -1;
-    };
-}
-
-//
-// Object
-//
-if (!Object.keys) {
-    Object.keys = function (object) {
-        var keys = [];
-        for (var name in object) {
-            if (Object.prototype.hasOwnProperty.call(object, name)) {
-                keys.push(name);
-            }
-        }
-        return keys;
-    };
-}
-
-//
-// String
-//
-if (!String.prototype.trim) {
-    String.prototype.trim = function () {
-        return String(this).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-    };
-}
 var less, tree, charset;
 
 if (typeof environment === "object" && ({}).toString.call(environment) === "[object Environment]") {
@@ -397,6 +277,9 @@ less.Parser = function Parser(env) {
         ];
     }
 
+    LessError.prototype = new Error();
+    LessError.prototype.constructor = LessError;
+
     this.env = env = env || {};
 
     // The optimization level dictates the thoroughness of the parser,
@@ -551,15 +434,15 @@ less.Parser = function Parser(env) {
                             .run(evaldRoot);
 
                         var css = evaldRoot.toCSS({
-                                compress: options.compress || false,
+                                compress: Boolean(options.compress),
                                 dumpLineNumbers: env.dumpLineNumbers,
-                                strictUnits: options.strictUnits === false ? false : true});
+                                strictUnits: Boolean(options.strictUnits)});
                     } catch (e) {
                         throw new(LessError)(e, env);
                     }
 
                     if (options.yuicompress && less.mode === 'node') {
-                        return require('ycssmin').cssmin(css);
+                        return require('ycssmin').cssmin(css, options.maxLineLen);
                     } else if (options.compress) {
                         return css.replace(/(\s)+/g, "$1");
                     } else {
@@ -2035,13 +1918,16 @@ tree.functions = {
         return this._isa(n, tree.URL);
     },
     ispixel: function (n) {
-        return (n instanceof tree.Dimension) && n.unit.is('px') ? tree.True : tree.False;
+        return this.isunit(n, 'px');
     },
     ispercentage: function (n) {
-        return (n instanceof tree.Dimension) && n.unit.is('%') ? tree.True : tree.False;
+        return this.isunit(n, '%');
     },
     isem: function (n) {
-        return (n instanceof tree.Dimension) && n.unit.is('em') ? tree.True : tree.False;
+        return this.isunit(n, 'em');
+    },
+    isunit: function (n, unit) {
+        return (n instanceof tree.Dimension) && n.unit.is(unit.value || unit) ? tree.True : tree.False;
     },
     _isa: function (n, Type) {
         return (n instanceof Type) ? tree.True : tree.False;
@@ -2797,7 +2683,7 @@ tree.Dimension.prototype = {
         return new(tree.Color)([this.value, this.value, this.value]);
     },
     toCSS: function (env) {
-        if ((!env || env.strictUnits !== false) && !this.unit.isSingular()) {
+        if ((env && env.strictUnits) && !this.unit.isSingular()) {
             throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: "+this.unit.toString());
         }
 
@@ -2821,7 +2707,7 @@ tree.Dimension.prototype = {
             }
         }
 
-        return this.unit.isEmpty() ? strValue : (strValue + this.unit.toCSS());
+        return strValue + this.unit.toCSS(env);
     },
 
     // In an operation between two Dimensions,
@@ -2840,7 +2726,7 @@ tree.Dimension.prototype = {
             } else {
                 other = other.convertTo(this.unit.usedUnits());
 
-                if(env.strictUnits !== false && other.unit.toString() !== unit.toString()) {
+                if(env.strictUnits && other.unit.toString() !== unit.toString()) {
                   throw new Error("Incompatible units. Change the units or use the unit function. Bad units: '" + unit.toString() +
                     "' and '" + other.unit.toString() + "'.");
                 }
@@ -2946,23 +2832,27 @@ tree.UnitConversions = {
   }
 };
 
-tree.Unit = function (numerator, denominator) {
+tree.Unit = function (numerator, denominator, backupUnit) {
   this.numerator = numerator ? numerator.slice(0).sort() : [];
   this.denominator = denominator ? denominator.slice(0).sort() : [];
+  this.backupUnit = backupUnit;
 };
 
 tree.Unit.prototype = {
   type: "Unit",
   clone: function () {
-    return new tree.Unit(this.numerator.slice(0), this.denominator.slice(0));
+    return new tree.Unit(this.numerator.slice(0), this.denominator.slice(0), this.backupUnit);
   },
 
-  toCSS: function () {
+  toCSS: function (env) {
     if (this.numerator.length >= 1) {
         return this.numerator[0];
     }
     if (this.denominator.length >= 1) {
         return this.denominator[0];
+    }
+    if ((!env || !env.strictUnits) && this.backupUnit) {
+        return this.backupUnit;
     }
     return "";
   },
@@ -2976,11 +2866,11 @@ tree.Unit.prototype = {
   },
   
   compare: function (other) {
-    return this.is(other.toCSS()) ? 0 : -1;
+    return this.is(other.toString()) ? 0 : -1;
   },
 
   is: function (unitString) {
-    return this.toCSS() === unitString;
+    return this.toString() === unitString;
   },
 
   isAngle: function () {
@@ -3028,16 +2918,22 @@ tree.Unit.prototype = {
   },
 
   cancel: function () {
-    var counter = {}, atomicUnit, i;
+    var counter = {}, atomicUnit, i, backup;
 
     for (i = 0; i < this.numerator.length; i++) {
-      atomicUnit = this.numerator[i];
-      counter[atomicUnit] = (counter[atomicUnit] || 0) + 1;
+        atomicUnit = this.numerator[i];
+        if (!backup) {
+            backup = atomicUnit;
+        }
+        counter[atomicUnit] = (counter[atomicUnit] || 0) + 1;
     }
 
     for (i = 0; i < this.denominator.length; i++) {
-      atomicUnit = this.denominator[i];
-      counter[atomicUnit] = (counter[atomicUnit] || 0) - 1;
+        atomicUnit = this.denominator[i];
+        if (!backup) {
+            backup = atomicUnit;
+        }
+        counter[atomicUnit] = (counter[atomicUnit] || 0) - 1;
     }
 
     this.numerator = [];
@@ -3057,6 +2953,10 @@ tree.Unit.prototype = {
           }
         }
       }
+    }
+
+    if (this.numerator.length === 0 && this.denominator.length === 0 && backup) {
+        this.backupUnit = backup;
     }
 
     this.numerator.sort();
@@ -5218,6 +5118,7 @@ tree.jsify = function (obj) {
             //
             var haystackSelectorIndex, hackstackSelector, hackstackElementIndex, haystackElement,
                 targetCombinator, i,
+                extendVisitor = this,
                 needleElements = extend.selector.elements,
                 potentialMatches = [], potentialMatch, matches = [];
 
@@ -5246,7 +5147,7 @@ tree.jsify = function (obj) {
                         }
 
                         // if we don't match, null our match to indicate failure
-                        if (needleElements[potentialMatch.matched].value !== haystackElement.value ||
+                        if (!extendVisitor.isElementValuesEqual(needleElements[potentialMatch.matched].value, haystackElement.value) ||
                             (potentialMatch.matched > 0 && needleElements[potentialMatch.matched].combinator.value !== targetCombinator)) {
                             potentialMatch = null;
                         } else {
@@ -5278,6 +5179,26 @@ tree.jsify = function (obj) {
                 }
             }
             return matches;
+        },
+        isElementValuesEqual: function(elementValue1, elementValue2) {
+            if (typeof elementValue1 === "string" || typeof elementValue2 === "string") {
+                return elementValue1 === elementValue2;
+            }
+            if (elementValue1 instanceof tree.Attribute) {
+                if (elementValue1.op !== elementValue2.op || elementValue1.key !== elementValue2.key) {
+                    return false;
+                }
+                if (!elementValue1.value || !elementValue2.value) {
+                    if (elementValue1.value || elementValue2.value) {
+                        return false;
+                    }
+                    return true;
+                }
+                elementValue1 = elementValue1.value.value || elementValue1.value;
+                elementValue2 = elementValue2.value.value || elementValue2.value;
+                return elementValue1 === elementValue2;
+            }
+            return false;
         },
         extendSelector:function (matches, selectorPath, replacementSelector) {
 
@@ -5567,7 +5488,7 @@ function extractUrlParts(url, baseUrl) {
         if (!baseUrlParts) {
             throw new Error("Could not parse page url - '"+baseUrl+"'");
         }
-        urlParts[1] = baseUrlParts[1];
+        urlParts[1] = urlParts[1] || baseUrlParts[1] || "";
         if (!urlParts[2]) {
             urlParts[3] = baseUrlParts[3] + urlParts[3];
         }
@@ -5575,6 +5496,14 @@ function extractUrlParts(url, baseUrl) {
     
     if (urlParts[3]) {
         directories = urlParts[3].replace("\\", "/").split("/");
+
+        // extract out . before .. so .. doesn't absorb a non-directory
+        for(i = 0; i < directories.length; i++) {
+            if (directories[i] === ".") {
+                directories.splice(i, 1);
+                i -= 1;
+            }
+        }
 
         for(i = 0; i < directories.length; i++) {
             if (directories[i] === ".." && i > 0) {

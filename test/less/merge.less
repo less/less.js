@@ -1,61 +1,51 @@
 .first-transform() {
-  transform: rotate(90deg) skew(30deg) !merge(space);
+  transform+: rotate(90deg), skew(30deg);
 }
 .second-transform() {
-  transform: scale(2,4) !merge(space);
+  transform+: scale(2,4);
 }
 .third-transform() {
   transform: scaleX(45deg);
 }
 .fourth-transform() {
-  transform: scaleX(45deg) !merge(comma);
+  transform+: scaleX(45deg);
 }
 .fifth-transform() {
-  transform: scale(2,4) !important !merge(space);
+  transform+: scale(2,4) !important;
 }
 .first-background() {
-  background: url(data://img1.png) !merge(comma);
+  background+: url(data://img1.png);
 }
 .second-background() {
-  background: url(data://img2.png) !merge(comma);
+  background+: url(data://img2.png);
 }
 
 .test1 {
-  // Can merge values with space separator 
+  // Can merge values
   .first-transform();
   .second-transform();
 }
 .test2 {
-  // Wont merge values without !merge directive, for backwards compatibility with css
+  // Wont merge values without +: merge directive, for backwards compatibility with css
   .first-transform();
   .third-transform();
 }
 .test3 {
-  // Can merge values with comma separator
+  // Wont merge values from two sources with different properties
+  .fourth-transform();
   .first-background();
-  .second-background();
 }
 .test4 {
-  // Wont merge values from two sources with different seperators
-  .first-transform();
-  .fourth-transform();
-}
-.test5 {
-  // Wont merge values from two sources with the same seperators but different properties
-  .fourth-transform();
-  .first-background();
-}
-.test6 {
   // Wont merge values from sources that merked as !important, for backwards compatibility with css 
   .first-transform();
   .fifth-transform();
 }
-.test7 {
+.test5 {
   // Wont merge values from mixins that merked as !important, for backwards compatibility with css 
   .first-transform();
   .second-transform() !important;
 }
-.test8 {
+.test6 {
   // Ignores !merge if no peers found
   .second-transform();
 }

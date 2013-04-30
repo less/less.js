@@ -6,7 +6,7 @@
   transform: scaleX(45deg);
 }
 .test3 {
-  background: url(img1.png), url(img2.png);
+  background: url(data://img1.png), url(data://img2.png);
 }
 .test4 {
   transform: rotate(90deg) skew(30deg);
@@ -14,7 +14,7 @@
 }
 .test5 {
   transform: scaleX(45deg);
-  background: url(img1.png);
+  background: url(data://img1.png);
 }
 .test6 {
   transform: rotate(90deg) skew(30deg);

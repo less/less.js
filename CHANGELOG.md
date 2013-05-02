@@ -1,3 +1,10 @@
+# 1.4.0
+
+2013-05-??
+
+ - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
+ - change lessc option for strict units to --strict-units=off
+
 # 1.4.0 Beta 3
 
 2013-04-30

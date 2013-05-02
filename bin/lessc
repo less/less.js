@@ -23,7 +23,8 @@ var options = {
     rootpath: '',
     relativeUrls: false,
     ieCompat: true,
-    strictMaths: true
+    strictMath: false,
+    strictUnits: false
 };
 var continueProcessing = true,
     currentErrorcode;
@@ -39,7 +40,17 @@ var checkArgFunc = function(arg, option) {
         return false;
     }
     return true;
-}
+};
+
+var checkBooleanArg = function(arg) {
+    var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
+    if (!onOff) {
+        sys.puts(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        continueProcessing = false;
+        return false;
+    }
+    return Boolean(onOff[2]);
+};
 
 args = args.filter(function (arg) {
     var match;
@@ -49,7 +60,7 @@ args = args.filter(function (arg) {
         return false;
     }
 
-    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]+))?$/i)) { arg = match[1] }
+    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]*))?$/i)) { arg = match[1] }
     else { return arg }
 
     switch (arg) {
@@ -129,12 +140,16 @@ args = args.filter(function (arg) {
             options.relativeUrls = true;
             break;
         case "sm":
-        case "strict-maths-off":
-            options.strictMaths = false;
+        case "strict-math":
+            if (checkArgFunc(arg, match[2])) {
+                options.strictMath = checkBooleanArg(match[2]);
+            }
             break;
         case "su":
-        case "strict-units-off":
-            options.strictUnits = false;
+        case "strict-units":
+            if (checkArgFunc(arg, match[2])) {
+                options.strictUnits = checkBooleanArg(match[2]);
+            }
             break;
     }
 });

@@ -1,5 +1,5 @@
 /*if not async then phantomjs fails to run the webserver and the test concurrently*/
-var less = { async: true };
+var less = { async: true, strictMath: true };
 
 /* record log messages for testing */
 var logMessages = [],

@@ -23,9 +23,9 @@ less.tree.functions._color = function (str) {
 
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
-runTestSet({relativeUrls: true, silent: true});
+runTestSet({strictMath: true, relativeUrls: true, silent: true});
 
-runTestSet({strictUnits: true}, "errors/", function(name, err, compiledLess, doReplacements) {
+runTestSet({strictMath: true, strictUnits: true}, "errors/", function(name, err, compiledLess, doReplacements) {
     fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
         sys.print("- " + name + ": ");
         expectedErr = doReplacements(expectedErr, 'test/less/errors/');
@@ -53,15 +53,15 @@ runTestSet({strictUnits: true}, "errors/", function(name, err, compiledLess, doR
             .replace(/\r\n/g, '\n');
     });
 
-runTestSet({dumpLineNumbers: 'comments'}, "debug/", null,
+runTestSet({strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,
            function(name) { return name + '-comments'; });
-runTestSet({dumpLineNumbers: 'mediaquery'}, "debug/", null,
+runTestSet({strictMath: true, dumpLineNumbers: 'mediaquery'}, "debug/", null,
            function(name) { return name + '-mediaquery'; });
-runTestSet({dumpLineNumbers: 'all'}, "debug/", null,
+runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
-runTestSet({relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
-runTestSet({compress: true}, "compression/");
-runTestSet({strictMaths: false}, "legacy/");
+runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
+runTestSet({strictMath: true, compress: true}, "compression/");
+runTestSet({strictMath: false}, "legacy/");
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),

@@ -3124,7 +3124,7 @@ tree.Expression.prototype = {
         if (inParenthesis) {
             env.outOfParenthesis();
         }
-        if (this.parens && this.parensInOp && !(env.isMathsOn()) && !doubleParen) {
+        if (this.parens && this.parensInOp && !(env.isMathOn()) && !doubleParen) {
             returnValue = new(tree.Paren)(returnValue);
         }
         return returnValue;
@@ -3392,17 +3392,17 @@ tree.Media.prototype = {
             this.ruleset.debugInfo = this.debugInfo;
             media.debugInfo = this.debugInfo;
         }
-        var strictMathsBypass = false;
-        if (env.strictMaths === false) {
-            strictMathsBypass = true;
-            env.strictMaths = true;
+        var strictMathBypass = false;
+        if (!env.strictMath) {
+            strictMathBypass = true;
+            env.strictMath = true;
         }
         try {
             media.features = this.features.eval(env);
         }
         finally {
-            if (strictMathsBypass) {
-                env.strictMaths = false;
+            if (strictMathBypass) {
+                env.strictMath = false;
             }
         }
         
@@ -3742,7 +3742,7 @@ tree.Negative.prototype = {
         return '-' + this.value.toCSS(env);
     },
     eval: function (env) {
-        if (env.isMathsOn()) {
+        if (env.isMathOn()) {
             return (new(tree.Operation)('*', [new(tree.Dimension)(-1), this.value])).eval(env);
         }
         return new(tree.Negative)(this.value.eval(env));
@@ -3767,7 +3767,7 @@ tree.Operation.prototype = {
             b = this.operands[1].eval(env),
             temp;
 
-        if (env.isMathsOn()) {
+        if (env.isMathOn()) {
             if (a instanceof tree.Dimension && b instanceof tree.Color) {
                 if (this.op === '*' || this.op === '+') {
                     temp = b, b = a, a = temp;
@@ -3903,10 +3903,10 @@ tree.Rule.prototype = {
         }
     },
     eval: function (env) {
-        var strictMathsBypass = false;
-        if (this.name === "font" && env.strictMaths === false) {
-            strictMathsBypass = true;
-            env.strictMaths = true;
+        var strictMathBypass = false;
+        if (this.name === "font" && env.strictMath === false) {
+            strictMathBypass = true;
+            env.strictMath = true;
         }
         try {
             return new(tree.Rule)(this.name,
@@ -3915,8 +3915,8 @@ tree.Rule.prototype = {
                               this.index, this.currentFileInfo, this.inline);
         }
         finally {
-            if (strictMathsBypass) {
-                env.strictMaths = false;
+            if (strictMathBypass) {
+                env.strictMath = false;
             }
         }
     },
@@ -4646,7 +4646,7 @@ tree.jsify = function (obj) {
         'verbose',     // whether to log more activity
         'compress',    // whether to compress
         'ieCompat',    // whether to enforce IE compatibility (IE8 data-uri)
-        'strictMaths', // whether maths has to be within parenthesis
+        'strictMath',  // whether math has to be within parenthesis
         'strictUnits'  // whether units need to evaluate correctly
         ];
 
@@ -4667,8 +4667,8 @@ tree.jsify = function (obj) {
         this.parensStack.pop();
     };
 
-    tree.evalEnv.prototype.isMathsOn = function () {
-        return this.strictMaths === false ? true : (this.parensStack && this.parensStack.length);
+    tree.evalEnv.prototype.isMathOn = function () {
+        return this.strictMath ? (this.parensStack && this.parensStack.length) : true;
     };
 
     tree.evalEnv.prototype.isPathRelative = function (path) {

@@ -37,7 +37,8 @@
     "ycssmin": ">=1.0.1"
   },
   "devDependencies": {
-    "diff": "~1.0"
+    "diff": "~1.0",
+    "jshint": "~1.1.0"
   },
   "keywords": [
     "compile less",

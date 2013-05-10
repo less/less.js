@@ -15,11 +15,12 @@ var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
     readDirFilesSync(path.join("test", dir, 'less', dir2 || ""), /\.less$/, function (file) {
         var name = path.basename(file, '.less'),
             id = (dir ? dir + '-' : "") + 'less-' + (dir2 ? dir2 + "-" : "") + name;
-        
+
         if (exclude && name.match(exclude)) { return; }
-        
+
         output += '<link id="original-less:' + id + '" rel="stylesheet/less" type="text/css" href="/' + path.join(dir, 'less', dir2 || "", name) + '.less' +'">\n';
         output += '<link id="expected-less:' + id + '" rel="stylesheet"  type="text/css" href="/' + path.join(dir, 'css', dir2 || "", name) + '.css' + '">\n';
+        output += '<style id="inline-less:' + id + '" type="text/less">@import "/' + path.join(dir, 'less', dir2 || "", name) + '.less' + '";</style>\n';
     });
 
     output += String(fs.readFileSync(path.join('test/browser', 'template.htm'))).replace("{runner-name}", testSuiteName);

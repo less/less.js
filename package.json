@@ -3,10 +3,10 @@
   "version": "0.9.4",
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
-  "repositories": [{
+  "repository": {
       "type": "git",
       "url": "http://github.com/mapbox/carto.git"
-  }],
+  },
   "author": {
     "name": "MapBox",
     "url": "http://mapbox.com/",

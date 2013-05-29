@@ -157,6 +157,9 @@ if (ext == '.mml') {
         }, compileMML);
     } else {
         data.Stylesheet = data.Stylesheet.map(function(x) {
+            if (typeof x !== 'string') {
+                return { id: x, data: x.data }
+            }
             return { id: x, data: fs.readFileSync(path.join(path.dirname(input), x), 'utf8') }
         });
         compileMML(null,data);

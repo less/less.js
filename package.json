@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.4.0-b4",
+  "version": "1.4.0",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": "Alexis Sellier <self@cloudhead.net>",

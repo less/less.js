@@ -1,3 +1,9 @@
+# 1.4.0
+
+2013-06-05
+
+ - fix passing of strict maths option
+
 # 1.4.0 Beta 4
 
 2013-05-04

@@ -229,7 +229,7 @@ var parseLessFile = function (e, data) {
                     compress: options.compress,
                     yuicompress: options.yuicompress,
                     maxLineLen: options.maxLineLen,
-                    strictMaths: options.strictMaths,
+                    strictMath: options.strictMath,
                     strictUnits: options.strictUnits
                 });
                 if (output) {

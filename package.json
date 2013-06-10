@@ -40,9 +40,9 @@
     "xml2js": "~0.1.13"
   },
   "devDependencies": {
-    "mocha": "1.0.x",
+    "mocha": "",
     "docco": "0.3.x",
-    "jshint": "0.2.x",
+    "jshint": "",
     "sax": "0.1.x"
   },
   "scripts": {

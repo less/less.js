@@ -81,6 +81,12 @@
   pow: 64px;
   pow: 64;
   pow: 27;
+  min: min(3, 3em);
+  min: min(3pt, 3em);
+  min: 1%;
+  min: min(1%, 5px);
+  min: 3pt;
+  max: 3;
   percentage: 20%;
   color: #ff0011;
   tint: #898989;

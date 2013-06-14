@@ -8,6 +8,8 @@
   <Parameter name="format">png</Parameter>
   <Parameter name="minzoom">0</Parameter>
   <Parameter name="maxzoom">22</Parameter>
+  <Parameter name="scale">1</Parameter>
+  <Parameter name="metatile">2</Parameter>
 </Parameters>
 
 

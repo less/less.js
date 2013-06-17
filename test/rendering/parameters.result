@@ -15,6 +15,9 @@
     <Parameter name="format">png</Parameter>
     <Parameter name="interactivity_layer">world</Parameter>
     <Parameter name="interactivity_fields">NAME</Parameter>
+    <Parameter name="customString"><![CDATA[Hello world]]></Parameter>
+    <Parameter name="customNumber">5</Parameter>
+    <Parameter name="customBoolean">true</Parameter>
 </Parameters>
 </Map>
 

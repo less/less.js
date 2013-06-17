@@ -15,7 +15,10 @@
         "layer": "world",
         "fields": ["NAME"]
     },
-    "omitted": "Omitted property.",
+    "customString": "Hello world",
+    "customNumber": 5,
+    "customBoolean": true,
+    "customOmitted": { "foo": "bar" },
     "Stylesheet": [],
     "Layer": [{
         "name": "world",

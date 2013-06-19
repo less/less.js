@@ -62,6 +62,7 @@ runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
 runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
 runTestSet({strictMath: true, compress: true}, "compression/");
 runTestSet({strictMath: false}, "legacy/");
+testNoOptions();
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),
@@ -183,4 +184,16 @@ function toCSS(options, path, callback) {
             }
         });
     });
+}
+
+function testNoOptions() {
+    totalTests++;
+    try {
+        sys.print("- Integration - creating parser without options: ");
+        new(less.Parser);
+    } catch(e) {
+        fail(stylize("FAIL\n", "red"));
+        return;
+    }
+    ok(stylize("OK\n", "green"));
 }

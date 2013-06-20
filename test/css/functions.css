@@ -80,6 +80,11 @@
   pow: 64px;
   pow: 64;
   pow: 27;
+  min: 0;
+  min: min("junk", 5);
+  min: 3pt;
+  max: 3;
+  max: max(8%, 1cm);
   percentage: 20%;
   color: #ff0011;
   tint: #898989;

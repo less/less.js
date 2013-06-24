@@ -23,7 +23,7 @@ doc:
 	$(docco) lib/carto/*.js lib/carto/tree/*.js
 
 dist/carto.js:
-	cat browser/*.js lib/carto/parser.js lib/carto/tree.js lib/carto/tree/*.js > dist/carto.js
+	cat browser/*.js lib/carto/parser.js lib/carto/tree.js lib/carto/tree/*.js lib/carto/functions.js > dist/carto.js
 
 dist: dist/carto.js
 

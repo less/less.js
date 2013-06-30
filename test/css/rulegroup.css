@@ -1,0 +1,10 @@
+._x1 {
+  font-size: 1em;font-family: sans-serif;
+  margin: auto;
+  boder-right: solid 1px green;boder-left: dotted 1px green;
+}
+._x2 {
+  font-size: 1em;font-family: sans-serif;
+  margin: auto;
+  boder-right: solid 1px #000000;boder-left: dotted 1px #000000;
+}

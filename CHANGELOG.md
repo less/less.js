@@ -10,6 +10,7 @@
  - change to not throw exceptions in toCSS - always return an error object
  - allow property merging through the +: syntax
  - Fix the saturate function to pass through when using the CSS syntax
+ - Added svg-gradient function
 
 # 1.4.1
 

@@ -6,7 +6,7 @@
  - support for guards on selectors (currently only if you have a single selector)
  - Added min/max functions
  - fix bad spaces between namespace operators
- - do not compress comment if it begind with an exclamation mark
+ - do not compress comment if it begins with an exclamation mark
  - change to not throw exceptions in toCSS - always return an error object
  - allow property merging through the +: syntax
  - Fix the saturate function to pass through when using the CSS syntax

@@ -1,8 +1,15 @@
-# 1.4.1 WIP
+# 1.5.0 WIP
 
  - support for import inline option to include css that you do not want less to parse e.g. `@import (inline) "file.css";`
  - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
  - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
+ - support for guards on selectors (currently only if you have a single selector)
+ - Added min/max functions
+ - fix bad spaces between namespace operators
+ - do not compress comment if it begind with an exclamation mark
+ - change to not throw exceptions in toCSS - always return an error object
+ - allow property merging through the +: syntax
+ - Fix the saturate function to pass through when using the CSS syntax
 
 # 1.4.1
 

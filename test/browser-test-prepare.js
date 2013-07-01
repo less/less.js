@@ -39,6 +39,7 @@ removeFiles("test/browser", /test-runner-[a-zA-Z-]*\.htm$/);
 createTestRunnerPage("", /javascript|urls/, "main");
 createTestRunnerPage("", null, "legacy", "legacy");
 createTestRunnerPage("", /javascript/, "errors", "errors");
+createTestRunnerPage("", null, "no-js-errors", "no-js-errors");
 createTestRunnerPage("browser", null, "browser");
 createTestRunnerPage("browser", null, "relative-urls", "relative-urls");
 createTestRunnerPage("browser", null, "rootpath", "rootpath");

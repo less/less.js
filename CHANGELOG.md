@@ -11,6 +11,7 @@
  - allow property merging through the +: syntax
  - Fix the saturate function to pass through when using the CSS syntax
  - Added svg-gradient function
+ - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
 
 # 1.4.1
 

@@ -26,8 +26,34 @@ less.tree.functions._color = function (str) {
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
 runTestSet({strictMath: true, relativeUrls: true, silent: true});
+runTestSet({strictMath: true, strictUnits: true}, "errors/",
+            testErrors, null, getErrorPathReplacementFunction("errors"));
+runTestSet({strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
+            testErrors, null, getErrorPathReplacementFunction("no-js-errors"));
+runTestSet({strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,
+           function(name) { return name + '-comments'; });
+runTestSet({strictMath: true, dumpLineNumbers: 'mediaquery'}, "debug/", null,
+           function(name) { return name + '-mediaquery'; });
+runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
+           function(name) { return name + '-all'; });
+runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
+runTestSet({strictMath: true, compress: true}, "compression/");
+runTestSet({strictMath: false}, "legacy/");
 
-runTestSet({strictMath: true, strictUnits: true}, "errors/", function(name, err, compiledLess, doReplacements) {
+testNoOptions();
+
+function getErrorPathReplacementFunction(dir) {
+    return function(input) {
+        return input.replace(
+                "{path}", path.join(process.cwd(), "/test/less/" + dir + "/"))
+            .replace("{pathrel}", path.join("test", "less", dir + "/"))
+            .replace("{pathhref}", "")
+            .replace("{404status}", "")
+            .replace(/\r\n/g, '\n');
+    };
+}
+
+function testErrors(name, err, compiledLess, doReplacements) {
     fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
         sys.print("- " + name + ": ");
         expectedErr = doReplacements(expectedErr, 'test/less/errors/');
@@ -40,31 +66,14 @@ runTestSet({strictMath: true, strictUnits: true}, "errors/", function(name, err,
         } else {
             var errMessage = less.formatError(err);
             if (errMessage === expectedErr) {
-                ok('OK');                    
+                ok('OK');
             } else {
                 difference("FAIL", expectedErr, errMessage);
             }
         }
         sys.puts("");
-    });}, null, function(input, directory) {
-        return input.replace(
-            "{path}", path.join(process.cwd(), "/test/less/errors/"))
-            .replace("{pathrel}", path.join("test", "less", "errors/"))
-            .replace("{pathhref}", "")
-            .replace("{404status}", "")
-            .replace(/\r\n/g, '\n');
     });
-
-runTestSet({strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,
-           function(name) { return name + '-comments'; });
-runTestSet({strictMath: true, dumpLineNumbers: 'mediaquery'}, "debug/", null,
-           function(name) { return name + '-mediaquery'; });
-runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
-           function(name) { return name + '-all'; });
-runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
-runTestSet({strictMath: true, compress: true}, "compression/");
-runTestSet({strictMath: false}, "legacy/");
-testNoOptions();
+}
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),

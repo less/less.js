@@ -111,6 +111,9 @@ args = args.filter(function (arg) {
         case 'no-ie-compat':
             options.ieCompat = false;
             break;
+        case 'no-js':
+            options.javascriptEnabled = false;
+            break;
         case 'include-path':
             if (checkArgFunc(arg, match[2])) {
                 options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')

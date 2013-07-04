@@ -5,6 +5,8 @@ var path = require('path'),
 var less = require('../lib/less');
 var stylize = require('../lib/less/lessc_helper').stylize;
 
+var globals = Object.keys(global);
+
 var oneTestOnly = process.argv[2];
 
 var totalTests = 0,
@@ -74,6 +76,12 @@ function globalReplacements(input, directory) {
             .replace(/\{pathimport\}/g, pathimport)
             .replace(/\{pathimportesc\}/g, pathimportesc)
             .replace(/\r\n/g, '\n');
+}
+
+function checkGlobalLeaks() {
+    return Object.keys(global).filter(function(v) {
+        return globals.indexOf(v) < 0;
+    });
 }
 
 function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements) {
@@ -146,6 +154,7 @@ function ok(msg) {
 }
 
 function endTest() {
+    var leaked = checkGlobalLeaks();
     if (failedTests + passedTests === totalTests) {
         sys.puts("");
         sys.puts("");
@@ -156,6 +165,12 @@ function endTest() {
         } else {
             sys.print(stylize("All Passed ", "green"));
             sys.print(passedTests + " run");
+        }
+        if (leaked.length > 0) {
+            sys.puts("");
+            sys.puts("");
+            sys.print(stylize("Global leak detected: ", "red") + leaked.join(', '));
+            sys.print("\n");
         }
     }
 }

@@ -54,7 +54,7 @@
   -moz-border-radius: 8px /* moz only with operation */;
 }
 .test {
-  color: 1px //put in @b - causes problems! --->;
+  color: 1px;
 }
 #last {
   color: #0000ff;

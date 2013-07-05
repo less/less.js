@@ -1,3 +1,11 @@
+# 1.4.1
+
+2013-07-05
+
+ - fix syncImports and yui-compress option, as they were being ignored
+ - fixed several global variable leaks
+ - handle getting null or undefined passed as the options object
+
 # 1.4.0
 
 2013-06-05

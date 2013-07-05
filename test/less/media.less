@@ -109,7 +109,9 @@ body {
 }
 @smartphone: ~"only screen and (max-width: 200px)";
 @media @smartphone {
-  width: 480px;
+  body {
+    width: 480px;
+  }
 }
 
 @media print {

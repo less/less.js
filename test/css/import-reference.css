@@ -1,6 +1,3 @@
-@media only screen and (max-width: 200px) {
-  width: 480px;
-}
 /*
   The media statement above is invalid (no selector)
   We should ban invalid media queries with properties and no selector?

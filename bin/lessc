@@ -11,7 +11,7 @@ var args = process.argv.slice(1);
 var options = {
     depends: false,
     compress: false,
-    yuicompress: false,
+    cleancss: false,
     max_line_len: -1,
     optimization: 1,
     silent: false,
@@ -51,6 +51,8 @@ var checkBooleanArg = function(arg) {
     }
     return Boolean(onOff[2]);
 };
+
+var warningMessages = "";
 
 args = args.filter(function (arg) {
     var match;
@@ -95,7 +97,11 @@ args = args.filter(function (arg) {
             options.depends = true;
             break;
         case 'yui-compress':
-            options.yuicompress = true;
+            warningMessages += "yui-compress option has been removed. assuming clean-css.";
+            options.cleancss = true;
+            break;
+        case 'clean-css':
+            options.cleancss = true;
             break;
         case 'max-line-len':
             if (checkArgFunc(arg, match[2])) {
@@ -170,6 +176,9 @@ var output = args[2];
 var outputbase = args[2];
 if (output) {
     output = path.resolve(process.cwd(), output);
+    if (warningMessages) {
+        sys.puts(warningMessages);
+    }
 }
 
 if (! input) {
@@ -230,7 +239,7 @@ var parseLessFile = function (e, data) {
                     verbose: options.verbose,
                     ieCompat: options.ieCompat,
                     compress: options.compress,
-                    yuicompress: options.yuicompress,
+                    cleancss: options.cleancss,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
                     strictUnits: options.strictUnits

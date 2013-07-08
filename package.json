@@ -34,7 +34,7 @@
     "mime": "1.2.x",
     "request": ">=2.12.0",
     "mkdirp": "~0.3.4",
-    "ycssmin": ">=1.0.1"
+    "clean-css": "1.0.x"
   },
   "devDependencies": {
     "diff": "~1.0"

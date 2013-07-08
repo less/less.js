@@ -1,6 +1,6 @@
 # 1.5.0 WIP
 
- - support for import inline option to include css that you do not want less to parse e.g. `@import (inline) "file.css";`
+ - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
  - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
  - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
  - support for guards on selectors (currently only if you have a single selector)
@@ -12,6 +12,7 @@
  - Fix the saturate function to pass through when using the CSS syntax
  - Added svg-gradient function
  - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
+ - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
 
 # 1.4.1
 

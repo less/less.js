@@ -35,6 +35,7 @@ less:
 	@@cat ${HEADER} | sed s/@VERSION/${VERSION}/ > ${DIST}
 	@@echo "(function (window, undefined) {" >> ${DIST}
 	@@cat build/require.js\
+	      build/browser-header.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/colors.js\
@@ -64,6 +65,7 @@ rhino:
 	@@mkdir -p dist
 	@@touch ${RHINO}
 	@@cat build/require-rhino.js\
+	      build/rhino-header.js\
 	      ${SRC}/parser.js\
 	      ${SRC}/env.js\
 	      ${SRC}/visitor.js\

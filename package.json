@@ -28,6 +28,7 @@
     "node": ">=0.4.2"
   },
   "scripts": {
+    "pretest": "./node_modules/.bin/jshint --config ./.jshintrc .",
     "test": "make test"
   },
   "optionalDependencies": {
@@ -37,7 +38,8 @@
     "ycssmin": ">=1.0.1"
   },
   "devDependencies": {
-    "diff": "~1.0"
+    "diff": "~1.0",
+    "jshint": "~2.1.4"
   },
   "keywords": [
     "compile less",

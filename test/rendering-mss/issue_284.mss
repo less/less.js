@@ -2,7 +2,7 @@
   [type='primary'] {
     line-color: red;
   }
-  [foo='bar'] { 
+  [foo='bar'] {
     line-width: 10;
   }
 }

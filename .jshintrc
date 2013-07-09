@@ -1,0 +1,7 @@
+{
+    "evil": true,
+    "boss": true,
+    "expr": true,
+    "laxbreak": true,
+    "node": true
+}

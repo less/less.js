@@ -9,6 +9,8 @@ var globals = Object.keys(global);
 
 var oneTestOnly = process.argv[2];
 
+var isVerbose = process.env.npm_config_loglevel === 'verbose';
+
 var totalTests = 0,
     failedTests = 0,
     passedTests = 0;
@@ -123,6 +125,10 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
                 if (less === css) { ok('OK'); }
                 else if (err) {
                     fail("ERROR: " + (err && err.message));
+                    if (isVerbose) {
+                        console.error();
+                        console.error(err.stack);
+                    }
                 } else {
                     difference("FAIL", css, less);
                 }

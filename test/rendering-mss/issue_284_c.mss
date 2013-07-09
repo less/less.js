@@ -7,7 +7,7 @@
   }
 }
 
-#roads_hig {
+#roads_high {
   [type='primary'] {
     line-color: red;
   }

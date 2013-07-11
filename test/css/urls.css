@@ -44,6 +44,14 @@
 #secret {
   font-family: xecret, sans-serif;
 }
+#imported-relative-path {
+  background-image: url(import/../../data/image.jpg);
+  border-image: url('import/../../data/image.jpg');
+}
+#relative-url-import {
+  background-image: url(import/../../data/image.jpg);
+  border-image: url('import/../../data/image.jpg');
+}
 #data-uri {
   uri: url('data:image/jpeg;base64,bm90IGFjdHVhbGx5IGEganBlZyBmaWxlCg==');
 }

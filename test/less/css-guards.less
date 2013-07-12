@@ -29,3 +29,36 @@
 @b: 2;
 @c: 3;
 @d: 3;
+
+.inheritance when (@b = 2) {
+  .test {
+    color: black;
+  }
+  &:hover {
+    color: pink;
+  }
+  .hideme when (@b = 1) {
+    color: green;
+  }
+  & when (@b = 1) {
+    hideme: green;
+  }
+}
+
+.hideme when (@b = 1) {
+  .test {
+    color: black;
+  }
+  &:hover {
+    color: pink;
+  }
+  .hideme when (@b = 1) {
+    color: green;
+  }
+}
+
+& when (@b = 1) {
+  .hideme {
+    color: red;
+  }
+}

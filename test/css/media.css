@@ -118,7 +118,8 @@
     margin: 1cm;
   }
   @page :first {
-    size: 8.5in 11in;@top-left {
+    size: 8.5in 11in;
+    @top-left {
       margin: 1cm;
     }
     @top-left-corner {

@@ -32,7 +32,6 @@
   color: red;
   /* A C-style comment */
   /* A C-style comment */
-
   background-color: orange;
   font-size: 12px;
   /* lost comment */
@@ -59,7 +58,12 @@
 #last {
   color: #0000ff;
 }
-/*  *//* { *//*  *//*  *//*  */#div {
+/*  */
+/* { */
+/*  */
+/*  */
+/*  */
+#div {
   color: #A33;
 }
 /* } */

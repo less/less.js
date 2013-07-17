@@ -9,6 +9,8 @@ var globals = Object.keys(global);
 
 var oneTestOnly = process.argv[2];
 
+var isVerbose = process.env.npm_config_loglevel === 'verbose';
+
 var totalTests = 0,
     failedTests = 0,
     passedTests = 0;
@@ -20,7 +22,7 @@ less.tree.functions.increment = function (a) {
     return new(less.tree.Dimension)(a.value + 1);
 };
 less.tree.functions._color = function (str) {
-    if (str.value === "evil red") { return new(less.tree.Color)("600") }
+    if (str.value === "evil red") { return new(less.tree.Color)("600"); }
 };
 
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
@@ -101,7 +103,7 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
         doReplacements = globalReplacements;
 
     fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
-        if (! /\.less/.test(file)) { return }
+        if (! /\.less/.test(file)) { return; }
         
         var name = foldername + path.basename(file, '.less');
         
@@ -117,12 +119,16 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
             var css_name = name;
             if(nameModifier) css_name=nameModifier(name);
             fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                sys.print("- " + css_name + ": ")
+                sys.print("- " + css_name + ": ");
                 
                 css = css && doReplacements(css, 'test/less/' + foldername);
                 if (less === css) { ok('OK'); }
                 else if (err) {
                     fail("ERROR: " + (err && err.message));
+                    if (isVerbose) {
+                        console.error();
+                        console.error(err.stack);
+                    }
                 } else {
                     difference("FAIL", css, less);
                 }
@@ -190,7 +196,7 @@ function toCSS(options, path, callback) {
     var tree, css;
     options = options || {};
     fs.readFile(path, 'utf8', function (e, str) {
-        if (e) { return callback(e) }
+        if (e) { return callback(e); }
         
         options.paths = [require('path').dirname(path)];
         options.filename = require('path').resolve(process.cwd(), path);
@@ -215,7 +221,7 @@ function testNoOptions() {
     totalTests++;
     try {
         sys.print("- Integration - creating parser without options: ");
-        new(less.Parser);
+        new(less.Parser)();
     } catch(e) {
         fail(stylize("FAIL\n", "red"));
         return;

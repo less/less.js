@@ -7,7 +7,7 @@ var readDirFilesSync = function(dir, regex, callback) {
         if (! regex.test(file)) { return; }
         callback(file);
     });
-}
+};
 
 var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
     var output = '<html><head>\n';
@@ -33,7 +33,7 @@ var removeFiles = function(dir, regex) {
             console.log("Failed to delete " + file);
         });
     });
-}
+};
 
 removeFiles("test/browser", /test-runner-[a-zA-Z-]*\.htm$/);
 createTestRunnerPage("", /javascript|urls/, "main");

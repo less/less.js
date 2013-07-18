@@ -138,6 +138,11 @@ args = args.filter(function (arg) {
                 options.dumpLineNumbers = match[2];
             }
             break;
+        case 'source-map':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMap = match[2];
+            }
+            break;
         case 'rp':
         case 'rootpath':
             if (checkArgFunc(arg, match[2])) {
@@ -240,6 +245,7 @@ var parseLessFile = function (e, data) {
                     ieCompat: options.ieCompat,
                     compress: options.compress,
                     cleancss: options.cleancss,
+                    sourceMap: options.sourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
                     strictUnits: options.strictUnits

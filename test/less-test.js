@@ -142,7 +142,7 @@ function diff(left, right) {
     sys.puts("");
     require('diff').diffLines(left, right).forEach(function(item) {
       if(item.added || item.removed) {
-        var text = item.value.replace("\n", String.fromCharCode(182) + "\n");;
+        var text = item.value.replace("\n", String.fromCharCode(182) + "\n");
         sys.print(stylize(text, item.added ? 'green' : 'red'));
       } else {
         sys.print(item.value);

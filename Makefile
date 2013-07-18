@@ -61,6 +61,9 @@ browser-test: browser-prepare
 browser-test-server: browser-prepare
 	phantomjs test/browser/phantom-runner.js --no-tests
 
+jshint:
+	node_modules/.bin/jshint --config ./.jshintrc .
+
 rhino:
 	@@mkdir -p dist
 	@@touch ${RHINO}

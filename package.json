@@ -8,12 +8,18 @@
     "The Core Less Team"
   ],
   "bugs": {
-    "url": "https://github.com/cloudhead/less.js/issues"
+    "url": "https://github.com/less/less.js/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloudhead/less.js.git"
+    "url": "https://github.com/less/less.js.git"
   },
+  "licenses": [
+    {
+      "type": "Apache v2",
+      "url": "https://github.com/less/less.js/blob/master/LICENSE"
+    }
+  ],
   "bin": {
     "lessc": "./bin/lessc"
   },
@@ -73,11 +79,5 @@
     "stylesheet",
     "variables in css",
     "css less"
-  ],
-  "licenses": [
-    {
-      "type": "Apache v2",
-      "url": "https://github.com/cloudhead/less.js/blob/master/LICENSE"
-    }
   ]
 }

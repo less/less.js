@@ -9,20 +9,20 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     build: grunt.file.readYAML('build/build.yml'),
-    pkg  : grunt.file.readJSON('package.json'),
+    pkg: grunt.file.readJSON('package.json'),
 
     // Metadata
-    license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
-    copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
-    version: '1.4.1',
     meta: {
+      license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
+      copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
+      version: '1.4.1',
       banner:
         '/* \n' +
-        ' * LESS - <%= pkg.description %> v<%= version %> \n' +
+        ' * LESS - <%= pkg.description %> v<%= meta.version %> \n' +
         ' * http://lesscss.org \n' +
         ' * \n' +
-        ' * <%= copyright %>, <%= pkg.author %> \n' +
-        ' * Licensed under the <%= license %> License. \n' +
+        ' * <%= meta.copyright %>, <%= pkg.author %> \n' +
+        ' * Licensed under the <%= meta.license %> License. \n' +
         ' * \n' +
         ' * @licence \n' +
         ' */ \n\n'
@@ -36,6 +36,9 @@ module.exports = function(grunt) {
       browser: {
         command: 'node test/browser-test-prepare.js'
       },
+      phantom: {
+        command: 'phantomjs test/browser/phantom-runner.js'
+      },
       benchmark: {
         command: 'node benchmark/less-benchmark.js'
       },
@@ -44,24 +47,24 @@ module.exports = function(grunt) {
         command: 'git add dist/*.js'
       },
       alpha_commit: {
-        command: 'git commit -m "Update alpha <%= version %>"'
+        command: 'git commit -m "Update alpha <%= meta.version %>"'
       },
       add: {
         command: 'git add dist/*'
       },
       commit: {
-        command: 'git commit -a -m "(dist) build <%= version %>"'
+        command: 'git commit -a -m "(dist) build <%= meta.version %>"'
       },
       // Create .tar.gz archive
       archive: {
-        command: 'git archive master --prefix=less/ -o ../archives/less-<%= version %>.tar.gz'
+        command: 'git archive master --prefix=less/ -o ../archives/less-<%= meta.version %>.tar.gz'
       },
       // npm
       npm: {
-        command: 'npm publish less-<%= version %>.tar.gz'
+        command: 'npm publish less-<%= meta.version %>.tar.gz'
       },
       npm_tag: {
-        command: 'npm tag less@<%= version %> stable'
+        command: 'npm tag less@<%= meta.version %> stable'
       }
     },
 
@@ -72,6 +75,12 @@ module.exports = function(grunt) {
         separator: '\n\n'
       },
       // Browser tests
+      readme: {
+        options: { process: true, banner: '' },
+        src: ['build/README.md'],
+        dest: 'README.md'
+      },
+      // Browser tests
       browser: {
         src: ['<%= build.browser %>'],
         dest: 'test/browser/less.js'
@@ -79,56 +88,38 @@ module.exports = function(grunt) {
       // Rhino
       rhino: {
         src: ['<%= build.rhino %>'],
-        dest: 'tmp/less-rhino-<%= version %>.js'
+        dest: 'tmp/less-rhino-<%= meta.version %>.js'
       },
 
       alpha: {
         src: ['<%= build.node %>'],
-        dest: 'tmp/less-<%= version %>-alpha.js'
+        dest: 'tmp/less-<%= meta.version %>-alpha.js'
       },
       beta: {
         src: ['<%= build.node %>'],
-        dest: 'tmp/less-<%= version %>-beta.js'
+        dest: 'tmp/less-<%= meta.version %>-beta.js'
       }
     },
 
     uglify: {
       options: {
-        banner: '/* LESS.js v<%= version %> RHINO | <%= copyright %>, <%= pkg.author.name %> */\n\n',
+        banner: '/* LESS.js v<%= meta.version %> RHINO | <%= copyright %>, <%= pkg.author.name %> */\n\n',
         mangle: true
       },
       browser: {
         src:  '<%= concat.browser.dest %>',
-        dest: 'tmp/less-<%= version %>.min.js'
+        dest: 'tmp/less-<%= meta.version %>.min.js'
       },
       alpha: {
         src:  '<%= concat.alpha.dest %>',
-        dest: 'tmp/less-<%= version %>-alpha.min.js'
+        dest: 'tmp/less-<%= meta.version %>-alpha.min.js'
       },
       beta: {
         src:  '<%= concat.beta.dest %>',
-        dest: 'tmp/less-<%= version %>-beta.min.js'
+        dest: 'tmp/less-<%= meta.version %>-beta.min.js'
       }
     },
 
-    // Browser tests
-    // I just threw some values in here as placeholders,
-    // so I doubt any of it is correct.
-    jasmine: {
-      browser: {
-        src: './test/browser-test-prepare.js',
-        options: {
-          // version: '1.2.0',
-          template: './test/browser/template.htm',
-          // specs: './test/browser/spec/*Spec.js',
-          // helpers: './test/browser/spec/*Helper.js',
-          // junit: {
-          //   path: './test/browser/junit/customTemplate',
-          //   consolidate: true
-          // }
-        }
-      }
-    },
     // This may or may not be useful, but it hasn't been
     // set up yet any
     nodeunit: {
@@ -149,8 +140,15 @@ module.exports = function(grunt) {
         src: ['lib/**/*.js']
       },
       test: {
-        src: ['test/*.js']
+        src: ['test/*.js', 'test/browser/runner-*.js']
       }
+    },
+
+    // Before running tests, clean out the results
+    // of any previous tests. (this will need to be
+    // setup based on configuration of browser tests.
+    clean: {
+      test: ['test/browser/test-runner-*.htm']
     },
 
     watch: {
@@ -173,42 +171,62 @@ module.exports = function(grunt) {
     }
   });
 
-  // Load the necessary plugins.
+  // Load these plugins to provide the necessary tasks
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-  // Default task.
+  // Default task to build Less.js
   grunt.registerTask('default', [
     'concat:browser',
     'uglify:browser'
   ]);
 
-  // Alpha.
+  // Rhino
   grunt.registerTask('rhino', [
     'concat:rhino'
   ]);
 
-  // Alpha.
+  // Alpha
   grunt.registerTask('alpha', [
     'concat:alpha',
     'uglify:alpha'
   ]);
 
-  // Beta.
+  // Beta
   grunt.registerTask('beta', [
     'concat:beta',
     'uglify:beta'
   ]);
 
-  // Tests to be run.
-  grunt.registerTask('test', [
-    // 'jshint:lib',
-    // 'nodeunit',
-    // 'jasmine',
-    'shell:test'
+  // Readme.
+  grunt.registerTask('readme', [
+    'concat:readme'
   ]);
 
-  // Benchmarks.
+
+
+
+  // Browser tests
+  // grunt.registerTask('browser', [
+  //   'clean',
+  //   'shell:browser',
+  //   'shell:phantom'
+  // ]);
+
+  // All tests
+  grunt.registerTask('test', [
+    'jshint:lib',
+    'nodeunit',
+    // 'jasmine',
+    'clean',
+    'shell:test',
+    // 'shell:browser'
+  ]);
+
+  // Benchmarks
   grunt.registerTask('bench', [
     'shell:benchmark'
   ]);
+
+
+
 };

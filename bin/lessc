@@ -216,6 +216,11 @@ if (options.depends) {
     sys.print(outputbase + ": ");
 }
 
+var writeSourceMap = function(output) {
+    ensureDirectory(options.sourceMap);
+    fs.writeFileSync(options.sourceMap, output, 'utf8');
+};
+
 var parseLessFile = function (e, data) {
     if (e) {
         sys.puts("lessc: " + e.message);
@@ -246,6 +251,7 @@ var parseLessFile = function (e, data) {
                     compress: options.compress,
                     cleancss: options.cleancss,
                     sourceMap: options.sourceMap,
+                    writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
                     strictUnits: options.strictUnits

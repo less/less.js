@@ -41,6 +41,8 @@ runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
 runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
 runTestSet({strictMath: true, compress: true}, "compression/");
 runTestSet({strictMath: false}, "legacy/");
+runTestSet({strictMath: true, strictUnits: true, sourceMap: true }, "sourcemaps/",
+    testSourcemap, null, null, function(filename) { return path.join('test/sourcemaps', filename) + '.json'; });
 
 testNoOptions();
 
@@ -53,6 +55,18 @@ function getErrorPathReplacementFunction(dir) {
             .replace("{404status}", "")
             .replace(/\r\n/g, '\n');
     };
+}
+
+function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
+    fs.readFile(path.join('test/sourcemaps', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        sys.print("- " + name + ": ");
+        if (sourcemap === expectedSourcemap) {
+            ok('OK');
+        } else {
+            difference("FAIL", expectedSourcemap, sourcemap);
+        }
+        sys.puts("");
+    });
 }
 
 function testErrors(name, err, compiledLess, doReplacements) {
@@ -96,7 +110,7 @@ function checkGlobalLeaks() {
     });
 }
 
-function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements) {
+function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
     foldername = foldername || "";
 
     if(!doReplacements)
@@ -111,13 +125,20 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
         
         totalTests++;
 
+        if (options.sourceMap) {
+            var sourceMapOutput;
+            options.writeSourceMap = function(output) {
+                sourceMapOutput = output;
+            };
+        }
+
         toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
             if (verifyFunction) {
-                return verifyFunction(name, err, less, doReplacements);
+                return verifyFunction(name, err, less, doReplacements, sourceMapOutput);
             }
             var css_name = name;
-            if(nameModifier) css_name=nameModifier(name);
+            if(nameModifier) { css_name = nameModifier(name); }
             fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
                 sys.print("- " + css_name + ": ");
                 

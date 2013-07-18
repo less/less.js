@@ -13,9 +13,9 @@ module.exports = function(grunt) {
 
     // Metadata
     meta: {
+      version: '1.4.1',
       license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
       copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
-      version: '1.4.1',
       banner:
         '/* \n' +
         ' * LESS - <%= pkg.description %> v<%= meta.version %> \n' +
@@ -90,17 +90,17 @@ module.exports = function(grunt) {
         src: ['<%= build.rhino %>'],
         dest: 'tmp/less-rhino-<%= meta.version %>.js'
       },
-
       alpha: {
-        src: ['<%= build.node %>'],
+        src: ['<%= build.browser %>'],
         dest: 'tmp/less-<%= meta.version %>-alpha.js'
       },
       beta: {
-        src: ['<%= build.node %>'],
+        src: ['<%= build.browser %>'],
         dest: 'tmp/less-<%= meta.version %>-beta.js'
       }
     },
 
+    // Must run "concat" first
     uglify: {
       options: {
         banner: '/* LESS.js v<%= meta.version %> RHINO | <%= copyright %>, <%= pkg.author.name %> */\n\n',
@@ -174,15 +174,19 @@ module.exports = function(grunt) {
   // Load these plugins to provide the necessary tasks
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
+
   // Default task to build Less.js
   grunt.registerTask('default', [
     'concat:browser',
     'uglify:browser'
   ]);
-
   // Rhino
   grunt.registerTask('rhino', [
     'concat:rhino'
+  ]);
+  // Minify
+  grunt.registerTask('min', [
+    'uglify'
   ]);
 
   // Alpha
@@ -190,27 +194,11 @@ module.exports = function(grunt) {
     'concat:alpha',
     'uglify:alpha'
   ]);
-
   // Beta
   grunt.registerTask('beta', [
     'concat:beta',
     'uglify:beta'
   ]);
-
-  // Readme.
-  grunt.registerTask('readme', [
-    'concat:readme'
-  ]);
-
-
-
-
-  // Browser tests
-  // grunt.registerTask('browser', [
-  //   'clean',
-  //   'shell:browser',
-  //   'shell:phantom'
-  // ]);
 
   // All tests
   grunt.registerTask('test', [
@@ -221,12 +209,22 @@ module.exports = function(grunt) {
     'shell:test',
     // 'shell:browser'
   ]);
+  // Browser tests
+  // grunt.registerTask('browser', [
+  //   'clean',
+  //   'shell:browser',
+  //   'shell:phantom'
+  // ]);
 
   // Benchmarks
   grunt.registerTask('bench', [
     'shell:benchmark'
   ]);
 
+  // Readme.
+  grunt.registerTask('readme', [
+    'concat:readme'
+  ]);
 
 
 };

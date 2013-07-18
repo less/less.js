@@ -21,7 +21,7 @@ less:
   parser   : <%= build.lib %>/parser.js
   functions: <%= build.lib %>/functions.js
   colors   : <%= build.lib %>/colors.js
-  treedir  : <%= build.lib %>/tree/*.js # glob
+  treedir  : <%= build.lib %>/tree/*.js # glob all files
   tree     : <%= build.lib %>/tree.js
   env      : <%= build.lib %>/env.js
   visitor  : <%= build.lib %>/visitor.js

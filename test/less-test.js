@@ -58,7 +58,7 @@ function getErrorPathReplacementFunction(dir) {
 }
 
 function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
-    fs.readFile(path.join('test/sourcemaps', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+    fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
         sys.print("- " + name + ": ");
         if (sourcemap === expectedSourcemap) {
             ok('OK');

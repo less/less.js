@@ -139,7 +139,9 @@ args = args.filter(function (arg) {
             }
             break;
         case 'source-map':
-            if (checkArgFunc(arg, match[2])) {
+            if (!match[2]) {
+                options.sourceMap = true;
+            } else {
                 options.sourceMap = match[2];
             }
             break;
@@ -184,6 +186,14 @@ if (output) {
     if (warningMessages) {
         sys.puts(warningMessages);
     }
+}
+
+if (options.sourceMap === true) {
+    if (!output) {
+        sys.puts("the sourcemap option only has an optional filename if the css filename is given");
+        return;
+    }
+    options.sourceMap = output + ".map";
 }
 
 if (! input) {
@@ -250,7 +260,8 @@ var parseLessFile = function (e, data) {
                     ieCompat: options.ieCompat,
                     compress: options.compress,
                     cleancss: options.cleancss,
-                    sourceMap: options.sourceMap,
+                    sourceMap: Boolean(options.sourceMap),
+                    sourceMapFilename: options.sourceMap,
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,

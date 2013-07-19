@@ -62,6 +62,12 @@ function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         sys.print("- " + name + ": ");
         if (sourcemap === expectedSourcemap) {
             ok('OK');
+        } else if (err) {
+            fail("ERROR: " + (err && err.message));
+            if (isVerbose) {
+                console.error();
+                console.error(err.stack);
+            }
         } else {
             difference("FAIL", expectedSourcemap, sourcemap);
         }

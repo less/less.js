@@ -1,6 +1,5 @@
 var path = require('path'),
-    fs = require('fs'),
-    sys = require('util');
+    fs = require('fs');
 
 var readDirFilesSync = function(dir, regex, callback) {
     fs.readdirSync(dir).forEach(function (file) {

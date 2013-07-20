@@ -3,5 +3,7 @@
     "boss": true,
     "expr": true,
     "laxbreak": true,
-    "node": true
+    "node": true,
+    "unused": "vars",
+    "noarg": true
 }

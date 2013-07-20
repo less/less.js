@@ -220,7 +220,7 @@ function endTest() {
 }
 
 function toCSS(options, path, callback) {
-    var tree, css;
+    var css;
     options = options || {};
     fs.readFile(path, 'utf8', function (e, str) {
         if (e) { return callback(e); }

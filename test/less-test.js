@@ -40,7 +40,7 @@ runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
            function(name) { return name + '-all'; });
 runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
 runTestSet({strictMath: true, compress: true}, "compression/");
-runTestSet({strictMath: false}, "legacy/");
+runTestSet({}, "legacy/");
 runTestSet({strictMath: true, strictUnits: true, sourceMap: true }, "sourcemaps/",
     testSourcemap, null, null, function(filename) { return path.join('test/sourcemaps', filename) + '.json'; });
 

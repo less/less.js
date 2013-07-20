@@ -22,7 +22,7 @@
     "test": "./test"
   },
   "jam": {
-    "main": "./dist/less-1.4.1.js"
+    "main": "./dist/less-1.4.2.js"
   },
   "engines": {
     "node": ">=0.4.2"

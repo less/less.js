@@ -136,6 +136,7 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
             options.writeSourceMap = function(output) {
                 sourceMapOutput = output;
             };
+            options.sourceMapOutputFilename = name + ".css";
         }
 
         toCSS(options, path.join('test/less/', foldername + file), function (err, less) {

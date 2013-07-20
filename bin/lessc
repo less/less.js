@@ -186,6 +186,7 @@ if (output) {
     if (warningMessages) {
         sys.puts(warningMessages);
     }
+    options.sourceMapOutputFilename = output;
 }
 
 if (options.sourceMap === true) {
@@ -262,6 +263,7 @@ var parseLessFile = function (e, data) {
                     cleancss: options.cleancss,
                     sourceMap: Boolean(options.sourceMap),
                     sourceMapFilename: options.sourceMap,
+                    sourceMapOutputFilename: options.sourceMapOutputFilename,
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,

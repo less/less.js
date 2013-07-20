@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": "Alexis Sellier <self@cloudhead.net>",
@@ -8,11 +8,11 @@
     "The Core Less Team"
   ],
   "bugs": {
-    "url": "https://github.com/cloudhead/less.js/issues"
+    "url": "https://github.com/less/less.js/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloudhead/less.js.git"
+    "url": "https://github.com/less/less.js.git"
   },
   "bin": {
     "lessc": "./bin/lessc"
@@ -22,7 +22,7 @@
     "test": "./test"
   },
   "jam": {
-    "main": "./dist/less-1.4.1.js"
+    "main": "./dist/less-1.4.2.js"
   },
   "engines": {
     "node": ">=0.4.2"
@@ -67,7 +67,7 @@
   "licenses": [
     {
       "type": "Apache v2",
-      "url": "https://github.com/cloudhead/less.js/blob/master/LICENSE"
+      "url": "https://github.com/less/less.js/blob/master/LICENSE"
     }
   ]
 }

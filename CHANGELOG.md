@@ -13,6 +13,15 @@
  - Added svg-gradient function
  - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
 
+# 1.4.2
+
+2013-07-20
+
+ - if you don't pass a strict maths option, font size/line height options are output correctly again
+ - npmignore now include .gitattributes
+ - property names may include capital letters
+ - various windows path fixes (capital letters, multiple // in a path)
+
 # 1.4.1
 
 2013-07-05

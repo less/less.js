@@ -112,3 +112,6 @@ foo | * {
 h1 {
   color: green;
 }
+.upper-test {
+  UpperCaseProperties: allowed;
+}

@@ -1,7 +1,7 @@
 #
 # Run all tests
 #
-test: 
+test:
 	node test/less-test.js
 
 #
@@ -15,19 +15,10 @@ benchmark:
 #
 SRC = lib/less
 HEADER = build/header.js
-VERSION = `cat package.json | grep version \
-														| grep -o '[0-9]\.[0-9]\.[0-9]\+'`
+VERSION = `cat package.json | grep version | grep -o '[0-9]\.[0-9]\.[0-9]\+'`
 DIST = dist/less-${VERSION}.js
 RHINO = dist/less-rhino-${VERSION}.js
 DIST_MIN = dist/less-${VERSION}.min.js
-
-browser-prepare: DIST := test/browser/less.js
-
-alpha: DIST := dist/less-${VERSION}-alpha.js
-alpha: DIST_MIN := dist/less-${VERSION}-alpha.min.js
-
-beta: DIST := dist/less-${VERSION}-beta.js
-beta: DIST_MIN := dist/less-${VERSION}-beta.min.js
 
 less:
 	@@mkdir -p dist
@@ -50,10 +41,16 @@ less:
 	      build/amd.js >> ${DIST}
 	@@echo "})(window);" >> ${DIST}
 	@@echo ${DIST} built.
-	
+min: less
+	@@echo minifying...
+	@@uglifyjs ${DIST} > ${DIST_MIN}
+	@@echo ${DIST_MIN} built.
+
+
+browser-prepare: DIST := test/browser/less.js
 browser-prepare: less
 	node test/browser-test-prepare.js
-	
+
 browser-test: browser-prepare
 	phantomjs test/browser/phantom-runner.js
 
@@ -78,27 +75,12 @@ rhino:
 	      ${SRC}/rhino.js > ${RHINO}
 	@@echo ${RHINO} built.
 
-min: less
-	@@echo minifying...
-	@@uglifyjs ${DIST} > ${DIST_MIN}
-	@@echo ${DIST_MIN} built.
 
+
+alpha: DIST := dist/less-${VERSION}-alpha.js
+alpha: DIST_MIN := dist/less-${VERSION}-alpha.min.js
 alpha: min
 
+beta: DIST := dist/less-${VERSION}-beta.js
+beta: DIST_MIN := dist/less-${VERSION}-beta.min.js
 beta: min
-
-alpha-release: alpha
-	git add dist/*.js
-	git commit -m "Update alpha ${VERSION}"
-
-dist: min rhino
-	git add dist/*
-	git commit -a -m "(dist) build ${VERSION}"
-	git archive master --prefix=less/ -o less-${VERSION}.tar.gz
-	npm publish less-${VERSION}.tar.gz
-
-stable:
-	npm tag less@${VERSION} stable
-
-
-.PHONY: test benchmark

@@ -1,3 +1,5 @@
+@var: black;
+
 .a() {
   color: red;
 }
@@ -6,4 +8,19 @@
   color: green;
   .a();
   color: blue;
+  background: @var;
+}
+
+.a, .b {
+  background: green;
+  .c, .d {
+    background: gray;
+    & + & {
+      color: red;
+    }
+  }
+}
+
+.extend:extend(.a all) {
+  color: pink;
 }

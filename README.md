@@ -1,4 +1,4 @@
-# [Less.js v1.4.1](http://lesscss.org)
+# [Less.js v1.4.2](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
@@ -31,7 +31,7 @@ To learn about the many other features Less.js has to offer please visit [http:/
 #### nesting
 Take advantage of nesting to make code more readable and maintainable. This:
 
-``` less
+```less
 .nav > li > a {
   border: 1px solid #f5f5f5;
   &:hover {
@@ -42,7 +42,7 @@ Take advantage of nesting to make code more readable and maintainable. This:
 
 renders to:
 
-``` css
+```css
 .nav > li > a {
   border: 1px solid #f5f5f5;
 }
@@ -55,7 +55,7 @@ renders to:
 #### variables
 Updated commonly used values from a single location.
 
-``` less
+```less
 // Variables ("inline" comments like this can be used)
 @link-color:  #428bca; // appears as "sea blue"
 
@@ -73,7 +73,7 @@ Variables can also be used in `@import` statements, URLs, selector names, and mo
 #### operations
 Continuing with the same example above, we can use our variables even easier to maintain with _operations_, which enables the use of addition, subraction, multiplication and division in your styles:
 
-``` less
+```less
 // Variables
 @link-color:        #428bca;
 @link-color-hover:  darken(@link-color, 10%);
@@ -88,7 +88,7 @@ a:hover {
 ```
 renders to:
 
-``` css
+```css
 a {
   color: #428bca;
 }
@@ -101,7 +101,7 @@ a:hover {
 ##### "implicit" mixins
 Mixins enable you to apply the styles of one selector inside another selector like this:
 
-``` less
+```less
 // Any "regular" class...
 .link {
   color: @link-color;
@@ -114,7 +114,7 @@ a {
 
 renders to:
 
-``` css
+```css
 .link {
   color: #428bca;
 }
@@ -131,7 +131,7 @@ So any selector can be an "implicit mixin". We'll show you a DRYer way to do thi
 ##### parametric mixins
 Mixins can also accept parameters:
 
-``` less
+```less
 // Transition mixin
 .transition(@transition) {
   -webkit-transition: @transition;
@@ -143,7 +143,7 @@ Mixins can also accept parameters:
 
 used like this:
 
-``` less
+```less
 a {
   font-weight: bold;
   color: @link-color;
@@ -157,7 +157,7 @@ a {
 
 renders to:
 
-``` css
+```css
 a {
   font-weight: bold;
   color: #428bca;
@@ -175,7 +175,7 @@ a:hover {
 #### extend
 The `extend` feature can be thought of as the _inverse_ of mixins. It accomplishes the goal of "borrowing styles", but rather than copying all the rules of _Selector A_ over to _Selector B_, `extend` copies the name of the _inheriting selector_ (_Selector B_) over to the _extending selector_ (_Selector A_). So continuing with the example used for [mixins](#mixins) above, extend works like this:
 
-``` less
+```less
 .link {
   color: @link-color;
 }
@@ -191,7 +191,7 @@ a {
 
 renders to:
 
-``` css
+```css
 .link, a {
   color: #428bca;
 }
@@ -202,7 +202,7 @@ renders to:
 ### Compiling and Parsing
 Invoke the compiler from node:
 
-``` javascript
+```javascript
 var less = require('less');
 
 less.render('.class { width: (1 + 1) }', function (e, css) {
@@ -212,7 +212,7 @@ less.render('.class { width: (1 + 1) }', function (e, css) {
 
 Outputs:
 
-``` css
+```css
 .class {
   width: 2;
 }
@@ -220,7 +220,7 @@ Outputs:
 
 You may also manually invoke the parser and compiler:
 
-``` javascript
+```javascript
 var parser = new(less.Parser);
 
 parser.parse('.class { width: (1 + 1) }', function (err, tree) {
@@ -233,7 +233,7 @@ parser.parse('.class { width: (1 + 1) }', function (err, tree) {
 ### Configuration
 You may also pass options to the compiler:
 
-``` javascript
+```javascript
 var parser = new(less.Parser)({
     paths: ['.', './src/less'], // Specify search paths for @import directives
     filename: 'style.less'      // Specify a filename, for better error messages
@@ -243,6 +243,19 @@ parser.parse('.class { width: (1 + 1) }', function (e, tree) {
     tree.toCSS({ compress: true }); // Minify CSS output
 });
 ```
+
+## More information
+
+For general information on the language, configuration options or usage visit [lesscss.org](http://lesscss.org) or [the less wiki][wiki].
+
+Here are other resources for using Less.js:
+
+* [stackoverflow.com][so] is a great place to get answers about Less.
+* [node.js tools](https://github.com/less/less.js/wiki/Converting-LESS-to-CSS) for converting Less to CSS
+* [GUI compilers for Less](https://github.com/less/less.js/wiki/GUI-compilers-that-use-LESS.js)
+* [Less.js Issues][issues] for reporting bugs
+
+
 
 ## Contributing
 Please read [CONTRIBUTING.md](./CONTRIBUTING.md). Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
@@ -278,25 +291,11 @@ npm install
 You should now be able to build Less.js, run tests, benchmarking, and other tasks listed in the Gruntfile.
 
 
-## More information
-
-For general information on the language, configuration options or usage visit [lesscss.org](http://lesscss.org) or [the less wiki][wiki].
-
-Here are other resources for using Less.js:
-
-* [stackoverflow.com][so] is a great place to get answers about Less.
-* [node.js tools](https://github.com/less/less.js/wiki/Converting-LESS-to-CSS) for converting Less to CSS
-* [GUI compilers for Less](https://github.com/less/less.js/wiki/GUI-compilers-that-use-LESS.js)
-* [Less.js Issues][issues] for reporting bugs
-
-
-
-
 ## Building Less.js
 
 The Less.js [Gruntfile](Gruntfile.js) is configured with the following "convenience tasks" (you must first install [the necessary local dependencies](package.json)):
 
-```
+```shell
 $ npm install
 ```
 
@@ -317,15 +316,16 @@ Please review the [Gruntfile](Gruntfile.js) to become acquainted with the other 
 
 
 ## Release History
-See the [changelog](./CHANGELOG)
+See the [changelog](CHANGELOG)
 
-## [License](./LICENSE)
+## [License](LICENSE)
 
-Copyright (c) 2009-2013 Alexis Sellier & The Core Less Team
-Licensed under the Apache license.
+Copyright (c) 2009-2013 [Alexis Sellier](http://cloudhead.io/) & The Core Less Team
+Licensed under the [Apache License](LICENSE).
 
 
 [so]: http://stackoverflow.com/questions/tagged/twitter-bootstrap+less "StackOverflow.com"
 [issues]: https://github.com/less/less.js/issues "GitHub Issues for Less.js"
 [wiki]: https://github.com/less/less.js/wiki "The official wiki for Less.js"
 [download]: https://github.com/less/less.js/zipball/master "Download Less.js"
+})(window);

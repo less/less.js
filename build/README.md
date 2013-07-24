@@ -320,7 +320,7 @@ See the [changelog](CHANGELOG)
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-<%= grunt.template.today("yyyy") %> [{%= authors[0].name %}]({%= authors[0].url %}) & The Core Less Team
+Copyright (c) 2009-<%= grunt.template.today("yyyy") %> [Alexis Sellier](http://cloudhead.io/) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 

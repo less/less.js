@@ -3,7 +3,7 @@
 > We welcome feature requests and bug reports. Please read these guidelines before submitting one. 
 
 
-<span class="warning">**Words that begin with the at sign (`@`) must be wrapped in backticks!** </span>. as a courtesy to avoid sending notifications to any user that might have the `@username` being referenced. Remember, usernames start with the at sign.
+<span class="warning">**Words that begin with the at sign (`@`) must be wrapped in backticks!** </span>. As a courtesy to avoid sending notifications to any user that might have the `@username` being referenced, please remember that GitHub usernames also start with the at sign. If you don't wrap them in backticks, users will get unintended notifications from you.
 
 GitHub has other great markdown features as well, [go here to learn more about them](https://help.github.com/articles/github-flavored-markdown).   
 

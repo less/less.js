@@ -182,19 +182,21 @@ if (input && input != '-') {
 var output = args[2];
 var outputbase = args[2];
 if (output) {
+    options.sourceMapOutputFilename = output;
     output = path.resolve(process.cwd(), output);
     if (warningMessages) {
         sys.puts(warningMessages);
     }
-    options.sourceMapOutputFilename = output;
 }
+
+options.sourceMapRootpath = process.cwd();
 
 if (options.sourceMap === true) {
     if (!output) {
         sys.puts("the sourcemap option only has an optional filename if the css filename is given");
         return;
     }
-    options.sourceMap = output + ".map";
+    options.sourceMap = options.sourceMapOutputFilename + ".map";
 }
 
 if (! input) {
@@ -264,6 +266,7 @@ var parseLessFile = function (e, data) {
                     sourceMap: Boolean(options.sourceMap),
                     sourceMapFilename: options.sourceMap,
                     sourceMapOutputFilename: options.sourceMapOutputFilename,
+                    sourceMapRootpath: options.sourceMapRootpath,
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,

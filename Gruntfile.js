@@ -16,7 +16,7 @@ module.exports = function(grunt) {
         ' * LESS - <%= pkg.description %> v<%= pkg.version %> \n' +
         ' * http://lesscss.org \n' +
         ' * \n' +
-        ' * <%= meta.copyright %>, <%= pkg.author %> \n' +
+        ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> \n' +
         ' * Licensed under the <%= meta.license %> License. \n' +
         ' * \n' +
         ' * @licence \n' +
@@ -41,7 +41,7 @@ module.exports = function(grunt) {
 
     concat: {
       options: {
-        stripBanner: true,
+        stripBanners: true,
         banner: '<%= meta.banner %>\n\n(function (window, undefined) {',
         footer: '\n})(window);'
       },
@@ -52,20 +52,20 @@ module.exports = function(grunt) {
       },
       alpha: {
         src: ['<%= build.browser %>'],
-        dest: 'tmp/less-<%= pkg.version %>-alpha.js'
+        dest: 'dist/less-<%= pkg.version %>-alpha.js'
       },
       beta: {
         src: ['<%= build.browser %>'],
-        dest: 'tmp/less-<%= pkg.version %>-beta.js'
+        dest: 'dist/less-<%= pkg.version %>-beta.js'
       },
       // Rhino
       rhino: {
         options: {
-          banner: '/* LESS.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author %> */\n\n',
+          banner: '/* LESS.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhino %>'],
-        dest: 'tmp/less-rhino-<%= pkg.version %>.js'
+        dest: 'dist/less-rhino-<%= pkg.version %>.js'
       },
       // Generate readme
       readme: {
@@ -85,15 +85,15 @@ module.exports = function(grunt) {
       },
       browser: {
         src: ['<%= concat.browser.src %>'],
-        dest: 'tmp/less-<%= pkg.version %>.min.js'
+        dest: 'dist/less-<%= pkg.version %>.min.js'
       },
       alpha: {
         src: ['<%= concat.alpha.src %>'],
-        dest: 'tmp/less-<%= pkg.version %>-alpha.min.js'
+        dest: 'dist/less-<%= pkg.version %>-alpha.min.js'
       },
       beta: {
         src: ['<%= concat.beta.src %>'],
-        dest: 'tmp/less-<%= pkg.version %>-beta.min.js'
+        dest: 'dist/less-<%= pkg.version %>-beta.min.js'
       }
     },
 
@@ -132,8 +132,7 @@ module.exports = function(grunt) {
   // Default task to build Less.js
   grunt.registerTask('default', [
     'browser',
-    'rhino',
-    'min'
+    'rhino'
   ]);
 
   // Browser

@@ -3,7 +3,10 @@
   "version": "1.4.2",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
-  "author": "Alexis Sellier <self@cloudhead.net>",
+  "author": {
+    "name": "Alexis Sellier",
+    "email": "self@cloudhead.net"
+  },
   "contributors": [
     "The Core Less Team"
   ],

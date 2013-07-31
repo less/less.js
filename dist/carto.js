@@ -3853,7 +3853,7 @@ tree.Reference = {
     data: reference.version.latest
 };
 
-tree.Reference.setReference = function(ref, version) {
+tree.Reference.set = function(ref, version) {
     reference = ref;
     tree.Reference.setVersion(version || 'latest');
 };
@@ -4756,7 +4756,7 @@ var tree = require('../tree');
 tree.Value.prototype.toJS = function() {
   var v = this.value[0].value[0];
   val = v.toString();
-  if(v.is === "color") {
+  if(v.is === "color" || v.is === 'uri') {
     val = "'" + val + "'";
   }
   return "_value = " + val + ";";

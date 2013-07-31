@@ -64,6 +64,11 @@ browser-test-server: browser-prepare
 jshint:
 	node_modules/.bin/jshint --config ./.jshintrc .
 
+test-sourcemaps:
+	node bin/lessc --source-map --source-map-inline test/less/import.less test/sourcemaps/import.css
+	node bin/lessc --source-map --source-map-inline test/less/sourcemaps/basic.less test/sourcemaps/basic.css
+	node node_modules/http-server/bin/http-server test/sourcemaps -p 8083
+
 rhino:
 	@@mkdir -p dist
 	@@touch ${RHINO}

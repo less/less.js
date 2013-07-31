@@ -40,7 +40,8 @@
   },
   "devDependencies": {
     "diff": "~1.0",
-    "jshint": "~2.1.4"
+    "jshint": "~2.1.4",
+    "http-server": "~0.5.5"
   },
   "keywords": [
     "compile less",

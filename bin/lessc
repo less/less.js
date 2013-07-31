@@ -149,6 +149,10 @@ args = args.filter(function (arg) {
             if (checkArgFunc(arg, match[2])) {
                 options.sourceMapRootpath = match[2];
             }
+            break;
+        case 'source-map-inline':
+            options.outputSourceFiles = true;
+            break;
         case 'rp':
         case 'rootpath':
             if (checkArgFunc(arg, match[2])) {
@@ -200,7 +204,8 @@ if (options.sourceMap === true) {
         sys.puts("the sourcemap option only has an optional filename if the css filename is given");
         return;
     }
-    options.sourceMap = options.sourceMapOutputFilename + ".map";
+    options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
+    options.sourceMap = path.basename(options.sourceMapFullFilename);
 }
 
 if (! input) {
@@ -234,8 +239,9 @@ if (options.depends) {
 }
 
 var writeSourceMap = function(output) {
-    ensureDirectory(options.sourceMap);
-    fs.writeFileSync(options.sourceMap, output, 'utf8');
+    var filename = options.sourceMapFullFilename || options.sourceMap;
+    ensureDirectory(filename);
+    fs.writeFileSync(filename, output, 'utf8');
 };
 
 var parseLessFile = function (e, data) {
@@ -272,6 +278,7 @@ var parseLessFile = function (e, data) {
                     sourceMapOutputFilename: options.sourceMapOutputFilename,
                     sourceMapBasepath: options.sourceMapBasepath,
                     sourceMapRootpath: options.sourceMapRootpath || "",
+                    outputSourceFiles: options.outputSourceFiles,
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,

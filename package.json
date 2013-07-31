@@ -28,16 +28,20 @@
     "node": ">=0.4.2"
   },
   "scripts": {
+    "pretest": "make jshint",
     "test": "make test"
   },
   "optionalDependencies": {
     "mime": "1.2.x",
     "request": ">=2.12.0",
     "mkdirp": "~0.3.4",
-    "clean-css": "1.0.x"
+    "clean-css": "1.0.x",
+    "source-map": "0.1.x"
   },
   "devDependencies": {
-    "diff": "~1.0"
+    "diff": "~1.0",
+    "jshint": "~2.1.4",
+    "http-server": "~0.5.5"
   },
   "keywords": [
     "compile less",

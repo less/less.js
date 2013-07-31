@@ -8,6 +8,8 @@ uglify = ./node_modules/.bin/uglify
 
 JS_CLIENT_FILES=browser/*.js lib/carto/parser.js lib/carto/tree.js lib/carto/tree/*.js lib/carto/functions.js lib/carto/renderer_js.js
 
+all: dist
+
 lint:
 	./node_modules/.bin/jshint lib/carto/*.js lib/carto/tree/*.js
 
@@ -25,8 +27,9 @@ doc:
 	$(docco) lib/carto/*.js lib/carto/tree/*.js
 
 dist/carto.js: $(JS_CLIENT_FILES)
-	cat browser/*.js lib/carto/parser.js lib/carto/tree.js lib/carto/tree/*.js lib/carto/functions.js lib/carto/renderer_js.js > dist/carto.js
+	cat $(JS_CLIENT_FILES) > dist/carto.js
 
 dist: dist/carto.js
+
 
 .PHONY: test

@@ -145,6 +145,10 @@ args = args.filter(function (arg) {
                 options.sourceMap = match[2];
             }
             break;
+        case 'source-map-rootpath':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapRootpath = match[2];
+            }
         case 'rp':
         case 'rootpath':
             if (checkArgFunc(arg, match[2])) {
@@ -189,7 +193,7 @@ if (output) {
     }
 }
 
-options.sourceMapRootpath = process.cwd();
+options.sourceMapBasepath = process.cwd();
 
 if (options.sourceMap === true) {
     if (!output) {
@@ -266,7 +270,8 @@ var parseLessFile = function (e, data) {
                     sourceMap: Boolean(options.sourceMap),
                     sourceMapFilename: options.sourceMap,
                     sourceMapOutputFilename: options.sourceMapOutputFilename,
-                    sourceMapRootpath: options.sourceMapRootpath,
+                    sourceMapBasepath: options.sourceMapBasepath,
+                    sourceMapRootpath: options.sourceMapRootpath || "",
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,

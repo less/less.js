@@ -10,3 +10,9 @@
 .multiple-conditions-1 {
   color: red;
 }
+.inheritance .test {
+  color: black;
+}
+.inheritance:hover {
+  color: pink;
+}

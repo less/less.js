@@ -1,15 +1,9 @@
 {
-  "curly": true,
-  "eqeqeq": true,
-  "evil": true,
-  "immed": true,
-  "latedef": true,
-  "newcap": true,
-  "noarg": true,
-  "sub": true,
-  "undef": true,
-  "unused": true,
-  "boss": true,
-  "eqnull": true,
-  "node": true
+    "evil": true,
+    "boss": true,
+    "expr": true,
+    "laxbreak": true,
+    "node": true,
+    "unused": "vars",
+    "noarg": true
 }

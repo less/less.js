@@ -11,7 +11,7 @@ var args = process.argv.slice(1);
 var options = {
     depends: false,
     compress: false,
-    yuicompress: false,
+    cleancss: false,
     max_line_len: -1,
     optimization: 1,
     silent: false,
@@ -51,6 +51,8 @@ var checkBooleanArg = function(arg) {
     }
     return Boolean(onOff[2]);
 };
+
+var warningMessages = "";
 
 args = args.filter(function (arg) {
     var match;
@@ -95,7 +97,11 @@ args = args.filter(function (arg) {
             options.depends = true;
             break;
         case 'yui-compress':
-            options.yuicompress = true;
+            warningMessages += "yui-compress option has been removed. assuming clean-css.";
+            options.cleancss = true;
+            break;
+        case 'clean-css':
+            options.cleancss = true;
             break;
         case 'max-line-len':
             if (checkArgFunc(arg, match[2])) {
@@ -131,6 +137,21 @@ args = args.filter(function (arg) {
             if (checkArgFunc(arg, match[2])) {
                 options.dumpLineNumbers = match[2];
             }
+            break;
+        case 'source-map':
+            if (!match[2]) {
+                options.sourceMap = true;
+            } else {
+                options.sourceMap = match[2];
+            }
+            break;
+        case 'source-map-rootpath':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapRootpath = match[2];
+            }
+            break;
+        case 'source-map-inline':
+            options.outputSourceFiles = true;
             break;
         case 'rp':
         case 'rootpath':
@@ -169,7 +190,22 @@ if (input && input != '-') {
 var output = args[2];
 var outputbase = args[2];
 if (output) {
+    options.sourceMapOutputFilename = output;
     output = path.resolve(process.cwd(), output);
+    if (warningMessages) {
+        sys.puts(warningMessages);
+    }
+}
+
+options.sourceMapBasepath = process.cwd();
+
+if (options.sourceMap === true) {
+    if (!output) {
+        sys.puts("the sourcemap option only has an optional filename if the css filename is given");
+        return;
+    }
+    options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
+    options.sourceMap = path.basename(options.sourceMapFullFilename);
 }
 
 if (! input) {
@@ -202,6 +238,12 @@ if (options.depends) {
     sys.print(outputbase + ": ");
 }
 
+var writeSourceMap = function(output) {
+    var filename = options.sourceMapFullFilename || options.sourceMap;
+    ensureDirectory(filename);
+    fs.writeFileSync(filename, output, 'utf8');
+};
+
 var parseLessFile = function (e, data) {
     if (e) {
         sys.puts("lessc: " + e.message);
@@ -230,7 +272,14 @@ var parseLessFile = function (e, data) {
                     verbose: options.verbose,
                     ieCompat: options.ieCompat,
                     compress: options.compress,
-                    yuicompress: options.yuicompress,
+                    cleancss: options.cleancss,
+                    sourceMap: Boolean(options.sourceMap),
+                    sourceMapFilename: options.sourceMap,
+                    sourceMapOutputFilename: options.sourceMapOutputFilename,
+                    sourceMapBasepath: options.sourceMapBasepath,
+                    sourceMapRootpath: options.sourceMapRootpath || "",
+                    outputSourceFiles: options.outputSourceFiles,
+                    writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
                     strictUnits: options.strictUnits

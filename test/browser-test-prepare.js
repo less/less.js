@@ -1,13 +1,12 @@
 var path = require('path'),
-    fs = require('fs'),
-    sys = require('util');
+    fs = require('fs');
 
 var readDirFilesSync = function(dir, regex, callback) {
     fs.readdirSync(dir).forEach(function (file) {
         if (! regex.test(file)) { return; }
         callback(file);
     });
-}
+};
 
 var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
     var output = '<html><head>\n';
@@ -33,7 +32,7 @@ var removeFiles = function(dir, regex) {
             console.log("Failed to delete " + file);
         });
     });
-}
+};
 
 removeFiles("test/browser", /test-runner-[a-zA-Z-]*\.htm$/);
 createTestRunnerPage("", /javascript|urls/, "main");

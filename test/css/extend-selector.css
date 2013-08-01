@@ -52,9 +52,9 @@ div.ext7,
 .c.replace + .replace .replace,
 .replace.replace .c,
 .c.replace + .replace .c,
-.rep_ace .rep_ace .rep_ace,
+.rep_ace.rep_ace .rep_ace,
 .c.rep_ace + .rep_ace .rep_ace,
-.rep_ace .rep_ace .c,
+.rep_ace.rep_ace .c,
 .c.rep_ace + .rep_ace .c {
   prop: copy-paste-replace;
 }

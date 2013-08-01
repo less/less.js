@@ -3,10 +3,7 @@
   "version": "1.4.2",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
-  "author": {
-    "name": "Alexis Sellier",
-    "email": "self@cloudhead.net"
-  },
+  "author": "Alexis Sellier <self@cloudhead.net>",
   "contributors": [
     "The Core Less Team"
   ],
@@ -17,12 +14,6 @@
     "type": "git",
     "url": "https://github.com/less/less.js.git"
   },
-  "licenses": [
-    {
-      "type": "Apache v2",
-      "url": "https://github.com/less/less.js/blob/master/LICENSE"
-    }
-  ],
   "bin": {
     "lessc": "./bin/lessc"
   },
@@ -37,23 +28,20 @@
     "node": ">=0.4.2"
   },
   "scripts": {
-    "test": "grunt test"
+    "pretest": "make jshint",
+    "test": "make test"
   },
   "optionalDependencies": {
     "mime": "1.2.x",
     "request": ">=2.12.0",
     "mkdirp": "~0.3.4",
-    "ycssmin": ">=1.0.1"
+    "clean-css": "1.0.x",
+    "source-map": "0.1.x"
   },
   "devDependencies": {
-    "diff": "~1.0.5",
-    "grunt": "~0.4.1",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-uglify": "~0.2.2",
-    "grunt-shell": "~0.3.1",
-    "matchdep": "~0.1.2"
+    "diff": "~1.0",
+    "jshint": "~2.1.4",
+    "http-server": "~0.5.5"
   },
   "keywords": [
     "compile less",
@@ -79,5 +67,11 @@
     "stylesheet",
     "variables in css",
     "css less"
+  ],
+  "licenses": [
+    {
+      "type": "Apache v2",
+      "url": "https://github.com/less/less.js/blob/master/LICENSE"
+    }
   ]
 }

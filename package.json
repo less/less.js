@@ -42,7 +42,8 @@
     "diff": "~1.0",
     "jshint": "~2.1.4",
     "http-server": "~0.5.5",
-    "grunt": "~0.4.1"
+    "grunt": "~0.4.1",
+    "matchdep": "~0.1.2"
   },
   "keywords": [
     "compile less",

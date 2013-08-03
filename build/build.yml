@@ -19,7 +19,7 @@ lib: lib/less
 # General
 # =================================
 prepend:
-  browser: build/require.js
+  browser: [build/require.js, build/browser-header.js]
   rhino:   build/require-rhino.js
 
 append:

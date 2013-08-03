@@ -47,7 +47,7 @@ module.exports = function(grunt) {
       },
       // Browser versions
       browser: {
-        src: ['<%= build.browser %>'],
+        src: ['<%= !build.browser %>'],
         dest: 'test/browser/less.js'
       },
       alpha: {
@@ -115,6 +115,38 @@ module.exports = function(grunt) {
       }
     },
 
+    connect: {
+      server: {
+        options: {
+          port: 8081
+	  // grunt-contrib-jasmine assumes that web-server runs in root directory
+	  // it 's outfile is relativized against root
+	  //base: 'test' 
+        }
+      }
+    },
+
+    jasmine: {
+      options: {
+        keepRunner: true, //TODO meri: remove after it is done
+	host: 'http://localhost:8081/',
+	helpers: 'test/browser/common.js',
+	template: 'test/browser/test-runner-template.tmpl'
+      },
+      main: {
+        //TODO meri: find better location for less.js - reference can go to template and compiled browser to dist
+	//src is used to build list of less files to compile
+        src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
+	options: {
+          specs: 'test/browser/runner-main.js',
+          outfile: 'test/browser/test-runner-main.html',
+	  templateOptions: {
+	    originalLess: '',
+	    expectedCss: ''
+	  }
+        }
+      }
+    },
     // Before running tests, clean out the results
     // of any previous tests. (this will need to be
     // setup based on configuration of browser tests.
@@ -162,11 +194,17 @@ module.exports = function(grunt) {
     'uglify:beta'
   ]);
 
+    // Run all tests
+  grunt.registerTask('browserTest', [
+    'connect:server',
+  ]);
+
   // Run all tests
   grunt.registerTask('test', [
     'jshint:lib',
     'clean',
-    'shell:test'
+    'shell:test',
+    'browserTest'
   //   'shell:browser',
   //   'shell:phantom'
   ]);

@@ -119,9 +119,6 @@ module.exports = function(grunt) {
       server: {
         options: {
           port: 8081
-	  // grunt-contrib-jasmine assumes that web-server runs in root directory
-	  // it 's outfile is relativized against root
-	  //base: 'test' 
         }
       }
     },
@@ -134,7 +131,6 @@ module.exports = function(grunt) {
 	template: 'test/browser/test-runner-template.tmpl'
       },
       main: {
-        //TODO meri: find better location for less.js - reference can go to template and compiled browser to dist
 	//src is used to build list of less files to compile
         src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
 	options: {

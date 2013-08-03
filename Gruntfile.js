@@ -47,7 +47,7 @@ module.exports = function(grunt) {
       },
       // Browser versions
       browser: {
-        src: ['<%= !build.browser %>'],
+        src: ['<%= build.browser %>'],
         dest: 'test/browser/less.js'
       },
       alpha: {

@@ -139,11 +139,7 @@ module.exports = function(grunt) {
         src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
 	options: {
           specs: 'test/browser/runner-main.js',
-          outfile: 'test/browser/test-runner-main.html',
-	  templateOptions: {
-	    originalLess: '',
-	    expectedCss: ''
-	  }
+          outfile: 'test/browser/test-runner-main.html'
         }
       }
     },

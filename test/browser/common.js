@@ -56,6 +56,7 @@ var testSheet = function(sheet) {
     });
 };
 
+//TODO: do it cleaner - the same way as in css
 function extractId(href) {
     return href.replace(/^[a-z-]+:\/+?[^\/]+/, '' )  // Remove protocol & domain
                .replace(/^\//,                 '' )  // Remove root /
@@ -71,17 +72,26 @@ var testErrorSheet = function(sheet) {
 //            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
             errorHref = lessHref.replace(/.less$/, ".txt"),
             errorFile = loadFile(errorHref),
-            actualErrorElement = document.getElementById(id),
+            actualErrorElement,
             actualErrorMsg;
+
+        // Less.js sets 10ms timer in order to add error message on top of page.
+        waitsFor(function() {
+	    actualErrorElement = document.getElementById(id);
+            return actualErrorElement!==null;
+        }, "failed to load expected outout", 70);
+
 
         describe("the error", function() {
             expect(actualErrorElement).not.toBe(null);
         });
             
-        actualErrorMsg = actualErrorElement.innerText
+        runs(function() {
+          actualErrorMsg = actualErrorElement.innerText
                 .replace(/\n\d+/g, function(lineNo) { return lineNo + " "; })
                 .replace(/\n\s*in /g, " in ")
                 .replace("\n\n", "\n");
+        });
 
         waitsFor(function() {
             return errorFile.loaded;

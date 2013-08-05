@@ -154,6 +154,14 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-errors-spec.js',
           outfile: 'test/browser/test-runner-errors.html'
         }
+      },
+      noJsErrors: { 
+        src: ['test/less/no-js-errors/*.less'], 
+	options: {
+	  helpers: 'test/browser/runner-no-js-errors-options.js',
+          specs: 'test/browser/runner-no-js-errors-spec.js',
+          outfile: 'test/browser/test-runner-no-js-errors.html'
+        }
       }
     },
 

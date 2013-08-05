@@ -2552,7 +2552,7 @@ carto.Parser = function Parser(env) {
             zoom: function() {
                 save();
                 var op, val;
-                if ($(/^\[zoom/g) &&
+                if ($(/^\[\s*zoom/g) &&
                     (op = $(this.entities.comparison)) &&
                     (val = $(/^\d+/)) &&
                     $(']')) {

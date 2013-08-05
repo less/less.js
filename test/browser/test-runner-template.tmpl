@@ -18,22 +18,22 @@ var generateScriptsTasgs = function(allScripts) {
         lessName = pathParts[pathParts.length-1],
         name = lessName.split('.')[0];
     %>
-  <link id="original-less:test-less-<%=name%>" rel="stylesheet/less" type="text/css" href="<%=fullLessName%>">
+  <link id="original-less:test-less-<%=name%>" title="test-less-<%=name%>" rel="stylesheet/less" type="text/css" href="<%=fullLessName%>">
   <link id="expected-less:test-less-<%=name%>" rel="stylesheet" type="text/css" href="<%=fullCssName%>"><%
   });
 %>
 
-<!-- grunt-contrib-jasmine css -->
+  <!-- grunt-contrib-jasmine css -->
 <% css.forEach(function(style){ %>
   <link rel="stylesheet" type="text/css" href="<%= style %>">
 <% }) %>
-<!-- inital grunt-contrib-jasmine scripts -->
+  <!-- inital grunt-contrib-jasmine scripts -->
 <% generateScriptsTasgs([].concat(scripts.polyfills, scripts.jasmine)); %>
-<!-- less.js testing -->
-<% generateScriptsTasgs(scripts.vendor); 
-%>  <script>var less = { async: false, strictMath: true };</script><script src="less.js"></script>
-<% generateScriptsTasgs([].concat(scripts.helpers, scripts.specs)); %>
-<!-- final grunt-contrib-jasmine scripts -->
+  <!-- less.js testing -->
+<% generateScriptsTasgs([].concat(scripts.vendor, scripts.helpers)); 
+%>  <script src="less.js"></script>
+<% generateScriptsTasgs(scripts.specs); %>
+  <!-- final grunt-contrib-jasmine scripts -->
 <% generateScriptsTasgs([].concat(scripts.reporters, scripts.start)); %>
 </head>
 <body>

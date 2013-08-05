@@ -127,18 +127,36 @@ module.exports = function(grunt) {
       options: {
         keepRunner: true, //TODO meri: remove after it is done
 	host: 'http://localhost:8081/',
-	helpers: 'test/browser/common.js',
+	vendor: 'test/browser/common.js',
 	template: 'test/browser/test-runner-template.tmpl'
       },
       main: {
 	//src is used to build list of less files to compile
         src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
 	options: {
-          specs: 'test/browser/runner-main.js',
+	  helpers: 'test/browser/runner-main-options.js',
+          specs: 'test/browser/runner-main-spec.js',
           outfile: 'test/browser/test-runner-main.html'
+        }
+      },
+      legacy: {
+        src: ['test/less/legacy/*.less'], 
+	options: {
+	  helpers: 'test/browser/runner-legacy-options.js',
+          specs: 'test/browser/runner-legacy-spec.js',
+          outfile: 'test/browser/test-runner-legacy.html'
+        }
+      },
+      errors: {
+        src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'], 
+	options: {
+	  helpers: 'test/browser/runner-errors-options.js',
+          specs: 'test/browser/runner-errors-spec.js',
+          outfile: 'test/browser/test-runner-errors.html'
         }
       }
     },
+
     // Before running tests, clean out the results
     // of any previous tests. (this will need to be
     // setup based on configuration of browser tests.
@@ -189,6 +207,7 @@ module.exports = function(grunt) {
     // Run all tests
   grunt.registerTask('browserTest', [
     'connect:server',
+    'jasmine'
   ]);
 
   // Run all tests

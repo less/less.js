@@ -1,7 +1,15 @@
-/*if not async then phantomjs fails to run the webserver and the test concurrently*/
-var less = { async: true, strictMath: true };
-
 /* record log messages for testing */
+var logAllIds = function() {
+  var allTags = document.head.getElementsByTagName('style');
+  var ids = [];
+  for (var tg = 0; tg< allTags.length; tg++) {
+    var tag = allTags[tg];
+    if (tag.id) {
+      console.log(tag.id);
+    }   
+  }
+};
+
 var logMessages = [],
     realConsoleLog = console.log;
 console.log = function(msg) {
@@ -48,10 +56,19 @@ var testSheet = function(sheet) {
     });
 };
 
+function extractId(href) {
+    return href.replace(/^[a-z-]+:\/+?[^\/]+/, '' )  // Remove protocol & domain
+               .replace(/^\//,                 '' )  // Remove root /
+               .replace(/\.[a-zA-Z]+$/,        '' )  // Remove simple extension
+               .replace(/[^\.\w-]+/g,          '-')  // Replace illegal characters
+               .replace(/\./g,                 ':'); // Replace dots with colons(for valid id)
+}
+
 var testErrorSheet = function(sheet) {
     it(sheet.id + " should match an error", function() {
         var lessHref =  sheet.href,
-            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
+	    id = "less-error-message:"+extractId(lessHref),
+//            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
             errorHref = lessHref.replace(/.less$/, ".txt"),
             errorFile = loadFile(errorHref),
             actualErrorElement = document.getElementById(id),

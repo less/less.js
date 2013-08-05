@@ -81,11 +81,6 @@ var testErrorSheet = function(sheet) {
             return actualErrorElement!==null;
         }, "error message was not generated", 70);
 
-
-        describe("the error", function() {
-            expect(actualErrorElement).not.toBe(null);
-        });
-            
         runs(function() {
           actualErrorMsg = actualErrorElement.innerText
                 .replace(/\n\d+/g, function(lineNo) { return lineNo + " "; })

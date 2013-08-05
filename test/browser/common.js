@@ -79,7 +79,7 @@ var testErrorSheet = function(sheet) {
         waitsFor(function() {
 	    actualErrorElement = document.getElementById(id);
             return actualErrorElement!==null;
-        }, "failed to load expected outout", 70);
+        }, "error message was not generated", 70);
 
 
         describe("the error", function() {

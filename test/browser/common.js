@@ -41,11 +41,23 @@ var testSheet = function(sheet) {
     it(sheet.id + " should match the expected output", function() {
         var lessOutputId =  sheet.id.replace("original-", ""),
             expectedOutputId = "expected-" + lessOutputId,
-            lessOutput = document.getElementById(lessOutputId).innerText,
+            lessOutputObj,
+	    lessOutput,
             expectedOutputHref = document.getElementById(expectedOutputId).href,
             expectedOutput = loadFile(expectedOutputHref);
 
+        // Browser spec generates less on the fly, so we need to loose control
         waitsFor(function() {
+	    lessOutputObj = document.getElementById(lessOutputId);
+	    // the type condition is necessary because of inline browser tests
+            return lessOutputObj!==null && lessOutputObj.type==="text/css";
+        }, "generation of " + lessOutputId + "", 700);
+
+	runs(function() {
+            lessOutput = lessOutputObj.innerText;
+        });
+
+	waitsFor(function() {
             return expectedOutput.loaded;
         }, "failed to load expected outout", 10000);
         

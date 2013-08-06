@@ -162,6 +162,14 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-no-js-errors-spec.js',
           outfile: 'test/browser/test-runner-no-js-errors.html'
         }
+      },
+      browser: {
+        src: ['test/browser/less/*.less'], 
+	options: {
+	  helpers: 'test/browser/runner-browser-options.js',
+          specs: 'test/browser/runner-browser-spec.js',
+          outfile: 'test/browser/test-runner-browser.html'
+        }
       }
     },
 

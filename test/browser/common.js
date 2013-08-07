@@ -89,7 +89,7 @@ var testErrorSheet = function(sheet) {
 
         // Less.js sets 10ms timer in order to add error message on top of page.
         waitsFor(function() {
-	    actualErrorElement = document.getElementById(id);
+	        actualErrorElement = document.getElementById(id);
             return actualErrorElement!==null;
         }, "error message was not generated", 70);
 

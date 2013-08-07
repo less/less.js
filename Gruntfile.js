@@ -28,12 +28,6 @@ module.exports = function(grunt) {
       test: {
         command: 'node test/less-test.js'
       },
-      browser: {
-        command: 'node test/browser-test-prepare.js'
-      },
-      phantom: {
-        command: 'phantomjs test/browser/phantom-runner.js'
-      },
       benchmark: {
         command: 'node benchmark/less-benchmark.js'
       }
@@ -125,7 +119,7 @@ module.exports = function(grunt) {
 
     jasmine: {
       options: {
-        keepRunner: true, //TODO meri: remove after it is done
+        keepRunner: true,
         host: 'http://localhost:8081/',
         vendor: 'test/browser/common.js',
         template: 'test/browser/test-runner-template.tmpl'
@@ -150,6 +144,7 @@ module.exports = function(grunt) {
       errors: {
         src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'], 
         options: {
+          timeout: 20000,
           helpers: 'test/browser/runner-errors-options.js',
           specs: 'test/browser/runner-errors-spec.js',
           outfile: 'test/browser/test-runner-errors.html'
@@ -272,8 +267,6 @@ module.exports = function(grunt) {
     'clean',
     'shell:test',
     'browserTest'
-  //   'shell:browser',
-  //   'shell:phantom'
   ]);
 
   // Run benchmark

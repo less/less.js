@@ -203,6 +203,14 @@ module.exports = function(grunt) {
           outfile: 'test/browser/test-runner-production.html'
         }
       },
+      modifyVars: {
+        src: ['test/browser/less/modify-vars/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-modify-vars-options.js',
+          specs: 'test/browser/runner-modify-vars-spec.js',
+          outfile: 'test/browser/test-runner-modify-vars.html'
+        }
+      }
     },
 
     // Before running tests, clean out the results

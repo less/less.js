@@ -45,6 +45,8 @@ less:
   to_css   : <%= build.lib %>/to-css-visitor.js
   extend   : <%= build.lib %>/extend-visitor.js
   browser  : <%= build.lib %>/browser.js
+  source_map_output  : <%= build.lib %>/source-map-output.js
+  to_css_visitor  : <%= build.lib %>/to-css-visitor.js
 
   # glob all files in ./lib/less/tree directory
   treedir  : <%= build.lib %>/tree/*.js
@@ -72,6 +74,8 @@ browser:
   - <%= build.less.join %>
   - <%= build.less.to_css %>
   - <%= build.less.extend %>
+  - <%= build.less.source_map_output %>
+  - <%= build.less.to_css_visitor %>
 
   # append browser-specific code
   - <%= build.append.browser %>
@@ -99,6 +103,8 @@ rhino:
   - <%= build.less.colors %>
   - <%= build.less.treedir %> # glob all files
   - <%= build.less.tree %>
+  - <%= build.less.source_map_output %>
+  - <%= build.less.to_css_visitor %>
 
   # append rhino-specific code
   - <%= build.append.rhino %>

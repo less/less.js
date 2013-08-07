@@ -126,49 +126,57 @@ module.exports = function(grunt) {
     jasmine: {
       options: {
         keepRunner: true, //TODO meri: remove after it is done
-	host: 'http://localhost:8081/',
-	vendor: 'test/browser/common.js',
-	template: 'test/browser/test-runner-template.tmpl'
+        host: 'http://localhost:8081/',
+        vendor: 'test/browser/common.js',
+        template: 'test/browser/test-runner-template.tmpl'
       },
       main: {
-	//src is used to build list of less files to compile
+        //src is used to build list of less files to compile
         src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
-	options: {
-	  helpers: 'test/browser/runner-main-options.js',
+        options: {
+          helpers: 'test/browser/runner-main-options.js',
           specs: 'test/browser/runner-main-spec.js',
           outfile: 'test/browser/test-runner-main.html'
         }
       },
       legacy: {
         src: ['test/less/legacy/*.less'], 
-	options: {
-	  helpers: 'test/browser/runner-legacy-options.js',
+        options: {
+          helpers: 'test/browser/runner-legacy-options.js',
           specs: 'test/browser/runner-legacy-spec.js',
           outfile: 'test/browser/test-runner-legacy.html'
         }
       },
       errors: {
         src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'], 
-	options: {
-	  helpers: 'test/browser/runner-errors-options.js',
+        options: {
+          helpers: 'test/browser/runner-errors-options.js',
           specs: 'test/browser/runner-errors-spec.js',
           outfile: 'test/browser/test-runner-errors.html'
         }
       },
       noJsErrors: { 
         src: ['test/less/no-js-errors/*.less'], 
-	options: {
-	  helpers: 'test/browser/runner-no-js-errors-options.js',
+        options: {
+          helpers: 'test/browser/runner-no-js-errors-options.js',
           specs: 'test/browser/runner-no-js-errors-spec.js',
           outfile: 'test/browser/test-runner-no-js-errors.html'
         }
       },
       browser: {
         src: ['test/browser/less/*.less'], 
-	options: {
-	  helpers: 'test/browser/runner-browser-options.js',
+        options: {
+          helpers: 'test/browser/runner-browser-options.js',
           specs: 'test/browser/runner-browser-spec.js',
           outfile: 'test/browser/test-runner-browser.html'
+        }
+      },
+      relativeUrls: {
+        src: ['test/browser/less/relative-urls/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-relative-urls-options.js',
+          specs: 'test/browser/runner-relative-urls-spec.js',
+          outfile: 'test/browser/test-runner-relative-urls.html'
         }
       }
     },

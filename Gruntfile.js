@@ -178,6 +178,14 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-relative-urls-spec.js',
           outfile: 'test/browser/test-runner-relative-urls.html'
         }
+      },
+      rootpath: {
+        src: ['test/browser/less/rootpath/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-rootpath-options.js',
+          specs: 'test/browser/runner-rootpath-spec.js',
+          outfile: 'test/browser/test-runner-rootpath.html'
+        }
       }
     },
 

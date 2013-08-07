@@ -194,7 +194,15 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-rootpath-relative-spec.js',
           outfile: 'test/browser/test-runner-rootpath-relative.html'
         }
-      }
+      },
+      production: {
+        src: ['test/browser/less/production/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-production-options.js',
+          specs: 'test/browser/runner-production-spec.js',
+          outfile: 'test/browser/test-runner-production.html'
+        }
+      },
     },
 
     // Before running tests, clean out the results

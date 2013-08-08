@@ -1,0 +1,64 @@
+#one-color-to-dimension {
+  hue: 0;
+  saturation: 0%;
+  lightness: 0%;
+  hsvhue: 0;
+  hsvsaturation: 0%;
+  hsvvalue: 0%;
+  red: 0;
+  green: 0;
+  blue: 0;
+  alpha: 0;
+  luma: 0%;
+}
+#one-color-to-color {
+  saturate: transparent;
+  desaturate: transparent;
+  lighten: rgba(128, 128, 128, 0);
+  darken: transparent;
+  fadein: rgba(0, 0, 0, 0.5);
+  fadeout: transparent;
+  fade: rgba(0, 0, 0, 0.5);
+  spin: transparent;
+  greyscale: transparent;
+  tint: rgba(255, 255, 255, 0.5);
+  shade: rgba(0, 0, 0, 0.5);
+  contrast: #ffffff;
+  argb: #00000000;
+}
+#two-color-first-transparent {
+  mix: rgba(255, 0, 0, 0.5);
+  multiply: #000000;
+  screen: #ff0000;
+  overlay: #000000;
+  softlight: #000000;
+  hardlight: #ff0000;
+  difference: #ff0000;
+  exclusion: #ff0000;
+  average: #800000;
+  negation: #ff0000;
+}
+#two-color-second-transparent {
+  mix: rgba(0, 128, 0, 0.5);
+  multiply: #000000;
+  screen: #008000;
+  overlay: #000100;
+  softlight: #004000;
+  hardlight: #000000;
+  difference: #008000;
+  exclusion: #008000;
+  average: #004000;
+  negation: #008000;
+}
+#two-color-both-transparent {
+  mix: transparent;
+  multiply: #000000;
+  screen: #000000;
+  overlay: #000000;
+  softlight: #000000;
+  hardlight: #000000;
+  difference: #000000;
+  exclusion: #000000;
+  average: #000000;
+  negation: #000000;
+}

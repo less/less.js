@@ -1,0 +1,70 @@
+@t: transparent;
+
+#one-color-to-dimension {
+  hue: hue(@t);
+  saturation: saturation(@t);
+  lightness: lightness(@t);
+  hsvhue: hsvhue(@t);
+  hsvsaturation: hsvsaturation(@t);
+  hsvvalue: hsvvalue(@t);
+  red: red(@t);
+  green: green(@t);
+  blue: blue(@t);
+  alpha: alpha(@t);
+  luma: luma(@t);
+}
+
+#one-color-to-color {
+  saturate: saturate(@t, 50%);
+  desaturate: desaturate(@t, 50%);
+  lighten: lighten(@t, 50%);
+  darken: darken(@t, 50%);
+  fadein: fadein(@t, 50%);
+  fadeout: fadeout(@t, 50%);
+  fade: fade(@t, 50%);
+  spin: spin(@t, 50%);
+  greyscale: greyscale(@t, 50%);
+  tint: tint(@t, 50%);
+  shade: shade(@t, 50%);
+  contrast: contrast(@t);
+  argb: argb(@t);
+}
+
+#two-color-first-transparent {
+  mix: mix(@t, red, 50%);
+  multiply: multiply(@t, red);
+  screen: screen(@t, red);
+  overlay: overlay(@t, red);
+  softlight: softlight(@t, red);
+  hardlight: hardlight(@t, red);
+  difference: difference(@t, red);
+  exclusion: exclusion(@t, red);
+  average: average(@t, red);
+  negation: negation(@t, red);
+}
+
+#two-color-second-transparent {
+  mix: mix(green, @t, 50%);
+  multiply: multiply(green, @t);
+  screen: screen(green, @t);
+  overlay: overlay(green, @t);
+  softlight: softlight(green, @t);
+  hardlight: hardlight(green, @t);
+  difference: difference(green, @t);
+  exclusion: exclusion(green, @t);
+  average: average(green, @t);
+  negation: negation(green, @t);
+}
+
+#two-color-both-transparent {
+  mix: mix(@t, @t, 50%);
+  multiply: multiply(@t, @t);
+  screen: screen(@t, @t);
+  overlay: overlay(@t, @t);
+  softlight: softlight(@t, @t);
+  hardlight: hardlight(@t, @t);
+  difference: difference(@t, @t);
+  exclusion: exclusion(@t, @t);
+  average: average(@t, @t);
+  negation: negation(@t, @t);
+}

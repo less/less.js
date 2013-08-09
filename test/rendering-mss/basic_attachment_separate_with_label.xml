@@ -1,0 +1,10 @@
+<Style name="style-label" filter-mode="first">
+  <Rule>
+    <TextSymbolizer face-name="DejaVu Sans Book" fill="#ff6347" allow-overlap="true" ><![CDATA['1']]></TextSymbolizer>
+  </Rule>
+</Style>
+<Style name="style" filter-mode="first">
+  <Rule>
+    <MarkersSymbolizer width="10" allow-overlap="true" fill="#cd853f" />
+  </Rule>
+</Style>

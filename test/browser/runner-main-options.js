@@ -1,3 +1,4 @@
+var less = {};
 less.functions = {
     add: function (a, b) {
         return new(less.tree.Dimension)(a.value + b.value);
@@ -10,6 +11,3 @@ less.functions = {
     }
 };
 
-describe("less.js main tests", function() {
-    testLessEqualsInDocument();
-});

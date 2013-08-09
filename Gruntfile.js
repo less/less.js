@@ -28,12 +28,6 @@ module.exports = function(grunt) {
       test: {
         command: 'node test/less-test.js'
       },
-      browser: {
-        command: 'node test/browser-test-prepare.js'
-      },
-      phantom: {
-        command: 'phantomjs test/browser/phantom-runner.js'
-      },
       benchmark: {
         command: 'node benchmark/less-benchmark.js'
       }
@@ -115,6 +109,105 @@ module.exports = function(grunt) {
       }
     },
 
+    connect: {
+      server: {
+        options: {
+          port: 8081
+        }
+      }
+    },
+
+    jasmine: {
+      options: {
+        keepRunner: true,
+        host: 'http://localhost:8081/',
+        vendor: 'test/browser/common.js',
+        template: 'test/browser/test-runner-template.tmpl'
+      },
+      main: {
+        //src is used to build list of less files to compile
+        src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
+        options: {
+          helpers: 'test/browser/runner-main-options.js',
+          specs: 'test/browser/runner-main-spec.js',
+          outfile: 'test/browser/test-runner-main.html'
+        }
+      },
+      legacy: {
+        src: ['test/less/legacy/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-legacy-options.js',
+          specs: 'test/browser/runner-legacy-spec.js',
+          outfile: 'test/browser/test-runner-legacy.html'
+        }
+      },
+      errors: {
+        src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'], 
+        options: {
+          timeout: 20000,
+          helpers: 'test/browser/runner-errors-options.js',
+          specs: 'test/browser/runner-errors-spec.js',
+          outfile: 'test/browser/test-runner-errors.html'
+        }
+      },
+      noJsErrors: { 
+        src: ['test/less/no-js-errors/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-no-js-errors-options.js',
+          specs: 'test/browser/runner-no-js-errors-spec.js',
+          outfile: 'test/browser/test-runner-no-js-errors.html'
+        }
+      },
+      browser: {
+        src: ['test/browser/less/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-browser-options.js',
+          specs: 'test/browser/runner-browser-spec.js',
+          outfile: 'test/browser/test-runner-browser.html'
+        }
+      },
+      relativeUrls: {
+        src: ['test/browser/less/relative-urls/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-relative-urls-options.js',
+          specs: 'test/browser/runner-relative-urls-spec.js',
+          outfile: 'test/browser/test-runner-relative-urls.html'
+        }
+      },
+      rootpath: {
+        src: ['test/browser/less/rootpath/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-rootpath-options.js',
+          specs: 'test/browser/runner-rootpath-spec.js',
+          outfile: 'test/browser/test-runner-rootpath.html'
+        }
+      },
+      rootpathRelative: {
+        src: ['test/browser/less/rootpath-relative/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-rootpath-relative-options.js',
+          specs: 'test/browser/runner-rootpath-relative-spec.js',
+          outfile: 'test/browser/test-runner-rootpath-relative.html'
+        }
+      },
+      production: {
+        src: ['test/browser/less/production/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-production-options.js',
+          specs: 'test/browser/runner-production-spec.js',
+          outfile: 'test/browser/test-runner-production.html'
+        }
+      },
+      modifyVars: {
+        src: ['test/browser/less/modify-vars/*.less'], 
+        options: {
+          helpers: 'test/browser/runner-modify-vars-options.js',
+          specs: 'test/browser/runner-modify-vars-spec.js',
+          outfile: 'test/browser/test-runner-modify-vars.html'
+        }
+      }
+    },
+
     // Before running tests, clean out the results
     // of any previous tests. (this will need to be
     // setup based on configuration of browser tests.
@@ -162,13 +255,18 @@ module.exports = function(grunt) {
     'uglify:beta'
   ]);
 
+    // Run all tests
+  grunt.registerTask('browserTest', [
+    'connect:server',
+    'jasmine'
+  ]);
+
   // Run all tests
   grunt.registerTask('test', [
     'jshint:lib',
     'clean',
-    'shell:test'
-  //   'shell:browser',
-  //   'shell:phantom'
+    'shell:test',
+    'browserTest'
   ]);
 
   // Run benchmark

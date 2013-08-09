@@ -1,7 +1,15 @@
-/*if not async then phantomjs fails to run the webserver and the test concurrently*/
-var less = { async: true, strictMath: true };
-
 /* record log messages for testing */
+var logAllIds = function() {
+  var allTags = document.head.getElementsByTagName('style');
+  var ids = [];
+  for (var tg = 0; tg< allTags.length; tg++) {
+    var tag = allTags[tg];
+    if (tag.id) {
+      console.log(tag.id);
+    }   
+  }
+};
+
 var logMessages = [],
     realConsoleLog = console.log;
 console.log = function(msg) {
@@ -33,11 +41,23 @@ var testSheet = function(sheet) {
     it(sheet.id + " should match the expected output", function() {
         var lessOutputId =  sheet.id.replace("original-", ""),
             expectedOutputId = "expected-" + lessOutputId,
-            lessOutput = document.getElementById(lessOutputId).innerText,
+            lessOutputObj,
+	    lessOutput,
             expectedOutputHref = document.getElementById(expectedOutputId).href,
             expectedOutput = loadFile(expectedOutputHref);
 
+        // Browser spec generates less on the fly, so we need to loose control
         waitsFor(function() {
+	    lessOutputObj = document.getElementById(lessOutputId);
+	    // the type condition is necessary because of inline browser tests
+            return lessOutputObj!==null && lessOutputObj.type==="text/css";
+        }, "generation of " + lessOutputId + "", 700);
+
+	runs(function() {
+            lessOutput = lessOutputObj.innerText;
+        });
+
+	waitsFor(function() {
             return expectedOutput.loaded;
         }, "failed to load expected outout", 10000);
         
@@ -48,23 +68,37 @@ var testSheet = function(sheet) {
     });
 };
 
+//TODO: do it cleaner - the same way as in css
+function extractId(href) {
+    return href.replace(/^[a-z-]+:\/+?[^\/]+/, '' )  // Remove protocol & domain
+               .replace(/^\//,                 '' )  // Remove root /
+               .replace(/\.[a-zA-Z]+$/,        '' )  // Remove simple extension
+               .replace(/[^\.\w-]+/g,          '-')  // Replace illegal characters
+               .replace(/\./g,                 ':'); // Replace dots with colons(for valid id)
+}
+
 var testErrorSheet = function(sheet) {
     it(sheet.id + " should match an error", function() {
         var lessHref =  sheet.href,
-            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
+	    id = "less-error-message:"+extractId(lessHref),
+//            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
             errorHref = lessHref.replace(/.less$/, ".txt"),
             errorFile = loadFile(errorHref),
-            actualErrorElement = document.getElementById(id),
+            actualErrorElement,
             actualErrorMsg;
 
-        describe("the error", function() {
-            expect(actualErrorElement).not.toBe(null);
-        });
-            
-        actualErrorMsg = actualErrorElement.innerText
+        // Less.js sets 10ms timer in order to add error message on top of page.
+        waitsFor(function() {
+	        actualErrorElement = document.getElementById(id);
+            return actualErrorElement!==null;
+        }, "error message was not generated", 70);
+
+        runs(function() {
+          actualErrorMsg = actualErrorElement.innerText
                 .replace(/\n\d+/g, function(lineNo) { return lineNo + " "; })
                 .replace(/\n\s*in /g, " in ")
                 .replace("\n\n", "\n");
+        });
 
         waitsFor(function() {
             return errorFile.loaded;

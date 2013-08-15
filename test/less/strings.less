@@ -49,3 +49,9 @@
     .mix-mul(black);
     .mix-mul(orange);
 }
+
+@test: Arial, Verdana, San-Serif;
+.watermark {
+  @family: ~"Univers, @{test}";
+  family: @family;
+}

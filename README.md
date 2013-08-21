@@ -328,4 +328,3 @@ Licensed under the [Apache License](LICENSE).
 [issues]: https://github.com/less/less.js/issues "GitHub Issues for Less.js"
 [wiki]: https://github.com/less/less.js/wiki "The official wiki for Less.js"
 [download]: https://github.com/less/less.js/zipball/master "Download Less.js"
-})(window);

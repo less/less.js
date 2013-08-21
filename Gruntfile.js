@@ -2,12 +2,15 @@
 
 module.exports = function(grunt) {
 
+  // Report the elapsed execution time of tasks.
+  require('time-grunt')(grunt);
+
   // Project configuration.
   grunt.initConfig({
+
+    // Metadata required for build.
     build: grunt.file.readYAML('build/build.yml'),
     pkg: grunt.file.readJSON('package.json'),
-
-    // Metadata
     meta: {
       license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
       copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
@@ -35,7 +38,7 @@ module.exports = function(grunt) {
 
     concat: {
       options: {
-        stripBanners: true,
+        stripBanners: 'all',
         banner: '<%= meta.banner %>\n\n(function (window, undefined) {',
         footer: '\n})(window);'
       },
@@ -63,10 +66,8 @@ module.exports = function(grunt) {
       },
       // Generate readme
       readme: {
-        options: {
-          process: true,
-          banner: '' // override task-level banner
-        },
+        // override task-level banner and footer
+        options: {process: true, banner: '', footer: ''},
         src: ['build/README.md'],
         dest: 'README.md'
       }
@@ -92,20 +93,14 @@ module.exports = function(grunt) {
     },
 
     jshint: {
-      options: {
-        jshintrc: '.jshintrc'
-      },
-      benchmark: {
-        src: ['benchmark/**/*.js']
-      },
-      gruntfile: {
-        src: 'Gruntfile.js'
-      },
-      lib: {
-        src: ['lib/**/*.js']
-      },
-      test: {
-        src: ['test/*.js', 'test/browser/runner-*.js']
+      options: {jshintrc: '.jshintrc'},
+      files: {
+        src: [
+          'Gruntfile.js',
+          'lib/**/*.js',
+          'test/**/*.js',
+          'benchmark/*.js'
+        ]
       }
     },
 
@@ -119,98 +114,99 @@ module.exports = function(grunt) {
 
     jasmine: {
       options: {
+        // version: '2.0.0-rc2',
         keepRunner: true,
         host: 'http://localhost:8081/',
         vendor: 'test/browser/common.js',
         template: 'test/browser/test-runner-template.tmpl'
       },
       main: {
-        //src is used to build list of less files to compile
-        src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'], 
+        // src is used to build list of less files to compile
+        src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less'],
         options: {
           helpers: 'test/browser/runner-main-options.js',
           specs: 'test/browser/runner-main-spec.js',
-          outfile: 'test/browser/test-runner-main.html'
+          outfile: 'tmp/browser/test-runner-main.html'
         }
       },
       legacy: {
-        src: ['test/less/legacy/*.less'], 
+        src: ['test/less/legacy/*.less'],
         options: {
           helpers: 'test/browser/runner-legacy-options.js',
           specs: 'test/browser/runner-legacy-spec.js',
-          outfile: 'test/browser/test-runner-legacy.html'
+          outfile: 'tmp/browser/test-runner-legacy.html'
         }
       },
       errors: {
-        src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'], 
+        src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'],
         options: {
           timeout: 20000,
           helpers: 'test/browser/runner-errors-options.js',
           specs: 'test/browser/runner-errors-spec.js',
-          outfile: 'test/browser/test-runner-errors.html'
+          outfile: 'tmp/browser/test-runner-errors.html'
         }
       },
-      noJsErrors: { 
-        src: ['test/less/no-js-errors/*.less'], 
+      noJsErrors: {
+        src: ['test/less/no-js-errors/*.less'],
         options: {
           helpers: 'test/browser/runner-no-js-errors-options.js',
           specs: 'test/browser/runner-no-js-errors-spec.js',
-          outfile: 'test/browser/test-runner-no-js-errors.html'
+          outfile: 'tmp/browser/test-runner-no-js-errors.html'
         }
       },
       browser: {
-        src: ['test/browser/less/*.less'], 
+        src: ['test/browser/less/*.less'],
         options: {
           helpers: 'test/browser/runner-browser-options.js',
           specs: 'test/browser/runner-browser-spec.js',
-          outfile: 'test/browser/test-runner-browser.html'
+          outfile: 'tmp/browser/test-runner-browser.html'
         }
       },
       relativeUrls: {
-        src: ['test/browser/less/relative-urls/*.less'], 
+        src: ['test/browser/less/relative-urls/*.less'],
         options: {
           helpers: 'test/browser/runner-relative-urls-options.js',
           specs: 'test/browser/runner-relative-urls-spec.js',
-          outfile: 'test/browser/test-runner-relative-urls.html'
+          outfile: 'tmp/browser/test-runner-relative-urls.html'
         }
       },
       rootpath: {
-        src: ['test/browser/less/rootpath/*.less'], 
+        src: ['test/browser/less/rootpath/*.less'],
         options: {
           helpers: 'test/browser/runner-rootpath-options.js',
           specs: 'test/browser/runner-rootpath-spec.js',
-          outfile: 'test/browser/test-runner-rootpath.html'
+          outfile: 'tmp/browser/test-runner-rootpath.html'
         }
       },
       rootpathRelative: {
-        src: ['test/browser/less/rootpath-relative/*.less'], 
+        src: ['test/browser/less/rootpath-relative/*.less'],
         options: {
           helpers: 'test/browser/runner-rootpath-relative-options.js',
           specs: 'test/browser/runner-rootpath-relative-spec.js',
-          outfile: 'test/browser/test-runner-rootpath-relative.html'
+          outfile: 'tmp/browser/test-runner-rootpath-relative.html'
         }
       },
       production: {
-        src: ['test/browser/less/production/*.less'], 
+        src: ['test/browser/less/production/*.less'],
         options: {
           helpers: 'test/browser/runner-production-options.js',
           specs: 'test/browser/runner-production-spec.js',
-          outfile: 'test/browser/test-runner-production.html'
+          outfile: 'tmp/browser/test-runner-production.html'
         }
       },
       modifyVars: {
-        src: ['test/browser/less/modify-vars/*.less'], 
+        src: ['test/browser/less/modify-vars/*.less'],
         options: {
           helpers: 'test/browser/runner-modify-vars-options.js',
           specs: 'test/browser/runner-modify-vars-spec.js',
-          outfile: 'test/browser/test-runner-modify-vars.html'
+          outfile: 'tmp/browser/test-runner-modify-vars.html'
         }
       }
     },
 
     // Before running tests, clean out the results
     // of any previous tests. (this will need to be
-    // setup based on configuration of browser tests.
+    // setup based on configuration of browser tests).
     clean: {
       test: ['test/browser/test-runner-*.htm']
     }
@@ -224,24 +220,8 @@ module.exports = function(grunt) {
 
   // Default task to build Less.js
   grunt.registerTask('default', [
-    'browser',
-    'rhino'
-  ]);
-
-  // Browser
-  grunt.registerTask('browser', [
     'concat:browser',
     'uglify:browser'
-  ]);
-
-  // Rhino
-  grunt.registerTask('rhino', [
-    'concat:rhino'
-    // 'uglify:rhino'
-  ]);
-  // Minify
-  grunt.registerTask('min', [
-    'uglify'
   ]);
 
   // Alpha
@@ -249,6 +229,7 @@ module.exports = function(grunt) {
     'concat:alpha',
     'uglify:alpha'
   ]);
+
   // Beta
   grunt.registerTask('beta', [
     'concat:beta',
@@ -256,17 +237,17 @@ module.exports = function(grunt) {
   ]);
 
     // Run all tests
-  grunt.registerTask('browserTest', [
-    'connect:server',
+  grunt.registerTask('browser', [
+    'connect',
     'jasmine'
   ]);
 
   // Run all tests
   grunt.registerTask('test', [
-    'jshint:lib',
     'clean',
+    'jshint',
     'shell:test',
-    'browserTest'
+    'browser'
   ]);
 
   // Run benchmark

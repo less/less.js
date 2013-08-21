@@ -35,7 +35,7 @@ fs.readFile(file, 'utf8', function (e, data) {
 
         total += end - start;
 
-        sys.puts("Total: " + total + "ms (" +
+        sys.puts("Total: " + total + " ms (" +
                  parseInt(1000 / total * data.length / 1024) + " KB/s)");
 
         if (err) {

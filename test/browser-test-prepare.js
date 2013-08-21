@@ -17,8 +17,8 @@ var createTestRunnerPage = function(dir, exclude, testSuiteName, dir2) {
 
         if (exclude && name.match(exclude)) { return; }
 
-        output += '<link id="original-less:' + id + '" rel="stylesheet/less" type="text/css" href="/' + path.join(dir, 'less', dir2 || "", name) + '.less' +'">\n';
-        output += '<link id="expected-less:' + id + '" rel="stylesheet"  type="text/css" href="/' + path.join(dir, 'css', dir2 || "", name) + '.css' + '">\n';
+        output += '<link id="original-less:' + id + '" rel="stylesheet/less" type="text/css" href="/' + path.join(dir, 'less', dir2 || "", name).replace("\\", "/") + '.less' +'" />\n';
+        output += '<link id="expected-less:' + id + '" rel="stylesheet"  type="text/css" href="/' + path.join(dir, 'css', dir2 || "", name).replace("\\", "/") + '.css' + '" />\n';
     });
 
     output += String(fs.readFileSync(path.join('test/browser', 'template.htm'))).replace("{runner-name}", testSuiteName);

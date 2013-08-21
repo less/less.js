@@ -39,8 +39,8 @@ less:
 	      ${SRC}/parser.js\
 	      ${SRC}/functions.js\
 	      ${SRC}/colors.js\
-	      ${SRC}/tree/*.js\
 	      ${SRC}/tree.js\
+	      ${SRC}/tree/*.js\
 	      ${SRC}/env.js\
 	      ${SRC}/visitor.js\
 	      ${SRC}/import-visitor.js\

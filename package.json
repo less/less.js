@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": "Alexis Sellier <self@cloudhead.net>",
@@ -22,7 +22,7 @@
     "test": "./test"
   },
   "jam": {
-    "main": "./dist/less-1.4.2.js"
+    "main": "./dist/less-1.5.0.js"
   },
   "engines": {
     "node": ">=0.4.2"

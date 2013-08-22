@@ -1,5 +1,6 @@
 # 1.5.0 WIP
 
+ - sourcemap support
  - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
  - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
  - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
@@ -13,6 +14,8 @@
  - Added svg-gradient function
  - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
  - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
+ - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
+ - Browser: added errorReporting option which can be "html" (default) or "console" or a function
 
 # 1.4.2
 

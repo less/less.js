@@ -12,6 +12,7 @@
 #built-in {
   @r: 32;
   escaped: e("-Some::weird(#thing, y)");
+  gsub: gsub("Hello, Foo.", "Foo\.$", "World!");
   lighten: lighten(#ff0000, 40%);
   darken: darken(#ff0000, 40%);
   saturate: saturate(#29332f, 20%);

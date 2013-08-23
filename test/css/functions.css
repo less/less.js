@@ -8,6 +8,7 @@
 }
 #built-in {
   escaped: -Some::weird(#thing, y);
+  gsub: "Hello, World!";
   lighten: #ffcccc;
   darken: #330000;
   saturate: #203c31;

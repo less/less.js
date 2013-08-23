@@ -9,6 +9,7 @@
 #built-in {
   escaped: -Some::weird(#thing, y);
   gsub: "Hello, World!";
+  gsub-captured: "This is a new string.";
   lighten: #ffcccc;
   darken: #330000;
   saturate: #203c31;

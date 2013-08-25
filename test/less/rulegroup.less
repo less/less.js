@@ -1,0 +1,28 @@
+._x1 {
+	font: {
+		size: 1em;
+		family: sans-serif;
+	}
+	margin: auto;
+	
+	boder: {
+		right: solid 1px green;
+		left: dotted 1px green;
+	}
+}
+
+@size: 1em;
+@color: black;
+
+._x2 {
+	font: {
+		size: @size;
+		family: sans-serif;
+	}
+	margin: auto;
+	
+	boder: {
+		right: solid 1px @color;
+		left: dotted 1px @color;
+	}
+}

@@ -4846,7 +4846,7 @@ tree.Definition.prototype.toJS = function() {
   var _if = this.filters.toJS();
   var filters = [zoom];
   if(_if) filters.push(_if);
-  if(frame_offset) filters.push('ctx.frame_offset ===' + frame_offset);
+  if(frame_offset) filters.push('ctx["frame-offset"] === ' + frame_offset);
   _if = filters.join(" && ");
   _.each(this.rules, function(rule) {
       if(rule instanceof tree.Rule) {
@@ -4999,7 +4999,7 @@ CartoCSS.Layer.prototype = {
   getStyle: function(target, props, context) {
     var style = {};
     for(var i in this.shader) {
-      if(i !== 'attachment') {
+      if(i !== 'attachment' && i !== 'zoom' && i !== 'frames') {
         style[i] = this.shader[i](props, context);
       }
     }
@@ -5134,6 +5134,8 @@ CartoCSS.prototype = {
         if(!done[k]) {
           for(var prop in layer) {
             if (prop !== 'zoom' && prop !== 'frames') {
+
+              if(this.options.debug) console.log("****", prop);
               layer[prop] = this._createFn(layer[prop]);
             }
           }
@@ -5143,6 +5145,11 @@ CartoCSS.prototype = {
         }
         layer.zoom |= def.zoom;
         layer.frames.push(def.frame_offset);
+      }
+
+      // uniq the frames
+      for(i = 0; i < ordered_layers.length; ++i) {
+        ordered_layers[i].frames = _.uniq(ordered_layers[i].frames);
       }
 
       return ordered_layers;
@@ -5161,7 +5168,7 @@ carto.RendererJS = function (options) {
 // Prepare a javascript object which contains the layers
 carto.RendererJS.prototype.render = function render(cartocss, callback) {
     tree.Reference.setVersion(this.options.mapnik_version);
-    return new CartoCSS(cartocss);
+    return new CartoCSS(cartocss, this.options);
 }
 if(typeof(module) !== 'undefined') {
   module.exports = carto.RendererJS;

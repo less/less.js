@@ -21,7 +21,7 @@ describe('RenderingJS', function() {
   ].join('\n');
 
   beforeEach(function() {
-    shader = (new carto.RendererJS()).render(style);
+    shader = (new carto.RendererJS({ debug: true })).render(style);
   });
 
   it ("shold render layers", function() {
@@ -35,5 +35,11 @@ describe('RenderingJS', function() {
 
     layer = shader.getLayers()[1];
     assert( layer.frames()[0] === 10);
+  });
+
+  it ("shold render with frames var", function() {
+    var layer = shader.getLayers()[1];
+    var props = layer.getStyle('canvas-2d', {}, { 'zoom': 0, 'frame-offset': 10 });
+    assert( props['lineWidth'] === 4);
   });
 });

@@ -12,6 +12,9 @@ function require(arg) {
     if(!mod) {
       mod = window.carto[arg]
     }
+    if(!mod) {
+      mod = window[arg.split('/')[1]];
+    }
     // try global scope
     if(!mod) {
       mod = window[arg]

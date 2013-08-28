@@ -1,9 +1,9 @@
 [
-    {"elements":[".foo",".bar",".baz"],"specificity":[0,3,0,29]},
-    {"elements":[".foo",".baz"],"specificity":[0,2,0,68]},
-    {"elements":[".baz",".foo"],"specificity":[0,2,0,55]},
-    {"elements":[".baz",".bar"],"specificity":[0,2,0,0]},
-    {"elements":[".baz"],"specificity":[0,1,0,47]},
-    {"elements":[".bar"],"specificity":[0,1,0,21]},
-    {"elements":[".foo"],"specificity":[0,1,0,13]}
+    {"elements":[".foo",".bar",".baz"],"frame_offset":0,"specificity":[0,3,0,29]},
+    {"elements":[".foo",".baz"],"frame_offset":0,"specificity":[0,2,0,68]},
+    {"elements":[".baz",".foo"],"frame_offset":0,"specificity":[0,2,0,55]},
+    {"elements":[".baz",".bar"],"frame_offset":0,"specificity":[0,2,0,0]},
+    {"elements":[".baz"],"frame_offset":0,"specificity":[0,1,0,47]},
+    {"elements":[".bar"],"frame_offset":0,"specificity":[0,1,0,21]},
+    {"elements":[".foo"],"frame_offset":0,"specificity":[0,1,0,13]}
 ]

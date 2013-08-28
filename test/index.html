@@ -15,16 +15,16 @@
             document.getElementById('error').innerHTML += JSON.stringify(obj);
           }
         };
-        (new carto.Parser(parse_env)).parse(style,
-        function(err, ruleset) {
-          var definition = ruleset.toList(parse_env);
-          console.log(definition);
+        var ruleset = (new carto.Parser(parse_env)).parse(style);
+        var definition = ruleset.toList(parse_env);
+        console.log(definition);
+        console.log(window.a = (new carto.RendererJS()).render(style));
+
           // for (var i in ruleset.rules) {
           //   for (var j in ruleset.rules[i].rules) {
           //     document.getElementById('output').innerHTML += ruleset.rules[i].rules[j].eval(parse_env).toXML(parse_env) + ' ';
           //   }
           // }
-        });
     }
   </script>
 </head>
@@ -32,8 +32,18 @@
 <h3>Style</h3>
 <pre id='style'>
 #world {
-  line-widthi: 2;
+  line-width: 2;
   line-color: #f00;
+  [frame-offset = 1] {
+    line-width: 3;
+  }
+  [frame-offset = 2] {
+    line-width: 3;
+  }
+}
+
+#worls[frame-offset = 10] {
+    line-width: 4;
 }
 </pre>
 <h3>Error</h3>

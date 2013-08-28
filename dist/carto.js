@@ -1866,6 +1866,9 @@ function require(arg) {
     if(!mod) {
       mod = window.carto[arg]
     }
+    if(!mod) {
+      mod = window[arg.split('/')[1]];
+    }
     // try global scope
     if(!mod) {
       mod = window[arg]
@@ -1874,7 +1877,7 @@ function require(arg) {
 }
 var carto, tree, _;
 
-if (typeof(process) !== 'undefined') {
+if (typeof(exports) !== 'undefined') {
     carto = exports;
     tree = require('./tree');
     _ = require('underscore');
@@ -2175,9 +2178,6 @@ carto.Parser = function Parser(env) {
             // and sorted according to specificitySort
             root.toList = (function() {
                 var line, lines, column;
-                if (!(window && window._)) {
-                    var _ = require('underscore')._;
-                }
                 return function(env) {
                     env.error = function(e) {
                         if (!env.errors) env.errors = new Error('');
@@ -2501,11 +2501,13 @@ carto.Parser = function Parser(env) {
                 var e, elements = [];
                 var f, filters = new tree.Filterset();
                 var z, zoom = tree.Zoom.all;
+                var fo, frame_offset = tree.FrameOffset.null;
                 var segments = 0, conditions = 0;
 
                 while (
                         (e = $(this.element)) ||
                         (z = $(this.zoom)) ||
+                        (fo = $(this.frame_offset)) ||
                         (f = $(this.filter)) ||
                         (a = $(this.attachment))
                     ) {
@@ -2514,6 +2516,9 @@ carto.Parser = function Parser(env) {
                         elements.push(e);
                     } else if (z) {
                         zoom &= z;
+                        conditions++;
+                    } else if (fo) {
+                        frame_offset = fo;
                         conditions++;
                     } else if (f) {
                         filters.add(f);
@@ -2532,7 +2537,7 @@ carto.Parser = function Parser(env) {
                 }
 
                 if (segments) {
-                    return new tree.Selector(filters, zoom, elements, attachment, conditions, memo);
+                    return new tree.Selector(filters, zoom, frame_offset, elements, attachment, conditions, memo);
                 }
             },
 
@@ -2546,6 +2551,17 @@ carto.Parser = function Parser(env) {
                         if (! $(']')) return;
                         return new tree.Filter(key, op, val, memo, env.filename);
                     }
+                }
+            },
+
+            frame_offset: function() {
+                save();
+                var op, val;
+                if ($(/^\[\s*frame-offset/g) &&
+                    (op = $(this.entities.comparison)) &&
+                    (val = $(/^\d+/)) &&
+                    $(']'))  {
+                        return tree.FrameOffset(op, val, memo);
                 }
             },
 
@@ -2957,6 +2973,7 @@ tree.Definition = function Definition(selector, rules) {
     }
     this.filters = selector.filters;
     this.zoom = selector.zoom;
+    this.frame_offset = selector.frame_offset;
     this.attachment = selector.attachment || '__default__';
     this.specificity = selector.specificity();
 };
@@ -3614,6 +3631,33 @@ tree.FontSet.prototype.toXML = function(env) {
 };
 
 })(require('../tree'));
+var tree = require('../tree');
+
+// Storage for Frame offset value
+// and stores them as bit-sequences so that they can be combined,
+// inverted, and compared quickly.
+tree.FrameOffset = function(op, value, index) {
+    value = parseInt(value, 10);
+    if (value > tree.FrameOffset.max || value <= 0) {
+        throw {
+            message: 'Only frame-offset levels between 1 and ' +
+                tree.FrameOffset.max + ' supported.',
+            index: index
+        };
+    }
+
+    if (op !== '=') {
+        throw {
+            message: 'only = operator is supported for frame-offset',
+            index: index
+        };
+    }
+    return value;
+};
+
+tree.FrameOffset.max = 32;
+tree.FrameOffset.null = 0;
+
 (function(tree) {
 //
 // RGB Colors - #ff0014, #eee
@@ -4215,7 +4259,7 @@ tree.Ruleset.prototype = {
                     if (match = selector.match(rule.selectors[j])) {
                         if (selector.elements.length > 1) {
                             Array.prototype.push.apply(rules, rule.find(
-                                new tree.Selector(null, null, selector.elements.slice(1)), self));
+                                new tree.Selector(null, null, null, selector.elements.slice(1)), self));
                         } else {
                             rules.push(rule);
                         }
@@ -4247,6 +4291,7 @@ tree.Ruleset.prototype = {
                         // filters. This means that we only have to clone when
                         // the zoom levels or the attachment is different too.
                         if (parent.zoom === (parent.zoom & child.zoom) &&
+                            parent.frame_offset === child.frame_offset &&
                             parent.attachment === child.attachment) {
                             continue;
                         } else {
@@ -4261,6 +4306,7 @@ tree.Ruleset.prototype = {
                     var clone = Object.create(tree.Selector.prototype);
                     clone.filters = mergedFilters;
                     clone.zoom = parent.zoom & child.zoom;
+                    clone.frame_offset = child.frame_offset;
                     clone.elements = parent.elements.concat(child.elements);
                     if (parent.attachment && child.attachment) {
                         clone.attachment = parent.attachment + '/' + child.attachment;
@@ -4307,10 +4353,11 @@ var assert = require('assert');
 
 (function(tree) {
 
-tree.Selector = function Selector(filters, zoom, elements, attachment, conditions, index) {
+tree.Selector = function Selector(filters, zoom, frame_offset, elements, attachment, conditions, index) {
     this.elements = elements || [];
     this.attachment = attachment;
     this.filters = filters || {};
+    this.frame_offset = frame_offset;
     this.zoom = typeof zoom !== 'undefined' ? zoom : tree.Zoom.all;
     this.conditions = conditions;
     this.index = index;
@@ -4749,8 +4796,9 @@ function clamp(val) {
 }
 
 })(require('./tree'));
-(function() {
-var tree = require('../tree');
+(function(carto) {
+var tree = require('./tree');
+var _ = require('underscore');
 
 // monkey patch less classes
 tree.Value.prototype.toJS = function() {
@@ -4794,12 +4842,12 @@ tree.Definition.prototype.toJS = function() {
   // merge conditions from filters with zoom condition of the
   // definition
   var zoom = "(" + this.zoom + " & (1 << ctx.zoom))";
-  var _if = this.filters.toJS() 
-  if(_if && _if.length > 0) {
-     _if += " && " + zoom;
-  } else {
-    _if = zoom;
-  }
+  var frame_offset = this.frame_offset;
+  var _if = this.filters.toJS();
+  var filters = [zoom];
+  if(_if) filters.push(_if);
+  if(frame_offset) filters.push('ctx.frame_offset ===' + frame_offset);
+  _if = filters.join(" && ");
   _.each(this.rules, function(rule) {
       if(rule instanceof tree.Rule) {
         shaderAttrs[rule.name] = shaderAttrs[rule.name] || [];
@@ -4826,7 +4874,8 @@ tree.Definition.prototype.toJS = function() {
 };
 
 
-function CartoCSS(style) {
+function CartoCSS(style, options) {
+  this.options = options || {};
   if(style) {
     this.setStyle(style);
   }
@@ -4912,7 +4961,7 @@ CartoCSS.renderers['canvas-2d'] = {
 }
 
 var renderer = CartoCSS.renderers['svg'];
-var ref = window.carto['mapnik-reference'].version.latest;
+var ref = require('mapnik-reference').version.latest;
 var to_load = ['polygon', 'line', 'point', 'markers'];
 for(var ss in to_load) {
   var s = to_load[ss];
@@ -4930,6 +4979,11 @@ CartoCSS.Layer.prototype = {
 
   name: function() {
     return this.fullName().split('::')[0];
+  },
+
+  // frames this layer need to be rendered
+  frames: function() {
+    return this.shader.frames;
   },
 
   attachment: function() {
@@ -5017,7 +5071,7 @@ CartoCSS.prototype = {
 
   _createFn: function(ops) {
     var body = ops.join('\n');
-    console.log(body);
+    if(this.options.debug) console.log(body);
     return Function("data","ctx", "var _value = null; " +  body + "; return _value; ");
   },
 
@@ -5048,6 +5102,7 @@ CartoCSS.prototype = {
     try {
       ruleset = (new carto.Parser(parse_env)).parse(cartocss);
     } catch(e) {
+      console.log(e.stack);
       // add the style.mss string to match the response from the server
       parse_env.errors.push(e.message);
       return;
@@ -5061,6 +5116,8 @@ CartoCSS.prototype = {
         var def = defs[i];
         var key = def.elements[0] + "::" + def.attachment;
         var layer = layers[key] = (layers[key] || {});
+        layer.frames = [];
+        layer.zoom = tree.Zoom.all;
         var props = def.toJS();
         for(var v in props) {
           (layer[v] = (layer[v] || [])).push(props[v].join('\n'))
@@ -5073,15 +5130,19 @@ CartoCSS.prototype = {
       for(var i = 0; i < defs.length; ++i) {
         var def = defs[i];
         var k = def.elements[0] + "::" + def.attachment;
+        var layer = layers[k];
         if(!done[k]) {
-          var layer = layers[k];
           for(var prop in layer) {
-            layer[prop] = this._createFn(layer[prop]);
+            if (prop !== 'zoom' && prop !== 'frames') {
+              layer[prop] = this._createFn(layer[prop]);
+            }
           }
           layer.attachment = k;
           ordered_layers.push(layer);
           done[k] = true;
         }
+        layer.zoom |= def.zoom;
+        layer.frames.push(def.frame_offset);
       }
 
       return ordered_layers;
@@ -5090,6 +5151,7 @@ CartoCSS.prototype = {
     return null;
   }
 };
+
 
 carto.RendererJS = function (options) {
     this.options = options || {};
@@ -5101,5 +5163,9 @@ carto.RendererJS.prototype.render = function render(cartocss, callback) {
     tree.Reference.setVersion(this.options.mapnik_version);
     return new CartoCSS(cartocss);
 }
+if(typeof(module) !== 'undefined') {
+  module.exports = carto.RendererJS;
+}
 
-})();
+
+})(require('../carto'));

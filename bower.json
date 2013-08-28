@@ -1,5 +1,5 @@
 {
   "name": "less",
   "version": "1.4.2",
-  "main": ["./lib/less/index"]
+  "main": "./lib/less/index.js"
 }

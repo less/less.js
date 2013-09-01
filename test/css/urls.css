@@ -1,4 +1,4 @@
-@import "import/../css/background.css";
+@import "css/background.css";
 
 @import "import/import-test-d.css";
 
@@ -35,11 +35,11 @@
 #logo {
   width: 100px;
   height: 100px;
-  background: url('import/imports/../assets/logo.png');
+  background: url('import/assets/logo.png');
 }
 @font-face {
   font-family: xecret;
-  src: url('import/imports/../assets/xecret.ttf');
+  src: url('import/assets/xecret.ttf');
 }
 #secret {
   font-family: xecret, sans-serif;

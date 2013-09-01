@@ -61,7 +61,7 @@
 }
 .transparent {
   color: transparent;
-  background-color: rgba(0, 0, 0, 0);
+  background-color: transparent;
 }
 #alpha #fromvar {
   opacity: 0.7;

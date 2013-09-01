@@ -201,3 +201,13 @@ body {
     font-size: 11px;
   }
 }
+@media (min-width: 480px) {
+  .nav-justified > li {
+    display: table-cell;
+  }
+}
+@media (min-width: 768px) and (min-width: 480px) {
+  .menu > li {
+    display: table-cell;
+  }
+}

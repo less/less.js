@@ -210,3 +210,18 @@ body {
     body { font-size: 11px; }
   }
 }
+
+.nav-justified {
+  @media (min-width: 480px) {
+    > li {
+      display: table-cell;
+    }
+  }
+}
+
+.menu
+{
+  @media (min-width: 768px) {
+    .nav-justified();
+  }
+}

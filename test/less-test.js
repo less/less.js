@@ -1,3 +1,4 @@
+/*jshint latedef: nofunc */
 var path = require('path'),
     fs = require('fs'),
     sys = require('util');

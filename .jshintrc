@@ -3,7 +3,9 @@
     "boss": true,
     "expr": true,
     "laxbreak": true,
+    "latedef": true,
     "node": true,
+    "undef": true,
     "unused": "vars",
     "noarg": true
 }

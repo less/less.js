@@ -34,3 +34,8 @@
     color: yellow;
   }
 }
+@media screen and (max-width: 604px) and (min-device-pixel-ratio: 2) {
+  #css {
+    color: purple;
+  }
+}

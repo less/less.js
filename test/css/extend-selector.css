@@ -70,3 +70,11 @@ div.ext7,
 .attributes .attributes .attribute-test {
   extend: attributes2;
 }
+.header .header-nav,
+.footer .footer-nav {
+  background: red;
+}
+.header .header-nav:before,
+.footer .footer-nav:before {
+  background: blue;
+}

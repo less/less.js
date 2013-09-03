@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.4.2",
+  "version": "1.5.0-b1",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": "Alexis Sellier <self@cloudhead.net>",
@@ -28,16 +28,20 @@
     "node": ">=0.4.2"
   },
   "scripts": {
+    "pretest": "make jshint",
     "test": "make test"
   },
   "optionalDependencies": {
     "mime": "1.2.x",
     "request": ">=2.12.0",
     "mkdirp": "~0.3.4",
-    "ycssmin": ">=1.0.1"
+    "clean-css": "1.0.x",
+    "source-map": "0.1.x"
   },
   "devDependencies": {
-    "diff": "~1.0"
+    "diff": "~1.0",
+    "jshint": "~2.1.4",
+    "http-server": "~0.5.5"
   },
   "keywords": [
     "compile less",

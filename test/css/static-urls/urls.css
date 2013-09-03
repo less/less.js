@@ -1,5 +1,4 @@
-@import "folder (1)/../css/background.css";
-
+@import "css/background.css";
 @import "folder (1)/import-test-d.css";
 @font-face {
   src: url("/fonts/garamond-pro.ttf");
@@ -31,11 +30,11 @@
 #logo {
   width: 100px;
   height: 100px;
-  background: url('folder (1)/../assets/logo.png');
+  background: url('assets/logo.png');
 }
 @font-face {
   font-family: xecret;
-  src: url('folder (1)/../assets/xecret.ttf');
+  src: url('assets/xecret.ttf');
 }
 #secret {
   font-family: xecret, sans-serif;

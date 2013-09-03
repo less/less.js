@@ -13,8 +13,8 @@ var testLessEqualsInDocument = function() {
     testLessInDocument(testSheet);
 };
 
-var testLessErrorsInDocument = function() {
-    testLessInDocument(testErrorSheet);
+var testLessErrorsInDocument = function(isConsole) {
+    testLessInDocument(isConsole ? testErrorSheetConsole : testErrorSheet);
 };
 
 var testLessInDocument = function(testFunc) {
@@ -43,7 +43,7 @@ var testSheet = function(sheet) {
         
         runs(function() {
             // use sheet to do testing
-            expect(lessOutput).toEqual(expectedOutput.text);
+            expect(expectedOutput.text).toEqual(lessOutput);
         });
     });
 };
@@ -76,10 +76,45 @@ var testErrorSheet = function(sheet) {
                 .replace("{pathrel}", "")
                 .replace("{pathhref}", "http://localhost:8081/less/errors/")
                 .replace("{404status}", " (404)");
-            expect(actualErrorMsg).toEqual(errorTxt);
+            expect(errorTxt).toEqual(actualErrorMsg);
             if (errorTxt == actualErrorMsg) {
                 actualErrorElement.style.display = "none";
             }
+        });
+    });
+};
+
+var testErrorSheetConsole = function(sheet) {
+    it(sheet.id + " should match an error", function() {
+        var lessHref =  sheet.href,
+            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
+            errorHref = lessHref.replace(/.less$/, ".txt"),
+            errorFile = loadFile(errorHref),
+            actualErrorElement = document.getElementById(id),
+            actualErrorMsg = logMessages[logMessages.length - 1];
+
+        describe("the error", function() {
+            expect(actualErrorElement).toBe(null);
+
+        });
+
+        /*actualErrorMsg = actualErrorElement.innerText
+            .replace(/\n\d+/g, function(lineNo) { return lineNo + " "; })
+            .replace(/\n\s*in /g, " in ")
+            .replace("\n\n", "\n");*/
+
+        waitsFor(function() {
+            return errorFile.loaded;
+        }, "failed to load expected outout", 10000);
+
+        runs(function() {
+            var errorTxt = errorFile.text
+                .replace("{path}", "")
+                .replace("{pathrel}", "")
+                .replace("{pathhref}", "http://localhost:8081/browser/less/")
+                .replace("{404status}", " (404)")
+                .trim();
+            expect(errorTxt).toEqual(actualErrorMsg);
         });
     });
 };

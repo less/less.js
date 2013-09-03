@@ -26,6 +26,7 @@
   luma-cyan: 79%;
   luma-white-alpha: 50%;
   contrast-filter: contrast(30%);
+  saturate-filter: saturate(5%);
   contrast-white: #000000;
   contrast-black: #ffffff;
   contrast-red: #ffffff;
@@ -80,6 +81,11 @@
   pow: 64px;
   pow: 64;
   pow: 27;
+  min: 0;
+  min: min("junk", 5);
+  min: 3pt;
+  max: 3;
+  max: max(8%, 1cm);
   percentage: 20%;
   color: #ff0011;
   tint: #898989;

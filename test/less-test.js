@@ -1,3 +1,4 @@
+/*jshint latedef: nofunc */
 var path = require('path'),
     fs = require('fs'),
     sys = require('util');
@@ -8,6 +9,8 @@ var stylize = require('../lib/less/lessc_helper').stylize;
 var globals = Object.keys(global);
 
 var oneTestOnly = process.argv[2];
+
+var isVerbose = process.env.npm_config_loglevel === 'verbose';
 
 var totalTests = 0,
     failedTests = 0,
@@ -20,14 +23,60 @@ less.tree.functions.increment = function (a) {
     return new(less.tree.Dimension)(a.value + 1);
 };
 less.tree.functions._color = function (str) {
-    if (str.value === "evil red") { return new(less.tree.Color)("600") }
+    if (str.value === "evil red") { return new(less.tree.Color)("600"); }
 };
 
 sys.puts("\n" + stylize("LESS", 'underline') + "\n");
 
 runTestSet({strictMath: true, relativeUrls: true, silent: true});
+runTestSet({strictMath: true, strictUnits: true}, "errors/",
+            testErrors, null, getErrorPathReplacementFunction("errors"));
+runTestSet({strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
+            testErrors, null, getErrorPathReplacementFunction("no-js-errors"));
+runTestSet({strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,
+           function(name) { return name + '-comments'; });
+runTestSet({strictMath: true, dumpLineNumbers: 'mediaquery'}, "debug/", null,
+           function(name) { return name + '-mediaquery'; });
+runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
+           function(name) { return name + '-all'; });
+runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
+runTestSet({strictMath: true, compress: true}, "compression/");
+runTestSet({}, "legacy/");
+runTestSet({strictMath: true, strictUnits: true, sourceMap: true }, "sourcemaps/",
+    testSourcemap, null, null, function(filename) { return path.join('test/sourcemaps', filename) + '.json'; });
 
-runTestSet({strictMath: true, strictUnits: true}, "errors/", function(name, err, compiledLess, doReplacements) {
+testNoOptions();
+
+function getErrorPathReplacementFunction(dir) {
+    return function(input) {
+        return input.replace(
+                "{path}", path.join(process.cwd(), "/test/less/" + dir + "/"))
+            .replace("{pathrel}", path.join("test", "less", dir + "/"))
+            .replace("{pathhref}", "")
+            .replace("{404status}", "")
+            .replace(/\r\n/g, '\n');
+    };
+}
+
+function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
+    fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        sys.print("- " + name + ": ");
+        if (sourcemap === expectedSourcemap) {
+            ok('OK');
+        } else if (err) {
+            fail("ERROR: " + (err && err.message));
+            if (isVerbose) {
+                console.error();
+                console.error(err.stack);
+            }
+        } else {
+            difference("FAIL", expectedSourcemap, sourcemap);
+        }
+        sys.puts("");
+    });
+}
+
+function testErrors(name, err, compiledLess, doReplacements) {
     fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
         sys.print("- " + name + ": ");
         expectedErr = doReplacements(expectedErr, 'test/less/errors/');
@@ -40,31 +89,14 @@ runTestSet({strictMath: true, strictUnits: true}, "errors/", function(name, err,
         } else {
             var errMessage = less.formatError(err);
             if (errMessage === expectedErr) {
-                ok('OK');                    
+                ok('OK');
             } else {
                 difference("FAIL", expectedErr, errMessage);
             }
         }
         sys.puts("");
-    });}, null, function(input, directory) {
-        return input.replace(
-            "{path}", path.join(process.cwd(), "/test/less/errors/"))
-            .replace("{pathrel}", path.join("test", "less", "errors/"))
-            .replace("{pathhref}", "")
-            .replace("{404status}", "")
-            .replace(/\r\n/g, '\n');
     });
-
-runTestSet({strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,
-           function(name) { return name + '-comments'; });
-runTestSet({strictMath: true, dumpLineNumbers: 'mediaquery'}, "debug/", null,
-           function(name) { return name + '-mediaquery'; });
-runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
-           function(name) { return name + '-all'; });
-runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
-runTestSet({strictMath: true, compress: true}, "compression/");
-runTestSet({ }, "legacy/");
-testNoOptions();
+}
 
 function globalReplacements(input, directory) {
     var p = path.join(process.cwd(), directory),
@@ -85,14 +117,14 @@ function checkGlobalLeaks() {
     });
 }
 
-function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements) {
+function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
     foldername = foldername || "";
 
     if(!doReplacements)
         doReplacements = globalReplacements;
 
     fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
-        if (! /\.less/.test(file)) { return }
+        if (! /\.less/.test(file)) { return; }
         
         var name = foldername + path.basename(file, '.less');
         
@@ -100,20 +132,34 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
         
         totalTests++;
 
+        if (options.sourceMap) {
+            var sourceMapOutput;
+            options.writeSourceMap = function(output) {
+                sourceMapOutput = output;
+            };
+            options.sourceMapOutputFilename = name + ".css";
+            options.sourceMapBasepath = path.join(process.cwd(), "test/less");
+            options.sourceMapRootpath = "testweb/";
+        }
+
         toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
             if (verifyFunction) {
-                return verifyFunction(name, err, less, doReplacements);
+                return verifyFunction(name, err, less, doReplacements, sourceMapOutput);
             }
             var css_name = name;
-            if(nameModifier) css_name=nameModifier(name);
+            if(nameModifier) { css_name = nameModifier(name); }
             fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                sys.print("- " + css_name + ": ")
+                sys.print("- " + css_name + ": ");
                 
                 css = css && doReplacements(css, 'test/less/' + foldername);
                 if (less === css) { ok('OK'); }
                 else if (err) {
                     fail("ERROR: " + (err && err.message));
+                    if (isVerbose) {
+                        console.error();
+                        console.error(err.stack);
+                    }
                 } else {
                     difference("FAIL", css, less);
                 }
@@ -127,7 +173,8 @@ function diff(left, right) {
     sys.puts("");
     require('diff').diffLines(left, right).forEach(function(item) {
       if(item.added || item.removed) {
-        sys.print(stylize(item.value, item.added ? 'green' : 'red'));
+        var text = item.value.replace("\n", String.fromCharCode(182) + "\n");
+        sys.print(stylize(text, item.added ? 'green' : 'red'));
       } else {
         sys.print(item.value);
       }
@@ -177,10 +224,10 @@ function endTest() {
 }
 
 function toCSS(options, path, callback) {
-    var tree, css;
+    var css;
     options = options || {};
     fs.readFile(path, 'utf8', function (e, str) {
-        if (e) { return callback(e) }
+        if (e) { return callback(e); }
         
         options.paths = [require('path').dirname(path)];
         options.filename = require('path').resolve(process.cwd(), path);
@@ -205,7 +252,7 @@ function testNoOptions() {
     totalTests++;
     try {
         sys.print("- Integration - creating parser without options: ");
-        new(less.Parser);
+        new(less.Parser)();
     } catch(e) {
         fail(stylize("FAIL\n", "red"));
         return;

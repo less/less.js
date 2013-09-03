@@ -1,0 +1,64 @@
+
+.light when (lightness(@a) > 50%) {
+  color: green;
+}
+.dark when (lightness(@a) < 50%) {
+  color: orange;
+}
+@a: #ddd;
+
+.see-the {
+  @a: #444; // this mirrors what mixins do - they evaluate guards at the point of execution
+  .light();
+  .dark();
+}
+
+.hide-the {
+  .light();
+  .dark();
+}
+
+.multiple-conditions-1 when (@b = 1), (@c = 2), (@d = 3) {
+  color: red;
+}
+
+.multiple-conditions-2 when (@b = 1), (@c = 2), (@d = 2) {
+  color: blue;
+}
+
+@b: 2;
+@c: 3;
+@d: 3;
+
+.inheritance when (@b = 2) {
+  .test {
+    color: black;
+  }
+  &:hover {
+    color: pink;
+  }
+  .hideme when (@b = 1) {
+    color: green;
+  }
+  & when (@b = 1) {
+    hideme: green;
+  }
+}
+
+.hideme when (@b = 1) {
+  .test {
+    color: black;
+  }
+  &:hover {
+    color: pink;
+  }
+  .hideme when (@b = 1) {
+    color: green;
+  }
+}
+
+& when (@b = 1) {
+  .hideme {
+    color: red;
+  }
+}

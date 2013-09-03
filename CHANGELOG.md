@@ -1,3 +1,25 @@
+# 1.5.0 Beta 1
+
+2013-09-01
+
+ - sourcemap support
+ - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
+ - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
+ - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
+ - support for guards on selectors (currently only if you have a single selector)
+ - Added min/max functions
+ - fix bad spaces between namespace operators
+ - do not compress comment if it begins with an exclamation mark
+ - change to not throw exceptions in toCSS - always return an error object
+ - allow property merging through the +: syntax
+ - Fix the saturate function to pass through when using the CSS syntax
+ - Added svg-gradient function
+ - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
+ - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
+ - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
+ - Browser: added errorReporting option which can be "html" (default) or "console" or a function
+ - A few bug fixes for media queries and extends
+
 # 1.4.2
 
 2013-07-20
@@ -22,7 +44,7 @@
  - fix passing of strict maths option
 
 # 1.4.0 Beta 4
-
+ 
 2013-05-04
 
  - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
@@ -55,7 +77,7 @@
  - significant bug fixes to our debug options
  - other parameters can be used as defaults in mixins e.g. .a(@a, @b:@a)
  - an error is shown if properties are used outside of a ruleset
- - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 3 
+ - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14 
  - added luma, hsvhue, hsvsaturation, hsvvalue functions
  - added pow, pi, mod, tan, sin, cos, atan, asin, acos and sqrt math functions
  - added convert function, e.g. convert(1rad, deg) => value in degrees

@@ -1,4 +1,6 @@
-# 1.5.0 WIP
+# 1.5.0 Beta 1
+
+2013-09-01
 
  - sourcemap support
  - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
@@ -16,6 +18,7 @@
  - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
  - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
  - Browser: added errorReporting option which can be "html" (default) or "console" or a function
+ - A few bug fixes for media queries and extends
 
 # 1.4.2
 

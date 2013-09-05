@@ -124,7 +124,7 @@ module.exports = function(grunt) {
         // version: '2.0.0-rc2',
         keepRunner: true,
         host: 'http://localhost:8081/',
-        vendor: 'test/browser/common.js',
+        vendor: ['test/browser/common.js', 'test/browser/less.js'],
         template: 'test/browser/test-runner-template.tmpl'
       },
       main: {
@@ -249,6 +249,7 @@ module.exports = function(grunt) {
 
   // Run all browser tests
   grunt.registerTask('browsertest', [
+    'browser',
     'connect',
     'jasmine'
   ]);
@@ -263,7 +264,6 @@ module.exports = function(grunt) {
     'clean',
     'jshint',
     'shell:test',
-    'browser',
     'browsertest'
   ]);
 

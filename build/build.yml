@@ -63,8 +63,8 @@ browser:
   - <%= build.less.parser %>
   - <%= build.less.functions %>
   - <%= build.less.colors %>
-  - <%= build.less.treedir %> # glob all files
   - <%= build.less.tree %>
+  - <%= build.less.treedir %> # glob all files
   - <%= build.less.env %>
   - <%= build.less.visitor %>
   - <%= build.less.import_visitor %>
@@ -97,8 +97,8 @@ rhino:
   - <%= build.less.extend_visitor %>
   - <%= build.less.functions %>
   - <%= build.less.colors %>
-  - <%= build.less.treedir %> # glob all files
   - <%= build.less.tree %>
+  - <%= build.less.treedir %> # glob all files
   - <%= build.less.source_map_output %>
 
   # append rhino-specific code

@@ -43,7 +43,7 @@ module.exports = function(grunt) {
         footer: '\n})(window);'
       },
       // Browser versions
-      browser: {
+      browsertest: {
         src: ['<%= build.browser %>'],
         dest: 'test/browser/less.js'
       },
@@ -54,6 +54,10 @@ module.exports = function(grunt) {
       beta: {
         src: ['<%= build.browser %>'],
         dest: 'dist/less-<%= pkg.version %>-beta.js'
+      },
+      stable: {
+        src: ['<%= build.browser %>'],
+        dest: 'dist/less-<%= pkg.version %>.js'
       },
       // Rhino
       rhino: {
@@ -78,10 +82,6 @@ module.exports = function(grunt) {
         banner: '<%= meta.banner %>',
         mangle: true
       },
-      browser: {
-        src: ['<%= concat.browser.src %>'],
-        dest: 'dist/less-<%= pkg.version %>.min.js'
-      },
       alpha: {
         src: ['<%= concat.alpha.src %>'],
         dest: 'dist/less-<%= pkg.version %>-alpha.min.js'
@@ -89,6 +89,10 @@ module.exports = function(grunt) {
       beta: {
         src: ['<%= concat.beta.src %>'],
         dest: 'dist/less-<%= pkg.version %>-beta.min.js'
+      },
+      stable: {
+        src: ['<%= concat.browser.src %>'],
+        dest: 'dist/less-<%= pkg.version %>.min.js'
       }
     },
 
@@ -202,11 +206,9 @@ module.exports = function(grunt) {
       }
     },
 
-    // Before running tests, clean out the results
-    // of any previous tests. (this will need to be
-    // setup based on configuration of browser tests).
+    // Clean the version of less built for the tests
     clean: {
-      test: ['test/browser/test-runner-*.htm']
+      test: ['test/browser/less.js']
     }
   });
 
@@ -216,10 +218,9 @@ module.exports = function(grunt) {
   // Actually load this plugin's task(s).
   grunt.loadTasks('build/tasks');
 
-  // Default task to build Less.js
+  // by default, run tests
   grunt.registerTask('default', [
-    'concat:browser',
-    'uglify:browser'
+    'test'
   ]);
 
   // Alpha
@@ -234,10 +235,21 @@ module.exports = function(grunt) {
     'uglify:beta'
   ]);
 
-    // Run all tests
-  grunt.registerTask('browser', [
+  // Beta
+  grunt.registerTask('stable', [
+    'concat:stable',
+    'uglify:stable'
+  ]);
+
+  // Run all browser tests
+  grunt.registerTask('browsertest', [
     'connect',
     'jasmine'
+  ]);
+
+  // Create the browser version of less.js
+  grunt.registerTask('browser', [
+    'concat:browsertest'
   ]);
 
   // Run all tests
@@ -245,7 +257,8 @@ module.exports = function(grunt) {
     'clean',
     'jshint',
     'shell:test',
-    'browser'
+    'browser',
+    'browsertest'
   ]);
 
   // Run benchmark

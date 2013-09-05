@@ -1,4 +1,4 @@
-# [Less.js v1.4.2](http://lesscss.org)
+# [Less.js v1.5.0-b1](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
@@ -280,32 +280,37 @@ and then `cd less`.
 
 #### Install dependencies
 
-Tests and benchmarking require Grunt `~0.4.1`. If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to install and use Grunt plugins, which are necessary for development with Less.js.
-
-To install Grunt and other necessary dependencies run:
+To install all the dependencies for less development, run:
 
 ```shell
 npm install
 ```
 
-You should now be able to build Less.js, run tests, benchmarking, and other tasks listed in the Gruntfile.
-
-
-## Building Less.js
-
-The Less.js [Gruntfile](Gruntfile.js) is configured with the following "convenience tasks" (you must first install [the necessary local dependencies](package.json)):
+If you haven't run grunt before, install grunt-cli globally so you can just run `grunt`
 
 ```shell
-$ npm install
+npm install grunt-cli -g
 ```
 
-When all of the necessary dependencies are installed you may run the various Grunt.js commands provided:
+You should now be able to build Less.js, run tests, benchmarking, and other tasks listed in the Gruntfile.
 
-#### build - `grunt`
-Build Less.js from from the `/lib/less` source files.
+## Using Less.js Grunt
 
-#### test - `grunt test`
+Tests, benchmarking and building is done using Grunt `~0.4.1`. If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to install and use Grunt plugins, which are necessary for development with Less.js.
+
+The Less.js [Gruntfile](Gruntfile.js) is configured with the following "convenience tasks" :
+
+#### test - `grunt`
 Runs jshint, nodeunit and headless jasmine tests using [phantomjs](http://code.google.com/p/phantomjs/). You must have phantomjs installed for the jasmine tests to run.
+
+#### test - `grunt benchmark`
+Runs the benchmark suite.
+
+#### build for testing browser - 'grunt browser'
+This builds less.js and puts it in 'test/browser/less.js'
+
+#### build - `grunt stable | grunt beta | grunt alpha`
+Builds Less.js from from the `/lib/less` source files. This is done by the developer releasing a new release, do not do this if you are creating a pull request.
 
 #### readme - `grunt readme`
 Build the README file from [a template](build/README.md) to ensure that metadata is up-to-date and (more likely to be) correct.

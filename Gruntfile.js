@@ -33,9 +33,14 @@ module.exports = function(grunt) {
       },
       benchmark: {
         command: 'node benchmark/less-benchmark.js'
+      },
+      "sourcemap-test": {
+        command: [
+            'node bin/lessc --source-map --source-map-inline test/less/import.less test/sourcemaps/import.css',
+            'node bin/lessc --source-map --source-map-inline test/less/sourcemaps/basic.less test/sourcemaps/basic.css',
+            'node node_modules/http-server/bin/http-server test/sourcemaps -p 8084'].join('&&')
       }
     },
-
     concat: {
       options: {
         stripBanners: 'all',
@@ -208,7 +213,8 @@ module.exports = function(grunt) {
 
     // Clean the version of less built for the tests
     clean: {
-      test: ['test/browser/less.js']
+      test: ['test/browser/less.js', 'tmp'],
+      "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map']
     }
   });
 
@@ -259,6 +265,12 @@ module.exports = function(grunt) {
     'shell:test',
     'browser',
     'browsertest'
+  ]);
+
+  // generate a good test environment for testing sourcemaps
+  grunt.registerTask('sourcemap-test', [
+    'clean:sourcemap-test',
+    'shell:sourcemap-test'
   ]);
 
   // Run benchmark

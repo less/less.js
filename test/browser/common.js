@@ -111,7 +111,7 @@ var testErrorSheet = function(sheet) {
       var errorTxt = errorFile.text
         .replace("{path}", "")
         .replace("{pathrel}", "")
-        .replace("{pathhref}", "http://localhost:8081/less/errors/")
+        .replace("{pathhref}", "http://localhost:8081/test/less/errors/")
         .replace("{404status}", " (404)");
       expect(errorTxt).toEqual(actualErrorMsg);
       if (errorTxt == actualErrorMsg) {

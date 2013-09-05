@@ -28,9 +28,13 @@
     <!-- inital grunt-contrib-jasmine scripts -->
     <% generateScriptTags([].concat(scripts.polyfills, scripts.jasmine)); %>
 
-    <!-- less.js testing -->
-    <% generateScriptTags([].concat(scripts.vendor, scripts.helpers)); %>
+    <!-- Helpers - The less options -->
+    <% generateScriptTags(scripts.helpers); %>
 
+    <!-- Vendor - less.js and common code -->
+    <% generateScriptTags(scripts.vendor); %>
+
+    <!-- Spec -->
     <% generateScriptTags(scripts.specs); %>
 
     <!-- final grunt-contrib-jasmine scripts -->

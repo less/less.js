@@ -321,7 +321,7 @@ Please review the [Gruntfile](Gruntfile.js) to become acquainted with the other 
 
 
 ## Release History
-See the [changelog](CHANGELOG)
+See the [changelog](CHANGELOG.md)
 
 ## [License](LICENSE)
 

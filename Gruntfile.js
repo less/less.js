@@ -27,12 +27,15 @@ module.exports = function(grunt) {
     },
 
     shell: {
-      options: {stdout: 'log'},
+      options: {stdout: true, failOnError: true},
       test: {
         command: 'node test/less-test.js'
       },
       benchmark: {
         command: 'node benchmark/less-benchmark.js'
+      },
+      "browsertest-server": {
+          command: 'node node_modules/http-server/bin/http-server . -p 8088'
       },
       "sourcemap-test": {
         command: [
@@ -252,6 +255,11 @@ module.exports = function(grunt) {
     'browser',
     'connect',
     'jasmine'
+  ]);
+
+  // setup a web server to run the browser tests in a browser rather than phantom
+  grunt.registerTask('browsertest-server', [
+    'shell:browsertest-server'
   ]);
 
   // Create the browser version of less.js

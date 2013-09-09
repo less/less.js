@@ -35,8 +35,7 @@ describe("less.js modify vars", function() {
   testLessEqualsInDocument();
   it("Should log only 2 XHR requests", function() {
     var xhrLogMessages = logMessages.filter(function(item) {
-      var filename = item.replace(/^.*[\\\/]/, '');
-      return (/XHR: Getting '/).test(filename).magenta;
+      return (/XHR: Getting '/).test(item);
     });
     expect(xhrLogMessages.length).toEqual(2);
   });

@@ -55,14 +55,6 @@ module.exports = function(grunt) {
         src: ['<%= build.browser %>'],
         dest: 'test/browser/less.js'
       },
-      alpha: {
-        src: ['<%= build.browser %>'],
-        dest: 'dist/less-<%= pkg.version %>-alpha.js'
-      },
-      beta: {
-        src: ['<%= build.browser %>'],
-        dest: 'dist/less-<%= pkg.version %>-beta.js'
-      },
       stable: {
         src: ['<%= build.browser %>'],
         dest: 'dist/less-<%= pkg.version %>.js'
@@ -90,16 +82,8 @@ module.exports = function(grunt) {
         banner: '<%= meta.banner %>',
         mangle: true
       },
-      alpha: {
-        src: ['<%= concat.alpha.src %>'],
-        dest: 'dist/less-<%= pkg.version %>-alpha.min.js'
-      },
-      beta: {
-        src: ['<%= concat.beta.src %>'],
-        dest: 'dist/less-<%= pkg.version %>-beta.min.js'
-      },
       stable: {
-        src: ['<%= concat.browser.src %>'],
+        src: ['<%= concat.stable.src %>'],
         dest: 'dist/less-<%= pkg.version %>.min.js'
       }
     },
@@ -232,19 +216,7 @@ module.exports = function(grunt) {
     'test'
   ]);
 
-  // Alpha
-  grunt.registerTask('alpha', [
-    'concat:alpha',
-    'uglify:alpha'
-  ]);
-
-  // Beta
-  grunt.registerTask('beta', [
-    'concat:beta',
-    'uglify:beta'
-  ]);
-
-  // Beta
+  // Release
   grunt.registerTask('stable', [
     'concat:stable',
     'uglify:stable'

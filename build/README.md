@@ -1,4 +1,4 @@
-# [Less.js v1.5.0-b1](http://lesscss.org)
+# [Less.js v<%= pkg.version %>](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
@@ -296,7 +296,7 @@ You should now be able to build Less.js, run tests, benchmarking, and other task
 
 ## Using Less.js Grunt
 
-Tests, benchmarking and building is done using Grunt `~0.4.1`. If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to install and use Grunt plugins, which are necessary for development with Less.js.
+Tests, benchmarking and building is done using Grunt `<%= pkg.devDependencies.grunt %>`. If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to install and use Grunt plugins, which are necessary for development with Less.js.
 
 The Less.js [Gruntfile](Gruntfile.js) is configured with the following "convenience tasks" :
 
@@ -325,7 +325,7 @@ See the [changelog](CHANGELOG)
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-2013 [Alexis Sellier](http://cloudhead.io/) & The Core Less Team
+Copyright (c) 2009-<%= grunt.template.today("yyyy") %> [Alexis Sellier](http://cloudhead.io/) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 

@@ -16,18 +16,17 @@ fs.readFile(file, 'utf8', function (e, data) {
     start = new(Date);
 
     new(less.Parser)({ optimization: 2 }).parse(data, function (err, tree) {
-        end = new(Date);
+        end = new Date();
 
         total = end - start;
 
         sys.puts("Parsing: " +
                  total + " ms (" +
-                 parseInt(1000 / total *
-                 data.length / 1024) + " KB\/s)");
+                 Number(1000 / total * data.length / 1024) + " KB\/s)");
 
-        start = new(Date);
+        start = new Date();
         css = tree.toCSS();
-        end = new(Date);
+        end = new Date();
 
         sys.puts("Generation: " + (end - start) + " ms (" +
                  parseInt(1000 / (end - start) *
@@ -36,7 +35,7 @@ fs.readFile(file, 'utf8', function (e, data) {
         total += end - start;
 
         sys.puts("Total: " + total + "ms (" +
-                 parseInt(1000 / total * data.length / 1024) + " KB/s)");
+            Number(1000 / total * data.length / 1024) + " KB/s)");
 
         if (err) {
             less.writeError(err);

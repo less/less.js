@@ -150,6 +150,11 @@ args = args.filter(function (arg) {
                 options.sourceMapRootpath = match[2];
             }
             break;
+        case 'source-map-basepath':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapBasepath = match[2];
+            }
+            break;
         case 'source-map-inline':
             options.outputSourceFiles = true;
             break;
@@ -197,7 +202,7 @@ if (output) {
     }
 }
 
-options.sourceMapBasepath = process.cwd();
+options.sourceMapBasepath = options.sourceMapBasepath || process.cwd();
 
 if (options.sourceMap === true) {
     if (!output) {

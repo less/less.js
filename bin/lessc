@@ -20,6 +20,7 @@ var options = {
     paths: [],
     color: true,
     strictImports: false,
+    insecure: false,
     rootpath: '',
     relativeUrls: false,
     ieCompat: true,
@@ -91,6 +92,9 @@ args = args.filter(function (arg) {
         case 'x':
         case 'compress':
             options.compress = true;
+            break;
+        case 'insecure':
+            options.insecure = true;
             break;
         case 'M':
         case 'depends':

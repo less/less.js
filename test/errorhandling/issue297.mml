@@ -1,0 +1,8 @@
+{
+    "Stylesheet": [
+        "issue297.mss"
+    ],
+    "Layer": [{
+        "name": "t"
+    }]
+}

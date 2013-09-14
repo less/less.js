@@ -247,11 +247,13 @@ if (options.depends) {
     sys.print(outputbase + ": ");
 }
 
-var writeSourceMap = function(output) {
-    var filename = options.sourceMapFullFilename || options.sourceMap;
-    ensureDirectory(filename);
-    fs.writeFileSync(filename, output, 'utf8');
-};
+if (options.sourceMap !== "inline") {
+    var writeSourceMap = function(output) {
+        var filename = options.sourceMapFullFilename || options.sourceMap;
+        ensureDirectory(filename);
+        fs.writeFileSync(filename, output, 'utf8');
+    };
+}
 
 var parseLessFile = function (e, data) {
     if (e) {

@@ -102,11 +102,13 @@
   mix-0: #ffff00;
   mix-100: #ff0000;
   mix-weightless: #ff8000;
+  mixt: rgba(255, 0, 0, 0.5);
 }
 #built-in .is-a {
   color: true;
   color1: true;
   color2: true;
+  color3: true;
   keyword: true;
   number: true;
   string: true;
@@ -117,6 +119,8 @@
 }
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);
+  alpha2: 0.5;
+  alpha3: 0;
 }
 #blendmodes {
   multiply: #ed0000;

@@ -206,7 +206,7 @@ if (output) {
     }
 }
 
-options.sourceMapBasepath = options.sourceMapBasepath || process.cwd();
+options.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
 
 if (options.sourceMap === true) {
     if (!output) {

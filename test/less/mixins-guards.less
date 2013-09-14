@@ -135,3 +135,16 @@
 #tryNumberPx {
   .mixin(4px);
 }
+
+.lock-mixin(@a) {
+ .inner-locked-mixin(@x: @a) when (@a = 1) {
+    a: @a;
+    x: @x;
+  }
+}
+.call-lock-mixin {
+  .lock-mixin(1);
+  .call-inner-lock-mixin {
+    .inner-locked-mixin();
+  }
+}

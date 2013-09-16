@@ -15,7 +15,7 @@ module.exports = function(grunt) {
       license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
       copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
       banner:
-        '/* \n' +
+        '/*! \n' +
         ' * LESS - <%= pkg.description %> v<%= pkg.version %> \n' +
         ' * http://lesscss.org \n' +
         ' * \n' +

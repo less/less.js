@@ -1,5 +1,5 @@
-/* 
- * LESS - Leaner CSS v1.5.0-b2 
+/*! 
+ * LESS - Leaner CSS v1.5.0-b3 
  * http://lesscss.org 
  * 
  * Copyright (c) 2009-2013, Alexis Sellier <self@cloudhead.net> 
@@ -496,7 +496,8 @@ less.Parser = function Parser(env) {
                                     outputFilename: options.sourceMapOutputFilename,
                                     sourceMapBasepath: options.sourceMapBasepath,
                                     sourceMapRootpath: options.sourceMapRootpath,
-                                    outputSourceFiles: options.outputSourceFiles
+                                    outputSourceFiles: options.outputSourceFiles,
+                                    sourceMapGenerator: options.sourceMapGenerator
                                 });
                         }
 
@@ -555,10 +556,10 @@ less.Parser = function Parser(env) {
                         e = new(LessError)(e, env);
                     }
 
-                    callback(e);
+                    return callback(e);
                 }
                 else {
-                    callback(null, root);
+                    return callback(null, root);
                 }
             };
 
@@ -566,7 +567,7 @@ less.Parser = function Parser(env) {
                 new tree.importVisitor(this.imports, finish)
                     .run(root);
             } else {
-                finish();
+                return finish();
             }
         },
 
@@ -682,12 +683,11 @@ less.Parser = function Parser(env) {
                     var k;
 
                     if (k = $(/^[_A-Za-z-][_A-Za-z0-9-]*/)) {
-                        if (tree.colors.hasOwnProperty(k)) {
-                            // detect named color
-                            return new(tree.Color)(tree.colors[k].slice(1));
-                        } else {
-                            return new(tree.Keyword)(k);
+                        var color = tree.Color.fromKeyword(k);
+                        if (color) {
+                            return color;
                         }
+                        return new(tree.Keyword)(k);
                     }
                 },
 
@@ -1491,7 +1491,7 @@ less.Parser = function Parser(env) {
             //
             directive: function () {
                 var name, value, rules, nonVendorSpecificName,
-                    hasBlock, hasIdentifier, hasExpression;
+                    hasBlock, hasIdentifier, hasExpression, identifier;
 
                 if (input.charAt(i) !== '@') { return; }
 
@@ -1546,7 +1546,10 @@ less.Parser = function Parser(env) {
                 }
 
                 if (hasIdentifier) {
-                    name += " " + ($(/^[^{]+/) || '').trim();
+                    identifier = ($(/^[^{]+/) || '').trim();
+                    if (identifier) {
+                        name += " " + identifier;
+                    }
                 }
 
                 if (hasBlock)
@@ -2047,7 +2050,16 @@ tree.functions = {
     },
     color: function (n) {
         if (n instanceof tree.Quoted) {
-            return new(tree.Color)(n.value.slice(1));
+            var colorCandidate = n.value,
+                returnColor;
+            returnColor = tree.Color.fromKeyword(colorCandidate);
+            if (returnColor) {
+                return returnColor;
+            }
+            if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/.test(colorCandidate)) {
+                return new(tree.Color)(colorCandidate.slice(1));
+            }
+            throw { type: "Argument", message: "argument must be a color keyword or 3/6 digit hex e.g. #FFF" };
         } else {
             throw { type: "Argument", message: "argument must be a string" };
         }
@@ -2528,7 +2540,6 @@ tree.functionCall.prototype = tree.functions;
         'teal':'#008080',
         'thistle':'#d8bfd8',
         'tomato':'#ff6347',
-        // 'transparent':'rgba(0,0,0,0)',
         'turquoise':'#40e0d0',
         'violet':'#ee82ee',
         'wheat':'#f5deb3',
@@ -2803,6 +2814,9 @@ tree.Color = function (rgb, a) {
     }
     this.alpha = typeof(a) === 'number' ? a : 1;
 };
+
+var transparentKeyword = "transparent";
+
 tree.Color.prototype = {
     type: "Color",
     eval: function () { return this; },
@@ -2819,6 +2833,9 @@ tree.Color.prototype = {
         // which has better compatibility with older browsers.
         // Values are capped between `0` and `255`, rounded and zero-padded.
         if (this.alpha < 1.0) {
+            if (this.alpha === 0 && this.isTransparentKeyword) {
+                return transparentKeyword;
+            }
             return "rgba(" + this.rgb.map(function (c) {
                 return Math.round(c);
             }).concat(this.alpha).join(',' + (compress ? '' : ' ')) + ")";
@@ -2934,6 +2951,18 @@ tree.Color.prototype = {
             x.rgb[1] === this.rgb[1] &&
             x.rgb[2] === this.rgb[2] &&
             x.alpha === this.alpha) ? 0 : -1;
+    }
+};
+
+tree.Color.fromKeyword = function(keyword) {
+    if (tree.colors.hasOwnProperty(keyword)) {
+        // detect named color
+        return new(tree.Color)(tree.colors[keyword].slice(1));
+    }
+    if (keyword === transparentKeyword) {
+        var transparent = new(tree.Color)([0, 0, 0], 0);
+        transparent.isTransparentKeyword = true;
+        return transparent;
     }
 };
 
@@ -4150,11 +4179,11 @@ tree.mixin.Definition.prototype = {
         return ruleset;
     },
     matchCondition: function (args, env) {
-
         if (this.condition && !this.condition.eval(
             new(tree.evalEnv)(env,
-                [this.evalParams(env, new(tree.evalEnv)(env, this.frames.concat(env.frames)), args, [])]
-                    .concat(env.frames)))) {
+                [this.evalParams(env, new(tree.evalEnv)(env, this.frames.concat(env.frames)), args, [])] // the parameter variables
+                    .concat(this.frames) // the parent namespace/mixin frames
+                    .concat(env.frames)))) { // the current environment frames
             return false;
         }
         return true;
@@ -4644,7 +4673,9 @@ tree.Ruleset.prototype = {
         for (i = 0; i < ruleNodes.length; i++) {
             rule = ruleNodes[i];
 
-            if (i + 1 === ruleNodes.length) {
+            // @page{ directive ends up with root elements inside it, a mix of rules and rulesets
+            // In this instance we do not know whether it is the last property
+            if (i + 1 === ruleNodes.length && (!this.root || rulesetNodes.length === 0 || this.firstRoot)) {
                 env.lastRule = true;
             }
 
@@ -4668,10 +4699,10 @@ tree.Ruleset.prototype = {
 
         for (i = 0; i < rulesetNodes.length; i++) {
             if (ruleNodes.length && firstRuleset) {
-                output.add("\n" + (this.root ? tabRuleStr : tabSetStr));
+                output.add((env.compress ? "" : "\n") + (this.root ? tabRuleStr : tabSetStr));
             }
             if (!firstRuleset) {
-                output.add('\n' + (this.root ? tabRuleStr : tabSetStr));
+                output.add((env.compress ? "" : "\n") + (this.root ? tabRuleStr : tabSetStr));
             }
             firstRuleset = false;
             rulesetNodes[i].genCSS(env, output);
@@ -5087,6 +5118,7 @@ tree.Variable.prototype = {
         'relativeUrls',     // option - whether to adjust URL's to be relative
         'rootpath',         // option - rootpath to append to URL's
         'strictImports',    // option -
+        'insecure',         // option - whether to allow imports from insecure ssl hosts
         'dumpLineNumbers',  // option - whether to dump line numbers
         'compress',         // option - whether to compress
         'processImports',   // option - whether to process imports. if false then imports will not be imported
@@ -6034,7 +6066,6 @@ tree.Variable.prototype = {
 })(require('./tree'));
 
 (function (tree) {
-    var sourceMap = require("source-map");
 
     tree.sourceMapOutput = function (options) {
         this._css = [];
@@ -6046,6 +6077,7 @@ tree.Variable.prototype = {
         this._sourceMapBasepath = options.sourceMapBasepath;
         this._sourceMapRootpath = options.sourceMapRootpath;
         this._outputSourceFiles = options.outputSourceFiles;
+        this._sourceMapGeneratorConstructor = options.sourceMapGenerator || require("source-map").SourceMapGenerator;
 
         if (this._sourceMapRootpath && this._sourceMapRootpath.charAt(this._sourceMapRootpath.length-1) !== '/') {
             this._sourceMapRootpath += '/';
@@ -6062,7 +6094,7 @@ tree.Variable.prototype = {
                 filename = filename.substring(1);
              }
         }
-        return this._sourceMapRootpath + filename.replace(/\\/g, '/');
+        return (this._sourceMapRootpath || "") + filename.replace(/\\/g, '/');
     };
 
     tree.sourceMapOutput.prototype.add = function(chunk, fileInfo, index) {
@@ -6101,7 +6133,7 @@ tree.Variable.prototype = {
     };
 
     tree.sourceMapOutput.prototype.toCSS = function(env) {
-        this._sourceMapGenerator = new sourceMap.SourceMapGenerator({ file: this._outputFilename, sourceRoot: null });
+        this._sourceMapGenerator = new this._sourceMapGeneratorConstructor({ file: this._outputFilename, sourceRoot: null });
 
         if (this._outputSourceFiles) {
             for(var filename in this._contentsMap) {
@@ -6112,10 +6144,21 @@ tree.Variable.prototype = {
         this._rootNode.genCSS(env, this);
 
         if (this._css.length > 0) {
-            this._writeSourceMap(JSON.stringify(this._sourceMapGenerator.toJSON()));
+            var sourceMapFilename,
+                sourceMapContent = JSON.stringify(this._sourceMapGenerator.toJSON());
 
             if (this._sourceMapFilename) {
-                this._css.push("/*# sourceMappingURL=" + this._sourceMapRootpath + this._sourceMapFilename + " */");
+                sourceMapFilename = this.normalizeFilename(this._sourceMapFilename);
+            }
+
+            if (this._writeSourceMap) {
+                this._writeSourceMap(sourceMapContent);
+            } else {
+                sourceMapFilename = "data:application/json," + encodeURIComponent(sourceMapContent);
+            }
+
+            if (sourceMapFilename) {
+                this._css.push("/*# sourceMappingURL=" + sourceMapFilename + " */");
             }
         }
 
@@ -6123,6 +6166,7 @@ tree.Variable.prototype = {
     };
 
 })(require('./tree'));
+
 //
 // browser.js - client-side engine
 //

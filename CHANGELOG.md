@@ -1,6 +1,6 @@
-# 1.5.0 Beta 1
+# 1.5.0 Beta 3
 
-2013-09-01
+2013-09-17
 
  - sourcemap support
  - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
@@ -16,9 +16,12 @@
  - Added svg-gradient function
  - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
  - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
+ - support transparent as a color, but not convert between rgba(0, 0, 0, 0) and transparent
+ - remove sys.puts calls to stop deprecation warnings in future node.js releases
  - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
  - Browser: added errorReporting option which can be "html" (default) or "console" or a function
- - A few bug fixes for media queries and extends
+ - Now uses grunt for building and testing
+ - A few bug fixes for media queries, extends, scoping, compression
 
 # 1.4.2
 

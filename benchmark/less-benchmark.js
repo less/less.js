@@ -10,7 +10,7 @@ if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
 fs.readFile(file, 'utf8', function (e, data) {
     var tree, css, start, end, total;
 
-    sys.puts("Benchmarking...\n", path.basename(file) + " (" +
+    console.log("Benchmarking...\n", path.basename(file) + " (" +
              parseInt(data.length / 1024) + " KB)", "");
 
     start = new(Date);
@@ -20,7 +20,7 @@ fs.readFile(file, 'utf8', function (e, data) {
 
         total = end - start;
 
-        sys.puts("Parsing: " +
+        console.log("Parsing: " +
                  total + " ms (" +
                  Number(1000 / total * data.length / 1024) + " KB\/s)");
 
@@ -28,13 +28,13 @@ fs.readFile(file, 'utf8', function (e, data) {
         css = tree.toCSS();
         end = new Date();
 
-        sys.puts("Generation: " + (end - start) + " ms (" +
+        console.log("Generation: " + (end - start) + " ms (" +
                  parseInt(1000 / (end - start) *
                  data.length / 1024) + " KB\/s)");
 
         total += end - start;
 
-        sys.puts("Total: " + total + "ms (" +
+        console.log("Total: " + total + "ms (" +
             Number(1000 / total * data.length / 1024) + " KB/s)");
 
         if (err) {

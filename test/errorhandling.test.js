@@ -8,7 +8,8 @@ var helper = require('./support/helper');
 
 describe('Error handling mml+mss', function() {
 helper.files('errorhandling', 'mml', function(file) {
-    it('should handle errors in ' + path.basename(file), function(done) {
+    var basename = path.basename(file);
+    it('should handle errors in ' + basename, function(done) {
         var completed = false;
         var renderResult;
         var mml = helper.mml(file);

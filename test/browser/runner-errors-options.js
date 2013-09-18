@@ -1,3 +1,5 @@
-var less = {};
-less.strictUnits = true;
+var less = {
+    strictUnits: true,
+    strictMath: true
+};
 

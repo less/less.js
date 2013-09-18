@@ -43,6 +43,9 @@
 .ops (@a) when (@a =< 0) {
   height: lt-or-eq;
 }
+.ops (@a) when (@a <= 0) {
+  height: lt-or-eq-alias;
+}
 .ops (@a) when not(@a = 0) {
   height: not-eq;
 }

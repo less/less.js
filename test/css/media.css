@@ -212,3 +212,8 @@ body {
     display: table-cell;
   }
 }
+@media all and tv {
+  .all-and-tv-variables {
+    var: all-and-tv;
+  }
+}

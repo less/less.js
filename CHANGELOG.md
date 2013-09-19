@@ -1,7 +1,8 @@
 ## Changelog
 
-## 0.10.0
+## 0.9.5
 
+* Bump `mapnik-reference` dependency to ~5.0.5
 * Adds compatibility with screen units.
 
 ## 0.9.4

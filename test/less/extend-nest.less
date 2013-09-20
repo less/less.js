@@ -63,3 +63,45 @@
 .amp-test-h {
   test: extended by masses of selectors;
 }
+
+.amp-test-i {
+  &.amp-test-j {
+    color: black;
+    background: white;
+  }
+  &.amp-test-k {
+    &:extend(&.amp-test-j);
+    background: red;
+  }
+}
+
+.amp-test-all {
+  &.all-a {
+    color: black;
+    background: white;
+    &:hover {
+      color: green;
+    }
+  }
+  &.all-b {
+    &:extend(&.all-a all);
+    background: red;
+  }
+}
+.deeper-amp-test {
+  background: black;
+  &.level-1 {
+    background: magenta;
+    color: black;
+    .sub-level-1 {
+      background: red;
+      color: white;
+    }
+    .sub-level-2:extend(.sub-level-1) {      
+      background: green;
+    }
+  }
+  &.level-2:extend(&.level-1) {
+    color: blue;
+  }
+}

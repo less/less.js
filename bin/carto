@@ -56,6 +56,11 @@ if (!existsSync(input)) {
 }
 
 function compileMML(err, data) {
+    // force drain the millstone download pool now
+    // to ensure we can exit without waiting
+    if (millstone.drainPool) {
+        millstone.drainPool(function() {});
+    }
     if (err) {
         console.error(err);
         process.exit(1);

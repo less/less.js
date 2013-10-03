@@ -5,7 +5,7 @@
 
 <Style name="world" filter-mode="first">
   <Rule>
-    <Filter>([name2] = ' Sa&apos;ad')</Filter>
+    <Filter>([name2] = ' Sa\'ad')</Filter>
     <PolygonSymbolizer fill="#ffffff" />
   </Rule>
 </Style>

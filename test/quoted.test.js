@@ -17,7 +17,7 @@ describe('Quoted', function() {
         it('should produce xml-friendly output', function() {
             var f = new tree.Quoted("Tom's & \"<quoted>\"");
             assert.ok(f);
-            assert.equal(f.toString(true), "'Tom&apos;s &amp; &quot;&lt;quoted&gt;&quot;'");
+            assert.equal(f.toString(true), "'Tom\\'s &amp; &quot;&lt;quoted&gt;&quot;'");
         });
     });
 });

@@ -1,6 +1,6 @@
-# 1.5.0 Beta 3
+# 1.5.0 Beta 4
 
-2013-09-17
+2013-10-04
 
  - sourcemap support
  - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
@@ -8,6 +8,8 @@
  - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
  - support for guards on selectors (currently only if you have a single selector)
  - Added min/max functions
+ - Added length function and improved extract to work with comma seperated values
+ - when using import multiple, sub imports are imported multiple times into final output
  - fix bad spaces between namespace operators
  - do not compress comment if it begins with an exclamation mark
  - change to not throw exceptions in toCSS - always return an error object

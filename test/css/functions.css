@@ -133,6 +133,7 @@
   average: #7b007b;
   negation: #d73131;
 }
-#extract {
-  result: 3 2 1 C B A;
+#extract-and-length {
+  extract: 3 2 1 C B A;
+  length: 6;
 }

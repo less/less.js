@@ -1,5 +1,5 @@
 /*! 
- * LESS - Leaner CSS v1.5.0-b3 
+ * LESS - Leaner CSS v1.5.0-b4 
  * http://lesscss.org 
  * 
  * Copyright (c) 2009-2013, Alexis Sellier <self@cloudhead.net> 
@@ -101,7 +101,7 @@ less.Parser = function Parser(env) {
 
                 if (e && !parserImports.error) { parserImports.error = e; }
 
-                callback(e, root, importedPreviously);
+                callback(e, root, importedPreviously, fullPath);
             };
 
             if (less.Parser.importer) {
@@ -1266,7 +1266,7 @@ less.Parser = function Parser(env) {
                 }
 
                 if ((op = $(/^[|~*$^]?=/))) {
-                    val = $(this.entities.quoted) || $(/^[\w-]+/) || $(this.entities.variableCurly);
+                    val = $(this.entities.quoted) || $(/^[0-9]+%/) || $(/^[\w-]+/) || $(this.entities.variableCurly);
                 }
 
                 expect(']');
@@ -1426,7 +1426,7 @@ less.Parser = function Parser(env) {
                 var e, p, nodes = [];
 
                 do {
-                    if (e = $(this.entities.keyword)) {
+                    if (e = ($(this.entities.keyword) || $(this.entities.variable))) {
                         nodes.push(e);
                     } else if ($('(')) {
                         p = $(this.property);
@@ -1533,6 +1533,7 @@ less.Parser = function Parser(env) {
                     case "@right-bottom":
                         hasBlock = true;
                         break;
+                    case "@host":
                     case "@page":
                     case "@document":
                     case "@supports":
@@ -1654,7 +1655,7 @@ less.Parser = function Parser(env) {
                 if ($(/^not/)) { negate = true; }
                 expect('(');
                 if (a = $(this.addition) || $(this.entities.keyword) || $(this.entities.quoted)) {
-                    if (op = $(/^(?:>=|=<|[<=>])/)) {
+                    if (op = $(/^(?:>=|<=|=<|[<=>])/)) {
                         if (b = $(this.addition) || $(this.entities.keyword) || $(this.entities.quoted)) {
                             c = new(tree.Condition)(op, a, b, index, negate);
                         } else {
@@ -1963,6 +1964,9 @@ tree.functions = {
         return new(tree.Quoted)('"' + str + '"', str);
     },
     unit: function (val, unit) {
+        if(!(val instanceof tree.Dimension)) {
+            throw { type: "Argument", message: "the first argument to unit must be a number" + (val instanceof tree.Operation ? ". Have you forgotten parenthesis?" : "") };
+        }
         return new(tree.Dimension)(val.value, unit ? unit.toCSS() : "");
     },
     convert: function (val, unit) {
@@ -2159,10 +2163,17 @@ tree.functions = {
     },
     shade: function(color, amount) {
         return this.mix(this.rgb(0, 0, 0), color, amount);
-    },
+    },   
     extract: function(values, index) {
-        index = index.value - 1; // (1-based index)
-        return values.value[index];
+        index = index.value - 1; // (1-based index)       
+        // handle non-array values as an array of length 1
+        // return 'undefined' if index is invalid
+        return Array.isArray(values.value) 
+            ? values.value[index] : Array(values)[index];
+    },
+    length: function(values) {
+        var n = Array.isArray(values.value) ? values.value.length : 1;
+        return new tree.Dimension(n);
     },
 
     "data-uri": function(mimetypeNode, filePathNode) {
@@ -2224,9 +2235,6 @@ tree.functions = {
                 }
 
                 return new tree.URL(filePathNode || mimetypeNode, this.currentFileInfo).eval(this.env);
-            } else if (!this.env.silent) {
-                // if explicitly disabled (via --no-ie-compat on CLI, or env.ieCompat === false), merely warn
-                console.warn("WARNING: Embedding %s (%dKB) exceeds IE8's data-uri size limit of %dKB!", filePath, fileSizeInKB, DATA_URI_MAX_KB);
             }
         }
 
@@ -2661,8 +2669,11 @@ tree.Alpha.prototype = {
 
 (function (tree) {
 
-tree.Anonymous = function (string) {
+tree.Anonymous = function (string, index, currentFileInfo, mapLines) {
     this.value = string.value || string;
+    this.index = index;
+    this.mapLines = mapLines;
+    this.currentFileInfo = currentFileInfo;
 };
 tree.Anonymous.prototype = {
     type: "Anonymous",
@@ -2682,7 +2693,7 @@ tree.Anonymous.prototype = {
         return left < right ? -1 : 1;
     },
     genCSS: function (env, output) {
-        output.add(this.value);
+        output.add(this.value, this.currentFileInfo, this.index, this.mapLines);
     },
     toCSS: tree.toCSS
 };
@@ -3036,8 +3047,8 @@ tree.Condition.prototype = {
                                 index: i };
                     }
                     switch (result) {
-                        case -1: return op === '<' || op === '=<';
-                        case  0: return op === '=' || op === '>=' || op === '=<';
+                        case -1: return op === '<' || op === '=<' || op === '<=';
+                        case  0: return op === '=' || op === '>=' || op === '=<' || op === '<=';
                         case  1: return op === '>' || op === '>=';
                     }
             }
@@ -3720,7 +3731,8 @@ tree.Import.prototype = {
         if (this.skip) { return []; }
 
         if (this.options.inline) {
-            var contents = new(tree.Anonymous)(this.root);
+            //todo needs to reference css file not import
+            var contents = new(tree.Anonymous)(this.root, 0, {filename: this.importedFilename}, true);
             return this.features ? new(tree.Media)([contents], this.features.value) : [contents];
         } else if (this.css) {
             var newImport = new(tree.Import)(this.evalPath(env), features, this.options, this.index);
@@ -4012,8 +4024,15 @@ tree.mixin.Call.prototype = {
                                     mixin = new tree.mixin.Definition("", [], mixin.rules, null, false);
                                     mixin.originalRuleset = mixins[m].originalRuleset || mixins[m];
                                 }
+                                //if (this.important) {
+                                //    isImportant = env.isImportant;
+                                //    env.isImportant = true;
+                                //}
                                 Array.prototype.push.apply(
                                       rules, mixin.eval(env, args, this.important).rules);
+                                //if (this.important) {
+                                //    env.isImportant = isImportant;
+                                //}
                             } catch (e) {
                                 throw { message: e.message, index: this.index, filename: this.currentFileInfo.filename, stack: e.stack };
                             }
@@ -4170,12 +4189,14 @@ tree.mixin.Definition.prototype = {
 
         frame.rules.unshift(new(tree.Rule)('@arguments', new(tree.Expression)(_arguments).eval(env)));
 
-        rules = important ?
-            this.parent.makeImportant.apply(this).rules : this.rules.slice(0);
+        rules = this.rules.slice(0);
 
         ruleset = new(tree.Ruleset)(null, rules);
         ruleset.originalRuleset = this;
         ruleset = ruleset.eval(new(tree.evalEnv)(env, [this, frame].concat(mixinFrames)));
+        if (important) {
+            ruleset = this.parent.makeImportant.apply(ruleset);
+        }
         return ruleset;
     },
     matchCondition: function (args, env) {
@@ -4194,7 +4215,8 @@ tree.mixin.Definition.prototype = {
         if (! this.variadic) {
             if (argsLength < this.required)                               { return false; }
             if (argsLength > this.params.length)                          { return false; }
-            if ((this.required > 0) && (argsLength > this.params.length)) { return false; }
+        } else {
+            if (argsLength < (this.required - 1))                         { return false; }
         }
 
         len = Math.min(argsLength, this.arity);
@@ -5170,7 +5192,8 @@ tree.Variable.prototype = {
         'strictMath',  // whether math has to be within parenthesis
         'strictUnits', // whether units need to evaluate correctly
         'cleancss',    // whether to compress with clean-css
-        'sourceMap'    // whether to output a source map
+        'sourceMap',   // whether to output a source map
+        'importMultiple'// whether we are currently importing multiple copies
         ];
 
     tree.evalEnv = function(options, frames) {
@@ -5359,9 +5382,14 @@ tree.Variable.prototype = {
                     this.importCount++;
                     var env = new tree.evalEnv(this.env, this.env.frames.slice(0));
 
-                    this._importer.push(importNode.getPath(), importNode.currentFileInfo, importNode.options, function (e, root, imported) {
+                    if (importNode.options.multiple) {
+                        env.importMultiple = true;
+                    }
+
+                    this._importer.push(importNode.getPath(), importNode.currentFileInfo, importNode.options, function (e, root, imported, fullPath) {
                         if (e && !e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
-                        if (imported && !importNode.options.multiple) { importNode.skip = imported; }
+
+                        if (imported && !env.importMultiple) { importNode.skip = imported; }
 
                         var subFinish = function(e) {
                             importVisitor.importCount--;
@@ -5373,6 +5401,7 @@ tree.Variable.prototype = {
 
                         if (root) {
                             importNode.root = root;
+                            importNode.importedFilename = fullPath;
                             if (!inlineCSS && !importNode.skip) {
                                 new(tree.importVisitor)(importVisitor._importer, subFinish, env)
                                     .run(root);
@@ -6097,7 +6126,7 @@ tree.Variable.prototype = {
         return (this._sourceMapRootpath || "") + filename.replace(/\\/g, '/');
     };
 
-    tree.sourceMapOutput.prototype.add = function(chunk, fileInfo, index) {
+    tree.sourceMapOutput.prototype.add = function(chunk, fileInfo, index, mapLines) {
 
         //ignore adding empty strings
         if (!chunk) {
@@ -6105,18 +6134,33 @@ tree.Variable.prototype = {
         }
 
         var lines,
-            columns;
+            sourceLines,
+            columns,
+            sourceColumns,
+            i;
 
         if (fileInfo) {
             var inputSource = this._contentsMap[fileInfo.filename].substring(0, index);
-            lines = inputSource.split("\n");
-            columns = lines[lines.length-1];
-            this._sourceMapGenerator.addMapping({ generated: { line: this._lineNumber + 1, column: this._column},
-                original: { line: lines.length, column: columns.length},
-                source: this.normalizeFilename(fileInfo.filename)});
+            sourceLines = inputSource.split("\n");
+            sourceColumns = sourceLines[sourceLines.length-1];
         }
+
         lines = chunk.split("\n");
         columns = lines[lines.length-1];
+
+        if (fileInfo) {
+            if (!mapLines) {
+                this._sourceMapGenerator.addMapping({ generated: { line: this._lineNumber + 1, column: this._column},
+                    original: { line: sourceLines.length, column: sourceColumns.length},
+                    source: this.normalizeFilename(fileInfo.filename)});
+            } else {
+                for(i = 0; i < lines.length; i++) {
+                    this._sourceMapGenerator.addMapping({ generated: { line: this._lineNumber + i + 1, column: i === 0 ? this._column : 0},
+                        original: { line: sourceLines.length + i, column: i === 0 ? sourceColumns.length : 0},
+                        source: this.normalizeFilename(fileInfo.filename)});
+                }
+            }
+        }
 
         if (lines.length === 1) {
             this._column += columns.length;

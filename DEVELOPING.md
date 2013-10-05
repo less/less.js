@@ -26,5 +26,9 @@ Edit `_docs/package.json` to point to the head version of [mapnik-reference](htt
     npm install
     node generate.js
 
-Then run `jekyll serve -p 4000` to test the new site at `localhost:4000/carto`,
-git add your changes and push.
+Then run up a directory and run the testing server:
+
+    cd ../
+    jekyll serve -p 4000
+
+Test the new site at `localhost:4000/carto` and if things look good then git add your changes and push.

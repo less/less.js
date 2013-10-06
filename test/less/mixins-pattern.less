@@ -97,3 +97,19 @@
 .left-right {
     .border-radius(33);
 }
+
+//
+
+.pattern-match-with-default(1) {
+    special: 1;
+}
+.pattern-match-with-default(@a) when (@NoOtherMatches) {
+    default: @a;
+}
+
+.matched {
+    .pattern-match-with-default(1);
+}
+.not-matched {
+    .pattern-match-with-default(2);
+}

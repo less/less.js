@@ -1,7 +1,7 @@
 {
   "name": "less",
-  "version": "1.4.2",
-  "main": "./dist/less-1.4.2.js",
+  "version": "1.5.0",
+  "main": "./dist/",
   "ignore": [
     "**/.*",
     "benchmark",
@@ -15,4 +15,6 @@
     "package.json",
     "bower.json"
   ],
+  "dependencies": { },
+  "devDependencies": { }
 }

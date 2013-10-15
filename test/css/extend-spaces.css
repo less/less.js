@@ -1,0 +1,34 @@
+:lang(en),
+.lang,
+.spacedLang {
+  lang: en;
+}
+:lang( en),
+.lang,
+.spacedLang {
+  lang: spaced en;
+}
+:nth-child(even),
+.even,
+.spacedEven {
+  nth: no spaces even;
+}
+:nth-child( even),
+.even,
+.spacedEven {
+  nth: spaces even;
+}
+:nth-child(2n + 1),
+.nth,
+.spacedNth {
+  nth: no spaces even;
+}
+:nth-child(2n + 1),
+.nth,
+.spacedNth {
+  nth: spaces even;
+}
+:not(tr:nth-child(odd)),
+.elementNth1 {
+  selector: nth odd;
+}

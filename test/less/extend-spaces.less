@@ -1,0 +1,30 @@
+:lang(en) {
+  lang: en;
+}
+:lang( en ) {
+  lang: spaced en;
+}
+.lang:extend(:lang(en)){}
+.spacedLang:extend(:lang( en )){}
+
+:nth-child(even) {
+  nth: no spaces even;
+}
+:nth-child( even ) {
+  nth: spaces even;
+}
+.even:extend(:nth-child(even)){}
+.spacedEven:extend(:nth-child( even )){}
+:nth-child(2n+1) {
+  nth: no spaces even;
+}
+:nth-child(2n + 1) {
+  nth: spaces even;
+}
+.nth:extend(:nth-child(2n+1)){}
+.spacedNth:extend(:nth-child(2n + 1)){}
+
+:not(tr:nth-child(odd)) {
+  selector: nth odd;
+}
+.elementNth1:extend(:not(tr:nth-child(odd))) {}

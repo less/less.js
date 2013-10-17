@@ -54,6 +54,7 @@ var checkBooleanArg = function(arg) {
 };
 
 var warningMessages = "";
+var sourceMapFileInline = false;
 
 args = args.filter(function (arg) {
     var match;
@@ -159,7 +160,11 @@ args = args.filter(function (arg) {
                 options.sourceMapBasepath = match[2];
             }
             break;
-        case 'source-map-inline':
+        case 'source-map-map-inline':
+            sourceMapFileInline = true;
+            options.sourceMap = true;
+            break;
+        case 'source-map-less-inline':
             options.outputSourceFiles = true;
             break;
         case 'rp':
@@ -209,7 +214,7 @@ if (output) {
 options.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
 
 if (options.sourceMap === true) {
-    if (!output) {
+    if (!output && !sourceMapFileInline) {
         console.log("the sourcemap option only has an optional filename if the css filename is given");
         return;
     }
@@ -247,7 +252,7 @@ if (options.depends) {
     sys.print(outputbase + ": ");
 }
 
-if (options.sourceMap !== "inline") {
+if (!sourceMapFileInline) {
     var writeSourceMap = function(output) {
         var filename = options.sourceMapFullFilename || options.sourceMap;
         ensureDirectory(filename);

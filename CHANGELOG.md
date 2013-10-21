@@ -1,19 +1,18 @@
-# 1.5.0 Beta 4
+# 1.5.0
 
-2013-10-04
+2013-10-21
 
  - sourcemap support
  - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
  - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
  - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
  - support for guards on selectors (currently only if you have a single selector)
+ - allow property merging through the +: syntax
  - Added min/max functions
  - Added length function and improved extract to work with comma seperated values
  - when using import multiple, sub imports are imported multiple times into final output
  - fix bad spaces between namespace operators
  - do not compress comment if it begins with an exclamation mark
- - change to not throw exceptions in toCSS - always return an error object
- - allow property merging through the +: syntax
  - Fix the saturate function to pass through when using the CSS syntax
  - Added svg-gradient function
  - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
@@ -23,7 +22,7 @@
  - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
  - Browser: added errorReporting option which can be "html" (default) or "console" or a function
  - Now uses grunt for building and testing
- - A few bug fixes for media queries, extends, scoping, compression
+ - A few bug fixes for media queries, extends, scoping, compression and import once.
 
 # 1.4.2
 

@@ -2,8 +2,21 @@
 
 ## 0.9.5
 
-* Bump `mapnik-reference` dependency to ~5.0.5
+* Various speed optimizations to help address #20 (#231)
+* Fixed support for fields that contain the word `zoom` in them (previous clashed with `zoom` keyword)
+* Fixed support for a space in front of `zoom` keyword (#288)
+* Improved error messages when color functions encounter invalid color (#309)
+* The `carto` command line tool now exits cleanly when millstone is used
+* The `carto` command line tool now only localized with millstone if requested (#243)
+* Added man page for `carto` (#257)
+* Fix repeated comments in selectors. Fixes #260
+* Fixed `image-filter` duplication (#270)
+* Quote all needed XML chars. See #263.
+* Added higher tolerance for various characters in field names (#230)
+* Bump `mapnik-reference` dependency to ~5.0.7 (with support for Mapnik v2.2.0)
 * Adds compatibility with screen units.
+* Fixed ability to use carto as global module (#236)
+* Now using 'console' instead of `util` for `stderr` (#217)
 
 ## 0.9.4
 

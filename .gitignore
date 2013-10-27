@@ -4,7 +4,9 @@ node_modules
 *~
 .#*
 .idea
+.gradle
 test/browser/less.js
 test/browser/test-runner-*.htm
 test/sourcemaps/*.map
 test/sourcemaps/*.css
+out

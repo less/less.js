@@ -1,0 +1,152 @@
+import groovy.io.FileType
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.eriwen:gradle-js-plugin:1.8.0'
+    }
+}
+
+apply plugin: 'js'
+
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    rhino
+}
+
+dependencies {
+    rhino 'org.mozilla:rhino:1.7R4'
+}
+
+project.ext {
+    rhinoTestSrc = 'out/rhino-test.js'
+    testSrc = 'test/less'
+    testOut = 'out/test'
+}
+
+javascript.source {
+    test {
+        js {
+            srcDir '.'
+            include 'test/rhino/test-header.js'
+            include 'dist/less-rhino-1.5.0.js'
+        }
+    }
+}
+
+combineJs {
+    source = javascript.source.test.js.files
+    dest = file(rhinoTestSrc)
+}
+
+task testRhino {
+    dependsOn 'testRhinoBase', 'testRhinoErrors', 'testRhinoLegacy', 'testRhinoStaticUrls', 'testRhinoCompression'
+}
+
+task testRhinoBase(type: RhinoTest) {
+    options = [ '--strict-math=true' ]
+}
+
+task testRhinoErrors(type: RhinoTest) {
+    options = [ '--strict-math=true', '--strict-units=true' ]
+    testDir = 'errors/'
+    expectErrors = true
+}
+
+task testRhinoLegacy(type: RhinoTest) {
+    testDir = 'legacy/'
+}
+
+task testRhinoStaticUrls(type: RhinoTest) {
+    options = [ '--strict-math=true', '--rootpath=folder (1)/' ]
+    testDir = 'static-urls/'
+}
+
+task testRhinoCompression(type: RhinoTest) {
+    options = [ '--compress=true' ]
+    testDir = 'compression/'
+}
+
+task setupTest {
+    dependsOn combineJs
+    doLast {
+        file(testOut).deleteDir()
+    }
+}
+
+task cleanupTest << {
+    file(rhinoTestSrc).delete()
+    file(testOut).deleteDir()
+}
+
+
+class RhinoTest extends DefaultTask {
+
+    RhinoTest() {
+        dependsOn 'setupTest'
+    }
+
+    def testDir = ''
+    def options = []
+    def expectErrors = false
+
+    @TaskAction
+    def runTest() {
+        int testSuccesses = 0, testFailures = 0, testErrors = 0
+        project.file('test/less/' + testDir).eachFileMatch(FileType.FILES, ~/.*\.less/) { lessFile ->
+            print lessFile
+
+            def out = new java.io.ByteArrayOutputStream()
+            def execOptions = {
+                main = 'org.mozilla.javascript.tools.shell.Main'
+//                    main = 'org.mozilla.javascript.tools.debugger.Main'
+                classpath = project.configurations.rhino
+                args = [project.rhinoTestSrc, lessFile] + options
+                standardOutput = out
+                ignoreExitValue = true
+            }
+            try {
+                def exec = project.javaexec(execOptions)
+                def actual = out.toString().trim()
+                def actualResult = project.file(lessFile.path.replace('test/less', project.testOut).replace('.less', '.css'))
+                project.file(actualResult.parent).mkdirs()
+                actualResult << actual
+                def expected
+                if (expectErrors) {
+                    assert exec.exitValue != 0
+                    expected = project.file(lessFile.path.replace('.less', '.txt')).text.trim().
+                            replace('{path}', lessFile.parent + '/').
+                            replace('{pathhref}', '').
+                            replace('{404status}', '')
+                } else {
+                    assert exec.exitValue == 0
+                    expected = project.file(lessFile.path.replace('.less', '.css').replace('/less/', '/css/')).text.trim()
+                }
+                assert actual == expected
+                testSuccesses++
+                println '   ok'
+                actualResult.delete()
+            }
+            catch (ex) {
+                println ex
+                println()
+                testErrors++;
+            }
+            catch (AssertionError ae) {
+                println '   failed'
+//                println ae
+                testFailures++
+            }
+        }
+        println testSuccesses + " ok"
+        println testFailures + " assertion failed"
+        println testErrors + " errors"
+//        assert testFailures + testErrors == 0
+    }
+}

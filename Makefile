@@ -74,17 +74,18 @@ rhino:
 	@@touch ${RHINO}
 	@@cat build/require-rhino.js\
 	      build/rhino-header.js\
+	      build/rhino-path.js\
 	      ${SRC}/parser.js\
+	      ${SRC}/functions.js\
+	      ${SRC}/colors.js\
+	      ${SRC}/tree.js\
+	      ${SRC}/tree/*.js\
 	      ${SRC}/env.js\
 	      ${SRC}/visitor.js\
 	      ${SRC}/import-visitor.js\
 	      ${SRC}/join-selector-visitor.js\
 	      ${SRC}/to-css-visitor.js\
 	      ${SRC}/extend-visitor.js\
-	      ${SRC}/functions.js\
-	      ${SRC}/colors.js\
-	      ${SRC}/tree/*.js\
-	      ${SRC}/tree.js\
 	      ${SRC}/rhino.js > ${RHINO}
 	@@echo ${RHINO} built.
 

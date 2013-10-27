@@ -1,4 +1,6 @@
-
+.submixin(@a) {
+  border-width: @a;
+}
 .mixin (9) {
   border: 9 !important;  
 }
@@ -9,6 +11,7 @@
     test: @a;
   }
   // comment
+  .submixin(@a);
 }
 
 .class {

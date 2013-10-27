@@ -20,6 +20,7 @@ var options = {
     paths: [],
     color: true,
     strictImports: false,
+    insecure: false,
     rootpath: '',
     relativeUrls: false,
     ieCompat: true,
@@ -35,7 +36,7 @@ process.on('exit', function() { process.reallyExit(currentErrorcode) });
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
-        sys.puts(arg + " option requires a parameter");
+        console.log(arg + " option requires a parameter");
         continueProcessing = false;
         return false;
     }
@@ -45,7 +46,7 @@ var checkArgFunc = function(arg, option) {
 var checkBooleanArg = function(arg) {
     var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
     if (!onOff) {
-        sys.puts(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        console.log(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
         return false;
     }
@@ -53,6 +54,7 @@ var checkBooleanArg = function(arg) {
 };
 
 var warningMessages = "";
+var sourceMapFileInline = false;
 
 args = args.filter(function (arg) {
     var match;
@@ -68,7 +70,7 @@ args = args.filter(function (arg) {
     switch (arg) {
         case 'v':
         case 'version':
-            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
+            console.log("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
             continueProcessing = false;
         case 'verbose':
             options.verbose = true;
@@ -91,6 +93,9 @@ args = args.filter(function (arg) {
         case 'x':
         case 'compress':
             options.compress = true;
+            break;
+        case 'insecure':
+            options.insecure = true;
             break;
         case 'M':
         case 'depends':
@@ -150,7 +155,16 @@ args = args.filter(function (arg) {
                 options.sourceMapRootpath = match[2];
             }
             break;
-        case 'source-map-inline':
+        case 'source-map-basepath':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapBasepath = match[2];
+            }
+            break;
+        case 'source-map-map-inline':
+            sourceMapFileInline = true;
+            options.sourceMap = true;
+            break;
+        case 'source-map-less-inline':
             options.outputSourceFiles = true;
             break;
         case 'rp':
@@ -193,15 +207,15 @@ if (output) {
     options.sourceMapOutputFilename = output;
     output = path.resolve(process.cwd(), output);
     if (warningMessages) {
-        sys.puts(warningMessages);
+        console.log(warningMessages);
     }
 }
 
-options.sourceMapBasepath = process.cwd();
+options.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
 
 if (options.sourceMap === true) {
-    if (!output) {
-        sys.puts("the sourcemap option only has an optional filename if the css filename is given");
+    if (!output && !sourceMapFileInline) {
+        console.log("the sourcemap option only has an optional filename if the css filename is given");
         return;
     }
     options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
@@ -209,8 +223,8 @@ if (options.sourceMap === true) {
 }
 
 if (! input) {
-    sys.puts("lessc: no input files");
-    sys.puts("");
+    console.log("lessc: no input files");
+    console.log("");
     require('../lib/less/lessc_helper').printUsage();
     currentErrorcode = 1;
     return;
@@ -238,15 +252,17 @@ if (options.depends) {
     sys.print(outputbase + ": ");
 }
 
-var writeSourceMap = function(output) {
-    var filename = options.sourceMapFullFilename || options.sourceMap;
-    ensureDirectory(filename);
-    fs.writeFileSync(filename, output, 'utf8');
-};
+if (!sourceMapFileInline) {
+    var writeSourceMap = function(output) {
+        var filename = options.sourceMapFullFilename || options.sourceMap;
+        ensureDirectory(filename);
+        fs.writeFileSync(filename, output, 'utf8');
+    };
+}
 
 var parseLessFile = function (e, data) {
     if (e) {
-        sys.puts("lessc: " + e.message);
+        console.log("lessc: " + e.message);
         currentErrorcode = 1;
         return;
     }

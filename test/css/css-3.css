@@ -115,3 +115,11 @@ h1 {
 .upper-test {
   UpperCaseProperties: allowed;
 }
+@host {
+  div {
+    display: block;
+  }
+}
+::distributed(input::placeholder) {
+  color: #b3b3b3;
+}

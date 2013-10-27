@@ -26,7 +26,7 @@ less.tree.functions._color = function (str) {
     if (str.value === "evil red") { return new(less.tree.Color)("600"); }
 };
 
-sys.puts("\n" + stylize("LESS", 'underline') + "\n");
+console.log("\n" + stylize("LESS", 'underline') + "\n");
 
 runTestSet({strictMath: true, relativeUrls: true, silent: true});
 runTestSet({strictMath: true, strictUnits: true}, "errors/",
@@ -72,7 +72,6 @@ function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         } else {
             difference("FAIL", expectedSourcemap, sourcemap);
         }
-        sys.puts("");
     });
 }
 
@@ -94,7 +93,6 @@ function testErrors(name, err, compiledLess, doReplacements) {
                 difference("FAIL", expectedErr, errMessage);
             }
         }
-        sys.puts("");
     });
 }
 
@@ -120,16 +118,19 @@ function checkGlobalLeaks() {
 function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
     foldername = foldername || "";
 
-    if(!doReplacements)
+    if(!doReplacements) {
         doReplacements = globalReplacements;
+    }
 
     fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
         if (! /\.less/.test(file)) { return; }
         
         var name = foldername + path.basename(file, '.less');
         
-        if (oneTestOnly && name !== oneTestOnly) { return; }
-        
+        if (oneTestOnly && name !== oneTestOnly) {
+            return;
+        }
+
         totalTests++;
 
         if (options.sourceMap) {
@@ -163,14 +164,12 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
                 } else {
                     difference("FAIL", css, less);
                 }
-                sys.puts("");
             });
         });
     });
 }
 
 function diff(left, right) {
-    sys.puts("");
     require('diff').diffLines(left, right).forEach(function(item) {
       if(item.added || item.removed) {
         var text = item.value.replace("\n", String.fromCharCode(182) + "\n");
@@ -179,16 +178,17 @@ function diff(left, right) {
         sys.print(item.value);
       }
     });
+    console.log("");
 }
 
 function fail(msg) {
-    sys.print(stylize(msg, 'red'));
+    console.error(stylize(msg, 'red'));
     failedTests++;
     endTest();
 }
 
 function difference(msg, left, right) {
-    sys.print(stylize(msg, 'yellow'));
+    console.warn(stylize(msg, 'yellow'));
     failedTests++;
                 
     diff(left, right);
@@ -196,7 +196,7 @@ function difference(msg, left, right) {
 }
 
 function ok(msg) {
-    sys.print(stylize(msg, 'green'));
+    console.log(stylize(msg, 'green'));
     passedTests++;
     endTest();
 }
@@ -204,21 +204,20 @@ function ok(msg) {
 function endTest() {
     var leaked = checkGlobalLeaks();
     if (failedTests + passedTests === totalTests) {
-        sys.puts("");
-        sys.puts("");
+        console.log("");
         if (failedTests > 0) {
-            sys.print(failedTests);
-            sys.print(stylize(" Failed", "red"));
-            sys.print(", " + passedTests + " passed");
+            console.error(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed");
         } else {
-            sys.print(stylize("All Passed ", "green"));
-            sys.print(passedTests + " run");
+            console.log(stylize("All Passed ", "green") + passedTests + " run");
         }
         if (leaked.length > 0) {
-            sys.puts("");
-            sys.puts("");
-            sys.print(stylize("Global leak detected: ", "red") + leaked.join(', '));
-            sys.print("\n");
+            console.log("");
+            console.warn(stylize("Global leak detected: ", "red") + leaked.join(', '));
+        }
+
+        if (leaked.length || failedTests) {
+            //process.exit(1);
+            process.on('exit', function() { process.reallyExit(1) });
         }
     }
 }

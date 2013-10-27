@@ -203,3 +203,13 @@ body {
 .selector3 {
   .mixin-comma-default3(4,2,2,2);
 }
+
+.test-calling-one-arg-mixin(@a) {
+}
+
+.test-calling-one-arg-mixin(@a, @b, @rest...) {
+}
+
+div {
+  .test-calling-one-arg-mixin(1);
+}

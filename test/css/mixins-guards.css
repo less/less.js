@@ -18,6 +18,7 @@
 .ops1 {
   height: gt-or-eq;
   height: lt-or-eq;
+  height: lt-or-eq-alias;
 }
 .ops2 {
   height: gt-or-eq;
@@ -25,6 +26,7 @@
 }
 .ops3 {
   height: lt-or-eq;
+  height: lt-or-eq-alias;
   height: not-eq;
 }
 .default1 {
@@ -73,4 +75,8 @@
   catch: all;
   declare: 4;
   declare: 4px;
+}
+.call-lock-mixin .call-inner-lock-mixin {
+  a: 1;
+  x: 1;
 }

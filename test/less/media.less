@@ -225,3 +225,10 @@ body {
     .nav-justified();
   }
 }
+@all: ~"all";
+@tv: ~"tv";
+@media @all and @tv {
+  .all-and-tv-variables {
+    var: all-and-tv;
+  }
+}

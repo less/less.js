@@ -119,6 +119,7 @@
   }
   @page :first {
     size: 8.5in 11in;
+    
     @top-left {
       margin: 1cm;
     }
@@ -209,5 +210,10 @@ body {
 @media (min-width: 768px) and (min-width: 480px) {
   .menu > li {
     display: table-cell;
+  }
+}
+@media all and tv {
+  .all-and-tv-variables {
+    var: all-and-tv;
   }
 }

@@ -80,7 +80,7 @@ task setupTest {
     }
 }
 
-task cleanupTest << {
+task clean << {
     file(rhinoTestSrc).delete()
     file(testOut).deleteDir()
 }
@@ -105,7 +105,7 @@ class RhinoTest extends DefaultTask {
             def out = new java.io.ByteArrayOutputStream()
             def execOptions = {
                 main = 'org.mozilla.javascript.tools.shell.Main'
-//                    main = 'org.mozilla.javascript.tools.debugger.Main'
+//                main = 'org.mozilla.javascript.tools.debugger.Main'
                 classpath = project.configurations.rhino
                 args = [project.rhinoTestSrc, lessFile] + options
                 standardOutput = out

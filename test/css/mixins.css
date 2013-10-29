@@ -64,11 +64,31 @@
 .amp.support {
   color: orange;
 }
+.amp.support .higher {
+  top: 0px;
+}
+.amp.support.deeper {
+  height: auto;
+}
 .extended {
   width: 100%;
   border: 1px;
   background: none;
   color: orange;
+  top: 0px;
+  height: auto;
+}
+.extended .higher {
+  top: 0px;
+}
+.extended.deeper {
+  height: auto;
+}
+.do .re .mi .fa .sol .la .si {
+  color: cyan;
+}
+.mutli-selector-parents {
+  color: cyan;
 }
 .foo .bar {
   width: 100%;

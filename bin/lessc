@@ -286,6 +286,7 @@ var parseLessFile = function (e, data) {
                     cleancss: options.cleancss,
                     sourceMap: Boolean(options.sourceMap),
                     sourceMapFilename: options.sourceMap,
+                    sourceMappingURL: options.sourceMappingURL,
                     sourceMapOutputFilename: options.sourceMapOutputFilename,
                     sourceMapBasepath: options.sourceMapBasepath,
                     sourceMapRootpath: options.sourceMapRootpath || "",

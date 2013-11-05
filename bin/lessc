@@ -101,8 +101,7 @@ args = args.filter(function (arg) {
             options.depends = true;
             break;
         case 'yui-compress':
-            warningMessages += "yui-compress option has been removed. assuming clean-css.";
-            options.cleancss = true;
+            warningMessages += "yui-compress option has been removed. ignoring.";
             break;
         case 'clean-css':
             options.cleancss = true;

@@ -4,7 +4,13 @@ var assert = {
     message = message || '';
     if(!value) throw new Error("assertion failed", message);
   }
+};
+
+if (navigator.userAgent.indexOf('MSIE 8.0') !== -1 || navigator.userAgent.indexOf('MSIE 7.0') !== -1) {
+  Object.defineProperty = function(o, p, fn) { o[p] = fn.value; };
 }
+
+
 
 var carto_initialize = function(carto, uri, callback) {
   callback();
@@ -1875,7 +1881,6 @@ function require(arg) {
     }
     return mod;
 }
-var carto, tree, _;
 
 if (typeof(exports) !== 'undefined') {
     carto = exports;
@@ -1885,6 +1890,7 @@ if (typeof(exports) !== 'undefined') {
     if (typeof(window.carto) === 'undefined') { window.carto = {}; }
     carto = window.carto;
     tree = window.carto.tree = {};
+    _ = window._;
 }
 
 // carto.js - parser
@@ -2501,7 +2507,7 @@ carto.Parser = function Parser(env) {
                 var e, elements = [];
                 var f, filters = new tree.Filterset();
                 var z, zoom = tree.Zoom.all;
-                var fo, frame_offset = tree.FrameOffset.null;
+                var fo, frame_offset = tree.FrameOffset.none;
                 var segments = 0, conditions = 0;
 
                 while (
@@ -3656,7 +3662,7 @@ tree.FrameOffset = function(op, value, index) {
 };
 
 tree.FrameOffset.max = 32;
-tree.FrameOffset.null = 0;
+tree.FrameOffset.none = 0;
 
 (function(tree) {
 //

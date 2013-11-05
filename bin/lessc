@@ -183,6 +183,9 @@ args = args.filter(function (arg) {
                 options.strictUnits = checkBooleanArg(match[2]);
             }
             break;
+        default:
+            require('../lib/less/lessc_helper').printUsage();
+            continueProcessing = false;
     }
 });
 

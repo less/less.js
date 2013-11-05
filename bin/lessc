@@ -190,7 +190,7 @@ args = args.filter(function (arg) {
 });
 
 if (!continueProcessing) {
-    return;
+    process.reallyExit(1);
 }
 
 var input = args[1];

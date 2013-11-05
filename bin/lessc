@@ -206,6 +206,10 @@ args = args.filter(function (arg) {
                 options.modifyVariables += parseVariableOption(match[2]);
             }
             break;
+        default:
+            require('../lib/less/lessc_helper').printUsage();
+            continueProcessing = false;
+            break;
     }
 });
 

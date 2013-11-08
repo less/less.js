@@ -55,3 +55,17 @@
   @family: ~"Univers, @{test}";
   family: @family;
 }
+
+.multiline {
+  content: '''foo
+  bar
+  ''';
+}
+
+@multi_foo: 'xfoo';
+.multiline-value-interpolated {
+  content: ~'''foo
+  @{multi_foo}
+  bar
+  ''';
+}

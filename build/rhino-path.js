@@ -1,4 +1,4 @@
-less.path = {
+less._path = {
     join: function() {
         var parts = [];
         for (i in arguments) {

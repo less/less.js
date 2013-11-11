@@ -50,7 +50,7 @@ task testRhino {
 }
 
 task testRhinoBase(type: RhinoTest) {
-    options = [ '--strict-math=true' ]
+    options = [ '--strict-math=true', '--relative-urls' ]
 }
 
 task testRhinoErrors(type: RhinoTest) {

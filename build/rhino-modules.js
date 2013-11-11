@@ -17,6 +17,11 @@ less._path = {
         }
         return result.join('/');
     },
+    dirname: function(p) {
+        var path = p.split('/');
+        path.pop();
+        return path.join('/');
+    },
     basename: function(p, ext) {
         var base = p.split('/').pop();
         if (ext) {
@@ -27,9 +32,29 @@ less._path = {
         }
         return base;
     },
-    dirname: function(p) {
-        var path = p.split('/');
-        path.pop();
-        return path.join('/');
+    extname: function(p) {
+        var index = p.lastIndexOf('.');
+        return index > 0 ? p.substring(index) : '';
+    }
+};
+
+less._fs = {
+    readFileSync: function(name) {
+        var file = new java.io.File(name);
+        var stream = new java.io.FileInputStream(file);
+        var buffer = [];
+        var c;
+        while ((c = stream.read()) != -1) {
+            buffer.push(c);
+        }
+        stream.close();
+        return {
+            length: buffer.length,
+            toString: function(enc) {
+                if (enc === 'base64') {
+                    return javax.xml.bind.DatatypeConverter.printBase64Binary(buffer);
+                }
+            }
+        };
     }
 };

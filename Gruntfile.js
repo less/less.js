@@ -195,6 +195,14 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-modify-vars-spec.js',
           outfile: 'tmp/browser/test-runner-modify-vars.html'
         }
+      },
+      globalVars: {
+        src: ['test/browser/less/global-vars/*.less'],
+        options: {
+          helpers: 'test/browser/runner-global-vars-options.js',
+          specs: 'test/browser/runner-global-vars-spec.js',
+          outfile: 'tmp/browser/test-runner-global-vars.html'
+        }
       }
     },
 

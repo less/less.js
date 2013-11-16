@@ -80,7 +80,8 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         banner: '<%= meta.banner %>',
-        mangle: true
+        mangle: true,
+        wrap: true
       },
       stable: {
         src: ['<%= concat.stable.src %>'],

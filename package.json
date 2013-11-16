@@ -43,7 +43,7 @@
     "mime": "1.2.x",
     "request": ">=2.12.0",
     "mkdirp": "~0.3.4",
-    "clean-css": "1.0.x",
+    "clean-css": "2.0.x",
     "source-map": "0.1.x"
   },
   "devDependencies": {

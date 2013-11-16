@@ -242,6 +242,11 @@ if (options.sourceMap === true) {
     options.sourceMap = path.basename(options.sourceMapFullFilename);
 }
 
+if (options.cleancss && options.sourceMap) {
+    console.log("the sourcemap option is not compatible with sourcemap support at the moment. See Issue #1656");
+    return;
+}
+
 if (! input) {
     console.log("lessc: no input files");
     console.log("");

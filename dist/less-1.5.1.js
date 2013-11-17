@@ -1,5 +1,5 @@
 /*! 
- * LESS - Leaner CSS v1.5.0-b4 
+ * LESS - Leaner CSS v1.5.1 
  * http://lesscss.org 
  * 
  * Copyright (c) 2009-2013, Alexis Sellier <self@cloudhead.net> 
@@ -73,7 +73,8 @@ less.Parser = function Parser(env) {
         furthest,    // furthest index the parser has gone to
         chunks,      // chunkified input
         current,     // index of current chunk, in `input`
-        parser;
+        parser,
+        rootFilename = env && env.filename;
 
     // Top parser on an import tree must be sure there is one "env"
     // which will then be passed around by reference.
@@ -95,7 +96,7 @@ less.Parser = function Parser(env) {
             var fileParsedFunc = function (e, root, fullPath) {
                 parserImports.queue.splice(parserImports.queue.indexOf(path), 1); // Remove the path from the queue
 
-                var importedPreviously = fullPath in parserImports.files;
+                var importedPreviously = fullPath in parserImports.files || fullPath === rootFilename;
 
                 parserImports.files[fullPath] = root;                        // Store the root
 
@@ -493,6 +494,7 @@ less.Parser = function Parser(env) {
                                     rootNode: evaldRoot,
                                     contentsMap: parser.imports.contents,
                                     sourceMapFilename: options.sourceMapFilename,
+                                    sourceMapURL: options.sourceMapURL,
                                     outputFilename: options.sourceMapOutputFilename,
                                     sourceMapBasepath: options.sourceMapBasepath,
                                     sourceMapRootpath: options.sourceMapRootpath,
@@ -510,7 +512,9 @@ less.Parser = function Parser(env) {
                     }
 
                     if (options.cleancss && less.mode === 'node') {
-                        return require('clean-css').process(css);
+                        var CleanCSS = require('clean-css');
+                        //TODO would be nice for no advanced to be an option
+                        return new CleanCSS({keepSpecialComments: '*', processImport: false, noRebase: true, noAdvanced: true}).minify(css);
                     } else if (options.compress) {
                         return css.replace(/(^(\s)+)|((\s)+$)/g, "");
                     } else {
@@ -1302,7 +1306,7 @@ less.Parser = function Parser(env) {
                     $(this.comments);
                     if (! $(',')) { break; }
                     if (s.condition) {
-                        error("Guards are only currently allowed on a single selector");
+                        error("Guards are only currently allowed on a single selector.");
                     }
                     $(this.comments);
                 }
@@ -1643,7 +1647,7 @@ less.Parser = function Parser(env) {
                 var a, b, index = i, condition;
 
                 if (a = $(this.condition)) {
-                    while ($(',') && (b = $(this.condition))) {
+                    while (peek(/^,\s*(not\s*)?\(/) && $(',') && (b = $(this.condition))) {
                         condition = new(tree.Condition)('or', condition || a, b, index);
                     }
                     return condition || a;
@@ -3624,9 +3628,16 @@ tree.Extend.prototype = {
     },
     findSelfSelectors: function (selectors) {
         var selfElements = [],
-            i;
+            i,
+            selectorElements;
 
         for(i = 0; i < selectors.length; i++) {
+            selectorElements = selectors[i].elements;
+            // duplicate the logic in genCSS function inside the selector node.
+            // future TODO - move both logics into the selector joiner visitor
+            if (i > 0 && selectorElements.length && selectorElements[0].combinator.value === "") {
+                selectorElements[0].combinator.value = ' ';
+            }
             selfElements = selfElements.concat(selectors[i].elements);
         }
 
@@ -4373,7 +4384,7 @@ tree.Quoted.prototype = {
             var v = new(tree.Variable)('@' + name, that.index, that.currentFileInfo).eval(env, true);
             return (v instanceof tree.Quoted) ? v.value : v.toCSS();
         });
-        return new(tree.Quoted)(this.quote + value + this.quote, value, this.escaped, this.index);
+        return new(tree.Quoted)(this.quote + value + this.quote, value, this.escaped, this.index, this.currentFileInfo);
     },
     compare: function (x) {
         if (!x.toCSS) {
@@ -4626,9 +4637,9 @@ tree.Ruleset.prototype = {
             if (rule !== self) {
                 for (var j = 0; j < rule.selectors.length; j++) {
                     if (match = selector.match(rule.selectors[j])) {
-                        if (selector.elements.length > rule.selectors[j].elements.length) {
+                        if (selector.elements.length > match) {
                             Array.prototype.push.apply(rules, rule.find(
-                                new(tree.Selector)(selector.elements.slice(1)), self));
+                                new(tree.Selector)(selector.elements.slice(match)), self));
                         } else {
                             rules.push(rule);
                         }
@@ -4954,15 +4965,15 @@ tree.Selector.prototype = {
         max = Math.min(len, olen);
 
         if (olen === 0 || len < olen) {
-            return false;
+            return 0;
         } else {
             for (i = 0; i < max; i++) {
                 if (elements[i].value !== oelements[i].value) {
-                    return false;
+                    return 0;
                 }
             }
         }
-        return true;
+        return max; // return number of matched selectors 
     },
     eval: function (env) {
         var evaldCondition = this.condition && this.condition.eval(env);
@@ -5724,6 +5735,7 @@ tree.Variable.prototype = {
             for(i = 0; i < rulesetNode.rules.length; i++) {
                 if (rulesetNode.rules[i] instanceof tree.Extend) {
                     allSelectorsExtendList.push(rulesetNode.rules[i]);
+                    rulesetNode.extendOnEveryPath = true;
                 }
             }
 
@@ -5907,7 +5919,7 @@ tree.Variable.prototype = {
                     selectorPath = rulesetNode.paths[pathIndex];
 
                     // extending extends happens initially, before the main pass
-                    if (selectorPath[selectorPath.length-1].extendList.length) { continue; }
+                    if (rulesetNode.extendOnEveryPath || selectorPath[selectorPath.length-1].extendList.length) { continue; }
 
                     matches = this.findMatch(allExtends[extendIndex], selectorPath);
 
@@ -6008,6 +6020,24 @@ tree.Variable.prototype = {
                 elementValue2 = elementValue2.value.value || elementValue2.value;
                 return elementValue1 === elementValue2;
             }
+            elementValue1 = elementValue1.value;
+            elementValue2 = elementValue2.value;
+            if (elementValue1 instanceof tree.Selector) {
+                if (!(elementValue2 instanceof tree.Selector) || elementValue1.elements.length !== elementValue2.elements.length) {
+                    return false;
+                }
+                for(var i = 0; i <elementValue1.elements.length; i++) {
+                    if (elementValue1.elements[i].combinator.value !== elementValue2.elements[i].combinator.value) {
+                        if (i !== 0 || (elementValue1.elements[i].combinator.value || ' ') !== (elementValue2.elements[i].combinator.value || ' ')) {
+                            return false;
+                        }
+                    }
+                    if (!this.isElementValuesEqual(elementValue1.elements[i].value, elementValue2.elements[i].value)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
             return false;
         },
         extendSelector:function (matches, selectorPath, replacementSelector) {
@@ -6064,7 +6094,6 @@ tree.Variable.prototype = {
 
             if (currentSelectorPathIndex < selectorPath.length && currentSelectorPathElementIndex > 0) {
                 path[path.length - 1].elements = path[path.length - 1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
-                currentSelectorPathElementIndex = 0;
                 currentSelectorPathIndex++;
             }
 
@@ -6103,6 +6132,7 @@ tree.Variable.prototype = {
         this._contentsMap = options.contentsMap;
         this._sourceMapFilename = options.sourceMapFilename;
         this._outputFilename = options.outputFilename;
+        this._sourceMapURL = options.sourceMapURL;
         this._sourceMapBasepath = options.sourceMapBasepath;
         this._sourceMapRootpath = options.sourceMapRootpath;
         this._outputSourceFiles = options.outputSourceFiles;
@@ -6188,21 +6218,23 @@ tree.Variable.prototype = {
         this._rootNode.genCSS(env, this);
 
         if (this._css.length > 0) {
-            var sourceMapFilename,
+            var sourceMapURL,
                 sourceMapContent = JSON.stringify(this._sourceMapGenerator.toJSON());
 
-            if (this._sourceMapFilename) {
-                sourceMapFilename = this.normalizeFilename(this._sourceMapFilename);
+            if (this._sourceMapURL) {
+                sourceMapURL = this._sourceMapURL;
+            } else if (this._sourceMapFilename) {
+                sourceMapURL = this.normalizeFilename(this._sourceMapFilename);
             }
 
             if (this._writeSourceMap) {
                 this._writeSourceMap(sourceMapContent);
             } else {
-                sourceMapFilename = "data:application/json," + encodeURIComponent(sourceMapContent);
+                sourceMapURL = "data:application/json," + encodeURIComponent(sourceMapContent);
             }
 
-            if (sourceMapFilename) {
-                this._css.push("/*# sourceMappingURL=" + sourceMapFilename + " */");
+            if (sourceMapURL) {
+                this._css.push("/*# sourceMappingURL=" + sourceMapURL + " */");
             }
         }
 
@@ -6221,7 +6253,8 @@ var isFileProtocol = /^(file|chrome(-extension)?|resource|qrc|app):/.test(locati
 less.env = less.env || (location.hostname == '127.0.0.1' ||
                         location.hostname == '0.0.0.0'   ||
                         location.hostname == 'localhost' ||
-                        location.port.length > 0         ||
+                        (location.port &&
+                          location.port.length > 0)      ||
                         isFileProtocol                   ? 'development'
                                                          : 'production');
 
@@ -6265,6 +6298,7 @@ if (dumpLineNumbers) {
 var typePattern = /^text\/(x-)?less$/;
 var cache = null;
 var fileCache = {};
+var varsPre = "";
 
 function log(str, level) {
     if (less.env == 'development' && typeof(console) !== 'undefined' && less.logLevel >= level) {
@@ -6507,9 +6541,15 @@ function loadStyles(newVars) {
             var env = new less.tree.parseEnv(less),
                 lessText = style.innerHTML || '';
             env.filename = document.location.href.replace(/#.*$/, '');
-            if (newVars) {
+
+            if (newVars || varsPre) {
                 env.useFileCache = true;
-                lessText += "\n" + newVars;
+
+                lessText = varsPre + lessText;
+
+                if (newVars) {
+                    lessText += "\n" + newVars;
+                }
             }
 
             /*jshint loopfunc:true */
@@ -6712,6 +6752,8 @@ function loadFile(originalHref, currentFileInfo, callback, env, newVars) {
     }
 
     doXHR(href, env.mime, function (data, lastModified) {
+        data = varsPre + data;
+
         // per file cache
         fileCache[href] = data;
 
@@ -6731,7 +6773,7 @@ function loadStyleSheet(sheet, callback, reload, remaining, newVars) {
     var env = new less.tree.parseEnv(less);
     env.mime = sheet.type;
 
-    if (newVars) {
+    if (newVars || varsPre) {
         env.useFileCache = true;
     }
 
@@ -6798,6 +6840,18 @@ function initRunningMode(){
     }
 }
 
+function serializeVars(vars) {
+    var s = "";
+
+    for (var name in vars) {
+        s += ((name.slice(0,1) === '@')? '' : '@') + name +': '+
+                ((vars[name].slice(-1) === ';')? vars[name] : vars[name] +';');
+    }
+
+    return s;
+}
+
+
 //
 // Watch mode
 //
@@ -6840,12 +6894,7 @@ for (var i = 0; i < links.length; i++) {
 // CSS without reloading less-files
 //
 less.modifyVars = function(record) {
-    var newVars = "";
-    for (var name in record) {
-        newVars += ((name.slice(0,1) === '@')? '' : '@') + name +': '+
-                ((record[name].slice(-1) === ';')? record[name] : record[name] +';');
-    }
-    less.refresh(false, newVars);
+    less.refresh(false, serializeVars(record));
 };
 
 less.refresh = function (reload, newVars) {
@@ -6871,6 +6920,10 @@ less.refresh = function (reload, newVars) {
 
     loadStyles(newVars);
 };
+
+if (less.globalVars) {
+    varsPre = serializeVars(less.globalVars) + "\n";
+}
 
 less.refreshStyles = loadStyles;
 

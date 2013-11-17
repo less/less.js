@@ -83,7 +83,7 @@ module.exports = function(grunt) {
         mangle: true
       },
       stable: {
-        src: ['<%= concat.stable.src %>'],
+        src: ['<%= concat.stable.dest %>'],
         dest: 'dist/less-<%= pkg.version %>.min.js'
       }
     },

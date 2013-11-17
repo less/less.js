@@ -173,6 +173,11 @@ args = args.filter(function (arg) {
         case 'source-map-less-inline':
             options.outputSourceFiles = true;
             break;
+        case 'source-map-url':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapUrl = match[2];
+            }
+            break;
         case 'rp':
         case 'rootpath':
             if (checkArgFunc(arg, match[2])) {
@@ -318,7 +323,7 @@ var parseLessFile = function (e, data) {
                     cleancss: options.cleancss,
                     sourceMap: Boolean(options.sourceMap),
                     sourceMapFilename: options.sourceMap,
-                    sourceMappingURL: options.sourceMappingURL,
+                    sourceMapURL: options.sourceMapURL,
                     sourceMapOutputFilename: options.sourceMapOutputFilename,
                     sourceMapBasepath: options.sourceMapBasepath,
                     sourceMapRootpath: options.sourceMapRootpath || "",

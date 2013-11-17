@@ -175,7 +175,7 @@ args = args.filter(function (arg) {
             break;
         case 'source-map-url':
             if (checkArgFunc(arg, match[2])) {
-                options.sourceMapUrl = match[2];
+                options.sourceMapURL = match[2];
             }
             break;
         case 'rp':

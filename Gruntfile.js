@@ -210,6 +210,15 @@ module.exports = function(grunt) {
     clean: {
       test: ['test/browser/less.js', 'tmp'],
       "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map']
+    },
+
+    copy: {
+      stable: {
+        files: [
+          { src: 'dist/less-<%= pkg.version %>.js', dest: 'dist/less.js' },
+          { src: 'dist/less-<%= pkg.version %>.min.js', dest: 'dist/less.min.js' }
+        ]
+      }
     }
   });
 
@@ -227,7 +236,8 @@ module.exports = function(grunt) {
   // Release
   grunt.registerTask('stable', [
     'concat:stable',
-    'uglify:stable'
+    'uglify:stable',
+    'copy:stable'
   ]);
 
   // Run all browser tests

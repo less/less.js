@@ -29,6 +29,8 @@ less.tree.functions._color = function (str) {
 console.log("\n" + stylize("LESS", 'underline') + "\n");
 
 runTestSet({strictMath: true, relativeUrls: true, silent: true});
+runTestSet({vars: true}, "parse/",
+            null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
 runTestSet({strictMath: true, strictUnits: true}, "errors/",
             testErrors, null, getErrorPathReplacementFunction("errors"));
 runTestSet({strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
@@ -122,10 +124,14 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
         doReplacements = globalReplacements;
     }
 
+    function getBasename(file) {
+        return foldername + path.basename(file, '.less');
+    }
+
     fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
         if (! /\.less/.test(file)) { return; }
         
-        var name = foldername + path.basename(file, '.less');
+        var name = getBasename(file);
         
         if (oneTestOnly && name !== oneTestOnly) {
             return;
@@ -141,6 +147,12 @@ function runTestSet(options, foldername, verifyFunction, nameModifier, doReplace
             options.sourceMapOutputFilename = name + ".css";
             options.sourceMapBasepath = path.join(process.cwd(), "test/less");
             options.sourceMapRootpath = "testweb/";
+        }
+
+        if (options.vars) {
+            options.getVars = function(file) {
+                return JSON.parse(fs.readFileSync(getFilename(getBasename(file)), 'utf8'));
+            };
         }
 
         toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
@@ -232,7 +244,9 @@ function toCSS(options, path, callback) {
         options.filename = require('path').resolve(process.cwd(), path);
         options.optimization = options.optimization || 0;
 
-        new(less.Parser)(options).parse(str, function (err, tree) {
+        var parser = new(less.Parser)(options);
+        var args = [str];
+        args.push(function (err, tree) {
             if (err) {
                 callback(err);
             } else {
@@ -244,6 +258,10 @@ function toCSS(options, path, callback) {
                 }
             }
         });
+        if (options.vars) {
+            args.push(options.getVars(path));
+        }
+        parser.parse.apply(parser, args);
     });
 }
 

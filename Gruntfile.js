@@ -29,7 +29,7 @@ module.exports = function(grunt) {
     shell: {
       options: {stdout: true, failOnError: true},
       test: {
-        command: 'node test/less-test.js'
+        command: 'node test'
       },
       benchmark: {
         command: 'node benchmark/less-benchmark.js'

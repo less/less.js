@@ -4811,11 +4811,11 @@ tree.Value.prototype.toJS = function() {
   //var v = this.value[0].value[0];
   var val = this.eval()
   var v = val.toString();
-  if(val.is === "color" || val.is === 'uri') {
+  if(val.is === "color" || val.is === 'uri' || val.is === 'string') {
     v = "'" + v + "'";
   } else if (val.is === 'field') {
     // replace [varuable] by ctx['variable']
-    v = v.replace(/\[(.*)\]/g, "ctx['\$1']")
+    v = v.replace(/\[(.*)\]/g, "data['\$1']")
   }
   return "_value = " + v + ";";
 };
@@ -4996,6 +4996,11 @@ CartoCSS.Layer.prototype = {
     return this.fullName().split('::')[1];
   },
 
+  eval: function(prop) {
+    var p = this.shader[prop];
+    if (!p) return;
+    return p({}, { zoom: 0, 'frame-offset': 0 });
+  },
 
   /*
    * `target`: style, 'svg', 'canvas-2d'...

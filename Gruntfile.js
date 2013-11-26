@@ -58,7 +58,7 @@ module.exports = function(grunt) {
       },
       stable: {
         src: ['<%= build.browser %>'],
-        dest: 'dist/less-<%= pkg.version %>.js'
+        dest: 'dist/less.js'
       },
       // Rhino
       rhino: {
@@ -67,7 +67,7 @@ module.exports = function(grunt) {
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhino %>'],
-        dest: 'dist/less-rhino-<%= pkg.version %>.js'
+        dest: 'dist/less-rhino.js'
       },
       // Generate readme
       readme: {
@@ -85,17 +85,6 @@ module.exports = function(grunt) {
       },
       stable: {
         src: ['<%= concat.stable.dest %>'],
-        dest: 'dist/less-<%= pkg.version %>.min.js'
-      }
-    },
-
-    copy: {
-      stable: {
-        src: 'dist/less-<%= pkg.version %>.js',
-        dest: 'dist/less.js'
-      },
-      stable_min: {
-        src: 'dist/less-<%= pkg.version %>.min.js',
         dest: 'dist/less.min.js'
       }
     },
@@ -240,8 +229,6 @@ module.exports = function(grunt) {
   grunt.registerTask('stable', [
     'concat:stable',
     'uglify:stable',
-    'copy:stable',
-    'copy:stable_min',
     'updateBowerJson'
   ]);
 

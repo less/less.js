@@ -195,6 +195,10 @@ renders to:
 .link, a {
   color: #428bca;
 }
+
+a {
+  font-weight: bold;
+}
 ```
 
 ## Usage

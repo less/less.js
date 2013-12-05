@@ -22,7 +22,9 @@ module.exports = function(grunt) {
         ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> \n' +
         ' * Licensed under the <%= meta.license %> License. \n' +
         ' * \n' +
-        ' * @licence \n' +
+        ' */ \n\n' +
+        ' /**' +
+        ' * @licence <%= meta.license %>\n' +
         ' */ \n\n'
     },
 

@@ -24,7 +24,7 @@ module.exports = function(grunt) {
         ' * \n' +
         ' */ \n\n' +
         ' /**' +
-        ' * @licence <%= meta.license %>\n' +
+        ' * @license <%= meta.license %>\n' +
         ' */ \n\n'
     },
 

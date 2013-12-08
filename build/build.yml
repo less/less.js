@@ -20,7 +20,7 @@ lib: lib/less
 # =================================
 prepend:
   browser: ['build/require.js', 'build/browser-header.js']
-  rhino:   build/require-rhino.js
+  rhino:   ['build/require-rhino.js', 'build/rhino-header.js']
 
 append:
   amd:     build/amd.js

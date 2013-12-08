@@ -33,8 +33,7 @@ _Pull requests are encouraged!_
 * Start by adding a feature request to get feedback and see how your idea is received. 
 * If your pull request solves an existing issue, but it's different in some way, _please create a new issue_ and make sure to discuss it with the core contributors. Otherwise you risk your hard work being rejected.
 * Do not change the **./dist/** folder, we do this when releasing
-* _Please add tests_ for your work. Use `make test` to see if they pass node.js tests and `make browser-test` to see the browser ([PhantomJS](http://phantomjs.org/)) tests pass.
-
+* _Please add tests_ for your work. Tests are invoked using `grunt test` command. It will run both node.js tests and browser ([PhantomJS](http://phantomjs.org/)) tests. 
 
 ### Coding Standards
 

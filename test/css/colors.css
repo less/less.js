@@ -78,3 +78,7 @@
 #alpha #hsl {
   opacity: 1;
 }
+#percentage {
+  color: 255;
+  border-color: rgba(255, 0, 0, 0.5);
+}

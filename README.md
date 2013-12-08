@@ -102,6 +102,9 @@ a:hover {
 Mixins enable you to apply the styles of one selector inside another selector like this:
 
 ```less
+// Variables
+@link-color:        #428bca;
+
 // Any "regular" class...
 .link {
   color: @link-color;
@@ -144,6 +147,13 @@ Mixins can also accept parameters:
 used like this:
 
 ```less
+// Variables
+@link-color:        #428bca;
+@link-color-hover:  darken(@link-color, 10%);
+
+//Transiation mixin would be anywhere here
+
+
 a {
   font-weight: bold;
   color: @link-color;
@@ -176,6 +186,9 @@ a:hover {
 The `extend` feature can be thought of as the _inverse_ of mixins. It accomplishes the goal of "borrowing styles", but rather than copying all the rules of _Selector A_ over to _Selector B_, `extend` copies the name of the _inheriting selector_ (_Selector B_) over to the _extending selector_ (_Selector A_). So continuing with the example used for [mixins](#mixins) above, extend works like this:
 
 ```less
+// Variables
+@link-color:        #428bca;
+
 .link {
   color: @link-color;
 }
@@ -194,6 +207,10 @@ renders to:
 ```css
 .link, a {
   color: #428bca;
+}
+
+a {
+  font-weight: bold;
 }
 ```
 

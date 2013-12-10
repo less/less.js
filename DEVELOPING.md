@@ -16,7 +16,7 @@ Running the head binary:
 ## Documentation
 
 This repository contains auto-generated documentation of the content of Carto
-that's published on MapBox.com.
+that's published on Mapbox.com.
 
     git fetch origin gh-pages:gh-pages
 

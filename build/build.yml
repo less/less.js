@@ -20,7 +20,7 @@ lib: lib/less
 # =================================
 prepend:
   browser: ['build/require.js', 'build/browser-header.js']
-  rhino:   ['build/require-rhino.js', 'build/rhino-header.js']
+  rhino:   ['build/require-rhino.js', 'build/rhino-header.js', 'build/rhino-modules.js']
 
 append:
   amd:     build/amd.js
@@ -89,16 +89,16 @@ rhino:
 
   # core
   - <%= build.less.parser %>
+  - <%= build.less.functions %>
+  - <%= build.less.colors %>
+  - <%= build.less.tree %>
+  - <%= build.less.treedir %> # glob all files
   - <%= build.less.env %>
   - <%= build.less.visitor %>
   - <%= build.less.import_visitor %>
   - <%= build.less.join %>
   - <%= build.less.to_css_visitor %>
   - <%= build.less.extend_visitor %>
-  - <%= build.less.functions %>
-  - <%= build.less.colors %>
-  - <%= build.less.tree %>
-  - <%= build.less.treedir %> # glob all files
   - <%= build.less.source_map_output %>
 
   # append rhino-specific code

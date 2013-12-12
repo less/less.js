@@ -35,7 +35,7 @@ javascript.source {
         js {
             srcDir '.'
             include 'test/rhino/test-header.js'
-            include 'dist/less-rhino-1.5.0.js'
+            include 'dist/less-rhino-1.5.1.js'
         }
     }
 }
@@ -130,8 +130,10 @@ class RhinoTest extends DefaultTask {
                     def exec = project.javaexec(execOptions)
                     def actual = out.toString().trim()
                     def actualResult = project.file(lessFile.path.replace('test/less', project.testOut).replace('.less', '.css'))
+
                     project.file(actualResult.parent).mkdirs()
                     actualResult << actual
+                    //println " ** " + actual
                     def expected
                     if (expectErrors) {
                         assert exec.exitValue != 0
@@ -141,8 +143,17 @@ class RhinoTest extends DefaultTask {
                                 replace('{404status}', '')
                     } else {
                         assert exec.exitValue == 0
-                        expected = project.file(lessFile.path.replace('.less', '.css').replace('/less/', '/css/')).text.trim()
+                        expected = project.file(lessFile.path.replace('.less', '.css').replace('\\less\\', '\\css\\')).text.trim()
                     }
+                    actual=actual.trim()
+                    actual = actual.replace('\r\n', '\n')
+                    expected = expected.replace('\r\n', '\n')
+                    actual = actual.replace("/","\\")
+                    expected = expected.replace("/","\\")
+//                        println "* actual *" 
+//                        println actual
+//                        println "* expected *" 
+//                        println expected
                     assert actual == expected
                     testSuccesses++
                     println stylize('   ok', 'green')

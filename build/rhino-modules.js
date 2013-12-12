@@ -1,7 +1,7 @@
 (function() {
 
     console = function() {
-        var stdout = java.lang.Systen.out;
+        var stdout = java.lang.System.out;
         var stderr = java.lang.System.err;
 
         function doLog(out, type) {

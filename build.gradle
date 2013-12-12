@@ -59,6 +59,12 @@ task testRhinoErrors(type: RhinoTest) {
     expectErrors = true
 }
 
+task testRhinoNoJsError(type: RhinoTest) {
+    options = [ '--strict-math=true', '--strict-units=true', '--no-js' ]
+    testDir = 'no-js-errors/'
+    expectErrors = true
+}
+
 task testRhinoLegacy(type: RhinoTest) {
     testDir = 'legacy/'
 }

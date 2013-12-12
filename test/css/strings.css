@@ -41,3 +41,14 @@
 .watermark {
   family: Univers, Arial, Verdana, San-Serif;
 }
+.multiline {
+  content: 'foo
+  bar
+  ';
+}
+.multiline-value-interpolated {
+  content: foo
+  xfoo
+  bar
+  ;
+}

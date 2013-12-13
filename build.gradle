@@ -53,6 +53,24 @@ task testRhinoBase(type: RhinoTest) {
     options = [ '--strict-math=true', '--relative-urls' ]
 }
 
+task testRhinoDebugAll(type: DebugRhinoTest) {
+    options = [ '--strict-math=true', '--line-numbers=all' ]
+    testDir = 'debug' + fs
+    suffix = "-all"
+}
+
+task testRhinoDebugComments(type: DebugRhinoTest) {
+    options = [ '--strict-math=true', '--line-numbers=comments' ]
+    testDir = 'debug' + fs
+    suffix = "-comments"
+}
+
+task testRhinoDebugMediaquery(type: DebugRhinoTest) {
+    options = [ '--strict-math=true', '--line-numbers=mediaquery' ]
+    testDir = 'debug' + fs
+    suffix = "-mediaquery"
+}
+
 task testRhinoErrors(type: RhinoTest) {
     options = [ '--strict-math=true', '--strict-units=true' ]
     testDir = 'errors/'
@@ -91,6 +109,35 @@ task clean << {
     file(testOut).deleteDir()
 }
 
+class DebugRhinoTest extends RhinoTest {
+    def suffix = ""
+
+    def expectedCssPath(lessFilePath) {
+      return lessFilePath.replace('.less', suffix+'.css').replace('\\less\\', '\\css\\'); //FIXME: now it works only on windows
+    }
+
+    def escapeIt(it) {
+      //work in progress
+      return it.replaceAll("\\\\", "\\\\\\\\").replaceAll("/", "\\\\/").replaceAll(":", "\\\\:").replaceAll("\\.", "\\\\.");
+    }
+
+    def globalReplacements(input, directory) {
+      def pDirectory = toPlatformFs(directory)
+      def p = lessRootDir + fs + pDirectory 
+      def pathimport = p + toPlatformFs("import/")
+      def pathesc = escapeIt(p)
+      def pathimportesc = escapeIt(pathimport)
+      
+      println ""
+      println "p: " + p
+      println "pathimport: " + pathimport
+      println "pathesc: " + pathesc
+      println "pathimportesc: " + pathimportesc
+
+      def result = input.replace("{path}", p).replace("{pathesc}", pathesc).replace("{pathimport}", pathimport)
+      return result.replace("{pathimportesc}", pathimportesc).replace("\r\n", "\n")
+    }
+}
 
 class RhinoTest extends DefaultTask {
 
@@ -101,6 +148,21 @@ class RhinoTest extends DefaultTask {
     def testDir = ''
     def options = []
     def expectErrors = false
+    def fs = File.separator;
+    def projectDir = System.getProperty("user.dir");
+    def lessRootDir = projectDir + fs + "test" + fs + "less"
+ 
+    def toPlatformFs(path) {
+      return path.replace('\\', fs).replace('/', fs); 
+    }
+
+    def expectedCssPath(lessFilePath) {
+      return lessFilePath.replace('.less', '.css').replace('\\less\\', '\\css\\');
+    }
+
+    def globalReplacements(input, directory) {
+      return input;
+    }
 
     def stylize(str, style) {
         def styles = [
@@ -149,7 +211,9 @@ class RhinoTest extends DefaultTask {
                                 replace('{404status}', '')
                     } else {
                         assert exec.exitValue == 0
-                        expected = project.file(lessFile.path.replace('.less', '.css').replace('\\less\\', '\\css\\')).text.trim()
+                        def expectedFile = expectedCssPath(lessFile.path)
+                        expected = project.file(expectedFile).text.trim()
+                        expected = globalReplacements(expected, testDir)
                     }
                     actual=actual.trim()
                     actual = actual.replace('\r\n', '\n')
@@ -158,8 +222,10 @@ class RhinoTest extends DefaultTask {
                     expected = expected.replace("/","\\")
 //                        println "* actual *" 
 //                        println actual
+                        new File("actual.txt").write(actual)
 //                        println "* expected *" 
 //                        println expected
+                        new File("expected.txt").write(expected)
                     assert actual == expected
                     testSuccesses++
                     println stylize('   ok', 'green')

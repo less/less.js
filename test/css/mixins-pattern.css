@@ -45,3 +45,9 @@
 .left-right {
   both: 330;
 }
+.matched {
+  special: 1;
+}
+.not-matched {
+  default: 2;
+}

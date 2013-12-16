@@ -1,10 +1,10 @@
 {
     "evil": true,
-    "boss": true,
     "laxbreak": true,
     "latedef": true,
     "node": true,
     "undef": true,
     "unused": "vars",
-    "noarg": true
+    "noarg": true,
+    "eqnull": true
 }

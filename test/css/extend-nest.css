@@ -55,3 +55,43 @@
 .amp-test-f.amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e + .amp-test-c .amp-test-b.amp-test-d.amp-test-b.amp-test-e.amp-test-g {
   test: extended by masses of selectors;
 }
+.amp-test-i.amp-test-j,
+.amp-test-i.amp-test-k {
+  color: black;
+  background: white;
+}
+.amp-test-i.amp-test-k {
+  background: red;
+}
+.amp-test-all.all-a,
+.amp-test-all.all-b {
+  color: black;
+  background: white;
+}
+.amp-test-all.all-a:hover,
+.amp-test-all.all-b:hover {
+  color: green;
+}
+.amp-test-all.all-b {
+  background: red;
+}
+.deeper-amp-test {
+  background: black;
+}
+.deeper-amp-test.level-1,
+.deeper-amp-test.level-2 {
+  background: magenta;
+  color: black;
+}
+.deeper-amp-test.level-1 .sub-level-1,
+.deeper-amp-test.level-2 .sub-level-1 {
+  background: red;
+  color: white;
+}
+.deeper-amp-test.level-1 .sub-level-2,
+.deeper-amp-test.level-2 .sub-level-2 {
+  background: green;
+}
+.deeper-amp-test.level-2 {
+  color: blue;
+}

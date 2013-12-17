@@ -281,6 +281,7 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md). Add unit tests for any new or 
 
 Before opening any issue, please search for existing issues and read the [Issue Guidelines](https://github.com/necolas/issue-guidelines), written by [Nicolas Gallagher](https://github.com/necolas/). After that if you find a bug or would like to make feature request, [please open a new issue][issues].
 
+Please report documentation issues in [the documentation project](https://github.com/less/less-docs).
 
 
 ### Development

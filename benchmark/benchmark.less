@@ -203,7 +203,7 @@ div.browse {
     }
     li.paginate.previous a div b { border-right: 15px solid @white; border-left: none; left: 12px; }
     li.paginate.next a div b { border-left: 15px solid @white; border-right: none; left: 16px; }
-  }  
+  }
   > div.footer {
     padding: 9px 10px 10px; background: @light_grey * 0.75 + @white * 0.25; overflow: hidden;
     border-top: 1px solid @light_grey; .border_radius_bottom(3);
@@ -231,7 +231,7 @@ div.browse.with_options > ul { .border_radius_top(0); }
 div.browse.with_footer > ul { .border_radius_bottom(0); }
 /* Browse List */
 div.browse.list {
-> ul {
+  > ul {
     margin: 0; min-height: 320px;
     padding: 10px 0 0 10px; overflow: hidden;
     > li {
@@ -347,7 +347,7 @@ div.browse.brands.list {
     }
     .all a { font-weight: bold; }
     .current a {
-      background: @white; color: @black; border: 1px solid (@light_grey * 0.25 + @white * 0.75); border-right: none; border-left: 5px solid @bg; 
+      background: @white; color: @black; border: 1px solid (@light_grey * 0.25 + @white * 0.75); border-right: none; border-left: 5px solid @bg;
       padding-left: 10px;
     }
   }
@@ -437,7 +437,7 @@ div.voted {
   a.up {
     float: left; background: @colour_positive * 0.66 + @bg * 0.15; .border_radius_left(3);
     :hover { background: @colour_positive * 0.85 + @bg * 0.15; }
-  } 
+  }
   a.down {
     float: left; background: @colour_negative * 0.66 + @bg * 0.15; .border_radius_right(3);
     margin: 0 5px 0 1px;
@@ -460,7 +460,7 @@ div.panel {
   margin: 0 0 20px; position: relative; .box_shadow(0, 0, 3, @light_grey * 0.66 + @white * 0.33); .border_radius(3);
   > div.header {
     background: @bg url('/images/panel_header_bg.png') repeat-x top left; border-bottom: 1px solid (@bg * 0.66 + @black * 0.33);
-    padding: 5px 10px 4px; .border_radius_top(3); min-height: 18px; 
+    padding: 5px 10px 4px; .border_radius_top(3); min-height: 18px;
     h2 { font-size: 16px; margin: 0; color: @white; .text_shadow(1, 1, 0, @bg * 0.66 + @black * 0.33); }
     h3 { color: @white; font-size: 14px; margin: 0; line-height: 18px; .text_shadow(1, 1, 0, @bg * 0.66 + @black * 0.33); }
     small { display: block; font-size: 12px; color: @light_grey * 0.25 + @white * 0.75; }
@@ -603,7 +603,7 @@ ul.people.list {
     margin: 0 0 10px; padding: 0 0 10px; overflow: hidden; float: none; width: auto; .border_radius(0);
     border: none; border-bottom: 1px solid (@light_grey * 0.33 + @white * 0.66);
     span.points {
-      float: right; display: block; padding: 5px; background: @light_grey * 0.15 + @white * 0.85; line-height: 1; 
+      float: right; display: block; padding: 5px; background: @light_grey * 0.15 + @white * 0.85; line-height: 1;
       text-align: center; width: 50px; height: 30px; .border_radius(3); margin: 0 0 0 10px;
       strong { display: block; color: @black; font-size: 16px; margin: 2px 0 0; }
       label { color: @grey; text-transform: uppercase; font-size: 10px; }
@@ -743,7 +743,7 @@ ul.people.tiled {
             height: 0; float: right; display: none;
           }
           span {
-            .border_radius(3); background: @bg; display: block; 
+            .border_radius(3); background: @bg; display: block;
             line-height: 30px; padding: 0 10px; font-size: 14px; font-weight: bold; margin: 0 10px 0 0;
           }
         }
@@ -798,7 +798,7 @@ ul.people.tiled {
           img { vertical-align: middle; float: left; }
           .name { font-weight: bold; font-size: 14px; display: block; margin: -2px 0 0 42px; }
           small {
-            font-size: 12px; color: @grey; display: block; margin-left: 42px; 
+            font-size: 12px; color: @grey; display: block; margin-left: 42px;
             strong { color: @black; font-weight: normal; }
           }
           :hover {
@@ -910,7 +910,7 @@ div.blank {
 }
 
 div.blank.small {
-  padding: 10px 20px; 
+  padding: 10px 20px;
   h4 { font-weight: normal; font-size: 16px; }
   p { margin: 0; }
 }
@@ -942,7 +942,7 @@ div.panel {
     div.content.browse {
       padding: 0; margin: 0;
       > ul {
-          min-height: 0; .border_radius(0);
+        min-height: 0; .border_radius(0);
         > li {
           div.thumbnail {
             a.thumbnail { padding: 5px; }
@@ -957,7 +957,7 @@ div.panel {
 
     div.content.browse.ads > ul > li {
       width: 93px;
-      > div.thumbnail a.thumbnail { width: 83px; height: 62px; } 
+      > div.thumbnail a.thumbnail { width: 83px; height: 62px; }
     }
     div.content.browse.brands {
       .border_radius(3);
@@ -1196,7 +1196,7 @@ label.list_number.large {
           span { display: block; margin: 0 0 0 130px; }
         }
         p:last-child { margin: 0; }
-        
+
       }
     }
     div.login {
@@ -1268,7 +1268,7 @@ label.list_number.large {
           b.voted.against { background: @colour_negative * 0.33 + @white * 0.66; }
         }
         /* Temporarily removed avatar and symbol */
-/*        div.symbols a.agent, b { display: none; }*/
+        /*        div.symbols a.agent, b { display: none; }*/
         div.description {
           font-size: 12px; color: @grey;
           a.agent { font-weight: bold; }
@@ -1293,11 +1293,11 @@ label.list_number.large {
       }
       li.new_comment.ad, li.endorsed.ad, li.voted {
         div.description, div.content { margin-left: 106px; }
-/*        div.description, div.content { margin-left: 53px; }*/
+        /*        div.description, div.content { margin-left: 53px; }*/
       }
       li.new_comment.brand, li.replied_to, li.endorsed.brand, li.connected, li.sn_setup {
         div.description, div.content { margin-left: 96px; }
-/*        div.description, div.content { margin-left: 43px; }*/
+        /*        div.description, div.content { margin-left: 43px; }*/
       }
       li.replied_to {
         div.content {
@@ -1530,7 +1530,7 @@ div.browse {
     }
     li.paginate.previous a div b { border-right: 15px solid @white; border-left: none; left: 12px; }
     li.paginate.next a div b { border-left: 15px solid @white; border-right: none; left: 16px; }
-  }  
+  }
   > div.footer {
     padding: 9px 10px 10px; background: @light_grey * 0.75 + @white * 0.25; overflow: hidden;
     border-top: 1px solid @light_grey; .border_radius_bottom(3);
@@ -1558,7 +1558,7 @@ div.browse.with_options > ul { .border_radius_top(0); }
 div.browse.with_footer > ul { .border_radius_bottom(0); }
 /* Browse List */
 div.browse.list {
-> ul {
+  > ul {
     margin: 0; min-height: 320px;
     padding: 10px 0 0 10px; overflow: hidden;
     > li {
@@ -1674,7 +1674,7 @@ div.browse.brands.list {
     }
     .all a { font-weight: bold; }
     .current a {
-      background: @white; color: @black; border: 1px solid (@light_grey * 0.25 + @white * 0.75); border-right: none; border-left: 5px solid @bg; 
+      background: @white; color: @black; border: 1px solid (@light_grey * 0.25 + @white * 0.75); border-right: none; border-left: 5px solid @bg;
       padding-left: 10px;
     }
   }
@@ -1764,7 +1764,7 @@ div.voted {
   a.up {
     float: left; background: @colour_positive * 0.66 + @bg * 0.15; .border_radius_left(3);
     :hover { background: @colour_positive * 0.85 + @bg * 0.15; }
-  } 
+  }
   a.down {
     float: left; background: @colour_negative * 0.66 + @bg * 0.15; .border_radius_right(3);
     margin: 0 5px 0 1px;
@@ -1833,7 +1833,7 @@ div.voted {
             height: 0; float: right; display: none;
           }
           span {
-            .border_radius(3); background: @bg; display: block; 
+            .border_radius(3); background: @bg; display: block;
             line-height: 30px; padding: 0 10px; font-size: 14px; font-weight: bold; margin: 0 10px 0 0;
           }
         }
@@ -1888,7 +1888,7 @@ div.voted {
           img { vertical-align: middle; float: left; }
           .name { font-weight: bold; font-size: 14px; display: block; margin: -2px 0 0 42px; }
           small {
-            font-size: 12px; color: @grey; display: block; margin-left: 42px; 
+            font-size: 12px; color: @grey; display: block; margin-left: 42px;
             strong { color: @black; font-weight: normal; }
           }
           :hover {
@@ -2000,7 +2000,7 @@ div.blank {
 }
 
 div.blank.small {
-  padding: 10px 20px; 
+  padding: 10px 20px;
   h4 { font-weight: normal; font-size: 16px; }
   p { margin: 0; }
 }
@@ -2109,11 +2109,11 @@ div.panel {
   color: red; /* A C-style comment */
   background-color: orange; // A little comment
   font-size: 12px;
-  
+
   /* lost comment */ content: @var;
-  
+
   border: 1px solid black;
-  
+
   // padding & margin //
   padding: 0;
   margin: 2em;
@@ -2127,33 +2127,33 @@ div.panel {
 
 #last { color: blue }
 //
-.comma-delimited { 
+.comma-delimited {
   background: url(bg.jpg) no-repeat, url(bg.png) repeat-x top left, url(bg);
   text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset,
-    0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
+  0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
 }
 @font-face {
   font-family: Headline;
   src: local(Futura-Medium),
-       url(fonts.svg#MyGeometricModern) format("svg");
+  url(fonts.svg#MyGeometricModern) format("svg");
 }
 .other {
   -moz-transform: translate(0, 11em) rotate(-90deg);
 }
 p:not([class*="lead"]) {
-  color: black; 
+  color: black;
 }
 
 input[type="text"].class#id[attr=32]:not(1) {
-  color: white;
-}
+                                      color: white;
+                                    }
 
 div#id.class[a=1][b=2].class:not(1) {
-  color: white;
-}
+                        color: white;
+                      }
 
-ul.comma > li:not(:only-child)::after { 
+ul.comma > li:not(:only-child)::after {
   color: white;
 }
 
@@ -2250,7 +2250,7 @@ p + h1 {
 #more-shorthands {
   margin: 0;
   padding: 1px 0 2px 0;
-  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif; 
+  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
 }
 
 .misc {
@@ -2271,7 +2271,7 @@ p + h1 {
 
 #functions {
   @var: 10;
-  color: color("evil red"); // #660000
+  color: color("red");
   width: increment(15);
   height: undefined("self");
   border-width: add(2, 3);
@@ -2303,7 +2303,7 @@ p + h1 {
 }
 
 .mixina (@style, @width, @color: black) {
-    border: @width @style @color;
+  border: @width @style @color;
 }
 
 .mixiny
@@ -2363,11 +2363,11 @@ body {
 }
 
 .nested-ruleset (@width: 200px) {
-    width: @width;
-    .column { margin: @width; }
+  width: @width;
+  .column { margin: @width; }
 }
 .content {
-    .nested-ruleset(600px);
+  .nested-ruleset(600px);
 }
 
 //
@@ -2385,8 +2385,8 @@ body {
 //
 
 .var-inside () {
-    @var: 10px;
-    width: @var;
+  @var: 10px;
+  width: @var;
 }
 #var-inside { .var-inside; }
 .mix-inner (@var) {
@@ -2398,9 +2398,9 @@ body {
     height: @a * 10;
 
     .innest {
-      width: @a;  
+      width: @a;
       .mix-inner(@a * 2);
-    }  
+    }
   }
 }
 
@@ -2408,100 +2408,100 @@ body {
   .mix(30);
 }
 .mixin () {
-    zero: 0;
+  zero: 0;
 }
 .mixin (@a: 1px) {
-    one: 1;
+  one: 1;
 }
 .mixin (@a) {
-    one-req: 1;
+  one-req: 1;
 }
 .mixin (@a: 1px, @b: 2px) {
-    two: 2;
+  two: 2;
 }
 
 .mixin (@a, @b, @c) {
-    three-req: 3;
+  three-req: 3;
 }
 
 .mixin (@a: 1px, @b: 2px, @c: 3px) {
-    three: 3;
+  three: 3;
 }
 
 .zero {
-    .mixin();
+  .mixin();
 }
 
 .one {
-    .mixin(1);
+  .mixin(1);
 }
 
 .two {
-    .mixin(1, 2);
+  .mixin(1, 2);
 }
 
 .three {
-    .mixin(1, 2, 3);
+  .mixin(1, 2, 3);
 }
 
 //
 
 .mixout ('left') {
-    left: 1;
+  left: 1;
 }
 
 .mixout ('right') {
-    right: 1;
+  right: 1;
 }
 
 .left {
-    .mixout('left');
+  .mixout('left');
 }
 .right {
-    .mixout('right');
+  .mixout('right');
 }
 
 //
 
 .border (@side, @width) {
-    color: black;
-    .border-side(@side, @width);
+  color: black;
+  .border-side(@side, @width);
 }
 .border-side (left, @w) {
-    border-left: @w;
+  border-left: @w;
 }
 .border-side (right, @w) {
-    border-right: @w;
+  border-right: @w;
 }
 
 .border-right {
-    .border(right, 4px);
+  .border(right, 4px);
 }
 .border-left {
-    .border(left, 4px);
+  .border(left, 4px);
 }
 
 //
 
 
 .border-radius (@r) {
-    both: @r * 10;
+  both: @r * 10;
 }
 .border-radius (@r, left) {
-    left: @r;
+  left: @r;
 }
 .border-radius (@r, right) {
-    right: @r;
+  right: @r;
 }
 
 .only-right {
-    .border-radius(33, right);
+  .border-radius(33, right);
 }
 .only-left {
-    .border-radius(33, left);
+  .border-radius(33, left);
 }
 .left-right {
-    .border-radius(33);
+  .border-radius(33);
 }
 .mixin { border: 1px solid black; }
 .mixout { border-color: orange; }
@@ -2679,12 +2679,12 @@ body {
     }
   }
 }h1, h2, h3 {
-  a, p {
-    &:hover {
-      color: red;
-    }
-  }
-}
+   a, p {
+     &:hover {
+       color: red;
+     }
+   }
+ }
 
 #all { color: blue; }
 #the { color: blue; }
@@ -2743,29 +2743,29 @@ td, input {
 }
 
 .redefinition {
-    @var: 4;
-    @var: 2;
-    @var: 3;
-    three: @var;
+  @var: 4;
+  @var: 2;
+  @var: 3;
+  three: @var;
 }
 
 .values {
-    @a: 'Trebuchet';
-    font-family: @a, @a, @a;
+  @a: 'Trebuchet';
+  font-family: @a, @a, @a;
 }
 
 
 .whitespace
-  { color: white; }  
-  
+{ color: white; }
+
 .whitespace
 {
   color: white;
 }
-  .whitespace
+.whitespace
 { color: white; }
 
-.whitespace{color:white;}  
+.whitespace{color:white;}
 .whitespace { color : white ; }
 
 .white,
@@ -2781,14 +2781,14 @@ td, input {
 .no-semi-column {border: 2px solid white}
 .newlines {
   background: the,
-              great,
-              wall;
+  great,
+  wall;
   border: 2px
-          solid
-          black;
+  solid
+  black;
 }
 .empty {
-  
+
 }
 #yelow {
   #short {
@@ -2873,11 +2873,11 @@ td, input {
   color: red; /* A C-style comment */
   background-color: orange; // A little comment
   font-size: 12px;
-  
+
   /* lost comment */ content: @var;
-  
+
   border: 1px solid black;
-  
+
   // padding & margin //
   padding: 0;
   margin: 2em;
@@ -2891,33 +2891,33 @@ td, input {
 
 #last { color: blue }
 //
-.comma-delimited { 
+.comma-delimited {
   background: url(bg.jpg) no-repeat, url(bg.png) repeat-x top left, url(bg);
   text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset,
-    0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
+  0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
 }
 @font-face {
   font-family: Headline;
   src: local(Futura-Medium),
-       url(fonts.svg#MyGeometricModern) format("svg");
+  url(fonts.svg#MyGeometricModern) format("svg");
 }
 .other {
   -moz-transform: translate(0, 11em) rotate(-90deg);
 }
 p:not([class*="lead"]) {
-  color: black; 
+  color: black;
 }
 
 input[type="text"].class#id[attr=32]:not(1) {
-  color: white;
-}
+                                      color: white;
+                                    }
 
 div#id.class[a=1][b=2].class:not(1) {
-  color: white;
-}
+                        color: white;
+                      }
 
-ul.comma > li:not(:only-child)::after { 
+ul.comma > li:not(:only-child)::after {
   color: white;
 }
 
@@ -3014,7 +3014,7 @@ p + h1 {
 #more-shorthands {
   margin: 0;
   padding: 1px 0 2px 0;
-  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif; 
+  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
 }
 
 .misc {
@@ -3035,7 +3035,7 @@ p + h1 {
 
 #functions {
   @var: 10;
-  color: color("evil red"); // #660000
+  color: color("red");
   width: increment(15);
   height: undefined("self");
   border-width: add(2, 3);
@@ -3067,7 +3067,7 @@ p + h1 {
 }
 
 .mixina (@style, @width, @color: black) {
-    border: @width @style @color;
+  border: @width @style @color;
 }
 
 .mixiny
@@ -3127,11 +3127,11 @@ body {
 }
 
 .nested-ruleset (@width: 200px) {
-    width: @width;
-    .column { margin: @width; }
+  width: @width;
+  .column { margin: @width; }
 }
 .content {
-    .nested-ruleset(600px);
+  .nested-ruleset(600px);
 }
 
 //
@@ -3149,8 +3149,8 @@ body {
 //
 
 .var-inside () {
-    @var: 10px;
-    width: @var;
+  @var: 10px;
+  width: @var;
 }
 #var-inside { .var-inside; }
 .mix-inner (@var) {
@@ -3162,9 +3162,9 @@ body {
     height: @a * 10;
 
     .innest {
-      width: @a;  
+      width: @a;
       .mix-inner(@a * 2);
-    }  
+    }
   }
 }
 
@@ -3172,100 +3172,100 @@ body {
   .mix(30);
 }
 .mixin () {
-    zero: 0;
+  zero: 0;
 }
 .mixin (@a: 1px) {
-    one: 1;
+  one: 1;
 }
 .mixin (@a) {
-    one-req: 1;
+  one-req: 1;
 }
 .mixin (@a: 1px, @b: 2px) {
-    two: 2;
+  two: 2;
 }
 
 .mixin (@a, @b, @c) {
-    three-req: 3;
+  three-req: 3;
 }
 
 .mixin (@a: 1px, @b: 2px, @c: 3px) {
-    three: 3;
+  three: 3;
 }
 
 .zero {
-    .mixin();
+  .mixin();
 }
 
 .one {
-    .mixin(1);
+  .mixin(1);
 }
 
 .two {
-    .mixin(1, 2);
+  .mixin(1, 2);
 }
 
 .three {
-    .mixin(1, 2, 3);
+  .mixin(1, 2, 3);
 }
 
 //
 
 .mixout ('left') {
-    left: 1;
+  left: 1;
 }
 
 .mixout ('right') {
-    right: 1;
+  right: 1;
 }
 
 .left {
-    .mixout('left');
+  .mixout('left');
 }
 .right {
-    .mixout('right');
+  .mixout('right');
 }
 
 //
 
 .border (@side, @width) {
-    color: black;
-    .border-side(@side, @width);
+  color: black;
+  .border-side(@side, @width);
 }
 .border-side (left, @w) {
-    border-left: @w;
+  border-left: @w;
 }
 .border-side (right, @w) {
-    border-right: @w;
+  border-right: @w;
 }
 
 .border-right {
-    .border(right, 4px);
+  .border(right, 4px);
 }
 .border-left {
-    .border(left, 4px);
+  .border(left, 4px);
 }
 
 //
 
 
 .border-radius (@r) {
-    both: @r * 10;
+  both: @r * 10;
 }
 .border-radius (@r, left) {
-    left: @r;
+  left: @r;
 }
 .border-radius (@r, right) {
-    right: @r;
+  right: @r;
 }
 
 .only-right {
-    .border-radius(33, right);
+  .border-radius(33, right);
 }
 .only-left {
-    .border-radius(33, left);
+  .border-radius(33, left);
 }
 .left-right {
-    .border-radius(33);
+  .border-radius(33);
 }
 .mixin { border: 1px solid black; }
 .mixout { border-color: orange; }
@@ -3443,12 +3443,12 @@ body {
     }
   }
 }h1, h2, h3 {
-  a, p {
-    &:hover {
-      color: red;
-    }
-  }
-}
+   a, p {
+     &:hover {
+       color: red;
+     }
+   }
+ }
 
 #all { color: blue; }
 #the { color: blue; }
@@ -3507,29 +3507,29 @@ td, input {
 }
 
 .redefinition {
-    @var: 4;
-    @var: 2;
-    @var: 3;
-    three: @var;
+  @var: 4;
+  @var: 2;
+  @var: 3;
+  three: @var;
 }
 
 .values {
-    @a: 'Trebuchet';
-    font-family: @a, @a, @a;
+  @a: 'Trebuchet';
+  font-family: @a, @a, @a;
 }
 
 
 .whitespace
-  { color: white; }  
-  
+{ color: white; }
+
 .whitespace
 {
   color: white;
 }
-  .whitespace
+.whitespace
 { color: white; }
 
-.whitespace{color:white;}  
+.whitespace{color:white;}
 .whitespace { color : white ; }
 
 .white,
@@ -3545,14 +3545,14 @@ td, input {
 .no-semi-column {border: 2px solid white}
 .newlines {
   background: the,
-              great,
-              wall;
+  great,
+  wall;
   border: 2px
-          solid
-          black;
+  solid
+  black;
 }
 .empty {
-  
+
 }
 #yelow {
   #short {
@@ -3637,11 +3637,11 @@ td, input {
   color: red; /* A C-style comment */
   background-color: orange; // A little comment
   font-size: 12px;
-  
+
   /* lost comment */ content: @var;
-  
+
   border: 1px solid black;
-  
+
   // padding & margin //
   padding: 0;
   margin: 2em;
@@ -3655,33 +3655,33 @@ td, input {
 
 #last { color: blue }
 //
-.comma-delimited { 
+.comma-delimited {
   background: url(bg.jpg) no-repeat, url(bg.png) repeat-x top left, url(bg);
   text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset,
-    0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
+  0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
 }
 @font-face {
   font-family: Headline;
   src: local(Futura-Medium),
-       url(fonts.svg#MyGeometricModern) format("svg");
+  url(fonts.svg#MyGeometricModern) format("svg");
 }
 .other {
   -moz-transform: translate(0, 11em) rotate(-90deg);
 }
 p:not([class*="lead"]) {
-  color: black; 
+  color: black;
 }
 
 input[type="text"].class#id[attr=32]:not(1) {
-  color: white;
-}
+                                      color: white;
+                                    }
 
 div#id.class[a=1][b=2].class:not(1) {
-  color: white;
-}
+                        color: white;
+                      }
 
-ul.comma > li:not(:only-child)::after { 
+ul.comma > li:not(:only-child)::after {
   color: white;
 }
 
@@ -3778,7 +3778,7 @@ p + h1 {
 #more-shorthands {
   margin: 0;
   padding: 1px 0 2px 0;
-  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif; 
+  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
 }
 
 .misc {
@@ -3799,7 +3799,7 @@ p + h1 {
 
 #functions {
   @var: 10;
-  color: color("evil red"); // #660000
+  color: color("red");
   width: increment(15);
   height: undefined("self");
   border-width: add(2, 3);
@@ -3831,7 +3831,7 @@ p + h1 {
 }
 
 .mixina (@style, @width, @color: black) {
-    border: @width @style @color;
+  border: @width @style @color;
 }
 
 .mixiny
@@ -3891,11 +3891,11 @@ body {
 }
 
 .nested-ruleset (@width: 200px) {
-    width: @width;
-    .column { margin: @width; }
+  width: @width;
+  .column { margin: @width; }
 }
 .content {
-    .nested-ruleset(600px);
+  .nested-ruleset(600px);
 }
 
 //
@@ -3913,8 +3913,8 @@ body {
 //
 
 .var-inside () {
-    @var: 10px;
-    width: @var;
+  @var: 10px;
+  width: @var;
 }
 #var-inside { .var-inside; }
 .mix-inner (@var) {
@@ -3926,9 +3926,9 @@ body {
     height: @a * 10;
 
     .innest {
-      width: @a;  
+      width: @a;
       .mix-inner(@a * 2);
-    }  
+    }
   }
 }
 
@@ -3936,44 +3936,44 @@ body {
   .mix(30);
 }
 .mixin () {
-    zero: 0;
+  zero: 0;
 }
 .mixin (@a: 1px) {
-    one: 1;
+  one: 1;
 }
 .mixin (@a) {
-    one-req: 1;
+  one-req: 1;
 }
 .mixin (@a: 1px, @b: 2px) {
-    two: 2;
+  two: 2;
 }
 
 .mixin (@a, @b, @c) {
-    three-req: 3;
+  three-req: 3;
 }
 
 .mixin (@a: 1px, @b: 2px, @c: 3px) {
-    three: 3;
+  three: 3;
 }
 
 .zero {
-    .mixin();
+  .mixin();
 }
 
 .one {
-    .mixin(1);
+  .mixin(1);
 }
 
 .two {
-    .mixin(1, 2);
+  .mixin(1, 2);
 }
 
 .three {
-    .mixin(1, 2, 3);
+  .mixin(1, 2, 3);
 }
 
 //
 
 .mixout ('left') {
-    left: 1;
+  left: 1;
 }

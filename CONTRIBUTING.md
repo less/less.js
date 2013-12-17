@@ -17,7 +17,9 @@ We only accept issues that are bug reports or feature requests. Bugs must be iso
 3. **Test with the latest version**. We get a lot of issues that could be resolved by updating your version of Less.js. 
 3. **Include a live example.** Please use [less2css.org](http://less2css.org/) for sharing your isolated test cases. 
 4. **Share as much information as possible.** Include operating system and version. Describe how you use Less. If you use it in the browser, please include browser and version, and the version of Less.js you're using. Let us know if you're using the command line (`lessc`) or an external tool. And try to include steps to reproduce the bug.
+5. If you have a solution or suggestion for how to fix the bug you're reporting, please include it, or make a pull request - don't assume the maintainers know how to fix it just because you do.
 
+Please report documentation issues in [the documentation project](https://github.com/less/less-docs).
 
 ## Feature Requests
 

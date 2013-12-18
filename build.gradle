@@ -25,6 +25,7 @@ dependencies {
 }
 
 project.ext {
+    failures = 0;
     rhinoTestSrc = 'out/rhino-test.js'
     testSrc = 'test/less'
     testOut = 'out/test'
@@ -45,8 +46,8 @@ combineJs {
     dest = file(rhinoTestSrc)
 }
 
-task testRhino {
-    dependsOn 'testRhinoBase', 'testRhinoErrors', 'testRhinoLegacy', 'testRhinoStaticUrls', 'testRhinoCompression'
+task testRhino(type: AllRhinoTests) {
+    dependsOn 'testRhinoBase', 'testRhinoErrors', 'testRhinoLegacy', 'testRhinoStaticUrls', 'testRhinoCompression', 'testRhinoDebugAll', 'testRhinoDebugComments', 'testRhinoDebugMediaquery', 'testRhinoNoJsError'
 }
 
 task testRhinoBase(type: RhinoTest) {
@@ -74,6 +75,12 @@ task testRhinoDebugMediaquery(type: DebugRhinoTest) {
 task testRhinoErrors(type: RhinoTest) {
     options = [ '--strict-math=true', '--strict-units=true' ]
     testDir = 'errors/'
+    expectErrors = true
+}
+
+task testRhinoChyby(type: RhinoTest) {
+    options = [ '--strict-math=true', '--strict-units=true' ]
+    testDir = 'chyby/'
     expectErrors = true
 }
 
@@ -117,7 +124,6 @@ class DebugRhinoTest extends RhinoTest {
     }
 
     def escapeIt(it) {
-      //work in progress
       return it.replaceAll("\\\\", "\\\\\\\\").replaceAll("/", "\\\\/").replaceAll(":", "\\\\:").replaceAll("\\.", "\\\\.");
     }
 
@@ -128,12 +134,6 @@ class DebugRhinoTest extends RhinoTest {
       def pathesc = escapeIt(p)
       def pathimportesc = escapeIt(pathimport)
       
-      println ""
-      println "p: " + p
-      println "pathimport: " + pathimport
-      println "pathesc: " + pathesc
-      println "pathimportesc: " + pathimportesc
-
       def result = input.replace("{path}", p).replace("{pathesc}", pathesc).replace("{pathimport}", pathimport)
       return result.replace("{pathimportesc}", pathimportesc).replace("\r\n", "\n")
     }
@@ -194,6 +194,8 @@ class RhinoTest extends DefaultTask {
                     standardOutput = out
                     ignoreExitValue = true
                 }
+                println project.rhinoTestSrc 
+                println lessFile
                 try {
                     def exec = project.javaexec(execOptions)
                     def actual = out.toString().trim()
@@ -201,7 +203,6 @@ class RhinoTest extends DefaultTask {
 
                     project.file(actualResult.parent).mkdirs()
                     actualResult << actual
-                    //println " ** " + actual
                     def expected
                     if (expectErrors) {
                         assert exec.exitValue != 0
@@ -238,7 +239,7 @@ class RhinoTest extends DefaultTask {
                 }
                 catch (AssertionError ae) {
                     println stylize('   failed', 'red')
-//                    println ae
+                    println ae
                     testFailures++
                 }
             } else {
@@ -248,6 +249,34 @@ class RhinoTest extends DefaultTask {
         println stylize(testSuccesses + ' ok', 'green')
         println stylize(testFailures + ' assertion failed', testFailures == 0 ? 'green' : 'red')
         println stylize(testErrors + ' errors', testErrors == 0 ? 'green' : 'red')
-//        assert testFailures + testErrors == 0
+        if (testFailures != 0 || testErrors != 0) {
+            project.failures++;
+        }
+    }
+}
+
+class AllRhinoTests extends DefaultTask {
+
+    AllRhinoTests() {
+    }
+
+    @TaskAction
+    def runTest() {
+       println stylize(project.failures + ' test sutes failed', project.failures == 0 ? 'green' : 'red')
+    }
+
+    def stylize(str, style) {
+        def styles = [
+            reset     : [0,   0],
+            bold      : [1,  22],
+            inverse   : [7,  27],
+            underline : [4,  24],
+            yellow    : [33, 39],
+            green     : [32, 39],
+            red       : [31, 39],
+            grey      : [90, 39]
+        ];
+        return '\033[' + styles[style][0] + 'm' + str +
+                '\033[' + styles[style][1] + 'm';
     }
 }

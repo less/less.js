@@ -55,6 +55,9 @@
                 } else if (part === '' && result.length > 0) {
                     // skip
                 } else if (part !== '.') {
+		    if (part.slice(-1)==='\\' || part.slice(-1)==='/') {
+		      part = part.slice(0, -1);
+		    }
                     result.push(part);
                 }
             }

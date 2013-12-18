@@ -8,6 +8,7 @@
  - Added --clean-option and cleancssOptions to allow passing in clean css options
  - Fix possible issue with import reference not bringing in styles (may not be a bugfix, just a code tidy)
  - Performance improvements that may result in approx 20-40% speed up
+ - Fix some issues with urls() being prefixed twice and unquoted urls in mixins being processed each time they are called
 
 # 1.5.1
 

@@ -45,7 +45,7 @@
         join: function() {
             var parts = [];
             for (i in arguments) {
-                parts = parts.concat(arguments[i].split('/'));
+                parts = parts.concat(arguments[i].split(/\/|\\/));
             }
             var result = [];
             for (i in parts) {

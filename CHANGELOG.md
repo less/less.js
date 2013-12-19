@@ -9,6 +9,8 @@
  - Fix possible issue with import reference not bringing in styles (may not be a bugfix, just a code tidy)
  - Performance improvements that may result in approx 20-40% speed up
  - Fix some issues with urls() being prefixed twice and unquoted urls in mixins being processed each time they are called
+ - Properties can be interpolated, e.g. @{prefix}-property: value;
+ - a default function has been added only valid in mixin definitions to determine if no other mixins have been matched
 
 # 1.5.1
 

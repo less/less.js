@@ -130,7 +130,6 @@ class DebugRhinoTest extends RhinoTest {
 
     def globalReplacements(input, directory) {
       def pDirectory = toPlatformFs(directory)
-      println("projectDir: " + projectDir)
       def p = lessRootDir + fs + pDirectory 
       def pathimport = p + toPlatformFs("import/")
       def pathesc = escapeIt(p)
@@ -156,7 +155,7 @@ class RhinoTest extends DefaultTask {
  
     def toUpperCaseDriveLetter(path) {
       if (path.charAt(1)==':' && path.charAt(2)=='\\') {
-          return path.substring(0,1).toUpperCase() + path.substring(2);
+          return path.substring(0,1).toUpperCase() + path.substring(1);
       } 
       return path;
     }
@@ -248,7 +247,7 @@ class RhinoTest extends DefaultTask {
                 }
                 catch (AssertionError ae) {
                     println stylize('   failed', 'red')
-//                    println ae
+                    println ae
                     testFailures++
                 }
             } else {

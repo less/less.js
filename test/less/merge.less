@@ -36,7 +36,7 @@
   .first-background();
 }
 .test4 {
-  // Wont merge values from sources that merked as !important, for backwards compatibility with css 
+  // Wont merge values from sources that merked as !important, for backwards compatibility with css
   .first-transform();
   .fifth-transform();
 }
@@ -48,4 +48,12 @@
 .test6 {
   // Ignores !merge if no peers found
   .second-transform();
+}
+
+.test-interleaved {
+    transform+:  t1;
+    background+: b1;
+    transform+:  t2;
+    background+: b2, b3;
+    transform+:  t3;
 }

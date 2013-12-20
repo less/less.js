@@ -20,3 +20,7 @@
 .test6 {
   transform: scale(2, 4);
 }
+.test-interleaved {
+  transform: t1, t2, t3;
+  background: b1, b2, b3;
+}

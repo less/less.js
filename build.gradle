@@ -47,8 +47,8 @@ combineJs {
 }
 
 task testRhino(type: AllRhinoTests) {
-    dependsOn 'testRhinoBase', 'testRhinoDebugAll', 'testRhinoDebugComments', 'testRhinoDebugMediaquery'
-//    dependsOn 'testRhinoBase', 'testRhinoErrors', 'testRhinoLegacy', 'testRhinoStaticUrls', 'testRhinoCompression', 'testRhinoDebugAll', 'testRhinoDebugComments', 'testRhinoDebugMediaquery', 'testRhinoNoJsError'
+//      dependsOn 'testRhinoBase'
+    dependsOn 'testRhinoBase', 'testRhinoErrors', 'testRhinoLegacy', 'testRhinoStaticUrls', 'testRhinoCompression', 'testRhinoDebugAll', 'testRhinoDebugComments', 'testRhinoDebugMediaquery', 'testRhinoNoJsError'
 }
 
 task testRhinoBase(type: RhinoTest) {
@@ -231,10 +231,10 @@ class RhinoTest extends DefaultTask {
                     expected = expected.replace("/","\\")
 //                        println "* actual *" 
 //                        println actual
-                        new File("actual.txt").write(actual)
+//                        new File("actual.txt").write(actual)
 //                        println "* expected *" 
 //                        println expected
-                        new File("expected.txt").write(expected)
+//                        new File("expected.txt").write(expected)
                     assert actual == expected
                     testSuccesses++
                     println stylize('   ok', 'green')

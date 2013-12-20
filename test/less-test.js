@@ -28,6 +28,8 @@ module.exports = function() {
         if (str.value === "evil red") { return new(less.tree.Color)("600"); }
     };
 
+runTestSet({vars: true}, "parse/",
+            null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
             sys.print("- " + name + ": ");
@@ -92,10 +94,14 @@ module.exports = function() {
             doReplacements = globalReplacements;
         }
 
+    function getBasename(file) {
+        return foldername + path.basename(file, '.less');
+    }
+
         fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
             if (! /\.less/.test(file)) { return; }
 
-            var name = foldername + path.basename(file, '.less');
+            var name = getBasename(file);
 
             if (oneTestOnly && name !== oneTestOnly) {
                 return;
@@ -112,6 +118,12 @@ module.exports = function() {
                 options.sourceMapBasepath = path.join(process.cwd(), "test/less");
                 options.sourceMapRootpath = "testweb/";
             }
+
+        if (options.vars) {
+            options.getVars = function(file) {
+                return JSON.parse(fs.readFileSync(getFilename(getBasename(file)), 'utf8'));
+            };
+        }
 
             toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
@@ -202,7 +214,9 @@ module.exports = function() {
             options.filename = require('path').resolve(process.cwd(), path);
             options.optimization = options.optimization || 0;
 
-            new(less.Parser)(options).parse(str, function (err, tree) {
+        var parser = new(less.Parser)(options);
+        var args = [str];
+        args.push(function (err, tree) {
                 if (err) {
                     callback(err);
                 } else {
@@ -214,6 +228,10 @@ module.exports = function() {
                     }
                 }
             });
+            if (options.vars) {
+                args.push(options.getVars(path));
+            }
+            parser.parse.apply(parser, args);
         });
     }
 

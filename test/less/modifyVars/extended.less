@@ -5,5 +5,7 @@
 }
 #footer {
   color: (@base-color + #003300);
-  border-color: desaturate(@red, 10%);
+  border-color: @red;
 }
+@red: blue; // var is overridden by the modifyVars
+//@base-color: green;

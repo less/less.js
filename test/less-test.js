@@ -28,8 +28,6 @@ module.exports = function() {
         if (str.value === "evil red") { return new(less.tree.Color)("600"); }
     };
 
-runTestSet({vars: true}, "parse/",
-            null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
             sys.print("- " + name + ": ");
@@ -94,9 +92,9 @@ runTestSet({vars: true}, "parse/",
             doReplacements = globalReplacements;
         }
 
-    function getBasename(file) {
-        return foldername + path.basename(file, '.less');
-    }
+        function getBasename(file) {
+             return foldername + path.basename(file, '.less');
+        }
 
         fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
             if (! /\.less/.test(file)) { return; }
@@ -119,11 +117,9 @@ runTestSet({vars: true}, "parse/",
                 options.sourceMapRootpath = "testweb/";
             }
 
-        if (options.vars) {
             options.getVars = function(file) {
-                return JSON.parse(fs.readFileSync(getFilename(getBasename(file)), 'utf8'));
+                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
             };
-        }
 
             toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
@@ -214,9 +210,14 @@ runTestSet({vars: true}, "parse/",
             options.filename = require('path').resolve(process.cwd(), path);
             options.optimization = options.optimization || 0;
 
-        var parser = new(less.Parser)(options);
-        var args = [str];
-        args.push(function (err, tree) {
+            var parser = new(less.Parser)(options);
+            var additionalData = {};
+            if (options.globalVars) {
+                additionalData.globalVars = options.getVars(path);
+            } else if (options.modifyVars) {
+                additionalData.modifyVars = options.getVars(path);
+            }
+            parser.parse(str, function (err, tree) {
                 if (err) {
                     callback(err);
                 } else {
@@ -227,12 +228,8 @@ runTestSet({vars: true}, "parse/",
                         callback(e);
                     }
                 }
+                }, additionalData);
             });
-            if (options.vars) {
-                args.push(options.getVars(path));
-            }
-            parser.parse.apply(parser, args);
-        });
     }
 
     function testNoOptions() {

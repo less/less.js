@@ -217,6 +217,9 @@ module.exports = function() {
             } else if (options.modifyVars) {
                 additionalData.modifyVars = options.getVars(path);
             }
+            if (options.banner) {
+                additionalData.banner = options.banner;
+            }
             parser.parse(str, function (err, tree) {
                 if (err) {
                     callback(err);

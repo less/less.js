@@ -38,7 +38,7 @@ lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true, glo
         }
         return path.join('test/sourcemaps', filename) + '.json'; 
     });
-lessTester.runTestSet({globalVars: true}, "globalVars/",
+lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "globalVars/",
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
 lessTester.runTestSet({modifyVars: true}, "modifyVars/",
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });

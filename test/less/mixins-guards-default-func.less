@@ -157,3 +157,23 @@ guard-default-multi-4 {
     .m(1);
     .m(2);
 }
+
+// default & scope
+
+guard-default-scopes {
+    .s1() {.m(@v)                  {1: no condition}}
+    .s2() {.m(@v) when (@v)        {2: when true}}
+    .s3() {.m(@v) when (default()) {3: when default}}
+
+    &-3 {
+        .s2();
+        .s3();
+        .m(false);
+    }
+    
+    &-1 {
+        .s1();
+        .s3();
+        .m(false);
+    }
+}

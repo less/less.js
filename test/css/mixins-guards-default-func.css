@@ -112,3 +112,9 @@ guard-default-multi-4 {
   always: 2;
   case: 2;
 }
+guard-default-scopes-3 {
+  3: when default;
+}
+guard-default-scopes-1 {
+  1: no condition;
+}

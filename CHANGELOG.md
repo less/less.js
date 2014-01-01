@@ -1,16 +1,19 @@
-# ???
+# 1.6.0
 
- - Fixed line/column numbers from math errors
+ - Properties can be interpolated, e.g. @{prefix}-property: value;
+ - a default function has been added only valid in mixin definitions to determine if no other mixins have been matched
  - Added a plugins option that allows specifying an array of visitors run on the less AST
+ - Performance improvements that may result in approx 20-40% speed up
+ - Javascript evaluations returning numbers can now be used in calculations/functions
  - fixed issue when adding colours, taking the alpha over 1 and breaking when used in colour functions
  - when adding together 2 colours with non zero alpha, the alpha will now be combined rather than added
  - the advanced colour functions no longer ignore transparency, they blend that too
  - Added --clean-option and cleancssOptions to allow passing in clean css options
+ - rgba declarations are now always clamped e.g. rgba(-1,258,258, -1) becomes rgba(0, 255, 255, 0)
  - Fix possible issue with import reference not bringing in styles (may not be a bugfix, just a code tidy)
- - Performance improvements that may result in approx 20-40% speed up
  - Fix some issues with urls() being prefixed twice and unquoted urls in mixins being processed each time they are called
- - Properties can be interpolated, e.g. @{prefix}-property: value;
- - a default function has been added only valid in mixin definitions to determine if no other mixins have been matched
+ - Fixed error messages for undefined variables in javascript evaluation
+ - Fixed line/column numbers from math errors
 
 # 1.5.1
 

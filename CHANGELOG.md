@@ -1,5 +1,7 @@
 # 1.6.0
 
+2014-01-01
+
  - Properties can be interpolated, e.g. @{prefix}-property: value;
  - a default function has been added only valid in mixin definitions to determine if no other mixins have been matched
  - Added a plugins option that allows specifying an array of visitors run on the less AST

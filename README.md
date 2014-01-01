@@ -1,4 +1,4 @@
-# [Less.js v1.5.1](http://lesscss.org)
+# [Less.js v1.6.0](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
@@ -151,8 +151,7 @@ used like this:
 @link-color:        #428bca;
 @link-color-hover:  darken(@link-color, 10%);
 
-//Transiation mixin would be anywhere here
-
+//Transition mixin would be anywhere here
 
 a {
   font-weight: bold;
@@ -208,7 +207,6 @@ renders to:
 .link, a {
   color: #428bca;
 }
-
 a {
   font-weight: bold;
 }
@@ -283,7 +281,6 @@ Before opening any issue, please search for existing issues and read the [Issue 
 
 Please report documentation issues in [the documentation project](https://github.com/less/less-docs).
 
-
 ### Development
 
 #### Install Less.js
@@ -343,7 +340,7 @@ See the [changelog](CHANGELOG.md)
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-2013 [Alexis Sellier](http://cloudhead.io/) & The Core Less Team
+Copyright (c) 2009-2014 [Alexis Sellier](http://cloudhead.io/) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 

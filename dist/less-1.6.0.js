@@ -2284,6 +2284,12 @@ tree.functions = {
     max: function () {
         return this._minmax(false, arguments);
     },
+	zero: function (n) {
+        return new(tree.Dimension)(n.value, n.value ? n.unit : '');
+    },
+	unitonly: function (n) {
+        return new(tree.Anonymous)(n.unit);
+    },
     argb: function (color) {
         return new(tree.Anonymous)(color.toARGB());
     },

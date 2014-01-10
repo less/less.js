@@ -187,7 +187,7 @@ class RhinoTest extends DefaultTask {
     def runTest() {
         int testSuccesses = 0, testFailures = 0, testErrors = 0
         project.file('test/less/' + testDir).eachFileMatch(FileType.FILES, ~/.*\.less/) { lessFile ->
-            println "$lessFile"
+            print lessFile
             if (!project.hasProperty('test') || lessFile.name.startsWith(project.test)) {
                 def out = new java.io.ByteArrayOutputStream()
                 def execOptions = {
@@ -204,7 +204,7 @@ class RhinoTest extends DefaultTask {
                     def exec = project.javaexec(execOptions)
                     def actual = out.toString().trim()
                     def actualResult = project.file(lessFile.path.replace('test/less', project.testOut).replace('.less', '.css'))
-					
+
                     project.file(actualResult.parent).mkdirs()
                     actualResult << actual
                     def expected
@@ -231,7 +231,6 @@ class RhinoTest extends DefaultTask {
 //                        println "* expected *" 
 //                        println expected
 //                        new File("expected.txt").write(expected)
-					
                     assert actual == expected
                     testSuccesses++
                     println stylize('   ok', 'green')

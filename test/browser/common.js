@@ -54,7 +54,7 @@ var testSheet = function(sheet) {
     }, "generation of " + lessOutputId + "", 700);
 
     runs(function() {
-      lessOutput = lessOutputObj.innerText;
+      lessOutput = lessOutputObj.innerText || lessOutputObj.innerHTML;
     });
 
     waitsFor(function() {

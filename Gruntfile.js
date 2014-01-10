@@ -232,6 +232,11 @@ module.exports = function(grunt) {
     'uglify:stable'
   ]);
 
+  // Release Rhino Version
+  grunt.registerTask('rhino', [
+    'concat:rhino'
+  ]);
+  
   // Run all browser tests
   grunt.registerTask('browsertest', [
     'browser',

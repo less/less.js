@@ -1,3 +1,12 @@
+# 1.6.1
+
+ - support ^ and ^^ shadow dom selectors
+ - error on (currently) ambiguous guards on multiple css selectors
+ - older environments - protect against typeof regex returning function
+ - Do not use default keyword
+ - use innerHTML in tests, not innerText
+ - protect for-in in case Array and Object prototypes have custom fields
+
 # 1.6.0
 
 2014-01-01

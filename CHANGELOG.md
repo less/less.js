@@ -1,6 +1,10 @@
 # 1.6.1
 
+2014-01-12
+
  - support ^ and ^^ shadow dom selectors
+ - fix sourcemap selector (used to report end of the element or selector) and directive position (previously not supported)
+ - fix parsing empty less files
  - error on (currently) ambiguous guards on multiple css selectors
  - older environments - protect against typeof regex returning function
  - Do not use default keyword

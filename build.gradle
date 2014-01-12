@@ -3,14 +3,16 @@ import groovy.io.FileType
 buildscript {
     repositories {
         mavenCentral()
+		jcenter()
     }
     dependencies {
         classpath 'com.eriwen:gradle-js-plugin:1.8.0'
+		classpath 'com.moowork.gradle:gradle-grunt-plugin:0.2'
     }
 }
 
 apply plugin: 'js'
-
+apply plugin: 'grunt'
 
 repositories {
     mavenCentral()
@@ -25,8 +27,9 @@ dependencies {
 }
 
 project.ext {
+	packageProps = new groovy.json.JsonSlurper().parseText(new File("package.json").toURL().text)
     failures = 0;
-    rhinoTestSrc = 'out/rhino-test.js'
+    rhinoTestSrc = "out/rhino-test-${packageProps.version}.js"
     testSrc = 'test/less'
     testOut = 'out/test'
 }
@@ -36,7 +39,7 @@ javascript.source {
         js {
             srcDir '.'
             include 'test/rhino/test-header.js'
-            include 'dist/less-rhino-1.5.1.js'
+            include "dist/less-rhino-${packageProps.version}.js"
         }
     }
 }
@@ -106,7 +109,7 @@ task testRhinoCompression(type: RhinoTest) {
 }
 
 task setupTest {
-    dependsOn combineJs
+    dependsOn grunt_rhino, combineJs
     doLast {
         file(testOut).deleteDir()
     }

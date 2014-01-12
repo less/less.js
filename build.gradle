@@ -121,11 +121,6 @@ task clean << {
 }
 
 class DebugRhinoTest extends RhinoTest {
-    def suffix = ""
-
-    def expectedCssPath(lessFilePath) {
-      return lessFilePath.replace('.less', suffix+'.css').replace('\\less\\', '\\css\\'); //FIXME: now it works only on windows
-    }
 
     def escapeIt(it) {
       return it.replaceAll("\\\\", "\\\\\\\\").replaceAll("/", "\\\\/").replaceAll(":", "\\\\:").replaceAll("\\.", "\\\\.");
@@ -149,6 +144,7 @@ class RhinoTest extends DefaultTask {
         dependsOn 'setupTest'
     }
 
+    def suffix = ""
     def testDir = ''
     def options = []
     def expectErrors = false
@@ -168,7 +164,7 @@ class RhinoTest extends DefaultTask {
     }
 
     def expectedCssPath(lessFilePath) {
-      return lessFilePath.replace('.less', '.css').replace('\\less\\', '\\css\\');
+	  lessFilePath.replace('.less', "${suffix}.css").replace("${fs}less${fs}", "${fs}css${fs}");
     }
 
     def globalReplacements(input, directory) {

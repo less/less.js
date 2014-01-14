@@ -1,5 +1,5 @@
 
-test {
+pi-test {
     @prefix: ufo-;
     @a:    border;
     @bb:      top;
@@ -38,4 +38,16 @@ test {
         @subterfuge: ~'+';
         pre-property-ish@{subterfuge}: nice try dude;
     }
+}
+
+pi-indirect-vars {
+    @{p}: @p;
+    @p: @@a;
+    @a: b;
+    @b: auto;
+}
+
+pi-complex-values {
+    @{p}@{p}: none;
+    @p: (1 + 2px) fadeout(#ff0, 50%), pi() /* foo */;
 }

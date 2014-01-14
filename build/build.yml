@@ -13,7 +13,7 @@
 
 # Less.js Lib
 lib: lib/less
-
+lib_source_map: 'lib/source-map'
 
 # =================================
 # General
@@ -100,6 +100,7 @@ rhino:
   - <%= build.less.to_css_visitor %>
   - <%= build.less.extend_visitor %>
   - <%= build.less.source_map_output %>
+  - <%= build.source_map %>
 
   # append rhino-specific code
   - <%= build.append.rhino %>
@@ -145,3 +146,13 @@ tree:
   - <%= build.lib %>/tree/url.js
   - <%= build.lib %>/tree/value.js
   - <%= build.lib %>/tree/variable.js
+  
+# =================================
+# source-map build
+# =================================
+
+# <%= build.source_map %>
+source_map:
+  - <%= build.lib_source_map %>/source-map-header.js
+  - <%= build.lib_source_map %>/source-map-0.1.31.js
+  - <%= build.lib_source_map %>/source-map-footer.js

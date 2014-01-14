@@ -15,7 +15,6 @@ function getErrorPathReplacementFunction(dir) {
 }
 
 console.log("\n" + stylize("LESS", 'underline') + "\n");
-
 lessTester.runTestSet({strictMath: true, relativeUrls: true, silent: true});
 lessTester.runTestSet({strictMath: true, strictUnits: true}, "errors/",
     lessTester.testErrors, null, getErrorPathReplacementFunction("errors"));
@@ -31,6 +30,5 @@ lessTester.runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder 
 lessTester.runTestSet({strictMath: true, compress: true}, "compression/");
 lessTester.runTestSet({}, "legacy/");
 lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true }, "sourcemaps/",
-    lessTester.testSourcemap, null, null, function(filename) { return path.join('test/sourcemaps', filename) + '.json'; });
-
+    lessTester.testSourcemap, null, null);
 lessTester.testNoOptions();

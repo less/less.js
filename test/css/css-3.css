@@ -123,3 +123,7 @@ h1 {
 ::distributed(input::placeholder) {
   color: #b3b3b3;
 }
+.shadow ^ .dom,
+body ^^ .shadow {
+  display: done;
+}

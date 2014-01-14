@@ -238,18 +238,20 @@ args = args.filter(function (arg) {
                     console.log("we support only arguments that make sense for less, '--keep-line-breaks', '-b'");
                     console.log("'--s0', '--s1', '--advanced', '--skip-advanced', '--selectors-merge-mode'");
                     continueProcessing = false;
+                    currentErrorcode = 1;
                     break;
             }
             break;
         default:
             require('../lib/less/lessc_helper').printUsage();
             continueProcessing = false;
+            currentErrorcode = 1;
             break;
     }
 });
 
 if (!continueProcessing) {
-    process.reallyExit(1);
+    return;
 }
 
 var input = args[1];

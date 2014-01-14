@@ -102,6 +102,9 @@ a:hover {
 Mixins enable you to apply the styles of one selector inside another selector like this:
 
 ```less
+// Variables
+@link-color:        #428bca;
+
 // Any "regular" class...
 .link {
   color: @link-color;
@@ -144,6 +147,12 @@ Mixins can also accept parameters:
 used like this:
 
 ```less
+// Variables
+@link-color:        #428bca;
+@link-color-hover:  darken(@link-color, 10%);
+
+//Transition mixin would be anywhere here
+
 a {
   font-weight: bold;
   color: @link-color;
@@ -176,6 +185,9 @@ a:hover {
 The `extend` feature can be thought of as the _inverse_ of mixins. It accomplishes the goal of "borrowing styles", but rather than copying all the rules of _Selector A_ over to _Selector B_, `extend` copies the name of the _inheriting selector_ (_Selector B_) over to the _extending selector_ (_Selector A_). So continuing with the example used for [mixins](#mixins) above, extend works like this:
 
 ```less
+// Variables
+@link-color:        #428bca;
+
 .link {
   color: @link-color;
 }
@@ -194,6 +206,9 @@ renders to:
 ```css
 .link, a {
   color: #428bca;
+}
+a {
+  font-weight: bold;
 }
 ```
 
@@ -264,7 +279,7 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md). Add unit tests for any new or 
 
 Before opening any issue, please search for existing issues and read the [Issue Guidelines](https://github.com/necolas/issue-guidelines), written by [Nicolas Gallagher](https://github.com/necolas/). After that if you find a bug or would like to make feature request, [please open a new issue][issues].
 
-
+Please report documentation issues in [the documentation project](https://github.com/less/less-docs).
 
 ### Development
 
@@ -321,7 +336,7 @@ Please review the [Gruntfile](Gruntfile.js) to become acquainted with the other 
 
 
 ## Release History
-See the [changelog](CHANGELOG)
+See the [changelog](CHANGELOG.md)
 
 ## [License](LICENSE)
 

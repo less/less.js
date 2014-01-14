@@ -93,10 +93,14 @@ module.exports = function() {
             doReplacements = globalReplacements;
         }
 
+        function getBasename(file) {
+             return foldername + path.basename(file, '.less');
+        }
+
         fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
             if (! /\.less/.test(file)) { return; }
 
-            var name = foldername + path.basename(file, '.less');
+            var name = getBasename(file);
 
             if (oneTestOnly && name !== oneTestOnly) {
                 return;
@@ -113,6 +117,10 @@ module.exports = function() {
                 options.sourceMapBasepath = path.join(process.cwd(), "test/less");
                 options.sourceMapRootpath = "testweb/";
             }
+
+            options.getVars = function(file) {
+                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
+            };
 
             toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
@@ -203,7 +211,17 @@ module.exports = function() {
             options.filename = require('path').resolve(process.cwd(), path);
             options.optimization = options.optimization || 0;
 
-            new(less.Parser)(options).parse(str, function (err, tree) {
+            var parser = new(less.Parser)(options);
+            var additionalData = {};
+            if (options.globalVars) {
+                additionalData.globalVars = options.getVars(path);
+            } else if (options.modifyVars) {
+                additionalData.modifyVars = options.getVars(path);
+            }
+            if (options.banner) {
+                additionalData.banner = options.banner;
+            }
+            parser.parse(str, function (err, tree) {
                 if (err) {
                     callback(err);
                 } else {
@@ -214,8 +232,8 @@ module.exports = function() {
                         callback(e);
                     }
                 }
+                }, additionalData);
             });
-        });
     }
 
     function testNoOptions() {

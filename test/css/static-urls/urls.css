@@ -39,3 +39,7 @@
 #secret {
   font-family: xecret, sans-serif;
 }
+#imported-relative-path {
+  background-image: url(../data/image.jpg);
+  border-image: url('../data/image.jpg');
+}

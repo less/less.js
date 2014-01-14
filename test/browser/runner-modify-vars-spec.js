@@ -20,7 +20,8 @@ describe("less.js modify vars", function() {
       lessOutputObj.type = "not compiled yet";
       less.modifyVars({
         var1: "green",
-        var2: "purple"
+        var2: "purple",
+        scale: 20
       });
     });
 

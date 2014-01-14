@@ -43,15 +43,23 @@
 #secret {
   font-family: xecret, sans-serif;
 }
+#imported-relative-path {
+  background-image: url(../data/image.jpg);
+  border-image: url('../data/image.jpg');
+}
+#relative-url-import {
+  background-image: url(../data/image.jpg);
+  border-image: url('../data/image.jpg');
+}
 #data-uri {
-  uri: url('data:image/jpeg;base64,bm90IGFjdHVhbGx5IGEganBlZyBmaWxlCg==');
+  uri: url("data:image/jpeg;base64,bm90IGFjdHVhbGx5IGEganBlZyBmaWxlCg==");
 }
 #data-uri-guess {
-  uri: url('data:image/jpeg;base64,bm90IGFjdHVhbGx5IGEganBlZyBmaWxlCg==');
+  uri: url("data:image/jpeg;base64,bm90IGFjdHVhbGx5IGEganBlZyBmaWxlCg==");
 }
 #data-uri-ascii {
-  uri-1: url('data:text/html,%3Ch1%3EThis%20page%20is%20100%25%20Awesome.%3C%2Fh1%3E%0A');
-  uri-2: url('data:text/html,%3Ch1%3EThis%20page%20is%20100%25%20Awesome.%3C%2Fh1%3E%0A');
+  uri-1: url("data:text/html,%3Ch1%3EThis%20page%20is%20100%25%20Awesome.%3C%2Fh1%3E%0A");
+  uri-2: url("data:text/html,%3Ch1%3EThis%20page%20is%20100%25%20Awesome.%3C%2Fh1%3E%0A");
 }
 #data-uri-toobig {
   uri: url('../data/data-uri-fail.png');

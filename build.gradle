@@ -230,7 +230,6 @@ class RhinoTest extends DefaultTask {
 	def handleResult(exec, out, lessFile) {
 		def actual = out.toString().trim()
 		def actualResult = project.file(lessFile.path.replace('test/less', project.testOut).replace('.less', '.css'))
-
 		project.file(actualResult.parent).mkdirs()
 		actualResult << actual
 		def expected
@@ -269,7 +268,7 @@ class RhinoTest extends DefaultTask {
             println "lessfile: $lessFile"
             if (!project.hasProperty('test') || lessFile.name.startsWith(project.test)) {
                 def out = new java.io.ByteArrayOutputStream()
-				def processedOptions = postProcessOptions([project.rhinoTestSrc, lessFile] + options, lessFile)
+                def processedOptions = postProcessOptions([project.rhinoTestSrc, lessFile] + options, lessFile)
                 def execOptions = {
                     main = 'org.mozilla.javascript.tools.shell.Main'
 //                    main = 'org.mozilla.javascript.tools.debugger.Main'

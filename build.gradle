@@ -1,4 +1,6 @@
 import groovy.io.FileType
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.api.tasks.Exec
 
 buildscript {
     repositories {
@@ -44,8 +46,12 @@ javascript.source {
     }
 }
 
+task runGruntRhino(type: GruntTask) {
+    gruntArgs = "rhino"
+}
+
 combineJs {
-	dependsOn grunt_rhino
+	dependsOn runGruntRhino
     source = javascript.source.test.js.files
     dest = file(rhinoTestSrc)
 }
@@ -314,7 +320,7 @@ class AllRhinoTests extends DefaultTask {
 
     @TaskAction
     def runTest() {
-       println stylize(project.failures + ' test sutes failed', project.failures == 0 ? 'green' : 'red')
+       println stylize(project.failures + ' test suites failed', project.failures == 0 ? 'green' : 'red')
     }
 
     def stylize(str, style) {
@@ -332,3 +338,20 @@ class AllRhinoTests extends DefaultTask {
                 '\033[' + styles[style][1] + 'm';
     }
 }
+
+class GruntTask extends Exec {
+    private String gruntExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "grunt.cmd" : "grunt"
+    private String switches = "--no-color"
+
+    String gruntArgs = "" 
+
+    public GruntTask() {
+        super()
+        this.setExecutable(gruntExecutable)
+    }
+
+    public void setGruntArgs(String gruntArgs) {
+        this.args = "$switches $gruntArgs".trim().split(" ") as List
+    }
+}
+

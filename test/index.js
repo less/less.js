@@ -42,6 +42,6 @@ lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "glob
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
 lessTester.runTestSet({modifyVars: true}, "modifyVars/",
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
-
+lessTester.runTestSet({cacheBuster: '424242'}, "cache-buster/");
 
 lessTester.testNoOptions();

@@ -28,7 +28,7 @@ var options = {
     strictUnits: false,
     globalVariables: '',
     modifyVariables: '',
-    cacheBuster: ''
+    urlArgs: ''
 };
 var cleancssOptions = {};
 var continueProcessing = true,
@@ -243,9 +243,9 @@ args = args.filter(function (arg) {
                     break;
             }
             break;
-        case 'cache-buster':
+        case 'url-args':
             if (checkArgFunc(arg, match[2])) {
-                options.cacheBuster = match[2];
+                options.urlArgs = match[2];
             }
             break;
         default:
@@ -372,7 +372,7 @@ var parseLessFile = function (e, data) {
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
                     strictUnits: options.strictUnits,
-                    cacheBuster: options.cacheBuster
+                    urlArgs: options.urlArgs
                 });
                 if (output) {
                     ensureDirectory(output);

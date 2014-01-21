@@ -15,7 +15,6 @@ function getErrorPathReplacementFunction(dir) {
 }
 
 console.log("\n" + stylize("LESS", 'underline') + "\n");
-
 lessTester.runTestSet({strictMath: true, relativeUrls: true, silent: true});
 lessTester.runTestSet({strictMath: true, strictUnits: true}, "errors/",
     lessTester.testErrors, null, getErrorPathReplacementFunction("errors"));
@@ -42,6 +41,4 @@ lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "glob
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
 lessTester.runTestSet({modifyVars: true}, "modifyVars/",
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
-
-
 lessTester.testNoOptions();

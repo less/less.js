@@ -18,3 +18,7 @@ test/sourcemaps/*.css
 
 # grunt
 .grunt
+
+# gradle
+.gradle
+out

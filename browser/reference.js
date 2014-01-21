@@ -55,6 +55,7 @@ var _mapnik_reference_latest = {
                 "overlay",
                 "darken",
                 "lighten",
+                "lighter", // added for torque
                 "color-dodge",
                 "color-burn",
                 "hard-light",
@@ -188,6 +189,7 @@ var _mapnik_reference_latest = {
                     "overlay",
                     "darken",
                     "lighten",
+                    "lighter", // added for torque
                     "color-dodge",
                     "color-burn",
                     "hard-light",
@@ -1671,6 +1673,53 @@ var _mapnik_reference_latest = {
                 "type": "expression",
                 "default-value": "0"
             }
+        },
+        "torque": {
+          "-torque-frame-count": {
+              "css": "-torque-frame-count",
+              "default-value": "128",
+              "type":"float",
+              "default-meaning": "the data is broken into 128 time frames",
+              "doc": "Number of animation steps/frames used in the animation. If the data contains a fewere number of total frames, the lesser value will be used."
+          },
+          "-torque-resolution": {
+              "css": "-torque-resolution",
+              "default-value": "2",
+              "type":"float",
+              "default-meaning": "",
+              "doc": "Spatial resolution in pixels. A resolution of 1 means no spatial aggregation of the data. Any other resolution of N results in spatial aggregation into cells of NxN pixels. The value N must be power of 2"
+          },
+          "-torque-animation-duration": {
+              "css": "-torque-animation-duration",
+              "default-value": "30",
+              "type":"float",
+              "default-meaning": "the animation lasts 30 seconds",
+              "doc": "Animation duration in seconds"
+          },
+          "-torque-aggregation-function": {
+              "css": "-torque-aggregation-function",
+              "default-value": "count(cartodb_id)",
+              "type": "string",
+              "default-meaning": "the value for each cell is the count of points in that cell",
+              "doc": "A function used to calculate a value from the aggregate data for each cell. See -torque-resolution"
+          },
+          "-torque-time-attribute": {
+              "css": "-torque-time-attribute",
+              "default-value": "time",
+              "type": "string",
+              "default-meaning": "the data column in your table that is of a time based type",
+              "doc": "The table column that contains the time information used create the animation"
+          },
+          "-torque-data-aggregation": {
+              "css": "-torque-data-aggregation",
+              "default-value": "linear",
+              "type": [
+                "linear",
+                "cumulative"
+              ],
+              "default-meaning": "previous values are discarded",
+              "doc": "A linear animation will discard previous values while a cumulative animation will accumulate them until it restarts"
+          }
         }
     },
     "colors": {

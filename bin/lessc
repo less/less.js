@@ -27,7 +27,8 @@ var options = {
     strictMath: false,
     strictUnits: false,
     globalVariables: '',
-    modifyVariables: ''
+    modifyVariables: '',
+    urlArgs: ''
 };
 var cleancssOptions = {};
 var continueProcessing = true,
@@ -242,6 +243,11 @@ args = args.filter(function (arg) {
                     break;
             }
             break;
+        case 'url-args':
+            if (checkArgFunc(arg, match[2])) {
+                options.urlArgs = match[2];
+            }
+            break;
         default:
             require('../lib/less/lessc_helper').printUsage();
             continueProcessing = false;
@@ -365,7 +371,8 @@ var parseLessFile = function (e, data) {
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
-                    strictUnits: options.strictUnits
+                    strictUnits: options.strictUnits,
+                    urlArgs: options.urlArgs
                 });
                 if (output) {
                     ensureDirectory(output);

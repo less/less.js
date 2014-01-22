@@ -36,23 +36,13 @@ project.ext {
     testOut = 'out/test'
 }
 
-javascript.source {
-    test {
-        js {
-            srcDir '.'
-            include 'test/rhino/test-header.js'
-            include "dist/less-rhino-${packageProps.version}.js"
-        }
-    }
-}
-
 task runGruntRhino(type: GruntTask) {
     gruntArgs = "rhino"
 }
 
 combineJs {
 	dependsOn runGruntRhino
-    source = javascript.source.test.js.files
+    source = ["dist/less-rhino-${packageProps.version}.js", "test/rhino/test-header.js","dist/lessc-rhino-${packageProps.version}.js"]
     dest = file(rhinoTestSrc)
 }
 

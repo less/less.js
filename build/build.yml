@@ -102,7 +102,9 @@ rhino:
   - <%= build.less.source_map_output %>
   - <%= build.source_map %>
 
-  # append rhino-specific code
+
+# <%= build.rhinolessc %>
+rhinolessc:
   - <%= build.append.rhino %>
 
 

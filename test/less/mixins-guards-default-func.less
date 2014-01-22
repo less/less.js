@@ -117,18 +117,18 @@ guard-default-expr-never {
 // not conflicting multiple default() uses:
 
 guard-default-multi-1 {
-    .m(0)                      {case:       0}
-    .m(@x) when (default())    {default-1: @x}
-    .m(2)  when (default())    {default-2: @x}
+    .m(0)                   {case:       0}
+    .m(@x) when (default()) {default-1: @x}
+    .m(2)  when (default()) {default-2: @x}
 
     &-0 {.m(0)}
     &-1 {.m(1)}
 }
 
 guard-default-multi-2 {
-    .m(1, @x)   when (default())  {default-1: @x}
-    .m(2, @x)   when (default())  {default-2: @x}
-    .m(@x, yes) when (default())  {default-3: @x}
+    .m(1, @x)   when (default()) {default-1: @x}
+    .m(2, @x)   when (default()) {default-2: @x}
+    .m(@x, yes) when (default()) {default-3: @x}
 
     &-1 {.m(1, no)}
     &-2 {.m(2, no)}
@@ -155,6 +155,22 @@ guard-default-multi-4 {
     .m(2)                                      {case:    2}
     
     .m(1);
+    .m(2);
+}
+
+guard-default-not-ambiguos-2 {
+    .m(@x)                     {case:         1}
+    .m(@x) when (default())    {default:     @x}
+    .m(@x) when not(default()) {not-default: @x}
+
+    .m(2);
+}
+
+guard-default-not-ambiguos-3 {
+    .m(@x)                     {case:           1}
+    .m(@x) when not(default()) {not-default-1: @x}
+    .m(@x) when not(default()) {not-default-2: @x}
+
     .m(2);
 }
 

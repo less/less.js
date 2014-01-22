@@ -24,3 +24,10 @@
   transform: t1, t2, t3;
   background: b1, b2, b3;
 }
+.test-spaced {
+  transform: t1 t2 t3;
+  background: b1 b2, b3;
+}
+.test-interleaved-with-spaced {
+  transform: t1a t1b, b1 t2a t2b t2c, b2, b3 t3a t3b;
+}

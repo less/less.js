@@ -13,7 +13,7 @@
   name-value: name;
   string-value: "string";
   number-value: 12345678;
-  color-value: #0000ff;
+  color-value: blue;
   rgba-value: rgba(80, 160, 240, 0.67);
   empty-value: ;
   name-length: 1;

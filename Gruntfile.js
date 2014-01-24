@@ -70,6 +70,15 @@ module.exports = function(grunt) {
         src: ['<%= build.rhino %>'],
         dest: 'dist/less-rhino-<%= pkg.version %>.js'
       },
+      // lessc for Rhino
+      rhinolessc: {
+        options: {
+          banner: '/* LESS.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
+          footer: '' // override task-level footer
+        },
+        src: ['<%= build.rhinolessc %>'],
+        dest: 'dist/lessc-rhino-<%= pkg.version %>.js'
+      },
       // Generate readme
       readme: {
         // override task-level banner and footer
@@ -234,7 +243,8 @@ module.exports = function(grunt) {
 
   // Release Rhino Version
   grunt.registerTask('rhino', [
-    'concat:rhino'
+    'concat:rhino',
+    'concat:rhinolessc'
   ]);
   
   // Run all browser tests

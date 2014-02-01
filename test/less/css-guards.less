@@ -8,7 +8,7 @@
 @a: #ddd;
 
 .see-the {
-  @a: #444; // this mirrors what mixins do - they evaluate guards at the point of execution
+  @a: #444; // this mirrors what mixins do - they evaluate the guards at the point of definition
   .light();
   .dark();
 }
@@ -62,3 +62,12 @@
     color: red;
   }
 }
+
+.mixin-with-guard-inside(@colWidth) {
+  // selector with guard (applies also to & when() ...)
+  .clsWithGuard when (@colWidth <= 0) {
+    dispaly: none;
+  }
+}
+
+.mixin-with-guard-inside(0px);

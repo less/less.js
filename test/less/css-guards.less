@@ -71,3 +71,29 @@
 }
 
 .mixin-with-guard-inside(0px);
+
+.dont-split-me-up {
+  width: 1px;
+  & when (@c = 3) {
+    color: red;
+  }
+  & when (@c = 3) {
+    height: 1px;
+  }
+  + & when (@c = 3) { // creates invalid css but tests that we don't fold it in
+    sibling: true;
+  }
+}
+
+.scope-check when (@c = 3) {
+  @k: 1px;
+  & when (@c = 3) {
+    @k: 2px;
+    sub-prop: @k;
+  }
+  prop: @k;
+}
+.scope-check-2 {
+  .scope-check();
+  @k:4px;
+}

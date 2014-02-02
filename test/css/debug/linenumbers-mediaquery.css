@@ -33,3 +33,8 @@
 .tst2 {
   color: white;
 }
+@media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000327}}
+.test {
+  color: red;
+  width: 2;
+}

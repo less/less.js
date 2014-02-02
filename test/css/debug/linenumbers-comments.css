@@ -33,3 +33,8 @@
 .tst2 {
   color: white;
 }
+/* line 27, {path}linenumbers.less */
+.test {
+  color: red;
+  width: 2;
+}

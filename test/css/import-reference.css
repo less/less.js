@@ -14,9 +14,6 @@
 .visible:hover {
   color: green;
 }
-.visible {
-  color: green;
-}
 .only-with-visible + .visible,
 .visible + .only-with-visible,
 .visible + .visible {
@@ -35,9 +32,6 @@
   color: green;
 }
 .b:hover {
-  color: green;
-}
-.b {
   color: green;
 }
 .b + .b {

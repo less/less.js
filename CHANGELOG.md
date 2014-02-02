@@ -1,3 +1,18 @@
+# 1.6.2
+
+2014-02-02
+
+ - The Rhino release is fixed!
+ - ability to use uppercase colours
+ - Fix a nasty bug causing syntax errors when selector interpolation is preceded by a long comment (and some other cases)
+ - Fix a major bug with the variable scope in guards on selectors (e.g. not mixins)
+ - Fold in `& when () {` to the current selector rather than duplicating it
+ - fix another issue with array prototypes
+ - add a url-args option which adds a value to all urls (for cache busting)
+ - Round numbers to 8 decimal places - thereby stopping javascript precision errors
+ - some improvements to the default() function in more complex scenarios
+ - improved missing '{' and '(' detection
+
 # 1.6.1
 
 2014-01-12

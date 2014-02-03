@@ -41,7 +41,7 @@
 .tst2 {
   color: white;
 }
-/* line 27, c:\git\less.js\test\less\debug\linenumbers.less */
+/* line 27, {path}linenumbers.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000327}}
 .test {
   color: red;

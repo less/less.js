@@ -1,0 +1,41 @@
+
+@a: display;
+@b: flexbox;
+@c: 25%;
+@d: c;
+
+@supports (@{a}: @b) and (width: @{c}) or (height: @@d) {
+    div {
+        width: 100px;
+    }
+}
+
+@name: enlarger;
+@keyframes @name {
+    from {font-size: 12px;}
+    to   {font-size: 15px;}
+}
+
+.m(reducer);
+.m(@name) {
+    @-webkit-keyframes @name {
+        from {font-size: 13px;}
+        to   {font-size: 10px;}
+    }
+}
+
+@types: toc, index;
+@dir:   :left;
+
+@page @dir, @types {
+    margin: 2cm;
+}
+
+@url:    url(http://www.w4.org/);
+@prefix: less;
+
+@document @url, domain(@{prefix}css.org) {
+    body {
+        color: purple;
+    }
+}

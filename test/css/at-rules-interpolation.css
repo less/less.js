@@ -1,0 +1,29 @@
+@supports (display: flexbox) and (width: 25%) or (height: 25%) {
+  div {
+    width: 100px;
+  }
+}
+@keyframes enlarger {
+  from {
+    font-size: 12px;
+  }
+  to {
+    font-size: 15px;
+  }
+}
+@-webkit-keyframes reducer {
+  from {
+    font-size: 13px;
+  }
+  to {
+    font-size: 10px;
+  }
+}
+@page :left, toc, index {
+  margin: 2cm;
+}
+@document url(http://www.w4.org/), domain(lesscss.org) {
+  body {
+    color: purple;
+  }
+}

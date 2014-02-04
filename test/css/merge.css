@@ -29,5 +29,6 @@
   background: b1 b2, b3;
 }
 .test-interleaved-with-spaced {
-  transform: t1a t1b, b1 t2a t2b t2c, b2, b3 t3a t3b;
+  transform: t1s, t2 t3s, t4 t5s t6s;
+  background: b1 b2s, b3, b4;
 }

@@ -8,8 +8,6 @@
 }
 #built-in {
   escaped: -Some::weird(#thing, y);
-  gsub: "Hello, World!";
-  gsub-captured: "This is a new string.";
   lighten: #ffcccc;
   darken: #330000;
   saturate: #203c31;
@@ -47,6 +45,9 @@
   contrast-dark-thresh-per: #eeeeee;
   contrast-high-thresh-per: #eeeeee;
   contrast-low-thresh-per: #111111;
+  replace: "Hello, World!";
+  replace-captured: "This is a new string.";
+  replace-options: "2 + 2 = 4";
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
   format-multiple: "hello earth 2";

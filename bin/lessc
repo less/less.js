@@ -11,7 +11,7 @@ var args = process.argv.slice(1);
 var options = {
     depends: false,
     compress: false,
-    yuicompress: false,
+    cleancss: false,
     max_line_len: -1,
     optimization: 1,
     silent: false,
@@ -20,12 +20,17 @@ var options = {
     paths: [],
     color: true,
     strictImports: false,
+    insecure: false,
     rootpath: '',
     relativeUrls: false,
     ieCompat: true,
     strictMath: false,
-    strictUnits: false
+    strictUnits: false,
+    globalVariables: '',
+    modifyVariables: '',
+    urlArgs: ''
 };
+var cleancssOptions = {};
 var continueProcessing = true,
     currentErrorcode;
 
@@ -35,7 +40,7 @@ process.on('exit', function() { process.reallyExit(currentErrorcode) });
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
-        sys.puts(arg + " option requires a parameter");
+        console.log(arg + " option requires a parameter");
         continueProcessing = false;
         return false;
     }
@@ -45,12 +50,20 @@ var checkArgFunc = function(arg, option) {
 var checkBooleanArg = function(arg) {
     var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
     if (!onOff) {
-        sys.puts(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        console.log(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
         return false;
     }
     return Boolean(onOff[2]);
 };
+
+var parseVariableOption = function(option) {
+    var parts = option.split('=', 2);
+    return '@' + parts[0] + ': ' + parts[1] + ';\n';
+};
+
+var warningMessages = "";
+var sourceMapFileInline = false;
 
 args = args.filter(function (arg) {
     var match;
@@ -60,13 +73,13 @@ args = args.filter(function (arg) {
         return false;
     }
 
-    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=([^\s]*))?$/i)) { arg = match[1] }
+    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i)) { arg = match[1] }
     else { return arg }
 
     switch (arg) {
         case 'v':
         case 'version':
-            sys.puts("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
+            console.log("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
             continueProcessing = false;
         case 'verbose':
             options.verbose = true;
@@ -90,12 +103,18 @@ args = args.filter(function (arg) {
         case 'compress':
             options.compress = true;
             break;
+        case 'insecure':
+            options.insecure = true;
+            break;
         case 'M':
         case 'depends':
             options.depends = true;
             break;
         case 'yui-compress':
-            options.yuicompress = true;
+            warningMessages += "yui-compress option has been removed. ignoring.";
+            break;
+        case 'clean-css':
+            options.cleancss = true;
             break;
         case 'max-line-len':
             if (checkArgFunc(arg, match[2])) {
@@ -110,6 +129,9 @@ args = args.filter(function (arg) {
             break;
         case 'no-ie-compat':
             options.ieCompat = false;
+            break;
+        case 'no-js':
+            options.javascriptEnabled = false;
             break;
         case 'include-path':
             if (checkArgFunc(arg, match[2])) {
@@ -127,6 +149,35 @@ args = args.filter(function (arg) {
         case 'line-numbers':
             if (checkArgFunc(arg, match[2])) {
                 options.dumpLineNumbers = match[2];
+            }
+            break;
+        case 'source-map':
+            if (!match[2]) {
+                options.sourceMap = true;
+            } else {
+                options.sourceMap = match[2];
+            }
+            break;
+        case 'source-map-rootpath':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapRootpath = match[2];
+            }
+            break;
+        case 'source-map-basepath':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapBasepath = match[2];
+            }
+            break;
+        case 'source-map-map-inline':
+            sourceMapFileInline = true;
+            options.sourceMap = true;
+            break;
+        case 'source-map-less-inline':
+            options.outputSourceFiles = true;
+            break;
+        case 'source-map-url':
+            if (checkArgFunc(arg, match[2])) {
+                options.sourceMapURL = match[2];
             }
             break;
         case 'rp':
@@ -151,6 +202,57 @@ args = args.filter(function (arg) {
                 options.strictUnits = checkBooleanArg(match[2]);
             }
             break;
+        case "global-var":
+            if (checkArgFunc(arg, match[2])) {
+                options.globalVariables += parseVariableOption(match[2]);
+            }
+            break;
+        case "modify-var":
+            if (checkArgFunc(arg, match[2])) {
+                options.modifyVariables += parseVariableOption(match[2]);
+            }
+            break;
+        case "clean-option":
+            var cleanOptionArgs = match[2].split(":");
+            switch(cleanOptionArgs[0]) {
+                case "--keep-line-breaks":
+                case "-b":
+                    cleancssOptions.keepBreaks = true;
+                    break;
+                case "--s0":
+                    cleancssOptions.keepSpecialComments = 0;
+                    break;
+                case "--s1":
+                    cleancssOptions.keepSpecialComments = 1;
+                    break;
+                case "--skip-advanced":
+                    cleancssOptions.noAdvanced = true;
+                    break;
+                case "--advanced":
+                    cleancssOptions.noAdvanced = false;
+                    break;
+                case "--selectors-merge-mode":
+                    cleancssOptions.selectorsMergeMode = cleanOptionArgs[1];
+                    break;
+                default:
+                    console.log("unrecognised clean-css option '" + cleanOptionArgs[0] + "'");
+                    console.log("we support only arguments that make sense for less, '--keep-line-breaks', '-b'");
+                    console.log("'--s0', '--s1', '--advanced', '--skip-advanced', '--selectors-merge-mode'");
+                    continueProcessing = false;
+                    currentErrorcode = 1;
+                    break;
+            }
+            break;
+        case 'url-args':
+            if (checkArgFunc(arg, match[2])) {
+                options.urlArgs = match[2];
+            }
+            break;
+        default:
+            require('../lib/less/lessc_helper').printUsage();
+            continueProcessing = false;
+            currentErrorcode = 1;
+            break;
     }
 });
 
@@ -166,12 +268,32 @@ if (input && input != '-') {
 var output = args[2];
 var outputbase = args[2];
 if (output) {
+    options.sourceMapOutputFilename = output;
     output = path.resolve(process.cwd(), output);
+    if (warningMessages) {
+        console.log(warningMessages);
+    }
+}
+
+options.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
+
+if (options.sourceMap === true) {
+    if (!output && !sourceMapFileInline) {
+        console.log("the sourcemap option only has an optional filename if the css filename is given");
+        return;
+    }
+    options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
+    options.sourceMap = path.basename(options.sourceMapFullFilename);
+}
+
+if (options.cleancss && options.sourceMap) {
+    console.log("the sourcemap option is not compatible with sourcemap support at the moment. See Issue #1656");
+    return;
 }
 
 if (! input) {
-    sys.puts("lessc: no input files");
-    sys.puts("");
+    console.log("lessc: no input files");
+    console.log("");
     require('../lib/less/lessc_helper').printUsage();
     currentErrorcode = 1;
     return;
@@ -199,12 +321,22 @@ if (options.depends) {
     sys.print(outputbase + ": ");
 }
 
+if (!sourceMapFileInline) {
+    var writeSourceMap = function(output) {
+        var filename = options.sourceMapFullFilename || options.sourceMap;
+        ensureDirectory(filename);
+        fs.writeFileSync(filename, output, 'utf8');
+    };
+}
+
 var parseLessFile = function (e, data) {
     if (e) {
-        sys.puts("lessc: " + e.message);
+        console.log("lessc: " + e.message);
         currentErrorcode = 1;
         return;
     }
+
+    data = options.globalVariables + data + options.modifyVariables;
 
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
@@ -227,10 +359,20 @@ var parseLessFile = function (e, data) {
                     verbose: options.verbose,
                     ieCompat: options.ieCompat,
                     compress: options.compress,
-                    yuicompress: options.yuicompress,
+                    cleancss: options.cleancss,
+                    cleancssOptions: cleancssOptions,
+                    sourceMap: Boolean(options.sourceMap),
+                    sourceMapFilename: options.sourceMap,
+                    sourceMapURL: options.sourceMapURL,
+                    sourceMapOutputFilename: options.sourceMapOutputFilename,
+                    sourceMapBasepath: options.sourceMapBasepath,
+                    sourceMapRootpath: options.sourceMapRootpath || "",
+                    outputSourceFiles: options.outputSourceFiles,
+                    writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
-                    strictUnits: options.strictUnits
+                    strictUnits: options.strictUnits,
+                    urlArgs: options.urlArgs
                 });
                 if (output) {
                     ensureDirectory(output);

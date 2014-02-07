@@ -32,6 +32,7 @@
   luma-cyan: luma(#00ffff);
   luma-white-alpha: luma(rgba(255,255,255,0.5));
   contrast-filter: contrast(30%);
+  saturate-filter: saturate(5%);
   contrast-white: contrast(#fff);
   contrast-black: contrast(#000);
   contrast-red: contrast(#ff0000);
@@ -88,14 +89,21 @@
   pow: pow(8px, 2);
   pow: pow(4, 3);
   pow: pow(3, 3em);
+  min: min(0);
+  min: min("junk", 6, 5);
+  min: min(1pc, 3pt);
+  max: max(1, 3);
+  max: max(3%, 1cm, 8%, 2mm);
   percentage: percentage((10px / 50));
   color: color("#ff0011");
   tint: tint(#777777, 13);
   tint-full: tint(#777777, 100);
   tint-percent: tint(#777777, 13%);
+  tint-negative: tint(#777777, -13%);
   shade: shade(#777777, 13);
   shade-full: shade(#777777, 100);
   shade-percent: shade(#777777, 13%);
+  shade-negative: shade(#777777, -13%);
 
   fade-out: fadeOut(red, 5%); // support fadeOut and fadeout
   fade-in: fadein(fadeout(red, 10%), 5%);
@@ -107,11 +115,13 @@
   mix-0: mix(#ff0000, #ffff00, 0);
   mix-100: mix(#ff0000, #ffff00, 100);
   mix-weightless: mix(#ff0000, #ffff00);
+  mixt: mix(#ff0000, transparent);
 
   .is-a {
     color: iscolor(#ddd);
     color1: iscolor(red);
     color2: iscolor(rgb(0, 0, 0));
+    color3: iscolor(transparent);
     keyword: iskeyword(hello);
     number: isnumber(32);
     string: isstring("hello");
@@ -124,6 +134,8 @@
 
 #alpha {
   alpha: darken(hsla(25, 50%, 50%, 0.6), 10%);
+  alpha2: alpha(rgba(3, 4, 5, 0.5));
+  alpha3: alpha(transparent);
 }
 
 #blendmodes {
@@ -138,7 +150,8 @@
   negation: negation(#f60000, #313131);
 }
 
-#extract {
+#extract-and-length {
   @anon: A B C 1 2 3;
-  result: extract(@anon, 6) extract(@anon, 5) extract(@anon, 4) extract(@anon, 3) extract(@anon, 2) extract(@anon, 1);
+  extract: extract(@anon, 6) extract(@anon, 5) extract(@anon, 4) extract(@anon, 3) extract(@anon, 2) extract(@anon, 1);
+  length: length(@anon);
 }

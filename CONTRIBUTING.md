@@ -3,7 +3,7 @@
 > We welcome feature requests and bug reports. Please read these guidelines before submitting one. 
 
 
-<span class="warning">**Words that begin with the at sign (`@`) must be wrapped in backticks!** </span>. as a courtesy to avoid sending notifications to any user that might have the `@username` being referenced. Remember, usernames start with the at sign.
+<span class="warning">**Words that begin with the at sign (`@`) must be wrapped in backticks!** </span>. As a courtesy to avoid sending notifications to any user that might have the `@username` being referenced, please remember that GitHub usernames also start with the at sign. If you don't wrap them in backticks, users will get unintended notifications from you.
 
 GitHub has other great markdown features as well, [go here to learn more about them](https://help.github.com/articles/github-flavored-markdown).   
 
@@ -17,7 +17,9 @@ We only accept issues that are bug reports or feature requests. Bugs must be iso
 3. **Test with the latest version**. We get a lot of issues that could be resolved by updating your version of Less.js. 
 3. **Include a live example.** Please use [less2css.org](http://less2css.org/) for sharing your isolated test cases. 
 4. **Share as much information as possible.** Include operating system and version. Describe how you use Less. If you use it in the browser, please include browser and version, and the version of Less.js you're using. Let us know if you're using the command line (`lessc`) or an external tool. And try to include steps to reproduce the bug.
+5. If you have a solution or suggestion for how to fix the bug you're reporting, please include it, or make a pull request - don't assume the maintainers know how to fix it just because you do.
 
+Please report documentation issues in [the documentation project](https://github.com/less/less-docs).
 
 ## Feature Requests
 
@@ -33,8 +35,7 @@ _Pull requests are encouraged!_
 * Start by adding a feature request to get feedback and see how your idea is received. 
 * If your pull request solves an existing issue, but it's different in some way, _please create a new issue_ and make sure to discuss it with the core contributors. Otherwise you risk your hard work being rejected.
 * Do not change the **./dist/** folder, we do this when releasing
-* _Please add tests_ for your work. Use `make test` to see if they pass node.js tests and `make browser-test` to see the browser ([PhantomJS](http://phantomjs.org/)) tests pass.
-
+* _Please add tests_ for your work. Tests are invoked using `grunt test` command. It will run both node.js tests and browser ([PhantomJS](http://phantomjs.org/)) tests. 
 
 ### Coding Standards
 

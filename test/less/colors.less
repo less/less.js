@@ -37,6 +37,7 @@
   .b { color: (#eee + #fff); } // #ffffff
   .c { color: (#aaa * 3); } // #ffffff
   .d { color: (#00ee00 + #009900); } // #00ff00
+  .e { color: rgba(-99.9, 31.4159, 321, 0.42); }  
 }
 
 #grey {
@@ -89,4 +90,9 @@
     #hsl {
         opacity: alpha(hsl(120, 100%, 50%));
     }
+}
+
+#percentage {
+  color: red(rgb(100%, 0, 0));
+  border-color: rgba(100%, 0, 0, 50%);
 }

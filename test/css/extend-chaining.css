@@ -51,6 +51,15 @@
 .y {
   color: z;
 }
+.va,
+.vb,
+.vc {
+  color: black;
+}
+.vb,
+.vc {
+  color: white;
+}
 @media tv {
   .ma,
   .mb,

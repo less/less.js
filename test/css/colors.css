@@ -37,6 +37,9 @@
 #overflow .d {
   color: #00ff00;
 }
+#overflow .e {
+  color: rgba(0, 31, 255, 0.42);
+}
 #grey {
   color: #c8c8c8;
 }
@@ -77,4 +80,8 @@
 }
 #alpha #hsl {
   opacity: 1;
+}
+#percentage {
+  color: 255;
+  border-color: rgba(255, 0, 0, 0.5);
 }

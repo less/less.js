@@ -1,3 +1,88 @@
+# 1.6.2
+
+2014-02-02
+
+ - The Rhino release is fixed!
+ - ability to use uppercase colours
+ - Fix a nasty bug causing syntax errors when selector interpolation is preceded by a long comment (and some other cases)
+ - Fix a major bug with the variable scope in guards on selectors (e.g. not mixins)
+ - Fold in `& when () {` to the current selector rather than duplicating it
+ - fix another issue with array prototypes
+ - add a url-args option which adds a value to all urls (for cache busting)
+ - Round numbers to 8 decimal places - thereby stopping javascript precision errors
+ - some improvements to the default() function in more complex scenarios
+ - improved missing '{' and '(' detection
+
+# 1.6.1
+
+2014-01-12
+
+ - support ^ and ^^ shadow dom selectors
+ - fix sourcemap selector (used to report end of the element or selector) and directive position (previously not supported)
+ - fix parsing empty less files
+ - error on (currently) ambiguous guards on multiple css selectors
+ - older environments - protect against typeof regex returning function
+ - Do not use default keyword
+ - use innerHTML in tests, not innerText
+ - protect for-in in case Array and Object prototypes have custom fields
+
+# 1.6.0
+
+2014-01-01
+
+ - Properties can be interpolated, e.g. @{prefix}-property: value;
+ - a default function has been added only valid in mixin definitions to determine if no other mixins have been matched
+ - Added a plugins option that allows specifying an array of visitors run on the less AST
+ - Performance improvements that may result in approx 20-40% speed up
+ - Javascript evaluations returning numbers can now be used in calculations/functions
+ - fixed issue when adding colours, taking the alpha over 1 and breaking when used in colour functions
+ - when adding together 2 colours with non zero alpha, the alpha will now be combined rather than added
+ - the advanced colour functions no longer ignore transparency, they blend that too
+ - Added --clean-option and cleancssOptions to allow passing in clean css options
+ - rgba declarations are now always clamped e.g. rgba(-1,258,258, -1) becomes rgba(0, 255, 255, 0)
+ - Fix possible issue with import reference not bringing in styles (may not be a bugfix, just a code tidy)
+ - Fix some issues with urls() being prefixed twice and unquoted urls in mixins being processed each time they are called
+ - Fixed error messages for undefined variables in javascript evaluation
+ - Fixed line/column numbers from math errors
+
+# 1.5.1
+
+2013-11-17
+
+ - Added source-map-URL option
+ - Fixed a bug which meant the minimised 1.5.0 browser version was not wrapped, meaning it interfered with require js
+ - Fixed a bug where the browser version assume port was specified
+ - Added the ability to specify variables on the command line
+ - Upgraded clean-css and fixed it from trying to import
+ - correct a bug meaning imports weren't synchronous (syncImport option available for full synchronous behaviour)
+ - better mixin matching behaviour with calling multiple classes e.g. .a.b.c;
+
+# 1.5.0
+
+2013-10-21
+
+ - sourcemap support
+ - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
+ - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
+ - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
+ - support for guards on selectors (currently only if you have a single selector)
+ - allow property merging through the +: syntax
+ - Added min/max functions
+ - Added length function and improved extract to work with comma seperated values
+ - when using import multiple, sub imports are imported multiple times into final output
+ - fix bad spaces between namespace operators
+ - do not compress comment if it begins with an exclamation mark
+ - Fix the saturate function to pass through when using the CSS syntax
+ - Added svg-gradient function
+ - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
+ - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
+ - support transparent as a color, but not convert between rgba(0, 0, 0, 0) and transparent
+ - remove sys.puts calls to stop deprecation warnings in future node.js releases
+ - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
+ - Browser: added errorReporting option which can be "html" (default) or "console" or a function
+ - Now uses grunt for building and testing
+ - A few bug fixes for media queries, extends, scoping, compression and import once.
+
 # 1.4.2
 
 2013-07-20
@@ -22,7 +107,7 @@
  - fix passing of strict maths option
 
 # 1.4.0 Beta 4
-
+ 
 2013-05-04
 
  - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
@@ -55,7 +140,7 @@
  - significant bug fixes to our debug options
  - other parameters can be used as defaults in mixins e.g. .a(@a, @b:@a)
  - an error is shown if properties are used outside of a ruleset
- - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 3 
+ - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14 
  - added luma, hsvhue, hsvsaturation, hsvvalue functions
  - added pow, pi, mod, tan, sin, cos, atan, asin, acos and sqrt math functions
  - added convert function, e.g. convert(1rad, deg) => value in degrees

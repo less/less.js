@@ -131,6 +131,7 @@ a {
   }
 }
 [prop],
+[prop=10%],
 [prop="value@{num}"],
 [prop*="val@{num}"],
 [|prop~="val@{num}"],
@@ -140,4 +141,16 @@ a {
 [@{num}=@{num}],
 [@{num}] {
   attributes: yes;
+}
+
+/*
+Large comment means chunk will be emitted after } which means chunk will begin with whitespace...
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+*/
+@{selector} {
+  color: red;
 }

@@ -1,7 +1,7 @@
 .comma-delimited {
   text-shadow: -1px -1px 1px #ff0000, 6px 5px 5px #ffff00;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset, 0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
-  -webkit-transform: rotate(-0.0000000001deg);
+  -webkit-transform: rotate(0deg);
 }
 @font-face {
   font-family: Headline;
@@ -97,16 +97,16 @@ p::before {
   font-size: 10px;
 }
 @namespace foo url(http://www.example.com);
-foo | h1 {
+foo|h1 {
   color: blue;
 }
-foo | * {
+foo|* {
   color: yellow;
 }
-| h1 {
+|h1 {
   color: red;
 }
-* | h1 {
+*|h1 {
   color: green;
 }
 h1 {
@@ -114,4 +114,16 @@ h1 {
 }
 .upper-test {
   UpperCaseProperties: allowed;
+}
+@host {
+  div {
+    display: block;
+  }
+}
+::distributed(input::placeholder) {
+  color: #b3b3b3;
+}
+.shadow ^ .dom,
+body ^^ .shadow {
+  display: done;
 }

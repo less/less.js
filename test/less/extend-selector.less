@@ -82,3 +82,18 @@ div.ext5,
     &:extend([data="test3"] all);
   }
 }
+
+.header {
+  .header-nav {
+    background: red;
+    &:before {
+      background: blue;
+    }
+  }
+}
+
+.footer {
+  .footer-nav {
+    &:extend( .header .header-nav all );
+  }
+}

@@ -61,12 +61,30 @@
 .amp {
     &.support {
         color: orange;
+        .higher {
+            top: 0px;
+        }
+        &.deeper {
+            height: auto;
+        }
     }
 }
 .extended {
     .bo;
     .jo.ki;
     .amp.support;
+    .amp.support.higher;
+    .amp.support.deeper;
+}
+.do .re .mi .fa {
+    .sol .la {
+        .si {
+            color: cyan;
+        }
+    }
+}
+.mutli-selector-parents {
+    .do.re.mi.fa.sol.la.si;
 }
 .foo .bar {
   .bar;
@@ -111,4 +129,13 @@ h3 { .margin_between(15px, 5px); }
     .paddingFloat(((10px + 12) * 2));
 
     &.large { .paddingFloat(((10em * 2) * 2)); }
+}
+.clearfix() {
+  // ...
+}
+.clearfix {
+  .clearfix();
+}
+.foo {
+  .clearfix();
 }

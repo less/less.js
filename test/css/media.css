@@ -53,9 +53,6 @@
     width: 500px;
   }
 }
-@media a {
-  
-}
 @media a and b {
   .first .second .third {
     width: 300px;
@@ -106,7 +103,9 @@
   }
 }
 @media only screen and (max-width: 200px) {
-  width: 480px;
+  body {
+    width: 480px;
+  }
 }
 @media print {
   @page :left {
@@ -119,7 +118,9 @@
     margin: 1cm;
   }
   @page :first {
-    size: 8.5in 11in;@top-left {
+    size: 8.5in 11in;
+    
+    @top-left {
       margin: 1cm;
     }
     @top-left-corner {
@@ -199,5 +200,20 @@ body {
 @media (max-width: 1200px) and (max-width: 900px) {
   body {
     font-size: 11px;
+  }
+}
+@media (min-width: 480px) {
+  .nav-justified > li {
+    display: table-cell;
+  }
+}
+@media (min-width: 768px) and (min-width: 480px) {
+  .menu > li {
+    display: table-cell;
+  }
+}
+@media all and tv {
+  .all-and-tv-variables {
+    var: all-and-tv;
   }
 }

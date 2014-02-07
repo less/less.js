@@ -1,5 +1,18 @@
 {
   "name": "less",
-  "version": "1.4.2",
-  "main": ["./lib/less/index"]
+  "version": "1.6.2",
+  "main": "./dist/less-1.6.2.js",
+  "ignore": [
+    "**/.*",
+    "benchmark",
+    "bin",
+    "build",
+    "lib",
+    "test",
+    "*.md",
+    "LICENSE",
+    "Gruntfile.js",
+    "package.json",
+    "bower.json"
+  ]
 }

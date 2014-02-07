@@ -1,9 +1,12 @@
 {
   "name": "less",
-  "version": "1.4.2",
+  "version": "1.6.2",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
-  "author": "Alexis Sellier <self@cloudhead.net>",
+  "author": {
+    "name": "Alexis Sellier",
+    "email": "self@cloudhead.net"
+  },
   "contributors": [
     "The Core Less Team"
   ],
@@ -14,6 +17,12 @@
     "type": "git",
     "url": "https://github.com/less/less.js.git"
   },
+  "licenses": [
+    {
+      "type": "Apache v2",
+      "url": "https://github.com/less/less.js/blob/master/LICENSE"
+    }
+  ],
   "bin": {
     "lessc": "./bin/lessc"
   },
@@ -22,23 +31,35 @@
     "test": "./test"
   },
   "jam": {
-    "main": "./dist/less-1.4.2.js"
+    "main": "./dist/less-1.5.0.js"
   },
   "engines": {
     "node": ">=0.4.2"
   },
   "scripts": {
-    "test": "make test"
+    "test": "grunt test"
   },
   "optionalDependencies": {
     "mime": "1.2.x",
     "request": ">=2.12.0",
-    "mkdirp": "~0.3.4",
-    "ycssmin": ">=1.0.1"
+    "mkdirp": "~0.3.5",
+    "clean-css": "2.0.x",
+    "source-map": "0.1.x"
   },
   "devDependencies": {
-    "diff": "~1.0"
-  },
+    "diff": "~1.0",
+    "grunt": "~0.4.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-connect": "~0.3.0",
+    "grunt-contrib-jasmine": "~0.5.2",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt-shell": "~0.3.1",
+    "http-server": "~0.5.5",
+    "matchdep": "~0.1.2",
+    "time-grunt": "~0.1.1"
+ },
   "keywords": [
     "compile less",
     "css nesting",
@@ -63,11 +84,5 @@
     "stylesheet",
     "variables in css",
     "css less"
-  ],
-  "licenses": [
-    {
-      "type": "Apache v2",
-      "url": "https://github.com/less/less.js/blob/master/LICENSE"
-    }
   ]
 }

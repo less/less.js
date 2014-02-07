@@ -59,6 +59,18 @@
   color: z;
 }
 
+//very simple chaining, but with the extend inside the ruleset
+.va {
+  color: black;
+}
+.vb {
+  &:extend(.va);
+  color: white;
+}
+.vc {
+  &:extend(.vb);
+}
+
 // media queries - dont extend outside, do extend inside
 
 @media tv {

@@ -18,6 +18,7 @@
     kg9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC);
   background-image: url(data:image/x-png,f9difSSFIIGFIFJD1f982FSDKAA9==);
   background-image: url(http://fonts.googleapis.com/css?family=\"Rokkitt\":\(400\),700);
+  background-image: url("http://fonts.googleapis.com/css?family=\"Rokkitt\":\(400\),700");
 }
 
 #svg-data-uri {
@@ -33,6 +34,11 @@
 }
 
 @import "import/import-and-relative-paths-test";
+
+#relative-url-import {
+    .unquoted-relative-path-bg;
+    .quoted-relative-path-border-image;
+}
 
 #data-uri {
   uri: data-uri('image/jpeg;base64', '../data/image.jpg');
@@ -55,3 +61,12 @@
 }
 
 .add_an_import("file.css");
+
+#svg-functions {
+  background-image: svg-gradient(to bottom, black, white);
+  background-image: svg-gradient(to bottom, black, orange 3%, white);
+  @green_5: green 5%;
+  @orange_percentage: 3%;
+  @orange_color: orange;
+  background-image: svg-gradient(to bottom, (mix(black, white) + #444) 1%, @orange_color @orange_percentage, ((@green_5)), white 95%);
+}

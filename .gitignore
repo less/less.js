@@ -1,8 +1,24 @@
-node_modules
+# OS and IDE
 .emacs*
 *.flymake
 *~
 .#*
 .idea
+*.sublime-*
+
+# npm
+node_modules
+npm-debug.log
+
+# project-specific
+tmp
 test/browser/less.js
-test/browser/test-runner-*.htm
+test/sourcemaps/*.map
+test/sourcemaps/*.css
+
+# grunt
+.grunt
+
+# gradle
+.gradle
+out

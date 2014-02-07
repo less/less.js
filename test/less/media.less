@@ -109,7 +109,9 @@ body {
 }
 @smartphone: ~"only screen and (max-width: 200px)";
 @media @smartphone {
-  width: 480px;
+  body {
+    width: 480px;
+  }
 }
 
 @media print {
@@ -206,5 +208,27 @@ body {
 
   @media (max-width: 900px) {
     body { font-size: 11px; }
+  }
+}
+
+.nav-justified {
+  @media (min-width: 480px) {
+    > li {
+      display: table-cell;
+    }
+  }
+}
+
+.menu
+{
+  @media (min-width: 768px) {
+    .nav-justified();
+  }
+}
+@all: ~"all";
+@tv: ~"tv";
+@media @all and @tv {
+  .all-and-tv-variables {
+    var: all-and-tv;
   }
 }

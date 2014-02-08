@@ -1,3 +1,9 @@
+# 1.6.3
+
+2014-02-08
+
+ - Fix issue with calling toCSS twice not working in some situations (like with bootstrap 2)
+
 # 1.6.2
 
 2014-02-02

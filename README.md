@@ -1,4 +1,4 @@
-# [Less.js v1.6.2](http://lesscss.org)
+# [Less.js v1.6.3](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 

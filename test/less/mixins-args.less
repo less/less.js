@@ -213,3 +213,18 @@ body {
 div {
   .test-calling-one-arg-mixin(1);
 }
+
+.test-calling-with-ellipsis-variable {
+  .mixin-multi-arg(1; 2; 3; 4) { }
+
+  @all: 1, 2, 3, 4;
+  .mixin-multi-arg(@all...);
+
+  @first: 1, 2;
+  @last: 3, 4;
+  .mixin-multi-arg(@first...; @last...);
+
+  @single: 1;
+  .mixin-multi-arg(@single...; 2; 3; 4);
+  .mixin-multi-arg(@single...; 2; @last...);
+}

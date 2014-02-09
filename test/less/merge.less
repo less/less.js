@@ -57,3 +57,22 @@
     background+: b2, b3;
     transform+:  t3;
 }
+
+.test-spaced {
+    transform+_:  t1;
+    background+_: b1;
+    transform+_:  t2;
+    background+_: b2, b3;
+    transform+_:  t3;
+}
+
+.test-interleaved-with-spaced {
+    transform+_:  t1s;
+    transform+:   t2;
+    background+:  b1;
+    transform+_:  t3s;
+    transform+:   t4 t5s;
+    background+_: b2s, b3;
+    transform+_:  t6s;
+    background+:  b4;
+}

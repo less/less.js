@@ -1,0 +1,16 @@
+@ruleset: {
+     color: black;
+     background: white;
+  };
+
+.wrap-mixin(@ruleset) {
+  .wrap-selector {
+      @ruleset();
+    }
+};
+
+.wrap-mixin({
+  color: black;
+});
+
+.wrap-mixin(@ruleset);

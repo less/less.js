@@ -143,6 +143,7 @@ tree:
   - <%= build.lib %>/tree/quoted.js
   - <%= build.lib %>/tree/rule.js
   - <%= build.lib %>/tree/ruleset.js
+  - <%= build.lib %>/tree/ruleset-call.js
   - <%= build.lib %>/tree/selector.js
   - <%= build.lib %>/tree/unicode-descriptor.js
   - <%= build.lib %>/tree/url.js

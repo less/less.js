@@ -151,3 +151,9 @@
     .inner-locked-mixin();
   }
 }
+.bug-100cm-1m(@a) when (@a = 1) {
+  .failed {
+    one-hundred: not-equal-to-1;
+  }
+}
+.bug-100cm-1m(100cm);

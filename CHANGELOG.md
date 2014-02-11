@@ -1,3 +1,13 @@
+# 1.7.0
+
+2014-??-??
+
+ - Add support for using variables with @supports, @namespace, @charset
+ - Fix support for `.mixin(@args...)` when called with no args (e.g. `.mixin();`)
+ - Support property merging with +_ when spaces are needed and keep + for comma separated
+ - Do unit conversions with min and max functions. Don't pass through if not understood, throw an error
+ - Fix a bug when comparing a unit value to a non-unit value if the unit-value was the multiple of another unit (e.g. cm, mm, deg etc.)
+
 # 1.6.3
 
 2014-02-08

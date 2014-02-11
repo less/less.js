@@ -1,5 +1,6 @@
 .zero {
   variadic: true;
+  named-variadic: true;
   zero: 0;
   one: 1;
   two: 2;
@@ -7,6 +8,7 @@
 }
 .one {
   variadic: true;
+  named-variadic: true;
   one: 1;
   one-req: 1;
   two: 2;
@@ -14,11 +16,13 @@
 }
 .two {
   variadic: true;
+  named-variadic: true;
   two: 2;
   three: 3;
 }
 .three {
   variadic: true;
+  named-variadic: true;
   three-req: 3;
   three: 3;
 }

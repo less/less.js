@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/less/less.js.png?branch=master)](https://travis-ci.org/less/less.js)
 # [Less.js v<%= pkg.version %>](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).

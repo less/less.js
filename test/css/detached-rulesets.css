@@ -2,6 +2,20 @@
   color: black;
 }
 .wrap-selector {
+  color: red;
+}
+.wrap-selector {
   color: black;
   background: white;
+}
+header {
+  background: blue;
+}
+@media screen and (min-width: 1200) {
+  header {
+    background: red;
+  }
+}
+html.lt-ie9 header {
+  background: red;
 }

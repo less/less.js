@@ -31,3 +31,18 @@ header {
     background: red;
   });
 }
+
+.wrap-mixin-calls-wrap(@ruleset) {
+  .wrap-mixin(@ruleset);
+};
+
+.wrap-mixin({
+  test: extra-wrap;
+  .wrap-mixin-calls-wrap({
+    test: wrapped-twice;
+  });
+});
+
+.wrap-mixin({
+  test-func: unit(90px);
+});

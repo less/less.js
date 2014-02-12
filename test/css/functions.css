@@ -52,6 +52,8 @@
   eformat: rgb(32, 128, 64);
   unitless: 12;
   unit: 14em;
+  get-unit: px;
+  get-unit-empty: ;
   hue: 98;
   saturation: 12%;
   lightness: 95%;
@@ -82,10 +84,11 @@
   pow: 64;
   pow: 27;
   min: 0;
-  min: min("junk", 5);
-  min: 3pt;
+  min: 5;
+  min: 1pt;
+  min: 3mm;
   max: 3;
-  max: max(8%, 1cm);
+  max: 5em;
   percentage: 20%;
   color: #ff0011;
   tint: #898989;

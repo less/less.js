@@ -19,3 +19,13 @@ header {
 html.lt-ie9 header {
   background: red;
 }
+.wrap-selector {
+  test: extra-wrap;
+}
+.wrap-selector .wrap-selector {
+  test: wrapped-twice;
+}
+.wrap-selector {
+  test-func: 90;
+  test-arithmetic: 18px;
+}

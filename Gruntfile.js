@@ -1,4 +1,5 @@
 'use strict';
+var fs = require('fs');
 
 module.exports = function(grunt) {
 
@@ -59,7 +60,7 @@ module.exports = function(grunt) {
       },
       stable: {
         src: ['<%= build.browser %>'],
-        dest: 'dist/less-<%= pkg.version %>.js'
+        dest: 'dist/less.js'
       },
       // Rhino
       rhino: {
@@ -68,7 +69,7 @@ module.exports = function(grunt) {
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhino %>'],
-        dest: 'dist/less-rhino-<%= pkg.version %>.js'
+        dest: 'dist/less-rhino.js'
       },
       // lessc for Rhino
       rhinolessc: {
@@ -95,7 +96,7 @@ module.exports = function(grunt) {
       },
       stable: {
         src: ['<%= concat.stable.dest %>'],
-        dest: 'dist/less-<%= pkg.version %>.min.js'
+        dest: 'dist/less.min.js'
       }
     },
 
@@ -238,7 +239,8 @@ module.exports = function(grunt) {
   // Release
   grunt.registerTask('stable', [
     'concat:stable',
-    'uglify:stable'
+    'uglify:stable',
+    'updateBowerJson'
   ]);
 
   // Release Rhino Version
@@ -287,4 +289,10 @@ module.exports = function(grunt) {
   grunt.registerTask('readme', [
     'concat:readme'
   ]);
+
+  grunt.registerTask('updateBowerJson', function() {
+     var bowerJson = require('./bower.json');
+     bowerJson.version = grunt.config('pkg.version');
+     fs.writeFileSync('./bower.json', JSON.stringify(bowerJson,null,2));
+  });
 };

@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "diff": "~1.0",
-    "grunt": "~0.4.1",
+    "grunt": "~0.4.2",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-connect": "~0.3.0",
@@ -58,8 +58,9 @@
     "grunt-shell": "~0.3.1",
     "http-server": "~0.5.5",
     "matchdep": "~0.1.2",
-    "time-grunt": "~0.1.1"
- },
+    "time-grunt": "~0.1.1",
+    "grunt-contrib-copy": "~0.4.1"
+  },
   "keywords": [
     "compile less",
     "css nesting",

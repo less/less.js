@@ -3,14 +3,23 @@
      background: white;
   };
 
+@a: 1px;
 .wrap-mixin(@ruleset) {
+  @a: hidden and if you see this in the output its a bug;
+  @b: visible;
   .wrap-selector {
+      @c: visible;
       @ruleset();
+	  visible-one: @b;
+	  visible-two: @c;
     }
 };
 
 .wrap-mixin({
   color: black;
+  one: @a;
+  @b: hidden and if you see this in the output its a bug;
+  @c: hidden and if you see this in the output its a bug;
 });
 
 .wrap-mixin(@ruleset: {

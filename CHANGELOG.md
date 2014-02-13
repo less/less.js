@@ -1,3 +1,14 @@
+#2.0.0
+
+2014-??-??
+
+ - no longer including old versions of less in the repo or npm
+ - not including test and gradle files in npm (Note: TODO may need to move some test framework into lib for core plugins)
+ - colours now output in the format they are added unless compressing, so yellow will output yellow, not its hex counterpart
+TODO
+ - Environment Support
+ - Finalised Plugin Support
+
 # 1.7.0
 
 2014-??-??

@@ -62,9 +62,9 @@
   test: pass;
 }
 .colorguardtest {
-  content: is #ff0000;
-  content: is not #0000ff its #ff0000;
-  content: is not #0000ff its #800080;
+  content: is red;
+  content: is not blue its red;
+  content: is not blue its purple;
 }
 .stringguardtest {
   content: is theme1;

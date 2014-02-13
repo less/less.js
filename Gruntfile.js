@@ -78,7 +78,7 @@ module.exports = function(grunt) {
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhinolessc %>'],
-        dest: 'dist/lessc-rhino-<%= pkg.version %>.js'
+        dest: 'dist/lessc-rhino.js'
       },
       // Generate readme
       readme: {

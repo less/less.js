@@ -56,3 +56,10 @@ header {
   test-func: unit(90px);
   test-arithmetic: unit((9+9), px);
 });
+// without mixins
+@ruleset-2: {
+  b: 1;
+};
+.without-mixins {
+  @ruleset-2();
+}

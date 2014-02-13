@@ -42,3 +42,6 @@ html.lt-ie9 header {
   visible-one: visible;
   visible-two: visible;
 }
+.without-mixins {
+  b: 1;
+}

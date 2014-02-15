@@ -13,7 +13,6 @@ var options = {
     compress: false,
     cleancss: false,
     max_line_len: -1,
-    optimization: 1,
     silent: false,
     verbose: false,
     lint: false,
@@ -143,9 +142,6 @@ args = args.filter(function (arg) {
                     });
             }
             break;
-        case 'O0': options.optimization = 0; break;
-        case 'O1': options.optimization = 1; break;
-        case 'O2': options.optimization = 2; break;
         case 'line-numbers':
             if (checkArgFunc(arg, match[2])) {
                 options.dumpLineNumbers = match[2];

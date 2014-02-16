@@ -10,8 +10,8 @@
   .wrap-selector {
       @c: visible;
       @ruleset();
-	  visible-one: @b;
-	  visible-two: @c;
+      visible-one: @b;
+      visible-two: @c;
     }
 };
 
@@ -62,4 +62,41 @@ header {
 };
 .without-mixins {
   @ruleset-2();
+}
+@my-ruleset: {
+    .my-selector {
+      @media tv {
+        background-color: black;
+      }
+    }
+  };
+@media (orientation:portrait) {
+    @my-ruleset();
+    // doesn't work yet
+/*    .wrap-media-mixin({
+      @media tv {
+        .triple-wrapped-mq {
+          triple: true;
+        }
+      }
+    });*/
+}
+.wrap-media-mixin(@ruleset) {
+  @media widescreen {
+    @media print {
+      @ruleset();
+    }
+    @ruleset();
+  }
+  @ruleset();
+}
+// unlocking mixins
+@my-mixins: {
+  .mixin() {
+    test: test;
+  }
+};
+@my-mixins();
+.a {
+  .mixin();
 }

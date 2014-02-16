@@ -45,3 +45,20 @@ html.lt-ie9 header {
 .without-mixins {
   b: 1;
 }
+@media (orientation: portrait) {
+  /*    .wrap-media-mixin({
+      @media tv {
+        .triple-wrapped-mq {
+          triple: true;
+        }
+      }
+    });*/
+}
+@media (orientation: portrait) and tv {
+  .my-selector {
+    background-color: black;
+  }
+}
+.a {
+  test: test;
+}

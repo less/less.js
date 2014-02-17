@@ -49,6 +49,9 @@
   contrast-dark-thresh-per: contrast(#000, #111111, #eeeeee, 50%);
   contrast-high-thresh-per: contrast(#555, #111111, #eeeeee, 60%);
   contrast-low-thresh-per: contrast(#555, #111111, #eeeeee, 10%);
+  replace: replace("Hello, Mars.", "Mars\.", "World!");
+  replace-captured: replace("This is a string.", "(string)\.$", "new $1.");
+  replace-with-flags: replace("One + one = 4", "one", "2", "gi");
   format: %("rgb(%d, %d, %d)", @r, 128, 64);
   format-string: %("hello %s", "world");
   format-multiple: %("hello %s %d", "earth", 2);

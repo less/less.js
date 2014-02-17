@@ -1,6 +1,7 @@
 .wrap-selector {
   color: black;
   one: 1px;
+  four: magic-frame;
   visible-one: visible;
   visible-two: visible;
 }
@@ -45,18 +46,24 @@ html.lt-ie9 header {
 .without-mixins {
   b: 1;
 }
-@media (orientation: portrait) {
-  /*    .wrap-media-mixin({
-      @media tv {
-        .triple-wrapped-mq {
-          triple: true;
-        }
-      }
-    });*/
-}
 @media (orientation: portrait) and tv {
   .my-selector {
     background-color: black;
+  }
+}
+@media (orientation: portrait) and widescreen and print and tv {
+  .triple-wrapped-mq {
+    triple: true;
+  }
+}
+@media (orientation: portrait) and widescreen and tv {
+  .triple-wrapped-mq {
+    triple: true;
+  }
+}
+@media (orientation: portrait) and tv {
+  .triple-wrapped-mq {
+    triple: true;
   }
 }
 .a {

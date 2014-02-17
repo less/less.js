@@ -127,6 +127,7 @@ tree:
   - <%= build.lib %>/tree/color.js
   - <%= build.lib %>/tree/comment.js
   - <%= build.lib %>/tree/condition.js
+  - <%= build.lib %>/tree/detached-ruleset.js
   - <%= build.lib %>/tree/dimension.js
   - <%= build.lib %>/tree/directive.js
   - <%= build.lib %>/tree/element.js

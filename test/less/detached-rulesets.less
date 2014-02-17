@@ -7,6 +7,7 @@
 .wrap-mixin(@ruleset) {
   @a: hidden and if you see this in the output its a bug;
   @b: visible;
+  @d: magic-frame; // same behaviour as mixin calls - falls back to this frame
   .wrap-selector {
       @c: visible;
       @ruleset();
@@ -20,6 +21,7 @@
   one: @a;
   @b: hidden and if you see this in the output its a bug;
   @c: hidden and if you see this in the output its a bug;
+  four: @d;
 });
 
 .wrap-mixin(@ruleset: {
@@ -72,14 +74,13 @@ header {
   };
 @media (orientation:portrait) {
     @my-ruleset();
-    // doesn't work yet
-/*    .wrap-media-mixin({
+    .wrap-media-mixin({
       @media tv {
         .triple-wrapped-mq {
           triple: true;
         }
       }
-    });*/
+    });
 }
 .wrap-media-mixin(@ruleset) {
   @media widescreen {
@@ -100,3 +101,4 @@ header {
 .a {
   .mixin();
 }
+// Same fallback frame behaviour as mixin calls

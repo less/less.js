@@ -48,10 +48,15 @@
   replace: "Hello, World!";
   replace-captured: "This is a new string.";
   replace-with-flags: "2 + 2 = 4";
+  replace-single-quoted: 'foo-2';
+  replace-escaped-string: bar-2;
+  replace-keyword: baz-2;
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
   format-multiple: "hello earth 2";
   format-url-encode: "red is %23ff0000";
+  format-single-quoted: 'hello single world';
+  format-escaped-string: hello escaped world;
   eformat: rgb(32, 128, 64);
   unitless: 12;
   unit: 14em;

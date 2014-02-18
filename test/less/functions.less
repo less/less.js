@@ -52,10 +52,15 @@
   replace: replace("Hello, Mars.", "Mars\.", "World!");
   replace-captured: replace("This is a string.", "(string)\.$", "new $1.");
   replace-with-flags: replace("One + one = 4", "one", "2", "gi");
+  replace-single-quoted: replace('foo-1', "1", "2");
+  replace-escaped-string: replace(~"bar-1", "1", "2");
+  replace-keyword: replace(baz-1, "1", "2");
   format: %("rgb(%d, %d, %d)", @r, 128, 64);
   format-string: %("hello %s", "world");
   format-multiple: %("hello %s %d", "earth", 2);
-  format-url-encode: %('red is %A', #ff0000);
+  format-url-encode: %("red is %A", #ff0000);
+  format-single-quoted: %('hello %s', "single world");
+  format-escaped-string: %(~"hello %s", "escaped world");
   eformat: e(%("rgb(%d, %d, %d)", @r, 128, 64));
   
   unitless: unit(12px);

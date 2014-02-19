@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "underscore": "~1.4.3",
-    "mapnik-reference": "~5.0.7",
+    "mapnik-reference": "https://github.com/mapnik/mapnik-reference/tarball/master",
     "xml2js": "~0.2.4",
     "optimist": "~0.6.0"
   },

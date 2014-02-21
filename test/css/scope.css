@@ -33,3 +33,6 @@
   scope: 'top level';
   sub-scope-only: 'inside';
 }
+#parentSelectorScope {
+  prop: #ffffff;
+}

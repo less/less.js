@@ -352,8 +352,9 @@ var parseLessFile = function (e, data) {
                 sys.print(file + " ")
             }
             sys.print("\n");
-        } else if(!options.lint) {
+        } else {
             try {
+	        if (options.lint) { writeSourceMap = function() {} }
                 var css = tree.toCSS({
                     silent: options.silent,
                     verbose: options.verbose,
@@ -374,15 +375,17 @@ var parseLessFile = function (e, data) {
                     strictUnits: options.strictUnits,
                     urlArgs: options.urlArgs
                 });
-                if (output) {
-                    ensureDirectory(output);
-                    fs.writeFileSync(output, css, 'utf8');
-                    if (options.verbose) {
-                        console.log('lessc: wrote ' + output);
-                    }
-                } else {
-                    sys.print(css);
-                }
+		if(!options.lint) {
+                    if (output) {
+                        ensureDirectory(output);
+                        fs.writeFileSync(output, css, 'utf8');
+                        if (options.verbose) {
+                            console.log('lessc: wrote ' + output);
+                        }
+                    } else {
+                        sys.print(css);
+		    }
+		}
             } catch (e) {
                 less.writeError(e, options);
                 currentErrorcode = 2;

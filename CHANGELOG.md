@@ -13,7 +13,7 @@ TODO
 
 2014-??-??
 
- - Add support for using variables with @supports, @namespace, @charset
+ - Add support for using variables with @keyframes, @namespace, @charset
  - Fix support for `.mixin(@args...)` when called with no args (e.g. `.mixin();`)
  - Support property merging with +_ when spaces are needed and keep + for comma separated
  - Do unit conversions with min and max functions. Don't pass through if not understood, throw an error

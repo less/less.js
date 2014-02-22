@@ -3,7 +3,7 @@
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
-This is the JavaScript, and now official, stable version of LESS.
+This is the JavaScript, and now official, stable version of Less.
 
 
 ## Getting Started

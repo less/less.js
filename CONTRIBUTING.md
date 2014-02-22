@@ -47,4 +47,4 @@ _Pull requests are encouraged!_
 ## Developing
 If you want to take an issue just add a small comment saying you are having a go at something, so we don't get duplication.
 
-Learn more about [developing Less.js](https://github.com/less/less.js/wiki/Developing-less.js).
+Learn more about [developing Less.js](http://lesscss.org/usage/#developing-less).

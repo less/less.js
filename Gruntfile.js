@@ -214,6 +214,14 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-global-vars-spec.js',
           outfile: 'tmp/browser/test-runner-global-vars.html'
         }
+      },
+      postProcessor: {
+        src: ['test/browser/less/postProcessor/*.less'],
+        options: {
+          helpers: 'test/browser/runner-postProcessor-options.js',
+          specs: 'test/browser/runner-postProcessor.js',
+          outfile: 'tmp/browser/test-postProcessor.html'
+        }
       }
     },
 

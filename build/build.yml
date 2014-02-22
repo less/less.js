@@ -24,7 +24,7 @@ prepend:
 
 append:
   amd:     build/amd.js
-  browser: <%= build.lib %>/browser.js
+  browser: ['lib/less/environments/browser.js', '<%= build.lib %>/browser.js']
   rhino:   <%= build.lib %>/rhino.js
 
 

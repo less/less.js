@@ -7,6 +7,9 @@
  - Support property merging with +_ when spaces are needed and keep + for comma separated
  - Do unit conversions with min and max functions. Don't pass through if not understood, throw an error
  - Fix a bug when comparing a unit value to a non-unit value if the unit-value was the multiple of another unit (e.g. cm, mm, deg etc.)
+ - Fix mixins with media queries in import reference files not being put into the output (they now output, they used to incorrectly not)
+ - Fix lint mode - now reports all errors
+ - Fixed a small scope issue with & {} selector rulesets incorrectly making mixins visible - regression from 1.6.2
  - Browser - added log level "debug" at 3 to get less logging, The default has changed so unless you set the value to the default you won't see a difference
  - Browser - added postProcessor option, a function called to post-process the css before adding to the page
 

@@ -5711,11 +5711,11 @@ function xhr(url, type, callback, errback) {
 }
 
 function getXMLHttpRequest() {
-    if (window.XMLHttpRequest) {
+    if (window.XMLHttpRequest && (window.location.protocol !== "file:" || !window.ActiveXObject)) {
         return new(XMLHttpRequest);
     } else {
         try {
-            return new(ActiveXObject)("MSXML2.XMLHTTP.3.0");
+            return new(ActiveXObject)("Microsoft.XMLHTTP");
         } catch (e) {
             log("browser doesn't support AJAX.");
             return null;

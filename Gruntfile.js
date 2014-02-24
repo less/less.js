@@ -47,6 +47,14 @@ module.exports = function(grunt) {
             'node node_modules/http-server/bin/http-server test/sourcemaps -p 8084'].join('&&')
       }
     },
+
+    browserify: {
+      dist: {
+          files: {
+              'dist/less.js': ['lib/less/non-node-index.js', 'lib/less/browser.js', 'lib/less/environment/browser.js']
+          }
+      }
+    },
     concat: {
       options: {
         stripBanners: 'all',

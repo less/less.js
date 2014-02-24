@@ -137,7 +137,7 @@ tree:
   - <%= build.lib %>/tree/javascript.js
   - <%= build.lib %>/tree/keyword.js
   - <%= build.lib %>/tree/media.js
-  - <%= build.lib %>/tree/mixin.js
+  - <%= build.lib %>/tree/mixin-call.js
   - <%= build.lib %>/tree/negative.js
   - <%= build.lib %>/tree/operation.js
   - <%= build.lib %>/tree/paren.js

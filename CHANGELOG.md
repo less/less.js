@@ -4,6 +4,7 @@
 
  - Add support for rulesets in variables and passed to mixins to allow wrapping
  - Change luma to follow the w3c spec, luma is available as luminance. Contrast still uses luma so you may see differences if your threshold % is close to the existing calculated luma.
+ - Upgraded clean css which means the --selectors-merge-mode is now renamed --compatibility
  - Add support for using variables with @keyframes, @namespace, @charset
  - Support property merging with +_ when spaces are needed and keep + for comma separated
  - Imports now always import once consistently - a race condition meant previously certain configurations would lead to a different ordering of files

@@ -51,7 +51,12 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
           files: {
-              'dist/less.js': ['lib/less/non-node-index.js', 'lib/less/browser.js', 'lib/less/environment/browser.js']
+              'dist/less.js': ['lib/less/browser.js']
+          }
+      },
+      browsertest: {
+          files: {
+              'test/browser/less.js': ['lib/less/browser.js']
           }
       }
     },
@@ -274,12 +279,13 @@ module.exports = function(grunt) {
 
   // setup a web server to run the browser tests in a browser rather than phantom
   grunt.registerTask('browsertest-server', [
+    'browser',
     'shell:browsertest-server'
   ]);
 
   // Create the browser version of less.js
   grunt.registerTask('browser', [
-    'concat:browsertest'
+    'browserify:browsertest'
   ]);
 
   // Run all tests

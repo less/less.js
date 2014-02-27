@@ -11,18 +11,25 @@ TODO
 
 # 1.7.0
 
-2014-??-??
+2014-02-27
 
+ - Add support for rulesets in variables and passed to mixins to allow wrapping
+ - Change luma to follow the w3c spec, luma is available as luminance. Contrast still uses luma so you may see differences if your threshold % is close to the existing calculated luma.
+ - Upgraded clean css which means the --selectors-merge-mode is now renamed --compatibility
  - Add support for using variables with @keyframes, @namespace, @charset
- - Fix support for `.mixin(@args...)` when called with no args (e.g. `.mixin();`)
  - Support property merging with +_ when spaces are needed and keep + for comma separated
+ - Imports now always import once consistently - a race condition meant previously certain configurations would lead to a different ordering of files
+ - Fix support for `.mixin(@args...)` when called with no args (e.g. `.mixin();`)
  - Do unit conversions with min and max functions. Don't pass through if not understood, throw an error
+ - Allow % to be passed on its own to the unit function e.g. `unit(10, %)`
  - Fix a bug when comparing a unit value to a non-unit value if the unit-value was the multiple of another unit (e.g. cm, mm, deg etc.)
  - Fix mixins with media queries in import reference files not being put into the output (they now output, they used to incorrectly not)
  - Fix lint mode - now reports all errors
  - Fixed a small scope issue with & {} selector rulesets incorrectly making mixins visible - regression from 1.6.2
  - Browser - added log level "debug" at 3 to get less logging, The default has changed so unless you set the value to the default you won't see a difference
+ - Browser - logLevel takes effect regardless of the environment (production/dev)
  - Browser - added postProcessor option, a function called to post-process the css before adding to the page
+ - Browser - use the right request for file access in IE
 
 # 1.6.3
 

@@ -1,4 +1,5 @@
-/*jshint rhino:true, unused: false */
+/* LESS.js v1.7.0 RHINO | Copyright (c) 2009-2014, Alexis Sellier <self@cloudhead.net> */
+
 /*global name:true, less, loadStyleSheet, os */
 
 function formatError(ctx, options) {
@@ -150,6 +151,7 @@ function writeFile(filename, content) {
         compress: false,
         cleancss: false,
         max_line_len: -1,
+        optimization: 1,
         silent: false,
         verbose: false,
         lint: false,
@@ -202,7 +204,7 @@ function writeFile(filename, content) {
         switch (arg) {
             case 'v':
             case 'version':
-                console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
+                console.log("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
                 continueProcessing = false;
                 break;
             case 'verbose':
@@ -268,6 +270,9 @@ function writeFile(filename, content) {
                             });
                 }
                 break;
+            case 'O0': options.optimization = 0; break;
+            case 'O1': options.optimization = 1; break;
+            case 'O2': options.optimization = 2; break;
             case 'line-numbers':
                 if (checkArgFunc(arg, match[2])) {
                     options.dumpLineNumbers = match[2];

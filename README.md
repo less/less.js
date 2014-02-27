@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/less/less.js.png?branch=master)](https://travis-ci.org/less/less.js)
-# [Less.js v1.6.3](http://lesscss.org)
+# [Less.js v1.7.0](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
-This is the JavaScript, and now official, stable version of Less.
+This is the JavaScript, official, stable version of Less.
 
 
 ## Getting Started

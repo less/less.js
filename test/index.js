@@ -14,7 +14,7 @@ function getErrorPathReplacementFunction(dir) {
     };
 }
 
-console.log("\n" + stylize("LESS", 'underline') + "\n");
+console.log("\n" + stylize("Less", 'underline') + "\n");
 lessTester.runTestSet({strictMath: true, relativeUrls: true, silent: true});
 lessTester.runTestSet({strictMath: true, strictUnits: true}, "errors/",
     lessTester.testErrors, null, getErrorPathReplacementFunction("errors"));

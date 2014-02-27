@@ -24,7 +24,12 @@
   luma-blue: 7%;
   luma-yellow: 93%;
   luma-cyan: 79%;
-  luma-white-alpha: 50%;
+  luma-differs-from-luminance: 24%;
+  luminance-white: 100%;
+  luminance-black: 0%;
+  luminance-black-alpha: 0%;
+  luminance-red: 21%;
+  luminance-differs-from-luma: 36%;
   contrast-filter: contrast(30%);
   saturate-filter: saturate(5%);
   contrast-white: #000000;

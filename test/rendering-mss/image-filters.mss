@@ -1,4 +1,5 @@
 #layer {
-	image-filters:invert();
-	direct-image-filters:invert();
+    image-filters:invert();
+    image-filters-inflate:true;
+    direct-image-filters:invert();
 }

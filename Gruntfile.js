@@ -16,7 +16,7 @@ module.exports = function(grunt) {
       copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
       banner:
         '/*! \n' +
-        ' * LESS - <%= pkg.description %> v<%= pkg.version %> \n' +
+        ' * Less - <%= pkg.description %> v<%= pkg.version %> \n' +
         ' * http://lesscss.org \n' +
         ' * \n' +
         ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> \n' +
@@ -64,7 +64,7 @@ module.exports = function(grunt) {
       // Rhino
       rhino: {
         options: {
-          banner: '/* LESS.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
+          banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhino %>'],
@@ -73,7 +73,7 @@ module.exports = function(grunt) {
       // lessc for Rhino
       rhinolessc: {
         options: {
-          banner: '/* LESS.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
+          banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhinolessc %>'],

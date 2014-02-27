@@ -79,7 +79,7 @@ args = args.filter(function (arg) {
     switch (arg) {
         case 'v':
         case 'version':
-            console.log("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
+            console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
             continueProcessing = false;
         case 'verbose':
             options.verbose = true;

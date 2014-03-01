@@ -1,4 +1,4 @@
-var less = {};
+var less = {logLevel: 4, errorReporting: "console"};
 
 // There originally run inside describe method. However, since they have not
 // been inside it, they run at jasmine compile time (not runtime). It all
@@ -11,6 +11,7 @@ var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 
     testSheets = [];
 
 // setup style tags with less and link tags pointing to expected css output
+
 for (var i = 0; i < testFiles.length; i++) {
   var file = testFiles[i],
       lessPath  = '/test/less/' + file + '.less',

@@ -6,12 +6,12 @@
 .mixin (@a: 1px, @b: 50%) when (@b > 75%){
   text-align: center;
 }
- 
+
 .named-arg {
   color: blue;
   .mixin(@b: 100%);
 }
- 
+
 .class {
   @var: 20%;
   .mixin(@b: @var);

@@ -46,7 +46,7 @@ guard-default-definition-order {
 guard-default-out-of-guard {
     .m(1)                              {case-1:   1}
     .m(@x: default()) when (default()) {default: @x}
-    
+
     &-0 {
         case-0: default();
         .m(1);
@@ -153,7 +153,7 @@ guard-default-multi-4 {
     .m(@x) when (default()), not(default())    {always: @x}
     .m(@x) when (default()) and not(default()) {never:  @x}
     .m(2)                                      {case:    2}
-    
+
     .m(1);
     .m(2);
 }
@@ -186,7 +186,7 @@ guard-default-scopes {
         .s3();
         .m(false);
     }
-    
+
     &-1 {
         .s1();
         .s3();

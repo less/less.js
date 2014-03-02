@@ -26,7 +26,7 @@
     color-value:   extract(blue, 1);
     rgba-value:    extract(rgba(80, 160, 240, 0.67), 1);
     empty-value:   extract(~'', 1);
-    
+
     name-length:   length(name);
     string-length: length("string");
     number-length: length(12345678);
@@ -48,7 +48,7 @@
     }
 }
 
-.mixin-args(...) { 
+.mixin-args(...) {
     &-2 {
         length:  length(@arguments);
         extract: extract(@arguments, 3) ~"|" extract(@arguments, 2) ~"|" extract(@arguments, 1);
@@ -90,7 +90,7 @@
     extract-1: extract(@v, 2);
     length-2:  length(extract(@v, 2));
     extract-2: extract(extract(@v, 2), 2);
-    
+
     &-as-args {.mixin-args(@a, @b, @c)}
 }
 
@@ -111,17 +111,17 @@
     @a: a b c d, 1 2 3 4;
     @b: 5 6 7 8, e f g h;
     .3D(@a, @b);
-    
+
     .3D(...) {
 
         @v1:       @arguments;
         length-1:  length(@v1);
         extract-1: extract(@v1, 1);
-        
+
         @v2:       extract(@v1, 2);
         length-2:  length(@v2);
         extract-2: extract(@v2, 1);
-        
+
         @v3:       extract(@v2, 1);
         length-3:  length(@v3);
         extract-3: extract(@v3, 3);

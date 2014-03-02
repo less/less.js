@@ -215,6 +215,14 @@ module.exports = function(grunt) {
           outfile: 'tmp/browser/test-runner-global-vars.html'
         }
       },
+      numPrecision: {
+        src: ['test/browser/less/numPrecision/*.less'],
+        options: {
+          helpers: 'test/browser/runner-numPrecision-options.js',
+          specs: 'test/browser/runner-numPrecision-spec.js',
+          outfile: 'tmp/browser/test-numPrecision.html'
+        }
+      },
       postProcessor: {
         src: ['test/browser/less/postProcessor/*.less'],
         options: {

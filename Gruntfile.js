@@ -15,17 +15,17 @@ module.exports = function(grunt) {
       license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
       copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
       banner:
-        '/*! \n' +
-        ' * Less - <%= pkg.description %> v<%= pkg.version %> \n' +
-        ' * http://lesscss.org \n' +
-        ' * \n' +
-        ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> \n' +
-        ' * Licensed under the <%= meta.license %> License. \n' +
-        ' * \n' +
-        ' */ \n\n' +
+        '/*!\n' +
+        ' * Less - <%= pkg.description %> v<%= pkg.version %>\n' +
+        ' * http://lesscss.org\n' +
+        ' *\n' +
+        ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>>\n' +
+        ' * Licensed under the <%= meta.license %> License.\n' +
+        ' *\n' +
+        ' */\n\n' +
         ' /**' +
         ' * @license <%= meta.license %>\n' +
-        ' */ \n\n'
+        ' */\n\n'
     },
 
     shell: {
@@ -254,7 +254,7 @@ module.exports = function(grunt) {
     'concat:rhino',
     'concat:rhinolessc'
   ]);
-  
+
   // Run all browser tests
   grunt.registerTask('browsertest', [
     'browser',

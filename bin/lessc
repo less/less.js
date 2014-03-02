@@ -35,7 +35,7 @@ var continueProcessing = true,
 
 // calling process.exit does not flush stdout always
 // so use this to set the exit code
-process.on('exit', function() { process.reallyExit(currentErrorcode) });
+process.on('exit', function() { process.reallyExit(currentErrorcode); });
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
@@ -67,19 +67,22 @@ var sourceMapFileInline = false;
 args = args.filter(function (arg) {
     var match;
 
-    if (match = arg.match(/^-I(.+)$/)) {
+    match = arg.match(/^-I(.+)$/);
+    if (match) {
         options.paths.push(match[1]);
         return false;
     }
 
-    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i)) { arg = match[1] }
-    else { return arg }
+    match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i);
+    if (match) { arg = match[1]; }
+    else { return arg; }
 
     switch (arg) {
         case 'v':
         case 'version':
             console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
             continueProcessing = false;
+            break;
         case 'verbose':
             options.verbose = true;
             break;
@@ -98,6 +101,7 @@ args = args.filter(function (arg) {
         case 'help':
             require('../lib/less/lessc_helper').printUsage();
             continueProcessing = false;
+            break;
         case 'x':
         case 'compress':
             options.compress = true;
@@ -257,7 +261,6 @@ if (!continueProcessing) {
 }
 
 var input = args[1];
-var inputbase = args[1];
 if (input && input != '-') {
     input = path.resolve(process.cwd(), input);
 }
@@ -345,12 +348,14 @@ var parseLessFile = function (e, data) {
             return;
         } else if (options.depends) {
             for(var file in parser.imports.files) {
-                sys.print(file + " ")
+                if (parser.imports.files.hasOwnProperty(file)) {
+                    sys.print(file + " ");
+                }
             }
             sys.print("\n");
         } else {
             try {
-	        if (options.lint) { writeSourceMap = function() {} }
+            if (options.lint) { writeSourceMap = function() {}; }
                 var css = tree.toCSS({
                     silent: options.silent,
                     verbose: options.verbose,
@@ -380,7 +385,7 @@ var parseLessFile = function (e, data) {
                         }
                     } else {
                         sys.print(css);
-		    }
+            }
 		}
             } catch (e) {
                 less.writeError(e, options);

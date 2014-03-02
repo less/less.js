@@ -49,30 +49,22 @@ module.exports = function(grunt) {
     },
 
     browserify: {
-      dist: {
-          files: {
-              'dist/less.js': ['lib/less/browser.js']
-          }
-      },
-      browsertest: {
-          files: {
-              'test/browser/less.js': ['lib/less/browser.js']
-          }
+      browser: {
+          src: ['./lib/less/browser.js'],
+          dest: 'tmp/less.js'
       }
     },
     concat: {
       options: {
         stripBanners: 'all',
-        banner: '<%= meta.banner %>\n\n(function (window, undefined) {',
-        footer: '\n})(window);'
+        banner: '<%= meta.banner %>'
       },
-      // Browser versions
       browsertest: {
-        src: ['<%= build.browser %>'],
+        src: '<%= browserify.browser.dest %>',
         dest: 'test/browser/less.js'
       },
-      stable: {
-        src: ['<%= build.browser %>'],
+      dist: {
+        src: '<%= browserify.browser.dest %>',
         dest: 'dist/less.js'
       },
       // Rhino
@@ -107,8 +99,8 @@ module.exports = function(grunt) {
         banner: '<%= meta.banner %>',
         mangle: true
       },
-      stable: {
-        src: ['<%= concat.stable.dest %>'],
+      dist: {
+        src: ['<%= concat.dist.dest %>'],
         dest: 'dist/less.min.js'
       }
     },
@@ -118,7 +110,8 @@ module.exports = function(grunt) {
       files: {
         src: [
           'Gruntfile.js',
-          'lib/less/**/*.js'
+          'lib/less/**/*.js',
+          'bin/lessc'
         ]
       }
     },
@@ -257,35 +250,44 @@ module.exports = function(grunt) {
     'test'
   ]);
 
+  grunt.registerTask('updateBowerJson', function() {
+    var bowerJson = require('./bower.json');
+    bowerJson.version = grunt.config('pkg.version');
+    fs.writeFileSync('./bower.json', JSON.stringify(bowerJson,null,2));
+  });
+
   // Release
-  grunt.registerTask('stable', [
-    'concat:stable',
-    'uglify:stable',
+  grunt.registerTask('dist', [
+    'browserify:browser',
+    'concat:dist',
+    'uglify:dist',
     'updateBowerJson'
   ]);
 
   // Release Rhino Version
   grunt.registerTask('rhino', [
+    'browserify:rhino',
     'concat:rhino',
     'concat:rhinolessc'
   ]);
-  
-  // Run all browser tests
+
+  // Create the browser version of less.js
+  grunt.registerTask('browsertest-lessjs', [
+    'browserify:browser',
+    'concat:browsertest'
+  ]);
+
+    // Run all browser tests
   grunt.registerTask('browsertest', [
-    'browser',
+    'browsertest-lessjs',
     'connect',
     'jasmine'
   ]);
 
   // setup a web server to run the browser tests in a browser rather than phantom
   grunt.registerTask('browsertest-server', [
-    'browser',
+    'browsertest-less',
     'shell:browsertest-server'
-  ]);
-
-  // Create the browser version of less.js
-  grunt.registerTask('browser', [
-    'browserify:browsertest'
   ]);
 
   // Run all tests
@@ -312,9 +314,4 @@ module.exports = function(grunt) {
     'concat:readme'
   ]);
 
-  grunt.registerTask('updateBowerJson', function() {
-     var bowerJson = require('./bower.json');
-     bowerJson.version = grunt.config('pkg.version');
-     fs.writeFileSync('./bower.json', JSON.stringify(bowerJson,null,2));
-  });
 };

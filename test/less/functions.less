@@ -67,11 +67,11 @@
   format-single-quoted: %('hello %s', "single world");
   format-escaped-string: %(~"hello %s", "escaped world");
   eformat: e(%("rgb(%d, %d, %d)", @r, 128, 64));
-  
+
   unitless: unit(12px);
   unit: unit((13px + 1px), em);
   unitpercentage: unit(100, %);
-  
+
   get-unit: get-unit(10px);
   get-unit-empty: get-unit(10);
 
@@ -126,7 +126,7 @@
 
   fade-out: fadeOut(red, 5%); // support fadeOut and fadeout
   fade-in: fadein(fadeout(red, 10%), 5%);
-  
+
   hsv: hsv(5, 50%, 30%);
   hsva: hsva(3, 50%, 30%, 0.2);
 

@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/less/less.js.png?branch=master)](https://travis-ci.org/less/less.js)
-# [Less.js v<%= pkg.version %>](http://lesscss.org)
+# [Less.js v<%= pkg.version %>](http://lesscss.org) [![Dependencies](https://david-dm.org/less/less.js.png)](https://david-dm.org/less/less.js) [![devDependency Status](https://david-dm.org/less/less.js/dev-status.png)](https://david-dm.org/less/less.js#info=devDependencies)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 

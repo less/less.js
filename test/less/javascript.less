@@ -24,10 +24,12 @@
 .arrays {
     @ary:  1, 2, 3;
     @ary2: 1  2  3;
-    @ary3: 1  2  3,  4  5,  6;
-    @ary4: 7  8, 9;
+    @ary3: 4  5  6, 7  8, 9;
     ary: `@{ary}.join(', ')`;
-    ary1: `@{ary2}.join(', ')`;
-    ary2: ~`@{ary3}`;
-    ary3: ~`[@{ary3}, @{ary4}]`;
+    ary2: `@{ary2}.join(', ')`;
+    ary3: `@{ary3}`;
+    ary3string: `"@{ary3}"`;
+    ary3length: length(`@{ary3}`);
+    ary2-3: `[@{ary2}, @{ary3}]`;
+    ary2-3length: length(`[@{ary2}, @{ary3}]`);
 }

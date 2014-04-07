@@ -22,74 +22,13 @@ For more advanced topics see:
  - [How to style labels](https://www.mapbox.com/tilemill/docs/guides/styling-labels/)
  - [How to style lines](https://www.mapbox.com/tilemill/docs/guides/styling-lines/)
  - [How to style polygons](https://www.mapbox.com/tilemill/docs/guides/styling-polygons/)
+ - See also the (Styling Concepts)[#styling-concepts] for explanations of advanced features.
 
 ## Developers
 
-#### Installation
+For details about how to install Carto from source and use on the command line see the [Installation section](#installation).
 
-If you're using [TileMill](http://mapbox.com/tilemill/), you're already
-using CartoCSS and don't need to do a thing.
-
-If you're a developer-type and want to use the `carto` binary with
-`node.js` (and you have [npm](http://npmjs.org/) installed),
-
-    npm install -g carto
-
-Optionally you may also want to install millstone which is required for resolving data in the same way as TileMill does:
-
-    npm install -g millstone
-
-
-Having `millstone` installed specifically enable support for localizing external resources (URLs and local files) referenced in your mml file, and detecting projections (using [node-srs](https://github.com/mapbox/node-srs))
-
-Now that Carto is installed you should have a `carto` command line tool available that can be run on a TileMill project:
-
-    carto project.mml > mapnik.xml
-
-#### From code
-
-Currently CartoCSS is designed to be invoked from [node.js](http://nodejs.org/).
-The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
-
-    // defined variables:
-    // - input (the name or identifier of the file being parsed)
-    // - data (a string containing the MML or an object of MML)
-    var carto = require('carto');
-    
-    new carto.Renderer({
-            filename: input,
-            local_data_dir: path.dirname(input),
-        }).render(data, function(err, output) {
-            if (err) {
-                if (Array.isArray(err)) {
-                    err.forEach(function(e) {
-                        carto.writeError(e, options);
-                    });
-                } else { throw err; }
-            } else {
-                sys.puts(output);
-            }
-        });
-
-### Vim
-
-To install, download or clone this repository, then add the `vim-carto`
-directory located at `build/vim-carto` to your `~/.vim` file.
-
-## Credits
-
-CartoCSS is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
-
-It depends on:
-
-* [underscore.js](https://github.com/documentcloud/underscore/)
-
-Only for running tests:
-
-* [mocha](https://github.com/visionmedia/mocha)
-* [sax-js](https://github.com/isaacs/sax-js/)
-
-## Technical Syntax details
+## Styling Concepts
 
 ### Attachments and Instances
 
@@ -123,14 +62,6 @@ While attachments allow creating implicit "layers" with the same data, using **i
 ```
 
 This makes Mapnik first draw the line of color #333 with a width of 6, and then immediately afterwards, it draws the same line again with width 4 and color #666. Contrast that to attachments: Mapnik would first draw all casings before proceeding to the actual lines.
-
-
-## Rasters and Buildings
-_new_
-
-Rasters are supported in CartoCSS - it knows how to download `.vrt`, `.tiff`, and soon other raster formats, and the properties of the [RasterSymbolizer](http://trac.mapnik.org/wiki/RasterSymbolizer) are exposed in the language.
-
-The [BuildingSymbolizer](http://trac.mapnik.org/wiki/BuildingSymbolizer) is also supported in `CartoCSS`. The code stores symbolizer types and properties in a JSON file (in `tree/reference.json`), so new Mapnik features can be quickly implemented here.
 
 ## Variables & Expressions
 
@@ -242,6 +173,71 @@ String comparisons:
 /* a regular expression over name */
 #world[name =~ "A.*"]
 ```
+
+#### Installation
+
+If you're using [TileMill](http://mapbox.com/tilemill/), you're already
+using CartoCSS and don't need to do a thing.
+
+If you're a developer-type and want to use the `carto` binary with
+`node.js` (and you have [npm](http://npmjs.org/) installed),
+
+    npm install -g carto
+
+Optionally you may also want to install millstone which is required for resolving data in the same way as TileMill does:
+
+    npm install -g millstone
+
+
+Having `millstone` installed specifically enable support for localizing external resources (URLs and local files) referenced in your mml file, and detecting projections (using [node-srs](https://github.com/mapbox/node-srs))
+
+Now that Carto is installed you should have a `carto` command line tool available that can be run on a TileMill project:
+
+    carto project.mml > mapnik.xml
+
+#### From code
+
+Currently CartoCSS is designed to be invoked from [node.js](http://nodejs.org/).
+The `Renderer` interface is the main API for developers, and it takes an MML file as a string as input.
+
+    // defined variables:
+    // - input (the name or identifier of the file being parsed)
+    // - data (a string containing the MML or an object of MML)
+    var carto = require('carto');
+    
+    new carto.Renderer({
+            filename: input,
+            local_data_dir: path.dirname(input),
+        }).render(data, function(err, output) {
+            if (err) {
+                if (Array.isArray(err)) {
+                    err.forEach(function(e) {
+                        carto.writeError(e, options);
+                    });
+                } else { throw err; }
+            } else {
+                sys.puts(output);
+            }
+        });
+
+### Vim
+
+To install, download or clone this repository, then add the `vim-carto`
+directory located at `build/vim-carto` to your `~/.vim` file.
+
+## Credits
+
+CartoCSS is based on [less.js](https://github.com/cloudhead/less.js), a CSS compiler written by Alexis Sellier.
+
+It depends on:
+
+* [underscore.js](https://github.com/documentcloud/underscore/)
+
+Only for running tests:
+
+* [mocha](https://github.com/visionmedia/mocha)
+* [sax-js](https://github.com/isaacs/sax-js/)
+
 
 ## Authors
 

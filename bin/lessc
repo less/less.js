@@ -287,7 +287,7 @@ if (options.sourceMap === true) {
 }
 
 if (options.cleancss && options.sourceMap) {
-    console.log("the sourcemap option is not compatible with sourcemap support at the moment. See Issue #1656");
+    console.log("the cleancss option is not compatible with sourcemap support at the moment. See Issue #1656");
     return;
 }
 

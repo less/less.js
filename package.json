@@ -1,6 +1,6 @@
 {
   "name": "carto",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
   "repository": {

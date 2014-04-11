@@ -1,0 +1,6 @@
+<Style name="style" filter-mode="first">
+  <Rule>
+    <Filter>([zoomy] &gt; 2)</Filter>
+    <PolygonSymbolizer fill="#ff0000" />
+  </Rule>
+</Style>

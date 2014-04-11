@@ -12,7 +12,7 @@ describe('Quoted', function() {
         it('should produce normal output', function() {
             var f = new tree.Quoted("Tom's & \"<quoted>\"");
             assert.ok(f);
-            assert.equal(f.toString(), "Tom's & \"<quoted>\"");
+            assert.equal(f.toString(), "Tom's &amp; \"<quoted>\"");
         });
         it('should produce xml-friendly output', function() {
             var f = new tree.Quoted("Tom's & \"<quoted>\"");

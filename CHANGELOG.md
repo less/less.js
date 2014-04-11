@@ -1,5 +1,13 @@
 ## Changelog
 
+## 0.9.6
+
+* Fixed support for `text-face-name` values with `&` like `El&Font Bubble`
+* Fixed support for filtering on fields containing single quotes. Now `#layer[name="it's"] { ... }` is possible.
+* Fixed support for filtering on fields containing `&`. Now `#layer["Hello&Goodbye"="yes"] { ... }` is possible.
+* Added support for exponential notation in filters. Now `#layer[value = 1.2e3] { ... }` is possible.
+* Bump `mapnik-reference` dependency to ~5.0.8 (with support for Mapnik v2.3.0 and 3.x)
+
 ## 0.9.5
 
 * Various speed optimizations to help address #20 (#231)

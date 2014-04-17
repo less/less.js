@@ -103,10 +103,10 @@ exports.compareToXMLFile = function(filename, second, callback, processors) {
                 });
 
                 try {
-                    assert.deepEqual(secondXML, firstXML);
+                    assert.deepEqual(firstXML, secondXML);
                     callback(null);
                 } catch (err) {
-                    callback(err,secondXML, firstXML);
+                    callback(err, firstXML, secondXML);
                 }
             });
         });

@@ -1,5 +1,9 @@
 ## Changelog
 
+## Future
+
+* Bump `mapnik-reference` dependency to ~5.0.9 (with `shield-halo-rasterizer`)
+
 ## 0.9.6
 
 * Fixed support for `text-face-name` values with `&` like `El&Font Bubble`

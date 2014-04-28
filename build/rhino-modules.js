@@ -51,7 +51,11 @@
             for (i in parts) {
                 var part = parts[i];
                 if (part === '..' && result.length > 0) {
-                    result.pop();
+                    if (result[result.length - 1] === '..') {
+                        result.push('..');
+                    } else {
+                        result.pop();
+                    }
                 } else if (part === '' && result.length > 0) {
                     // skip
                 } else if (part !== '.') {

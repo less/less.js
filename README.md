@@ -4,7 +4,7 @@
 
 Is the language for map design used by [TileMill](). It is similiar in syntax to CSS, but builds upon it with specific abilities to filter map data and by providing things like variables.
 
-Carto, aka CartoCSS, targets the [Mapnik renderer](http://mapnik.org) and is able to general Mapnik XML>
+Carto, aka CartoCSS, targets the [Mapnik renderer](http://mapnik.org) and is able to generate Mapnik XML.
 
 Carto is an evolution of the [Cascadenik](https://github.com/mapnik/Cascadenik) idea and language,
 with an emphasis on speed and flexibility. If you are a previous user of Cascadenik, see the [key differences wiki](https://github.com/mapbox/carto/wiki/Differences-With-Cascadenik).

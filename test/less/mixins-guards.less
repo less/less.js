@@ -116,13 +116,17 @@
 	.colorguard(purple);
 }
 
-.stringguard(@str) when (@str = "theme1")					{ content: is theme1; }
-.stringguard(@str) when not ("theme2" = @str)				{ content: is not theme2; }
-.stringguard(@str) when (~"theme1" = @str)					{ content: is theme1 no quotes; }
+.stringguard(@str) when (@str = "theme1")					{ content: @str is "theme1"; }
+.stringguard(@str) when not ("theme2" = @str)				{ content: @str is not "theme2"; }
+.stringguard(@str) when (@str = 'theme1')					{ content: @str is 'theme1'; }
+.stringguard(@str) when not ('theme2' = @str)				{ content: @str is not 'theme2'; }
+.stringguard(@str) when (~"theme1" = @str)					{ content: @str is theme1; }
 .stringguard(@str)											{}
 .stringguardtest {
     .stringguard("theme1");
 	.stringguard("theme2");
+    .stringguard('theme1');
+    .stringguard('theme2');
 	.stringguard(theme1);
 }
 

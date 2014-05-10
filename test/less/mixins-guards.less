@@ -161,3 +161,13 @@
   }
 }
 .bug-100cm-1m(100cm);
+
+#ns {
+    .mixin-for-root-usage(@a) when (@a > 0) {
+        .mixin-generated-class {
+            a: @a;
+        }
+    }
+}
+
+#ns > .mixin-for-root-usage(1);

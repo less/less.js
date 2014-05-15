@@ -1,7 +1,8 @@
 ## Changelog
 
-## Future
+## 0.10.0
 
+* Remove automatic inclusion of `maximum-extent` on Map element to allow geometries that are buffered past extent bounds (e.g. dateline). 
 * Bump `mapnik-reference` dependency to ~5.0.9 (with `shield-halo-rasterizer`)
 
 ## 0.9.6

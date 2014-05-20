@@ -204,21 +204,20 @@ The `Renderer` interface is the main API for developers, and it takes an MML fil
     // - input (the name or identifier of the file being parsed)
     // - data (a string containing the MML or an object of MML)
     var carto = require('carto');
-    
-    new carto.Renderer({
+
+    try {
+        var output = new carto.Renderer({
             filename: input,
             local_data_dir: path.dirname(input),
-        }).render(data, function(err, output) {
-            if (err) {
-                if (Array.isArray(err)) {
-                    err.forEach(function(e) {
-                        carto.writeError(e, options);
-                    });
-                } else { throw err; }
-            } else {
-                sys.puts(output);
-            }
-        });
+        }).render(data);
+    } catch(err) {
+        if (Array.isArray(err)) {
+            err.forEach(function(e) {
+                carto.writeError(e, options);
+            });
+        } else { throw err; }
+    }
+    console.log(output);
 
 ### Vim
 

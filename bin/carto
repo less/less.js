@@ -65,26 +65,13 @@ function compileMML(err, data) {
         console.error(err);
         process.exit(1);
     }
+    var renderer = new carto.Renderer({
+        filename: input,
+        benchmark: options.benchmark,
+        ppi: options.ppi
+    });
     try {
-        var renderer = new carto.Renderer({
-            filename: input,
-            benchmark: options.benchmark,
-            ppi: options.ppi
-        });
-        renderer.render(data, function(err, output) {
-            if (err) {
-                console.error(err);
-                throw err;
-                process.exit(1);
-            } else {
-                if (!options.benchmark) {
-                    console.log(output);
-                } else {
-                    var duration = (+new Date) - start;
-                    console.log('TOTAL: ' + (duration) + 'ms');
-                }
-            }
-        });
+        var output = renderer.render(data);
     } catch (e) {
         if (e.stack) {
             console.error(e.stack);
@@ -92,6 +79,12 @@ function compileMML(err, data) {
             console.error(e);
         }
         process.exit(1);
+    }
+    if (!options.benchmark) {
+        console.log(output);
+    } else {
+        var duration = (+new Date) - start;
+        console.log('TOTAL: ' + (duration) + 'ms');
     }
 };
 
@@ -100,26 +93,13 @@ function compileMSS(err, data) {
         console.error(err);
         process.exit(1);
     }
+    var renderer = new carto.Renderer({
+        filename: path.basename(input),
+        benchmark: options.benchmark,
+        ppi: options.ppi
+    });
     try {
-        var renderer = new carto.Renderer({
-            filename: path.basename(input),
-            benchmark: options.benchmark,
-            ppi: options.ppi
-        });
-        renderer.renderMSS(data, function(err, output) {
-            if (err) {
-                console.error(err);
-                throw err;
-                process.exit(1);
-            } else {
-                if (!options.benchmark) {
-                    console.log(output);
-                } else {
-                    var duration = (+new Date) - start;
-                    console.log('TOTAL: ' + (duration) + 'ms');
-                }
-            }
-        });
+        var output = renderer.renderMSS(data);
     } catch (e) {
         if (e.stack) {
             console.error(e.stack);
@@ -127,6 +107,12 @@ function compileMSS(err, data) {
             console.error(e);
         }
         process.exit(1);
+    }
+    if (!options.benchmark) {
+        console.log(output);
+    } else {
+        var duration = (+new Date) - start;
+        console.log('TOTAL: ' + (duration) + 'ms');
     }
 };
 

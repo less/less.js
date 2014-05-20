@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.11.0
+
+* Switch API to be synchronous. All errors should be caught using try/catch now.
+
 ## 0.10.0
 
 * Remove automatic inclusion of `maximum-extent` on Map element to allow geometries that are buffered past extent bounds (e.g. dateline). 

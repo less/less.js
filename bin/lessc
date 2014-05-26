@@ -336,7 +336,7 @@ var parseLessFile = function (e, data) {
         return;
     }
 
-    data = options.globalVariables + data + options.modifyVariables;
+    data = options.globalVariables + data + '\n' + options.modifyVariables;
 
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;

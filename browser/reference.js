@@ -628,7 +628,8 @@ var _mapnik_reference_latest = {
                 "css": "marker-type",
                 "type": [
                     "arrow",
-                    "ellipse"
+                    "ellipse",
+                    "rectangle"
                 ],
                 "default-value": "ellipse",
                 "doc": "The default marker-type. If a SVG file is not given as the marker-file parameter, the renderer provides either an arrow or an ellipse (a circle if height is equal to width)"

@@ -15,7 +15,7 @@ We only accept issues that are bug reports or feature requests. Bugs must be iso
 1. **Search for existing issues.** We get a lot of duplicate issues, and you'd help us out a lot by first checking if someone else has reported the same issue. Moreover, the issue may have already been resolved with a fix available.
 2. **Create an isolated and reproducible test case.** Be sure the problem exists in Less.js's code with [reduced test cases](http://css-tricks.com/reduced-test-cases/) that should be included in each bug report.
 3. **Test with the latest version**. We get a lot of issues that could be resolved by updating your version of Less.js. 
-3. **Include a live example.** Please use [less2css.org](http://less2css.org/) for sharing your isolated test cases. 
+3. **Include an example with source.** E.g. You can use [less2css.org](http://less2css.org/) to create a short test case. 
 4. **Share as much information as possible.** Include operating system and version. Describe how you use Less. If you use it in the browser, please include browser and version, and the version of Less.js you're using. Let us know if you're using the command line (`lessc`) or an external tool. And try to include steps to reproduce the bug.
 5. If you have a solution or suggestion for how to fix the bug you're reporting, please include it, or make a pull request - don't assume the maintainers know how to fix it just because you do.
 

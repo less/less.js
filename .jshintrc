@@ -8,5 +8,6 @@
     "trailing": true,
     "noarg": true,
     "eqnull": true,
-    "forin": true
+    "forin": true,
+    "predef": ["Promise"]
 }

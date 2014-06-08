@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/less/less.js.png?branch=master)](https://travis-ci.org/less/less.js)
-[![Dependencies](https://david-dm.org/less/less.js.png)](https://david-dm.org/less/less.js) [![devDependency Status](https://david-dm.org/less/less.js/dev-status.png)](https://david-dm.org/less/less.js#info=devDependencies)
+ [![Dependencies](https://david-dm.org/less/less.js.png)](https://david-dm.org/less/less.js) [![devDependency Status](https://david-dm.org/less/less.js/dev-status.png)](https://david-dm.org/less/less.js#info=devDependencies) [![optionalDependency Status](https://david-dm.org/less/less.js/optional-status.png)](https://david-dm.org/less/less.js#info=optionalDependencies)
 
-# [Less.js v1.7.0](http://lesscss.org)
+# [Less.js v1.7.1](http://lesscss.org)
 
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
@@ -48,6 +48,6 @@ Copyright (c) 2009-2014 [Alexis Sellier](http://cloudhead.io/) & The Core Less T
 Licensed under the [Apache License](LICENSE).
 
 
-[so]: http://stackoverflow.com/questions/tagged/less "StackOverflow.com"
+[so]: http://stackoverflow.com/questions/tagged/twitter-bootstrap+less "StackOverflow.com"
 [issues]: https://github.com/less/less.js/issues "GitHub Issues for Less.js"
 [download]: https://github.com/less/less.js/zipball/master "Download Less.js"

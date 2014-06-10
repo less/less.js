@@ -1,4 +1,5 @@
-/*jshint rhino:true, unused: false */
+/* Less.js v1.7.1 RHINO | Copyright (c) 2009-2014, Alexis Sellier <self@cloudhead.net> */
+
 /*global name:true, less, loadStyleSheet, os */
 
 function formatError(ctx, options) {
@@ -67,9 +68,9 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
         input = readFile(sheetName);
 
     input = input.replace(/^\xEF\xBB\xBF/, '');
-
+        
     contents[sheetName] = input;
-
+        
     var parser = new less.Parser({
         paths: [sheet.href.replace(/[\w\.-]+$/, '')],
         contents: contents
@@ -151,6 +152,7 @@ function writeFile(filename, content) {
         compress: false,
         cleancss: false,
         max_line_len: -1,
+        optimization: 1,
         silent: false,
         verbose: false,
         lint: false,
@@ -190,12 +192,12 @@ function writeFile(filename, content) {
 
     args = args.filter(function (arg) {
         var match = arg.match(/^-I(.+)$/);
-
+        
         if (match) {
             options.paths.push(match[1]);
             return false;
         }
-
+        
         match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i);
         if (match) { arg = match[1]; } // was (?:=([^\s]*)), check!
         else { return arg; }
@@ -269,6 +271,9 @@ function writeFile(filename, content) {
                             });
                 }
                 break;
+            case 'O0': options.optimization = 0; break;
+            case 'O1': options.optimization = 1; break;
+            case 'O2': options.optimization = 2; break;
             case 'line-numbers':
                 if (checkArgFunc(arg, match[2])) {
                     options.dumpLineNumbers = match[2];
@@ -370,7 +375,7 @@ function writeFile(filename, content) {
     } else if (options.sourceMap) {
         options.sourceMapOutputFilename = options.sourceMap;
     }
-
+    
 
     if (!name) {
         console.log("lessc: no inout files");

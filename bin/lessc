@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path'),
-    fs = require('fs'),
+    fs = require('../lib/less/fs'),
     sys = require('util'),
     os = require('os'),
     mkdirp;
@@ -286,7 +286,7 @@ if (options.sourceMap === true) {
 }
 
 if (options.cleancss && options.sourceMap) {
-    console.log("the sourcemap option is not compatible with sourcemap support at the moment. See Issue #1656");
+    console.log("the cleancss option is not compatible with sourcemap support at the moment. See Issue #1656");
     return;
 }
 
@@ -335,7 +335,7 @@ var parseLessFile = function (e, data) {
         return;
     }
 
-    data = options.globalVariables + data + options.modifyVariables;
+    data = options.globalVariables + data + '\n' + options.modifyVariables;
 
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;

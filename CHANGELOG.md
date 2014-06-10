@@ -1,3 +1,21 @@
+# 1.7.1
+
+2014-06-08
+
+ - Fix detection of recursive mixins
+ - Fix the paths option for later versions of node (0.10+)
+ - Fix paths joining bug
+ - Fix a number precision issue on some versions of node
+ - Fix an IE8 issue with importing css files
+ - Fix IE11 detection for xhr requests
+ - Modify var works if the last line of a less file is a comment.
+ - Better detection of valid hex colour codes
+ - Some stability fixes to support a low number of available file handles
+ - Support comparing values with different quote types e.g. "test" now === 'test'
+ - Give better error messages if accessing a url that returns a non 200 status code
+ - Fix the e() function when passed empty string
+ - Several minor bug fixes
+
 # 1.7.0
 
 2014-02-27

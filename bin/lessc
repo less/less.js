@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path'),
-    fs = require('../lib/less/fs'),
+    fs = require('../lib/less/environment/node/fs'),
     sys = require('util'),
     os = require('os'),
     mkdirp;

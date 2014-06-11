@@ -1,0 +1,15 @@
+
+<Style name="style-inline" filter-mode="first">
+  <Rule>
+    <LineSymbolizer stroke="#000000" stroke-width="1" />
+  </Rule>
+</Style>
+<Style name="style-outline" filter-mode="first">
+  <Rule>
+    <Filter>([ne_10m_adm] = 'AAA')</Filter>
+    <LineSymbolizer stroke="#85c5d3" stroke-width="4" stroke-linejoin="round" />
+  </Rule>
+  <Rule>
+    <LineSymbolizer stroke="#85c5d3" stroke-width="4" stroke-linejoin="round" />
+  </Rule>
+</Style>

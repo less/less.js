@@ -1,4 +1,4 @@
 #data {
     raster-opacity: 1;
-    raster-mode: hard-light;
+    raster-comp-op: hard-light;
 }

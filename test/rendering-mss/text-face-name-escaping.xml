@@ -1,0 +1,5 @@
+<Style name="style" filter-mode="first">
+  <Rule>
+    <TextSymbolizer face-name="El&amp;Font Bubble Regular" ><![CDATA[[name]]]></TextSymbolizer>
+  </Rule>
+</Style>

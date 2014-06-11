@@ -1,5 +1,5 @@
 @us: 'US';
-@thing: "COUNTRY";
+@thing: [COUNTRY];
 
 #world[COUNTRY=@us] {
   polygon-fill: #000;

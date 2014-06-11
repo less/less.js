@@ -1,0 +1,6 @@
+<Style name="style-power" filter-mode="first">
+  <Rule>
+    <Filter>([power] = 'generator') and ([generator:source] = 'wind')</Filter>
+    <MarkersSymbolizer width="0" />
+  </Rule>
+</Style>

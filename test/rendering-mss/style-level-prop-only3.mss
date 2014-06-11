@@ -1,0 +1,3 @@
+#landcover {
+  image-filters:invert();
+}

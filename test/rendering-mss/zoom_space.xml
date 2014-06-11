@@ -1,0 +1,6 @@
+<Style name="style" filter-mode="first">
+  <Rule>
+    <MaxScaleDenominator>100000000</MaxScaleDenominator>
+    <PolygonSymbolizer fill="#ff0000" />
+  </Rule>
+</Style>

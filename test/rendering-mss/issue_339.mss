@@ -1,0 +1,1 @@
+#poi_label[maki=''] { opacity:.5; }

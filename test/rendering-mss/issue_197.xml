@@ -1,0 +1,11 @@
+<Style name="style" filter-mode="first">
+  <Rule>
+    <MaxScaleDenominator>3000000</MaxScaleDenominator>
+    <MinScaleDenominator>1500000</MinScaleDenominator>
+    <MarkersSymbolizer width="1" />
+  </Rule>
+  <Rule>
+    <MaxScaleDenominator>6500000</MaxScaleDenominator>
+    <MarkersSymbolizer width="1" />
+  </Rule>
+</Style>

@@ -1,0 +1,4 @@
+#landcover {
+  ::foo {
+  }
+}

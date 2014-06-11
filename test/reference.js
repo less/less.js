@@ -1,4 +1,5 @@
-window.carto = window.carto || {};
+if (typeof window !== 'undefined')
+  window.carto = window.carto || {};
 
 var _mapnik_reference_latest = {
     "version": "2.1.0",
@@ -1487,9 +1488,10 @@ var _mapnik_reference_latest = {
     }
 };
 
-window.carto['mapnik-reference'] =  {
-  version: {
-    latest: '2.1.0',
-    '2.1.0': _mapnik_reference_latest
+if (typeof window !== 'undefined')
+  window.carto['mapnik-reference'] =  {
+    version: {
+      latest: '2.1.0',
+      '2.1.0': _mapnik_reference_latest
+    }
   }
-}

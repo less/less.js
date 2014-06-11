@@ -1,7 +1,80 @@
 ## Changelog
 
-## XXXX
+## 0.11.1-dev-browser
 * added rectangle option for marker-type
+
+## 0.11.0
+
+* Switch API to be synchronous. All errors should be caught using try/catch now.
+
+## 0.10.0
+
+* Remove automatic inclusion of `maximum-extent` on Map element to allow geometries that are buffered past extent bounds (e.g. dateline). 
+* Bump `mapnik-reference` dependency to ~5.0.9 (with `shield-halo-rasterizer`)
+
+## 0.9.6
+
+* Fixed support for `text-face-name` values with `&` like `El&Font Bubble`
+* Fixed support for filtering on fields containing single quotes. Now `#layer[name="it's"] { ... }` is possible.
+* Fixed support for filtering on fields containing `&`. Now `#layer["Hello&Goodbye"="yes"] { ... }` is possible.
+* Added support for exponential notation in filters. Now `#layer[value = 1.2e3] { ... }` is possible.
+* Bump `mapnik-reference` dependency to ~5.0.8 (with support for Mapnik v2.3.0 and 3.x)
+
+## 0.9.5
+
+* Various speed optimizations to help address #20 (#231)
+* Fixed support for fields that contain the word `zoom` in them (previous clashed with `zoom` keyword)
+* Fixed support for a space in front of `zoom` keyword (#288)
+* Improved error messages when color functions encounter invalid color (#309)
+* The `carto` command line tool now exits cleanly when millstone is used
+* The `carto` command line tool now only localized with millstone if requested (#243)
+* Added man page for `carto` (#257)
+* Fix repeated comments in selectors. Fixes #260
+* Fixed `image-filter` duplication (#270)
+* Quote all needed XML chars. See #263.
+* Added higher tolerance for various characters in field names (#230)
+* Bump `mapnik-reference` dependency to ~5.0.7 (with support for Mapnik v2.2.0)
+* Adds compatibility with screen units.
+* Fixed ability to use carto as global module (#236)
+* Now using 'console' instead of `util` for `stderr` (#217)
+
+## 0.9.4
+
+* Fixes nesting of regex calls
+
+## 0.9.3
+
+* Allows `text-face-name` properties to be unquoted
+* Detects inline Format XML tags in `text-name` and passes such output
+  straight to XML for advanced text names.
+* Fixes bugs around concatenation of strings in expressions
+* Fixes parsing of comments in between selectors
+* Fixes parsing of whitespace in calls
+* Improved error messages for unknown properties - advises user on
+  the property name most closely matching the incorrect input.
+* Improved errors for calls, advises user on number of arguments
+* Fixes instance inheritance - thanks @gravitystorm!
+
+## 0.9.2
+
+Tagged Sept 6, 2012
+
+* Bump `mapnik-reference` dependency to ~5.0.0
+* Better support for unsigned types in certain Mapnik styling properties
+
+## 0.9.1
+
+Tagged Aug 15, 2012
+
+* Improved error handling for different target `mapnik-reference` versions (strk)
+* Bump `mapnik-reference` dependency to ~4.0.3
+* Fixed handling of image-filter syntax as per [Mapnik changes](https://github.com/mapnik/mapnik/issues/1384)
+
+## 0.9.0
+
+* Bump `mapnik-reference` dependency to ~4.0.0 to pull in new properties.
+* Adapted to `comp-op` rename upstream in `mapnik-reference`.
+* Adapted to `transform` rename upstream in `mapnik-reference` and Mapnik.
 
 ## 0.8.1
 
@@ -10,7 +83,7 @@
 ## 0.8.0
 
 * Adds the modulus operator `%` as an option
-* Adds a new field-type like `[FIELD]` instead of "[FIELD"
+* Adds a new field-type like `[FIELD]` instead of "[FIELD]"
 * Supports function syntax for transforms, optionally with variables and arguments.
 
 ### 0.7.1

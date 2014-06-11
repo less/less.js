@@ -1,1 +1,1 @@
-invalid_property.mss:3:2 Unrecognized rule: polygonopacity
+invalid_property.mss:3:2 Unrecognized rule: polygonopacity. Did you mean polygon-opacity?

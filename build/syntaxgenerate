@@ -2,8 +2,7 @@
 
 var path = require('path'),
     fs = require('fs'),
-    _ = require('underscore')._,
-    sys = require('sys');
+    _ = require('underscore')._;
 
 var carto = require('../lib/carto');
 

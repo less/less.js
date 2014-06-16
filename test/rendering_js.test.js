@@ -39,7 +39,7 @@ describe('RenderingJS', function() {
 
   it ("shold render with frames var", function() {
     var layer = shader.getLayers()[1];
-    var props = layer.getStyle('canvas-2d', {}, { 'zoom': 0, 'frame-offset': 10 });
-    assert( props['lineWidth'] === 4);
+    var props = layer.getStyle({}, { 'zoom': 0, 'frame-offset': 10 });
+    assert( props['line-width'] === 4);
   });
 });

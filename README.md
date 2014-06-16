@@ -24,7 +24,7 @@ for (var i = 0; i < layers.length; ++i) {
     console.log("- frames: ", layer.frames())
     console.log("- attachment: ", layer.attachment())
 
-    var layerShader = layer.getStyle('canvas-2d', { property: 1 }, { zoom: 10 })
+    var layerShader = layer.getStyle({ property: 1 }, { zoom: 10 })
     console.log(layerShader['marker-width']) // 1
     console.log(layerShader['marker-fill']) // #FF0000
 }
@@ -60,13 +60,13 @@ shader.findLayer({ name: 'test' })
 
 ## CartoCSS.Layer
 
-### getStyle(target, props, context)
+### getStyle(props, context)
 
-return the evaluated style
-    - target: 'canvas-2d'
+return the evaluated style:
     - props: object containing properties needed to render the style. If the cartocss style uses
       some variables they should be passed in this object
     - context: rendering context variables like ``zoom`` or animation ``frame``
+
 
 
 

@@ -3,7 +3,6 @@
 #
 
 expresso = ./node_modules/.bin/mocha
-<<<<<<< HEAD
 docco = ./node_modules/.bin/docco
 uglify = ./node_modules/.bin/uglify
 

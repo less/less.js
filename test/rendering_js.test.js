@@ -42,4 +42,12 @@ describe('RenderingJS', function() {
     var props = layer.getStyle({}, { 'zoom': 0, 'frame-offset': 10 });
     assert( props['line-width'] === 4);
   });
+
+  it ("shold render variables", function() {
+    var style = '#test { marker-width: [testing]; }';
+    shader = (new carto.RendererJS({ debug: true })).render(style);
+    var layer = shader.getLayers()[0];
+    var props = layer.getStyle({testing: 2}, { 'zoom': 0, 'frame-offset': 10 });
+    assert( props['marker-width'] === 2);
+  });
 });

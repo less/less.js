@@ -50,4 +50,14 @@ describe('RenderingJS', function() {
     var props = layer.getStyle({testing: 2}, { 'zoom': 0, 'frame-offset': 10 });
     assert( props['marker-width'] === 2);
   });
+
+  it ("should allow filter based rendering", function() {
+    var style = '#test { marker-width: 10; [zoom = 1] { marker-width: 1; } }';
+    shader = (new carto.RendererJS({ debug: true })).render(style);
+    var layer = shader.getLayers()[0];
+    var props = layer.getStyle({}, { 'zoom': 0, 'frame-offset': 10 });
+    assert( props['marker-width'] ===  10);
+    props = layer.getStyle({}, { 'zoom': 1, 'frame-offset': 10 });
+    assert( props['marker-width'] ===  1);
+  });
 });

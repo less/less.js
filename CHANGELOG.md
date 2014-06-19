@@ -1,3 +1,10 @@
+# 1.7.2
+
+2014-06-19
+
+ - Allow paths option to be a string (in 1.7.1 less started throwing an exception instead of incorrectly processing the string as an array of chars)
+ - Do not round numbers when used with javascript (introduced 1.7.0)
+
 # 1.7.1
 
 2014-06-08
@@ -153,7 +160,7 @@
  - fix passing of strict maths option
 
 # 1.4.0 Beta 4
- 
+
 2013-05-04
 
  - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
@@ -186,7 +193,7 @@
  - significant bug fixes to our debug options
  - other parameters can be used as defaults in mixins e.g. .a(@a, @b:@a)
  - an error is shown if properties are used outside of a ruleset
- - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14 
+ - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14
  - added luma, hsvhue, hsvsaturation, hsvvalue functions
  - added pow, pi, mod, tan, sin, cos, atan, asin, acos and sqrt math functions
  - added convert function, e.g. convert(1rad, deg) => value in degrees

@@ -127,3 +127,6 @@ h1 {
 body ^^ .shadow {
   display: done;
 }
+#issue2066 {
+  background: url('/images/icon-team.svg') 0 0 / contain;
+}

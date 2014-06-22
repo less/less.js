@@ -1,3 +1,11 @@
+# 1.7.3
+
+2014-06-22
+
+ - Include dist files, missing from 1.7.2
+ - Do not round the results of color functions, like lightness, hue, luma etc.
+ - Support cover and contain keywords in background definitions
+
 # 1.7.2
 
 2014-06-19

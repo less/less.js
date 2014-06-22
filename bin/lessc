@@ -212,6 +212,11 @@ args = args.filter(function (arg) {
                 options.modifyVariables += parseVariableOption(match[2]);
             }
             break;
+        case "num-precision":
+            if (checkArgFunc(arg, match[2])) {
+                options.numPrecision = parseInt(match[2], 10);
+            }
+            break;
         case "clean-option":
             var cleanOptionArgs = match[2].split(":");
             switch(cleanOptionArgs[0]) {
@@ -373,7 +378,8 @@ var parseLessFile = function (e, data) {
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
                     strictUnits: options.strictUnits,
-                    urlArgs: options.urlArgs
+                    urlArgs: options.urlArgs,
+                    numPrecision: options.numPrecision
                 });
 		if(!options.lint) {
                     if (output) {

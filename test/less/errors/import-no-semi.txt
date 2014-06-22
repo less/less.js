@@ -1,2 +1,2 @@
-ParseError: Unrecognised input in {path}import-no-semi.less on line 1, column 1:
+ParseError: bad media features or missing ';' in {path}import-no-semi.less on line 1, column 41:
 1 @import "this-statement-is-invalid.less"

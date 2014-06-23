@@ -60,4 +60,36 @@ describe('RenderingJS', function() {
     props = layer.getStyle({}, { 'zoom': 1, 'frame-offset': 10 });
     assert( props['marker-width'] ===  1);
   });
+
+  it ("symbolizers should be in rendering order", function() {
+    var style = '#test { polygon-fill: red; line-color: red; }';
+    style += '#test2 { line-color: red;polygon-fill: red; line-witdh: 10; }';
+    var shader = (new carto.RendererJS({ debug: true })).render(style);
+    var layer0 = shader.getLayers()[0];
+    assert(layer0.getSymbolizers()[0] === 'polygon');
+    assert(layer0.getSymbolizers()[1] === 'line');
+
+    var layer1 = shader.getLayers()[1];
+    assert(layer0.getSymbolizers()[0] === 'polygon');
+    assert(layer0.getSymbolizers()[1] === 'line');
+  });
+
+  it ("should return variable for styles that change", function() {
+    var style = '#test { marker-width: [prop]; }';
+    var shader = (new carto.RendererJS({ debug: true })).render(style);
+    var layer0 = shader.getLayers()[0];
+    assert(layer0.isVariable());
+
+    style = '#test { marker-width: 1; }';
+    shader = (new carto.RendererJS({ debug: true })).render(style);
+    layer0 = shader.getLayers()[0];
+    assert(!layer0.isVariable());
+
+    style = '#test { marker-width: [prop]; marker-fill: red;  }';
+    shader = (new carto.RendererJS({ debug: true })).render(style);
+    layer0 = shader.getLayers()[0];
+    assert(layer0.isVariable());
+
+  });
+
 });

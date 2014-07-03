@@ -4,8 +4,8 @@
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
   "repository": {
-      "type": "git",
-      "url": "http://github.com/mapbox/carto.git"
+    "type": "git",
+    "url": "http://github.com/mapbox/carto.git"
   },
   "author": {
     "name": "Mapbox",
@@ -23,9 +23,11 @@
     "Konstantin Käfer",
     "Alexis Sellier <self@cloudhead.net>"
   ],
-  "licenses": [{
+  "licenses": [
+    {
       "type": "Apache"
-  }],
+    }
+  ],
   "bin": {
     "carto": "./bin/carto",
     "mml2json.js": "./bin/mml2json.js"
@@ -44,10 +46,13 @@
   "devDependencies": {
     "mocha": "1.12.x",
     "jshint": "0.2.x",
-    "sax": "0.1.x"
+    "sax": "0.1.x",
+    "istanbul": "~0.2.14",
+    "coveralls": "~2.10.1"
   },
   "scripts": {
     "pretest": "npm install",
-    "test": "mocha -R spec"
+    "test": "mocha -R spec",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha && coveralls < ./coverage/lcov.info"
   }
 }

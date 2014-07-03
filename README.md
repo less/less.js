@@ -1,6 +1,6 @@
 # CartoCSS
 
-[![Build Status](https://secure.travis-ci.org/mapbox/carto.png)](http://travis-ci.org/mapbox/carto)
+[![Build Status](https://secure.travis-ci.org/mapbox/carto.png)](http://travis-ci.org/mapbox/carto) [![Coverage Status](https://coveralls.io/repos/mapbox/carto/badge.png)](https://coveralls.io/r/mapbox/carto)
 
 Is the language for map design used by [TileMill](). It is similiar in syntax to CSS, but builds upon it with specific abilities to filter map data and by providing things like variables.
 

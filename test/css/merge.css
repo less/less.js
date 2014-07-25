@@ -32,3 +32,8 @@
   transform: t1s, t2 t3s, t4 t5s t6s;
   background: b1 b2s, b3, b4;
 }
+@font-face {
+  font-family: 'MyWebFont';
+  src: url(webfont.eot);
+  src: url('webfont.eot?#iefix') format('embedded-opentype'), url('webfont.woff') format('woff'), format('truetype') url('webfont.ttf'), url('webfont.svg#svgFontName') format('svg');
+}

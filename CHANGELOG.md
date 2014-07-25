@@ -1,3 +1,79 @@
+# 1.7.3
+
+2014-06-22
+
+ - Include dist files, missing from 1.7.2
+ - Do not round the results of color functions, like lightness, hue, luma etc.
+ - Support cover and contain keywords in background definitions
+
+# 1.7.2
+
+2014-06-19
+
+ - Allow paths option to be a string (in 1.7.1 less started throwing an exception instead of incorrectly processing the string as an array of chars)
+ - Do not round numbers when used with javascript (introduced 1.7.0)
+
+# 1.7.1
+
+2014-06-08
+
+ - Fix detection of recursive mixins
+ - Fix the paths option for later versions of node (0.10+)
+ - Fix paths joining bug
+ - Fix a number precision issue on some versions of node
+ - Fix an IE8 issue with importing css files
+ - Fix IE11 detection for xhr requests
+ - Modify var works if the last line of a less file is a comment.
+ - Better detection of valid hex colour codes
+ - Some stability fixes to support a low number of available file handles
+ - Support comparing values with different quote types e.g. "test" now === 'test'
+ - Give better error messages if accessing a url that returns a non 200 status code
+ - Fix the e() function when passed empty string
+ - Several minor bug fixes
+
+# 1.7.0
+
+2014-02-27
+
+ - Add support for rulesets in variables and passed to mixins to allow wrapping
+ - Change luma to follow the w3c spec, luma is available as luminance. Contrast still uses luma so you may see differences if your threshold % is close to the existing calculated luma.
+ - Upgraded clean css which means the --selectors-merge-mode is now renamed --compatibility
+ - Add support for using variables with @keyframes, @namespace, @charset
+ - Support property merging with +_ when spaces are needed and keep + for comma separated
+ - Imports now always import once consistently - a race condition meant previously certain configurations would lead to a different ordering of files
+ - Fix support for `.mixin(@args...)` when called with no args (e.g. `.mixin();`)
+ - Do unit conversions with min and max functions. Don't pass through if not understood, throw an error
+ - Allow % to be passed on its own to the unit function e.g. `unit(10, %)`
+ - Fix a bug when comparing a unit value to a non-unit value if the unit-value was the multiple of another unit (e.g. cm, mm, deg etc.)
+ - Fix mixins with media queries in import reference files not being put into the output (they now output, they used to incorrectly not)
+ - Fix lint mode - now reports all errors
+ - Fixed a small scope issue with & {} selector rulesets incorrectly making mixins visible - regression from 1.6.2
+ - Browser - added log level "debug" at 3 to get less logging, The default has changed so unless you set the value to the default you won't see a difference
+ - Browser - logLevel takes effect regardless of the environment (production/dev)
+ - Browser - added postProcessor option, a function called to post-process the css before adding to the page
+ - Browser - use the right request for file access in IE
+
+# 1.6.3
+
+2014-02-08
+
+ - Fix issue with calling toCSS twice not working in some situations (like with bootstrap 2)
+
+# 1.6.2
+
+2014-02-02
+
+ - The Rhino release is fixed!
+ - ability to use uppercase colours
+ - Fix a nasty bug causing syntax errors when selector interpolation is preceded by a long comment (and some other cases)
+ - Fix a major bug with the variable scope in guards on selectors (e.g. not mixins)
+ - Fold in `& when () {` to the current selector rather than duplicating it
+ - fix another issue with array prototypes
+ - add a url-args option which adds a value to all urls (for cache busting)
+ - Round numbers to 8 decimal places - thereby stopping javascript precision errors
+ - some improvements to the default() function in more complex scenarios
+ - improved missing '{' and '(' detection
+
 # 1.6.1
 
 2014-01-12
@@ -92,7 +168,7 @@
  - fix passing of strict maths option
 
 # 1.4.0 Beta 4
- 
+
 2013-05-04
 
  - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
@@ -125,7 +201,7 @@
  - significant bug fixes to our debug options
  - other parameters can be used as defaults in mixins e.g. .a(@a, @b:@a)
  - an error is shown if properties are used outside of a ruleset
- - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14 
+ - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14
  - added luma, hsvhue, hsvsaturation, hsvvalue functions
  - added pow, pi, mod, tan, sin, cos, atan, asin, acos and sqrt math functions
  - added convert function, e.g. convert(1rad, deg) => value in degrees

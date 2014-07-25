@@ -50,7 +50,7 @@
             var result = [];
             for (i in parts) {
                 var part = parts[i];
-                if (part === '..' && result.length > 0) {
+                if (part === '..' && result.length > 0 && result[result.length-1] !== '..') {
                     result.pop();
                 } else if (part === '' && result.length > 0) {
                     // skip

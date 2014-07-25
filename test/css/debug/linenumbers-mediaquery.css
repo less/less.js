@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\000033}}
+@media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\000031}}
 /* @charset "ISO-8859-1"; */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\0000323}}
 .tst3 {
@@ -32,4 +32,9 @@
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\0000318}}
 .tst2 {
   color: white;
+}
+@media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000327}}
+.test {
+  color: red;
+  width: 2;
 }

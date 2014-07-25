@@ -67,9 +67,17 @@
   content: is not #0000ff its #800080;
 }
 .stringguardtest {
-  content: is theme1;
-  content: is not theme2;
-  content: is theme1 no quotes;
+  content: "theme1" is "theme1";
+  content: "theme1" is not "theme2";
+  content: "theme1" is 'theme1';
+  content: "theme1" is not 'theme2';
+  content: 'theme1' is "theme1";
+  content: 'theme1' is not "theme2";
+  content: 'theme1' is 'theme1';
+  content: 'theme1' is not 'theme2';
+  content: theme1 is not "theme2";
+  content: theme1 is not 'theme2';
+  content: theme1 is theme1;
 }
 #tryNumberPx {
   catch: all;
@@ -79,4 +87,7 @@
 .call-lock-mixin .call-inner-lock-mixin {
   a: 1;
   x: 1;
+}
+.mixin-generated-class {
+  a: 1;
 }

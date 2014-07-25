@@ -15,17 +15,17 @@ module.exports = function(grunt) {
       license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
       copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
       banner:
-        '/*! \n' +
-        ' * LESS - <%= pkg.description %> v<%= pkg.version %> \n' +
-        ' * http://lesscss.org \n' +
-        ' * \n' +
-        ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> \n' +
-        ' * Licensed under the <%= meta.license %> License. \n' +
-        ' * \n' +
-        ' */ \n\n' +
+        '/*!\n' +
+        ' * Less - <%= pkg.description %> v<%= pkg.version %>\n' +
+        ' * http://lesscss.org\n' +
+        ' *\n' +
+        ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>>\n' +
+        ' * Licensed under the <%= meta.license %> License.\n' +
+        ' *\n' +
+        ' */\n\n' +
         ' /**' +
         ' * @license <%= meta.license %>\n' +
-        ' */ \n\n'
+        ' */\n\n'
     },
 
     shell: {
@@ -64,11 +64,20 @@ module.exports = function(grunt) {
       // Rhino
       rhino: {
         options: {
-          banner: '/* LESS.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
+          banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
           footer: '' // override task-level footer
         },
         src: ['<%= build.rhino %>'],
         dest: 'dist/less-rhino-<%= pkg.version %>.js'
+      },
+      // lessc for Rhino
+      rhinolessc: {
+        options: {
+          banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
+          footer: '' // override task-level footer
+        },
+        src: ['<%= build.rhinolessc %>'],
+        dest: 'dist/lessc-rhino-<%= pkg.version %>.js'
       },
       // Generate readme
       readme: {
@@ -205,6 +214,14 @@ module.exports = function(grunt) {
           specs: 'test/browser/runner-global-vars-spec.js',
           outfile: 'tmp/browser/test-runner-global-vars.html'
         }
+      },
+      postProcessor: {
+        src: ['test/browser/less/postProcessor/*.less'],
+        options: {
+          helpers: 'test/browser/runner-postProcessor-options.js',
+          specs: 'test/browser/runner-postProcessor.js',
+          outfile: 'tmp/browser/test-postProcessor.html'
+        }
       }
     },
 
@@ -234,9 +251,10 @@ module.exports = function(grunt) {
 
   // Release Rhino Version
   grunt.registerTask('rhino', [
-    'concat:rhino'
+    'concat:rhino',
+    'concat:rhinolessc'
   ]);
-  
+
   // Run all browser tests
   grunt.registerTask('browsertest', [
     'browser',

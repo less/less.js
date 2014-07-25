@@ -51,4 +51,3 @@ Licensed under the [Apache License](LICENSE).
 [so]: http://stackoverflow.com/questions/tagged/twitter-bootstrap+less "StackOverflow.com"
 [issues]: https://github.com/less/less.js/issues "GitHub Issues for Less.js"
 [download]: https://github.com/less/less.js/zipball/master "Download Less.js"
-

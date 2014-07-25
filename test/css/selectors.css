@@ -140,3 +140,14 @@ p a span {
 [3] {
   attributes: yes;
 }
+/*
+Large comment means chunk will be emitted after } which means chunk will begin with whitespace...
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank
+*/
+.blood {
+  color: red;
+}

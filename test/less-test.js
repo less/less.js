@@ -227,6 +227,8 @@ module.exports = function() {
                 } else {
                     try {
                         css = tree.toCSS(options);
+                        var css2 = tree.toCSS(options); // integration test that 2nd call gets same output
+                        if (css2 !== css) { throw new Error("css not equal to 2nd call"); }
                         callback(null, css);
                     } catch (e) {
                         callback(e);

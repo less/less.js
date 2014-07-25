@@ -1,6 +1,6 @@
 @charset "UTF-8";
-/* line 3, {pathimport}test.less */
-@media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\000033}}
+/* line 1, {pathimport}test.less */
+@media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\000031}}
 /* @charset "ISO-8859-1"; */
 /* line 23, {pathimport}test.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\0000323}}
@@ -40,4 +40,10 @@
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\0000318}}
 .tst2 {
   color: white;
+}
+/* line 27, {path}linenumbers.less */
+@media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000327}}
+.test {
+  color: red;
+  width: 2;
 }

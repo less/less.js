@@ -8,7 +8,7 @@
 @a: #ddd;
 
 .see-the {
-  @a: #444; // this mirrors what mixins do - they evaluate guards at the point of execution
+  @a: #444; // this mirrors what mixins do - they evaluate the guards at the point of definition
   .light();
   .dark();
 }
@@ -61,4 +61,42 @@
   .hideme {
     color: red;
   }
+}
+
+.mixin-with-guard-inside(@colWidth) {
+  // selector with guard (applies also to & when() ...)
+  .clsWithGuard when (@colWidth <= 0) {
+    dispaly: none;
+  }
+}
+
+.mixin-with-guard-inside(0px);
+
+.dont-split-me-up {
+  width: 1px;
+  & when (@c = 3) {
+    color: red;
+  }
+  & when (@c = 3) {
+    height: 1px;
+  }
+  + & when (@c = 3) { // creates invalid css but tests that we don't fold it in
+    sibling: true;
+  }
+}
+
+.scope-check when (@c = 3) {
+  @k: 1px;
+  & when (@c = 3) {
+    @k: 2px;
+    sub-prop: @k;
+  }
+  prop: @k;
+}
+.scope-check-2 {
+  .scope-check();
+  @k:4px;
+}
+.errors-if-called when (@c = never) {
+  .mixin-doesnt-exist();
 }

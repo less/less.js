@@ -28,7 +28,12 @@
   luma-blue: luma(#0000ff);
   luma-yellow: luma(#ffff00);
   luma-cyan: luma(#00ffff);
-  luma-white-alpha: luma(rgba(255,255,255,0.5));
+  luma-differs-from-luminance: luma(#ff3600);
+  luminance-white: luma(#fff);
+  luminance-black: luma(#000);
+  luminance-black-alpha: luma(rgba(0,0,0,0.5));
+  luminance-red: luma(#ff0000);
+  luminance-differs-from-luma: luminance(#ff3600);
   contrast-filter: contrast(30%);
   saturate-filter: saturate(5%);
   contrast-white: contrast(#fff);
@@ -44,19 +49,31 @@
   contrast-light-thresh: contrast(#fff, #111111, #eeeeee, 0.5);
   contrast-dark-thresh: contrast(#000, #111111, #eeeeee, 0.5);
   contrast-high-thresh: contrast(#555, #111111, #eeeeee, 0.6);
-  contrast-low-thresh: contrast(#555, #111111, #eeeeee, 0.1);
+  contrast-low-thresh: contrast(#555, #111111, #eeeeee, 0.09);
   contrast-light-thresh-per: contrast(#fff, #111111, #eeeeee, 50%);
   contrast-dark-thresh-per: contrast(#000, #111111, #eeeeee, 50%);
   contrast-high-thresh-per: contrast(#555, #111111, #eeeeee, 60%);
-  contrast-low-thresh-per: contrast(#555, #111111, #eeeeee, 10%);
+  contrast-low-thresh-per: contrast(#555, #111111, #eeeeee, 9%);
+  replace: replace("Hello, Mars.", "Mars\.", "World!");
+  replace-captured: replace("This is a string.", "(string)\.$", "new $1.");
+  replace-with-flags: replace("One + one = 4", "one", "2", "gi");
+  replace-single-quoted: replace('foo-1', "1", "2");
+  replace-escaped-string: replace(~"bar-1", "1", "2");
+  replace-keyword: replace(baz-1, "1", "2");
   format: %("rgb(%d, %d, %d)", @r, 128, 64);
   format-string: %("hello %s", "world");
   format-multiple: %("hello %s %d", "earth", 2);
-  format-url-encode: %('red is %A', #ff0000);
+  format-url-encode: %("red is %A", #ff0000);
+  format-single-quoted: %('hello %s', "single world");
+  format-escaped-string: %(~"hello %s", "escaped world");
   eformat: e(%("rgb(%d, %d, %d)", @r, 128, 64));
   
   unitless: unit(12px);
   unit: unit((13px + 1px), em);
+  unitpercentage: unit(100, %);
+  
+  get-unit: get-unit(10px);
+  get-unit-empty: get-unit(10);
 
   hue: hue(hsl(98, 12%, 95%));
   saturation: saturation(hsl(98, 12%, 95%));
@@ -88,18 +105,21 @@
   pow: pow(4, 3);
   pow: pow(3, 3em);
   min: min(0);
-  min: min("junk", 6, 5);
-  min: min(1pc, 3pt);
+  min: min(6, 5);
+  min: min(1pt, 3pt);
+  min: min(1cm, 3mm);
   max: max(1, 3);
-  max: max(3%, 1cm, 8%, 2mm);
+  max: max(3em, 1em, 2em, 5em);
   percentage: percentage((10px / 50));
   color: color("#ff0011");
   tint: tint(#777777, 13);
   tint-full: tint(#777777, 100);
   tint-percent: tint(#777777, 13%);
+  tint-negative: tint(#777777, -13%);
   shade: shade(#777777, 13);
   shade-full: shade(#777777, 100);
   shade-percent: shade(#777777, 13%);
+  shade-negative: shade(#777777, -13%);
 
   fade-out: fadeOut(red, 5%); // support fadeOut and fadeout
   fade-in: fadein(fadeout(red, 10%), 5%);

@@ -1,7 +1,17 @@
-/*
-  The media statement above is invalid (no selector)
-  We should ban invalid media queries with properties and no selector?
-*/
+input[type="text"].class#id[attr=32]:not(1) {
+  color: white;
+}
+div#id.class[a=1][b=2].class:not(1) {
+  color: white;
+}
+@media print {
+  .class {
+    color: blue;
+  }
+  .class .sub {
+    width: 42;
+  }
+}
 .visible {
   color: red;
 }
@@ -12,9 +22,6 @@
   color: green;
 }
 .visible:hover {
-  color: green;
-}
-.visible {
   color: green;
 }
 .only-with-visible + .visible,
@@ -37,9 +44,6 @@
 .b:hover {
   color: green;
 }
-.b {
-  color: green;
-}
 .b + .b {
   color: green;
 }
@@ -52,4 +56,13 @@
 /* comment pulled in */
 .visible {
   extend: test;
+}
+.test-mediaq-import {
+  color: green;
+  test: 340px;
+}
+@media (max-size: 450px) {
+  .test-mediaq-import {
+    color: red;
+  }
 }

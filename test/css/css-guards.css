@@ -2,7 +2,7 @@
   color: green;
 }
 .see-the {
-  color: orange;
+  color: green;
 }
 .hide-the {
   color: green;
@@ -15,4 +15,23 @@
 }
 .inheritance:hover {
   color: pink;
+}
+.clsWithGuard {
+  dispaly: none;
+}
+.dont-split-me-up {
+  width: 1px;
+  color: red;
+  height: 1px;
+}
+ + .dont-split-me-up {
+  sibling: true;
+}
+.scope-check {
+  sub-prop: 2px;
+  prop: 1px;
+}
+.scope-check-2 {
+  sub-prop: 2px;
+  prop: 1px;
 }

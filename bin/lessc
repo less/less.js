@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path'),
-    fs = require('fs'),
+    fs = require('../lib/less/fs'),
     sys = require('util'),
     os = require('os'),
     mkdirp;
@@ -27,7 +27,8 @@ var options = {
     strictMath: false,
     strictUnits: false,
     globalVariables: '',
-    modifyVariables: ''
+    modifyVariables: '',
+    urlArgs: ''
 };
 var cleancssOptions = {};
 var continueProcessing = true,
@@ -78,7 +79,7 @@ args = args.filter(function (arg) {
     switch (arg) {
         case 'v':
         case 'version':
-            console.log("lessc " + less.version.join('.') + " (LESS Compiler) [JavaScript]");
+            console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
             continueProcessing = false;
         case 'verbose':
             options.verbose = true;
@@ -230,16 +231,21 @@ args = args.filter(function (arg) {
                 case "--advanced":
                     cleancssOptions.noAdvanced = false;
                     break;
-                case "--selectors-merge-mode":
-                    cleancssOptions.selectorsMergeMode = cleanOptionArgs[1];
+                case "--compatibility":
+                    cleancssOptions.compatibility = cleanOptionArgs[1];
                     break;
                 default:
                     console.log("unrecognised clean-css option '" + cleanOptionArgs[0] + "'");
                     console.log("we support only arguments that make sense for less, '--keep-line-breaks', '-b'");
-                    console.log("'--s0', '--s1', '--advanced', '--skip-advanced', '--selectors-merge-mode'");
+                    console.log("'--s0', '--s1', '--advanced', '--skip-advanced', '--compatibility'");
                     continueProcessing = false;
                     currentErrorcode = 1;
                     break;
+            }
+            break;
+        case 'url-args':
+            if (checkArgFunc(arg, match[2])) {
+                options.urlArgs = match[2];
             }
             break;
         default:
@@ -281,7 +287,7 @@ if (options.sourceMap === true) {
 }
 
 if (options.cleancss && options.sourceMap) {
-    console.log("the sourcemap option is not compatible with sourcemap support at the moment. See Issue #1656");
+    console.log("the cleancss option is not compatible with sourcemap support at the moment. See Issue #1656");
     return;
 }
 
@@ -330,7 +336,7 @@ var parseLessFile = function (e, data) {
         return;
     }
 
-    data = options.globalVariables + data + options.modifyVariables;
+    data = options.globalVariables + data + '\n' + options.modifyVariables;
 
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
@@ -346,8 +352,9 @@ var parseLessFile = function (e, data) {
                 sys.print(file + " ")
             }
             sys.print("\n");
-        } else if(!options.lint) {
+        } else {
             try {
+	        if (options.lint) { writeSourceMap = function() {} }
                 var css = tree.toCSS({
                     silent: options.silent,
                     verbose: options.verbose,
@@ -365,17 +372,20 @@ var parseLessFile = function (e, data) {
                     writeSourceMap: writeSourceMap,
                     maxLineLen: options.maxLineLen,
                     strictMath: options.strictMath,
-                    strictUnits: options.strictUnits
+                    strictUnits: options.strictUnits,
+                    urlArgs: options.urlArgs
                 });
-                if (output) {
-                    ensureDirectory(output);
-                    fs.writeFileSync(output, css, 'utf8');
-                    if (options.verbose) {
-                        console.log('lessc: wrote ' + output);
-                    }
-                } else {
-                    sys.print(css);
-                }
+		if(!options.lint) {
+                    if (output) {
+                        ensureDirectory(output);
+                        fs.writeFileSync(output, css, 'utf8');
+                        if (options.verbose) {
+                            console.log('lessc: wrote ' + output);
+                        }
+                    } else {
+                        sys.print(css);
+		    }
+		}
             } catch (e) {
                 less.writeError(e, options);
                 currentErrorcode = 2;

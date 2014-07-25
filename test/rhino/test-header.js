@@ -11,3 +11,5 @@ function initRhinoTest() {
         if (str.value === "evil red") { return new(less.tree.Color)("600"); }
     };
 }
+
+initRhinoTest();

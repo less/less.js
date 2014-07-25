@@ -1,5 +1,5 @@
 @charset "UTF-8";
-/* line 3, {pathimport}test.less */
+/* line 1, {pathimport}test.less */
 /* @charset "ISO-8859-1"; */
 /* line 23, {pathimport}test.less */
 .tst3 {
@@ -32,4 +32,9 @@
 /* line 18, {pathimport}test.less */
 .tst2 {
   color: white;
+}
+/* line 27, {path}linenumbers.less */
+.test {
+  color: red;
+  width: 2;
 }

@@ -1,7 +1,7 @@
 {
   "name": "less",
-  "version": "1.7.3",
-  "main": "./dist/less-1.7.3.js",
+  "version": "1.7.4",
+  "main": "./dist/less-1.7.4.js",
   "ignore": [
     "**/.*",
     "benchmark",

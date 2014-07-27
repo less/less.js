@@ -2,8 +2,7 @@
 
 module.exports = function() {
     var path = require('path'),
-        fs = require('fs'),
-        sys = require('util');
+        fs = require('fs');
 
     var less = require('../lib/less');
     var stylize = require('../lib/less/lessc_helper').stylize;
@@ -31,7 +30,7 @@ module.exports = function() {
 
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
-            sys.print("- " + name + ": ");
+            process.stdout.write("- " + name + ": ");
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
             } else if (err) {
@@ -48,7 +47,7 @@ module.exports = function() {
 
     function testErrors(name, err, compiledLess, doReplacements) {
         fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
-            sys.print("- " + name + ": ");
+            process.stdout.write("- " + name + ": ");
             expectedErr = doReplacements(expectedErr, 'test/less/errors/');
             if (!err) {
                 if (compiledLess) {
@@ -130,7 +129,7 @@ module.exports = function() {
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }
                 fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                    sys.print("- " + css_name + ": ");
+                    process.stdout.write("- " + css_name + ": ");
 
                     css = css && doReplacements(css, 'test/less/' + foldername);
                     if (less === css) { ok('OK'); }
@@ -152,9 +151,9 @@ module.exports = function() {
         require('diff').diffLines(left, right).forEach(function(item) {
           if(item.added || item.removed) {
             var text = item.value.replace("\n", String.fromCharCode(182) + "\n");
-            sys.print(stylize(text, item.added ? 'green' : 'red'));
+              process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
           } else {
-            sys.print(item.value);
+              process.stdout.write(item.value);
           }
         });
         console.log("");
@@ -241,7 +240,7 @@ module.exports = function() {
     function testNoOptions() {
         totalTests++;
         try {
-            sys.print("- Integration - creating parser without options: ");
+            process.stdout.write("- Integration - creating parser without options: ");
             new(less.Parser)();
         } catch(e) {
             fail(stylize("FAIL\n", "red"));

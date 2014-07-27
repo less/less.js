@@ -2,7 +2,6 @@
 
 var path = require('path'),
     fs = require('../lib/less/fs'),
-    sys = require('util'),
     os = require('os'),
     mkdirp;
 
@@ -315,10 +314,10 @@ var ensureDirectory = function (filepath) {
 
 if (options.depends) {
     if (!outputbase) {
-        sys.print("option --depends requires an output path to be specified");
+        console.log("option --depends requires an output path to be specified");
         return;
     }
-    sys.print(outputbase + ": ");
+    process.stdout.write(outputbase + ": ");
 }
 
 if (!sourceMapFileInline) {
@@ -349,9 +348,9 @@ var parseLessFile = function (e, data) {
             return;
         } else if (options.depends) {
             for(var file in parser.imports.files) {
-                sys.print(file + " ")
+                process.stdout.write(file + " ")
             }
-            sys.print("\n");
+            console.log("");
         } else {
             try {
 	        if (options.lint) { writeSourceMap = function() {} }
@@ -383,7 +382,7 @@ var parseLessFile = function (e, data) {
                             console.log('lessc: wrote ' + output);
                         }
                     } else {
-                        sys.print(css);
+                        process.stdout.write(css);
 		    }
 		}
             } catch (e) {

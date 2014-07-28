@@ -1,3 +1,15 @@
+# 1.7.4
+
+2014-07-27
+
+ - Handle uppercase paths in browser
+ - Show error if an empty selector is used in extend
+ - Fix property merging in directives
+ - Fix ordering of charset and import directives
+ - Fix race condition that caused a rules is undefined error sometimes if you had a complex import strategy
+ - Better error message for imports missing semi-colons or malformed
+ - Do not use util.print to avoid deprecate warnings in node 0.11
+
 # 1.7.3
 
 2014-06-22

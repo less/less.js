@@ -70,3 +70,14 @@
   @orange_color: orange;
   background-image: svg-gradient(to bottom, (mix(black, white) + #444) 1%, @orange_color @orange_percentage, ((@green_5)), white 95%);
 }
+//it should work also inside @font-face #2035
+@font-face {
+  font-family: 'MyWebFont';
+  src: url(webfont.eot);
+  src+: url('webfont.eot?#iefix');
+  src+_: format('embedded-opentype');
+  src+: url('webfont.woff') format('woff');
+  src+: format('truetype');
+  src+_: url('webfont.ttf');
+  src+: url('webfont.svg#svgFontName') format('svg');
+}

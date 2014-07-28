@@ -35,3 +35,8 @@
     color: yellow;
   }
 }
+@media print {
+  body {
+    width: 100%;
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "carto",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
   "repository": {
@@ -29,8 +29,7 @@
     }
   ],
   "bin": {
-    "carto": "./bin/carto",
-    "mml2json.js": "./bin/mml2json.js"
+    "carto": "./bin/carto"
   },
   "man": "./man/carto.1",
   "main": "./lib/carto/index",

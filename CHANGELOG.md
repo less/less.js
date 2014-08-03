@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.12.0
+
+* Drop mml2json and xml2js dependency.
+
 ## 0.11.0
 
 * Switch API to be synchronous. All errors should be caught using try/catch now.

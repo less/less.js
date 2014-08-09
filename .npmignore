@@ -1,1 +1,13 @@
 .gitattributes
+benchmark
+build
+dist
+gradle*
+Gruntfile.js
+projectFilesBackup
+.idea
+test
+tmp
+.jshintrc
+.travis.yml
+build.gradle

@@ -128,6 +128,13 @@ body ^^ .shadow {
   display: done;
 }
 
+:host(.sel .a),
+:host-context(.sel .b),
+.sel /deep/ .b,
+::content .sel {
+  type: shadow-dom;
+}
+
 #issue2066 {
   background: url('/images/icon-team.svg') 0 0 / contain;
 }

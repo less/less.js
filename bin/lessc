@@ -233,10 +233,13 @@ args = args.filter(function (arg) {
                 case "--compatibility":
                     cleancssOptions.compatibility = cleanOptionArgs[1];
                     break;
+                case "--rounding-precision":
+                    cleancssOptions.roundingPrecision = Number(cleanOptionArgs[1]);
+                    break;
                 default:
                     console.log("unrecognised clean-css option '" + cleanOptionArgs[0] + "'");
                     console.log("we support only arguments that make sense for less, '--keep-line-breaks', '-b'");
-                    console.log("'--s0', '--s1', '--advanced', '--skip-advanced', '--compatibility'");
+                    console.log("'--s0', '--s1', '--advanced', '--skip-advanced', '--compatibility', '--rounding-precision'");
                     continueProcessing = false;
                     currentErrorcode = 1;
                     break;

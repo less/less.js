@@ -42,7 +42,7 @@
   "optionalDependencies": {
     "graceful-fs": "~2.0.3",
     "mime": "~1.2.11",
-    "request": "~2.34.0",
+    "request": "~2.40.0",
     "mkdirp": "~0.3.5",
     "clean-css": "2.1.x",
     "source-map": "0.1.x"

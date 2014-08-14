@@ -78,13 +78,6 @@ module.exports = function(grunt) {
         },
         src: ['<%= build.rhinolessc %>'],
         dest: 'dist/lessc-rhino-<%= pkg.version %>.js'
-      },
-      // Generate readme
-      readme: {
-        // override task-level banner and footer
-        options: {process: true, banner: '', footer: ''},
-        src: ['build/README.md'],
-        dest: 'README.md'
       }
     },
 
@@ -289,10 +282,5 @@ module.exports = function(grunt) {
   // Run benchmark
   grunt.registerTask('benchmark', [
     'shell:benchmark'
-  ]);
-
-  // Readme.
-  grunt.registerTask('readme', [
-    'concat:readme'
   ]);
 };

@@ -1,5 +1,5 @@
 #import {
-  color: #ff0000;
+  color: red;
 }
 @media (min-width: 600px) {
   #css { color: yellow; }

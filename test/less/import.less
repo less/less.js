@@ -19,3 +19,10 @@
 @import (multiple) "import/import-test-e" screen and (max-width: 602px);
 
 @import (less, multiple) url("import/import-test-d.css") screen and (max-width: 603px);
+
+@media print {
+  @import (multiple) "import/import-test-e";
+}
+
+@charset "UTF-8"; // climb on top #2126
+

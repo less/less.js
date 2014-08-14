@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.7.2",
+  "version": "1.7.4",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -40,11 +40,11 @@
     "test": "grunt test"
   },
   "optionalDependencies": {
-    "graceful-fs": "~2.0.3",
+    "graceful-fs": "~3.0.2",
     "mime": "~1.2.11",
-    "request": "~2.34.0",
-    "mkdirp": "~0.3.5",
-    "clean-css": "2.1.x",
+    "request": "~2.40.0",
+    "mkdirp": "~0.5.0",
+    "clean-css": "2.2.x",
     "source-map": "0.1.x",
     "promise": "~5.0.0"
   },

@@ -1,6 +1,5 @@
 var path = require('path'),
-    fs = require('fs'),
-    sys = require('util');
+    fs = require('fs');
 
 var less = require('../lib/less');
 var file = path.join(__dirname, 'benchmark.less');

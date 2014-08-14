@@ -71,7 +71,7 @@ var testSheet = function(sheet) {
 //TODO: do it cleaner - the same way as in css
 
 function extractId(href) {
-  return href.replace(/^[a-z-]+:\/+?[^\/]+/, '') // Remove protocol & domain
+  return href.replace(/^[a-z-]+:\/+?[^\/]+/i, '') // Remove protocol & domain
   .replace(/^\//, '') // Remove root /
   .replace(/\.[a-zA-Z]+$/, '') // Remove simple extension
   .replace(/[^\.\w-]+/g, '-') // Replace illegal characters

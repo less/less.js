@@ -7,6 +7,9 @@
 .borders {
   border-style: dashed;
 }
+.mixin > * {
+  border: do not match me;
+}
 #namespace .borders {
   border-style: dotted;
 }

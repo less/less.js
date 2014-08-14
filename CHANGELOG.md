@@ -8,8 +8,28 @@
  - better parsing - better comment support (TODO) and comments in brackets can now contain comments including quotes.
 TODO
  - Environment Support
- - Finalised Plugin Support
- 
+ - Finalised Plugin Support 
+
+# 1.7.4
+
+2014-07-27
+
+ - Handle uppercase paths in browser
+ - Show error if an empty selector is used in extend
+ - Fix property merging in directives
+ - Fix ordering of charset and import directives
+ - Fix race condition that caused a rules is undefined error sometimes if you had a complex import strategy
+ - Better error message for imports missing semi-colons or malformed
+ - Do not use util.print to avoid deprecate warnings in node 0.11
+
+# 1.7.3
+
+2014-06-22
+
+ - Include dist files, missing from 1.7.2
+ - Do not round the results of color functions, like lightness, hue, luma etc.
+ - Support cover and contain keywords in background definitions
+
  # 1.7.2
 
 2014-06-19

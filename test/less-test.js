@@ -18,15 +18,17 @@ module.exports = function() {
         passedTests = 0;
 
 
-    less.tree.functions.add = function (a, b) {
-        return new(less.tree.Dimension)(a.value + b.value);
-    };
-    less.tree.functions.increment = function (a) {
-        return new(less.tree.Dimension)(a.value + 1);
-    };
-    less.tree.functions._color = function (str) {
-        if (str.value === "evil red") { return new(less.tree.Color)("600"); }
-    };
+    less.functions.functionRegistry.addMultiple({
+        add: function (a, b) {
+            return new(less.tree.Dimension)(a.value + b.value);
+        },
+        increment: function (a) {
+            return new(less.tree.Dimension)(a.value + 1);
+        },
+        _color: function (str) {
+            if (str.value === "evil red") { return new(less.tree.Color)("600"); }
+        }
+    });
 
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {

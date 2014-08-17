@@ -38,8 +38,8 @@ module.exports = function() {
             } else if (err) {
                 fail("ERROR: " + (err && err.message));
                 if (isVerbose) {
-                    console.error();
-                    console.error(err.stack);
+                    process.stdout.write("\n");
+                    process.stdout.write(err.stack + "\n");
                 }
             } else {
                 difference("FAIL", expectedSourcemap, sourcemap);
@@ -138,8 +138,8 @@ module.exports = function() {
                     else if (err) {
                         fail("ERROR: " + (err && err.message));
                         if (isVerbose) {
-                            console.error();
-                            console.error(err.stack);
+                            process.stdout.write("\n");
+                            process.stdout.write(err.stack + "\n");
                         }
                     } else {
                         difference("FAIL", css, less);
@@ -158,17 +158,17 @@ module.exports = function() {
               process.stdout.write(item.value);
           }
         });
-        console.log("");
+        process.stdout.write("\n");
     }
 
     function fail(msg) {
-        console.error(stylize(msg, 'red'));
+        process.stdout.write(stylize(msg, 'red') + "\n");
         failedTests++;
         endTest();
     }
 
     function difference(msg, left, right) {
-        console.warn(stylize(msg, 'yellow'));
+        process.stdout.write(stylize(msg, 'yellow') + "\n");
         failedTests++;
 
         diff(left, right);
@@ -176,7 +176,7 @@ module.exports = function() {
     }
 
     function ok(msg) {
-        console.log(stylize(msg, 'green'));
+        process.stdout.write(stylize(msg, 'green') + "\n");
         passedTests++;
         endTest();
     }
@@ -184,15 +184,15 @@ module.exports = function() {
     function endTest() {
         var leaked = checkGlobalLeaks();
         if (failedTests + passedTests === totalTests) {
-            console.log("");
+            process.stdout.write("\n");
             if (failedTests > 0) {
-                console.error(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed");
+                process.stdout.write(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed\n");
             } else {
-                console.log(stylize("All Passed ", "green") + passedTests + " run");
+                process.stdout.write(stylize("All Passed ", "green") + passedTests + " run\n");
             }
             if (leaked.length > 0) {
-                console.log("");
-                console.warn(stylize("Global leak detected: ", "red") + leaked.join(', '));
+                process.stdout.write("\n");
+                process.stdout.write(stylize("Global leak detected: ", "red") + leaked.join(', ') + "\n");
             }
 
             if (leaked.length || failedTests) {

@@ -67,3 +67,7 @@
   color: #A33;
 }
 /* } */
+/*by block */
+#output-block {
+  comment: /* // Not commented out // */;
+}

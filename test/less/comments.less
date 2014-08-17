@@ -81,3 +81,8 @@
 //
 
 /*  *//* { *//*  *//*  *//*  */#div { color:#A33; }/* } */
+
+// line immediatly followed
+/*by block */
+@string_w_comment: ~"/* // Not commented out // */";
+#output-block { comment: @string_w_comment; }

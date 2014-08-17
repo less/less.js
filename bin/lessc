@@ -35,9 +35,9 @@ var continueProcessing = true,
 
 // calling process.exit does not flush stdout always
 // so use this to set the exit code
-process.on('exit', function() { process.reallyExit(currentErrorcode) });
+process.on('exit', function() { process.reallyExit(currentErrorcode); });
 
-var checkArgFunc = function(arg, option) {
+var checkArgFunc = function (arg, option) {
     if (!option) {
         console.log(arg + " option requires a parameter");
         continueProcessing = false;
@@ -46,17 +46,17 @@ var checkArgFunc = function(arg, option) {
     return true;
 };
 
-var checkBooleanArg = function(arg) {
+var checkBooleanArg = function (arg) {
     var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
     if (!onOff) {
-        console.log(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        console.log(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
         return false;
     }
     return Boolean(onOff[2]);
 };
 
-var parseVariableOption = function(option) {
+var parseVariableOption = function (option) {
     var parts = option.split('=', 2);
     return '@' + parts[0] + ': ' + parts[1] + ';\n';
 };
@@ -72,8 +72,12 @@ args = args.filter(function (arg) {
         return false;
     }
 
-    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i)) { arg = match[1] }
-    else { return arg }
+    if (match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i)) {
+        arg = match[1];
+    }
+    else {
+        return arg;
+    }
 
     switch (arg) {
         case 'v':
@@ -119,7 +123,7 @@ args = args.filter(function (arg) {
             if (checkArgFunc(arg, match[2])) {
                 options.maxLineLen = parseInt(match[2], 10);
                 if (options.maxLineLen <= 0) {
-                  options.maxLineLen = -1;
+                    options.maxLineLen = -1;
                 }
             }
             break;
@@ -135,7 +139,7 @@ args = args.filter(function (arg) {
         case 'include-path':
             if (checkArgFunc(arg, match[2])) {
                 options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
-                    .map(function(p) {
+                    .map(function (p) {
                         if (p) {
                             return path.resolve(process.cwd(), p);
                         }
@@ -213,7 +217,7 @@ args = args.filter(function (arg) {
             break;
         case "clean-option":
             var cleanOptionArgs = match[2].split(":");
-            switch(cleanOptionArgs[0]) {
+            switch (cleanOptionArgs[0]) {
                 case "--keep-line-breaks":
                 case "-b":
                     cleancssOptions.keepBreaks = true;
@@ -293,7 +297,7 @@ if (options.cleancss && options.sourceMap) {
     return;
 }
 
-if (! input) {
+if (!input) {
     console.log("lessc: no input files");
     console.log("");
     require('../lib/less/lessc_helper').printUsage();
@@ -324,7 +328,7 @@ if (options.depends) {
 }
 
 if (!sourceMapFileInline) {
-    var writeSourceMap = function(output) {
+    var writeSourceMap = function (output) {
         var filename = options.sourceMapFullFilename || options.sourceMap;
         ensureDirectory(filename);
         fs.writeFileSync(filename, output, 'utf8');
@@ -343,20 +347,20 @@ var parseLessFile = function (e, data) {
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
 
-    var parser = new(less.Parser)(options);
+    var parser = new (less.Parser)(options);
     parser.parse(data, function (err, tree) {
         if (err) {
             less.writeError(err, options);
             currentErrorcode = 1;
             return;
         } else if (options.depends) {
-            for(var file in parser.imports.files) {
-                process.stdout.write(file + " ")
+            for (var file in parser.imports.files) {
+                process.stdout.write(file + " ");
             }
             console.log("");
         } else {
             try {
-	        if (options.lint) { writeSourceMap = function() {} }
+            if (options.lint) { writeSourceMap = function() {}; }
                 var css = tree.toCSS({
                     silent: options.silent,
                     verbose: options.verbose,
@@ -377,7 +381,7 @@ var parseLessFile = function (e, data) {
                     strictUnits: options.strictUnits,
                     urlArgs: options.urlArgs
                 });
-		if(!options.lint) {
+                if (!options.lint) {
                     if (output) {
                         ensureDirectory(output);
                         fs.writeFileSync(output, css, 'utf8');
@@ -386,8 +390,8 @@ var parseLessFile = function (e, data) {
                         }
                     } else {
                         process.stdout.write(css);
-		    }
-		}
+                    }
+                }
             } catch (e) {
                 less.writeError(e, options);
                 currentErrorcode = 2;
@@ -404,11 +408,11 @@ if (input != '-') {
     process.stdin.setEncoding('utf8');
 
     var buffer = '';
-    process.stdin.on('data', function(data) {
+    process.stdin.on('data', function (data) {
         buffer += data;
     });
 
-    process.stdin.on('end', function() {
+    process.stdin.on('end', function () {
         parseLessFile(false, buffer);
     });
 }

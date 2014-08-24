@@ -37,7 +37,7 @@ less:
   colors           : <%= build.lib %>/colors.js
   tree             : <%= build.lib %>/tree.js
   treedir          : <%= build.lib %>/tree/*.js # glob all files in ./lib/less/tree directory
-  env              : <%= build.lib %>/env.js
+  env              : <%= build.lib %>/contexts.js
   visitor          : <%= build.lib %>/visitor.js
   import_visitor   : <%= build.lib %>/import-visitor.js
   join             : <%= build.lib %>/join-selector-visitor.js

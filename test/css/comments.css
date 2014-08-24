@@ -55,6 +55,9 @@
 .test {
   color: 1px;
 }
+.sr-only-focusable {
+  clip: auto;
+}
 #last {
   color: #0000ff;
 }

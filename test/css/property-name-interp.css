@@ -1,5 +1,6 @@
 pi-test {
   border: 0;
+  @not-variable: @not-variable;
   ufo-width: 50%;
   *-z-border: 1px dashed blue;
   -www-border-top: 2px;

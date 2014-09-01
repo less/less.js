@@ -24,6 +24,7 @@ Here are other resources for using Less.js:
 
 * [stackoverflow.com][so] is a great place to get answers about Less.
 * [Less.js Issues][issues] for reporting bugs
+* Design Shack, another great source for LESS (http://designshack.net/articles/css/using-less-js-to-simplify-your-css3/)
 
 
 ## Contributing

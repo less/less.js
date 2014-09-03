@@ -372,6 +372,21 @@ var parseLessFile = function (e, data) {
     less.render(data, options)
         .then(function(css) {
             if(!options.lint) {
+                if (options.cleancss) {
+                    var CleanCSS = require('clean-css');
+                    var cleancssOptions = options.cleancssOptions || {};
+
+                    if (cleancssOptions.keepSpecialComments === undefined) {
+                        cleancssOptions.keepSpecialComments = "*";
+                    }
+                    cleancssOptions.processImport = false;
+                    cleancssOptions.noRebase = true;
+                    if (cleancssOptions.noAdvanced === undefined) {
+                        cleancssOptions.noAdvanced = true;
+                    }
+
+                    css = new CleanCSS(cleancssOptions).minify(css);
+                }
                 if (output) {
                     ensureDirectory(output);
                     fs.writeFileSync(output, css, 'utf8');

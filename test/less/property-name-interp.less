@@ -7,7 +7,10 @@ pi-test {
     @d-d4: radius;
     @-:         -;
 
+    @var: ~'@not-variable';
+
     @{a}: 0;
+    @{var}: @var;
     @{prefix}width: 50%;
     *-z-@{a} :1px dashed blue;
     -www-@{a}-@{bb}: 2px;

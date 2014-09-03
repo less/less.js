@@ -58,6 +58,12 @@
 .sr-only-focusable {
   clip: auto;
 }
+@-webkit-keyframes hover {
+  /* and Chrome */
+  0% {
+    color: red;
+  }
+}
 #last {
   color: blue;
 }

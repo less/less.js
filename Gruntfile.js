@@ -278,7 +278,7 @@ module.exports = function (grunt) {
 
     // setup a web server to run the browser tests in a browser rather than phantom
     grunt.registerTask('browsertest-server', [
-        'browsertest-less',
+        'browsertest-lessjs',
         'shell:browsertest-server'
     ]);
 

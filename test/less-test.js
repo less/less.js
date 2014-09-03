@@ -203,7 +203,6 @@ module.exports = function() {
     }
 
     function toCSS(options, path, callback) {
-        var css;
         options = options || {};
         fs.readFile(path, 'utf8', function (e, str) {
             if (e) { return callback(e); }
@@ -212,31 +211,20 @@ module.exports = function() {
             options.filename = require('path').resolve(process.cwd(), path);
             options.optimization = options.optimization || 0;
 
-            var parser = new(less.Parser)(options);
-            var additionalData = {};
             if (options.globalVars) {
-                additionalData.globalVars = options.getVars(path);
+                options.globalVars = options.getVars(path);
             } else if (options.modifyVars) {
-                additionalData.modifyVars = options.getVars(path);
+                options.modifyVars = options.getVars(path);
             }
-            if (options.banner) {
-                additionalData.banner = options.banner;
-            }
-            parser.parse(str, function (err, tree) {
-                if (err) {
-                    callback(err);
-                } else {
-                    try {
-                        css = tree.toCSS(options);
-                        var css2 = tree.toCSS(options); // integration test that 2nd call gets same output
-                        if (css2 !== css) { throw new Error("css not equal to 2nd call"); }
-                        callback(null, css);
-                    } catch (e) {
-                        callback(e);
-                    }
-                }
-                }, additionalData);
-            });
+
+            less.render(str, options)
+                .then(function(css) {
+                    // TODO integration test that calling toCSS twice results in the same css?
+                    callback(null, css);
+                }, function(e) {
+                    callback(e);
+                });
+        });
     }
 
     function testNoOptions() {

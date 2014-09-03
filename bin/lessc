@@ -342,60 +342,51 @@ var parseLessFile = function (e, data) {
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
 
-    var parser = new(less.Parser)(options);
-    parser.parse(data, function (err, tree) {
-        if (err) {
-            less.writeError(err, options);
-            currentErrorcode = 1;
-            return;
-        } else if (options.depends) {
+    if (options.depends) {
+        var parser = new(less.Parser)(options);
+        parser.parse(data, function (err, tree) {
+            if (err) {
+                less.writeError(err, options);
+                currentErrorcode = 1;
+                return;
+            }
             for(var file in parser.imports.files) {
                 if (parser.imports.files.hasOwnProperty(file)) {
                     process.stdout.write(file + " ");
                 }
             }
             console.log("");
-        } else {
-            try {
-            if (options.lint) { writeSourceMap = function() {}; }
-                var css = tree.toCSS({
-                    silent: options.silent,
-                    verbose: options.verbose,
-                    ieCompat: options.ieCompat,
-                    compress: options.compress,
-                    cleancss: options.cleancss,
-                    cleancssOptions: cleancssOptions,
-                    sourceMap: Boolean(options.sourceMap),
-                    sourceMapFilename: options.sourceMap,
-                    sourceMapURL: options.sourceMapURL,
-                    sourceMapOutputFilename: options.sourceMapOutputFilename,
-                    sourceMapBasepath: options.sourceMapBasepath,
-                    sourceMapRootpath: options.sourceMapRootpath || "",
-                    outputSourceFiles: options.outputSourceFiles,
-                    writeSourceMap: writeSourceMap,
-                    maxLineLen: options.maxLineLen,
-                    strictMath: options.strictMath,
-                    strictUnits: options.strictUnits,
-                    urlArgs: options.urlArgs
-                });
-		if(!options.lint) {
-                    if (output) {
-                        ensureDirectory(output);
-                        fs.writeFileSync(output, css, 'utf8');
-                        if (options.verbose) {
-                            console.log('lessc: wrote ' + output);
-                        }
-                    } else {
-                        process.stdout.write(css);
+        });
+        return;
+    }
+
+    if (options.lint) {
+        options.writeSourceMap = function() {};
+    } else {
+        options.writeSourceMap = writeSourceMap;
+    }
+    options.sourceMapFilename = options.sourceMap;
+    options.sourceMap = Boolean(options.sourceMap);
+    options.sourceMapRootpath = options.sourceMapRootpath || "";
+
+    less.render(data, options)
+        .then(function(css) {
+            if(!options.lint) {
+                if (output) {
+                    ensureDirectory(output);
+                    fs.writeFileSync(output, css, 'utf8');
+                    if (options.verbose) {
+                        console.log('lessc: wrote ' + output);
+                    }
+                } else {
+                    process.stdout.write(css);
+                }
             }
-		}
-            } catch (e) {
-                less.writeError(e, options);
-                currentErrorcode = 2;
-                return;
-            }
-        }
-    });
+        },
+        function(err) {
+            less.writeError(err, options);
+            currentErrorcode = 1;
+        });
 };
 
 if (input != '-') {

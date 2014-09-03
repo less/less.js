@@ -1,3 +1,16 @@
+# 1.7.5
+
+2014-09-03
+
+ - Allow comments in keyframe (complete comment support coming in 2.0)
+ - pass options to parser from less.render
+ - Support /deep/ combinator
+ - handle fragments in data-uri's
+ - float @charsets to the top correctly
+ - updates to some dependencies
+ - Fix interpolated import in media query
+ - A few other various small corrections
+
 # 1.7.4
 
 2014-07-27

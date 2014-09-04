@@ -4,8 +4,8 @@ module.exports = function() {
     var path = require('path'),
         fs = require('fs');
 
-    var less = require('../lib/less');
-    var stylize = require('../lib/less/lessc_helper').stylize;
+    var less = require('../lib/less-node');
+    var stylize = require('../lib/less-node/lessc-helper').stylize;
 
     var globals = Object.keys(global);
 

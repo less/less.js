@@ -49,7 +49,7 @@ module.exports = function (grunt) {
 
         browserify: {
             browser: {
-                src: ['./lib/less/browser.js'],
+                src: ['./lib/less-browser/index.js'],
                 dest: 'tmp/less.js'
             }
         },

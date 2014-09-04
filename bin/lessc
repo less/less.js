@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 var path = require('path'),
-    fs = require('../lib/less/environment/node/fs'),
+    fs = require('../lib/less-node/fs'),
     os = require('os'),
     mkdirp;
 
-var less = require('../lib/less');
+var less = require('../lib/less-node');
 var args = process.argv.slice(1);
 var options = {
     depends: false,
@@ -98,7 +98,7 @@ args = args.filter(function (arg) {
             break;
         case 'h':
         case 'help':
-            require('../lib/less/lessc_helper').printUsage();
+            require('../lib/less-node/lessc-helper').printUsage();
             continueProcessing = false;
             break;
         case 'x':

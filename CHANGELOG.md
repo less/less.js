@@ -1,5 +1,10 @@
 ## Changelog
 
+## 0.13.0
+
+* Allows optional args in transforms.
+* Bump `mapnik-reference` dependency to 5.1.x.
+
 ## 0.12.0
 
 * Drop mml2json and xml2js dependency.

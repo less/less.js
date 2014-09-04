@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "underscore": "~1.6.0",
-    "mapnik-reference": "5.0.9",
+    "mapnik-reference": "5.1.x",
     "optimist": "~0.6.0"
   },
   "devDependencies": {

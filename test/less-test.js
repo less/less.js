@@ -231,7 +231,7 @@ module.exports = function() {
         totalTests++;
         try {
             process.stdout.write("- Integration - creating parser without options: ");
-            new(less.Parser)();
+            less.render("");
         } catch(e) {
             fail(stylize("FAIL\n", "red"));
             return;

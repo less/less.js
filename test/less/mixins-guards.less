@@ -171,3 +171,58 @@
 }
 
 #ns > .mixin-for-root-usage(1);
+
+@namespaceGuard: 1;
+#guarded when (@namespaceGuard>0) {
+  #deeper {
+    .mixin() {
+      guarded: namespace;
+    }
+  }
+}
+#guarded() when (@namespaceGuard>0) {
+  #deeper {
+    .mixin() {
+      silent: namespace;
+    }
+  }
+}
+#guarded(@variable) when (@namespaceGuard>0) {
+  #deeper {
+    .mixin() {
+      should: not match because namespace argument;
+    }
+  }
+}
+#guarded(@variable: default) when (@namespaceGuard>0) {
+  #deeper {
+    .mixin() {
+      guarded: with default;
+    }
+  }
+}
+#guarded when (@namespaceGuard<0) {
+  #deeper {
+    .mixin() {
+      should: not match because namespace guard;
+    }
+  }
+}
+#guarded-caller {
+  #guarded > #deeper > .mixin();
+}
+#top {
+  #deeper when (@namespaceGuard<0) {
+    .mixin(@a) {
+      should: not match because namespace guard;
+    }
+  }
+  #deeper() when (@namespaceGuard>0) {
+    .mixin(@a) {
+      should: match @a;
+    }
+  }
+}
+#guarded-deeper {
+  #top > #deeper > .mixin(1);
+}

@@ -130,6 +130,49 @@
 	.stringguard(theme1);
 }
 
+.generic(@a, @b) {/**/}
+.generic(@a, @b) when (@a = @b) {content: @a is equal to @b}
+.generic(@a, @b) when (@b = @a) {content: @b is equal to @a too}
+.generic(@a, @b) when (@a < @b) {content: @a is less than @b}
+.generic(@a, @b) when (@b < @a) {content: @b is less than @a too}
+.generic(@a, @b) when (@a > @b) {content: @a is greater than @b}
+.generic(@a, @b) when (@b > @a) {content: @b is greater than @a too}
+.generic(@a, @b) when not(@a = @b) {content: @a is not equal to @b}
+.generic(@a, @b) when not(@b = @a) {content: @b is not equal to @a too}
+
+.variouse-types-comparision {
+    .generic(true, false);
+    .generic(1, true);
+    .generic(2, 2px);
+    .generic(3, ~"3");
+    .generic(5, ~"4");
+    .generic(abc, ~"abc");
+    .generic(abc, "abc");
+    .generic('abc', "abd");
+    .generic(6, e("6"));
+    .generic(`9`, 8);
+    .generic(a, b);
+    .generic(1 2, 3);
+}
+
+.list-comparision {
+    .generic(a b c, a b c);
+    .generic(a b c, a b d);
+    .generic(a, b, c; a, b, c);
+    .generic(a, b, c; a, b, d);
+    .generic(1 2px 300ms, 1em 2 .3s);
+    
+    @space-list: 1 2 3;
+    @comma-list: 1, 2, 3;
+    @compound: @space-list @comma-list;
+    
+    .generic(@space-list, @comma-list);
+    .generic(@comma-list, ~"1, 2, 3");
+    .generic(@compound, @space-list @comma-list);
+    .generic(@compound, @comma-list @space-list);
+    .generic(@compound 4, ~"1 2 3 1, 2, 3 4");
+}
+
 .mixin(...) {
   catch:all;
 }

@@ -126,6 +126,9 @@ a {
     selector: interpolated;
 }
 .test {
+  &:nth-child(@{num}) {
+    selector: interpolated;
+  }
   &:nth-child(odd):not(:nth-child(3)) {
     color: #ff0000;
   }

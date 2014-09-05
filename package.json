@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -31,7 +31,7 @@
     "test": "./test"
   },
   "jam": {
-    "main": "./dist/less-1.6.3.js"
+    "main": "./dist/less-1.7.5.js"
   },
   "engines": {
     "node": ">=0.8.0"

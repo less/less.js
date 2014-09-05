@@ -125,6 +125,9 @@ p a span {
 :nth-child(3) {
   selector: interpolated;
 }
+.test:nth-child(3) {
+  selector: interpolated;
+}
 .test:nth-child(odd):not(:nth-child(3)) {
   color: #ff0000;
 }

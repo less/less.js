@@ -138,6 +138,8 @@
   percent: true;
   em: true;
   cat: true;
+  case-insensitive-1: true;
+  case-insensitive-2: true;
 }
 #alpha {
   alpha: rgba(153, 94, 51, 0.6);

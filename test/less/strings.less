@@ -55,3 +55,19 @@
   @family: ~"Univers, @{test}";
   family: @family;
 }
+#iterated-interpolation {
+  @box-small: 10px;
+  @box-large: 100px;
+
+  .mixin { // both ruleset and mixin
+    width: ~"@{box-@{suffix}}";
+    weird: ~"@{box}-@{suffix}}";
+    width-str: "@{box-@{suffix}}";
+    weird-str: "@{box}-@{suffix}}";
+    @box: ~"@{box";
+    @suffix: large;
+  }
+  .interpolation-mixin {
+    .mixin(); //call the above as mixin
+  }
+}

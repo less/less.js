@@ -41,3 +41,15 @@
 .watermark {
   family: Univers, Arial, Verdana, San-Serif;
 }
+#iterated-interpolation .mixin {
+  width: 100px;
+  weird: 100px;
+  width-str: "100px";
+  weird-str: "100px";
+}
+#iterated-interpolation .interpolation-mixin {
+  width: 100px;
+  weird: 100px;
+  width-str: "100px";
+  weird-str: "100px";
+}

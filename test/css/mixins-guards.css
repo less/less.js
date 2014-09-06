@@ -165,3 +165,11 @@
 .mixin-generated-class {
   a: 1;
 }
+#guarded-caller {
+  guarded: namespace;
+  silent: namespace;
+  guarded: with default;
+}
+#guarded-deeper {
+  should: match 1;
+}

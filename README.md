@@ -1,5 +1,5 @@
-[![NPM version](https://badge.fury.io/js/less.svg)](http://badge.fury.io/js/less) [![Build Status](https://travis-ci.org/less/less.js.png?branch=master)](https://travis-ci.org/less/less.js)
- [![Dependencies](https://david-dm.org/less/less.js.png)](https://david-dm.org/less/less.js) [![devDependency Status](https://david-dm.org/less/less.js/dev-status.png)](https://david-dm.org/less/less.js#info=devDependencies) [![optionalDependency Status](https://david-dm.org/less/less.js/optional-status.png)](https://david-dm.org/less/less.js#info=optionalDependencies)
+[![NPM version](https://badge.fury.io/js/less.svg)](http://badge.fury.io/js/less) [![Build Status](https://travis-ci.org/less/less.js.svg?branch=master)](https://travis-ci.org/less/less.js)  
+[![Dependencies](https://david-dm.org/less/less.js.svg)](https://david-dm.org/less/less.js) [![devDependency Status](https://david-dm.org/less/less.js/dev-status.svg)](https://david-dm.org/less/less.js#info=devDependencies) [![optionalDependency Status](https://david-dm.org/less/less.js/optional-status.svg)](https://david-dm.org/less/less.js#info=optionalDependencies)
 
 # [Less.js](http://lesscss.org)
 

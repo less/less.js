@@ -20,6 +20,9 @@
   height: 10px;
   color: red;
 }
+.deep-import-url {
+  color: red;
+}
 @media screen and (max-width: 601px) {
   #css {
     color: yellow;

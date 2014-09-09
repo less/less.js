@@ -5,7 +5,9 @@ var path = require('path'),
     os = require('os'),
     mkdirp;
 
-var less = require('../lib/less-node');
+var less = require('../lib/less-node'),
+    pluginManager = new less.PluginManager(less);
+
 var args = process.argv.slice(1);
 var options = {
     depends: false,
@@ -251,9 +253,12 @@ args = args.filter(function (arg) {
             }
             break;
         default:
-            require('../lib/less/lessc_helper').printUsage();
-            continueProcessing = false;
-            currentErrorcode = 1;
+            if (!pluginManager.interpretCommandLineArgument(arg, match[2])) {
+                // TODO more of an explanation
+                require('../lib/less/lessc_helper').printUsage();
+                continueProcessing = false;
+                currentErrorcode = 1;
+            }
             break;
     }
 });
@@ -368,6 +373,7 @@ var parseLessFile = function (e, data) {
     options.sourceMapFilename = options.sourceMap;
     options.sourceMap = Boolean(options.sourceMap);
     options.sourceMapRootpath = options.sourceMapRootpath || "";
+    options.plugins = pluginManager;
 
     less.render(data, options)
         .then(function(css) {

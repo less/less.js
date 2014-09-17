@@ -44,7 +44,6 @@
     "mime": "~1.2.11",
     "request": "~2.40.0",
     "mkdirp": "~0.5.0",
-    "clean-css": "2.2.x",
     "source-map": "0.1.x",
     "promise": "~5.0.0"
   },

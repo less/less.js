@@ -63,6 +63,12 @@ var parseVariableOption = function(option) {
 var warningMessages = "";
 var sourceMapFileInline = false;
 
+function printUsage() {
+    require('../lib/less-node/lessc-helper').printUsage();
+    pluginManager.printUsage();
+    continueProcessing = false;
+}
+
 args = args.filter(function (arg) {
     var match;
 
@@ -98,8 +104,7 @@ args = args.filter(function (arg) {
             break;
         case 'h':
         case 'help':
-            require('../lib/less-node/lessc-helper').printUsage();
-            continueProcessing = false;
+            printUsage();
             break;
         case 'x':
         case 'compress':
@@ -210,12 +215,23 @@ args = args.filter(function (arg) {
                 options.urlArgs = match[2];
             }
             break;
+        case 'plugin':
+            var splitupArg = match[2].match(/^([^=]+)(=(.*))?/),
+                name = splitupArg[1],
+                pluginOptions = splitupArg[3];
+
+            if (!pluginManager.tryLoadPlugin(name, pluginOptions)) {
+                console.log("Unable to load plugin " + name + " please make sure that it is installed under at the same level as less");
+                console.log();
+                printUsage();
+                currentErrorcode = 1;
+            }
+            break;
         default:
-            if (!pluginManager.interpretCommandLineArgument(arg, match[2])) {
+            if (!pluginManager.tryLoadPlugin("less-plugin-" + arg, match[2])) {
                 console.log("Unable to interpret argument " + arg + " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under at the same level as less");
                 console.log();
-                require('../lib/less-node/lessc-helper').printUsage();
-                continueProcessing = false;
+                printUsage();
                 currentErrorcode = 1;
             }
             break;
@@ -254,7 +270,7 @@ if (options.sourceMap === true) {
 if (! input) {
     console.log("lessc: no input files");
     console.log("");
-    require('../lib/less/lessc_helper').printUsage();
+    printUsage();
     currentErrorcode = 1;
     return;
 }

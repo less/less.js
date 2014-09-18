@@ -117,6 +117,8 @@ module.exports = function() {
                 options.sourceMapOutputFilename = name + ".css";
                 options.sourceMapBasepath = path.join(process.cwd(), "test/less");
                 options.sourceMapRootpath = "testweb/";
+                // TODO seperate options?
+                options.sourceMap = new less.SourceMapBuilder(options);
             }
 
             options.getVars = function(file) {

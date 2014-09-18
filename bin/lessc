@@ -299,7 +299,7 @@ if (options.depends) {
 
 if (!sourceMapFileInline) {
     var writeSourceMap = function(output) {
-        var filename = options.sourceMapFullFilename || options.sourceMap;
+        var filename = options.sourceMapFullFilename || options.sourceMapFilename;
         ensureDirectory(filename);
         fs.writeFileSync(filename, output, 'utf8');
     };
@@ -336,13 +336,17 @@ var parseLessFile = function (e, data) {
     }
 
     if (options.lint) {
-        options.writeSourceMap = function() {};
-    } else {
-        options.writeSourceMap = writeSourceMap;
+        options.sourceMap = false;
     }
+    options.writeSourceMap = writeSourceMap;
     options.sourceMapFilename = options.sourceMap;
-    options.sourceMap = Boolean(options.sourceMap);
     options.sourceMapRootpath = options.sourceMapRootpath || "";
+
+    if (options.sourceMap) {
+        // todo seperate options - no need to send them to less any more?
+        options.sourceMap = new less.SourceMapBuilder(options);
+    }
+
     options.plugins = pluginManager;
 
     less.render(data, options)

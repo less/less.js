@@ -64,7 +64,7 @@ var warningMessages = "";
 var sourceMapFileInline = false;
 
 function printUsage() {
-    require('../lib/less-node/lessc-helper').printUsage();
+    less.lesscHelper.printUsage();
     pluginManager.printUsage();
     continueProcessing = false;
 }

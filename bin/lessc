@@ -350,20 +350,19 @@ var parseLessFile = function (e, data) {
     options.plugins = pluginManager;
 
     less.render(data, options)
-        .then(function(css) {
+        .then(function(result) {
             if(!options.lint) {
                 if (output) {
                     ensureDirectory(output);
-                    fs.writeFileSync(output, css, 'utf8');
+                    fs.writeFileSync(output, result.css, 'utf8');
                     if (options.verbose) {
                         console.log('lessc: wrote ' + output);
                     }
                 } else {
-                    process.stdout.write(css);
+                    process.stdout.write(result.css);
                 }
                 if (options.sourceMap && !sourceMapFileInline) {
-                    // TODO change to return object instead of css.. so much simpler and can also return metrics
-                    writeSourceMap(options.sourceMap.getExternalSourceMap());
+                    writeSourceMap(result.map);
                 }
             }
         },

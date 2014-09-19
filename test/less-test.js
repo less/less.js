@@ -121,10 +121,10 @@ module.exports = function() {
                 return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
             };
 
-            toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
+            toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
 
                 if (verifyFunction) {
-                    return verifyFunction(name, err, less, doReplacements, options.sourceMap.getExternalSourceMap());
+                    return verifyFunction(name, err, result.css, doReplacements, result.map);
                 }
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }
@@ -132,7 +132,7 @@ module.exports = function() {
                     process.stdout.write("- " + css_name + ": ");
 
                     css = css && doReplacements(css, 'test/less/' + foldername);
-                    if (less === css) { ok('OK'); }
+                    if (result.css === css) { ok('OK'); }
                     else if (err) {
                         fail("ERROR: " + (err && err.message));
                         if (isVerbose) {
@@ -140,7 +140,7 @@ module.exports = function() {
                             process.stdout.write(err.stack + "\n");
                         }
                     } else {
-                        difference("FAIL", css, less);
+                        difference("FAIL", css, result.css);
                     }
                 });
             });
@@ -216,9 +216,9 @@ module.exports = function() {
             }
 
             less.render(str, options)
-                .then(function(css) {
+                .then(function(result) {
                     // TODO integration test that calling toCSS twice results in the same css?
-                    callback(null, css);
+                    callback(null, result);
                 }, function(e) {
                     callback(e);
                 });

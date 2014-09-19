@@ -344,7 +344,7 @@ var parseLessFile = function (e, data) {
 
     if (options.sourceMap) {
         // todo seperate options - no need to send them to less any more?
-        options.sourceMap = new less.SourceMapBuilder(options);
+        options.sourceMap = options;
     }
 
     options.plugins = pluginManager;

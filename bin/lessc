@@ -338,9 +338,9 @@ var parseLessFile = function (e, data) {
     if (options.lint) {
         options.sourceMap = false;
     }
-    options.writeSourceMap = writeSourceMap;
     options.sourceMapFilename = options.sourceMap;
     options.sourceMapRootpath = options.sourceMapRootpath || "";
+    options.sourceMapFileInline = sourceMapFileInline;
 
     if (options.sourceMap) {
         // todo seperate options - no need to send them to less any more?
@@ -360,6 +360,10 @@ var parseLessFile = function (e, data) {
                     }
                 } else {
                     process.stdout.write(css);
+                }
+                if (options.sourceMap && !sourceMapFileInline) {
+                    // TODO change to return object instead of css.. so much simpler and can also return metrics
+                    writeSourceMap(options.sourceMap.getExternalSourceMap());
                 }
             }
         },

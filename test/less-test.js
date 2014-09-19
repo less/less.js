@@ -110,10 +110,6 @@ module.exports = function() {
             totalTests++;
 
             if (options.sourceMap) {
-                var sourceMapOutput;
-                options.writeSourceMap = function(output) {
-                    sourceMapOutput = output;
-                };
                 options.sourceMapOutputFilename = name + ".css";
                 options.sourceMapBasepath = path.join(process.cwd(), "test/less");
                 options.sourceMapRootpath = "testweb/";
@@ -128,7 +124,7 @@ module.exports = function() {
             toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
 
                 if (verifyFunction) {
-                    return verifyFunction(name, err, less, doReplacements, sourceMapOutput);
+                    return verifyFunction(name, err, less, doReplacements, options.sourceMap.getExternalSourceMap());
                 }
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }

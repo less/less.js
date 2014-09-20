@@ -153,7 +153,7 @@ args = args.filter(function (arg) {
         case 'source-map':
             options.sourceMap = true;
             if (match[2]) {
-                sourceMapOptions.sourceMapFilename = match[2];
+                sourceMapOptions.sourceMapFullFilename = match[2];
             }
             break;
         case 'source-map-rootpath':
@@ -258,7 +258,7 @@ if (output) {
 sourceMapOptions.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
 
 if (options.sourceMap) {
-    if (!sourceMapOptions.sourceMapFilename) {
+    if (!sourceMapOptions.sourceMapFullFilename) {
         if (!output && !sourceMapFileInline) {
             console.log("the sourcemap option only has an optional filename if the css filename is given");
             console.log("consider adding --source-map-map-inline which embeds the sourcemap into the css");
@@ -270,7 +270,7 @@ if (options.sourceMap) {
         // its in the same directory, so always just the basename
         sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
     } else if (options.sourceMap && !sourceMapFileInline) {
-        var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFilename),
+        var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename),
             mapDir = path.dirname(mapFilename),
             outputDir = path.dirname(output);
         // find the path from the map to the output file
@@ -278,7 +278,6 @@ if (options.sourceMap) {
             path.relative(mapDir, outputDir), path.basename(output));
 
         // make the sourcemap filename point to the sourcemap relative to the css file output directory
-        sourceMapOptions.sourceMapFullFilename = sourceMapOptions.sourceMapFilename;
         sourceMapOptions.sourceMapFilename = path.join(
             path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
         console.log(sourceMapOptions.sourceMapFile);
@@ -317,7 +316,7 @@ if (options.depends) {
 
 if (!sourceMapFileInline) {
     var writeSourceMap = function(output) {
-        var filename = sourceMapOptions.sourceMapFullFilename || sourceMapOptions.sourceMapFilename;
+        var filename = sourceMapOptions.sourceMapFullFilename;
         ensureDirectory(filename);
         fs.writeFileSync(filename, output, 'utf8');
     };

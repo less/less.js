@@ -29,6 +29,7 @@ var options = {
     modifyVariables: '',
     urlArgs: ''
 };
+var sourceMapOptions = {};
 var continueProcessing = true,
     currentErrorcode;
 
@@ -150,20 +151,19 @@ args = args.filter(function (arg) {
             }
             break;
         case 'source-map':
-            if (!match[2]) {
-                options.sourceMap = true;
-            } else {
-                options.sourceMap = match[2];
+            options.sourceMap = true;
+            if (match[2]) {
+                sourceMapOptions.sourceMapFilename = match[2];
             }
             break;
         case 'source-map-rootpath':
             if (checkArgFunc(arg, match[2])) {
-                options.sourceMapRootpath = match[2];
+                sourceMapOptions.sourceMapRootpath = match[2];
             }
             break;
         case 'source-map-basepath':
             if (checkArgFunc(arg, match[2])) {
-                options.sourceMapBasepath = match[2];
+                sourceMapOptions.sourceMapBasepath = match[2];
             }
             break;
         case 'source-map-map-inline':
@@ -171,11 +171,11 @@ args = args.filter(function (arg) {
             options.sourceMap = true;
             break;
         case 'source-map-less-inline':
-            options.outputSourceFiles = true;
+            sourceMapOptions.outputSourceFiles = true;
             break;
         case 'source-map-url':
             if (checkArgFunc(arg, match[2])) {
-                options.sourceMapURL = match[2];
+                sourceMapOptions.sourceMapURL = match[2];
             }
             break;
         case 'rp':
@@ -249,22 +249,40 @@ if (input && input != '-') {
 var output = args[2];
 var outputbase = args[2];
 if (output) {
-    options.sourceMapOutputFilename = output;
     output = path.resolve(process.cwd(), output);
     if (warningMessages) {
         console.log(warningMessages);
     }
 }
 
-options.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
+sourceMapOptions.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
 
-if (options.sourceMap === true) {
-    if (!output && !sourceMapFileInline) {
-        console.log("the sourcemap option only has an optional filename if the css filename is given");
-        return;
+if (options.sourceMap) {
+    if (!sourceMapOptions.sourceMapFilename) {
+        if (!output && !sourceMapFileInline) {
+            console.log("the sourcemap option only has an optional filename if the css filename is given");
+            console.log("consider adding --source-map-map-inline which embeds the sourcemap into the css");
+            return;
+        }
+        // its in the same directory, so always just the basename
+        sourceMapOptions.sourceMapOutputFilename = path.basename(output);
+        sourceMapOptions.sourceMapFullFilename = output + ".map";
+        // its in the same directory, so always just the basename
+        sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+    } else if (options.sourceMap && !sourceMapFileInline) {
+        var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFilename),
+            mapDir = path.dirname(mapFilename),
+            outputDir = path.dirname(output);
+        // find the path from the map to the output file
+        sourceMapOptions.sourceMapOutputFilename = path.join(
+            path.relative(mapDir, outputDir), path.basename(output));
+
+        // make the sourcemap filename point to the sourcemap relative to the css file output directory
+        sourceMapOptions.sourceMapFullFilename = sourceMapOptions.sourceMapFilename;
+        sourceMapOptions.sourceMapFilename = path.join(
+            path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
+        console.log(sourceMapOptions.sourceMapFile);
     }
-    options.sourceMapFullFilename = options.sourceMapOutputFilename + ".map";
-    options.sourceMap = path.basename(options.sourceMapFullFilename);
 }
 
 if (! input) {
@@ -299,7 +317,7 @@ if (options.depends) {
 
 if (!sourceMapFileInline) {
     var writeSourceMap = function(output) {
-        var filename = options.sourceMapFullFilename || options.sourceMapFilename;
+        var filename = sourceMapOptions.sourceMapFullFilename || sourceMapOptions.sourceMapFilename;
         ensureDirectory(filename);
         fs.writeFileSync(filename, output, 'utf8');
     };
@@ -338,13 +356,11 @@ var parseLessFile = function (e, data) {
     if (options.lint) {
         options.sourceMap = false;
     }
-    options.sourceMapFilename = options.sourceMap;
-    options.sourceMapRootpath = options.sourceMapRootpath || "";
-    options.sourceMapFileInline = sourceMapFileInline;
+    sourceMapOptions.sourceMapRootpath = options.sourceMapRootpath || "";
+    sourceMapOptions.sourceMapFileInline = sourceMapFileInline;
 
     if (options.sourceMap) {
-        // todo seperate options - no need to send them to less any more?
-        options.sourceMap = options;
+        options.sourceMap = sourceMapOptions;
     }
 
     options.plugins = pluginManager;

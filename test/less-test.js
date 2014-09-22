@@ -124,7 +124,15 @@ module.exports = function() {
             toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
 
                 if (verifyFunction) {
-                    return verifyFunction(name, err, result.css, doReplacements, result.map);
+                    return verifyFunction(name, err, result && result.css, doReplacements, result && result.map);
+                }
+                if (err) {
+                    fail("ERROR: " + (err && err.message));
+                    if (isVerbose) {
+                        process.stdout.write("\n");
+                        process.stdout.write(err.stack + "\n");
+                    }
+                    return;
                 }
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }
@@ -133,13 +141,7 @@ module.exports = function() {
 
                     css = css && doReplacements(css, 'test/less/' + foldername);
                     if (result.css === css) { ok('OK'); }
-                    else if (err) {
-                        fail("ERROR: " + (err && err.message));
-                        if (isVerbose) {
-                            process.stdout.write("\n");
-                            process.stdout.write(err.stack + "\n");
-                        }
-                    } else {
+                    else {
                         difference("FAIL", css, result.css);
                     }
                 });

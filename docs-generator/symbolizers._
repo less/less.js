@@ -1,0 +1,14 @@
+<% _(symbolizers).each(function(symbolizer, name) { %>
+<% if (name == '*') { %>## All elements<% } else { %>## <%= name %><% } %>
+<% _(symbolizer).chain().filter(function(p) { return p.css; }).each(function(p) { %>
+<% if (_.isArray(p.type)) { %>
+#### <%= p.css.replace(/\s/g, '') %>
+<% _(p.type).each(function(type) { %>`<%= type %>`<% }); %>
+<% } else { %>#### <%= p.css.replace(/\s/g, '') %>
+`<%= p.type %>`<% } %>
+<% if (typeof p['default-value'] !== '') { %>Default Value: <%= p['default-value'] %><% } %>
+<% if (p['default-meaning']) { %>(<%- p['default-meaning'] %>)<% } %>
+<% if (typeof p['range'] !== 'undefined') { %>Range: <%= '' + p['range'] %><% } %>
+<% if (p.doc) { %><%- p.doc%><% } %>
+<% }); %>
+<% }); %>

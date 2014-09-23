@@ -1,0 +1,144 @@
+# Carto documentation
+
+The following is a list of properties provided in CartoCSS that you can apply to map elements.
+<%= table({symbolizers:symbolizers}) %>
+
+### Values
+
+Below is a list of values and an explanation of any expression that can be applied to properties in CartCSS.
+
+### Color
+
+CartoCSS accepts a variety of syntaxes for colors - HTML-style hex values, rgb, rgba, hsl, and hsla. It also supports the predefined HTML colors names, like `yellow` and `blue`.
+
+``` css
+#line {
+line-color: #ff0;
+line-color: #ffff00;
+line-color: rgb(255, 255, 0);
+line-color: rgba(255, 255, 0, 1);
+line-color: hsl(100, 50%, 50%);
+line-color: hsla(100, 50%, 50%, 1);
+line-color: yellow;
+}
+```
+
+Especially of note is the support for hsl, which can be [easier to reason about than rgb()](http://mothereffinghsl.com/). Carto also includes several color functions [borrowed from less](http://lesscss.org/#-color-functions):
+
+``` css
+// lighten and darken colors
+lighten(#ace, 10%);
+darken(#ace, 10%);
+
+// saturate and desaturate
+saturate(#550000, 10%);
+desaturate(#00ff00, 10%);
+
+// increase or decrease the opacity of a color
+fadein(#fafafa, 10%);
+fadeout(#fefefe, 14%);
+
+// spin rotates a color around the color wheel by degrees
+spin(#ff00ff, 10);
+
+// mix generates a color in between two other colors.
+mix(#fff, #000, 50%);
+```
+
+These functions all take arguments which can be color variables, literal colors, or the results of other functions operating on colors.
+
+### Float
+
+Float is a fancy way of saying 'number'. In CartoCSS, you specify _just a number_ - unlike CSS, there are no units, but everything is specified in pixels.
+
+``` css
+#line {
+line-width: 2;
+}
+```
+
+It's also possible to do simple math with number values:
+
+``` css
+#line {
+line-width: 4 / 2; // division
+line-width: 4 + 2; // addition
+line-width: 4 - 2; // subtraction
+line-width: 4 * 2; // multiplication
+line-width: 4 % 2; // modulus
+}
+```
+
+### URI
+
+URI is a fancy way of saying URL. When an argument is a URI, you use the same kind of `url('place.png')` notation that you would with HTML. Quotes around the URL aren't required, but are highly recommended. URIs can be paths to places on your computer, or on the internet.
+
+```css
+#markers {
+marker-file: url('marker.png');
+}
+```
+
+### String
+
+A string is basically just text. In the case of CartoCSS, you're going to put it in quotes. Strings can be anything, though pay attention to the cases of `text-name` and `shield-name` - they actually will refer to features, which you refer to by putting them in brackets, as seen in the example below.
+
+```css
+#labels {
+text-name: "[MY_FIELD]";
+}
+```
+
+### Boolean
+
+Boolean means yes or no, so it accepts the values `true` or `false`.
+
+```css
+#markers {
+marker-allow-overlap:true;
+}
+```
+
+### Expressions
+
+Expressions are statements that can include fields, numbers, and other types in a really flexible way. You have run into expressions before, in the realm of 'fields', where you'd specify `"[FIELD]"`, but expressions allow you to drop the quotes and also do quick addition, division, multiplication, and concatenation from within Carto syntax.
+
+```css
+#buildings {
+building-height: [HEIGHT_FIELD] * 10;
+}
+```
+
+### Numbers
+Numbers are comma-separated lists of one or more number in a specific order. They're used in line dash arrays, in which the numbers specify intervals of line, break, and line again.
+
+```css
+#disputedboundary {
+line-dasharray: 1, 4, 2;
+}
+```
+
+### Percentages
+In Carto, the percentage symbol, `%` universally means `value/100`. It's meant to be used with ratio-related properties, like opacity rules.
+
+_You should not use percentages as widths, heights, or other properties - unlike CSS, percentages are not relative to cascaded classes or page size, they're, as stated, simply the value divided by one hundred._
+
+```css
+#world {
+// this syntax
+polygon-opacity: 50%;
+
+// is equivalent to
+polygon-opacity: 0.5;
+}
+```
+
+### Functions
+
+Functions are comma-separated lists of one or more functions. For instance, transforms use the `functions` type to allow for transforms within Carto, which are optionally chainable.
+
+```css
+#point {
+point-transform: scale(2, 2);
+}
+```

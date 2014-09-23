@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "underscore": "~1.6.0",
-    "mapnik-reference": "5.1.x",
+    "mapnik-reference": "https://github.com/mapnik/mapnik-reference/tarball/expressions",
     "optimist": "~0.6.0"
   },
   "devDependencies": {

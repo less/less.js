@@ -2,6 +2,7 @@
 
 The following is a list of properties provided in CartoCSS that you can apply to map elements.
 
+* * *
 ## All elements
 
 #### image-filters `functions`
@@ -37,6 +38,7 @@ _(no separate buffer will be used and no alpha will be applied to the style afte
 An alpha value for the style (which means an alpha applied to all features in separate buffer and then composited back to main buffer)
 
 
+* * *
 ## map
 
 #### background-color `color`
@@ -104,6 +106,7 @@ _(No map-specific fonts will be registered)_
 Path to a directory which holds fonts which should be registered when the Map is loaded (in addition to any fonts that may be automatically registered).
 
 
+* * *
 ## polygon
 
 #### polygon-fill `color`
@@ -187,6 +190,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## line
 
 #### line-color `color`
@@ -334,6 +338,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## markers
 
 #### marker-file `uri`
@@ -505,6 +510,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## shield
 
 #### shield-name `expression`
@@ -780,6 +786,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## line-pattern
 
 #### line-pattern-file `uri`
@@ -847,6 +854,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## polygon-pattern
 
 #### polygon-pattern-file `uri`
@@ -930,6 +938,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## raster
 
 #### raster-opacity `float`
@@ -1005,6 +1014,7 @@ Default Value: undefined
 TODO
 
 
+* * *
 ## point
 
 #### point-file `uri`
@@ -1064,6 +1074,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## text
 
 #### text-name `expression`
@@ -1339,6 +1350,7 @@ _(add the current symbolizer on top of other symbolizer)_
 Composite operation. This defines how this symbolizer should behave relative to symbolizers atop or below it.
 
 
+* * *
 ## building
 
 #### building-fill `color`
@@ -1366,6 +1378,7 @@ Default Value: 0
 The height of the building in pixels.
 
 
+* * *
 ## debug
 
 #### debug-mode `string`

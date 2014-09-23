@@ -1,4 +1,5 @@
 <% _(symbolizers).each(function(symbolizer, name) { %>
+* * *
 <% if (name == '*') { %>## All elements<% } else { %>## <%= name %><% } %>
 <% _(symbolizer).chain().filter(function(p) { return p.css; }).each(function(p) { %>
 #### <%= p.css.replace(/\s/g, '') %> <% if (_.isArray(p.type)) { %>`keyword`<% } else { %>`<%= p.type %>`<% } %>

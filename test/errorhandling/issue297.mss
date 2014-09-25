@@ -1,4 +1,4 @@
 #t {
-  text-name: invalid;
-  text-face-name: "Dejagnu";
+  text-name: valid;
+  text-face-name: 2;
 }

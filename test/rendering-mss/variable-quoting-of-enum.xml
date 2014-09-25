@@ -1,0 +1,5 @@
+<Style name="style" filter-mode="first">
+  <Rule>
+    <LineSymbolizer rasterizer="fast" />
+  </Rule>
+</Style>

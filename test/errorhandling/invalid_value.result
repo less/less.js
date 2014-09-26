@@ -1,2 +1,1 @@
 invalid_value.mss:2:2 Invalid value for text-face-name, the type font is expected. 2 (of type float)  was given.
-invalid_value.mss:3:2 Invalid value for line-rasterizer, the type keyword (options: full, fast) is expected. full (of type string)  was given.

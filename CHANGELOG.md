@@ -1,5 +1,10 @@
 ## Changelog
 
+## 0.14.0
+
+* Support for Mapnik 3.x
+* Bump `mapnik-reference` dependency to ~6.0.1.
+
 ## 0.13.0
 
 * Allows optional args in transforms.

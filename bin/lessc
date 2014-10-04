@@ -281,7 +281,6 @@ if (options.sourceMap) {
         // make the sourcemap filename point to the sourcemap relative to the css file output directory
         sourceMapOptions.sourceMapFilename = path.join(
             path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
-        console.log(sourceMapOptions.sourceMapFile);
     }
 }
 

@@ -9,12 +9,12 @@ var less = require('../lib/less-node'),
     pluginManager = new less.PluginManager(less);
 
 var args = process.argv.slice(1);
-var options = {
+var silent = false,
+    verbose = false,
+    options = {
     depends: false,
     compress: false,
     max_line_len: -1,
-    silent: false,
-    verbose: false,
     lint: false,
     paths: [],
     color: true,
@@ -90,11 +90,11 @@ args = args.filter(function (arg) {
             continueProcessing = false;
             break;
         case 'verbose':
-            options.verbose = true;
+            verbose = true;
             break;
         case 's':
         case 'silent':
-            options.silent = true;
+            silent = true;
             break;
         case 'l':
         case 'lint':
@@ -364,15 +364,29 @@ var parseLessFile = function (e, data) {
 
     options.plugins = pluginManager;
 
+    less.logger.addListener({
+        info: function(msg) {
+            if (verbose) {
+                console.log(msg);
+            }
+        },
+        warn: function(msg) {
+            if (!silent) {
+                console.warn(msg);
+            }
+        },
+        error: function(msg) {
+            console.log(msg);
+        }
+    });
+
     less.render(data, options)
         .then(function(result) {
             if(!options.lint) {
                 if (output) {
                     ensureDirectory(output);
                     fs.writeFileSync(output, result.css, 'utf8');
-                    if (options.verbose) {
-                        console.log('lessc: wrote ' + output);
-                    }
+                    less.logger.info('lessc: wrote ' + output);
                 } else {
                     process.stdout.write(result.css);
                 }

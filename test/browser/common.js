@@ -10,11 +10,20 @@
 //   }
 // };
 
-var logMessages = [],
-  realConsoleLog = console.log;
-console.log = function(msg) {
-  logMessages.push(msg);
-  realConsoleLog.call(console, msg);
+var oldconsole = window.console;
+var logMessages = [];
+window.console = {
+    warn: function(msg) {
+        oldconsole.warn(msg);
+        logMessages.push(msg);
+    },
+    log: function(msg) {
+        oldconsole.log(msg);
+        logMessages.push(msg);
+    },
+    error: function(msg) {
+        oldconsole.error(msg);
+    }
 };
 
 var testLessEqualsInDocument = function() {

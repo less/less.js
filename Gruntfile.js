@@ -37,7 +37,7 @@ module.exports = function (grunt) {
                 command: 'node benchmark/less-benchmark.js'
             },
             "browsertest-server": {
-                command: 'node node_modules/http-server/bin/http-server . -p 8088'
+                command: 'node node_modules/http-server/bin/http-server . -p 8081'
             },
             "sourcemap-test": {
                 command: [

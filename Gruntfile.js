@@ -103,6 +103,9 @@ module.exports = function (grunt) {
                 src: [
                     'Gruntfile.js',
                     'lib/less/**/*.js',
+                    'lib/less-node/**/*.js',
+                    'lib/less-browser/**/*.js',
+                    'lib/less-rhino/**/*.js',
                     'bin/lessc'
                 ]
             }

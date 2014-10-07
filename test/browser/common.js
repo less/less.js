@@ -10,21 +10,22 @@
 //   }
 // };
 
-var oldconsole = window.console;
 var logMessages = [];
-window.console = {
-    warn: function(msg) {
-        oldconsole.warn(msg);
+window.less = window.less || {};
+less.loggers = [{
+    info: function(msg) {
         logMessages.push(msg);
     },
-    log: function(msg) {
-        oldconsole.log(msg);
+    debug: function(msg) {
+        logMessages.push(msg);
+    },
+    warn: function(msg) {
         logMessages.push(msg);
     },
     error: function(msg) {
-        oldconsole.error(msg);
+        logMessages.push(msg);
     }
-};
+}];
 
 var testLessEqualsInDocument = function() {
   testLessInDocument(testSheet);

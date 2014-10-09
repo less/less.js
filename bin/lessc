@@ -227,7 +227,7 @@ args = args.filter(function (arg) {
             if (plugin) {
                 plugins.push(plugin);
             } else {
-                console.log("Unable to load plugin " + name + " please make sure that it is installed under at the same level as less");
+                console.log("Unable to load plugin " + name + " please make sure that it is installed under or at the same level as less");
                 console.log();
                 printUsage();
                 currentErrorcode = 1;
@@ -238,7 +238,7 @@ args = args.filter(function (arg) {
             if (plugin) {
                 plugins.push(plugin);
             } else {
-                console.log("Unable to interpret argument " + arg + " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under at the same level as less");
+                console.log("Unable to interpret argument " + arg + " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under or at the same level as less");
                 console.log();
                 printUsage();
                 currentErrorcode = 1;

@@ -6,7 +6,9 @@ var path = require('path'),
     mkdirp;
 
 var less = require('../lib/less-node'),
-    pluginManager = new less.PluginManager(less);
+    pluginLoader = new less.PluginLoader(less),
+    plugin,
+    plugins = [];
 
 var args = process.argv.slice(1);
 var silent = false,
@@ -27,7 +29,8 @@ var silent = false,
     strictUnits: false,
     globalVariables: '',
     modifyVariables: '',
-    urlArgs: ''
+    urlArgs: '',
+    plugins: plugins
 };
 var sourceMapOptions = {};
 var continueProcessing = true,
@@ -66,7 +69,7 @@ var sourceMapFileInline = false;
 
 function printUsage() {
     less.lesscHelper.printUsage();
-    pluginManager.printUsage();
+    pluginLoader.printUsage(plugins);
     continueProcessing = false;
 }
 
@@ -220,7 +223,10 @@ args = args.filter(function (arg) {
                 name = splitupArg[1],
                 pluginOptions = splitupArg[3];
 
-            if (!pluginManager.tryLoadPlugin(name, pluginOptions)) {
+            plugin = pluginLoader.tryLoadPlugin(name, pluginOptions);
+            if (plugin) {
+                plugins.push(plugin);
+            } else {
                 console.log("Unable to load plugin " + name + " please make sure that it is installed under at the same level as less");
                 console.log();
                 printUsage();
@@ -228,7 +234,10 @@ args = args.filter(function (arg) {
             }
             break;
         default:
-            if (!pluginManager.tryLoadPlugin("less-plugin-" + arg, match[2])) {
+            plugin = pluginLoader.tryLoadPlugin("less-plugin-" + arg, match[2]);
+            if (plugin) {
+                plugins.push(plugin);
+            } else {
                 console.log("Unable to interpret argument " + arg + " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under at the same level as less");
                 console.log();
                 printUsage();
@@ -361,8 +370,6 @@ var parseLessFile = function (e, data) {
     if (options.sourceMap) {
         options.sourceMap = sourceMapOptions;
     }
-
-    options.plugins = pluginManager;
 
     less.logger.addListener({
         info: function(msg) {

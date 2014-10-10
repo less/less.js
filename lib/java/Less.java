@@ -84,11 +84,11 @@ public class Less
             Object result = cx.evaluateString(scope, sb.toString(), "setup", 1, null);
 
             // Reference the two LessCSS rhino libs that you placed into your META-INF folder
-            in = getClass().getResourceAsStream("/META-INF/less-rhino-1.7.5.js");
-            result = cx.evaluateReader(global, new InputStreamReader(in), "less-rhino-1.7.5.js", 1, null);
+            in = getClass().getResourceAsStream("/META-INF/less-rhino.js");
+            result = cx.evaluateReader(global, new InputStreamReader(in), "less-rhino.js", 1, null);
 
-            in = getClass().getResourceAsStream("/META-INF/lessc-rhino-1.7.5.js");
-            result = cx.evaluateReader(scope, new InputStreamReader(in), "lessc-rhino-1.7.5.js", 1, null);
+            in = getClass().getResourceAsStream("/META-INF/lessc-rhino.js");
+            result = cx.evaluateReader(scope, new InputStreamReader(in), "lessc-rhino.js", 1, null);
 
             // Extract and return the varOuput variable containing the CSS
             return Context.toString(ScriptableObject.getProperty(scope, "varOutput"));

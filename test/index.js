@@ -1,7 +1,7 @@
 var lessTest = require("./less-test"),
     lessTester = lessTest(),
     path = require("path"),
-    stylize = require('../lib/less/lessc_helper').stylize;
+    stylize = require('../lib/less-node/lessc-helper').stylize;
 
 function getErrorPathReplacementFunction(dir) {
     return function(input) {
@@ -30,12 +30,12 @@ lessTester.runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder 
 lessTester.runTestSet({strictMath: true, compress: true}, "compression/");
 lessTester.runTestSet({}, "legacy/");
 lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, "sourcemaps/",
-    lessTester.testSourcemap, null, null, 
-    function(filename, type) { 
+    lessTester.testSourcemap, null, null,
+    function(filename, type) {
         if (type === "vars") {
             return path.join('test/less/', filename) + '.json';
         }
-        return path.join('test/sourcemaps', filename) + '.json'; 
+        return path.join('test/sourcemaps', filename) + '.json';
     });
 lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "globalVars/",
     null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });

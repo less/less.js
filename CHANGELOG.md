@@ -1,3 +1,15 @@
+#2.0.0
+
+2014-??-??
+
+ - no longer including old versions of less in the repo or npm
+ - not including test and gradle files in npm (Note: TODO may need to move some test framework into lib for core plugins)
+ - colours now output in the format they are added unless compressing, so yellow will output yellow, not its hex counterpart
+ - better parsing - better comment support (TODO) and comments in brackets can now contain comments including quotes.
+TODO
+ - Environment Support
+ - Finalised Plugin Support 
+
 # 1.7.5
 
 2014-09-03
@@ -10,7 +22,7 @@
  - updates to some dependencies
  - Fix interpolated import in media query
  - A few other various small corrections
-
+ 
 # 1.7.4
 
 2014-07-27
@@ -31,13 +43,13 @@
  - Do not round the results of color functions, like lightness, hue, luma etc.
  - Support cover and contain keywords in background definitions
 
-# 1.7.2
+ # 1.7.2
 
 2014-06-19
 
  - Allow paths option to be a string (in 1.7.1 less started throwing an exception instead of incorrectly processing the string as an array of chars)
  - Do not round numbers when used with javascript (introduced 1.7.0)
-
+ 
 # 1.7.1
 
 2014-06-08

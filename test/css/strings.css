@@ -33,11 +33,23 @@
   url5: "http://lesscss.org/54.4px";
 }
 .mix-mul-class {
-  color: #0000ff;
-  color: #ff0000;
-  color: #000000;
-  color: #ffa500;
+  color: blue;
+  color: red;
+  color: black;
+  color: orange;
 }
 .watermark {
   family: Univers, Arial, Verdana, San-Serif;
+}
+#iterated-interpolation .mixin {
+  width: 100px;
+  weird: 100px;
+  width-str: "100px";
+  weird-str: "100px";
+}
+#iterated-interpolation .interpolation-mixin {
+  width: 100px;
+  weird: 100px;
+  width-str: "100px";
+  weird-str: "100px";
 }

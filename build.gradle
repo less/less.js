@@ -123,13 +123,13 @@ task clean << {
 }
 
 class SourceMapRhinoTest extends RhinoTest {
-	
+
 	// helper to get the output map file
 	def getOutputMap(lessFile) {
 		def outFile = project.file(lessFile.path.replace('test/less', project.testOut).replace('.less', '.css'))
 		return project.file(outFile.path + ".map");
 	}
-	
+
 	// callback to add SourceMap options to the options list
 	def postProcessOptions(options, lessFile) {
 		def outFile = getOutputMap(lessFile)
@@ -141,14 +141,14 @@ class SourceMapRhinoTest extends RhinoTest {
 
 		options
 	}
-	
+
 	// Callback to validate output
 	def handleResult(exec, out, lessFile) {
 		def actualFile = getOutputMap(lessFile)
-		def expectedFile = project.file(projectDir + fs + "test" + fs + testDir + fs + lessFile.name.replace(".less", ".json"))		
+		def expectedFile = project.file(projectDir + fs + "test" + fs + testDir + fs + lessFile.name.replace(".less", ".json"))
 		assert actualFile.text == expectedFile.text
 	}
-		
+
 }
 
 class DebugRhinoTest extends RhinoTest {
@@ -159,11 +159,11 @@ class DebugRhinoTest extends RhinoTest {
 
     def globalReplacements(input, directory) {
       def pDirectory = toPlatformFs(directory)
-      def p = lessRootDir + fs + pDirectory 
+      def p = lessRootDir + fs + pDirectory
       def pathimport = p + toPlatformFs("import/")
       def pathesc = escapeIt(p)
       def pathimportesc = escapeIt(pathimport)
-      
+
       def result = input.replace("{path}", p).replace("{pathesc}", pathesc).replace("{pathimport}", pathimport)
       return result.replace("{pathimportesc}", pathimportesc).replace("\r\n", "\n")
     }
@@ -182,16 +182,16 @@ class RhinoTest extends DefaultTask {
     def fs = File.separator;
     def projectDir = toUpperCaseDriveLetter(System.getProperty("user.dir"));
     def lessRootDir = projectDir + fs + "test" + fs + "less"
- 
+
     def toUpperCaseDriveLetter(path) {
       if (path.charAt(1)==':' && path.charAt(2)=='\\') {
           return path.substring(0,1).toUpperCase() + path.substring(1);
-      } 
+      }
       return path;
     }
 
     def toPlatformFs(path) {
-      return path.replace('\\', fs).replace('/', fs); 
+      return path.replace('\\', fs).replace('/', fs);
     }
 
     def expectedCssPath(lessFilePath) {
@@ -216,12 +216,12 @@ class RhinoTest extends DefaultTask {
         return '\033[' + styles[style][0] + 'm' + str +
                 '\033[' + styles[style][1] + 'm';
     }
-	
+
 	// Callback for subclasses to make any changes to the options
 	def postProcessOptions(options, lessFile) {
 		options
 	}
-	
+
 	// Callback to validate output
 	def handleResult(exec, out, lessFile) {
 		def actual = out.toString().trim()
@@ -273,7 +273,7 @@ class RhinoTest extends DefaultTask {
                     standardOutput = out
                     ignoreExitValue = true
                 }
-                println "rhinoTestSrc: ${project.rhinoTestSrc}" 
+                println "rhinoTestSrc: ${project.rhinoTestSrc}"
                 try {
                     def exec = project.javaexec(execOptions)
 					handleResult(exec, out, lessFile)
@@ -333,7 +333,7 @@ class GruntTask extends Exec {
     private String gruntExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "grunt.cmd" : "grunt"
     private String switches = "--no-color"
 
-    String gruntArgs = "" 
+    String gruntArgs = ""
 
     public GruntTask() {
         super()

@@ -69,11 +69,11 @@
 
 .mixin_def_with_colors(@a: white, // in
        @b: 1px //put in @b - causes problems! --->
-	   ) // the
-	   when (@a = white) {
-	.test {
-	    color: @b;
-	}
+       ) // the
+       when (@a = white) {
+    .test {
+        color: @b;
+    }
 }
 .mixin_def_with_colors();
 
@@ -94,3 +94,8 @@
 //
 
 /*  *//* { *//*  *//*  *//*  */#div { color:#A33; }/* } */
+
+// line immediatly followed
+/*by block */
+@string_w_comment: ~"/* // Not commented out // */";
+#output-block { comment: @string_w_comment; }

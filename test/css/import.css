@@ -4,7 +4,7 @@
 @import url("//ha.com/file.css") (min-width: 100px);
 #import-test {
   height: 10px;
-  color: #ff0000;
+  color: red;
   width: 10px;
   height: 30%;
 }
@@ -14,11 +14,14 @@
   }
 }
 #import {
-  color: #ff0000;
+  color: red;
 }
 .mixin {
   height: 10px;
-  color: #ff0000;
+  color: red;
+}
+.deep-import-url {
+  color: red;
 }
 @media screen and (max-width: 601px) {
   #css {

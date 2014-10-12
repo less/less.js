@@ -10,12 +10,22 @@
 //   }
 // };
 
-var logMessages = [],
-  realConsoleLog = console.log;
-console.log = function(msg) {
-  logMessages.push(msg);
-  realConsoleLog.call(console, msg);
-};
+var logMessages = [];
+window.less = window.less || {};
+less.loggers = [{
+    info: function(msg) {
+        logMessages.push(msg);
+    },
+    debug: function(msg) {
+        logMessages.push(msg);
+    },
+    warn: function(msg) {
+        logMessages.push(msg);
+    },
+    error: function(msg) {
+        logMessages.push(msg);
+    }
+}];
 
 var testLessEqualsInDocument = function() {
   testLessInDocument(testSheet);
@@ -71,7 +81,7 @@ var testSheet = function(sheet) {
 //TODO: do it cleaner - the same way as in css
 
 function extractId(href) {
-  return href.replace(/^[a-z-]+:\/+?[^\/]+/, '') // Remove protocol & domain
+  return href.replace(/^[a-z-]+:\/+?[^\/]+/i, '') // Remove protocol & domain
   .replace(/^\//, '') // Remove root /
   .replace(/\.[a-zA-Z]+$/, '') // Remove simple extension
   .replace(/[^\.\w-]+/g, '-') // Replace illegal characters

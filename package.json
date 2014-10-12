@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "1.7.5",
+  "version": "2.0.0",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -26,15 +26,15 @@
   "bin": {
     "lessc": "./bin/lessc"
   },
-  "main": "./lib/less/index",
+  "main": "./lib/less-node/index",
   "directories": {
     "test": "./test"
   },
   "jam": {
-    "main": "./dist/less-1.7.5.js"
+    "main": "./dist/less.js"
   },
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=0.10.0"
   },
   "scripts": {
     "test": "grunt test"
@@ -44,8 +44,8 @@
     "mime": "~1.2.11",
     "request": "~2.40.0",
     "mkdirp": "~0.5.0",
-    "clean-css": "2.2.x",
-    "source-map": "0.1.x"
+    "source-map": "0.1.x",
+    "promise": "~5.0.0"
   },
   "devDependencies": {
     "diff": "~1.0",
@@ -59,8 +59,10 @@
     "grunt-shell": "~0.7.0",
     "http-server": "~0.6.1",
     "matchdep": "~0.3.0",
-    "time-grunt": "~0.3.1"
- },
+    "time-grunt": "~0.3.1",
+    "browserify": "~3.30.2",
+    "grunt-browserify": "~1.3.1"
+  },
   "keywords": [
     "compile less",
     "css nesting",

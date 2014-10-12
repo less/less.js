@@ -104,7 +104,10 @@
   max: 3;
   max: 5em;
   percentage: 20%;
-  color: #ff0011;
+  color-quoted-digit: #dda0dd;
+  color-quoted-keyword: #dda0dd;
+  color-color: #dda0dd;
+  color-keyword: #dda0dd;
   tint: #898989;
   tint-full: #ffffff;
   tint-percent: #898989;

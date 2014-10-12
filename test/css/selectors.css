@@ -102,16 +102,16 @@ p a span {
   background: amber;
 }
 .other ::fnord {
-  color: #ff0000;
+  color: red;
 }
 .other::fnord {
-  color: #ff0000;
+  color: red;
 }
 .other ::bnord {
-  color: #ff0000;
+  color: red;
 }
 .other::bnord {
-  color: #ff0000;
+  color: red;
 }
 .blood {
   color: red;
@@ -123,6 +123,9 @@ p a span {
   color: black;
 }
 :nth-child(3) {
+  selector: interpolated;
+}
+.test:nth-child(3) {
   selector: interpolated;
 }
 .test:nth-child(odd):not(:nth-child(3)) {

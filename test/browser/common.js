@@ -54,17 +54,21 @@ var testSheet = function(sheet) {
       lessOutputObj,
       lessOutput,
       expectedOutputHref = document.getElementById(expectedOutputId).href,
-      expectedOutput = loadFile(expectedOutputHref);
+      expectedOutput = loadFile(expectedOutputHref),
+      finished = false;
 
     // Browser spec generates less on the fly, so we need to loose control
+    less.pageLoadFinished
+        .then(function() {
+            finished = true;
+        });
     waitsFor(function() {
-      lessOutputObj = document.getElementById(lessOutputId);
-      // the type condition is necessary because of inline browser tests
-      return lessOutputObj !== null && lessOutputObj.type === "text/css";
+      return finished;
     }, "generation of " + lessOutputId + "", 700);
 
     runs(function() {
-      lessOutput = lessOutputObj.innerText || lessOutputObj.innerHTML;
+        lessOutputObj = document.getElementById(lessOutputId);
+        lessOutput = lessOutputObj.innerText || lessOutputObj.innerHTML;
     });
 
     waitsFor(function() {

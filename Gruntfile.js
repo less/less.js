@@ -36,14 +36,11 @@ module.exports = function (grunt) {
             benchmark: {
                 command: 'node benchmark/less-benchmark.js'
             },
-            "browsertest-server": {
-                command: 'node node_modules/http-server/bin/http-server . -p 8081'
-            },
             "sourcemap-test": {
                 command: [
                     'node bin/lessc --source-map --source-map-map-inline test/less/import.less test/sourcemaps/import.css',
-                    'node bin/lessc --source-map --source-map-map-inline test/less/sourcemaps/basic.less test/sourcemaps/basic.css',
-                    'node node_modules/http-server/bin/http-server test/sourcemaps -p 8084'].join('&&')
+                    'node bin/lessc --source-map --source-map-map-inline test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
+                ].join('&&')
             }
         },
 
@@ -285,7 +282,7 @@ module.exports = function (grunt) {
     // setup a web server to run the browser tests in a browser rather than phantom
     grunt.registerTask('browsertest-server', [
         'browsertest-lessjs',
-        'shell:browsertest-server'
+        'connect::keepalive'
     ]);
 
     // Run all tests
@@ -299,7 +296,8 @@ module.exports = function (grunt) {
     // generate a good test environment for testing sourcemaps
     grunt.registerTask('sourcemap-test', [
         'clean:sourcemap-test',
-        'shell:sourcemap-test'
+        'shell:sourcemap-test',
+        'connect::keepalive'
     ]);
 
     // Run benchmark

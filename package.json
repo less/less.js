@@ -56,10 +56,9 @@
     "grunt-contrib-jasmine": "~0.5.2",
     "grunt-contrib-jshint": "~0.10.0",
     "grunt-contrib-uglify": "~0.6.0",
-    "grunt-shell": "~0.7.0",
-    "http-server": "~0.6.1",
+    "grunt-shell": "~1.1.1",
     "matchdep": "~0.3.0",
-    "time-grunt": "~0.3.1",
+    "time-grunt": "~1.0.0",
     "grunt-browserify": "~3.0.1"
   },
   "keywords": [

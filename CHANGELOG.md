@@ -1,14 +1,23 @@
-#2.0.0
+# 2.0.0-b1
 
-2014-??-??
+2014-10-19
 
+ - Public Beta / Release Candidate - Feedback welcome
+   For a guide to breaking changes see [the v2 upgrade guide](lesscss.org/usage/#v2-upgrade-guide)
  - no longer including old versions of less in the repo or npm
- - not including test and gradle files in npm (Note: TODO may need to move some test framework into lib for core plugins)
+ - not including test less and gradle files in npm
  - colours now output in the format they are added unless compressing, so yellow will output yellow, not its hex counterpart
- - better parsing - better comment support (TODO) and comments in brackets can now contain comments including quotes.
-TODO
- - Environment Support
- - Finalised Plugin Support 
+ - better parsing - better comment support and comments in brackets can now contain comments including quotes.
+ - Removal of dependency on clean-css - install less-plugin-clean-css and use --clean-css to reference plugin
+ - Environment Support - less is now separate from its node and browser environment implementations and adding support for another javascript environment should be straight forward.
+ - Plugin Support - it is now straight forward to add AST manipulations (see less-plugin-inline-images), file managers (see less-plugin-npm-import) and post processors (see less-plugin-clean-css and less-plugin-autoprefix).
+ - We now recommend using less.render and using the parser directly is not in the same way as in v2. It is possible but it would require changes and we do not guarantee it will not be broken in minor version releases.
+ - In the browser, less.pageLoadFinished will be a promise, resolved when less has finished its initial processing. less.refresh and less.modifyVars also return promises.
+ - In the browser, as before less is used as options, however this is now copied to less.options if you need to access after less has run
+ - In the browser, the cache can be overwritten by setting less.cache before less loads. After load less.cache will be the default implementation.
+ - less.js now uses browserify to generate its browser side component
+ - default values for the sourcemap options have been re-done and improved to hopefully mean creating sourcemaps is easier
+ - Many smaller bugfixes and API changes. Please let us know if something you relied on has disappeared or an area should be better documented.
 
 # 1.7.5
 
@@ -22,7 +31,7 @@ TODO
  - updates to some dependencies
  - Fix interpolated import in media query
  - A few other various small corrections
- 
+
 # 1.7.4
 
 2014-07-27
@@ -49,7 +58,7 @@ TODO
 
  - Allow paths option to be a string (in 1.7.1 less started throwing an exception instead of incorrectly processing the string as an array of chars)
  - Do not round numbers when used with javascript (introduced 1.7.0)
- 
+
 # 1.7.1
 
 2014-06-08

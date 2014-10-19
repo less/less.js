@@ -48,7 +48,7 @@ module.exports = function (grunt) {
             browser: {
                 src: ['./lib/less-browser/index.js'],
                 options: {
-                    ignore: ["promise"]
+                    //ignore: ["promise"]
                 },
                 dest: 'tmp/less.js'
             }

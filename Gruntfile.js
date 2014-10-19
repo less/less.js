@@ -38,8 +38,8 @@ module.exports = function (grunt) {
             },
             "sourcemap-test": {
                 command: [
-                    'node bin/lessc --source-map --source-map-map-inline test/less/import.less test/sourcemaps/import.css',
-                    'node bin/lessc --source-map --source-map-map-inline test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
+                    'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
+                    'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
                 ].join('&&')
             }
         },

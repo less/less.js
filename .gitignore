@@ -13,6 +13,7 @@ npm-debug.log
 # project-specific
 tmp
 test/browser/less.js
+test/sourcemaps/**/*.map
 test/sourcemaps/*.map
 test/sourcemaps/*.css
 

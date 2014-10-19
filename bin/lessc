@@ -264,9 +264,8 @@ if (output) {
     }
 }
 
-sourceMapOptions.sourceMapBasepath = options.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
-
 if (options.sourceMap) {
+
     sourceMapOptions.sourceMapInputFilename = input;
     if (!sourceMapOptions.sourceMapFullFilename) {
         if (!output && !sourceMapFileInline) {
@@ -292,6 +291,15 @@ if (options.sourceMap) {
             path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
     }
 }
+
+sourceMapOptions.sourceMapBasepath = sourceMapOptions.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
+
+if (!sourceMapOptions.sourceMapRootpath) {
+    var pathToMap = path.dirname(sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename),
+        pathToInput = path.dirname(sourceMapOptions.sourceMapInputFilename);
+    sourceMapOptions.sourceMapRootpath = path.relative(pathToMap, pathToInput);
+}
+
 
 if (! input) {
     console.log("lessc: no input files");
@@ -364,7 +372,6 @@ var parseLessFile = function (e, data) {
     if (options.lint) {
         options.sourceMap = false;
     }
-    sourceMapOptions.sourceMapRootpath = options.sourceMapRootpath || "";
     sourceMapOptions.sourceMapFileInline = sourceMapFileInline;
 
     if (options.sourceMap) {

@@ -103,7 +103,8 @@ var testErrorSheet = function (sheet) {
                         return lineNo + " ";
                     })
                     .replace(/\n\s*in /g, " in ")
-                    .replace("\n\n", "\n");
+                    .replace("\n\n", "\n")
+                    .replace(/\nStack Trace\n[\s\S]*/, "");
                 errorFile
                     .then(function (errorTxt) {
                         errorTxt = errorTxt
@@ -128,7 +129,8 @@ var testErrorSheetConsole = function (sheet) {
             errorHref = lessHref.replace(/.less$/, ".txt"),
             errorFile = loadFile(errorHref),
             actualErrorElement = document.getElementById(id),
-            actualErrorMsg = logMessages[logMessages.length - 1];
+            actualErrorMsg = logMessages[logMessages.length - 1]
+                .replace(/\nStack Trace\n[\s\S]*/, "");
 
         describe("the error", function () {
             expect(actualErrorElement).toBe(null);

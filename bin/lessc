@@ -292,9 +292,11 @@ if (options.sourceMap) {
     }
 }
 
-sourceMapOptions.sourceMapBasepath = sourceMapOptions.sourceMapBasepath || (input ? path.dirname(input) : process.cwd());
+if (sourceMapOptions.sourceMapBasepath === undefined) {
+    sourceMapOptions.sourceMapBasepath = input ? path.dirname(input) : process.cwd();
+}
 
-if (!sourceMapOptions.sourceMapRootpath) {
+if (sourceMapOptions.sourceMapRootpath === undefined) {
     var pathToMap = path.dirname(sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename),
         pathToInput = path.dirname(sourceMapOptions.sourceMapInputFilename);
     sourceMapOptions.sourceMapRootpath = path.relative(pathToMap, pathToInput);

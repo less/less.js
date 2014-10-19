@@ -49,7 +49,6 @@ module.exports = function (grunt) {
                 src: ['./lib/less-browser/index.js'],
                 options: {
                     alias: ["promise/polyfill.js:promise"]
-                    //ignore: ["promise/index.js"]
                 },
                 dest: 'tmp/less.js'
             }

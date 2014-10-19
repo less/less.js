@@ -41,9 +41,9 @@ a {
     .qux & {
       display: inline;
     }
-	.qux& {
-	  display: inline-block;
-	}
+    .qux& {
+      display: inline-block;
+    }
     .qux & .biz {
       display: none;
     }
@@ -123,9 +123,12 @@ a {
 }
 @num: 3;
 :nth-child(@{num}) {
-	selector: interpolated;
+    selector: interpolated;
 }
 .test {
+  &:nth-child(@{num}) {
+    selector: interpolated;
+  }
   &:nth-child(odd):not(:nth-child(3)) {
     color: #ff0000;
   }

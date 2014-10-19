@@ -1,4 +1,6 @@
-var less = {};
-less.strictMath = false;
-less.strictUnits = false;
+var less = {
+    logLevel: 4,
+    errorReporting: "console",
+    strictMath: false,
+    strictUnits: false };
 

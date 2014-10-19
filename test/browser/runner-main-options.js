@@ -1,4 +1,7 @@
-var less = {};
+var less = {
+    logLevel: 4,
+    errorReporting: "console"
+};
 less.strictMath = true;
 less.functions = {
   add: function(a, b) {

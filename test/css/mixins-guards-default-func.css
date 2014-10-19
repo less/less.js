@@ -96,10 +96,10 @@ guard-default-multi-2-3 {
   default-3: 3;
 }
 guard-default-multi-3-blue {
-  case-2: #00008b;
+  case-2: darkblue;
 }
 guard-default-multi-3-green {
-  default-color: #008000;
+  default-color: green;
 }
 guard-default-multi-3-foo {
   case-1: I am 'foo';

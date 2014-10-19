@@ -26,7 +26,7 @@
     <% }) %>
 
     <!-- inital grunt-contrib-jasmine scripts -->
-    <% generateScriptTags([].concat(scripts.polyfills, scripts.jasmine)); %>
+    <% generateScriptTags([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)); %>
 
     <!-- Helpers - The less options -->
     <% generateScriptTags(scripts.helpers); %>
@@ -38,7 +38,7 @@
     <% generateScriptTags(scripts.specs); %>
 
     <!-- final grunt-contrib-jasmine scripts -->
-    <% generateScriptTags([].concat(scripts.reporters, scripts.start)); %>
+    <% generateScriptTags([].concat(scripts.reporters)); %>
   </head>
 
   <body>

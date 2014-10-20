@@ -59,7 +59,8 @@
     "grunt-shell": "~1.1.1",
     "matchdep": "~0.3.0",
     "time-grunt": "~1.0.0",
-    "grunt-browserify": "~3.0.1"
+    "grunt-browserify": "~3.0.1",
+    "grunt-saucelabs": "~8.3.2"
   },
   "keywords": [
     "compile less",

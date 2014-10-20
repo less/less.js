@@ -226,6 +226,22 @@ module.exports = function (grunt) {
             }
         },
 
+        'saucelabs-jasmine': {
+            all: {
+                options: {
+                    username: "lukeapage",
+                    key: "2d7199e2-74da-432f-9449-c8c247babecf",
+                    urls: ['http://127.0.0.1:8081/tmp/browser/test-runner-main.html'],
+                    testname: 'Sauce Unit Test for less.js',
+                    browsers: [{
+                        browserName: "chrome",
+                        version: '37',
+                        platform: 'Windows 8'
+                    }]
+                }
+            }
+        },
+
         // Clean the version of less built for the tests
         clean: {
             test: ['test/browser/less.js', 'tmp'],
@@ -275,7 +291,8 @@ module.exports = function (grunt) {
     grunt.registerTask('browsertest', [
         'browsertest-lessjs',
         'connect',
-        'jasmine'
+        'jasmine',
+        'saucelabs-jasmine'
     ]);
 
     // setup a web server to run the browser tests in a browser rather than phantom
@@ -283,6 +300,14 @@ module.exports = function (grunt) {
         'browsertest-lessjs',
         'jasmine::build',
         'connect::keepalive'
+    ]);
+
+    // setup a web server to run the browser tests in a browser rather than phantom
+    grunt.registerTask('sauce', [
+        'browsertest-lessjs',
+        'jasmine::build',
+        'connect',
+        'saucelabs-jasmine'
     ]);
 
     // Run all tests

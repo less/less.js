@@ -121,10 +121,9 @@ module.exports = function (grunt) {
 
         jasmine: {
             options: {
-                // version: '2.0.0-rc2',
                 keepRunner: true,
                 host: 'http://localhost:8081/',
-                vendor: ['test/browser/common.js', 'test/browser/less.js'],
+                vendor: ['test/browser/jasmine-jsreporter.js', 'test/browser/common.js', 'test/browser/less.js'],
                 template: 'test/browser/test-runner-template.tmpl'
             },
             main: {
@@ -282,6 +281,7 @@ module.exports = function (grunt) {
     // setup a web server to run the browser tests in a browser rather than phantom
     grunt.registerTask('browsertest-server', [
         'browsertest-lessjs',
+        'jasmine::build',
         'connect::keepalive'
     ]);
 

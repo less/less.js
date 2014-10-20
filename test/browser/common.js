@@ -1,3 +1,7 @@
+/* Add js reporter for sauce */
+
+jasmine.getEnv().addReporter(new jasmine.JSReporter2());
+
 /* record log messages for testing */
 
 var logMessages = [];

@@ -4,6 +4,7 @@
 @font-face {
   src: url("/fonts/garamond-pro.ttf");
   src: local(Futura-Medium), url(fonts.svg#MyGeometricModern) format("svg");
+  not-a-comment: url(//z);
 }
 #shorthands {
   background: url("http://www.lesscss.org/spec.html") no-repeat 0 4px;

@@ -221,7 +221,7 @@ module.exports = function (grunt) {
                 options: {
                     helpers: 'test/browser/runner-postProcessor-options.js',
                     specs: 'test/browser/runner-postProcessor.js',
-                    outfile: 'tmp/browser/test-postProcessor.html'
+                    outfile: 'tmp/browser/test-runner-post-processor.html'
                 }
             }
         },
@@ -231,7 +231,11 @@ module.exports = function (grunt) {
                 options: {
                     username: "lukeapage",
                     key: "2d7199e2-74da-432f-9449-c8c247babecf",
-                    urls: ['http://127.0.0.1:8081/tmp/browser/test-runner-production.html'],
+                    urls: ["post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
+                           "rootpath", "relative-urls", "browser", "no-js-errors", "errors", "legacy"
+                    ].map(function(testName) {
+                        return "http://127.0.0.1:8081/tmp/browser/test-runner-" + testName + ".html";
+                    }),
                     testname: 'Sauce Unit Test for less.js',
                     browsers: [{
                         browserName: "chrome",

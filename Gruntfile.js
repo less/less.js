@@ -231,7 +231,7 @@ module.exports = function (grunt) {
                 options: {
                     username: "lukeapage",
                     key: "2d7199e2-74da-432f-9449-c8c247babecf",
-                    urls: ['http://127.0.0.1:8081/tmp/browser/test-runner-main.html'],
+                    urls: ['http://127.0.0.1:8081/tmp/browser/test-runner-production.html'],
                     testname: 'Sauce Unit Test for less.js',
                     browsers: [{
                         browserName: "chrome",

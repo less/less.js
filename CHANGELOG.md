@@ -3,7 +3,7 @@
 2014-10-19
 
  - Public Beta / Release Candidate - Feedback welcome
-   For a guide to breaking changes see [the v2 upgrade guide](lesscss.org/usage/#v2-upgrade-guide)
+   For a guide to breaking changes see [the v2 upgrade guide](http://lesscss.org/usage/#v2-upgrade-guide)
  - no longer including old versions of less in the repo or npm
  - not including test less and gradle files in npm
  - colours now output in the format they are added unless compressing, so yellow will output yellow, not its hex counterpart

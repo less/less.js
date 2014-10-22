@@ -229,8 +229,6 @@ module.exports = function (grunt) {
         'saucelabs-jasmine': {
             all: {
                 options: {
-                    username: "lukeapage",
-                    key: "2d7199e2-74da-432f-9449-c8c247babecf",
                     urls: ["post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
                            "rootpath", "relative-urls", "browser", "no-js-errors", "legacy"
                     ].map(function(testName) {
@@ -273,7 +271,11 @@ module.exports = function (grunt) {
                         version: '11',
                         platform: 'Windows 8.1'
                     }],
-                    sauceConfig: {'record-video': false, 'record-screenshots': false, 'idle-timeout': 60, 'max-duration': 100},
+                    sauceConfig: {
+                        'record-video': false, 'record-screenshots': false, 'idle-timeout': 100, 'max-duration': 240,
+                        build: process.env.TRAVIS_JOB_ID,
+                        tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH]
+                    },
                     throttled: 3
                 }
             }
@@ -282,7 +284,8 @@ module.exports = function (grunt) {
         // Clean the version of less built for the tests
         clean: {
             test: ['test/browser/less.js', 'tmp'],
-            "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map']
+            "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map'],
+            sauce_log: ["sc_*.log"]
         }
     });
 
@@ -329,7 +332,8 @@ module.exports = function (grunt) {
         'browsertest-lessjs',
         'connect',
         'jasmine',
-        'saucelabs-jasmine'
+        'saucelabs-jasmine',
+        'clean:sauce_log'
     ]);
 
     // setup a web server to run the browser tests in a browser rather than phantom
@@ -344,7 +348,8 @@ module.exports = function (grunt) {
         'browsertest-lessjs',
         'jasmine::build',
         'connect',
-        'saucelabs-jasmine'
+        'saucelabs-jasmine',
+        'clean:sauce_log'
     ]);
 
     // Run all tests

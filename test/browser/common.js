@@ -43,6 +43,21 @@ var testLessInDocument = function (testFunc) {
     }
 };
 
+var ieFormat = function(text) {
+    var styleNode = document.createElement('style');
+    styleNode.setAttribute('type', 'text/css');
+    var headNode = document.getElementsByTagName('head')[0];
+    headNode.appendChild(styleNode);
+    try {
+        styleNode.styleSheet.cssText = text;
+    } catch (e) {
+        throw new Error("Couldn't reassign styleSheet.cssText.");
+    }
+    var transformedText = styleNode.styleSheet.cssText;
+    headNode.removeChild(styleNode);
+    return transformedText;
+};
+
 var testSheet = function (sheet) {
     it(sheet.id + " should match the expected output", function (done) {
         var lessOutputId = sheet.id.replace("original-", ""),
@@ -56,11 +71,16 @@ var testSheet = function (sheet) {
         less.pageLoadFinished
             .then(function () {
                 lessOutputObj = document.getElementById(lessOutputId);
-                lessOutput = lessOutputObj.innerText || lessOutputObj.innerHTML;
+                var isIE = Boolean(lessOutputObj.styleSheet);
+                lessOutput = isIE ? lessOutputObj.styleSheet.cssText :
+                    (lessOutputObj.innerText || lessOutputObj.innerHTML);
 
                 expectedOutput
                     .then(function (text) {
-                        expect(text).toEqual(lessOutput);
+                        if (isIE) {
+                            text = ieFormat(text);
+                        }
+                        expect(lessOutput).toEqual(text);
                         done();
                     });
             });
@@ -116,7 +136,7 @@ var testErrorSheet = function (sheet) {
                             .replace("{pathrel}", "")
                             .replace("{pathhref}", "http://localhost:8081/test/less/errors/")
                             .replace("{404status}", " (404)");
-                        expect(errorTxt).toEqual(actualErrorMsg);
+                        expect(actualErrorMsg).toEqual(errorTxt);
                         if (errorTxt == actualErrorMsg) {
                             actualErrorElement.style.display = "none";
                         }
@@ -148,7 +168,7 @@ var testErrorSheetConsole = function (sheet) {
                     .replace("{pathhref}", "http://localhost:8081/browser/less/")
                     .replace("{404status}", " (404)")
                     .trim();
-                expect(errorTxt).toEqual(actualErrorMsg);
+                expect(actualErrorMsg).toEqual(errorTxt);
                 done();
             });
     });

@@ -232,16 +232,49 @@ module.exports = function (grunt) {
                     username: "lukeapage",
                     key: "2d7199e2-74da-432f-9449-c8c247babecf",
                     urls: ["post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
-                           "rootpath", "relative-urls", "browser", "no-js-errors", "errors", "legacy"
+                           "rootpath", "relative-urls", "browser", "no-js-errors", "legacy"
                     ].map(function(testName) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";
                     }),
                     testname: 'Sauce Unit Test for less.js',
                     browsers: [{
                         browserName: "chrome",
-                        version: '37',
+                        version: '',
                         platform: 'Windows 8'
-                    }]
+                    },
+                    {
+                        browserName: "firefox",
+                        version: '33',
+                        platform: 'Linux'
+                    },
+                    {
+                        browserName: "iPad",
+                        version: '8.0',
+                        platform: 'OS X 10.9',
+                        'device-orientation': 'portrait'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '8',
+                        platform: 'Windows XP'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '9',
+                        platform: 'Windows 7'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '10',
+                        platform: 'Windows 7'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '11',
+                        platform: 'Windows 8.1'
+                    }],
+                    sauceConfig: {'record-video': false, 'record-screenshots': false, 'idle-timeout': 60, 'max-duration': 100},
+                    throttled: 3
                 }
             }
         },

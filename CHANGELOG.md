@@ -1,3 +1,12 @@
+# 2.0.0-b2
+
+2014-10-??
+
+ - Support for rebeccapurple
+ - Browser can now accept options as attributes on the script tag and the link tags e.g. `<script data-verbose="false" src="less.js"...`
+ - adding a .less file extension is done in the abstract file manager so it the behaviour can be overridden by certain file managers
+ - Fixed a bug where unquoted urls begining `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
+
 # 2.0.0-b1
 
 2014-10-19

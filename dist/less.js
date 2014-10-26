@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v2.0.0-b1
+ * Less - Leaner CSS v2.0.0-b2
  * http://lesscss.org
  *
  * Copyright (c) 2009-2014, Alexis Sellier <self@cloudhead.net>
@@ -406,6 +406,7 @@ return FileManager;
 /*global window, document, location */
 
 var less;
+var addDataAttr = require("./utils").addDataAttr;
 
 /*
   TODO - options is now hidden - we should expose it on the less object, but not have it "as" the less object
@@ -415,6 +416,13 @@ var less;
 
 var isFileProtocol = /^(file|chrome(-extension)?|resource|qrc|app):/.test(window.location.protocol),
     options = window.less || {};
+
+// use options from the current script tag data attribues
+var script = document.currentScript || (function() {
+    var scripts = document.getElementsByTagName("script");
+    return scripts[scripts.length - 1];
+})();
+options = addDataAttr(options, script);
 
 // shim Promise if required
 require('promise/polyfill.js');
@@ -525,7 +533,7 @@ function loadStyles(modifyVars) {
 
 function loadStyleSheet(sheet, callback, reload, remaining, modifyVars) {
 
-    var instanceOptions = clone(options);
+    var instanceOptions = addDataAttr(clone(options), sheet);
     instanceOptions.mime = sheet.type;
 
     if (modifyVars) {
@@ -694,7 +702,7 @@ less.pageLoadFinished = less.registerStylesheets().then(
     }
 );
 
-},{"../less":27,"./browser":1,"./cache":2,"./error-reporting":3,"./file-manager":4,"./log-listener":6,"promise/polyfill.js":undefined}],6:[function(require,module,exports){
+},{"../less":27,"./browser":1,"./cache":2,"./error-reporting":3,"./file-manager":4,"./log-listener":6,"./utils":7,"promise/polyfill.js":92}],6:[function(require,module,exports){
 module.exports = function(less, options) {
 
     var logLevel_debug = 4,
@@ -747,6 +755,16 @@ module.exports = {
             .replace(/\.[a-zA-Z]+$/,        '' )  // Remove simple extension
             .replace(/[^\.\w-]+/g,          '-')  // Replace illegal characters
             .replace(/\./g,                 ':'); // Replace dots with colons(for valid id)
+    },
+    addDataAttr: function(options, tag) {
+        for (var opt in tag.dataset)
+            if (tag.dataset.hasOwnProperty(opt)) {
+                if (opt === "env" || opt === "dumpLineNumbers" || opt === "rootpath" || opt === "errorReporting")
+                    options[opt] = tag.dataset[opt];
+                else
+                    options[opt] = JSON.parse(tag.dataset[opt]);
+            }
+        return options;
     }
 };
 
@@ -981,6 +999,7 @@ module.exports = {
     'plum':'#dda0dd',
     'powderblue':'#b0e0e6',
     'purple':'#800080',
+    'rebeccapurple':'#663399',
     'red':'#ff0000',
     'rosybrown':'#bc8f8f',
     'royalblue':'#4169e1',
@@ -1051,6 +1070,10 @@ abstractFileManager.prototype.getPath = function (filename) {
         return "";
     }
     return filename.slice(0, j + 1);
+};
+
+abstractFileManager.prototype.tryAppendLessExtension = function(path) {
+    return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + '.less';
 };
 
 abstractFileManager.prototype.supportsSync = function() {
@@ -2059,7 +2082,15 @@ module.exports = function(environment) {
         this.queue = [];        // Files which haven't been imported yet
         this.files = [];        // Holds the imported parse trees.
     };
-    ImportManager.prototype.push = function (path, currentFileInfo, importOptions, callback) {
+    /**
+     * Add an import to be imported
+     * @param path - the raw path
+     * @param tryAppendLessExtension - whether to try appending the less extension (if the path has no extension)
+     * @param currentFileInfo - the current file info (used for instance to work out relative paths)
+     * @param importOptions - import options
+     * @param callback - callback for when it is imported
+     */
+    ImportManager.prototype.push = function (path, tryAppendLessExtension, currentFileInfo, importOptions, callback) {
         var importManager = this;
         this.queue.push(path);
 
@@ -2087,6 +2118,10 @@ module.exports = function(environment) {
         if (!fileManager) {
             fileParsedFunc({ message: "Could not find a file-manager for " + path });
             return;
+        }
+
+        if (tryAppendLessExtension) {
+            path = fileManager.tryAppendLessExtension(path);
         }
 
         fileManager.loadFile(path, currentFileInfo.currentDirectory, this.context, environment)
@@ -2140,7 +2175,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 0, "0-b1"],
+        version: [2, 0, "0-b2"],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -2165,7 +2200,7 @@ module.exports = function(environment, fileManagers) {
     return less;
 };
 
-},{"./contexts":8,"./data":10,"./environment/abstract-file-manager":12,"./environment/environment":13,"./functions":20,"./import-manager":26,"./less-error":28,"./logger":29,"./parse-tree":30,"./parser/parser":33,"./plugin-manager":34,"./render":35,"./source-map-builder":36,"./source-map-output":37,"./transform-tree":38,"./tree":56,"./utils":77,"./visitors":80}],28:[function(require,module,exports){
+},{"./contexts":8,"./data":10,"./environment/abstract-file-manager":12,"./environment/environment":13,"./functions":20,"./import-manager":26,"./less-error":28,"./logger":29,"./parse-tree":30,"./parser/parser":33,"./plugin-manager":34,"./render":35,"./source-map-builder":36,"./source-map-output":37,"./transform-tree":38,"./tree":56,"./utils":77,"./visitors":81}],28:[function(require,module,exports){
 var utils = require("./utils");
 
 var LessError = module.exports = function LessError(e, importManager, currentFilename) {
@@ -3052,11 +3087,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                 url: function () {
                     var value, index = parserInput.i;
 
+                    parserInput.autoCommentAbsorb = false;
+
                     if (parserInput.currentChar() !== 'u' || !parserInput.$re(/^url\(/)) {
+                        parserInput.autoCommentAbsorb = true;
                         return;
                     }
-
-                    parserInput.autoCommentAbsorb = false;
 
                     value = this.quoted() || this.variable() ||
                             parserInput.$re(/^(?:(?:\\[\(\)'"])|[^\(\)'"])+/) || "";
@@ -4259,7 +4295,7 @@ Parser.serializeVars = function(vars) {
 
 module.exports = Parser;
 
-},{"../less-error":28,"../tree":56,"../utils":77,"../visitors":80,"./parser-input":32}],34:[function(require,module,exports){
+},{"../less-error":28,"../tree":56,"../utils":77,"../visitors":81,"./parser-input":32}],34:[function(require,module,exports){
 /**
  * Plugin Manager
  */
@@ -4695,7 +4731,7 @@ module.exports = function(root, options) {
     return evaldRoot;
 };
 
-},{"./contexts":8,"./tree":56,"./visitors":80}],39:[function(require,module,exports){
+},{"./contexts":8,"./tree":56,"./visitors":81}],39:[function(require,module,exports){
 var Node = require("./node");
 
 var Alpha = function (val) {
@@ -5712,12 +5748,22 @@ Import.prototype.genCSS = function (context, output) {
 };
 Import.prototype.getPath = function () {
     if (this.path instanceof Quoted) {
-        var path = this.path.value;
-        return (this.css !== undefined || /(\.[a-z]*$)|([\?;].*)$/.test(path)) ? path : path + '.less';
+        return this.path.value;
     } else if (this.path instanceof URL) {
         return this.path.value.value;
     }
     return null;
+};
+Import.prototype.isVariableImport = function () {
+    var path = this.path;
+    if (path instanceof URL) {
+        path = path.value;
+    }
+    if (path instanceof Quoted) {
+        return path.containsVariables();
+    }
+
+    return true;
 };
 Import.prototype.evalForImport = function (context) {
     var path = this.path;
@@ -6614,6 +6660,9 @@ Quoted.prototype.genCSS = function (context, output) {
         output.add(this.quote);
     }
 };
+Quoted.prototype.containsVariables = function() {
+    return this.value.match(/(`([^`]+)`)|@\{([\w-]+)\}/);
+};
 Quoted.prototype.eval = function (context) {
     var that = this, value = this.value;
     var javascriptReplacement = function (_, exp) {
@@ -6972,6 +7021,16 @@ Ruleset.prototype.variables = function () {
         this._variables = !this.rules ? {} : this.rules.reduce(function (hash, r) {
             if (r instanceof Rule && r.variable === true) {
                 hash[r.name] = r;
+            }
+            // when evaluating variables in an import statement, imports have not been eval'd
+            // so we need to go inside import statements.
+            if (r.type === "Import" && r.root) {
+                var vars = r.root.variables();
+                for(var name in vars) {
+                    if (vars.hasOwnProperty(name)) {
+                        hash[name] = vars[name];
+                    }
+                }
             }
             return hash;
         }, {});
@@ -8176,25 +8235,71 @@ ProcessExtendsVisitor.prototype = {
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../tree":56,"./visitor":83}],79:[function(require,module,exports){
-var contexts = require("../contexts"),
-    Visitor = require("./visitor");
+},{"../tree":56,"./visitor":84}],79:[function(require,module,exports){
+function ImportSequencer(onSequencerEmpty) {
+    this.imports = [];
+    this.variableImports = [];
+    this._onSequencerEmpty = onSequencerEmpty;
+}
 
-var ImportVisitor = function(importer, finish, evalEnv, onceFileDetectionMap, recursionDetector) {
+ImportSequencer.prototype.addImport = function(callback) {
+    var importSequencer = this,
+        importItem = {
+            callback: callback,
+            args: null,
+            isReady: false
+        };
+    this.imports.push(importItem);
+    return function() {
+        importItem.args = Array.prototype.slice.call(arguments, 0);
+        importItem.isReady = true;
+        importSequencer.tryRun();
+    };
+};
+
+ImportSequencer.prototype.addVariableImport = function(callback) {
+    this.variableImports.push(callback);
+};
+
+ImportSequencer.prototype.tryRun = function() {
+    while(true) {
+        while(this.imports.length > 0) {
+            var importItem = this.imports[0];
+            if (!importItem.isReady) {
+                return;
+            }
+            this.imports = this.imports.slice(1);
+            importItem.callback.apply(null, importItem.args);
+        }
+        if (this.variableImports.length === 0) {
+            break;
+        }
+        var variableImport = this.variableImports[0];
+        this.variableImports = this.variableImports.slice(1);
+        variableImport();
+    }
+    if (this._onSequencerEmpty) {
+        this._onSequencerEmpty();
+    }
+};
+
+module.exports = ImportSequencer;
+
+},{}],80:[function(require,module,exports){
+var contexts = require("../contexts"),
+    Visitor = require("./visitor"),
+    ImportSequencer = require("./import-sequencer");
+
+var ImportVisitor = function(importer, finish) {
+
     this._visitor = new Visitor(this);
     this._importer = importer;
     this._finish = finish;
-    this.context = evalEnv || new contexts.Eval();
+    this.context = new contexts.Eval();
     this.importCount = 0;
-    this.onceFileDetectionMap = onceFileDetectionMap || {};
+    this.onceFileDetectionMap = {};
     this.recursionDetector = {};
-    if (recursionDetector) {
-        for(var fullFilename in recursionDetector) {
-            if (recursionDetector.hasOwnProperty(fullFilename)) {
-                this.recursionDetector[fullFilename] = true;
-            }
-        }
-    }
+    this._sequencer = new ImportSequencer();
 };
 
 ImportVisitor.prototype = {
@@ -8210,83 +8315,121 @@ ImportVisitor.prototype = {
         }
 
         this.isFinished = true;
-
+        this._sequencer.tryRun();
         if (this.importCount === 0) {
-            this._finish(error);
+            this._finish(error || this.error);
         }
     },
     visitImport: function (importNode, visitArgs) {
-        var importVisitor = this,
-            evaldImportNode,
-            inlineCSS = importNode.options.inline;
+        var inlineCSS = importNode.options.inline;
 
         if (!importNode.css || inlineCSS) {
 
-            try {
-                evaldImportNode = importNode.evalForImport(this.context);
-            } catch(e){
-                if (!e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
-                // attempt to eval properly and treat as css
-                importNode.css = true;
-                // if that fails, this error will be thrown
-                importNode.error = e;
-            }
+            var context = new contexts.Eval(this.context, this.context.frames.slice(0));
+            var importParent = context.frames[0];
 
-            if (evaldImportNode && (!evaldImportNode.css || inlineCSS)) {
-                importNode = evaldImportNode;
-                this.importCount++;
-                var context = new contexts.Eval(this.context, this.context.frames.slice(0));
-
-                if (importNode.options.multiple) {
-                    context.importMultiple = true;
-                }
-
-                this._importer.push(importNode.getPath(), importNode.currentFileInfo, importNode.options, function (e, root, importedAtRoot, fullPath) {
-                    if (e && !e.filename) {
-                        e.index = importNode.index; e.filename = importNode.currentFileInfo.filename;
-                    }
-
-                    var duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
-                    if (!context.importMultiple) {
-                        if (duplicateImport) {
-                            importNode.skip = true;
-                        } else {
-                            importNode.skip = function() {
-                                if (fullPath in importVisitor.onceFileDetectionMap) {
-                                    return true;
-                                }
-                                importVisitor.onceFileDetectionMap[fullPath] = true;
-                                return false;
-                            };
-                        }
-                    }
-
-                    var subFinish = function(e) {
-                        importVisitor.importCount--;
-
-                        if (importVisitor.importCount === 0 && importVisitor.isFinished) {
-                            importVisitor._finish(e);
-                        }
-                    };
-
-                    if (root) {
-                        importNode.root = root;
-                        importNode.importedFilename = fullPath;
-
-                        if (!inlineCSS && (context.importMultiple || !duplicateImport)) {
-                            importVisitor.recursionDetector[fullPath] = true;
-                            new ImportVisitor(importVisitor._importer, subFinish, context, importVisitor.onceFileDetectionMap, importVisitor.recursionDetector)
-                                .run(root);
-                            return;
-                        }
-                    }
-
-                    subFinish();
-                });
+            this.importCount++;
+            if (importNode.isVariableImport()) {
+                this._sequencer.addVariableImport(this.processImportNode.bind(this, importNode, context, importParent));
+            } else {
+                importNode = this.processImportNode(importNode, context, importParent);
             }
         }
         visitArgs.visitDeeper = false;
         return importNode;
+    },
+    processImportNode: function(importNode, context, importParent) {
+        var evaldImportNode,
+            inlineCSS = importNode.options.inline;
+
+        try {
+            evaldImportNode = importNode.evalForImport(context);
+        } catch(e){
+            if (!e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
+            // attempt to eval properly and treat as css
+            importNode.css = true;
+            // if that fails, this error will be thrown
+            importNode.error = e;
+        }
+
+        if (evaldImportNode && (!evaldImportNode.css || inlineCSS)) {
+
+            if (evaldImportNode.options.multiple) {
+                context.importMultiple = true;
+            }
+
+            // try appending if we haven't determined if it is css or not
+            var tryAppendLessExtension = evaldImportNode.css === undefined;
+
+            var onImported = this.onImported.bind(this, evaldImportNode, context),
+                sequencedOnImported = this._sequencer.addImport(onImported);
+
+            this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.currentFileInfo, evaldImportNode.options, sequencedOnImported);
+
+            for(var i = 0; i < importParent.rules.length; i++) {
+                if (importParent.rules[i] === importNode) {
+                    importParent.rules[i] = evaldImportNode;
+                    break;
+                }
+            }
+            importNode = evaldImportNode;
+        } else {
+            this.importCount--;
+        }
+        return importNode;
+    },
+    onImported: function (importNode, context, e, root, importedAtRoot, fullPath) {
+        if (e) {
+            if (!e.filename) {
+                e.index = importNode.index; e.filename = importNode.currentFileInfo.filename;
+            }
+            this.error = e;
+        }
+
+        var importVisitor = this,
+            inlineCSS = importNode.options.inline,
+            duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
+
+        if (!context.importMultiple) {
+            if (duplicateImport) {
+                importNode.skip = true;
+            } else {
+                importNode.skip = function() {
+                    if (fullPath in importVisitor.onceFileDetectionMap) {
+                        return true;
+                    }
+                    importVisitor.onceFileDetectionMap[fullPath] = true;
+                    return false;
+                };
+            }
+        }
+
+        if (root) {
+            importNode.root = root;
+            importNode.importedFilename = fullPath;
+
+            if (!inlineCSS && (context.importMultiple || !duplicateImport)) {
+                importVisitor.recursionDetector[fullPath] = true;
+
+                var oldContext = this.context;
+                this.context = context;
+                try {
+                    this._visitor.visit(root);
+                } catch (e) {
+                    this.error = e;
+                }
+                this.context = oldContext;
+            }
+        }
+
+        importVisitor.importCount--;
+
+        if (importVisitor.isFinished) {
+            this._sequencer.tryRun();
+            if (importVisitor.importCount === 0) {
+                importVisitor._finish(importVisitor.error);
+            }
+        }
     },
     visitRule: function (ruleNode, visitArgs) {
         visitArgs.visitDeeper = false;
@@ -8323,7 +8466,7 @@ ImportVisitor.prototype = {
 };
 module.exports = ImportVisitor;
 
-},{"../contexts":8,"./visitor":83}],80:[function(require,module,exports){
+},{"../contexts":8,"./import-sequencer":79,"./visitor":84}],81:[function(require,module,exports){
 var visitors = {
     Visitor: require("./visitor"),
     ImportVisitor: require('./import-visitor'),
@@ -8334,7 +8477,7 @@ var visitors = {
 
 module.exports = visitors;
 
-},{"./extend-visitor":78,"./import-visitor":79,"./join-selector-visitor":81,"./to-css-visitor":82,"./visitor":83}],81:[function(require,module,exports){
+},{"./extend-visitor":78,"./import-visitor":80,"./join-selector-visitor":82,"./to-css-visitor":83,"./visitor":84}],82:[function(require,module,exports){
 var Visitor = require("./visitor");
 
 var JoinSelectorVisitor = function() {
@@ -8381,7 +8524,7 @@ JoinSelectorVisitor.prototype = {
 
 module.exports = JoinSelectorVisitor;
 
-},{"./visitor":83}],82:[function(require,module,exports){
+},{"./visitor":84}],83:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor");
 
@@ -8628,7 +8771,7 @@ ToCSSVisitor.prototype = {
 
 module.exports = ToCSSVisitor;
 
-},{"../tree":56,"./visitor":83}],83:[function(require,module,exports){
+},{"../tree":56,"./visitor":84}],84:[function(require,module,exports){
 var tree = require("../tree");
 
 var _visitArgs = { visitDeeper: true },
@@ -8775,7 +8918,7 @@ Visitor.prototype = {
 };
 module.exports = Visitor;
 
-},{"../tree":56}],84:[function(require,module,exports){
+},{"../tree":56}],85:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -8783,6 +8926,8 @@ var process = module.exports = {};
 process.nextTick = (function () {
     var canSetImmediate = typeof window !== 'undefined'
     && window.setImmediate;
+    var canMutationObserver = typeof window !== 'undefined'
+    && window.MutationObserver;
     var canPost = typeof window !== 'undefined'
     && window.postMessage && window.addEventListener
     ;
@@ -8791,8 +8936,29 @@ process.nextTick = (function () {
         return function (f) { return window.setImmediate(f) };
     }
 
+    var queue = [];
+
+    if (canMutationObserver) {
+        var hiddenDiv = document.createElement("div");
+        var observer = new MutationObserver(function () {
+            var queueList = queue.slice();
+            queue.length = 0;
+            queueList.forEach(function (fn) {
+                fn();
+            });
+        });
+
+        observer.observe(hiddenDiv, { attributes: true });
+
+        return function nextTick(fn) {
+            if (!queue.length) {
+                hiddenDiv.setAttribute('yes', 'no');
+            }
+            queue.push(fn);
+        };
+    }
+
     if (canPost) {
-        var queue = [];
         window.addEventListener('message', function (ev) {
             var source = ev.source;
             if ((source === window || source === null) && ev.data === 'process-tick') {
@@ -8832,7 +8998,7 @@ process.emit = noop;
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
-}
+};
 
 // TODO(shtylman)
 process.cwd = function () { return '/' };
@@ -8840,7 +9006,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap')
@@ -8947,7 +9113,22 @@ function doResolve(fn, onFulfilled, onRejected) {
   }
 }
 
-},{"asap":87}],86:[function(require,module,exports){
+},{"asap":90}],87:[function(require,module,exports){
+'use strict';
+
+var Promise = require('./core.js')
+var asap = require('asap')
+
+module.exports = Promise
+Promise.prototype.done = function (onFulfilled, onRejected) {
+  var self = arguments.length ? this.then.apply(this, arguments) : this
+  self.then(null, function (err) {
+    asap(function () {
+      throw err
+    })
+  })
+}
+},{"./core.js":86,"asap":90}],88:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -9057,7 +9238,69 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 }
 
-},{"./core.js":85,"asap":87}],87:[function(require,module,exports){
+},{"./core.js":86,"asap":90}],89:[function(require,module,exports){
+'use strict';
+
+//This file contains then/promise specific extensions that are only useful for node.js interop
+
+var Promise = require('./core.js')
+var asap = require('asap')
+
+module.exports = Promise
+
+/* Static Functions */
+
+Promise.denodeify = function (fn, argumentCount) {
+  argumentCount = argumentCount || Infinity
+  return function () {
+    var self = this
+    var args = Array.prototype.slice.call(arguments)
+    return new Promise(function (resolve, reject) {
+      while (args.length && args.length > argumentCount) {
+        args.pop()
+      }
+      args.push(function (err, res) {
+        if (err) reject(err)
+        else resolve(res)
+      })
+      fn.apply(self, args)
+    })
+  }
+}
+Promise.nodeify = function (fn) {
+  return function () {
+    var args = Array.prototype.slice.call(arguments)
+    var callback = typeof args[args.length - 1] === 'function' ? args.pop() : null
+    var ctx = this
+    try {
+      return fn.apply(this, arguments).nodeify(callback, ctx)
+    } catch (ex) {
+      if (callback === null || typeof callback == 'undefined') {
+        return new Promise(function (resolve, reject) { reject(ex) })
+      } else {
+        asap(function () {
+          callback.call(ctx, ex)
+        })
+      }
+    }
+  }
+}
+
+Promise.prototype.nodeify = function (callback, ctx) {
+  if (typeof callback != 'function') return this
+
+  this.then(function (value) {
+    asap(function () {
+      callback.call(ctx, null, value)
+    })
+  }, function (err) {
+    asap(function () {
+      callback.call(ctx, err)
+    })
+  })
+}
+
+},{"./core.js":86,"asap":90}],90:[function(require,module,exports){
 (function (process){
 
 // Use the fastest possible means to execute a task in a future turn
@@ -9174,7 +9417,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":84}],88:[function(require,module,exports){
+},{"_process":85}],91:[function(require,module,exports){
 // should work in any browser without browserify
 
 if (typeof Promise.prototype.done !== 'function') {
@@ -9187,7 +9430,7 @@ if (typeof Promise.prototype.done !== 'function') {
     })
   }
 }
-},{}],"promise/polyfill.js":[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 // not "use strict" so we can declare global "Promise"
 
 var asap = require('asap');
@@ -9199,4 +9442,11 @@ if (typeof Promise === 'undefined') {
 
 require('./polyfill-done.js');
 
-},{"./lib/core.js":85,"./lib/es6-extensions.js":86,"./polyfill-done.js":88,"asap":87}]},{},[5]);
+},{"./lib/core.js":86,"./lib/es6-extensions.js":88,"./polyfill-done.js":91,"asap":90}],"promise":[function(require,module,exports){
+'use strict';
+
+module.exports = require('./lib/core.js')
+require('./lib/done.js')
+require('./lib/es6-extensions.js')
+require('./lib/node-extensions.js')
+},{"./lib/core.js":86,"./lib/done.js":87,"./lib/es6-extensions.js":88,"./lib/node-extensions.js":89}]},{},[5]);

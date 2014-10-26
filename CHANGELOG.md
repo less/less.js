@@ -1,11 +1,14 @@
 # 2.0.0-b2
 
-2014-10-??
+2014-10-26
 
+ - Imports are now sequenced and so are consistent (previously some complex projects might end up with occasional different orderings)
+ - Imports with variables are better supported - variables can be specified in sub imports
  - Support for rebeccapurple
  - Browser can now accept options as attributes on the script tag and the link tags e.g. `<script data-verbose="false" src="less.js"...`
  - adding a .less file extension is done in the abstract file manager so it the behaviour can be overridden by certain file managers
- - Fixed a bug where unquoted urls begining `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
+ - Fixed a bug where unquoted urls beginning `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
+ - lessc plugins can be a function, used as a constructor as well as an object - this to allow the plugin more flexibility to be used programattically
 
 # 2.0.0-b1
 

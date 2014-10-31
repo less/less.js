@@ -48,7 +48,10 @@ module.exports = function (grunt) {
             browser: {
                 src: ['./lib/less-browser/index.js'],
                 options: {
-                    alias: ["promise/polyfill.js:promise"]
+                    alias: ["promise/polyfill.js:promise"],
+                    browserifyOptions: {
+                        standalone: 'less-browser'
+                    }
                 },
                 dest: 'tmp/less.js'
             }

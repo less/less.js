@@ -336,7 +336,6 @@ module.exports = function (grunt) {
         'browsertest-lessjs',
         'connect',
         'jasmine',
-        'saucelabs-jasmine',
         'clean:sauce_log'
     ]);
 
@@ -356,13 +355,20 @@ module.exports = function (grunt) {
         'clean:sauce_log'
     ]);
 
-    // Run all tests
-    grunt.registerTask('test', [
+    var testTasks = [
         'clean',
         'jshint',
         'shell:test',
         'browsertest'
-    ]);
+    ];
+
+    if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
+        Number(process.env.TRAVIS_NODE_VERSION) === "0.11") {
+        testTasks.push("sauce");
+    }
+
+    // Run all tests
+    grunt.registerTask('test', testTasks);
 
     // generate a good test environment for testing sourcemaps
     grunt.registerTask('sourcemap-test', [

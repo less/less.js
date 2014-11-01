@@ -46,7 +46,7 @@ module.exports = function (grunt) {
 
         browserify: {
             browser: {
-                src: ['./lib/less-browser/index.js'],
+                src: ['./lib/less-browser/bootstrap.js'],
                 options: {
                     exclude: ["promise"],
                     require: ["promise/polyfill.js"],

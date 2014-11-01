@@ -1,3 +1,12 @@
+# 2.0.0-b3
+
+2014-11-01
+
+ - some refactoring of browser structure to allow use of api vs normal browser bundle
+ - browser bundle no longer leaks require
+ - browser can now be scoped with just window
+ - browser useFileCache defaults to true, but file cache is now cleared when refreshing or in watch mode
+
 # 2.0.0-b2
 
 2014-10-26

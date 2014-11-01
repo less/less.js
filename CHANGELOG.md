@@ -1,12 +1,33 @@
+# 2.0.0-b3
+
+2014-11-01
+
+ - some refactoring of browser structure to allow use of api vs normal browser bundle
+ - browser bundle no longer leaks require
+ - browser can now be scoped with just window
+ - browser useFileCache defaults to true, but file cache is now cleared when refreshing or in watch mode
+
+# 2.0.0-b2
+
+2014-10-26
+
+ - Imports are now sequenced and so are consistent (previously some complex projects might end up with occasional different orderings)
+ - Imports with variables are better supported - variables can be specified in sub imports
+ - Support for rebeccapurple
+ - Browser can now accept options as attributes on the script tag and the link tags e.g. `<script data-verbose="false" src="less.js"...`
+ - adding a .less file extension is done in the abstract file manager so it the behaviour can be overridden by certain file managers
+ - Fixed a bug where unquoted urls beginning `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
+ - lessc plugins can be a function, used as a constructor as well as an object - this to allow the plugin more flexibility to be used programattically
+
 # 2.0.0-b1
 
 2014-10-19
 
  - Public Beta / Release Candidate - Feedback welcome
-   For a guide to breaking changes see [the v2 upgrade guide](lesscss.org/usage/#v2-upgrade-guide)
+   For a guide to breaking changes see [the v2 upgrade guide](http://lesscss.org/usage/#v2-upgrade-guide)
  - no longer including old versions of less in the repo or npm
  - not including test less and gradle files in npm
- - colours now output in the format they are added unless compressing, so yellow will output yellow, not its hex counterpart
+ - colours now output in the format they are added, so yellow will output yellow, not its hex counterpart
  - better parsing - better comment support and comments in brackets can now contain comments including quotes.
  - Removal of dependency on clean-css - install less-plugin-clean-css and use --clean-css to reference plugin
  - Environment Support - less is now separate from its node and browser environment implementations and adding support for another javascript environment should be straight forward.

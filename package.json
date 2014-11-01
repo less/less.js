@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "2.0.0-b1",
+  "version": "2.0.0-b3",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -42,7 +42,7 @@
   "optionalDependencies": {
     "graceful-fs": "~3.0.4",
     "mime": "~1.2.11",
-    "request": "~2.45.0",
+    "request": "~2.47.0",
     "mkdirp": "~0.5.0",
     "source-map": "0.1.x",
     "promise": "~6.0.1"
@@ -57,9 +57,9 @@
     "grunt-contrib-jshint": "~0.10.0",
     "grunt-contrib-uglify": "~0.6.0",
     "grunt-shell": "~1.1.1",
-    "matchdep": "~0.3.0",
-    "time-grunt": "~1.0.0",
     "grunt-browserify": "~3.1.0",
+    "matchdep": "~0.3.0",
+    "time-grunt": "~1.0.0"
     "grunt-saucelabs": "~8.3.2"
   },
   "keywords": [

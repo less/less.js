@@ -335,8 +335,7 @@ module.exports = function (grunt) {
     grunt.registerTask('browsertest', [
         'browsertest-lessjs',
         'connect',
-        'jasmine',
-        'clean:sauce_log'
+        'jasmine'
     ]);
 
     // setup a web server to run the browser tests in a browser rather than phantom
@@ -362,8 +361,11 @@ module.exports = function (grunt) {
         'browsertest'
     ];
 
+    console.log("Travis env...");
+    console.dir(Number(process.env.TRAVIS_PULL_REQUEST, 10));
+    console.dir(Number(process.env.TRAVIS_NODE_VERSION));
     if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
-        Number(process.env.TRAVIS_NODE_VERSION) === "0.11") {
+        Number(process.env.TRAVIS_NODE_VERSION) === 0.11) {
         testTasks.push("sauce");
     }
 

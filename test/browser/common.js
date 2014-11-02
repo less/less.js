@@ -189,10 +189,12 @@ var loadFile = function (href) {
     return new Promise(function (resolve, reject) {
         var request = new XMLHttpRequest();
         request.open('GET', href, true);
-        request.onload = function (e) {
-            resolve(request.response.replace(/\r/g, ""));
+        request.onreadystatechange = function () {
+            if (request.readyState == 4) {
+                resolve(request.responseText.replace(/\r/g, ""));
+            }
         };
-        request.send();
+        request.send(null);
     });
 };
 

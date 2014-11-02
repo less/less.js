@@ -112,20 +112,6 @@ var waitFor = function (waitFunc) {
     });
 };
 
-function getInnerText(el) {
-    var text = "";
-    if (typeof window.getSelection != "undefined") {
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        var range = document.createRange();
-        range.selectNodeContents(el);
-        sel.addRange(range);
-        text = sel.toString();
-        sel.removeAllRanges();
-    }
-    return text;
-}
-
 var testErrorSheet = function (sheet) {
     it(sheet.id + " should match an error", function (done) {
         var lessHref = sheet.href,
@@ -140,25 +126,27 @@ var testErrorSheet = function (sheet) {
             actualErrorElement = document.getElementById(id);
             return actualErrorElement !== null;
         }).then(function () {
-                var innerText = actualErrorElement.innerText ||
-                    (actualErrorElement.innerHTML
-                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<pre class="[^"]*">|<\/pre>|<\/li>|<\/?label>/g, "")
+                var innerText = (actualErrorElement.innerHTML
+                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="[^"]*")?>|<\/li>|<\/?label>/g, "")
                         .replace(/<\/h3>/g, " ")
-                        .replace(/<li>|<\/ul>/g, "\n"));
+                        .replace(/<li>|<\/ul>|<br>/g, "\n"))
+                        .replace(/&amp;/g,"&");
                 actualErrorMsg = innerText
                     .replace(/\n\d+/g, function (lineNo) {
                         return lineNo + " ";
                     })
                     .replace(/\n\s*in /g, " in ")
                     .replace("\n\n", "\n")
-                    .replace(/\nStack Trace\n[\s\S]*/, "");
+                    .replace(/\nStack Trace\n[\s\S]*/, "")
+                    .replace(/\n$/, "");
                 errorFile
                     .then(function (errorTxt) {
                         errorTxt = errorTxt
                             .replace("{path}", "")
                             .replace("{pathrel}", "")
                             .replace("{pathhref}", "http://localhost:8081/test/less/errors/")
-                            .replace("{404status}", " (404)");
+                            .replace("{404status}", " (404)")
+                            .replace(/\n$/, "");
                         expect(actualErrorMsg).toEqual(errorTxt);
                         if (errorTxt == actualErrorMsg) {
                             actualErrorElement.style.display = "none";

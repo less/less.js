@@ -254,30 +254,31 @@ module.exports = function (grunt) {
                         version: '8.0',
                         platform: 'OS X 10.9',
                         'device-orientation': 'portrait'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '8',
-                        platform: 'Windows XP'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '9',
-                        platform: 'Windows 7'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '10',
-                        platform: 'Windows 7'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '11',
-                        platform: 'Windows 8.1'
-                    }],
+                    }].concat(process.env.TRAVIS_BRANCH === "master" ? [] : [{
+                            browserName: "internet explorer",
+                            version: '8',
+                            platform: 'Windows XP'
+                        },
+                        {
+                            browserName: "internet explorer",
+                            version: '9',
+                            platform: 'Windows 7'
+                        },
+                        {
+                            browserName: "internet explorer",
+                            version: '10',
+                            platform: 'Windows 7'
+                        },
+                        {
+                            browserName: "internet explorer",
+                            version: '11',
+                            platform: 'Windows 8.1'
+                        }]),
                     sauceConfig: {
-                        /*'record-video': false, 'record-screenshots': false,*/ 'idle-timeout': 100, 'max-duration': 120,
-                        build: process.env.TRAVIS_JOB_ID,
+                        'record-video': process.env.TRAVIS_BRANCH !== "master",
+                        'record-screenshots': process.env.TRAVIS_BRANCH !== "master",
+                        'idle-timeout': 100, 'max-duration': 120,
+                        build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
                         tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH]
                     },
                     throttled: 3
@@ -367,7 +368,7 @@ module.exports = function (grunt) {
 
     if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
         Number(process.env.TRAVIS_NODE_VERSION) === 0.11 &&
-        process.env.TRAVIS_BRANCH === "master") {
+        (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "sauce")) {
         testTasks.push("sauce-after-setup");
     }
 

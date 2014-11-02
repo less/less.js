@@ -276,7 +276,7 @@ module.exports = function (grunt) {
                         platform: 'Windows 8.1'
                     }],
                     sauceConfig: {
-                        'record-video': false, 'record-screenshots': false, 'idle-timeout': 100, 'max-duration': 240,
+                        'record-video': false, 'record-screenshots': false, 'idle-timeout': 100, 'max-duration': 480,
                         build: process.env.TRAVIS_JOB_ID,
                         tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH]
                     },

@@ -108,6 +108,20 @@ var waitFor = function (waitFunc) {
     });
 };
 
+function getInnerText(el) {
+    var text = "";
+    if (typeof window.getSelection != "undefined") {
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        sel.addRange(range);
+        text = sel.toString();
+        sel.removeAllRanges();
+    }
+    return text;
+}
+
 var testErrorSheet = function (sheet) {
     it(sheet.id + " should match an error", function (done) {
         var lessHref = sheet.href,
@@ -122,7 +136,12 @@ var testErrorSheet = function (sheet) {
             actualErrorElement = document.getElementById(id);
             return actualErrorElement !== null;
         }).then(function () {
-                actualErrorMsg = actualErrorElement.innerText
+                var innerText = actualErrorElement.innerText ||
+                    (actualErrorElement.innerHTML
+                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<pre class="[^"]*">|<\/pre>|<\/li>|<\/?label>/g, "")
+                        .replace(/<\/h3>/g, " ")
+                        .replace(/<li>|<\/ul>/g, "\n"));
+                actualErrorMsg = innerText
                     .replace(/\n\d+/g, function (lineNo) {
                         return lineNo + " ";
                     })

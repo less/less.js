@@ -49,11 +49,15 @@ var ieFormat = function(text) {
     var headNode = document.getElementsByTagName('head')[0];
     headNode.appendChild(styleNode);
     try {
-        styleNode.styleSheet.cssText = text;
+        if (styleNode.styleSheet) {
+            styleNode.styleSheet.cssText = text;
+        } else {
+            styleNode.innerText = text;
+        }
     } catch (e) {
         throw new Error("Couldn't reassign styleSheet.cssText.");
     }
-    var transformedText = styleNode.styleSheet.cssText;
+    var transformedText = styleNode.styleSheet ? styleNode.styleSheet.cssText : styleNode.innerText;
     headNode.removeChild(styleNode);
     return transformedText;
 };
@@ -71,13 +75,13 @@ var testSheet = function (sheet) {
         less.pageLoadFinished
             .then(function () {
                 lessOutputObj = document.getElementById(lessOutputId);
-                var isIE = Boolean(lessOutputObj.styleSheet);
-                lessOutput = isIE ? lessOutputObj.styleSheet.cssText :
+                lessOutput = lessOutputObj.styleSheet ? lessOutputObj.styleSheet.cssText :
                     (lessOutputObj.innerText || lessOutputObj.innerHTML);
 
                 expectedOutput
                     .then(function (text) {
-                        if (isIE) {
+                        if (window.navigator.userAgent.indexOf("MSIE") >= 0 ||
+                            window.navigator.userAgent.indexOf("Trident/") >= 0) {
                             text = ieFormat(text);
                         }
                         expect(lessOutput).toEqual(text);

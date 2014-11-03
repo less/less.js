@@ -442,7 +442,7 @@ FileManager.prototype.clearFileCache = function() {
 };
 
 FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment) {
-    return new PromiseConstructor(function(fullfill, reject) {
+    return new PromiseConstructor(function(fulfill, reject) {
         if (currentDirectory && !this.isPathAbsolute(filename)) {
             filename = currentDirectory + filename;
         }
@@ -457,7 +457,7 @@ FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, o
         if (options.useFileCache && fileCache[href]) {
             try {
                 var lessText = fileCache[href];
-                fullfill({ contents: lessText, filename: href, webInfo: { lastModified: new Date() }});
+                fulfill({ contents: lessText, filename: href, webInfo: { lastModified: new Date() }});
             } catch (e) {
                 reject({filename: href, message: "Error loading file " + href + " error was " + e.message});
             }
@@ -469,7 +469,7 @@ FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, o
             fileCache[href] = data;
 
             // Use remote copy (re-parse)
-            fullfill({ contents: data, filename: href, webInfo: { lastModified: lastModified }});
+            fulfill({ contents: data, filename: href, webInfo: { lastModified: lastModified }});
         }, function doXHRError(status, url) {
             reject({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
         });
@@ -2107,7 +2107,7 @@ module.exports = function(environment) {
         this.rootFilename = rootFileInfo.filename;
         this.paths = context.paths || [];  // Search paths, when importing
         this.contents = {};             // map - filename to contents of all the files
-        this.contentsIgnoredChars = {}; // map - filename to lines at the begining of each file to ignore
+        this.contentsIgnoredChars = {}; // map - filename to lines at the beginning of each file to ignore
         this.mime = context.mime;
         this.error = null;
         this.context = context;
@@ -3349,7 +3349,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     var entities = parsers.entities,
                         returner = { args:null, variadic: false },
                         expressions = [], argsSemiColon = [], argsComma = [],
-                        isSemiColonSeperated, expressionContainsNamed, name, nameLoop, value, arg;
+                        isSemiColonSeparated, expressionContainsNamed, name, nameLoop, value, arg;
 
                     parserInput.save();
 
@@ -3360,10 +3360,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                             parserInput.commentStore.length = 0;
                             if (parserInput.currentChar() === '.' && parserInput.$re(/^\.{3}/)) {
                                 returner.variadic = true;
-                                if (parserInput.$char(";") && !isSemiColonSeperated) {
-                                    isSemiColonSeperated = true;
+                                if (parserInput.$char(";") && !isSemiColonSeparated) {
+                                    isSemiColonSeparated = true;
                                 }
-                                (isSemiColonSeperated ? argsSemiColon : argsComma)
+                                (isSemiColonSeparated ? argsSemiColon : argsComma)
                                     .push({ variadic: true });
                                 break;
                             }
@@ -3393,7 +3393,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (val && val instanceof tree.Variable) {
                             if (parserInput.$char(':')) {
                                 if (expressions.length > 0) {
-                                    if (isSemiColonSeperated) {
+                                    if (isSemiColonSeparated) {
                                         error("Cannot mix ; and , as delimiter types");
                                     }
                                     expressionContainsNamed = true;
@@ -3416,10 +3416,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                                 nameLoop = (name = val.name);
                             } else if (!isCall && parserInput.$re(/^\.{3}/)) {
                                 returner.variadic = true;
-                                if (parserInput.$char(";") && !isSemiColonSeperated) {
-                                    isSemiColonSeperated = true;
+                                if (parserInput.$char(";") && !isSemiColonSeparated) {
+                                    isSemiColonSeparated = true;
                                 }
-                                (isSemiColonSeperated ? argsSemiColon : argsComma)
+                                (isSemiColonSeparated ? argsSemiColon : argsComma)
                                     .push({ name: arg.name, variadic: true });
                                 break;
                             } else if (!isCall) {
@@ -3438,13 +3438,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                             continue;
                         }
 
-                        if (parserInput.$char(';') || isSemiColonSeperated) {
+                        if (parserInput.$char(';') || isSemiColonSeparated) {
 
                             if (expressionContainsNamed) {
                                 error("Cannot mix ; and , as delimiter types");
                             }
 
-                            isSemiColonSeperated = true;
+                            isSemiColonSeparated = true;
 
                             if (expressions.length > 1) {
                                 value = new(tree.Value)(expressions);
@@ -3458,7 +3458,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
 
                     parserInput.forget();
-                    returner.args = isSemiColonSeperated ? argsSemiColon : argsComma;
+                    returner.args = isSemiColonSeparated ? argsSemiColon : argsComma;
                     return returner;
                 },
                 //
@@ -5224,7 +5224,7 @@ Condition.prototype.eval = function (context) {
 module.exports = Condition;
 
 },{"./node":66}],50:[function(require,module,exports){
-var debugInfo = function(context, ctx, lineSeperator) {
+var debugInfo = function(context, ctx, lineSeparator) {
     var result="";
     if (context.dumpLineNumbers && !context.compress) {
         switch(context.dumpLineNumbers) {
@@ -5235,7 +5235,7 @@ var debugInfo = function(context, ctx, lineSeperator) {
                 result = debugInfo.asMediaQuery(ctx);
                 break;
             case 'all':
-                result = debugInfo.asComment(ctx) + (lineSeperator || "") + debugInfo.asMediaQuery(ctx);
+                result = debugInfo.asComment(ctx) + (lineSeparator || "") + debugInfo.asMediaQuery(ctx);
                 break;
         }
     }
@@ -7290,8 +7290,8 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
     }
 
     // The paths are [[Selector]]
-    // The first list is a list of comma seperated selectors
-    // The inner list is a list of inheritance seperated selectors
+    // The first list is a list of comma separated selectors
+    // The inner list is a list of inheritance separated selectors
     // e.g.
     // .a, .b {
     //   .c {

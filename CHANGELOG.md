@@ -196,7 +196,7 @@
  - support for guards on selectors (currently only if you have a single selector)
  - allow property merging through the +: syntax
  - Added min/max functions
- - Added length function and improved extract to work with comma seperated values
+ - Added length function and improved extract to work with comma separated values
  - when using import multiple, sub imports are imported multiple times into final output
  - fix bad spaces between namespace operators
  - do not compress comment if it begins with an exclamation mark
@@ -293,7 +293,7 @@
  - browser and server url re-writing is now aligned to not re-write (previous lessc behaviour)
  - url-rewriting can be made to re-write to be relative to the entry file using the relative-urls option (less.relativeUrls option)
  - rootpath option can be used to add a base path to every url
- - Support mixin argument seperator of ';' so you can pass comma seperated values. e.g. `.mixin(23px, 12px;);`
+ - Support mixin argument separator of ';' so you can pass comma separated values. e.g. `.mixin(23px, 12px;);`
  - Fix lots of problems with named arguments in corner cases, not behaving as expected
  - hsv, hsva, unit functions
  - fixed lots more bad error messages

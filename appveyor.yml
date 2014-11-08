@@ -1,7 +1,3 @@
-# Fix line endings in Windows. (runs before repo cloning)
-init:
-  - git config --global core.autocrlf input
-
 # Test against these versions of Node.js.
 environment:
   matrix:

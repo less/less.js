@@ -1,0 +1,32 @@
+# Fix line endings in Windows. (runs before repo cloning)
+init:
+  - git config --global core.autocrlf input
+
+# Test against these versions of Node.js.
+environment:
+  matrix:
+    - nodejs_version: "0.10"
+    - nodejs_version: "0.11"
+
+# Install scripts. (runs after repo cloning)
+install:
+  # Get the latest stable version of Node 0.STABLE.latest
+  - ps: Install-Product node $env:nodejs_version
+  # Typical npm stuff.
+  - npm install
+  # Grunt-specific stuff.
+  - npm install -g grunt-cli
+
+# Post-install test scripts.
+test_script:
+  # Output useful info for debugging.
+  - node --version
+  - npm --version
+  # Run test
+  - grunt test
+
+# Don't actually build.
+build: off
+
+# Set build version format here instead of in the admin panel.
+version: "{build}"

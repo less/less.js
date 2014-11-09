@@ -1,1 +1,1 @@
-module.exports = require('./lib/less-browser/index');
+module.exports = require('./lib/less-browser');

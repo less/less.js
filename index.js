@@ -1,1 +1,1 @@
-module.exports = require('./lib/less-node/index');
+module.exports = require('./lib/less-node');

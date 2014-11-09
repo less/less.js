@@ -43,3 +43,15 @@
   mix-units: 2px;
   invalid-units: 1px;
 }
+.units .fallback {
+  div-px-1: 10px;
+  div-px-2: 1px;
+  sub-px-1: 12.6px;
+  sub-cm-1: 9.666625cm;
+  mul-px-1: 19.6px;
+  mul-em-1: 19.6em;
+  mul-em-2: 196em;
+  mul-cm-1: 196cm;
+  add-px-1: 15.4px;
+  add-px-2: 393.35275591px;
+}

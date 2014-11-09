@@ -28,6 +28,7 @@ lessTester.runTestSet({strictMath: true, dumpLineNumbers: 'all'}, "debug/", null
     function(name) { return name + '-all'; });
 lessTester.runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/");
 lessTester.runTestSet({strictMath: true, compress: true}, "compression/");
+lessTester.runTestSet({strictMath: true, strictUnits: true}, "strict-units/");
 lessTester.runTestSet({}, "legacy/");
 lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, "sourcemaps/",
     lessTester.testSourcemap, null, null,

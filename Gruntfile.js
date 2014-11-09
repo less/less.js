@@ -147,6 +147,14 @@ module.exports = function (grunt) {
                     outfile: 'tmp/browser/test-runner-legacy.html'
                 }
             },
+            strictUnits: {
+                src: ['test/less/strict-units/*.less'],
+                options: {
+                    helpers: 'test/browser/runner-strict-units-options.js',
+                    specs: 'test/browser/runner-strict-units-spec.js',
+                    outfile: 'tmp/browser/test-runner-strict-units.html'
+                }
+            },
             errors: {
                 src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'],
                 options: {
@@ -234,7 +242,7 @@ module.exports = function (grunt) {
             all: {
                 options: {
                     urls: ["post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
-                           "rootpath", "relative-urls", "browser", "no-js-errors", "legacy"
+                           "rootpath", "relative-urls", "browser", "no-js-errors", "legacy", "strict-units"
                     ].map(function(testName) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";
                     }),

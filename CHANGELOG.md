@@ -1,3 +1,14 @@
+# 2.0.0
+
+2014-11-09
+
+ - Fixed multiplication in non strict units mode to take the left operand unit, in the case that the unit cannot be resolved
+ - Some fixes for browser cross-compatibility
+ - browser tests now pass in IE 8-11 and FF
+ - added index.js and browser.js in root as shortcuts
+ - fixed some local variable spellings
+ - support for @counter-style directive
+
 # 2.0.0-b3
 
 2014-11-01

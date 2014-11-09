@@ -26,7 +26,7 @@
   "bin": {
     "lessc": "./bin/lessc"
   },
-  "main": "./lib/less-node/index",
+  "main": "index",
   "directories": {
     "test": "./test"
   },

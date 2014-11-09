@@ -248,13 +248,15 @@ module.exports = function (grunt) {
                         browserName: "firefox",
                         version: '33',
                         platform: 'Linux'
-                    },
-                    {
-                        browserName: "iPad",
-                        version: '8.0',
-                        platform: 'OS X 10.9',
-                        'device-orientation': 'portrait'
-                    }].concat(process.env.TRAVIS_BRANCH === "master" ? [] : [{
+                    }
+                    ].concat(process.env.TRAVIS_BRANCH === "master" ? [] : [
+                        {
+                            browserName: "iPad",
+                            version: '8.0',
+                            platform: 'OS X 10.9',
+                            'device-orientation': 'portrait'
+                        },
+                        {
                             browserName: "internet explorer",
                             version: '8',
                             platform: 'Windows XP'

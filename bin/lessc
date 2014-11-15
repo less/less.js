@@ -353,24 +353,6 @@ var parseLessFile = function (e, data) {
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
 
-    if (options.depends) {
-        var parser = new(less.Parser)(options);
-        parser.parse(data, function (err, tree) {
-            if (err) {
-                less.writeError(err, options);
-                currentErrorcode = 1;
-                return;
-            }
-            for(var file in parser.imports.files) {
-                if (parser.imports.files.hasOwnProperty(file)) {
-                    process.stdout.write(file + " ");
-                }
-            }
-            console.log("");
-        });
-        return;
-    }
-
     if (options.lint) {
         options.sourceMap = false;
     }
@@ -403,11 +385,18 @@ var parseLessFile = function (e, data) {
                     ensureDirectory(output);
                     fs.writeFileSync(output, result.css, 'utf8');
                     less.logger.info('lessc: wrote ' + output);
-                } else {
+                } else if (!options.depends) {
                     process.stdout.write(result.css);
                 }
                 if (options.sourceMap && !sourceMapFileInline) {
                     writeSourceMap(result.map);
+                }
+                if (options.depends) {
+                    var depends = "";
+                    for(var i = 0; i < result.imports.length; i++) {
+                        depends += result.imports[i] + " ";
+                    }
+                    console.log(depends);
                 }
             }
         },

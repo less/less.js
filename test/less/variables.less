@@ -36,12 +36,17 @@
     zero: @var;
 }
 
+@important-var: @c !important;
+@important-var-two: @a !important;
 .values {
     minus-one: @var;
     @a: 'Trebuchet';
     @multi: 'A', B, C;
     font-family: @a, @a, @a;
     color: @c !important;
+    same-color: @important-var;
+    same-again: @important-var !important;
+    multi-important: @important-var @important-var, @important-var-two;
     multi: something @multi, @a;
 }
 

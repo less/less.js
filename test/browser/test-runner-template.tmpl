@@ -9,6 +9,18 @@
         <script src="<%= script %>"></script>
     <% }); }; %>
 
+    <!-- generate script tags for tests -->
+    <% var toArray = function(scripts) {
+        %>[<%
+        scripts.forEach(function(scriptUrl, index){
+            %>"<%= scriptUrl %>"<%
+            if (index !== scripts.length -1) {
+                %>,<%
+            }
+        });
+        %>]<%
+        }; %>
+
     <!-- for each test, generate CSS/LESS link tags -->
     <% scripts.src.forEach(function(fullLessName) {
       var pathParts = fullLessName.split('/');
@@ -25,20 +37,27 @@
       <link rel="stylesheet" type="text/css" href="<%= style %>">
     <% }) %>
 
-    <!-- inital grunt-contrib-jasmine scripts -->
-    <% generateScriptTags([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)); %>
+    <script>
+        setTimeout(function() {
+            var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
+                helpers = <% toArray(scripts.helpers) %>,
+                vendor = <% toArray(scripts.vendor) %>,
+                specs = <% toArray(scripts.specs) %>,
+                reporters = <% toArray([].concat(scripts.reporters)) %>,
+                allScripts = jasmine.concat(helpers).concat(vendor).concat(specs).concat(reporters);
 
-    <!-- Helpers - The less options -->
-    <% generateScriptTags(scripts.helpers); %>
+            for(var i = 0; i < allScripts.length; i++) {
+                var script = document.createElement("script");
+                script.src = allScripts[i];
+                script.async = false;
+                document.body.appendChild(script);
+            }
+            script.onload = function() {
+                window.onload();
+            };
 
-    <!-- Vendor - less.js and common code -->
-    <% generateScriptTags(scripts.vendor); %>
-
-    <!-- Spec -->
-    <% generateScriptTags(scripts.specs); %>
-
-    <!-- final grunt-contrib-jasmine scripts -->
-    <% generateScriptTags([].concat(scripts.reporters)); %>
+        },1000);
+    </script>
   </head>
 
   <body>

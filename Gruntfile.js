@@ -256,34 +256,33 @@ module.exports = function (grunt) {
                         browserName: "firefox",
                         version: '33',
                         platform: 'Linux'
-                    }
-                    ].concat(process.env.TRAVIS_BRANCH === "master" ? [] : [
-                        {
-                            browserName: "iPad",
-                            version: '8.0',
-                            platform: 'OS X 10.9',
-                            'device-orientation': 'portrait'
-                        },
-                        {
-                            browserName: "internet explorer",
-                            version: '8',
-                            platform: 'Windows XP'
-                        },
-                        {
-                            browserName: "internet explorer",
-                            version: '9',
-                            platform: 'Windows 7'
-                        },
-                        {
-                            browserName: "internet explorer",
-                            version: '10',
-                            platform: 'Windows 7'
-                        },
-                        {
-                            browserName: "internet explorer",
-                            version: '11',
-                            platform: 'Windows 8.1'
-                        }]),
+                    },
+                    {
+                        browserName: "iPad",
+                        version: '8.0',
+                        platform: 'OS X 10.9',
+                        'device-orientation': 'portrait'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '8',
+                        platform: 'Windows XP'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '9',
+                        platform: 'Windows 7'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '10',
+                        platform: 'Windows 7'
+                    },
+                    {
+                        browserName: "internet explorer",
+                        version: '11',
+                        platform: 'Windows 8.1'
+                    }],
                     sauceConfig: {
                         'record-video': process.env.TRAVIS_BRANCH !== "master",
                         'record-screenshots': process.env.TRAVIS_BRANCH !== "master",

@@ -127,17 +127,20 @@ var testErrorSheet = function (sheet) {
             return actualErrorElement !== null;
         }).then(function () {
                 var innerText = (actualErrorElement.innerHTML
-                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="[^"]*")?>|<\/li>|<\/?label>/g, "")
-                        .replace(/<\/h3>/g, " ")
-                        .replace(/<li>|<\/ul>|<br>/g, "\n"))
-                        .replace(/&amp;/g,"&");
+                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, "")
+                        .replace(/<\/h3>/ig, " ")
+                        .replace(/<li>|<\/ul>|<br>/ig, "\n"))
+                        .replace(/&amp;/ig,"&")
+                        // for IE8
+                        .replace(/\r\n/g,"\n")
+                        .replace(/\. \nin/,". in");
                 actualErrorMsg = innerText
                     .replace(/\n\d+/g, function (lineNo) {
                         return lineNo + " ";
                     })
                     .replace(/\n\s*in /g, " in ")
-                    .replace("\n\n", "\n")
-                    .replace(/\nStack Trace\n[\s\S]*/, "")
+                    .replace(/\n{2,}/g, "\n")
+                    .replace(/\nStack Trace\n[\s\S]*/i, "")
                     .replace(/\n$/, "");
                 errorFile
                     .then(function (errorTxt) {

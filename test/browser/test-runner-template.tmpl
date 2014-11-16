@@ -38,6 +38,28 @@
     <% }) %>
 
     <script>
+
+        function loadScript(url,callback){
+            var script = document.createElement('script');
+
+            if(document.documentMode === 8){
+                script.onreadystatechange = function(){
+                    if (script.readyState === 'loaded'){
+                        if (callback){callback()};
+                    };
+                };
+            } else {
+                script.onload = function(){
+                    if (callback){callback()};
+                };
+            };
+            script.src = url;
+            document.body.appendChild(script);
+        };
+
+
+        // allow sauce to query for the jasmine report
+        window.jasmine = { getJSReport: function() { } };
         setTimeout(function() {
             var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
                 helpers = <% toArray(scripts.helpers) %>,
@@ -46,15 +68,15 @@
                 reporters = <% toArray([].concat(scripts.reporters)) %>,
                 allScripts = jasmine.concat(helpers).concat(vendor).concat(specs).concat(reporters);
 
-            for(var i = 0; i < allScripts.length; i++) {
-                var script = document.createElement("script");
-                script.src = allScripts[i];
-                script.async = false;
-                document.body.appendChild(script);
+            function addNextScript() {
+                if (allScripts.length) {
+                    var scriptSrc = allScripts.shift();
+                    loadScript(scriptSrc, addNextScript);
+                } else {
+                    window.onload();
+                }
             }
-            script.onload = function() {
-                window.onload();
-            };
+            addNextScript();
 
         },1000);
     </script>

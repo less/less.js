@@ -1,7 +1,7 @@
 {
   "name": "less",
   "version": "2.0.0",
-  "main": "./dist/less.js",
+  "main": "dist/less.js",
   "ignore": [
     "**/.*",
     "benchmark",
@@ -15,6 +15,7 @@
     "Gruntfile.js",
     "*.json",
     "*.yml",
+    "build.gradle",
     "gradlew",
     "gradlew.bat",
     ".gitattributes",

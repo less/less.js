@@ -87,6 +87,21 @@ module.exports = function() {
         });
     }
 
+    function testSyncronous(options, filenameNoExtension) {
+        var isSync = true;
+        totalTests++;
+        toCSS(options, path.join('test/less/', filenameNoExtension + ".less"), function (err, result) {
+            process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
+
+            if (isSync) {
+                ok("OK");
+            } else {
+                fail("Not Sync");
+            }
+        });
+        isSync = false;
+    }
+
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || "";
 
@@ -204,27 +219,19 @@ module.exports = function() {
 
     function toCSS(options, path, callback) {
         options = options || {};
-        fs.readFile(path, 'utf8', function (e, str) {
-            if (e) { return callback(e); }
+        var str = fs.readFileSync(path, 'utf8');
 
-            options.paths = [require('path').dirname(path)];
-            options.filename = require('path').resolve(process.cwd(), path);
-            options.optimization = options.optimization || 0;
+        options.paths = [require('path').dirname(path)];
+        options.filename = require('path').resolve(process.cwd(), path);
+        options.optimization = options.optimization || 0;
 
-            if (options.globalVars) {
-                options.globalVars = options.getVars(path);
-            } else if (options.modifyVars) {
-                options.modifyVars = options.getVars(path);
-            }
+        if (options.globalVars) {
+            options.globalVars = options.getVars(path);
+        } else if (options.modifyVars) {
+            options.modifyVars = options.getVars(path);
+        }
 
-            less.render(str, options)
-                .then(function(result) {
-                    // TODO integration test that calling toCSS twice results in the same css?
-                    callback(null, result);
-                }, function(e) {
-                    callback(e);
-                });
-        });
+        less.render(str, options, callback);
     }
 
     function testNoOptions() {
@@ -241,6 +248,7 @@ module.exports = function() {
 
     return {
         runTestSet: runTestSet,
+        testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
         testNoOptions: testNoOptions

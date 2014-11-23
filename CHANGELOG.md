@@ -1,3 +1,18 @@
+# 2.1.0
+
+2014-11-23
+
+ - Fixed isSync option, it was using sync file operations but promises are guaranteed to call back async. We now support promises as a feature rather than the 1st class way of doing things.
+ - Browser code is now synchronous again, like in v1, meaning it blocks the site until less is compiled
+ - Some fixes for variable imports which affected filemanagers when synchronous
+ - Fixed lessc makefile dependencies option
+ - output now reports back a imports field with an array of imported files
+ - relative path test for drive names (so windows only) is now case insensitive
+ - Fix for IE7 - use getChar instead of indexing array
+ - variables using !important now output !important, which bubbles up to affect the rule
+ - livereload cache buster is now treated specially
+ - upgrade dependencies
+
 # 2.0.0
 
 2014-11-09

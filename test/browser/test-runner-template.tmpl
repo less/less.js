@@ -59,6 +59,8 @@
 
 
         // allow sauce to query for the jasmine report
+        // because we have to load the page before starting the test, so the thing
+        // sauce queries for might not be setup yet
         window.jasmine = { getJSReport: function() { } };
         setTimeout(function() {
             var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
@@ -69,6 +71,11 @@
                 allScripts = jasmine.concat(helpers).concat(vendor).concat(specs).concat(reporters);
 
             function addNextScript() {
+                // for sauce, see above. Additional step needed between loading jasmine and loading
+                // the js reporter
+                if (!jasmine.getJSReport) {
+                    jasmine.getJSReport = function() {};
+                }
                 if (allScripts.length) {
                     var scriptSrc = allScripts.shift();
                     loadScript(scriptSrc, addNextScript);

@@ -176,3 +176,21 @@
   extract: extract(@anon, 6) extract(@anon, 5) extract(@anon, 4) extract(@anon, 3) extract(@anon, 2) extract(@anon, 1);
   length: length(@anon);
 }
+
+#quoted-functions-in-mixin {
+  // Quoted type may have some weird side-effects when used in mixins (#2308)
+  .mixin();
+  .mixin() {
+    replace-double-quoted: replace('foo-1', "1", "2");
+    replace-single-quoted: replace('foo-3', "3", "4");
+    replace-escaped-string: replace(~"bar-1", "1", "2");
+    replace-keyword: replace(baz-1, "1", "2");
+    replace-anonymous: replace(e("qux-1"), "1", "2");
+    format-double-quoted: %("hello %s", "world");
+    format-single-quoted: %('hello %s', "single world");
+    format-escaped-string: %(~"hello %s", "escaped world");
+    format-keyword: %(hello);
+    format-anonymous: %(e("hello %s"), "anonymous world");
+  }
+}
+

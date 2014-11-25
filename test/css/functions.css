@@ -161,3 +161,15 @@
   extract: 3 2 1 C B A;
   length: 6;
 }
+#quoted-functions-in-mixin {
+  replace-double-quoted: 'foo-2';
+  replace-single-quoted: 'foo-4';
+  replace-escaped-string: bar-2;
+  replace-keyword: baz-2;
+  replace-anonymous: qux-2;
+  format-double-quoted: "hello world";
+  format-single-quoted: 'hello single world';
+  format-escaped-string: hello escaped world;
+  format-keyword: hello;
+  format-anonymous: hello anonymous world;
+}

@@ -1,3 +1,12 @@
+# 2.1.1
+
+2014-11-27
+
+ - Improved keyword and anonymous usage with the replace function
+ - Added getCSSAppendage to sourcemap builder to avoid duplication in plugins
+ - Fix problem with plugins when used with the promises version of render
+ - If the render callback throws an exception it now propogates instead of calling the callback again with an error
+
 # 2.1.0
 
 2014-11-23

@@ -27,6 +27,25 @@ module.exports = function() {
         }
     });
 
+    var queueList = [],
+        queueRunning = false;
+    function queue(func) {
+        if (queueRunning) {
+            queueList.push(func);
+        } else {
+            queueRunning = true;
+            func();
+        }
+    }
+    function release() {
+        if (queueList.length) {
+            var func = queueList.shift();
+            func();
+        } else {
+            queueRunning = false;
+        }
+    };
+
 
     var totalTests = 0,
         failedTests = 0,
@@ -103,6 +122,7 @@ module.exports = function() {
     }
 
     function testSyncronous(options, filenameNoExtension) {
+        queue(function() {
         var isSync = true;
         totalTests++;
         toCSS(options, path.join('test/less/', filenameNoExtension + ".less"), function (err, result) {
@@ -115,6 +135,7 @@ module.exports = function() {
             }
         });
         isSync = false;
+        });
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
@@ -151,6 +172,7 @@ module.exports = function() {
                 return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
             };
 
+            queue(function() {
             toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
 
                 if (verifyFunction) {
@@ -162,6 +184,7 @@ module.exports = function() {
                         process.stdout.write("\n");
                         process.stdout.write(err.stack + "\n");
                     }
+                    release();
                     return;
                 }
                 var css_name = name;
@@ -174,7 +197,9 @@ module.exports = function() {
                     else {
                         difference("FAIL", css, result.css);
                     }
+                    release();
                 });
+            });
             });
         });
     }

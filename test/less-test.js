@@ -13,6 +13,21 @@ module.exports = function() {
 
     var isVerbose = process.env.npm_config_loglevel === 'verbose';
 
+    less.logger.addListener({
+        info: function(msg) {
+            if (isVerbose) {
+                console.log(msg);
+            }
+        },
+        warn: function(msg) {
+            console.warn(msg);
+        },
+        error: function(msg) {
+            console.error(msg);
+        }
+    });
+
+
     var totalTests = 0,
         failedTests = 0,
         passedTests = 0;

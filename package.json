@@ -46,7 +46,8 @@
     "jshint": "0.2.x",
     "sax": "0.1.x",
     "istanbul": "~0.2.14",
-    "coveralls": "~2.10.1"
+    "coveralls": "~2.10.1",
+    "browserify": "~7.0.0"
   },
   "scripts": {
     "pretest": "npm install",

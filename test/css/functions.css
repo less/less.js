@@ -137,6 +137,7 @@
   pixel: true;
   percent: true;
   em: true;
+  unitless: true;
   cat: true;
   case-insensitive-1: true;
   case-insensitive-2: true;

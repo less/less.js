@@ -20,6 +20,9 @@ helper.files('errorhandling', 'mml', function(file) {
                 local_data_dir: path.join(__dirname, 'rendering'),
                 filename: file
             }).render(mml);
+            // should not get here
+            assert.ok(false);
+            done();
         } catch(err) {
             if (err.message.indexOf('***') > -1) throw err;
             var result = helper.resultFile(file);
@@ -54,6 +57,9 @@ helper.files('errorhandling', 'mss', function(file) {
                 // will match if the style was loaded from mml
                 filename: basename
             }).renderMSS(mss);
+            // should not get here
+            assert.ok(false);
+            done();
         } catch(err) {
             if (err.message.indexOf('***') > -1) throw err;
             var result = helper.resultFile(file);

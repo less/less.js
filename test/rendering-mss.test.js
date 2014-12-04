@@ -34,7 +34,7 @@ helper.files('rendering-mss', 'mss', function(file) {
           fs.writeFileSync(expected,output);
         }
         var expected_data = fs.readFileSync(expected).toString();
-        assert.equal(output,expected_data);
+        assert.equal(output.trim(),expected_data.trim());
     });
 });
 });

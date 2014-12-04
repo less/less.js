@@ -3,12 +3,7 @@
 #
 
 expresso = ./node_modules/.bin/mocha
-docco = ./node_modules/.bin/docco
-uglify = ./node_modules/.bin/uglify
-
-JS_CLIENT_FILES=browser/*.js lib/carto/parser.js lib/carto/tree.js lib/carto/tree/*.js lib/carto/functions.js lib/carto/renderer_js.js
-
-all: dist
+BROWSERIFY = ./node_modules/.bin/browserify
 
 lint:
 	./node_modules/.bin/jshint lib/carto/*.js lib/carto/tree/*.js
@@ -23,13 +18,10 @@ endif
 
 check: test
 
-doc:
-	$(docco) lib/carto/*.js lib/carto/tree/*.js
+dist:
+	mkdir -p dist
 
-dist/carto.js: $(JS_CLIENT_FILES)
-	cat $(JS_CLIENT_FILES) > dist/carto.js
-
-dist: dist/carto.js
-
+dist/carto.uncompressed.js: dist $(shell $(BROWSERIFY) --list lib/carto/index.js)
+	$(BROWSERIFY) --debug lib/carto/index.js --standalone carto > $@
 
 .PHONY: test

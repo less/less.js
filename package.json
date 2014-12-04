@@ -1,11 +1,11 @@
 {
   "name": "carto",
-  "version": "0.11.0",
+  "version": "0.14.0",
   "description": "Mapnik Stylesheet Compiler",
   "url": "https://github.com/mapbox/carto",
   "repository": {
-      "type": "git",
-      "url": "http://github.com/mapbox/carto.git"
+    "type": "git",
+    "url": "http://github.com/mapbox/carto.git"
   },
   "author": {
     "name": "Mapbox",
@@ -23,12 +23,13 @@
     "Konstantin Käfer",
     "Alexis Sellier <self@cloudhead.net>"
   ],
-  "licenses": [{
+  "licenses": [
+    {
       "type": "Apache"
-  }],
+    }
+  ],
   "bin": {
-    "carto": "./bin/carto",
-    "mml2json.js": "./bin/mml2json.js"
+    "carto": "./bin/carto"
   },
   "man": "./man/carto.1",
   "main": "./lib/carto/index",
@@ -37,18 +38,20 @@
   },
   "dependencies": {
     "underscore": "~1.6.0",
-    "mapnik-reference": "5.0.9",
-    "xml2js": "~0.4.2",
+    "mapnik-reference": "~6.0.2",
     "optimist": "~0.6.0"
   },
   "devDependencies": {
     "mocha": "1.12.x",
     "jshint": "0.2.x",
-    "docco": "0.3.x",
-    "sax": "0.1.x"
+    "sax": "0.1.x",
+    "istanbul": "~0.2.14",
+    "coveralls": "~2.10.1",
+    "browserify": "~7.0.0"
   },
   "scripts": {
     "pretest": "npm install",
-    "test": "mocha -R spec"
+    "test": "mocha -R spec",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha && coveralls < ./coverage/lcov.info"
   }
 }

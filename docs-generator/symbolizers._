@@ -1,0 +1,13 @@
+<% _(symbolizers).each(function(symbolizer, name) { %>
+<% if (name == '*') { %>## All elements<% } else { %>## <%= name %><% } %>
+<% _(symbolizer).chain().filter(function(p) { return p.css; }).each(function(p) { %>
+##### <%= p.css.replace(/\s/g, '') %> <% if (_.isArray(p.type)) { %>`keyword`<% } else { %>`<%= p.type %>`<% } %>
+<% if (_.isArray(p.type)) { %><% _(p.type).each(function(type) { %>`<%= type %>`<% }); %><% } %>
+
+<% if (typeof p['default-value'] !== '') { %>Default Value: <%= p['default-value'] %><% } %>
+<% if (p['default-meaning']) { %>_(<%- p['default-meaning'] %>)_<% } %>
+<% if (typeof p['range'] !== 'undefined') { %>Range: <%= '' + p['range'] %><% } %>
+<% if (p.doc) { %><%- p.doc%><% } %>
+* * *
+<% }); %>
+<% }); %>

@@ -1,7 +1,18 @@
 ## Changelog
 
-## 0.11.1-dev-browser
-* added rectangle option for marker-type
+## 0.14.0
+
+* Support for Mapnik 3.x
+* Bump `mapnik-reference` dependency to ~6.0.1.
+
+## 0.13.0
+
+* Allows optional args in transforms.
+* Bump `mapnik-reference` dependency to 5.1.x.
+
+## 0.12.0
+
+* Drop mml2json and xml2js dependency.
 
 ## 0.11.0
 

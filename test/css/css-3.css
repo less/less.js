@@ -1,5 +1,5 @@
 .comma-delimited {
-  text-shadow: -1px -1px 1px #ff0000, 6px 5px 5px #ffff00;
+  text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset, 0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
   -webkit-transform: rotate(0deg);
 }
@@ -133,6 +133,17 @@ body ^^ .shadow {
 ::content .sel {
   type: shadow-dom;
 }
+ /deep/ b {
+  c: 'd';
+}
+ /deep/ b[e] {
+  f: 'g';
+}
 #issue2066 {
   background: url('/images/icon-team.svg') 0 0 / contain;
+}
+@counter-style triangle {
+  system: cyclic;
+  symbols: ‣;
+  suffix: " ";
 }

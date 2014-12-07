@@ -9,6 +9,18 @@
         <script src="<%= script %>"></script>
     <% }); }; %>
 
+    <!-- generate script tags for tests -->
+    <% var toArray = function(scripts) {
+        %>[<%
+        scripts.forEach(function(scriptUrl, index){
+            %>"<%= scriptUrl %>"<%
+            if (index !== scripts.length -1) {
+                %>,<%
+            }
+        });
+        %>]<%
+        }; %>
+
     <!-- for each test, generate CSS/LESS link tags -->
     <% scripts.src.forEach(function(fullLessName) {
       var pathParts = fullLessName.split('/');
@@ -25,20 +37,56 @@
       <link rel="stylesheet" type="text/css" href="<%= style %>">
     <% }) %>
 
-    <!-- inital grunt-contrib-jasmine scripts -->
-    <% generateScriptTags([].concat(scripts.polyfills, scripts.jasmine)); %>
+    <script>
 
-    <!-- Helpers - The less options -->
-    <% generateScriptTags(scripts.helpers); %>
+        function loadScript(url,callback){
+            var script = document.createElement('script');
 
-    <!-- Vendor - less.js and common code -->
-    <% generateScriptTags(scripts.vendor); %>
+            if(document.documentMode === 8){
+                script.onreadystatechange = function(){
+                    if (script.readyState === 'loaded'){
+                        if (callback){callback()};
+                    };
+                };
+            } else {
+                script.onload = function(){
+                    if (callback){callback()};
+                };
+            };
+            script.src = url;
+            document.body.appendChild(script);
+        };
 
-    <!-- Spec -->
-    <% generateScriptTags(scripts.specs); %>
 
-    <!-- final grunt-contrib-jasmine scripts -->
-    <% generateScriptTags([].concat(scripts.reporters, scripts.start)); %>
+        // allow sauce to query for the jasmine report
+        // because we have to load the page before starting the test, so the thing
+        // sauce queries for might not be setup yet
+        window.jasmine = { getJSReport: function() { } };
+        setTimeout(function() {
+            var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
+                helpers = <% toArray(scripts.helpers) %>,
+                vendor = <% toArray(scripts.vendor) %>,
+                specs = <% toArray(scripts.specs) %>,
+                reporters = <% toArray([].concat(scripts.reporters)) %>,
+                allScripts = jasmine.concat(helpers).concat(vendor).concat(specs).concat(reporters);
+
+            function addNextScript() {
+                // for sauce, see above. Additional step needed between loading jasmine and loading
+                // the js reporter
+                if (!jasmine.getJSReport) {
+                    jasmine.getJSReport = function() {};
+                }
+                if (allScripts.length) {
+                    var scriptSrc = allScripts.shift();
+                    loadScript(scriptSrc, addNextScript);
+                } else {
+                    window.onload();
+                }
+            }
+            addNextScript();
+
+        },1000);
+    </script>
   </head>
 
   <body>

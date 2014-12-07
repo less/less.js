@@ -1,3 +1,80 @@
+# 2.1.1
+
+2014-11-27
+
+ - Improved keyword and anonymous usage with the replace function
+ - Added getCSSAppendage to sourcemap builder to avoid duplication in plugins
+ - Fix problem with plugins when used with the promises version of render
+ - If the render callback throws an exception it now propogates instead of calling the callback again with an error
+
+# 2.1.0
+
+2014-11-23
+
+ - Fixed isSync option, it was using sync file operations but promises are guaranteed to call back async. We now support promises as a feature rather than the 1st class way of doing things.
+ - Browser code is now synchronous again, like in v1, meaning it blocks the site until less is compiled
+ - Some fixes for variable imports which affected filemanagers when synchronous
+ - Fixed lessc makefile dependencies option
+ - output now reports back a imports field with an array of imported files
+ - relative path test for drive names (so windows only) is now case insensitive
+ - Fix for IE7 - use getChar instead of indexing array
+ - variables using !important now output !important, which bubbles up to affect the rule
+ - livereload cache buster is now treated specially
+ - upgrade dependencies
+
+# 2.0.0
+
+2014-11-09
+
+ - Fixed multiplication in non strict units mode to take the left operand unit, in the case that the unit cannot be resolved
+ - Some fixes for browser cross-compatibility
+ - browser tests now pass in IE 8-11 and FF
+ - added index.js and browser.js in root as shortcuts
+ - fixed some local variable spellings
+ - support for @counter-style directive
+
+# 2.0.0-b3
+
+2014-11-01
+
+ - some refactoring of browser structure to allow use of api vs normal browser bundle
+ - browser bundle no longer leaks require
+ - browser can now be scoped with just window
+ - browser useFileCache defaults to true, but file cache is now cleared when refreshing or in watch mode
+
+# 2.0.0-b2
+
+2014-10-26
+
+ - Imports are now sequenced and so are consistent (previously some complex projects might end up with occasional different orderings)
+ - Imports with variables are better supported - variables can be specified in sub imports
+ - Support for rebeccapurple
+ - Browser can now accept options as attributes on the script tag and the link tags e.g. `<script data-verbose="false" src="less.js"...`
+ - adding a .less file extension is done in the abstract file manager so it the behaviour can be overridden by certain file managers
+ - Fixed a bug where unquoted urls beginning `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
+ - lessc plugins can be a function, used as a constructor as well as an object - this to allow the plugin more flexibility to be used programattically
+
+# 2.0.0-b1
+
+2014-10-19
+
+ - Public Beta / Release Candidate - Feedback welcome
+   For a guide to breaking changes see [the v2 upgrade guide](http://lesscss.org/usage/#v2-upgrade-guide)
+ - no longer including old versions of less in the repo or npm
+ - not including test less and gradle files in npm
+ - colours now output in the format they are added, so yellow will output yellow, not its hex counterpart
+ - better parsing - better comment support and comments in brackets can now contain comments including quotes.
+ - Removal of dependency on clean-css - install less-plugin-clean-css and use --clean-css to reference plugin
+ - Environment Support - less is now separate from its node and browser environment implementations and adding support for another javascript environment should be straight forward.
+ - Plugin Support - it is now straight forward to add AST manipulations (see less-plugin-inline-images), file managers (see less-plugin-npm-import) and post processors (see less-plugin-clean-css and less-plugin-autoprefix).
+ - We now recommend using less.render and using the parser directly is not in the same way as in v2. It is possible but it would require changes and we do not guarantee it will not be broken in minor version releases.
+ - In the browser, less.pageLoadFinished will be a promise, resolved when less has finished its initial processing. less.refresh and less.modifyVars also return promises.
+ - In the browser, as before less is used as options, however this is now copied to less.options if you need to access after less has run
+ - In the browser, the cache can be overwritten by setting less.cache before less loads. After load less.cache will be the default implementation.
+ - less.js now uses browserify to generate its browser side component
+ - default values for the sourcemap options have been re-done and improved to hopefully mean creating sourcemaps is easier
+ - Many smaller bugfixes and API changes. Please let us know if something you relied on has disappeared or an area should be better documented.
+
 # 1.7.5
 
 2014-09-03
@@ -31,7 +108,7 @@
  - Do not round the results of color functions, like lightness, hue, luma etc.
  - Support cover and contain keywords in background definitions
 
-# 1.7.2
+ # 1.7.2
 
 2014-06-19
 
@@ -154,7 +231,7 @@
  - support for guards on selectors (currently only if you have a single selector)
  - allow property merging through the +: syntax
  - Added min/max functions
- - Added length function and improved extract to work with comma seperated values
+ - Added length function and improved extract to work with comma separated values
  - when using import multiple, sub imports are imported multiple times into final output
  - fix bad spaces between namespace operators
  - do not compress comment if it begins with an exclamation mark
@@ -251,7 +328,7 @@
  - browser and server url re-writing is now aligned to not re-write (previous lessc behaviour)
  - url-rewriting can be made to re-write to be relative to the entry file using the relative-urls option (less.relativeUrls option)
  - rootpath option can be used to add a base path to every url
- - Support mixin argument seperator of ';' so you can pass comma seperated values. e.g. `.mixin(23px, 12px;);`
+ - Support mixin argument separator of ';' so you can pass comma separated values. e.g. `.mixin(23px, 12px;);`
  - Fix lots of problems with named arguments in corner cases, not behaving as expected
  - hsv, hsva, unit functions
  - fixed lots more bad error messages

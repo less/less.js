@@ -4,8 +4,8 @@ module.exports = function() {
     var path = require('path'),
         fs = require('fs');
 
-    var less = require('../lib/less');
-    var stylize = require('../lib/less/lessc_helper').stylize;
+    var less = require('../lib/less-node');
+    var stylize = require('../lib/less-node/lessc-helper').stylize;
 
     var globals = Object.keys(global);
 
@@ -13,20 +13,56 @@ module.exports = function() {
 
     var isVerbose = process.env.npm_config_loglevel === 'verbose';
 
+    less.logger.addListener({
+        info: function(msg) {
+            if (isVerbose) {
+                console.log(msg);
+            }
+        },
+        warn: function(msg) {
+            console.warn(msg);
+        },
+        error: function(msg) {
+            console.error(msg);
+        }
+    });
+
+    var queueList = [],
+        queueRunning = false;
+    function queue(func) {
+        if (queueRunning) {
+            queueList.push(func);
+        } else {
+            queueRunning = true;
+            func();
+        }
+    }
+    function release() {
+        if (queueList.length) {
+            var func = queueList.shift();
+            func();
+        } else {
+            queueRunning = false;
+        }
+    };
+
+
     var totalTests = 0,
         failedTests = 0,
         passedTests = 0;
 
 
-    less.tree.functions.add = function (a, b) {
-        return new(less.tree.Dimension)(a.value + b.value);
-    };
-    less.tree.functions.increment = function (a) {
-        return new(less.tree.Dimension)(a.value + 1);
-    };
-    less.tree.functions._color = function (str) {
-        if (str.value === "evil red") { return new(less.tree.Color)("600"); }
-    };
+    less.functions.functionRegistry.addMultiple({
+        add: function (a, b) {
+            return new(less.tree.Dimension)(a.value + b.value);
+        },
+        increment: function (a) {
+            return new(less.tree.Dimension)(a.value + 1);
+        },
+        _color: function (str) {
+            if (str.value === "evil red") { return new(less.tree.Color)("600"); }
+        }
+    });
 
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
@@ -36,8 +72,8 @@ module.exports = function() {
             } else if (err) {
                 fail("ERROR: " + (err && err.message));
                 if (isVerbose) {
-                    console.error();
-                    console.error(err.stack);
+                    process.stdout.write("\n");
+                    process.stdout.write(err.stack + "\n");
                 }
             } else {
                 difference("FAIL", expectedSourcemap, sourcemap);
@@ -85,6 +121,23 @@ module.exports = function() {
         });
     }
 
+    function testSyncronous(options, filenameNoExtension) {
+        queue(function() {
+        var isSync = true;
+        totalTests++;
+        toCSS(options, path.join('test/less/', filenameNoExtension + ".less"), function (err, result) {
+            process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
+
+            if (isSync) {
+                ok("OK");
+            } else {
+                fail("Not Sync");
+            }
+        });
+        isSync = false;
+        });
+    }
+
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || "";
 
@@ -108,23 +161,31 @@ module.exports = function() {
             totalTests++;
 
             if (options.sourceMap) {
-                var sourceMapOutput;
-                options.writeSourceMap = function(output) {
-                    sourceMapOutput = output;
-                };
                 options.sourceMapOutputFilename = name + ".css";
                 options.sourceMapBasepath = path.join(process.cwd(), "test/less");
                 options.sourceMapRootpath = "testweb/";
+                // TODO separate options?
+                options.sourceMap = options;
             }
 
             options.getVars = function(file) {
                 return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
             };
 
-            toCSS(options, path.join('test/less/', foldername + file), function (err, less) {
+            queue(function() {
+            toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
 
                 if (verifyFunction) {
-                    return verifyFunction(name, err, less, doReplacements, sourceMapOutput);
+                    return verifyFunction(name, err, result && result.css, doReplacements, result && result.map);
+                }
+                if (err) {
+                    fail("ERROR: " + (err && err.message));
+                    if (isVerbose) {
+                        process.stdout.write("\n");
+                        process.stdout.write(err.stack + "\n");
+                    }
+                    release();
+                    return;
                 }
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }
@@ -132,17 +193,13 @@ module.exports = function() {
                     process.stdout.write("- " + css_name + ": ");
 
                     css = css && doReplacements(css, 'test/less/' + foldername);
-                    if (less === css) { ok('OK'); }
-                    else if (err) {
-                        fail("ERROR: " + (err && err.message));
-                        if (isVerbose) {
-                            console.error();
-                            console.error(err.stack);
-                        }
-                    } else {
-                        difference("FAIL", css, less);
+                    if (result.css === css) { ok('OK'); }
+                    else {
+                        difference("FAIL", css, result.css);
                     }
+                    release();
                 });
+            });
             });
         });
     }
@@ -156,17 +213,17 @@ module.exports = function() {
               process.stdout.write(item.value);
           }
         });
-        console.log("");
+        process.stdout.write("\n");
     }
 
     function fail(msg) {
-        console.error(stylize(msg, 'red'));
+        process.stdout.write(stylize(msg, 'red') + "\n");
         failedTests++;
         endTest();
     }
 
     function difference(msg, left, right) {
-        console.warn(stylize(msg, 'yellow'));
+        process.stdout.write(stylize(msg, 'yellow') + "\n");
         failedTests++;
 
         diff(left, right);
@@ -174,7 +231,7 @@ module.exports = function() {
     }
 
     function ok(msg) {
-        console.log(stylize(msg, 'green'));
+        process.stdout.write(stylize(msg, 'green') + "\n");
         passedTests++;
         endTest();
     }
@@ -182,15 +239,15 @@ module.exports = function() {
     function endTest() {
         var leaked = checkGlobalLeaks();
         if (failedTests + passedTests === totalTests) {
-            console.log("");
+            process.stdout.write("\n");
             if (failedTests > 0) {
-                console.error(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed");
+                process.stdout.write(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed\n");
             } else {
-                console.log(stylize("All Passed ", "green") + passedTests + " run");
+                process.stdout.write(stylize("All Passed ", "green") + passedTests + " run\n");
             }
             if (leaked.length > 0) {
-                console.log("");
-                console.warn(stylize("Global leak detected: ", "red") + leaked.join(', '));
+                process.stdout.write("\n");
+                process.stdout.write(stylize("Global leak detected: ", "red") + leaked.join(', ') + "\n");
             }
 
             if (leaked.length || failedTests) {
@@ -201,47 +258,27 @@ module.exports = function() {
     }
 
     function toCSS(options, path, callback) {
-        var css;
         options = options || {};
-        fs.readFile(path, 'utf8', function (e, str) {
-            if (e) { return callback(e); }
+        var str = fs.readFileSync(path, 'utf8');
 
-            options.paths = [require('path').dirname(path)];
-            options.filename = require('path').resolve(process.cwd(), path);
-            options.optimization = options.optimization || 0;
+        options.paths = [require('path').dirname(path)];
+        options.filename = require('path').resolve(process.cwd(), path);
+        options.optimization = options.optimization || 0;
 
-            var parser = new(less.Parser)(options);
-            var additionalData = {};
-            if (options.globalVars) {
-                additionalData.globalVars = options.getVars(path);
-            } else if (options.modifyVars) {
-                additionalData.modifyVars = options.getVars(path);
-            }
-            if (options.banner) {
-                additionalData.banner = options.banner;
-            }
-            parser.parse(str, function (err, tree) {
-                if (err) {
-                    callback(err);
-                } else {
-                    try {
-                        css = tree.toCSS(options);
-                        var css2 = tree.toCSS(options); // integration test that 2nd call gets same output
-                        if (css2 !== css) { throw new Error("css not equal to 2nd call"); }
-                        callback(null, css);
-                    } catch (e) {
-                        callback(e);
-                    }
-                }
-                }, additionalData);
-            });
+        if (options.globalVars) {
+            options.globalVars = options.getVars(path);
+        } else if (options.modifyVars) {
+            options.modifyVars = options.getVars(path);
+        }
+
+        less.render(str, options, callback);
     }
 
     function testNoOptions() {
         totalTests++;
         try {
             process.stdout.write("- Integration - creating parser without options: ");
-            new(less.Parser)();
+            less.render("");
         } catch(e) {
             fail(stylize("FAIL\n", "red"));
             return;
@@ -251,6 +288,7 @@ module.exports = function() {
 
     return {
         runTestSet: runTestSet,
+        testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
         testNoOptions: testNoOptions

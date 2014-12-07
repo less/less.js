@@ -1,4 +1,4 @@
-var less = {};
+var less = {logLevel: 4, errorReporting: "console"};
 
 // There originally run inside describe method. However, since they have not
 // been inside it, they run at jasmine compile time (not runtime). It all
@@ -10,7 +10,13 @@ var less = {};
 var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 'mixins'],
     testSheets = [];
 
+// IE 8-10 does not support less in style tags
+if (window.navigator.userAgent.indexOf("MSIE") >= 0) {
+    testFiles.length = 0;
+}
+
 // setup style tags with less and link tags pointing to expected css output
+
 for (var i = 0; i < testFiles.length; i++) {
   var file = testFiles[i],
       lessPath  = '/test/less/' + file + '.less',
@@ -23,10 +29,8 @@ for (var i = 0; i < testFiles.length; i++) {
   lessStyle.id = file;
   lessStyle.href = file;
 
-  if (lessStyle.styleSheet) {
-    lessStyle.styleSheet.cssText = lessText;
-  } else {
-    lessStyle.innerHTML = lessText;
+  if (lessStyle.styleSheet === undefined) {
+    lessStyle.appendChild(document.createTextNode(lessText));
   }
 
   cssLink.rel = 'stylesheet';
@@ -37,6 +41,11 @@ for (var i = 0; i < testFiles.length; i++) {
   var head = document.getElementsByTagName('head')[0];
 
   head.appendChild(lessStyle);
+
+  if (lessStyle.styleSheet) {
+    lessStyle.styleSheet.cssText = lessText;
+  }
+
   head.appendChild(cssLink);
   testSheets[i] = lessStyle;
 }

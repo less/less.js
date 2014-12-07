@@ -8,7 +8,7 @@
   color: blue;
   width: 10px;
   height: 99%;
-  border: 2px dotted #000000;
+  border: 2px dotted black;
 }
 .one-arg {
   width: 15px;
@@ -52,7 +52,7 @@ body {
   width: 10px;
 }
 .arguments {
-  border: 1px solid #000000;
+  border: 1px solid black;
   width: 1px;
 }
 .arguments2 {

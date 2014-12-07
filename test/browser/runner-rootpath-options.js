@@ -1,3 +1,4 @@
-var less = {};
-less.rootpath = "https://www.github.com/";
+var less = {logLevel: 4,
+    errorReporting: "console"};
+less.rootpath = "https://localhost/";
 

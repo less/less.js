@@ -27,21 +27,26 @@
 
 .redef {
     @var: 0;
-	.inition {
-		@var: 4;
-		@var: 2;
-		three: @var;
-		@var: 3;
-	}
-	zero: @var;
+    .inition {
+        @var: 4;
+        @var: 2;
+        three: @var;
+        @var: 3;
+    }
+    zero: @var;
 }
 
+@important-var: @c !important;
+@important-var-two: @a !important;
 .values {
-	minus-one: @var;
+    minus-one: @var;
     @a: 'Trebuchet';
     @multi: 'A', B, C;
     font-family: @a, @a, @a;
     color: @c !important;
+    same-color: @important-var;
+    same-again: @important-var !important;
+    multi-important: @important-var @important-var, @important-var-two;
     multi: something @multi, @a;
 }
 
@@ -62,8 +67,8 @@
 .testPollution {
     @a: 'no-pollution';
     a: @a;
-	.polluteMixin();
-	a: @a;
+    .polluteMixin();
+    a: @a;
 }
 
 .units {
@@ -80,4 +85,21 @@
   custom-unit-cancelling: (8cats * 9dogs / 4cats);
   mix-units: (1px + 1em);
   invalid-units: (1px * 1px);
+  .fallback {
+    @px: 14px;
+    @em: 1.4em;
+    @cm: 10cm;
+    div-px-1: (@px / @em);
+    div-px-2: ((@px / @em) / @cm);
+    sub-px-1: (@px - @em);
+    sub-cm-1: (@cm - (@px - @em));
+    mul-px-1: (@px * @em);
+    mul-em-1: (@em * @px);
+    mul-em-2: ((@em * @px) * @cm);
+    mul-cm-1: (@cm * (@em * @px));
+    add-px-1: (@px + @em);
+    add-px-2: ((@px + @em) + @cm);
+    mul-px-2: ((1 * @px) * @cm);
+    mul-px-3: ((@px * 1) * @cm);
+  }
 }

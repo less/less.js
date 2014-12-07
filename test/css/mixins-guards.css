@@ -62,9 +62,9 @@
   test: pass;
 }
 .colorguardtest {
-  content: is #ff0000;
-  content: is not #0000ff its #ff0000;
-  content: is not #0000ff its #800080;
+  content: is red;
+  content: is not blue its red;
+  content: is not blue its purple;
 }
 .stringguardtest {
   content: "theme1" is "theme1";
@@ -79,6 +79,80 @@
   content: theme1 is not 'theme2';
   content: theme1 is theme1;
 }
+.variouse-types-comparison {
+  /**/
+  content: true is not equal to false;
+  content: false is not equal to true too;
+  /**/
+  content: 1 is not equal to true;
+  content: true is not equal to 1 too;
+  /**/
+  content: 2 is equal to 2px;
+  content: 2px is equal to 2 too;
+  /**/
+  content: 3 is equal to 3;
+  content: 3 is equal to 3 too;
+  /**/
+  content: 5 is not equal to 4;
+  content: 4 is not equal to 5 too;
+  /**/
+  content: abc is equal to abc;
+  content: abc is equal to abc too;
+  /**/
+  content: abc is not equal to "abc";
+  content: "abc" is not equal to abc too;
+  /**/
+  content: 'abc' is less than "abd";
+  content: "abd" is greater than 'abc' too;
+  content: 'abc' is not equal to "abd";
+  content: "abd" is not equal to 'abc' too;
+  /**/
+  content: 6 is equal to 6;
+  content: 6 is equal to 6 too;
+  /**/
+  content: 8 is less than 9 too;
+  content: 9 is greater than 8;
+  content: 9 is not equal to 8;
+  content: 8 is not equal to 9 too;
+  /**/
+  content: a is not equal to b;
+  content: b is not equal to a too;
+  /**/
+  content: 1 2 is not equal to 3;
+  content: 3 is not equal to 1 2 too;
+}
+.list-comparison {
+  /**/
+  content: a b c is equal to a b c;
+  content: a b c is equal to a b c too;
+  /**/
+  content: a b c is not equal to a b d;
+  content: a b d is not equal to a b c too;
+  /**/
+  content: a, b, c is equal to a, b, c;
+  content: a, b, c is equal to a, b, c too;
+  /**/
+  content: a, b, c is not equal to a, b, d;
+  content: a, b, d is not equal to a, b, c too;
+  /**/
+  content: 1 2px 300ms is equal to 1em 2 0.3s;
+  content: 1em 2 0.3s is equal to 1 2px 300ms too;
+  /**/
+  content: 1 2 3 is not equal to 1, 2, 3;
+  content: 1, 2, 3 is not equal to 1 2 3 too;
+  /**/
+  content: 1, 2, 3 is equal to 1, 2, 3;
+  content: 1, 2, 3 is equal to 1, 2, 3 too;
+  /**/
+  content: 1 2 3 1, 2, 3 is equal to 1 2 3 1, 2, 3;
+  content: 1 2 3 1, 2, 3 is equal to 1 2 3 1, 2, 3 too;
+  /**/
+  content: 1 2 3 1, 2, 3 is not equal to 1, 2, 3 1 2 3;
+  content: 1, 2, 3 1 2 3 is not equal to 1 2 3 1, 2, 3 too;
+  /**/
+  content: 1 2 3 1, 2, 3 4 is equal to 1 2 3 1, 2, 3 4;
+  content: 1 2 3 1, 2, 3 4 is equal to 1 2 3 1, 2, 3 4 too;
+}
 #tryNumberPx {
   catch: all;
   declare: 4;
@@ -90,4 +164,12 @@
 }
 .mixin-generated-class {
   a: 1;
+}
+#guarded-caller {
+  guarded: namespace;
+  silent: namespace;
+  guarded: with default;
+}
+#guarded-deeper {
+  should: match 1;
 }

@@ -134,7 +134,18 @@ body ^^ .shadow {
 ::content .sel {
   type: shadow-dom;
 }
+/deep/ b {
+ c: 'd';
+ &[e]{
+   f: 'g';
+ }
+}
 
 #issue2066 {
   background: url('/images/icon-team.svg') 0 0 / contain;
+}
+@counter-style triangle {
+  system: cyclic;
+  symbols: ‣;
+  suffix: " ";
 }

@@ -1,19 +1,17 @@
 {
   "name": "carto",
-  "version": "0.14.0",
-  "description": "Mapnik Stylesheet Compiler",
-  "url": "https://github.com/mapbox/carto",
+  "version": "0.15.0",
+  "description": "CartoCSS Stylesheet Compiler",
+  "url": "https://github.com/cartodb/carto",
   "repository": {
     "type": "git",
-    "url": "http://github.com/mapbox/carto.git"
+    "url": "http://github.com/cartodb/carto.git"
   },
   "author": {
-    "name": "Mapbox",
-    "url": "http://mapbox.com/",
-    "email": "info@mapbox.com"
+    "name": "CartoDB",
+    "url": "http://cartodb.com/",
   },
   "keywords": [
-    "mapnik",
     "maps",
     "css",
     "stylesheets"
@@ -22,6 +20,8 @@
     "Tom MacWright <macwright@gmail.com>",
     "Konstantin Käfer",
     "Alexis Sellier <self@cloudhead.net>"
+    "Raul Ochoa <rochoa@cartodb.com>",
+    "Javi Santana <jsantana@cartodb.com>",
   ],
   "licenses": [
     {

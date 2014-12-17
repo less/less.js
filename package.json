@@ -9,7 +9,7 @@
   },
   "author": {
     "name": "CartoDB",
-    "url": "http://cartodb.com/",
+    "url": "http://cartodb.com/"
   },
   "keywords": [
     "maps",
@@ -19,9 +19,9 @@
   "contributors": [
     "Tom MacWright <macwright@gmail.com>",
     "Konstantin Käfer",
-    "Alexis Sellier <self@cloudhead.net>"
+    "Alexis Sellier <self@cloudhead.net>",
     "Raul Ochoa <rochoa@cartodb.com>",
-    "Javi Santana <jsantana@cartodb.com>",
+    "Javi Santana <jsantana@cartodb.com>"
   ],
   "licenses": [
     {
@@ -47,7 +47,8 @@
     "sax": "0.1.x",
     "istanbul": "~0.2.14",
     "coveralls": "~2.10.1",
-    "browserify": "~7.0.0"
+    "browserify": "~7.0.0",
+    "uglify-js": "1.3.3"
   },
   "scripts": {
     "pretest": "npm install",

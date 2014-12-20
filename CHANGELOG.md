@@ -1,3 +1,10 @@
+# 2.1.2
+
+2014-12-20
+
+ - Fix for use with requirejs
+ - Fixes for data-uri function
+
 # 2.1.1
 
 2014-11-27

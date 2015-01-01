@@ -369,7 +369,8 @@ var parseLessFile = function (e, data) {
             }
         },
         warn: function(msg) {
-            if (!silent) {
+            // do not show warning if outputting css to the console or the silent option is used
+            if (!silent && output) {
                 console.warn(msg);
             }
         },

@@ -63,7 +63,7 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>'
             },
             browsertest: {
-                src: '<%= browserify.browser.dest %>',
+                src: '<%= uglify.test.dest %>',
                 dest: 'test/browser/less.js'
             },
             dist: {
@@ -93,12 +93,19 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: '<%= meta.banner %>',
-                mangle: true
+                mangle: true,
+	            compress: {
+	                //pure_getters: true
+	            }
             },
             dist: {
                 src: ['<%= concat.dist.dest %>'],
                 dest: 'dist/less.min.js'
-            }
+            },
+	        test: {
+		        src: 'tmp/less.js',
+		        dest: 'tmp/less.min.js'
+	        }
         },
 
         jshint: {
@@ -338,6 +345,7 @@ module.exports = function (grunt) {
     // Create the browser version of less.js
     grunt.registerTask('browsertest-lessjs', [
         'browserify:browser',
+	    'uglify:test',
         'concat:browsertest'
     ]);
 

@@ -95,7 +95,7 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>',
                 mangle: true,
 	            compress: {
-	                //pure_getters: true
+	                pure_getters: true
 	            }
             },
             dist: {

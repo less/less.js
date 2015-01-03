@@ -44,13 +44,11 @@ module.exports = function() {
         } else {
             queueRunning = false;
         }
-    };
-
+    }
 
     var totalTests = 0,
         failedTests = 0,
         passedTests = 0;
-
 
     less.functions.functionRegistry.addMultiple({
         add: function (a, b) {
@@ -122,9 +120,9 @@ module.exports = function() {
     }
 
     function testSyncronous(options, filenameNoExtension) {
+		totalTests++;
         queue(function() {
         var isSync = true;
-        totalTests++;
         toCSS(options, path.join('test/less/', filenameNoExtension + ".less"), function (err, result) {
             process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
 
@@ -176,7 +174,9 @@ module.exports = function() {
             toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
 
                 if (verifyFunction) {
-                    return verifyFunction(name, err, result && result.css, doReplacements, result && result.map);
+                    var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map);
+	                release();
+	                return verificationResult;
                 }
                 if (err) {
                     fail("ERROR: " + (err && err.message));
@@ -238,6 +238,7 @@ module.exports = function() {
 
     function endTest() {
         var leaked = checkGlobalLeaks();
+
         if (failedTests + passedTests === totalTests) {
             process.stdout.write("\n");
             if (failedTests > 0) {
@@ -251,8 +252,8 @@ module.exports = function() {
             }
 
             if (leaked.length || failedTests) {
-                //process.exit(1);
-                process.on('exit', function() { process.reallyExit(1) });
+                process.exit(1);
+                process.on('exit', function() { process.reallyExit(1); });
             }
         }
     }

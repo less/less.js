@@ -1,3 +1,23 @@
+# 2.2.0
+
+2015-01-04
+
+ - do not apply relative paths to svg-gradient and data-uri functions data-uri output
+ - using import filename interpolation and import inline together now works
+ - deprecate the compression option (still works, but outputs a warning unless silent)
+ - The node version of less now has image-size, image-width, image-height which return the image dimensions of a file
+ - Fixed an issue that could cause the parse to occur more than once and the callback be called multiple times
+ - if you are outputting to the console, lessc defaults to silent so warnings do not end up in output
+ - isunit function supports '' to test if a dimension has no unit
+ - data-uri function now counts characters after base64 encoding instead of bytes before encoding to determine ie8 support
+ - fix bug effecting guards on pseudo class selectors
+ - do not cache on the browser when used with modifyVars
+ - detection if less does not parse last character in file
+ - detection of whether a file is css now requires /css, .css, ?css, &css instead of just css. You can still tell less the type of file using import options.
+ - remove extra new line added to sourcemap entry inline file
+ - support safari extension
+ - less.parse now exposes a way to get the AST. We do not recommend you use this unless you need to.
+
 # 2.1.2
 
 2014-12-20

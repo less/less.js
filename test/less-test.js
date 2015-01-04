@@ -125,7 +125,10 @@ module.exports = function() {
     }
 
     function testSyncronous(options, filenameNoExtension) {
-		totalTests++;
+	    if (oneTestOnly && ("Test Sync " + filenameNoExtension) !== oneTestOnly) {
+		    return;
+	    }
+	    totalTests++;
         queue(function() {
         var isSync = true;
         toCSS(options, path.join('test/less/', filenameNoExtension + ".less"), function (err, result) {
@@ -295,6 +298,9 @@ module.exports = function() {
     }
 
     function testNoOptions() {
+	    if (oneTestOnly && "Integration" !== oneTestOnly) {
+		    return;
+	    }
         totalTests++;
         try {
             process.stdout.write("- Integration - creating parser without options: ");

@@ -5,6 +5,8 @@ module.exports = function (grunt) {
 
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
+	
+	var COMPRESS_FOR_TESTS = true;
 
     // Project configuration.
     grunt.initConfig({
@@ -63,7 +65,7 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>'
             },
             browsertest: {
-                src: '<%= uglify.test.dest %>',
+                src: COMPRESS_FOR_TESTS ? '<%= uglify.test.dest %>' : '<%= browserify.browser.dest %>',
                 dest: 'test/browser/less.js'
             },
             dist: {
@@ -103,7 +105,7 @@ module.exports = function (grunt) {
                 dest: 'dist/less.min.js'
             },
 	        test: {
-		        src: 'tmp/less.js',
+		        src: '<%= browserify.browser.dest %>',
 		        dest: 'tmp/less.min.js'
 	        }
         },

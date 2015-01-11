@@ -46,3 +46,4 @@ lessTester.runTestSet({urlArgs: '424242'}, "url-args/");
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();
+lessTester.finished();

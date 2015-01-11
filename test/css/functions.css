@@ -138,6 +138,7 @@
   percent: true;
   em: true;
   cat: true;
+  no-unit-is-empty: true;
   case-insensitive-1: true;
   case-insensitive-2: true;
 }

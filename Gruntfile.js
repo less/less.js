@@ -5,6 +5,8 @@ module.exports = function (grunt) {
 
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
+	
+	var COMPRESS_FOR_TESTS = true;
 
     // Project configuration.
     grunt.initConfig({
@@ -63,7 +65,7 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>'
             },
             browsertest: {
-                src: '<%= browserify.browser.dest %>',
+                src: COMPRESS_FOR_TESTS ? '<%= uglify.test.dest %>' : '<%= browserify.browser.dest %>',
                 dest: 'test/browser/less.js'
             },
             dist: {
@@ -93,12 +95,19 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: '<%= meta.banner %>',
-                mangle: true
+                mangle: true,
+	            compress: {
+	                pure_getters: true
+	            }
             },
             dist: {
                 src: ['<%= concat.dist.dest %>'],
                 dest: 'dist/less.min.js'
-            }
+            },
+	        test: {
+		        src: '<%= browserify.browser.dest %>',
+		        dest: 'tmp/less.min.js'
+	        }
         },
 
         jshint: {
@@ -338,6 +347,7 @@ module.exports = function (grunt) {
     // Create the browser version of less.js
     grunt.registerTask('browsertest-lessjs', [
         'browserify:browser',
+	    'uglify:test',
         'concat:browsertest'
     ]);
 

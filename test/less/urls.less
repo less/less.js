@@ -1,3 +1,5 @@
+@import "nested-gradient-with-svg-gradient/mixin-consumer.less";
+
 @font-face {
   src: url("/fonts/garamond-pro.ttf");
   src: local(Futura-Medium),
@@ -55,8 +57,12 @@
   uri-2: data-uri('../data/page.html');
 }
 
-#data-uri-toobig {
+#file-functions {
   uri: data-uri('../data/data-uri-fail.png');
+  svg-not-base-64: data-uri('../data/image.svg');
+  size: image-size('../data/data-uri-fail.png');
+  width: image-width('../data/data-uri-fail.png');
+  height: image-height('../data/data-uri-fail.png');
 }
 .add_an_import(@file_to_import) {
 @import "@{file_to_import}";

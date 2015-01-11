@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -45,7 +45,8 @@
     "request": "^2.48.0",
     "mkdirp": "^0.5.0",
     "source-map": "^0.1.x",
-    "promise": "^6.0.1"
+    "promise": "^6.0.1",
+    "image-size": "~0.3.5"
   },
   "devDependencies": {
     "diff": "^1.0",

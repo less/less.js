@@ -6,10 +6,12 @@ var lessTest = require("./less-test"),
 function getErrorPathReplacementFunction(dir) {
     return function(input) {
         return input.replace(
-                "{path}", path.join(process.cwd(), "/test/less/" + dir + "/"))
-            .replace("{pathrel}", path.join("test", "less", dir + "/"))
-            .replace("{pathhref}", "")
-            .replace("{404status}", "")
+                /\{path\}/g, path.join(process.cwd(), "/test/less/" + dir + "/"))
+	        .replace(/\{node\}/g, "")
+	        .replace(/\{\/node\}/g, "")
+            .replace(/\{pathrel\}/g, path.join("test", "less", dir + "/"))
+            .replace(/\{pathhref\}/g, "")
+            .replace(/\{404status\}/g, "")
             .replace(/\r\n/g, '\n');
     };
 }

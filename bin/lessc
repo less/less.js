@@ -27,8 +27,8 @@ var silent = false,
     ieCompat: true,
     strictMath: false,
     strictUnits: false,
-    globalVariables: '',
-    modifyVariables: '',
+    globalVars: null,
+    modifyVars: null,
     urlArgs: '',
     plugins: plugins
 };
@@ -59,9 +59,9 @@ var checkBooleanArg = function(arg) {
     return Boolean(onOff[2]);
 };
 
-var parseVariableOption = function(option) {
+var parseVariableOption = function(option, variables) {
     var parts = option.split('=', 2);
-    return '@' + parts[0] + ': ' + parts[1] + ';\n';
+    variables[parts[0]] = parts[1];
 };
 
 var warningMessages = "";
@@ -205,12 +205,19 @@ args = args.filter(function (arg) {
             break;
         case "global-var":
             if (checkArgFunc(arg, match[2])) {
-                options.globalVariables += parseVariableOption(match[2]);
+                if (!options.globalVars) {
+                    options.globalVars = {};
+                }
+                parseVariableOption(match[2], options.globalVars);
             }
             break;
         case "modify-var":
             if (checkArgFunc(arg, match[2])) {
-                options.modifyVariables += parseVariableOption(match[2]);
+                if (!options.modifyVars) {
+                    options.modifyVars = {};
+                }
+
+                parseVariableOption(match[2], options.modifyVars);
             }
             break;
         case 'url-args':
@@ -348,8 +355,6 @@ var parseLessFile = function (e, data) {
         return;
     }
 
-    data = options.globalVariables + data + '\n' + options.modifyVariables;
-
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
 
@@ -369,7 +374,8 @@ var parseLessFile = function (e, data) {
             }
         },
         warn: function(msg) {
-            if (!silent) {
+            // do not show warning if outputting css to the console or the silent option is used
+            if (!silent && output) {
                 console.warn(msg);
             }
         },

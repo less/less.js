@@ -145,10 +145,11 @@ var testErrorSheet = function (sheet) {
                 errorFile
                     .then(function (errorTxt) {
                         errorTxt = errorTxt
-                            .replace("{path}", "")
-                            .replace("{pathrel}", "")
-                            .replace("{pathhref}", "http://localhost:8081/test/less/errors/")
-                            .replace("{404status}", " (404)")
+                            .replace(/\{path\}/g, "")
+                            .replace(/\{pathrel\}/g, "")
+                            .replace(/\{pathhref\}/g, "http://localhost:8081/test/less/errors/")
+                            .replace(/\{404status\}/g, " (404)")
+	                        .replace(/\{node\}.*\{\/node\}/g, "")
                             .replace(/\n$/, "");
                         expect(actualErrorMsg).toEqual(errorTxt);
                         if (errorTxt == actualErrorMsg) {
@@ -177,10 +178,11 @@ var testErrorSheetConsole = function (sheet) {
         errorFile
             .then(function (errorTxt) {
                 errorTxt
-                    .replace("{path}", "")
-                    .replace("{pathrel}", "")
-                    .replace("{pathhref}", "http://localhost:8081/browser/less/")
-                    .replace("{404status}", " (404)")
+                    .replace(/\{path\}/g, "")
+                    .replace(/\{pathrel\}/g, "")
+                    .replace(/\{pathhref\}/g, "http://localhost:8081/browser/less/")
+                    .replace(/\{404status\}/g, " (404)")
+                    .replace(/\{node\}.*\{\/node\}/g, "")
                     .trim();
                 expect(actualErrorMsg).toEqual(errorTxt);
                 done();

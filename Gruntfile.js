@@ -5,6 +5,8 @@ module.exports = function (grunt) {
 
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
+	
+	var COMPRESS_FOR_TESTS = true;
 
     // Project configuration.
     grunt.initConfig({
@@ -63,7 +65,7 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>'
             },
             browsertest: {
-                src: '<%= browserify.browser.dest %>',
+                src: COMPRESS_FOR_TESTS ? '<%= uglify.test.dest %>' : '<%= browserify.browser.dest %>',
                 dest: 'test/browser/less.js'
             },
             dist: {
@@ -93,12 +95,19 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: '<%= meta.banner %>',
-                mangle: true
+                mangle: true,
+	            compress: {
+	                pure_getters: true
+	            }
             },
             dist: {
                 src: ['<%= concat.dist.dest %>'],
                 dest: 'dist/less.min.js'
-            }
+            },
+	        test: {
+		        src: '<%= browserify.browser.dest %>',
+		        dest: 'tmp/less.min.js'
+	        }
         },
 
         jshint: {
@@ -338,6 +347,7 @@ module.exports = function (grunt) {
     // Create the browser version of less.js
     grunt.registerTask('browsertest-lessjs', [
         'browserify:browser',
+	    'uglify:test',
         'concat:browsertest'
     ]);
 
@@ -354,6 +364,20 @@ module.exports = function (grunt) {
         'jasmine::build',
         'connect::keepalive'
     ]);
+
+	var previous_force_state = grunt.option("force");
+
+	grunt.registerTask("force",function(set){
+		if (set === "on") {
+			grunt.option("force",true);
+		}
+		else if (set === "off") {
+			grunt.option("force",false);
+		}
+		else if (set === "restore") {
+			grunt.option("force",previous_force_state);
+		}
+	});
 
     grunt.registerTask('sauce', [
         'browsertest-lessjs',
@@ -378,7 +402,9 @@ module.exports = function (grunt) {
     if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
         Number(process.env.TRAVIS_NODE_VERSION) === 0.11 &&
         (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "sauce")) {
+        testTasks.push("force:on");
         testTasks.push("sauce-after-setup");
+        testTasks.push("force:off");
     }
 
     // Run all tests

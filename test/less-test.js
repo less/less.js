@@ -280,11 +280,24 @@ module.exports = function() {
         }
     }
 
-    function toCSS(options, path, callback) {
-        options = options || {};
-        var str = fs.readFileSync(path, 'utf8');
+    function contains(fullArray, obj) {
+        for (var i = 0; i < fullArray.length; i++) {
+            if (fullArray[i] === obj) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-        options.paths = [require('path').dirname(path)];
+
+  function toCSS(options, path, callback) {
+        options = options || {};
+        var str = fs.readFileSync(path, 'utf8'), addPath = require('path').dirname(path);
+
+        options.paths = options.paths || [];
+        if (!contains(options.paths, addPath)) {
+          options.paths.push(addPath);
+        }
         options.filename = require('path').resolve(process.cwd(), path);
         options.optimization = options.optimization || 0;
 

@@ -355,6 +355,8 @@ var parseLessFile = function (e, data) {
         return;
     }
 
+    data = data.replace(/^\uFEFF/, '');
+
     options.paths = [path.dirname(input)].concat(options.paths);
     options.filename = input;
 

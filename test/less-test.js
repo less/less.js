@@ -71,9 +71,9 @@ module.exports = function() {
         }
     });
 
-    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
+    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
-            process.stdout.write("- " + name + ": ");
+            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
             } else if (err) {
@@ -90,7 +90,7 @@ module.exports = function() {
 
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
-            process.stdout.write("- " + name + ": ");
+            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
             expectedErr = doReplacements(expectedErr, baseFolder);
             if (!err) {
                 if (compiledLess) {
@@ -155,8 +155,9 @@ module.exports = function() {
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
+        var options2 = options ? JSON.parse(JSON.stringify(options)) : {};
         runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
-        runTestSetInternal(bomFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+        runTestSetInternal(bomFolder, options2, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
     }
 
     function runTestSetNormalOnly(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
@@ -226,7 +227,7 @@ module.exports = function() {
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }
                 fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                    process.stdout.write("- " + css_name + ": ");
+                    process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
                         css = css && doReplacements(css, path.join(baseFolder, foldername));
                     if (result.css === css) { ok('OK'); }

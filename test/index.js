@@ -32,7 +32,7 @@ lessTester.runTestSet({strictMath: true, relativeUrls: false, rootpath: "folder 
 lessTester.runTestSet({strictMath: true, compress: true}, "compression/");
 lessTester.runTestSet({strictMath: true, strictUnits: true}, "strict-units/");
 lessTester.runTestSet({}, "legacy/");
-lessTester.runTestSetNormalOnly({strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, "sourcemaps/",
+lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, "sourcemaps/",
     lessTester.testSourcemap, null, null,
     function(filename, type, baseFolder) {
         if (type === "vars") {

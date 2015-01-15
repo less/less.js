@@ -150,8 +150,7 @@ module.exports = function() {
     }
 
     function prepBomTest() {
-      if (!fs.existsSync(bomFolder) || fs.readdirSync(bomFolder).length == 0)
-        copyBom.copyFolderWithBom(normalFolder, bomFolder);
+      copyBom.copyFolderWithBom(normalFolder, bomFolder);
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {

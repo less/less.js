@@ -3,6 +3,7 @@
 module.exports = function() {
     var path = require('path'),
         fs = require('fs');
+        copyBom = require('./copy-bom')();
 
     var less = require('../lib/less-node');
     var stylize = require('../lib/less-node/lessc-helper').stylize;
@@ -13,6 +14,9 @@ module.exports = function() {
 	    isFinished = false;
 
     var isVerbose = process.env.npm_config_loglevel === 'verbose';
+
+    var normalFolder = 'test/less';
+    var bomFolder = 'test/less-bom';
 
     less.logger.addListener({
         info: function(msg) {
@@ -67,9 +71,9 @@ module.exports = function() {
         }
     });
 
-    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
+    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
-            process.stdout.write("- " + name + ": ");
+            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
             } else if (err) {
@@ -84,10 +88,10 @@ module.exports = function() {
         });
     }
 
-    function testErrors(name, err, compiledLess, doReplacements) {
-        fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
-            process.stdout.write("- " + name + ": ");
-            expectedErr = doReplacements(expectedErr, 'test/less/errors/');
+    function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
+            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
+            expectedErr = doReplacements(expectedErr, baseFolder);
             if (!err) {
                 if (compiledLess) {
                     fail("No Error", 'red');
@@ -131,7 +135,7 @@ module.exports = function() {
 	    totalTests++;
         queue(function() {
         var isSync = true;
-        toCSS(options, path.join('test/less/', filenameNoExtension + ".less"), function (err, result) {
+        toCSS(options, path.join(normalFolder, filenameNoExtension + ".less"), function (err, result) {
             process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
 
             if (isSync) {
@@ -145,7 +149,21 @@ module.exports = function() {
         });
     }
 
+    function prepBomTest() {
+      copyBom.copyFolderWithBom(normalFolder, bomFolder);
+    }
+
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
+        var options2 = options ? JSON.parse(JSON.stringify(options)) : {};
+        runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+        runTestSetInternal(bomFolder, options2, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+    }
+
+    function runTestSetNormalOnly(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
+        runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+    }
+
+    function runTestSetInternal(baseFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || "";
 
         if(!doReplacements) {
@@ -156,7 +174,7 @@ module.exports = function() {
              return foldername + path.basename(file, '.less');
         }
 
-        fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
+        fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
             if (! /\.less/.test(file)) { return; }
 
             var name = getBasename(file);
@@ -169,19 +187,19 @@ module.exports = function() {
 
             if (options.sourceMap) {
                 options.sourceMapOutputFilename = name + ".css";
-                options.sourceMapBasepath = path.join(process.cwd(), "test/less");
+                options.sourceMapBasepath = path.join(process.cwd(), baseFolder);
                 options.sourceMapRootpath = "testweb/";
                 // TODO separate options?
                 options.sourceMap = options;
             }
 
             options.getVars = function(file) {
-                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
+                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars', baseFolder), 'utf8'));
             };
 
-	        var doubleCallCheck = false;
+            var doubleCallCheck = false;
             queue(function() {
-            toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
+                toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
 	            if (doubleCallCheck) {
 		            totalTests++;
 		            fail("less is calling back twice");
@@ -192,7 +210,7 @@ module.exports = function() {
 	            doubleCallCheck = (new Error()).stack;
 
                 if (verifyFunction) {
-                    var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map);
+                    var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
 	                release();
 	                return verificationResult;
                 }
@@ -208,9 +226,9 @@ module.exports = function() {
                 var css_name = name;
                 if(nameModifier) { css_name = nameModifier(name); }
                 fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                    process.stdout.write("- " + css_name + ": ");
+                    process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
-                    css = css && doReplacements(css, 'test/less/' + foldername);
+                        css = css && doReplacements(css, path.join(baseFolder, foldername));
                     if (result.css === css) { ok('OK'); }
                     else {
                         difference("FAIL", css, result.css);
@@ -225,10 +243,10 @@ module.exports = function() {
     function diff(left, right) {
         require('diff').diffLines(left, right).forEach(function(item) {
           if(item.added || item.removed) {
-            var text = item.value.replace("\n", String.fromCharCode(182) + "\n");
+            var text = item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
               process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
           } else {
-              process.stdout.write(item.value);
+              process.stdout.write(item.value.replace('\ufeff', '[[BOM]]'));
           }
         });
         process.stdout.write("\n");
@@ -327,10 +345,12 @@ module.exports = function() {
 
     return {
         runTestSet: runTestSet,
+        runTestSetNormalOnly: runTestSetNormalOnly,
         testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
         testNoOptions: testNoOptions,
+        prepBomTest: prepBomTest,
 	    finished: finished
     };
 };

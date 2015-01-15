@@ -345,6 +345,7 @@ if (!sourceMapFileInline) {
         var filename = sourceMapOptions.sourceMapFullFilename;
         ensureDirectory(filename);
         fs.writeFileSync(filename, output, 'utf8');
+        less.logger.info('lessc: wrote ' + filename);
     };
 }
 

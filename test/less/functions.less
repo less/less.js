@@ -137,6 +137,10 @@
   mixt: mix(#ff0000, transparent);
 
   .is-a {
+    @rules: {
+      color: red;
+    };
+    ruleset: isruleset(@rules);
     color: iscolor(#ddd);
     color1: iscolor(red);
     color2: iscolor(rgb(0, 0, 0));

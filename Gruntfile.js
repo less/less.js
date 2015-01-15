@@ -306,7 +306,7 @@ module.exports = function (grunt) {
 
         // Clean the version of less built for the tests
         clean: {
-            test: ['test/browser/less.js', 'tmp'],
+            test: ['test/browser/less.js', 'tmp', 'test/less-bom'],
             "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map'],
             sauce_log: ["sc_*.log"]
         }

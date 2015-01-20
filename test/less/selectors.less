@@ -157,3 +157,16 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 @{selector} {
   color: red;
 }
+.only-nested {
+  .foo:not(.tst&:hover) { 
+    test: only-nested;
+  }
+}
+.nestend-and-non-nested {
+  .foo&:not(.tst&:hover) {
+    test: nestend-and-non-nested;
+  }
+}
+.selector:not(&:hover) {
+  test: global scope;
+}

@@ -119,7 +119,7 @@ p a span {
 .bloodred {
   color: green;
 }
-#blood.blood.red.black {
+#blood.blood.red.black:blood {
   color: black;
 }
 :nth-child(3) {

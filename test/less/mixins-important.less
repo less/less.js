@@ -23,3 +23,15 @@
   .mixin !important;
   .mixin(9);
 }
+.size(@aaa: auto) {
+  .set-width(@aaa) {
+    width: @aaa;
+  }
+  .set-width(@aaa);
+}
+.when-calling-nested-issue-2394 {
+  .size() !important;
+}
+.when-calling-nested-with-param-issue-2394 {
+  .size(10px) !important;
+}

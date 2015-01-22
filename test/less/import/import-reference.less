@@ -49,3 +49,18 @@
     color: red;
   }
 }
+.mixin-with-directives(@keyframeName) {
+  @keyframes @keyframeName {
+    @rules1();
+  }
+  @supports (animation-name: test) {
+    @keyframes @keyframeName {
+      @rules2();
+    }
+    .selector {
+      color: red;
+    }
+  }
+  @rules1: {property: value;};
+  @rules2: {property: value;};
+}

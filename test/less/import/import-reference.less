@@ -49,7 +49,7 @@
     color: red;
   }
 }
-
+//https://github.com/less/less.js/issues/2359
 @supports (something: else) {
   .class {
     something: else;
@@ -61,5 +61,14 @@
   }
   .invisible {
     something: else;
+  }
+}
+//https://github.com/less/less.js/issues/1979
+.mixin-with-nested-selectors() {
+  .test {
+    color: red;
+    &:first-child {
+      color: blue;
+    }
   }
 }

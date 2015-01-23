@@ -74,3 +74,9 @@ div#id.class[a=1][b=2].class:not(1) {
     color: red;
   }
 }
+.test {
+  color: red;
+}
+.test:first-child {
+  color: blue;
+}

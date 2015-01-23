@@ -49,3 +49,17 @@
     color: red;
   }
 }
+
+@supports (something: else) {
+  .class {
+    something: else;
+  }
+  .nestedToo {
+    .class {
+      something: else;
+    }
+  }
+  .invisible {
+    something: else;
+  }
+}

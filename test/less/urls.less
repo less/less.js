@@ -49,6 +49,8 @@
   background-image: data-uri(@var), data-uri(replace('../data/image.filext', "filext", "jpg"));
   
   uri-fragment: data-uri('image/jpeg;base64', '../data/image.jpg#fragment');
+  uri-fragment2: data-uri('image/jpeg;base64', '../data/image.jpg?v=2');
+  uri-fragment3: data-uri('image/jpeg;base64', '../data/image.jpg?v=2#fragment');
 }
 
 #data-uri-guess {

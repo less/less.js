@@ -80,3 +80,14 @@ div#id.class[a=1][b=2].class:not(1) {
 .test:first-child {
   color: blue;
 }
+@keyframes some-name {
+  property: value;
+}
+@supports (animation-name: test) {
+  @keyframes some-name {
+    property: value;
+  }
+  .selector {
+    color: red;
+  }
+}

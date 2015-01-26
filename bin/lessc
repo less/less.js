@@ -281,10 +281,15 @@ if (output) {
 if (options.sourceMap) {
 
     sourceMapOptions.sourceMapInputFilename = input;
-    if (!sourceMapOptions.sourceMapFullFilename) {
+    if (!sourceMapOptions.sourceMapFullFilename || (!output && sourceMapOptions.sourceMapFullFilename)) {
         if (!output && !sourceMapFileInline) {
-            console.log("the sourcemap option only has an optional filename if the css filename is given");
-            console.log("consider adding --source-map-map-inline which embeds the sourcemap into the css");
+            if(sourceMapOptions.sourceMapFullFilename) {
+            console.warn("the sourcemap option requires the css filename to be given");
+            }
+            else { 
+            console.warn("the sourcemap option only has an optional filename if the css filename is given");
+            }
+            console.warn("consider adding --source-map-map-inline which embeds the sourcemap into the css");
             return;
         }
         // its in the same directory, so always just the basename

@@ -3,7 +3,14 @@
 var path = require('path'),
     fs = require('../lib/less-node/fs'),
     os = require('os'),
+    errno,
     mkdirp;
+
+try {
+    errno = require('errno');
+} catch (err) {
+    errno = null;
+}
 
 var less = require('../lib/less-node'),
     pluginLoader = new less.PluginLoader(less),
@@ -341,13 +348,66 @@ if (options.depends) {
 }
 
 if (!sourceMapFileInline) {
-    var writeSourceMap = function(output) {
+    var writeSourceMap = function(output, onDone) {
         var filename = sourceMapOptions.sourceMapFullFilename;
         ensureDirectory(filename);
-        fs.writeFileSync(filename, output, 'utf8');
-        less.logger.info('lessc: wrote ' + filename);
+        fs.writeFile(filename, output, 'utf8', function (err) {
+            if (err) {
+                var description = "Error: ";
+                if (errno && errno.errno[err.errno]) {
+                    description += errno.errno[err.errno].description;
+                } else {
+                    description += err.code + " " + err.message;
+                }
+                less.logger.error('lessc: failed to create file ' + filename);
+                less.logger.error(description);
+            } else {
+                less.logger.info('lessc: wrote ' + filename);
+            }
+            onDone();
+        });
     };
 }
+
+var writeSourceMapIfNeeded = function(output, onDone) {
+    if (options.sourceMap && !sourceMapFileInline) {
+        writeSourceMap(output, onDone);
+    }
+};
+
+var writeOutput = function(output, result, onSuccess) {
+    if (output) {
+        ensureDirectory(output);
+        fs.writeFile(output, result.css, {encoding: 'utf8'}, function (err) {
+            if (err) {
+                var description = "Error: ";
+                if (errno && errno.errno[err.errno]) {
+                    description += errno.errno[err.errno].description;
+                } else {
+                    description += err.code + " " + err.message;
+                }
+                less.logger.error('lessc: failed to create file ' + output);
+                less.logger.error(description);
+            } else {
+                less.logger.info('lessc: wrote ' + output);
+                onSuccess();
+            }
+        });
+    } else if (!options.depends) {
+        process.stdout.write(result.css);
+        onSuccess();
+    }
+};
+
+var logDependencies = function(options, result) {
+    if (options.depends) {
+        var depends = "";
+        for(var i = 0; i < result.imports.length; i++) {
+            depends += result.imports[i] + " ";
+        }
+        console.log(depends);
+    }
+};
 
 var parseLessFile = function (e, data) {
     if (e) {
@@ -390,23 +450,11 @@ var parseLessFile = function (e, data) {
     less.render(data, options)
         .then(function(result) {
             if(!options.lint) {
-                if (output) {
-                    ensureDirectory(output);
-                    fs.writeFileSync(output, result.css, 'utf8');
-                    less.logger.info('lessc: wrote ' + output);
-                } else if (!options.depends) {
-                    process.stdout.write(result.css);
-                }
-                if (options.sourceMap && !sourceMapFileInline) {
-                    writeSourceMap(result.map);
-                }
-                if (options.depends) {
-                    var depends = "";
-                    for(var i = 0; i < result.imports.length; i++) {
-                        depends += result.imports[i] + " ";
-                    }
-                    console.log(depends);
-                }
+                writeOutput(output, result, function() {
+                    writeSourceMapIfNeeded(result.map, function() {
+                        logDependencies(options, result);
+                    });
+                });
             }
         },
         function(err) {

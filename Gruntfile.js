@@ -5,8 +5,8 @@ module.exports = function (grunt) {
 
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
-	
-	var COMPRESS_FOR_TESTS = true;
+
+    var COMPRESS_FOR_TESTS = true;
 
     // Project configuration.
     grunt.initConfig({
@@ -96,18 +96,18 @@ module.exports = function (grunt) {
             options: {
                 banner: '<%= meta.banner %>',
                 mangle: true,
-	            compress: {
-	                pure_getters: true
-	            }
+                compress: {
+                    pure_getters: true
+                }
             },
             dist: {
                 src: ['<%= concat.dist.dest %>'],
                 dest: 'dist/less.min.js'
             },
-	        test: {
-		        src: '<%= browserify.browser.dest %>',
-		        dest: 'tmp/less.min.js'
-	        }
+            test: {
+                src: '<%= browserify.browser.dest %>',
+                dest: 'tmp/less.min.js'
+            }
         },
 
         jshint: {
@@ -121,6 +121,13 @@ module.exports = function (grunt) {
                     'lib/less-rhino/**/*.js',
                     'bin/lessc'
                 ]
+            }
+        },
+
+        jscs: {
+            src: ["test/**/*.js", "lib/less*/**/*.js", "bin/lessc"],
+            options: {
+                config: ".jscsrc"
             }
         },
 
@@ -347,7 +354,7 @@ module.exports = function (grunt) {
     // Create the browser version of less.js
     grunt.registerTask('browsertest-lessjs', [
         'browserify:browser',
-	    'uglify:test',
+        'uglify:test',
         'concat:browsertest'
     ]);
 
@@ -365,19 +372,19 @@ module.exports = function (grunt) {
         'connect::keepalive'
     ]);
 
-	var previous_force_state = grunt.option("force");
+    var previous_force_state = grunt.option("force");
 
-	grunt.registerTask("force",function(set){
-		if (set === "on") {
-			grunt.option("force",true);
-		}
-		else if (set === "off") {
-			grunt.option("force",false);
-		}
-		else if (set === "restore") {
-			grunt.option("force",previous_force_state);
-		}
-	});
+    grunt.registerTask("force",function(set){
+        if (set === "on") {
+            grunt.option("force",true);
+        }
+        else if (set === "off") {
+            grunt.option("force",false);
+        }
+        else if (set === "restore") {
+            grunt.option("force",previous_force_state);
+        }
+    });
 
     grunt.registerTask('sauce', [
         'browsertest-lessjs',
@@ -395,6 +402,7 @@ module.exports = function (grunt) {
     var testTasks = [
         'clean',
         'jshint',
+        'jscs',
         'shell:test',
         'browsertest'
     ];

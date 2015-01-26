@@ -11,7 +11,7 @@ module.exports = function() {
     var globals = Object.keys(global);
 
     var oneTestOnly = process.argv[2],
-	    isFinished = false;
+        isFinished = false;
 
     var isVerbose = process.env.npm_config_loglevel === 'verbose';
 
@@ -25,10 +25,10 @@ module.exports = function() {
             }
         },
         warn: function(msg) {
-	        process.stdout.write(msg + "\n");
+            process.stdout.write(msg + "\n");
         },
         error: function(msg) {
-	        process.stdout.write(msg + "\n");
+            process.stdout.write(msg + "\n");
         }
     });
 
@@ -36,21 +36,21 @@ module.exports = function() {
         queueRunning = false;
     function queue(func) {
         if (queueRunning) {
-	        //console.log("adding to queue");
+            //console.log("adding to queue");
             queueList.push(func);
         } else {
-	        //console.log("first in queue - starting");
+            //console.log("first in queue - starting");
             queueRunning = true;
             func();
         }
     }
     function release() {
         if (queueList.length) {
-	        //console.log("running next in queue");
+            //console.log("running next in queue");
             var func = queueList.shift();
-	        setTimeout(func, 0);
+            setTimeout(func, 0);
         } else {
-	        //console.log("stopping queue");
+            //console.log("stopping queue");
             queueRunning = false;
         }
     }
@@ -129,10 +129,10 @@ module.exports = function() {
     }
 
     function testSyncronous(options, filenameNoExtension) {
-	    if (oneTestOnly && ("Test Sync " + filenameNoExtension) !== oneTestOnly) {
-		    return;
-	    }
-	    totalTests++;
+        if (oneTestOnly && ("Test Sync " + filenameNoExtension) !== oneTestOnly) {
+            return;
+        }
+        totalTests++;
         queue(function() {
         var isSync = true;
         toCSS(options, path.join(normalFolder, filenameNoExtension + ".less"), function (err, result) {
@@ -143,7 +143,7 @@ module.exports = function() {
             } else {
                 fail("Not Sync");
             }
-	        release();
+            release();
         });
         isSync = false;
         });
@@ -200,19 +200,19 @@ module.exports = function() {
             var doubleCallCheck = false;
             queue(function() {
                 toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
-	            if (doubleCallCheck) {
-		            totalTests++;
-		            fail("less is calling back twice");
-		            process.stdout.write(doubleCallCheck + "\n");
-		            process.stdout.write((new Error()).stack + "\n");
-		            return;
-	            }
-	            doubleCallCheck = (new Error()).stack;
+                if (doubleCallCheck) {
+                    totalTests++;
+                    fail("less is calling back twice");
+                    process.stdout.write(doubleCallCheck + "\n");
+                    process.stdout.write((new Error()).stack + "\n");
+                    return;
+                }
+                doubleCallCheck = (new Error()).stack;
 
                 if (verifyFunction) {
                     var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
-	                release();
-	                return verificationResult;
+                    release();
+                    return verificationResult;
                 }
                 if (err) {
                     fail("ERROR: " + (err && err.message));
@@ -271,16 +271,16 @@ module.exports = function() {
         passedTests++;
         endTest();
     }
-	
-	function finished() {
-		isFinished = true;
-		endTest();
-	}
+
+    function finished() {
+        isFinished = true;
+        endTest();
+    }
 
     function endTest() {
         if (isFinished && ((failedTests + passedTests) >= totalTests)) {
-	        var leaked = checkGlobalLeaks();
-	        
+            var leaked = checkGlobalLeaks();
+
             process.stdout.write("\n");
             if (failedTests > 0) {
                 process.stdout.write(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed\n");
@@ -307,8 +307,7 @@ module.exports = function() {
         return false;
     }
 
-
-  function toCSS(options, path, callback) {
+    function toCSS(options, path, callback) {
         options = options || {};
         var str = fs.readFileSync(path, 'utf8'), addPath = require('path').dirname(path);
 
@@ -329,9 +328,9 @@ module.exports = function() {
     }
 
     function testNoOptions() {
-	    if (oneTestOnly && "Integration" !== oneTestOnly) {
-		    return;
-	    }
+        if (oneTestOnly && "Integration" !== oneTestOnly) {
+            return;
+        }
         totalTests++;
         try {
             process.stdout.write("- Integration - creating parser without options: ");
@@ -351,6 +350,6 @@ module.exports = function() {
         testSourcemap: testSourcemap,
         testNoOptions: testNoOptions,
         prepBomTest: prepBomTest,
-	    finished: finished
+        finished: finished
     };
 };

@@ -149,7 +149,7 @@ var testErrorSheet = function (sheet) {
                             .replace(/\{pathrel\}/g, "")
                             .replace(/\{pathhref\}/g, "http://localhost:8081/test/less/errors/")
                             .replace(/\{404status\}/g, " (404)")
-	                        .replace(/\{node\}.*\{\/node\}/g, "")
+                            .replace(/\{node\}.*\{\/node\}/g, "")
                             .replace(/\n$/, "");
                         expect(actualErrorMsg).toEqual(errorTxt);
                         if (errorTxt == actualErrorMsg) {

@@ -1,0 +1,6 @@
+{
+    "disallowImplicitTypeConversion": [/*"numeric", "boolean", "binary", "string"*/], /* should be true*/
+    "disallowMixedSpacesAndTabs": true,
+    "disallowMultipleLineBreaks": true,
+    "disallowTrailingWhitespace": true
+}

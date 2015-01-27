@@ -1,6 +1,5 @@
 {
     "evil": true,
-    "laxbreak": true,
     "latedef": true,
     "node": true,
     "undef": true,

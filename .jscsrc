@@ -12,5 +12,15 @@
     },
     "disallowTrailingComma": true,
     "disallowTrailingWhitespace": true,
-    "maximumLineLength": 160
+    "maximumLineLength": 160,
+    "requireCommaBeforeLineBreak": true,
+    "requireCurlyBraces": [
+                              "if",
+                              "else",
+                              "for",
+                              "while",
+                              "do",
+                              "try",
+                              "catch"
+                          ]
 }

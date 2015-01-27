@@ -17,29 +17,35 @@ module.exports = function() {
       var performCopy = false;
 
       if (stats.isFile()) {
-        if (!destFolderExists)
+        if (!destFolderExists) {
             fs.mkdirSync(destFolder);
-        if (src.match(/\.(css|less)$/))
+        }
+        if (src.match(/\.(css|less)$/)) {
             copyFileAddingBomSync(src, dest);
-        else
-          copyFileSync(src, dest)
+        } else {
+            copyFileSync(src, dest);
+        }
       }
       else if (stats.isDirectory()) {
-        if (!fs.existsSync(destFolder))
+        if (!fs.existsSync(destFolder)) {
             fs.mkdirSync(destFolder);
-        if (!fs.existsSync(dest))
+        }
+        if (!fs.existsSync(dest)) {
             fs.mkdirSync(dest);
+        }
         fs.readdirSync(src).forEach(function(d) {
-            if (d !== 'bom')
+            if (d !== 'bom') {
                 copyFolderWithBom(path.join(src, d), path.join(dest, d));
+            }
         });
       }
     }
 
     function copyFileAddingBomSync(srcFile, destFile) {
         var contents = fs.readFileSync(srcFile, { encoding: 'utf8' });
-        if (!contents.length || contents.charCodeAt(0) !== 0xFEFF)
+        if (!contents.length || contents.charCodeAt(0) !== 0xFEFF) {
             contents = '\ufeff' + contents;
+        }
         fs.writeFileSync(destFile, contents, { encoding: 'utf8' });
     }
 

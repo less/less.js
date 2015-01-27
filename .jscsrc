@@ -1,6 +1,16 @@
 {
     "disallowImplicitTypeConversion": ["numeric", "boolean", "binary", "string"],
+    "disallowKeywords": ["with"],
     "disallowMixedSpacesAndTabs": true,
     "disallowMultipleLineBreaks": true,
-    "disallowTrailingWhitespace": true
+    "disallowOperatorBeforeLineBreak": ["."],
+    "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~"],
+    "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
+    "disallowSpacesInCallExpression": true,
+    "disallowSpacesInNamedFunctionExpression": {
+        "beforeOpeningRoundBrace": true
+    },
+    "disallowTrailingComma": true,
+    "disallowTrailingWhitespace": true,
+    "maximumLineLength": 160
 }

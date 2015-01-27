@@ -1,3 +1,21 @@
+# 2.3.0
+
+2015-01-27
+
+ - add isruleset function
+ - add optional import option, causing less to not fail if file not found
+ - Fix browsers-side cache.
+ - Many fixes to import reference - support `@support` and keyframe
+ - Selectors now interpolate pseudo selectors (e.g. `:@{hover}`)
+ - Fix comments missed off if they were at the end of the file
+ - Fix !important used with parametric mixins
+ - Emits warnings for extends when the target is not found
+ - include-path now works on data-uri
+ - variables and function calls work for path in data-uri
+ - Fix absolute paths not working on imports sometimes.
+ - Unicode BOM removed again
+ - Misc. bug fixes
+
 # 2.2.0
 
 2015-01-04

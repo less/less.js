@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v2.2.0
+ * Less - Leaner CSS v2.3.0
  * http://lesscss.org
  *
  * Copyright (c) 2009-2015, Alexis Sellier <self@cloudhead.net>
@@ -52,9 +52,9 @@ module.exports = function(window, options) {
         options.useFileCache = true;
     }
 
-	if (options.onReady === undefined) {
-		options.onReady = true;
-	}
+    if (options.onReady === undefined) {
+        options.onReady = true;
+    }
 
 };
 
@@ -75,15 +75,15 @@ require("./add-default-options")(window, options);
 var less = module.exports = require("./index")(window, options);
 
 if (options.onReady) {
-	if (/!watch/.test(window.location.hash)) {
-		less.watch();
-	}
-	
-	less.pageLoadFinished = less.registerStylesheets().then(
-		function () {
-			return less.refresh(less.env === 'development');
-		}
-	);
+    if (/!watch/.test(window.location.hash)) {
+        less.watch();
+    }
+
+    less.pageLoadFinished = less.registerStylesheets().then(
+        function () {
+            return less.refresh(less.env === 'development');
+        }
+    );
 }
 },{"./add-default-options":1,"./index":7,"promise/polyfill.js":undefined}],3:[function(require,module,exports){
 var utils = require("./utils");
@@ -596,14 +596,14 @@ function loadStyleSheet(sheet, callback, reload, remaining, modifyVars) {
         if (webInfo) {
             webInfo.remaining = remaining;
 
-	        if (!instanceOptions.modifyVars) {
-	            var css = cache.getCSS(path, webInfo);
-	            if (!reload && css) {
-	                webInfo.local = true;
-	                callback(null, null, data, sheet, webInfo, path);
-	                return;
-	            }
-	        }
+            if (!instanceOptions.modifyVars) {
+                var css = cache.getCSS(path, webInfo);
+                if (!reload && css) {
+                    webInfo.local = true;
+                    callback(null, css, data, sheet, webInfo, path);
+                    return;
+                }
+            }
         }
 
         //TODO add tests around how this behaves when reloading
@@ -615,11 +615,11 @@ function loadStyleSheet(sheet, callback, reload, remaining, modifyVars) {
                 e.href = path;
                 callback(e);
             } else {
-	            result.css = postProcessCSS(result.css);
-	            if (!instanceOptions.modifyVars) {
-	                cache.setCSS(sheet.href, webInfo.lastModified, result.css);
-	            }
-	            callback(null, result.css, data, sheet, webInfo, path);
+                result.css = postProcessCSS(result.css);
+                if (!instanceOptions.modifyVars) {
+                    cache.setCSS(sheet.href, webInfo.lastModified, result.css);
+                }
+                callback(null, result.css, data, sheet, webInfo, path);
             }
         });
     }
@@ -716,7 +716,7 @@ less.refresh = function (reload, modifyVars, clearFileCache) {
             } else {
                 less.logger.info("rendered " + sheet.href + " successfully.");
             }
-	        browser.createCSS(window.document, css, sheet);
+            browser.createCSS(window.document, css, sheet);
             less.logger.info("css for " + sheet.href + " generated in " + (new Date() - endTime) + 'ms');
             if (webInfo.remaining === 0) {
                 totalMilliseconds = new Date() - startTime;
@@ -854,6 +854,7 @@ contexts.Parse = function(options) {
 };
 
 var evalCopyProperties = [
+    'paths',          // additional include paths
     'compress',       // whether to compress
     'ieCompat',       // whether to enforce IE compatibility (IE8 data-uri)
     'strictMath',     // whether math has to be within parenthesis
@@ -920,7 +921,6 @@ contexts.Eval.prototype.normalizePath = function( path ) {
 };
 
 //todo - do the same for the toCSS ?
-
 
 },{}],11:[function(require,module,exports){
 module.exports = {
@@ -1613,7 +1613,7 @@ colorFunctions = {
             return new Color(c.value.slice(1));
         }
         if ((c instanceof Color) || (c = Color.fromKeyword(c.value))) {
-            c.keyword = undefined;
+            c.value = undefined;
             return c;
         }
         throw {
@@ -1649,8 +1649,9 @@ module.exports = function(environment) {
 
         var mimetype = mimetypeNode && mimetypeNode.value;
         var filePath = filePathNode.value;
-        var currentDirectory = filePathNode.currentFileInfo.relativeUrls ?
-            filePathNode.currentFileInfo.currentDirectory : filePathNode.currentFileInfo.entryPath;
+        var currentFileInfo = this.currentFileInfo;
+        var currentDirectory = currentFileInfo.relativeUrls ?
+            currentFileInfo.currentDirectory : currentFileInfo.entryPath;
 
         var fragmentStart = filePath.indexOf('#');
         var fragment = '';
@@ -1672,7 +1673,7 @@ module.exports = function(environment) {
 
             mimetype = environment.mimeLookup(filePath);
 
-			if (mimetype === "image/svg+xml") {
+            if (mimetype === "image/svg+xml") {
                 useBase64 = false;
             } else {
                 // use base 64 unless it's an ASCII or UTF-8 format
@@ -1687,29 +1688,29 @@ module.exports = function(environment) {
 
         var fileSync = fileManager.loadFileSync(filePath, currentDirectory, this.context, environment);
         if (!fileSync.contents) {
-            logger.warn("Skipped data-uri embedding because file not found");
+            logger.warn("Skipped data-uri embedding of " + filePath + " because file not found");
             return fallback(this, filePathNode || mimetypeNode);
         }
         var buf = fileSync.contents;
-		if (useBase64 && !environment.encodeBase64) {
-			return fallback(this, filePathNode);
-		}
+        if (useBase64 && !environment.encodeBase64) {
+            return fallback(this, filePathNode);
+        }
 
         buf = useBase64 ? environment.encodeBase64(buf) : encodeURIComponent(buf);
 
         var uri = "data:" + mimetype + ',' + buf + fragment;
 
-		// IE8 cannot handle a data-uri larger than 32,768 characters. If this is exceeded
-		// and the --ieCompat flag is enabled, return a normal url() instead.
-		var DATA_URI_MAX = 32768;
-		if (uri.length >= DATA_URI_MAX) {
+        // IE8 cannot handle a data-uri larger than 32,768 characters. If this is exceeded
+        // and the --ieCompat flag is enabled, return a normal url() instead.
+        var DATA_URI_MAX = 32768;
+        if (uri.length >= DATA_URI_MAX) {
 
-			if (this.context.ieCompat !== false) {
-				logger.warn("Skipped data-uri embedding of " + filePath + " because its size (" + uri.length + " characters) exceeds IE8-safe " + DATA_URI_MAX + " characters!");
+            if (this.context.ieCompat !== false) {
+                logger.warn("Skipped data-uri embedding of " + filePath + " because its size (" + uri.length + " characters) exceeds IE8-safe " + DATA_URI_MAX + " characters!");
 
-				return fallback(this, filePathNode || mimetypeNode);
-			}
-		}
+                return fallback(this, filePathNode || mimetypeNode);
+            }
+        }
 
         return new URL(new Quoted('"' + uri + '"', uri, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
     });
@@ -1964,6 +1965,7 @@ functionRegistry.addMultiple({
 module.exports = function(environment) {
     var Dimension = require("../tree/dimension"),
         Color = require("../tree/color"),
+        Expression = require("../tree/expression"),
         Quoted = require("../tree/quoted"),
         URL = require("../tree/url"),
         functionRegistry = require("./function-registry");
@@ -2013,7 +2015,7 @@ module.exports = function(environment) {
             '<' + gradientType + 'Gradient id="gradient" gradientUnits="userSpaceOnUse" ' + gradientDirectionSvg + '>';
 
         for (i = 0; i < stops.length; i+= 1) {
-            if (stops[i].value) {
+            if (stops[i] instanceof Expression) {
                 color = stops[i].value[0];
                 position = stops[i].value[1];
             } else {
@@ -2038,8 +2040,9 @@ module.exports = function(environment) {
     });
 };
 
-},{"../tree/color":47,"../tree/dimension":53,"../tree/quoted":70,"../tree/url":77,"./function-registry":21}],27:[function(require,module,exports){
+},{"../tree/color":47,"../tree/dimension":53,"../tree/expression":56,"../tree/quoted":70,"../tree/url":77,"./function-registry":21}],27:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
+    DetachedRuleset = require("../tree/detached-ruleset"),
     Dimension = require("../tree/dimension"),
     Color = require("../tree/color"),
     Quoted = require("../tree/quoted"),
@@ -2062,6 +2065,9 @@ var isa = function (n, Type) {
         return (n instanceof Dimension) && n.unit.is(unit) ? Keyword.True : Keyword.False;
     };
 functionRegistry.addMultiple({
+    isruleset: function (n) {
+        return isa(n, DetachedRuleset);
+    },
     iscolor: function (n) {
         return isa(n, Color);
     },
@@ -2118,7 +2124,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":43,"../tree/color":47,"../tree/dimension":53,"../tree/keyword":62,"../tree/operation":68,"../tree/quoted":70,"../tree/url":77,"./function-registry":21}],28:[function(require,module,exports){
+},{"../tree/anonymous":43,"../tree/color":47,"../tree/detached-ruleset":52,"../tree/dimension":53,"../tree/keyword":62,"../tree/operation":68,"../tree/quoted":70,"../tree/url":77,"./function-registry":21}],28:[function(require,module,exports){
 var contexts = require("./contexts"),
     Parser = require('./parser/parser');
 
@@ -2161,12 +2167,14 @@ module.exports = function(environment) {
             importManager.queue.splice(importManager.queue.indexOf(path), 1); // Remove the path from the queue
 
             var importedEqualsRoot = fullPath === importManager.rootFilename;
-
+            if (importOptions.optional && e) {
+            callback(null, {rules:[]}, false, null);
+            }
+            else {
             importManager.files[fullPath] = root;
-
             if (e && !importManager.error) { importManager.error = e; }
-
             callback(e, root, importedEqualsRoot, fullPath);
+            }
         };
 
         var newFileInfo = {
@@ -2189,7 +2197,7 @@ module.exports = function(environment) {
 
         var loadFileCallback = function(loadedFile) {
             var resolvedFilename = loadedFile.filename,
-                contents = loadedFile.contents;
+                contents = loadedFile.contents.replace(/^\uFEFF/, '');
 
             // Pass on an updated rootpath if path of imported file is relative and file
             // is in a (sub|sup) directory
@@ -2246,7 +2254,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 2, 0],
+        version: [2, 3, 0],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -2355,7 +2363,7 @@ module.exports = {
 },{}],32:[function(require,module,exports){
 var LessError = require('./less-error'),
     transformTree = require("./transform-tree"),
-	logger = require("./logger");
+    logger = require("./logger");
 
 module.exports = function(SourceMapBuilder) {
 var ParseTree = function(root, imports) {
@@ -2372,11 +2380,11 @@ ParseTree.prototype.toCSS = function(options) {
     }
 
     try {
-	    var compress = Boolean(options.compress);
-	    if (compress) {
-		    logger.warn("The compress option has been deprecated. We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.");
-	    }
-	    
+        var compress = Boolean(options.compress);
+        if (compress) {
+            logger.warn("The compress option has been deprecated. We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.");
+        }
+
         var toCSSOptions = {
             compress: compress,
             dumpLineNumbers: options.dumpLineNumbers,
@@ -2463,6 +2471,10 @@ module.exports = function(environment, ParseTree, ImportManager) {
                     entryPath: entryPath,
                     rootFilename: filename
                 };
+                // add in a missing trailing slash
+                if (rootFileInfo.rootpath && rootFileInfo.rootpath.slice(-1) !== "/") {
+                    rootFileInfo.rootpath += "/";
+                }
             }
 
             var imports = new ImportManager(context, rootFileInfo);
@@ -3085,12 +3097,16 @@ var Parser = function Parser(context, imports, fileInfo) {
             primary: function () {
                 var mixin = this.mixin, root = [], node;
 
-                while (!parserInput.finished)
+                while (true)
                 {
                     while(true) {
                         node = this.comment();
                         if (!node) { break; }
                         root.push(node);
+                    }
+                    // always process comments before deciding if finished
+                    if (parserInput.finished) {
+                        break;
                     }
                     if (parserInput.peek('}')) {
                         break;
@@ -3712,7 +3728,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 c = this.combinator();
 
                 e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) || parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
-                    parserInput.$char('*') || parserInput.$char('&') || this.attribute() || parserInput.$re(/^\([^()@]+\)/) || parserInput.$re(/^[\.#](?=@)/) ||
+                    parserInput.$char('*') || parserInput.$char('&') || this.attribute() || parserInput.$re(/^\([^()@]+\)/) || parserInput.$re(/^[\.#:](?=@)/) ||
                     this.entities.variableCurly();
 
                 if (! e) {
@@ -4023,7 +4039,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             },
 
             importOption: function() {
-                var opt = parserInput.$re(/^(less|css|multiple|once|inline|reference)/);
+                var opt = parserInput.$re(/^(less|css|multiple|once|inline|reference|optional)/);
                 if (opt) {
                     return opt[1];
                 }
@@ -4237,19 +4253,19 @@ var Parser = function Parser(context, imports, fileInfo) {
             sub: function () {
                 var a, e;
 
-	            parserInput.save();
+                parserInput.save();
                 if (parserInput.$char('(')) {
                     a = this.addition();
                     if (a && parserInput.$char(')')) {
-	                    parserInput.forget();
-	                    e = new(tree.Expression)([a]);
-	                    e.parens = true;
+                        parserInput.forget();
+                        e = new(tree.Expression)([a]);
+                        e.parens = true;
                         return e;
                     }
-	                parserInput.restore("Expected ')'");
-	                return;
+                    parserInput.restore("Expected ')'");
+                    return;
                 }
-	            parserInput.restore();
+                parserInput.restore();
             },
             multiplication: function () {
                 var m, a, op, operation, isSpaced;
@@ -4963,7 +4979,6 @@ Assignment.prototype.genCSS = function (context, output) {
 };
 module.exports = Assignment;
 
-
 },{"./node":67}],45:[function(require,module,exports){
 var Node = require("./node");
 
@@ -5116,11 +5131,11 @@ Color.prototype.genCSS = function (context, output) {
 Color.prototype.toCSS = function (context, doNotCompress) {
     var compress = context && context.compress && !doNotCompress, color, alpha;
 
-    // `keyword` is set if this color was originally
+    // `value` is set if this color was originally
     // converted from a named color string so we need
     // to respect this and try to output named color too.
-    if (this.keyword) {
-        return this.keyword;
+    if (this.value) {
+        return this.value;
     }
 
     // If we have some transparency, the only way to represent it
@@ -5239,7 +5254,7 @@ Color.fromKeyword = function(keyword) {
     }
 
     if (c) {
-        c.keyword = keyword;
+        c.value = keyword;
         return c;
     }
 };
@@ -5555,7 +5570,7 @@ module.exports = Dimension;
 var Node = require("./node"),
     Ruleset = require("./ruleset");
 
-var Directive = function (name, value, rules, index, currentFileInfo, debugInfo) {
+var Directive = function (name, value, rules, index, currentFileInfo, debugInfo, isReferenced) {
     this.name  = name;
     this.value = value;
     if (rules) {
@@ -5565,6 +5580,7 @@ var Directive = function (name, value, rules, index, currentFileInfo, debugInfo)
     this.index = index;
     this.currentFileInfo = currentFileInfo;
     this.debugInfo = debugInfo;
+    this.isReferenced = isReferenced;
 };
 
 Directive.prototype = new Node();
@@ -5592,7 +5608,10 @@ Directive.prototype.genCSS = function (context, output) {
         value.genCSS(context, output);
     }
     if (rules) {
-        this.outputRuleset(context, output, [rules]);
+        if (rules.type === "Ruleset") {
+            rules = [rules];
+        }
+        this.outputRuleset(context, output, rules);
     } else {
         output.add(';');
     }
@@ -5607,7 +5626,7 @@ Directive.prototype.eval = function (context) {
         rules.root = true;
     }
     return new Directive(this.name, value, rules,
-        this.index, this.currentFileInfo, this.debugInfo);
+        this.index, this.currentFileInfo, this.debugInfo, this.isReferenced);
 };
 Directive.prototype.variable = function (name) { if (this.rules) return Ruleset.prototype.variable.call(this.rules, name); };
 Directive.prototype.find = function () { if (this.rules) return Ruleset.prototype.find.apply(this.rules, arguments); };
@@ -5623,6 +5642,9 @@ Directive.prototype.markReferenced = function () {
             }
         }
     }
+};
+Directive.prototype.getIsReferenced = function () {
+    return !this.currentFileInfo || !this.currentFileInfo.reference || this.isReferenced;
 };
 Directive.prototype.outputRuleset = function (context, output, rules) {
     var ruleCnt = rules.length, i;
@@ -5720,7 +5742,7 @@ var Node = require("./node"),
 var Expression = function (value) {
     this.value = value;
     if (!value) {
-        throw new Error("Expression requires a array parameter");
+        throw new Error("Expression requires an array parameter");
     }
 };
 Expression.prototype = new Node();
@@ -5968,6 +5990,7 @@ module.exports = Import;
 },{"./anonymous":43,"./media":63,"./node":67,"./quoted":70,"./ruleset":73,"./url":77}],59:[function(require,module,exports){
 var tree = {};
 
+tree.Node = require('./node');
 tree.Alpha = require('./alpha');
 tree.Color = require('./color');
 tree.Directive = require('./directive');
@@ -6007,7 +6030,7 @@ tree.RulesetCall = require('./ruleset-call');
 
 module.exports = tree;
 
-},{"./alpha":42,"./anonymous":43,"./assignment":44,"./attribute":45,"./call":46,"./color":47,"./combinator":48,"./comment":49,"./condition":50,"./detached-ruleset":52,"./dimension":53,"./directive":54,"./element":55,"./expression":56,"./extend":57,"./import":58,"./javascript":60,"./keyword":62,"./media":63,"./mixin-call":64,"./mixin-definition":65,"./negative":66,"./operation":68,"./paren":69,"./quoted":70,"./rule":71,"./ruleset":73,"./ruleset-call":72,"./selector":74,"./unicode-descriptor":75,"./unit":76,"./url":77,"./value":78,"./variable":79}],60:[function(require,module,exports){
+},{"./alpha":42,"./anonymous":43,"./assignment":44,"./attribute":45,"./call":46,"./color":47,"./combinator":48,"./comment":49,"./condition":50,"./detached-ruleset":52,"./dimension":53,"./directive":54,"./element":55,"./expression":56,"./extend":57,"./import":58,"./javascript":60,"./keyword":62,"./media":63,"./mixin-call":64,"./mixin-definition":65,"./negative":66,"./node":67,"./operation":68,"./paren":69,"./quoted":70,"./rule":71,"./ruleset":73,"./ruleset-call":72,"./selector":74,"./unicode-descriptor":75,"./unit":76,"./url":77,"./value":78,"./variable":79}],60:[function(require,module,exports){
 var JsEvalNode = require("./js-eval-node"),
     Dimension = require("./dimension"),
     Quoted = require("./quoted"),
@@ -7137,15 +7160,15 @@ Ruleset.prototype.evalImports = function(context) {
     }
 };
 Ruleset.prototype.makeImportant = function() {
-    return new Ruleset(this.selectors, this.rules.map(function (r) {
-                if (r.makeImportant) {
-                    return r.makeImportant();
-                } else {
-                    return r;
-                }
-            }), this.strictImports);
-};
-Ruleset.prototype.matchArgs = function (args) {
+    this.rules = this.rules.map(function (r) {
+        if (r.makeImportant) {
+            return r.makeImportant();
+        } else {
+            return r;
+        }
+    });
+    return this;
+};Ruleset.prototype.matchArgs = function (args) {
     return !args || args.length === 0;
 };
 // lets you call a css selector with a guard
@@ -7175,7 +7198,7 @@ Ruleset.prototype.variables = function () {
             }
             // when evaluating variables in an import statement, imports have not been eval'd
             // so we need to go inside import statements.
-	        // guard against root being a string (in the case of inlined less)
+            // guard against root being a string (in the case of inlined less)
             if (r.type === "Import" && r.root && r.root.variables) {
                 var vars = r.root.variables();
                 for(var name in vars) {
@@ -7369,18 +7392,49 @@ Ruleset.prototype.genCSS = function (context, output) {
     }
 };
 Ruleset.prototype.markReferenced = function () {
-    if (!this.selectors) {
-        return;
+    var s;
+    if (this.selectors) {
+        for (s = 0; s < this.selectors.length; s++) {
+            this.selectors[s].markReferenced();
+        }
     }
-    for (var s = 0; s < this.selectors.length; s++) {
-        this.selectors[s].markReferenced();
+
+    if (this.rules) {
+        for (s = 0; s < this.rules.length; s++) {
+            if (this.rules[s].markReferenced)
+                this.rules[s].markReferenced();
+        }
     }
 };
+Ruleset.prototype.getIsReferenced = function() {
+    var i, j, path, selector;
+
+    if (this.paths) {
+        for (i=0; i<this.paths.length; i++) {
+            path = this.paths[i];
+            for (j=0; j<path.length; j++) {
+                if (path[j].getIsReferenced && path[j].getIsReferenced())
+                    return true;
+            }
+        }
+    }
+
+    if (this.selectors) {
+        for (i=0;i<this.selectors.length;i++) {
+            selector = this.selectors[i];
+            if (selector.getIsReferenced && selector.getIsReferenced())
+                return true;
+        }
+    }
+    return false;
+};
+
 Ruleset.prototype.joinSelectors = function (paths, context, selectors) {
     for (var s = 0; s < selectors.length; s++) {
         this.joinSelector(paths, context, selectors[s]);
     }
 };
+
 Ruleset.prototype.joinSelector = function (paths, context, selector) {
 
     var i, j, k,
@@ -7968,7 +8022,8 @@ module.exports = {
 
 },{}],81:[function(require,module,exports){
 var tree = require("../tree"),
-    Visitor = require("./visitor");
+    Visitor = require("./visitor"),
+    logger = require("../logger");
 
 /*jshint loopfunc:true */
 
@@ -8063,11 +8118,30 @@ var ProcessExtendsVisitor = function() {
 ProcessExtendsVisitor.prototype = {
     run: function(root) {
         var extendFinder = new ExtendFinderVisitor();
+        this.extendIndicies = {};
         extendFinder.run(root);
         if (!extendFinder.foundExtends) { return root; }
         root.allExtends = root.allExtends.concat(this.doExtendChaining(root.allExtends, root.allExtends));
         this.allExtendsStack = [root.allExtends];
-        return this._visitor.visit(root);
+        var newRoot = this._visitor.visit(root);
+        this.checkExtendsForNonMatched(root.allExtends);
+        return newRoot;
+    },
+    checkExtendsForNonMatched: function(extendList) {
+        var indicies = this.extendIndicies;
+        extendList.filter(function(extend) {
+            return !extend.hasFoundMatches && extend.parent_ids.length == 1;
+        }).forEach(function(extend) {
+                var selector = "_unknown_";
+                try {
+                    selector = extend.selector.toCSS({});
+                }catch(_){}
+
+                if(!indicies[extend.index + ' ' + selector]) {
+                    indicies[extend.index + ' ' + selector] = true;
+                    logger.warn("extend '"+selector+"' has no matches");
+                }
+            });
     },
     doExtendChaining: function (extendsList, extendsListTarget, iterationCount) {
         //
@@ -8103,6 +8177,8 @@ ProcessExtendsVisitor.prototype = {
                 matches = extendVisitor.findMatch(extend, selectorPath);
 
                 if (matches.length) {
+
+                    extend.hasFoundMatches = true;
 
                     // we found a match, so for each self selector..
                     extend.selfSelectors.forEach(function(selfSelector) {
@@ -8187,6 +8263,7 @@ ProcessExtendsVisitor.prototype = {
                 matches = this.findMatch(allExtends[extendIndex], selectorPath);
 
                 if (matches.length) {
+                    allExtends[extendIndex].hasFoundMatches = true;
 
                     allExtends[extendIndex].selfSelectors.forEach(function(selfSelector) {
                         selectorsToAdd.push(extendVisitor.extendSelector(matches, selectorPath, selfSelector));
@@ -8372,7 +8449,9 @@ ProcessExtendsVisitor.prototype = {
         this.allExtendsStack.push(newAllExtends);
     },
     visitMediaOut: function (mediaNode) {
-        this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        var lastIndex = this.allExtendsStack.length - 1;
+        this.checkExtendsForNonMatched(this.allExtendsStack[lastIndex]);
+        this.allExtendsStack.length = lastIndex;
     },
     visitDirective: function (directiveNode, visitArgs) {
         var newAllExtends = directiveNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length-1]);
@@ -8380,18 +8459,20 @@ ProcessExtendsVisitor.prototype = {
         this.allExtendsStack.push(newAllExtends);
     },
     visitDirectiveOut: function (directiveNode) {
-        this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        var lastIndex = this.allExtendsStack.length - 1;
+        this.checkExtendsForNonMatched(this.allExtendsStack[lastIndex]);
+        this.allExtendsStack.length = lastIndex;
     }
 };
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../tree":59,"./visitor":87}],82:[function(require,module,exports){
+},{"../logger":31,"../tree":59,"./visitor":87}],82:[function(require,module,exports){
 function ImportSequencer(onSequencerEmpty) {
     this.imports = [];
     this.variableImports = [];
     this._onSequencerEmpty = onSequencerEmpty;
-	this._currentDepth = 0;
+    this._currentDepth = 0;
 }
 
 ImportSequencer.prototype.addImport = function(callback) {
@@ -8414,27 +8495,27 @@ ImportSequencer.prototype.addVariableImport = function(callback) {
 };
 
 ImportSequencer.prototype.tryRun = function() {
-	this._currentDepth++;
-	try {
-	    while(true) {
-	        while(this.imports.length > 0) {
-	            var importItem = this.imports[0];
-	            if (!importItem.isReady) {
-	                return;
-	            }
-	            this.imports = this.imports.slice(1);
-	            importItem.callback.apply(null, importItem.args);
-	        }
-	        if (this.variableImports.length === 0) {
-	            break;
-	        }
-	        var variableImport = this.variableImports[0];
-	        this.variableImports = this.variableImports.slice(1);
-	        variableImport();
-	    }
-	} finally {
-		this._currentDepth--;
-	}
+    this._currentDepth++;
+    try {
+        while(true) {
+            while(this.imports.length > 0) {
+                var importItem = this.imports[0];
+                if (!importItem.isReady) {
+                    return;
+                }
+                this.imports = this.imports.slice(1);
+                importItem.callback.apply(null, importItem.args);
+            }
+            if (this.variableImports.length === 0) {
+                break;
+            }
+            var variableImport = this.variableImports[0];
+            this.variableImports = this.variableImports.slice(1);
+            variableImport();
+        }
+    } finally {
+        this._currentDepth--;
+    }
     if (this._currentDepth === 0 && this._onSequencerEmpty) {
         this._onSequencerEmpty();
     }
@@ -8473,12 +8554,12 @@ ImportVisitor.prototype = {
         this.isFinished = true;
         this._sequencer.tryRun();
     },
-	_onSequencerEmpty: function() {
-		if (!this.isFinished) {
-			return;
-		}
-		this._finish(this.error);
-	},
+    _onSequencerEmpty: function() {
+        if (!this.isFinished) {
+            return;
+        }
+        this._finish(this.error);
+    },
     visitImport: function (importNode, visitArgs) {
         var inlineCSS = importNode.options.inline;
 
@@ -8532,9 +8613,9 @@ ImportVisitor.prototype = {
             this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.currentFileInfo, evaldImportNode.options, sequencedOnImported);
         } else {
             this.importCount--;
-	        if (this.isFinished) {
-		        this._sequencer.tryRun();
-	        }
+            if (this.isFinished) {
+                this._sequencer.tryRun();
+            }
         }
     },
     onImported: function (importNode, context, e, root, importedAtRoot, fullPath) {
@@ -8584,7 +8665,7 @@ ImportVisitor.prototype = {
         importVisitor.importCount--;
 
         if (importVisitor.isFinished) {
-	        importVisitor._sequencer.tryRun();
+            importVisitor._sequencer.tryRun();
         }
     },
     visitRule: function (ruleNode, visitArgs) {
@@ -8724,10 +8805,10 @@ ToCSSVisitor.prototype = {
     },
 
     visitDirective: function(directiveNode, visitArgs) {
-        if (directiveNode.currentFileInfo.reference && !directiveNode.isReferenced) {
-            return;
-        }
         if (directiveNode.name === "@charset") {
+            if (!directiveNode.getIsReferenced()) {
+                return;
+            }
             // Only output the debug info together with subsequent @charset definitions
             // a comment (or @media statement) before the actual @charset directive would
             // be considered illegal css as it has to be on the first line
@@ -8743,6 +8824,37 @@ ToCSSVisitor.prototype = {
         }
         if (directiveNode.rules && directiveNode.rules.rules) {
             this._mergeRules(directiveNode.rules.rules);
+            //process childs
+            directiveNode.accept(this._visitor);
+            visitArgs.visitDeeper = false;
+
+            // the directive was directly referenced and therefore needs to be shown in the output
+            if (directiveNode.getIsReferenced()) {
+                return directiveNode;
+            }
+
+            if (!directiveNode.rules.rules) {
+                return ;
+            }
+
+            //the directive was not directly referenced
+            for (var r = 0; r<directiveNode.rules.rules.length; r++) {
+                var rule = directiveNode.rules.rules[r];
+                if (rule.getIsReferenced && rule.getIsReferenced()) {
+                    //the directive contains something that was referenced (likely by extend)
+                    //therefore it needs to be shown in output too
+
+                    //marking as referenced in case the directive is stored inside another directive
+                    directiveNode.markReferenced();
+                    return directiveNode;
+                }
+            }
+            //The directive was not directly referenced and does not contain anything that
+            //was referenced. Therefore it must not be shown in output.
+            return ;
+        } else {
+            if (!directiveNode.getIsReferenced())
+                return;
         }
         return directiveNode;
     },

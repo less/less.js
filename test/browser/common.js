@@ -130,10 +130,10 @@ var testErrorSheet = function (sheet) {
                         .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, "")
                         .replace(/<\/h3>/ig, " ")
                         .replace(/<li>|<\/ul>|<br>/ig, "\n"))
-                        .replace(/&amp;/ig,"&")
+                        .replace(/&amp;/ig, "&")
                         // for IE8
-                        .replace(/\r\n/g,"\n")
-                        .replace(/\. \nin/,". in");
+                        .replace(/\r\n/g, "\n")
+                        .replace(/\. \nin/, ". in");
                 actualErrorMsg = innerText
                     .replace(/\n\d+/g, function (lineNo) {
                         return lineNo + " ";

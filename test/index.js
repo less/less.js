@@ -45,7 +45,7 @@ lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "glob
 lessTester.runTestSet({modifyVars: true}, "modifyVars/",
     null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; });
 lessTester.runTestSet({urlArgs: '424242'}, "url-args/");
-lessTester.runTestSet({paths: ['test/data/','test/less/import/']}, "include-path/");
+lessTester.runTestSet({paths: ['test/data/', 'test/less/import/']}, "include-path/");
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();

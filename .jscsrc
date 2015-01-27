@@ -8,35 +8,31 @@
     "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
     "disallowSpacesInCallExpression": true,
     "disallowSpacesInNamedFunctionExpression": {
-        "beforeOpeningRoundBrace": true
-    },
+        "beforeOpeningRoundBrace": true},
     "disallowTrailingComma": true,
     "disallowTrailingWhitespace": true,
     "maximumLineLength": 160,
     "requireCommaBeforeLineBreak": true,
-    "requireCurlyBraces": [
-                              "if",
+    "requireCurlyBraces": [   "if",
                               "else",
                               "for",
                               "while",
                               "do",
                               "try",
-                              "catch"
-                          ],
-    "requireOperatorBeforeLineBreak": [
-        "?",
-        "=",
-        "+",
-        "-",
-        "/",
-        "*",
-        "==",
-        "===",
-        "!=",
-        "!==",
-        ">",
-        ">=",
-        "<",
-        "<="
-    ]
+                              "catch"],
+    "requireOperatorBeforeLineBreak": [ "?",
+                                        "=",
+                                        "+",
+                                        "-",
+                                        "/",
+                                        "*",
+                                        "==",
+                                        "===",
+                                        "!=",
+                                        "!==",
+                                        ">",
+                                        ">=",
+                                        "<",
+                                        "<="],
+    "requireSpaceAfterBinaryOperators": true
 }

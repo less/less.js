@@ -59,7 +59,7 @@ var checkArgFunc = function(arg, option) {
 var checkBooleanArg = function(arg) {
     var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
     if (!onOff) {
-        console.log(" unable to parse "+arg+" as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        console.log(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
         return false;
     }

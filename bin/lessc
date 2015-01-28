@@ -376,6 +376,8 @@ function printUsage() {
     var writeSourceMapIfNeeded = function(output, onDone) {
         if (options.sourceMap && !sourceMapFileInline) {
             writeSourceMap(output, onDone);
+        } else {
+            onDone();
         }
     };
 

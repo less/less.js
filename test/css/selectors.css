@@ -154,7 +154,7 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 .blood {
   color: red;
 }
-.foo:not(.tst.only-nested:hover) {
+.foo:not(.tst.only-nested .level2:hover) {
   test: only-nested;
 }
 .foo.nestend-and-non-nested:not(.tst.nestend-and-non-nested:hover) {

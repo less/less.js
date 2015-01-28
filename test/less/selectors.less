@@ -123,15 +123,15 @@ a {
 }
 @num: 3;
 :nth-child(@{num}) {
-    selector: interpolated;
+  selector: interpolated;
 }
 .test {
-   &:nth-child(@{num}) {
-     selector: interpolated;
-   }
-   &:nth-child(odd):not(:nth-child(3)) {
-     color: #ff0000;
-   }
+  &:nth-child(@{num}) {
+    selector: interpolated;
+  }
+  &:nth-child(odd):not(:nth-child(3)) {
+    color: #ff0000;
+  }
  }
 [prop],
 [prop=10%],
@@ -158,8 +158,10 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
   color: red;
 }
 .only-nested {
-  .foo:not(.tst&:hover) { 
-    test: only-nested;
+  .level2 {
+    .foo:not(.tst&:hover) {
+      test: only-nested;
+    }
   }
 }
 .nestend-and-non-nested {

@@ -4,12 +4,11 @@ var lessTest = require("./less-test"),
     stylize = require('../lib/less-node/lessc-helper').stylize;
 
 function getErrorPathReplacementFunction(dir) {
-    return function(input) {
-        return input.replace(
-                /\{path\}/g, path.join(process.cwd(), "/test/less/" + dir + "/"))
-	        .replace(/\{node\}/g, "")
-	        .replace(/\{\/node\}/g, "")
-            .replace(/\{pathrel\}/g, path.join("test", "less", dir + "/"))
+    return function(input, baseDir) {
+        return input.replace(/\{path\}/g, path.join(process.cwd(), baseDir, dir + "/"))
+            .replace(/\{node\}/g, "")
+            .replace(/\{\/node\}/g, "")
+            .replace(/\{pathrel\}/g, path.join(baseDir, dir + "/"))
             .replace(/\{pathhref\}/g, "")
             .replace(/\{404status\}/g, "")
             .replace(/\r\n/g, '\n');
@@ -17,6 +16,7 @@ function getErrorPathReplacementFunction(dir) {
 }
 
 console.log("\n" + stylize("Less", 'underline') + "\n");
+lessTester.prepBomTest();
 lessTester.runTestSet({strictMath: true, relativeUrls: true, silent: true});
 lessTester.runTestSet({strictMath: true, strictUnits: true}, "errors/",
     lessTester.testErrors, null, getErrorPathReplacementFunction("errors"));
@@ -34,18 +34,18 @@ lessTester.runTestSet({strictMath: true, strictUnits: true}, "strict-units/");
 lessTester.runTestSet({}, "legacy/");
 lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, "sourcemaps/",
     lessTester.testSourcemap, null, null,
-    function(filename, type) {
+    function(filename, type, baseFolder) {
         if (type === "vars") {
-            return path.join('test/less/', filename) + '.json';
+            return path.join(baseFolder, filename) + '.json';
         }
         return path.join('test/sourcemaps', filename) + '.json';
     });
 lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "globalVars/",
-    null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
+    null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; });
 lessTester.runTestSet({modifyVars: true}, "modifyVars/",
-    null, null, null, function(name) { return path.join('test/less/', name) + '.json'; });
+    null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; });
 lessTester.runTestSet({urlArgs: '424242'}, "url-args/");
-lessTester.runTestSet({paths: ['test/data/','test/less/import/']}, "include-path/");
+lessTester.runTestSet({paths: ['test/data/', 'test/less/import/']}, "include-path/");
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();

@@ -8,10 +8,12 @@ var options = {
 }
 
 less.render(input, options, function (err, result) {
-  if (err) console.log(err);
-  if (result.css === expectedCss) {
-    console.log("PASS")
-  } else {
-    console.log("FAIL")
+  if (err) {
+      console.log(err);
   }
-})
+  if (result.css === expectedCss) {
+    console.log("PASS");
+  } else {
+    console.log("FAIL");
+  }
+});

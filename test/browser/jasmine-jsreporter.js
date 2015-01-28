@@ -180,7 +180,6 @@
     // export public
     jasmine.JSReporter = JSReporter;
 
-
     // ------------------------------------------------------------------------
     // Jasmine JSReporter for Jasmine 2.0
     // ------------------------------------------------------------------------
@@ -240,7 +239,7 @@
         suite.specs = [];
         suite.suites = [];
         suite.passed = true;
-        suite.parentId = this.suiteStack.slice(this.suiteStack.length -1)[0];
+        suite.parentId = this.suiteStack.slice(this.suiteStack.length - 1)[0];
         if (suite.parentId) {
             this.suites[suite.parentId].suites.push(suite);
         } else {
@@ -273,7 +272,7 @@
         spec = this._cacheSpec(spec);
         spec.timer = new Timer().start();
         // build up suites->spec tree as we go
-        spec.suiteId = this.suiteStack.slice(this.suiteStack.length -1)[0];
+        spec.suiteId = this.suiteStack.slice(this.suiteStack.length - 1)[0];
         this.suites[spec.suiteId].specs.push(spec);
     };
 

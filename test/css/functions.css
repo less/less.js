@@ -127,6 +127,7 @@
   mixt: rgba(255, 0, 0, 0.5);
 }
 #built-in .is-a {
+  ruleset: true;
   color: true;
   color1: true;
   color2: true;

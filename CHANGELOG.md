@@ -1,3 +1,10 @@
+# 2.3.1
+
+2015-01-28
+
+ - Fix depends option (regression in 2.3.0)
+ - Support parent selector (`&`) used in sub element expression (e.g. `:not(.c_&)`)
+
 # 2.3.0
 
 2015-01-27

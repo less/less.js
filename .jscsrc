@@ -61,5 +61,13 @@
                                         "===",
                                         "!=",
                                         "!=="
-                                    ]
+                                    ],
+    "requireSpaceBeforeBlockStatements": true,
+    "requireSpaceBetweenArguments": true,
+    "requireSpacesInConditionalExpression": true,
+    "requireSpacesInForStatement": true,
+    "requireSpacesInNamedFunctionExpression": {
+        "beforeOpeningCurlyBrace": true
+    },
+    "validateIndentation": 4
 }

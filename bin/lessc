@@ -92,8 +92,11 @@ function printUsage() {
         }
 
         match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i);
-        if (match) { arg = match[1]; }
-        else { return arg; }
+        if (match) {
+            arg = match[1];
+        } else {
+            return arg;
+        }
 
         switch (arg) {
             case 'v':
@@ -134,7 +137,7 @@ function printUsage() {
                 if (checkArgFunc(arg, match[2])) {
                     options.maxLineLen = parseInt(match[2], 10);
                     if (options.maxLineLen <= 0) {
-                      options.maxLineLen = -1;
+                        options.maxLineLen = -1;
                     }
                 }
                 break;

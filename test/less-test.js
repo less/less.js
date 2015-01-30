@@ -2,7 +2,7 @@
 
 module.exports = function() {
     var path = require('path'),
-        fs = require('fs');
+        fs = require('fs'),
         copyBom = require('./copy-bom')();
 
     var less = require('../lib/less-node');
@@ -134,23 +134,23 @@ module.exports = function() {
         }
         totalTests++;
         queue(function() {
-        var isSync = true;
-        toCSS(options, path.join(normalFolder, filenameNoExtension + ".less"), function (err, result) {
-            process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
+            var isSync = true;
+            toCSS(options, path.join(normalFolder, filenameNoExtension + ".less"), function (err, result) {
+                process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
 
-            if (isSync) {
-                ok("OK");
-            } else {
-                fail("Not Sync");
-            }
-            release();
-        });
-        isSync = false;
+                if (isSync) {
+                    ok("OK");
+                } else {
+                    fail("Not Sync");
+                }
+                release();
+            });
+            isSync = false;
         });
     }
 
     function prepBomTest() {
-      copyBom.copyFolderWithBom(normalFolder, bomFolder);
+        copyBom.copyFolderWithBom(normalFolder, bomFolder);
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
@@ -171,7 +171,7 @@ module.exports = function() {
         }
 
         function getBasename(file) {
-             return foldername + path.basename(file, '.less');
+            return foldername + path.basename(file, '.less');
         }
 
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
@@ -228,7 +228,7 @@ module.exports = function() {
                 fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
                     process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
-                        css = css && doReplacements(css, path.join(baseFolder, foldername));
+                    css = css && doReplacements(css, path.join(baseFolder, foldername));
                     if (result.css === css) { ok('OK'); }
                     else {
                         difference("FAIL", css, result.css);
@@ -242,12 +242,12 @@ module.exports = function() {
 
     function diff(left, right) {
         require('diff').diffLines(left, right).forEach(function(item) {
-          if (item.added || item.removed) {
-            var text = item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
-              process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
-          } else {
-              process.stdout.write(item.value.replace('\ufeff', '[[BOM]]'));
-          }
+            if (item.added || item.removed) {
+                var text = item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
+                process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
+            } else {
+                process.stdout.write(item.value.replace('\ufeff', '[[BOM]]'));
+            }
         });
         process.stdout.write("\n");
     }
@@ -313,7 +313,7 @@ module.exports = function() {
 
         options.paths = options.paths || [];
         if (!contains(options.paths, addPath)) {
-          options.paths.push(addPath);
+            options.paths.push(addPath);
         }
         options.filename = require('path').resolve(process.cwd(), path);
         options.optimization = options.optimization || 0;

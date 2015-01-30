@@ -11,34 +11,34 @@ module.exports = function() {
     var _buff = new Buffer(BUF_LENGTH);
 
     function copyFolderWithBom(src, dest) {
-      var stats = fs.lstatSync(src);
-      var destFolder = path.dirname(dest);
-      var destFolderExists = fs.existsSync(destFolder);
-      var performCopy = false;
+        var stats = fs.lstatSync(src);
+        var destFolder = path.dirname(dest);
+        var destFolderExists = fs.existsSync(destFolder);
+        var performCopy = false;
 
-      if (stats.isFile()) {
-        if (!destFolderExists) {
-            fs.mkdirSync(destFolder);
-        }
-        if (src.match(/\.(css|less)$/)) {
-            copyFileAddingBomSync(src, dest);
-        } else {
-            copyFileSync(src, dest);
-        }
-      }
-      else if (stats.isDirectory()) {
-        if (!fs.existsSync(destFolder)) {
-            fs.mkdirSync(destFolder);
-        }
-        if (!fs.existsSync(dest)) {
-            fs.mkdirSync(dest);
-        }
-        fs.readdirSync(src).forEach(function(d) {
-            if (d !== 'bom') {
-                copyFolderWithBom(path.join(src, d), path.join(dest, d));
+        if (stats.isFile()) {
+            if (!destFolderExists) {
+                fs.mkdirSync(destFolder);
             }
-        });
-      }
+            if (src.match(/\.(css|less)$/)) {
+                copyFileAddingBomSync(src, dest);
+            } else {
+                copyFileSync(src, dest);
+            }
+        }
+        else if (stats.isDirectory()) {
+            if (!fs.existsSync(destFolder)) {
+                fs.mkdirSync(destFolder);
+            }
+            if (!fs.existsSync(dest)) {
+                fs.mkdirSync(dest);
+            }
+            fs.readdirSync(src).forEach(function(d) {
+                if (d !== 'bom') {
+                    copyFolderWithBom(path.join(src, d), path.join(dest, d));
+                }
+            });
+        }
     }
 
     function copyFileAddingBomSync(srcFile, destFile) {
@@ -50,20 +50,20 @@ module.exports = function() {
     }
 
     function copyFileSync(srcFile, destFile) {
-        var fdr = fs.openSync(srcFile, 'r')
-        var stat = fs.fstatSync(fdr)
-        var fdw = fs.openSync(destFile, 'w', stat.mode)
-        var bytesRead = 1
-        var pos = 0
+        var fdr = fs.openSync(srcFile, 'r');
+        var stat = fs.fstatSync(fdr);
+        var fdw = fs.openSync(destFile, 'w', stat.mode);
+        var bytesRead = 1;
+        var pos = 0;
 
         while (bytesRead > 0) {
-        bytesRead = fs.readSync(fdr, _buff, 0, BUF_LENGTH, pos)
-        fs.writeSync(fdw, _buff, 0, bytesRead)
-        pos += bytesRead
+            bytesRead = fs.readSync(fdr, _buff, 0, BUF_LENGTH, pos)
+            fs.writeSync(fdw, _buff, 0, bytesRead);
+            pos += bytesRead;
         }
 
-        fs.closeSync(fdr)
-        fs.closeSync(fdw)
+        fs.closeSync(fdr);
+        fs.closeSync(fdw);
     }
 
     return {

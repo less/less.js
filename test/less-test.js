@@ -166,7 +166,7 @@ module.exports = function() {
     function runTestSetInternal(baseFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || "";
 
-        if(!doReplacements) {
+        if (!doReplacements) {
             doReplacements = globalReplacements;
         }
 
@@ -224,7 +224,7 @@ module.exports = function() {
                     return;
                 }
                 var css_name = name;
-                if(nameModifier) { css_name = nameModifier(name); }
+                if (nameModifier) { css_name = nameModifier(name); }
                 fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
                     process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
@@ -242,7 +242,7 @@ module.exports = function() {
 
     function diff(left, right) {
         require('diff').diffLines(left, right).forEach(function(item) {
-          if(item.added || item.removed) {
+          if (item.added || item.removed) {
             var text = item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
               process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
           } else {

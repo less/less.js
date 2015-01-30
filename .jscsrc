@@ -4,6 +4,10 @@
     "disallowMixedSpacesAndTabs": true,
     "disallowMultipleLineBreaks": true,
     "disallowOperatorBeforeLineBreak": ["."],
+    "disallowSpaceAfterKeywords": [
+                                        "void"//,
+                                        //"typeof"
+                                  ],
     "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~"],
     "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
     "disallowSpacesInCallExpression": true,
@@ -34,5 +38,28 @@
                                         ">=",
                                         "<",
                                         "<="],
-    "requireSpaceAfterBinaryOperators": true
+    "requireSpaceAfterBinaryOperators": true,
+    "requireSpaceAfterKeywords": [
+                                        "else",
+                                        "case",
+                                        "try",
+                                        "typeof",
+                                        "return",
+                                        "if",
+                                        "for",
+                                        "while",
+                                        "do"
+                                    ],
+    "requireSpaceBeforeBlockStatements": true,
+    "requireSpaceBeforeBinaryOperators": [
+                                        "=",
+                                        "+",
+                                        "-",
+                                        "/",
+                                        "*",
+                                        "==",
+                                        "===",
+                                        "!=",
+                                        "!=="
+                                    ]
 }

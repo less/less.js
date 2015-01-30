@@ -408,7 +408,7 @@ function printUsage() {
     var logDependencies = function(options, result) {
         if (options.depends) {
             var depends = "";
-            for(var i = 0; i < result.imports.length; i++) {
+            for (var i = 0; i < result.imports.length; i++) {
                 depends += result.imports[i] + " ";
             }
             console.log(depends);
@@ -455,7 +455,7 @@ function printUsage() {
 
         less.render(data, options)
             .then(function(result) {
-                if(!options.lint) {
+                if (!options.lint) {
                     writeOutput(output, result, function() {
                         writeSourceMapIfNeeded(result.map, function() {
                             logDependencies(options, result);

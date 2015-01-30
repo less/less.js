@@ -374,7 +374,7 @@ module.exports = function (grunt) {
 
     var previous_force_state = grunt.option("force");
 
-    grunt.registerTask("force",function(set){
+    grunt.registerTask("force",function(set) {
         if (set === "on") {
             grunt.option("force",true);
         }

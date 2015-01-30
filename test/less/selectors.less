@@ -172,3 +172,13 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 .selector:not(&:hover) {
   test: global scope;
 }
+// https://github.com/less/less.js/issues/2206
+.extend-this {
+  content: '\2661';
+}
+.first-level {
+  .second-level {
+    .active&:extend(.extend-this) { }
+    &.active2:extend(.extend-this) { }
+  }
+}

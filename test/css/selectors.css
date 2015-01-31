@@ -163,3 +163,8 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 .selector:not(:hover) {
   test: global scope;
 }
+.extend-this,
+.active.first-level .second-level,
+.first-level .second-level.active2 {
+  content: '\2661';
+}

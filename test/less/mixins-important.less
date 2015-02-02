@@ -35,3 +35,19 @@
 .when-calling-nested-with-param-issue-2394 {
   .size(10px) !important;
 }
+.testMixin-2421 () {
+    .topCheck-2421 () {
+        .nestedCheck-2421() {
+            margin: 5px;
+        }
+        .nestedCheck-2421();
+    }
+    .topCheck-2421();
+}
+.class1-2421 {
+    .testMixin-2421() !important;
+}
+.class2-2421 {
+    .testMixin-2421();
+}
+

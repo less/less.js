@@ -140,7 +140,7 @@
 .generic(@a, @b) when not(@a = @b) {content: @a is not equal to @b}
 .generic(@a, @b) when not(@b = @a) {content: @b is not equal to @a too}
 
-.variouse-types-comparision {
+.variouse-types-comparison {
     .generic(true, false);
     .generic(1, true);
     .generic(2, 2px);
@@ -155,7 +155,7 @@
     .generic(1 2, 3);
 }
 
-.list-comparision {
+.list-comparison {
     .generic(a b c, a b c);
     .generic(a b c, a b d);
     .generic(a, b, c; a, b, c);

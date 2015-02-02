@@ -117,13 +117,13 @@ a {
   color: green;
 }
 .red {
-  #@{theme}.@{theme}&.black {
+  #@{theme}.@{theme}&.black:@{theme} {
     color:black;
   }
 }
 @num: 3;
 :nth-child(@{num}) {
-    selector: interpolated;
+  selector: interpolated;
 }
 .test {
   &:nth-child(@{num}) {
@@ -132,7 +132,7 @@ a {
   &:nth-child(odd):not(:nth-child(3)) {
     color: #ff0000;
   }
-}
+ }
 [prop],
 [prop=10%],
 [prop="value@{num}"],
@@ -156,4 +156,29 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 */
 @{selector} {
   color: red;
+}
+.only-nested {
+  .level2 {
+    .foo:not(.tst&:hover) {
+      test: only-nested;
+    }
+  }
+}
+.nestend-and-non-nested {
+  .foo&:not(.tst&:hover) {
+    test: nestend-and-non-nested;
+  }
+}
+.selector:not(&:hover) {
+  test: global scope;
+}
+// https://github.com/less/less.js/issues/2206
+.extend-this {
+  content: '\2661';
+}
+.first-level {
+  .second-level {
+    .active&:extend(.extend-this) { }
+    &.active2:extend(.extend-this) { }
+  }
 }

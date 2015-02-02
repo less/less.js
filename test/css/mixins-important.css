@@ -43,3 +43,15 @@
 .class .inner {
   test: 9;
 }
+.when-calling-nested-issue-2394 {
+  width: auto !important;
+}
+.when-calling-nested-with-param-issue-2394 {
+  width: 10px !important;
+}
+.class1-2421 {
+  margin: 5px !important;
+}
+.class2-2421 {
+  margin: 5px;
+}

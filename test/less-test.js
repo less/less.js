@@ -2,21 +2,62 @@
 
 module.exports = function() {
     var path = require('path'),
-        fs = require('fs');
+        fs = require('fs'),
+        copyBom = require('./copy-bom')();
 
     var less = require('../lib/less-node');
     var stylize = require('../lib/less-node/lessc-helper').stylize;
 
     var globals = Object.keys(global);
 
-    var oneTestOnly = process.argv[2];
+    var oneTestOnly = process.argv[2],
+        isFinished = false;
 
     var isVerbose = process.env.npm_config_loglevel === 'verbose';
+
+    var normalFolder = 'test/less';
+    var bomFolder = 'test/less-bom';
+
+    less.logger.addListener({
+        info: function(msg) {
+            if (isVerbose) {
+                process.stdout.write(msg + "\n");
+            }
+        },
+        warn: function(msg) {
+            process.stdout.write(msg + "\n");
+        },
+        error: function(msg) {
+            process.stdout.write(msg + "\n");
+        }
+    });
+
+    var queueList = [],
+        queueRunning = false;
+    function queue(func) {
+        if (queueRunning) {
+            //console.log("adding to queue");
+            queueList.push(func);
+        } else {
+            //console.log("first in queue - starting");
+            queueRunning = true;
+            func();
+        }
+    }
+    function release() {
+        if (queueList.length) {
+            //console.log("running next in queue");
+            var func = queueList.shift();
+            setTimeout(func, 0);
+        } else {
+            //console.log("stopping queue");
+            queueRunning = false;
+        }
+    }
 
     var totalTests = 0,
         failedTests = 0,
         passedTests = 0;
-
 
     less.functions.functionRegistry.addMultiple({
         add: function (a, b) {
@@ -30,9 +71,9 @@ module.exports = function() {
         }
     });
 
-    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap) {
+    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
-            process.stdout.write("- " + name + ": ");
+            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
             } else if (err) {
@@ -47,10 +88,10 @@ module.exports = function() {
         });
     }
 
-    function testErrors(name, err, compiledLess, doReplacements) {
-        fs.readFile(path.join('test/less/', name) + '.txt', 'utf8', function (e, expectedErr) {
-            process.stdout.write("- " + name + ": ");
-            expectedErr = doReplacements(expectedErr, 'test/less/errors/');
+    function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
+            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
+            expectedErr = doReplacements(expectedErr, baseFolder);
             if (!err) {
                 if (compiledLess) {
                     fail("No Error", 'red');
@@ -71,8 +112,8 @@ module.exports = function() {
     function globalReplacements(input, directory) {
         var p = path.join(process.cwd(), directory),
             pathimport = path.join(process.cwd(), directory + "import/"),
-            pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a=='\\' ? '\/' : a); }),
-            pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a=='\\' ? '\/' : a); });
+            pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
+            pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
         return input.replace(/\{path\}/g, p)
                 .replace(/\{pathesc\}/g, pathesc)
@@ -87,18 +128,53 @@ module.exports = function() {
         });
     }
 
+    function testSyncronous(options, filenameNoExtension) {
+        if (oneTestOnly && ("Test Sync " + filenameNoExtension) !== oneTestOnly) {
+            return;
+        }
+        totalTests++;
+        queue(function() {
+            var isSync = true;
+            toCSS(options, path.join(normalFolder, filenameNoExtension + ".less"), function (err, result) {
+                process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
+
+                if (isSync) {
+                    ok("OK");
+                } else {
+                    fail("Not Sync");
+                }
+                release();
+            });
+            isSync = false;
+        });
+    }
+
+    function prepBomTest() {
+        copyBom.copyFolderWithBom(normalFolder, bomFolder);
+    }
+
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
+        var options2 = options ? JSON.parse(JSON.stringify(options)) : {};
+        runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+        runTestSetInternal(bomFolder, options2, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+    }
+
+    function runTestSetNormalOnly(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
+        runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+    }
+
+    function runTestSetInternal(baseFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || "";
 
-        if(!doReplacements) {
+        if (!doReplacements) {
             doReplacements = globalReplacements;
         }
 
         function getBasename(file) {
-             return foldername + path.basename(file, '.less');
+            return foldername + path.basename(file, '.less');
         }
 
-        fs.readdirSync(path.join('test/less/', foldername)).forEach(function (file) {
+        fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
             if (! /\.less/.test(file)) { return; }
 
             var name = getBasename(file);
@@ -111,20 +187,32 @@ module.exports = function() {
 
             if (options.sourceMap) {
                 options.sourceMapOutputFilename = name + ".css";
-                options.sourceMapBasepath = path.join(process.cwd(), "test/less");
+                options.sourceMapBasepath = path.join(process.cwd(), baseFolder);
                 options.sourceMapRootpath = "testweb/";
-                // TODO seperate options?
+                // TODO separate options?
                 options.sourceMap = options;
             }
 
             options.getVars = function(file) {
-                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars'), 'utf8'));
+                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars', baseFolder), 'utf8'));
             };
 
-            toCSS(options, path.join('test/less/', foldername + file), function (err, result) {
+            var doubleCallCheck = false;
+            queue(function() {
+                toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
+                if (doubleCallCheck) {
+                    totalTests++;
+                    fail("less is calling back twice");
+                    process.stdout.write(doubleCallCheck + "\n");
+                    process.stdout.write((new Error()).stack + "\n");
+                    return;
+                }
+                doubleCallCheck = (new Error()).stack;
 
                 if (verifyFunction) {
-                    return verifyFunction(name, err, result && result.css, doReplacements, result && result.map);
+                    var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
+                    release();
+                    return verificationResult;
                 }
                 if (err) {
                     fail("ERROR: " + (err && err.message));
@@ -132,31 +220,34 @@ module.exports = function() {
                         process.stdout.write("\n");
                         process.stdout.write(err.stack + "\n");
                     }
+                    release();
                     return;
                 }
                 var css_name = name;
-                if(nameModifier) { css_name = nameModifier(name); }
+                if (nameModifier) { css_name = nameModifier(name); }
                 fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                    process.stdout.write("- " + css_name + ": ");
+                    process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
-                    css = css && doReplacements(css, 'test/less/' + foldername);
+                    css = css && doReplacements(css, path.join(baseFolder, foldername));
                     if (result.css === css) { ok('OK'); }
                     else {
                         difference("FAIL", css, result.css);
                     }
+                    release();
                 });
+            });
             });
         });
     }
 
     function diff(left, right) {
         require('diff').diffLines(left, right).forEach(function(item) {
-          if(item.added || item.removed) {
-            var text = item.value.replace("\n", String.fromCharCode(182) + "\n");
-              process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
-          } else {
-              process.stdout.write(item.value);
-          }
+            if (item.added || item.removed) {
+                var text = item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
+                process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
+            } else {
+                process.stdout.write(item.value.replace('\ufeff', '[[BOM]]'));
+            }
         });
         process.stdout.write("\n");
     }
@@ -181,9 +272,15 @@ module.exports = function() {
         endTest();
     }
 
+    function finished() {
+        isFinished = true;
+        endTest();
+    }
+
     function endTest() {
-        var leaked = checkGlobalLeaks();
-        if (failedTests + passedTests === totalTests) {
+        if (isFinished && ((failedTests + passedTests) >= totalTests)) {
+            var leaked = checkGlobalLeaks();
+
             process.stdout.write("\n");
             if (failedTests > 0) {
                 process.stdout.write(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed\n");
@@ -196,38 +293,44 @@ module.exports = function() {
             }
 
             if (leaked.length || failedTests) {
-                //process.exit(1);
-                process.on('exit', function() { process.reallyExit(1) });
+                process.on('exit', function() { process.reallyExit(1); });
             }
         }
     }
 
+    function contains(fullArray, obj) {
+        for (var i = 0; i < fullArray.length; i++) {
+            if (fullArray[i] === obj) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function toCSS(options, path, callback) {
         options = options || {};
-        fs.readFile(path, 'utf8', function (e, str) {
-            if (e) { return callback(e); }
+        var str = fs.readFileSync(path, 'utf8'), addPath = require('path').dirname(path);
 
-            options.paths = [require('path').dirname(path)];
-            options.filename = require('path').resolve(process.cwd(), path);
-            options.optimization = options.optimization || 0;
+        options.paths = options.paths || [];
+        if (!contains(options.paths, addPath)) {
+            options.paths.push(addPath);
+        }
+        options.filename = require('path').resolve(process.cwd(), path);
+        options.optimization = options.optimization || 0;
 
-            if (options.globalVars) {
-                options.globalVars = options.getVars(path);
-            } else if (options.modifyVars) {
-                options.modifyVars = options.getVars(path);
-            }
+        if (options.globalVars) {
+            options.globalVars = options.getVars(path);
+        } else if (options.modifyVars) {
+            options.modifyVars = options.getVars(path);
+        }
 
-            less.render(str, options)
-                .then(function(result) {
-                    // TODO integration test that calling toCSS twice results in the same css?
-                    callback(null, result);
-                }, function(e) {
-                    callback(e);
-                });
-        });
+        less.render(str, options, callback);
     }
 
     function testNoOptions() {
+        if (oneTestOnly && "Integration" !== oneTestOnly) {
+            return;
+        }
         totalTests++;
         try {
             process.stdout.write("- Integration - creating parser without options: ");
@@ -241,8 +344,12 @@ module.exports = function() {
 
     return {
         runTestSet: runTestSet,
+        runTestSetNormalOnly: runTestSetNormalOnly,
+        testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
-        testNoOptions: testNoOptions
+        testNoOptions: testNoOptions,
+        prepBomTest: prepBomTest,
+        finished: finished
     };
 };

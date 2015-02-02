@@ -1,12 +1,120 @@
+# 2.3.1
+
+2015-01-28
+
+ - Fix depends option (regression in 2.3.0)
+ - Support parent selector (`&`) used in sub element expression (e.g. `:not(.c_&)`)
+
+# 2.3.0
+
+2015-01-27
+
+ - add isruleset function
+ - add optional import option, causing less to not fail if file not found
+ - Fix browsers-side cache.
+ - Many fixes to import reference - support `@support` and keyframe
+ - Selectors now interpolate pseudo selectors (e.g. `:@{hover}`)
+ - Fix comments missed off if they were at the end of the file
+ - Fix !important used with parametric mixins
+ - Emits warnings for extends when the target is not found
+ - include-path now works on data-uri
+ - variables and function calls work for path in data-uri
+ - Fix absolute paths not working on imports sometimes.
+ - Unicode BOM removed again
+ - Misc. bug fixes
+
+# 2.2.0
+
+2015-01-04
+
+ - do not apply relative paths to svg-gradient and data-uri functions data-uri output
+ - using import filename interpolation and import inline together now works
+ - deprecate the compression option (still works, but outputs a warning unless silent)
+ - The node version of less now has image-size, image-width, image-height which return the image dimensions of a file
+ - Fixed an issue that could cause the parse to occur more than once and the callback be called multiple times
+ - if you are outputting to the console, lessc defaults to silent so warnings do not end up in output
+ - isunit function supports '' to test if a dimension has no unit
+ - data-uri function now counts characters after base64 encoding instead of bytes before encoding to determine ie8 support
+ - fix bug effecting guards on pseudo class selectors
+ - do not cache on the browser when used with modifyVars
+ - detection if less does not parse last character in file
+ - detection of whether a file is css now requires /css, .css, ?css, &css instead of just css. You can still tell less the type of file using import options.
+ - remove extra new line added to sourcemap entry inline file
+ - support safari extension
+ - less.parse now exposes a way to get the AST. We do not recommend you use this unless you need to.
+
+# 2.1.2
+
+2014-12-20
+
+ - Fix for use with requirejs
+ - Fixes for data-uri function
+
+# 2.1.1
+
+2014-11-27
+
+ - Improved keyword and anonymous usage with the replace function
+ - Added getCSSAppendage to sourcemap builder to avoid duplication in plugins
+ - Fix problem with plugins when used with the promises version of render
+ - If the render callback throws an exception it now propogates instead of calling the callback again with an error
+
+# 2.1.0
+
+2014-11-23
+
+ - Fixed isSync option, it was using sync file operations but promises are guaranteed to call back async. We now support promises as a feature rather than the 1st class way of doing things.
+ - Browser code is now synchronous again, like in v1, meaning it blocks the site until less is compiled
+ - Some fixes for variable imports which affected filemanagers when synchronous
+ - Fixed lessc makefile dependencies option
+ - output now reports back a imports field with an array of imported files
+ - relative path test for drive names (so windows only) is now case insensitive
+ - Fix for IE7 - use getChar instead of indexing array
+ - variables using !important now output !important, which bubbles up to affect the rule
+ - livereload cache buster is now treated specially
+ - upgrade dependencies
+
+# 2.0.0
+
+2014-11-09
+
+ - Fixed multiplication in non strict units mode to take the left operand unit, in the case that the unit cannot be resolved
+ - Some fixes for browser cross-compatibility
+ - browser tests now pass in IE 8-11 and FF
+ - added index.js and browser.js in root as shortcuts
+ - fixed some local variable spellings
+ - support for @counter-style directive
+
+# 2.0.0-b3
+
+2014-11-01
+
+ - some refactoring of browser structure to allow use of api vs normal browser bundle
+ - browser bundle no longer leaks require
+ - browser can now be scoped with just window
+ - browser useFileCache defaults to true, but file cache is now cleared when refreshing or in watch mode
+
+# 2.0.0-b2
+
+2014-10-26
+
+ - Imports are now sequenced and so are consistent (previously some complex projects might end up with occasional different orderings)
+ - Imports with variables are better supported - variables can be specified in sub imports
+ - Support for rebeccapurple
+ - Browser can now accept options as attributes on the script tag and the link tags e.g. `<script data-verbose="false" src="less.js"...`
+ - adding a .less file extension is done in the abstract file manager so it the behaviour can be overridden by certain file managers
+ - Fixed a bug where unquoted urls beginning `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
+ - lessc plugins can be a function, used as a constructor as well as an object - this to allow the plugin more flexibility to be used programattically
+
 # 2.0.0-b1
 
 2014-10-19
 
  - Public Beta / Release Candidate - Feedback welcome
-   For a guide to breaking changes see [the v2 upgrade guide](lesscss.org/usage/#v2-upgrade-guide)
+   For a guide to breaking changes see [the v2 upgrade guide](http://lesscss.org/usage/#v2-upgrade-guide)
  - no longer including old versions of less in the repo or npm
  - not including test less and gradle files in npm
- - colours now output in the format they are added unless compressing, so yellow will output yellow, not its hex counterpart
+ - colours now output in the format they are added, so yellow will output yellow, not its hex counterpart
  - better parsing - better comment support and comments in brackets can now contain comments including quotes.
  - Removal of dependency on clean-css - install less-plugin-clean-css and use --clean-css to reference plugin
  - Environment Support - less is now separate from its node and browser environment implementations and adding support for another javascript environment should be straight forward.
@@ -175,7 +283,7 @@
  - support for guards on selectors (currently only if you have a single selector)
  - allow property merging through the +: syntax
  - Added min/max functions
- - Added length function and improved extract to work with comma seperated values
+ - Added length function and improved extract to work with comma separated values
  - when using import multiple, sub imports are imported multiple times into final output
  - fix bad spaces between namespace operators
  - do not compress comment if it begins with an exclamation mark
@@ -272,7 +380,7 @@
  - browser and server url re-writing is now aligned to not re-write (previous lessc behaviour)
  - url-rewriting can be made to re-write to be relative to the entry file using the relative-urls option (less.relativeUrls option)
  - rootpath option can be used to add a base path to every url
- - Support mixin argument seperator of ';' so you can pass comma seperated values. e.g. `.mixin(23px, 12px;);`
+ - Support mixin argument separator of ';' so you can pass comma separated values. e.g. `.mixin(23px, 12px;);`
  - Fix lots of problems with named arguments in corner cases, not behaving as expected
  - hsv, hsva, unit functions
  - fixed lots more bad error messages

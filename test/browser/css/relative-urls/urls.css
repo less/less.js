@@ -15,6 +15,7 @@
 }
 #misc {
   background-image: url(http://localhost:8081/test/browser/less/relative-urls/images/image.jpg);
+  background: url("#inline-svg");
 }
 #data-uri {
   background: url(data:image/png;charset=utf-8;base64,

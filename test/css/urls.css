@@ -39,6 +39,7 @@
   width: 100px;
   height: 100px;
   background: url('import/assets/logo.png');
+  background: url("#inline-svg");
 }
 @font-face {
   font-family: xecret;

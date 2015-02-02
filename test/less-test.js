@@ -3,7 +3,8 @@
 module.exports = function() {
     var path = require('path'),
         fs = require('fs'),
-        copyBom = require('./copy-bom')();
+        copyBom = require('./copy-bom')(),
+        doBomTest = false;
 
     var less = require('../lib/less-node');
     var stylize = require('../lib/less-node/lessc-helper').stylize;
@@ -151,12 +152,15 @@ module.exports = function() {
 
     function prepBomTest() {
         copyBom.copyFolderWithBom(normalFolder, bomFolder);
+        doBomTest = true;
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         var options2 = options ? JSON.parse(JSON.stringify(options)) : {};
         runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
-        runTestSetInternal(bomFolder, options2, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+        if (doBomTest) {
+            runTestSetInternal(bomFolder, options2, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+        }
     }
 
     function runTestSetNormalOnly(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {

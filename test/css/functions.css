@@ -175,3 +175,11 @@
   format-keyword: hello;
   format-anonymous: hello anonymous world;
 }
+#list-details {
+  length: 2;
+  one: a 1;
+  two: b 2;
+  two-length: 2;
+  two-one: b;
+  two-two: 2;
+}

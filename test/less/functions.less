@@ -199,3 +199,16 @@
   }
 }
 
+#list-details {
+  @list:
+    a 1, // Some comment
+    b 2;
+
+  length: length(@list);
+  one: extract(@list, 1);
+  @two: extract(@list, 2);
+  two: @two;
+  two-length: length(@two);
+  two-one: extract(@two, 1);
+  two-two: extract(@two, 2);
+}

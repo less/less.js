@@ -89,6 +89,23 @@ module.exports = function() {
         });
     }
 
+    function testEmptySourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        process.stdout.write("- " + path.join(baseFolder, name) + ": ");
+        if (err) {
+            fail("ERROR: " + (err && err.message));
+        } else {
+            var expectedSourcemap = undefined;
+            if ( compiledLess !== "" ) {
+                difference("\nCompiledLess must be empty", "", compiledLess);
+
+            } else if (sourcemap !== expectedSourcemap) {
+                fail("Sourcemap must be undefined");
+            } else {
+                ok('OK');
+            }
+        }
+    }
+
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
             process.stdout.write("- " + path.join(baseFolder, name) + ": ");
@@ -189,7 +206,7 @@ module.exports = function() {
 
             totalTests++;
 
-            if (options.sourceMap) {
+            if (options.sourceMap && !options.sourceMap.sourceMapFileInline) {
                 options.sourceMapOutputFilename = name + ".css";
                 options.sourceMapBasepath = path.join(process.cwd(), baseFolder);
                 options.sourceMapRootpath = "testweb/";
@@ -247,10 +264,10 @@ module.exports = function() {
     function diff(left, right) {
         require('diff').diffLines(left, right).forEach(function(item) {
             if (item.added || item.removed) {
-                var text = item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
+                var text = item.value && item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
                 process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
             } else {
-                process.stdout.write(item.value.replace('\ufeff', '[[BOM]]'));
+                process.stdout.write(item.value && item.value.replace('\ufeff', '[[BOM]]'));
             }
         });
         process.stdout.write("\n");
@@ -352,6 +369,7 @@ module.exports = function() {
         testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
+        testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         prepBomTest: prepBomTest,
         finished: finished

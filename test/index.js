@@ -40,6 +40,7 @@ lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: true, glo
         }
         return path.join('test/sourcemaps', filename) + '.json';
     });
+lessTester.runTestSet({strictMath: true, strictUnits: true, sourceMap: {sourceMapFileInline: true}}, "sourcemaps-empty/", lessTester.testEmptySourcemap);
 lessTester.runTestSet({globalVars: true, banner: "/**\n  * Test\n  */\n"}, "globalVars/",
     null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; });
 lessTester.runTestSet({modifyVars: true}, "modifyVars/",

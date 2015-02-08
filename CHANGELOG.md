@@ -1,3 +1,17 @@
+# 2.4.0
+
+2015-02-07
+
+ - Support for plugins that pre-process (to add libraries silently etc.)
+ - Empty sourcemaps now work
+ - Extract and Length functions now ignore comments in a list (more work to come to fix the general problem)
+ - fragment url's are treated absolute since they refer to the html document
+ - Extends on a selector joined with `&` now work better
+ - Nested mixins work better with !important (regression in 2.3.0)
+ - The promise dependency is now actually optional (introduced in 2.0.0)
+ - Files with just `\r` newlines now process ok (regression in 2.0.0)
+ - When strict units is off and the unit is 1/x, (e.g. 1 / 12px) the unit output is x, previously nothing (regression in 2.0.0)
+
 # 2.3.1
 
 2015-01-28

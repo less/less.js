@@ -363,6 +363,29 @@ module.exports = function() {
         ok(stylize("OK\n", "green"));
     }
 
+    function testRenderReturnsPromise() {
+        if (oneTestOnly && "Promise" !== oneTestOnly) {
+            return;
+        }
+        totalTests++;
+        var failed = false;
+        try {
+            process.stdout.write("- Promise - checking return type of render ");
+            less.render("");
+            failed = failed || typeof (less.render.then) === 'function' && ".then is not defined";
+            failed = failed || typeof (less.render.done) === 'function' && ".done is not defined";
+            failed = failed || typeof (less.render.catch) === 'function' && ".catch is not defined";
+        } catch(e) {
+            fail(stylize("FAIL\n", "red"));
+            return;
+        }
+        if (failed) {
+            fail(sylize("FAIL - ", "red") + fail + "\n");
+        }
+
+        ok(stylize("OK\n", "green"));
+    }
+
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
@@ -371,6 +394,7 @@ module.exports = function() {
         testSourcemap: testSourcemap,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
+        testRenderReturnsPromise: testRenderReturnsPromise,
         prepBomTest: prepBomTest,
         finished: finished
     };

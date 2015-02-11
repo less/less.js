@@ -50,4 +50,5 @@ lessTester.runTestSet({paths: ['test/data/', 'test/less/import/']}, "include-pat
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();
+lessTester.testRenderReturnsPromise();
 lessTester.finished();

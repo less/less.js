@@ -50,10 +50,16 @@
   uri: data-uri('../../data/data-uri-fail.png');
 }
 #svg-functions {
-  background-image: svg-gradient(to bottom, black, white);
+  @colorlist1: black, white;
+  background-image: svg-gradient(to bottom, @colorlist1);
+  background-image: svg-gradient(to bottom, black white);
   background-image: svg-gradient(to bottom, black, orange 3%, white);
+  @colorlist2: black, orange 3%, white;
+  background-image: svg-gradient(to bottom, @colorlist2);
   @green_5: green 5%;
   @orange_percentage: 3%;
   @orange_color: orange;
+  @colorlist3: (mix(black, white) + #444) 1%, @orange_color @orange_percentage, ((@green_5)), white 95%;
+  background-image: svg-gradient(to bottom,@colorlist3);
   background-image: svg-gradient(to bottom, (mix(black, white) + #444) 1%, @orange_color @orange_percentage, ((@green_5)), white 95%);
 }

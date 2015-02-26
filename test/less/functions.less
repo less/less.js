@@ -212,3 +212,9 @@
   two-one: extract(@two, 1);
   two-two: extract(@two, 2);
 }
+@color1: #FFF;/* comment1 */
+@color2: #FFF/* comment2 */;
+html {
+  color: mix(blue, @color1, 50%);
+  color: mix(blue, @color2, 50%);
+}

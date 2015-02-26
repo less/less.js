@@ -49,7 +49,7 @@ process.on('exit', function() { process.reallyExit(currentErrorcode); });
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
-        console.log(arg + " option requires a parameter");
+        console.error(arg + " option requires a parameter");
         continueProcessing = false;
         currentErrorcode = 1;
         return false;
@@ -60,7 +60,7 @@ var checkArgFunc = function(arg, option) {
 var checkBooleanArg = function(arg) {
     var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
     if (!onOff) {
-        console.log(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        console.error(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
         currentErrorcode = 1;
         return false;
@@ -73,7 +73,6 @@ var parseVariableOption = function(option, variables) {
     variables[parts[0]] = parts[1];
 };
 
-var warningMessages = "";
 var sourceMapFileInline = false;
 
 function printUsage() {
@@ -248,10 +247,8 @@ function printUsage() {
                 if (plugin) {
                     plugins.push(plugin);
                 } else {
-                    console.log("Unable to load plugin " + name +
+                    console.error("Unable to load plugin " + name +
                         " please make sure that it is installed under or at the same level as less");
-                    console.log();
-                    printUsage();
                     currentErrorcode = 1;
                 }
                 break;
@@ -260,11 +257,9 @@ function printUsage() {
                 if (plugin) {
                     plugins.push(plugin);
                 } else {
-                    console.log("Unable to interpret argument " + arg +
+                    console.error("Unable to interpret argument " + arg +
                         " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under or at" +
                         " the same level as less");
-                    console.log();
-                    printUsage();
                     currentErrorcode = 1;
                 }
                 break;
@@ -283,9 +278,6 @@ function printUsage() {
     var outputbase = args[2];
     if (output) {
         output = path.resolve(process.cwd(), output);
-        if (warningMessages) {
-            console.log(warningMessages);
-        }
     }
 
     if (options.sourceMap) {
@@ -327,8 +319,8 @@ function printUsage() {
     }
 
     if (! input) {
-        console.log("lessc: no input files");
-        console.log("");
+        console.error("lessc: no input files");
+        console.error("");
         printUsage();
         currentErrorcode = 1;
         return;
@@ -368,8 +360,8 @@ function printUsage() {
                     } else {
                         description += err.code + " " + err.message;
                     }
-                    less.logger.error('lessc: failed to create file ' + filename);
-                    less.logger.error(description);
+                    console.error('lessc: failed to create file ' + filename);
+                    console.error(description);
                 } else {
                     less.logger.info('lessc: wrote ' + filename);
                 }
@@ -397,8 +389,8 @@ function printUsage() {
                     } else {
                         description += err.code + " " + err.message;
                     }
-                    less.logger.error('lessc: failed to create file ' + output);
-                    less.logger.error(description);
+                    console.error('lessc: failed to create file ' + output);
+                    console.error(description);
                 } else {
                     less.logger.info('lessc: wrote ' + output);
                     onSuccess();
@@ -422,7 +414,7 @@ function printUsage() {
 
     var parseLessFile = function (e, data) {
         if (e) {
-            console.log("lessc: " + e.message);
+            console.error("lessc: " + e.message);
             currentErrorcode = 1;
             return;
         }
@@ -448,13 +440,13 @@ function printUsage() {
                 }
             },
             warn: function(msg) {
-                // do not show warning if outputting css to the console or the silent option is used
-                if (!silent && output) {
+                // do not show warning if the silent option is used
+                if (!silent) {
                     console.warn(msg);
                 }
             },
             error: function(msg) {
-                console.log(msg);
+                console.error(msg);
             }
         });
 

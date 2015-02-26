@@ -51,6 +51,7 @@ var checkArgFunc = function(arg, option) {
     if (!option) {
         console.log(arg + " option requires a parameter");
         continueProcessing = false;
+        currentErrorcode = 1;
         return false;
     }
     return true;
@@ -61,6 +62,7 @@ var checkBooleanArg = function(arg) {
     if (!onOff) {
         console.log(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
+        currentErrorcode = 1;
         return false;
     }
     return Boolean(onOff[2]);

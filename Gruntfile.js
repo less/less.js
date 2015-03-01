@@ -251,13 +251,21 @@ module.exports = function (grunt) {
                     specs: 'test/browser/runner-postProcessor.js',
                     outfile: 'tmp/browser/test-runner-post-processor.html'
                 }
+            },
+            postProcessorPLugin: {
+                src: ['test/browser/less/postProcessorPlugin/*.less'],
+                options: {
+                    helpers: 'test/browser/runner-postProcessorPlugin-options.js',
+                    specs: 'test/browser/runner-postProcessorPlugin.js',
+                    outfile: 'tmp/browser/test-runner-post-processor-plugin.html'
+                }
             }
         },
 
         'saucelabs-jasmine': {
             all: {
                 options: {
-                    urls: ["post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
+                    urls: ["post-processor-plugin","post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
                            "rootpath", "relative-urls", "browser", "no-js-errors", "legacy", "strict-units"
                     ].map(function(testName) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";

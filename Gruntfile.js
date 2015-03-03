@@ -328,7 +328,7 @@ module.exports = function (grunt) {
     });
 
     // Load these plugins to provide the necessary tasks
-    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+    require('jit-grunt')(grunt);
 
     // Actually load this plugin's task(s).
     grunt.loadTasks('build/tasks');

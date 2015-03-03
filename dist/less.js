@@ -446,8 +446,11 @@ module.exports = function(options, logger) {
     };
 
     FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment, callback) {
+        
+        console.log('loading...' + currentDirectory + filename);
+        
         if (currentDirectory && !this.isPathAbsolute(filename)) {
-            filename = currentDirectory + filename;
+            filename = ;
         }
 
         options = options || {};

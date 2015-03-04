@@ -253,9 +253,9 @@ module.exports = function (grunt) {
                 }
             },
             postProcessorPlugin: {
-                src: ['test/browser/less/postProcessorPlugin/*.less'],
+                src: ['test/less/postProcessorPlugin/*.less'],
                 options: {
-                    helpers: 'test/browser/runner-postProcessorPlugin-options.js',
+                    helpers: ['test/plugins/postprocess/index.js','test/browser/runner-postProcessorPlugin-options.js'],
                     specs: 'test/browser/runner-postProcessorPlugin.js',
                     outfile: 'tmp/browser/test-runner-post-processor-plugin.html'
                 }

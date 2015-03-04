@@ -47,6 +47,7 @@ lessTester.runTestSet({modifyVars: true}, "modifyVars/",
     null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; });
 lessTester.runTestSet({urlArgs: '424242'}, "url-args/");
 lessTester.runTestSet({paths: ['test/data/', 'test/less/import/']}, "include-path/");
+lessTester.runTestSet({plugin: 'test/plugins/postprocess/'}, "postProcessorPlugin/");
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();

@@ -148,7 +148,7 @@ module.exports = function (grunt) {
             },
             main: {
                 // src is used to build list of less files to compile
-                src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/import-plugin.less', '!test/less/urls.less', '!test/less/empty.less'],
+                src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less', '!test/less/empty.less'],
                 options: {
                     helpers: 'test/browser/runner-main-options.js',
                     specs: 'test/browser/runner-main-spec.js',

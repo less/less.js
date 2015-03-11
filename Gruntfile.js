@@ -261,25 +261,25 @@ module.exports = function (grunt) {
                 }
             },
             preProcessorPlugin: {
-                src: ['test/browser/less/preProcessorPlugin/*.less'],
+                src: ['test/less/preProcessorPlugin/*.less'],
                 options: {
-                    helpers: 'test/browser/runner-preProcessorPlugin-options.js',
+                    helpers: ['test/plugins/preprocess/index.js','test/browser/runner-preProcessorPlugin-options.js'],
                     specs: 'test/browser/runner-preProcessorPlugin.js',
                     outfile: 'tmp/browser/test-runner-pre-processor-plugin.html'
                 }
             },
             visitorPlugin: {
-                src: ['test/browser/less/visitorPlugin/*.less'],
+                src: ['test/less/visitorPlugin/*.less'],
                 options: {
-                    helpers: 'test/browser/runner-VisitorPlugin-options.js',
+                    helpers: ['test/plugins/visitor/index.js','test/browser/runner-VisitorPlugin-options.js'],
                     specs: 'test/browser/runner-VisitorPlugin.js',
                     outfile: 'tmp/browser/test-runner-visitor-plugin.html'
                 }
             },
             filemanagerPlugin: {
-                src: ['test/browser/less/filemanagerPlugin/*.less'],
+                src: ['test/less/filemanagerPlugin/*.less'],
                 options: {
-                    helpers: 'test/browser/runner-filemanagerPlugin-options.js',
+                    helpers: ['test/plugins/filemanager/index.js','test/browser/runner-filemanagerPlugin-options.js'],
                     specs: 'test/browser/runner-filemanagerPlugin.js',
                     outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
                 }

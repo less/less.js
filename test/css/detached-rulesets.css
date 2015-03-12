@@ -69,3 +69,8 @@ html.lt-ie9 header {
 .a {
   test: test;
 }
+.argument-default {
+  default: works;
+  direct: works;
+  named: works;
+}

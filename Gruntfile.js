@@ -51,7 +51,6 @@ module.exports = function (grunt) {
                 src: ['./lib/less-browser/bootstrap.js'],
                 options: {
                     exclude: ["promise"],
-                    require: ["promise/polyfill.js"],
                     browserifyOptions: {
                         standalone: 'less'
                     }

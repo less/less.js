@@ -1,45 +1,55 @@
 var path = require('path'),
     fs = require('fs');
 
-var less = require('../lib/less');
+var less = require('../lib/less-node');
 var file = path.join(__dirname, 'benchmark.less');
 
 if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
 
 fs.readFile(file, 'utf8', function (e, data) {
-    var tree, css, start, end, total;
+    var start, end, total;
 
     console.log("Benchmarking...\n", path.basename(file) + " (" +
              parseInt(data.length / 1024) + " KB)", "");
 
-    start = new Date();
+    var benchMarkData = [];
 
-    new less.Parser().parse(data, function (err, tree) {
-        end = new Date();
+    var totalruns = 100;
+    var ignoreruns = 30;
 
-        total = end - start;
-
-        console.log("Parsing: " +
-                 total + " ms (" +
-                 Number(1000 / total * data.length / 1024) + " KB\/s)");
-
+    for(var i = 0; i < totalruns; i++) {
         start = new Date();
-        css = tree.toCSS();
-        end = new Date();
 
-        console.log("Generation: " + (end - start) + " ms (" +
-                 parseInt(1000 / (end - start) *
-                 data.length / 1024) + " KB\/s)");
+        less.render(data, function (err) {
+            end = new Date();
 
-        total += end - start;
+            benchMarkData.push(end - start);
 
-        console.log("Total: " + total + "ms (" +
-            Number(1000 / total * data.length / 1024) + " KB/s)");
+            if (err) {
+                less.writeError(err);
+                process.exit(3);
+            }
+        });
+    }
 
-        if (err) {
-            less.writeError(err);
-            process.exit(3);
-        }
-    });
+    var totalTime = 0;
+    var mintime = Infinity;
+    var maxtime = 0;
+    for(var i = ignoreruns; i < totalruns; i++) {
+        totalTime += benchMarkData[i];
+        mintime = Math.min(mintime, benchMarkData[i]);
+        maxtime = Math.max(maxtime, benchMarkData[i]);
+    }
+    var avgtime = totalTime / (totalruns - ignoreruns);
+    var variation = maxtime - mintime;
+    var variationperc = (variation / avgtime) * 100;
+
+    console.log("Min. Time: "+mintime + " ms");
+    console.log("Max. Time: "+maxtime + " ms");
+    console.log("Total Average Time: " + avgtime + " ms (" +
+        parseInt(1000 / avgtime *
+        data.length / 1024) + " KB\/s)");
+    console.log("+/- " + variationperc + "%");
+
 });
 

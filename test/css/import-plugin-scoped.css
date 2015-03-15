@@ -1,0 +1,6 @@
+.in-scope {
+  result: PASS;
+}
+.out-of-scope {
+  result: test();
+}

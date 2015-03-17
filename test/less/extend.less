@@ -37,6 +37,15 @@ div.ext5,
     &:extend(.ext5 all);
 }
 
+.ext7.deep {
+    &:extend(.ext5 deep);
+}
+
+.ext7.any {
+    &:extend(.ext5 any);
+}
+
+
 .ext8.ext9 {
   result: add-foo;
 }
@@ -60,9 +69,17 @@ div.ext5,
 }
 
 .fuu:extend(.ext8.ext9 all) {}
+.fuu.any:extend(.ext8.ext9 any) {}
+.fuu.deep:extend(.ext8.ext9 deep) {}
 .buu:extend(.ext8 .ext9 all) {}
+.buu.any:extend(.ext8 .ext9 any) {}
+.buu.deep:extend(.ext8 .ext9 deep) {}
 .zap:extend(.ext8 + .ext9 all) {}
+.zap.any:extend(.ext8 + .ext9 any) {}
+.zap.deep:extend(.ext8 + .ext9 deep) {}
 .zoo:extend(.ext8 > .ext9 all) {}
+.zoo.any:extend(.ext8 > .ext9 any) {}
+.zoo.deep:extend(.ext8 > .ext9 deep) {}
 
 .aa {
   color: black;

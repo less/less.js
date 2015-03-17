@@ -1,0 +1,13 @@
+.grand {
+  grand: rules;
+}
+.grand .mother,
+.grand .father,
+.father2 {
+  parent: rules;
+}
+.grand .mother .child,
+.grand .father .child,
+.father2 .child {
+  child: rules;
+}

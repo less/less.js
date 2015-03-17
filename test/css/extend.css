@@ -30,30 +30,44 @@
 div.ext5,
 .ext6 > .ext5,
 div.ext7,
-.ext6 > .ext7 {
+.ext6 > .ext7,
+div.ext7.any,
+.ext6 > .ext7.any {
   width: 100px;
 }
 .ext8.ext9,
-.fuu {
+.fuu,
+.fuu.any,
+.fuu.deep {
   result: add-foo;
 }
 .ext8 .ext9,
 .ext8 + .ext9,
 .ext8 > .ext9,
 .buu,
+.buu.any,
+.buu.deep,
 .zap,
-.zoo {
+.zap.any,
+.zap.deep,
+.zoo,
+.zoo.any,
+.zoo.deep {
   result: bar-matched;
 }
 .ext8.nomatch {
   result: none;
 }
 .ext8 .ext9,
-.buu {
+.buu,
+.buu.any,
+.buu.deep {
   result: match-nested-bar;
 }
 .ext8.ext9,
-.fuu {
+.fuu,
+.fuu.any,
+.fuu.deep {
   result: match-nested-foo;
 }
 .aa,

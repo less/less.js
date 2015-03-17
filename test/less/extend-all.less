@@ -1,0 +1,15 @@
+.grand {
+grand: rules;
+
+.mother {
+  parent: rules;
+
+  .child {
+    child: rules;
+  }
+}
+}
+
+.father:extend(.mother all){};
+.father2:extend(.grand .mother all){};
+

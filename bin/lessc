@@ -283,12 +283,12 @@ function printUsage() {
     
     });
 
-    var input = filenames[1];
+    var input = filenames[0];
     if (input && input != '-') {
         input = path.resolve(process.cwd(), input);
     }
-    var output = filenames[2];
-    var outputbase = args[2];
+    var output = filenames[1];
+    var outputbase = filenames[1];
     if (output) {
         output = path.resolve(process.cwd(), output);
     }

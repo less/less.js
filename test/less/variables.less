@@ -51,9 +51,23 @@
 }
 
 .variable-names {
-    @var: 'hello';
-    @name: 'var';
-    name: @@name;
+    .quoted {
+        @var: 'hello';
+        @name: 'var';
+        name: @@name;
+    }
+
+    .unquoted {
+        @var: 'hello';
+        @name: var;
+        name: @@name;
+    }
+    
+    .color-keyword {
+        @red: 'hello';
+        @name: red;
+        name: @@name;
+    }
 }
 
 .alpha {

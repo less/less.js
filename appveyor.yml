@@ -2,17 +2,16 @@
 environment:
   matrix:
     - nodejs_version: "0.10"
-    - nodejs_version: "0.11"
-
-# Allow failing jobs for bleeding-edge Node.js versions.
-matrix:
-  allow_failures:
-    - nodejs_version: "0.11"
+    - nodejs_version: "0.12"
 
 # Install scripts. (runs after repo cloning)
 install:
   # Get the latest stable version of Node 0.STABLE.latest
   - ps: Install-Product node $env:nodejs_version
+  # Use npm v2
+  - npm -g install npm@2
+  - set PATH=%APPDATA%\npm;%PATH%
+  - npm -v
   # Typical npm stuff.
   - npm install
   # Grunt-specific stuff.

@@ -1,11 +1,9 @@
 {
     "evil": true,
-    "laxbreak": true,
     "latedef": true,
     "node": true,
     "undef": true,
     "unused": "vars",
-    "trailing": true,
     "noarg": true,
     "eqnull": true,
     "forin": true,

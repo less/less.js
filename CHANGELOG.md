@@ -1,3 +1,78 @@
+# 2.4.0
+
+2015-02-07
+
+ - Support for plugins that pre-process (to add libraries silently etc.)
+ - Empty sourcemaps now work
+ - Extract and Length functions now ignore comments in a list (more work to come to fix the general problem)
+ - fragment url's are treated absolute since they refer to the html document
+ - Extends on a selector joined with `&` now work better
+ - Nested mixins work better with !important (regression in 2.3.0)
+ - The promise dependency is now actually optional (introduced in 2.0.0)
+ - Files with just `\r` newlines now process ok (regression in 2.0.0)
+ - When strict units is off and the unit is 1/x, (e.g. 1 / 12px) the unit output is x, previously nothing (regression in 2.0.0)
+
+# 2.3.1
+
+2015-01-28
+
+ - Fix depends option (regression in 2.3.0)
+ - Support parent selector (`&`) used in sub element expression (e.g. `:not(.c_&)`)
+
+# 2.3.0
+
+2015-01-27
+
+ - add isruleset function
+ - add optional import option, causing less to not fail if file not found
+ - Fix browsers-side cache.
+ - Many fixes to import reference - support `@support` and keyframe
+ - Selectors now interpolate pseudo selectors (e.g. `:@{hover}`)
+ - Fix comments missed off if they were at the end of the file
+ - Fix !important used with parametric mixins
+ - Emits warnings for extends when the target is not found
+ - include-path now works on data-uri
+ - variables and function calls work for path in data-uri
+ - Fix absolute paths not working on imports sometimes.
+ - Unicode BOM removed again
+ - Misc. bug fixes
+
+# 2.2.0
+
+2015-01-04
+
+ - do not apply relative paths to svg-gradient and data-uri functions data-uri output
+ - using import filename interpolation and import inline together now works
+ - deprecate the compression option (still works, but outputs a warning unless silent)
+ - The node version of less now has image-size, image-width, image-height which return the image dimensions of a file
+ - Fixed an issue that could cause the parse to occur more than once and the callback be called multiple times
+ - if you are outputting to the console, lessc defaults to silent so warnings do not end up in output
+ - isunit function supports '' to test if a dimension has no unit
+ - data-uri function now counts characters after base64 encoding instead of bytes before encoding to determine ie8 support
+ - fix bug effecting guards on pseudo class selectors
+ - do not cache on the browser when used with modifyVars
+ - detection if less does not parse last character in file
+ - detection of whether a file is css now requires /css, .css, ?css, &css instead of just css. You can still tell less the type of file using import options.
+ - remove extra new line added to sourcemap entry inline file
+ - support safari extension
+ - less.parse now exposes a way to get the AST. We do not recommend you use this unless you need to.
+
+# 2.1.2
+
+2014-12-20
+
+ - Fix for use with requirejs
+ - Fixes for data-uri function
+
+# 2.1.1
+
+2014-11-27
+
+ - Improved keyword and anonymous usage with the replace function
+ - Added getCSSAppendage to sourcemap builder to avoid duplication in plugins
+ - Fix problem with plugins when used with the promises version of render
+ - If the render callback throws an exception it now propogates instead of calling the callback again with an error
+
 # 2.1.0
 
 2014-11-23

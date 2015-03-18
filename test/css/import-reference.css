@@ -34,6 +34,14 @@ div#id.class[a=1][b=2].class:not(1) {
 .visible + .visible .sub {
   color: green;
 }
+@supports (something: else) {
+  .class {
+    something: else;
+  }
+  .nestedToo .class {
+    something: else;
+  }
+}
 .b {
   color: red;
   color: green;
@@ -63,6 +71,23 @@ div#id.class[a=1][b=2].class:not(1) {
 }
 @media (max-size: 450px) {
   .test-mediaq-import {
+    color: red;
+  }
+}
+.test {
+  color: red;
+}
+.test:first-child {
+  color: blue;
+}
+@keyframes some-name {
+  property: value;
+}
+@supports (animation-name: test) {
+  @keyframes some-name {
+    property: value;
+  }
+  .selector {
     color: red;
   }
 }

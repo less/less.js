@@ -272,7 +272,7 @@ function printUsage() {
 
     // If input filenames are surrounded in quotes here, strip the quotes.
     // Bug #2508
-    filenames = [args[1], args[2]].map(function (arg) {
+    var filenames = [args[1], args[2]].map(function (arg) {
         var match;
 
         match = arg.match(/^'(.+)'$/);

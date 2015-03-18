@@ -264,12 +264,12 @@ filenames = [args[1], args[2]].map(function (arg) {
 
 });
 
-var input = args[1];
+var input = filenames[1];
 if (input && input != '-') {
     input = path.resolve(process.cwd(), input);
 }
-var output = args[2];
-var outputbase = args[2];
+var output = filenames[2];
+var outputbase = filenames[2];
 if (output) {
     output = path.resolve(process.cwd(), output);
     if (warningMessages) {

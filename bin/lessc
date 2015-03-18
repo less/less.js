@@ -274,7 +274,7 @@ function printUsage() {
     filenames = [args[1], args[2]].map(function (arg) {
         var match;
     
-        match = arg.match(/^["'](.+)["']$/);
+        match = arg.match(/^'(.+)'$/);
         if (match) {
             return match[1];
         } else {

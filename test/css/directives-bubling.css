@@ -101,3 +101,19 @@ html {
     property: value;
   }
 }
+.onTop {
+  animation: "textscale";
+  font-family: something;
+}
+@font-face {
+  font-family: something;
+  src: made-up-url;
+}
+@keyframes "textscale" {
+  0% {
+    font-size: 1em;
+  }
+  100% {
+    font-size: 2em;
+  }
+}

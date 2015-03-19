@@ -111,18 +111,32 @@
 
 //called from mixin 
 .nestedSupportsMixin() {
-    font-weight: 300;
-    -webkit-font-smoothing: subpixel-antialiased;
-    @supports not (-webkit-font-smoothing: subpixel-antialiased) {
-        font-weight: 400;
-        nested {
-          property: value;
-        }
+  font-weight: 300;
+  -webkit-font-smoothing: subpixel-antialiased;
+  @supports not (-webkit-font-smoothing: subpixel-antialiased) {
+    font-weight: 400;
+    nested {
+      property: value;
     }
+  }
 }
 
 html {
     .nestedSupportsMixin;
 }
 
+// selectors should not propagate into all directive types
+.onTop {
+  @font-face {
+    font-family: something;
+    src: made-up-url;
+  }
 
+  @keyframes "textscale" {
+      0% { font-size : 1em; }
+    100% { font-size : 2em; }
+  }
+
+  animation   : "textscale";
+  font-family : something;
+}

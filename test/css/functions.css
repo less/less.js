@@ -9,9 +9,13 @@
 #built-in {
   escaped: -Some::weird(#thing, y);
   lighten: #ffcccc;
+  lighten-relative: #ff6666;
   darken: #330000;
+  darken-relative: #990000;
   saturate: #203c31;
+  saturate-relative: #28342f;
   desaturate: #29332f;
+  desaturate-relative: #233930;
   greyscale: #2e2e2e;
   hsl-clamp: #ffffff;
   spin-p: #bf6a40;
@@ -118,6 +122,10 @@
   shade-negative: #868686;
   fade-out: rgba(255, 0, 0, 0.95);
   fade-in: rgba(255, 0, 0, 0.95);
+  fade-out-relative: rgba(255, 0, 0, 0.95);
+  fade-in-relative: rgba(255, 0, 0, 0.945);
+  fade-out2: rgba(255, 0, 0, 0);
+  fade-out2-relative: rgba(255, 0, 0, 0.25);
   hsv: #4d2926;
   hsva: rgba(77, 40, 38, 0.2);
   mix: #ff3300;

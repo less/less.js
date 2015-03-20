@@ -48,6 +48,10 @@ lessTester.runTestSet({modifyVars: true}, "modifyVars/",
 lessTester.runTestSet({urlArgs: '424242'}, "url-args/");
 lessTester.runTestSet({paths: ['test/data/', 'test/less/import/']}, "include-path/");
 lessTester.runTestSet({paths: 'test/data/'}, "include-path-string/");
+lessTester.runTestSet({plugin: 'test/plugins/postprocess/'}, "postProcessorPlugin/");
+lessTester.runTestSet({plugin: 'test/plugins/preprocess/'}, "preProcessorPlugin/");
+lessTester.runTestSet({plugin: 'test/plugins/visitor/'}, "visitorPlugin/");
+lessTester.runTestSet({plugin: 'test/plugins/filemanager/'}, "filemanagerPlugin/");
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();

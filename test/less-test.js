@@ -345,7 +345,10 @@ module.exports = function() {
         } else if (options.modifyVars) {
             options.modifyVars = options.getVars(path);
         }
-
+        if (options.plugin) {
+            var Plugin = require(require('path').resolve(process.cwd(), options.plugin));
+            options.plugins = [Plugin];
+        }
         less.render(str, options, callback);
     }
 

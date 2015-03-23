@@ -251,20 +251,44 @@ module.exports = function (grunt) {
                     outfile: 'tmp/browser/test-runner-post-processor.html'
                 }
             },
-            postProcessorPLugin: {
-                src: ['test/browser/less/postProcessorPlugin/*.less'],
+            postProcessorPlugin: {
+                src: ['test/less/postProcessorPlugin/*.less'],
                 options: {
-                    helpers: 'test/browser/runner-postProcessorPlugin-options.js',
+                    helpers: ['test/plugins/postprocess/index.js','test/browser/runner-postProcessorPlugin-options.js'],
                     specs: 'test/browser/runner-postProcessorPlugin.js',
                     outfile: 'tmp/browser/test-runner-post-processor-plugin.html'
                 }
-            }
+            },
+            preProcessorPlugin: {
+                src: ['test/less/preProcessorPlugin/*.less'],
+                options: {
+                    helpers: ['test/plugins/preprocess/index.js','test/browser/runner-preProcessorPlugin-options.js'],
+                    specs: 'test/browser/runner-preProcessorPlugin.js',
+                    outfile: 'tmp/browser/test-runner-pre-processor-plugin.html'
+                }
+            },
+            visitorPlugin: {
+                src: ['test/less/visitorPlugin/*.less'],
+                options: {
+                    helpers: ['test/plugins/visitor/index.js','test/browser/runner-VisitorPlugin-options.js'],
+                    specs: 'test/browser/runner-VisitorPlugin.js',
+                    outfile: 'tmp/browser/test-runner-visitor-plugin.html'
+                }
+            },
+            filemanagerPlugin: {
+                src: ['test/less/filemanagerPlugin/*.less'],
+                options: {
+                    helpers: ['test/plugins/filemanager/index.js','test/browser/runner-filemanagerPlugin-options.js'],
+                    specs: 'test/browser/runner-filemanagerPlugin.js',
+                    outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
+                }
+            }            
         },
 
         'saucelabs-jasmine': {
             all: {
                 options: {
-                    urls: ["post-processor-plugin","post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
+                    urls: ["filemanager-plugin","visitor-plugin","pre-processor-plugin","post-processor-plugin","post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
                            "rootpath", "relative-urls", "browser", "no-js-errors", "legacy", "strict-units"
                     ].map(function(testName) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";

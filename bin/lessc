@@ -270,25 +270,12 @@ function printUsage() {
         return;
     }
 
-    // If input filenames are surrounded in quotes here, strip the quotes.
-    // Bug #2508
-    var filenames = [args[1], args[2]].map(function (arg) {
-        var match;
-
-        match = arg && arg.match(/^'(.+)'$/);
-        if (match) {
-            return match[1];
-        } else {
-            return arg;
-        }
-    });
-
-    var input = filenames[0];
+    var input = args[1];
     if (input && input != '-') {
         input = path.resolve(process.cwd(), input);
     }
-    var output = filenames[1];
-    var outputbase = filenames[1];
+    var output = args[2];
+    var outputbase = args[2];
     if (output) {
         output = path.resolve(process.cwd(), output);
     }

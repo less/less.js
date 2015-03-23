@@ -20,6 +20,9 @@
   height: 10px;
   color: red;
 }
+.test-f {
+  height: 10px;
+}
 .deep-import-url {
   color: red;
 }

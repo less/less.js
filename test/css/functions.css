@@ -60,12 +60,16 @@
   replace-single-quoted: 'foo-2';
   replace-escaped-string: bar-2;
   replace-keyword: baz-2;
+  replace-with-color: "#113355#1133557";
+  replace-with-number: "2em07";
   format: "rgb(32, 128, 64)";
   format-string: "hello world";
   format-multiple: "hello earth 2";
   format-url-encode: "red is %23ff0000";
   format-single-quoted: 'hello single world';
   format-escaped-string: hello escaped world;
+  format-color-as-string: "#112233";
+  format-number-as-string: "4px";
   eformat: rgb(32, 128, 64);
   unitless: 12;
   unit: 14em;

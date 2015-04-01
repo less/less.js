@@ -36,7 +36,7 @@ module.exports = function (grunt) {
                 command: 'node test'
             },
             benchmark: {
-                command: 'node benchmark/less-benchmark.js'
+                command: 'node benchmark/index.js'
             },
             "sourcemap-test": {
                 command: [

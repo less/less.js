@@ -3,4 +3,5 @@ var less = {
     errorReporting: "console",
     globalVars: {
         "@global-var": "red"
-}};
+    }
+};

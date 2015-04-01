@@ -4,19 +4,17 @@
     };
 
     RemoveProperty.prototype = {
-    isReplacing: true,
-    run: function (root) {
-        return this._visitor.visit(root);
-    },
-    visitRule: function (ruleNode, visitArgs) {
-        if (ruleNode.name != '-some-aribitrary-property')
-        {
-            return ruleNode;
+        isReplacing: true,
+        run: function (root) {
+            return this._visitor.visit(root);
+        },
+        visitRule: function (ruleNode, visitArgs) {
+            if (ruleNode.name != '-some-aribitrary-property') {
+                return ruleNode;
+            } else {
+                return [];
+            }
         }
-        else {
-            return [];
-        }
-    }
     };
 
     exports.install = function(less, pluginManager) {

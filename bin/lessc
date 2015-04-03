@@ -2,7 +2,6 @@
 
 var path = require('path'),
     fs = require('../lib/less-node/fs'),
-    os = require('os'),
     errno,
     mkdirp;
 
@@ -153,8 +152,13 @@ function printUsage() {
                 break;
             case 'include-path':
                 if (checkArgFunc(arg, match[2])) {
-                    options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
+                    // support for both ; and : path separators
+                    // even on windows when using absolute paths with drive letters (eg C:\path:D:\path)
+                    var uniqueString = '!@#$%^&*()';
+                    options.paths = match[2].replace(/\b([a-z]):([\\\/])/gi, '$1' + uniqueString + '$2')
+                        .split(/[;:]/)
                         .map(function(p) {
+                            p = p.replace(uniqueString, ':');
                             if (p) {
                                 return path.resolve(process.cwd(), p);
                             }

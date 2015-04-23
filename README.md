@@ -4,6 +4,8 @@
 
 # [Less.js](http://lesscss.org)
 
+[![Join the chat at https://gitter.im/less/less.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/less/less.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
 
 This is the JavaScript, official, stable version of Less.

@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v2.5.0
+ * Less - Leaner CSS v2.5.1
  * http://lesscss.org
  *
  * Copyright (c) 2009-2015, Alexis Sellier <self@cloudhead.net>
@@ -74,17 +74,17 @@ require("./add-default-options")(window, options);
 
 var less = module.exports = require("./index")(window, options);
 
+window.less = less;
+
 if (options.onReady) {
     if (/!watch/.test(window.location.hash)) {
         less.watch();
     }
 
-    less.pageLoadFinished = less.registerStylesheets().then(
-        function () {
-            return less.refresh(less.env === 'development');
-        }
-    );
+    less.registerStylesheetsImmediately();
+    less.pageLoadFinished = less.refresh(less.env === 'development');
 }
+
 },{"./add-default-options":1,"./index":7,"promise/polyfill.js":94}],3:[function(require,module,exports){
 var utils = require("./utils");
 module.exports = {
@@ -671,20 +671,28 @@ module.exports = function(window, options) {
     less.unwatch = function () {clearInterval(less.watchTimer); this.watchMode = false; return false; };
 
     //
-    // Get all <link> tags with the 'rel' attribute set to "stylesheet/less"
+    // Synchronously get all <link> tags with the 'rel' attribute set to
+    // "stylesheet/less".
+    //
+    less.registerStylesheetsImmediately = function() {
+        var links = document.getElementsByTagName('link');
+        less.sheets = [];
+
+        for (var i = 0; i < links.length; i++) {
+            if (links[i].rel === 'stylesheet/less' || (links[i].rel.match(/stylesheet/) &&
+                (links[i].type.match(typePattern)))) {
+                less.sheets.push(links[i]);
+            }
+        }
+    };
+
+    //
+    // Asynchronously get all <link> tags with the 'rel' attribute set to
+    // "stylesheet/less", returning a Promise.
     //
     less.registerStylesheets = function() {
         return new Promise(function(resolve, reject) {
-            var links = document.getElementsByTagName('link');
-            less.sheets = [];
-
-            for (var i = 0; i < links.length; i++) {
-                if (links[i].rel === 'stylesheet/less' || (links[i].rel.match(/stylesheet/) &&
-                    (links[i].type.match(typePattern)))) {
-                    less.sheets.push(links[i]);
-                }
-            }
-
+            less.registerStylesheetsImmediately();
             resolve();
         });
     };
@@ -2372,7 +2380,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 5, 0],
+        version: [2, 5, 1],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -7002,7 +7010,7 @@ Definition.prototype.matchCondition = function (args, context) {
         new contexts.Eval(context,
             [this.evalParams(context, /* the parameter variables*/
                 new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames), args, [])]
-            .concat(this.frames) // the parent namespace/mixin frames
+            .concat(this.frames || []) // the parent namespace/mixin frames
             .concat(context.frames)))) { // the current environment frames
         return false;
     }
@@ -7630,7 +7638,7 @@ Ruleset.prototype.variable = function (name) {
     return this.variables()[name];
 };
 Ruleset.prototype.rulesets = function () {
-    if (!this.rules) { return null; }
+    if (!this.rules) { return []; }
 
     var filtRules = [], rules = this.rules, cnt = rules.length,
         i, rule;

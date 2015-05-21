@@ -17,12 +17,7 @@
     "type": "git",
     "url": "https://github.com/less/less.js.git"
   },
-  "licenses": [
-    {
-      "type": "Apache v2",
-      "url": "https://github.com/less/less.js/blob/master/LICENSE"
-    }
-  ],
+  "license": "Apache-2.0",
   "bin": {
     "lessc": "./bin/lessc"
   },

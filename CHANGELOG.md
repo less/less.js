@@ -1,3 +1,11 @@
+# 2.5.1
+
+2015-05-21
+
+ - Fix problems with less being async in some browsers
+ - Minor fix only likely to affect programmatic usage of ruleset find
+ - Fix  error when a namespaced mixin is invoked in global scope
+
 # 2.5.0
 
 2015-04-03

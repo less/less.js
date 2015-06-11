@@ -14,6 +14,16 @@
   background: blue;
 }
 
+.sidebar2any {
+  &:extend(.sidebar any);
+  background: blue;
+}
+
+.sidebar2deep {
+  &:extend(.sidebar deep);
+  background: blue;
+}
+
 .type1 {
     .sidebar3 {
       &:extend(.sidebar all);
@@ -24,6 +34,34 @@
 .type2 {
   &.sidebar4 {
     &:extend(.sidebar all);
+    background: red;
+  }
+}
+
+.type3 {
+    .sidebar5 {
+      &:extend(.sidebar any);
+      background: green;
+    }
+}
+
+.type4 {
+  &.sidebar6 {
+    &:extend(.sidebar any);
+    background: red;
+  }
+}
+
+.type5 {
+    .sidebar7 {
+      &:extend(.sidebar deep);
+      background: green;
+    }
+}
+
+.type6 {
+  &.sidebar8 {
+    &:extend(.sidebar deep);
     background: red;
   }
 }

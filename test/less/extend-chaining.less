@@ -23,6 +23,16 @@
 }
 .k:extend(.i all) {}
 
+//extend with any
+
+.g2.h2 {
+  color: black;
+}
+.i2.j2:extend(.g2 any) {
+  color: white;
+}
+.k2:extend(.i2 any) {}
+
 //extend multi-chaining
 
 .l {

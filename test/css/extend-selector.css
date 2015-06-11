@@ -19,10 +19,16 @@
 .foo .baz,
 .ext1 .ext2 .bar,
 .ext1 .ext2 .baz,
+.ext1 .ext2.deep .bar,
+.ext1 .ext2.deep .baz,
 .ext3 .bar,
 .ext3 .baz,
 .ext4 .bar,
-.ext4 .baz {
+.ext4 .baz,
+.ext3deep .bar,
+.ext3deep .baz,
+.ext4deep .bar,
+.ext4deep .baz {
   display: none;
 }
 div.ext5,

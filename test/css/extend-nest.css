@@ -1,14 +1,23 @@
 .sidebar,
 .sidebar2,
+.sidebar2any,
+.sidebar2deep,
 .type1 .sidebar3,
-.type2.sidebar4 {
+.type2.sidebar4,
+.type3 .sidebar5,
+.type4.sidebar6,
+.type5 .sidebar7,
+.type6.sidebar8 {
   width: 300px;
   background: red;
 }
 .sidebar .box,
 .sidebar2 .box,
+.sidebar2deep .box,
 .type1 .sidebar3 .box,
-.type2.sidebar4 .box {
+.type2.sidebar4 .box,
+.type5 .sidebar7 .box,
+.type6.sidebar8 .box {
   background: #FFF;
   border: 1px solid #000;
   margin: 10px 0;
@@ -16,10 +25,28 @@
 .sidebar2 {
   background: blue;
 }
+.sidebar2any {
+  background: blue;
+}
+.sidebar2deep {
+  background: blue;
+}
 .type1 .sidebar3 {
   background: green;
 }
 .type2.sidebar4 {
+  background: red;
+}
+.type3 .sidebar5 {
+  background: green;
+}
+.type4.sidebar6 {
+  background: red;
+}
+.type5 .sidebar7 {
+  background: green;
+}
+.type6.sidebar8 {
   background: red;
 }
 .button,

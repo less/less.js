@@ -20,9 +20,23 @@
 .ext1 .ext2
     :extend(.foo all) {
 }
+.ext1 .ext2.any
+    :extend(.foo any) {
+}
+.ext1 .ext2.deep
+    :extend(.foo deep) {
+}
 
 .ext3:extend(.foo all),
 .ext4:extend(.foo all) {
+}
+
+.ext3any:extend(.foo any),
+.ext4any:extend(.foo any) {
+}
+
+.ext3deep:extend(.foo deep),
+.ext4deep:extend(.foo deep) {
 }
 
 div.ext5,

@@ -1,6 +1,5 @@
 {
   "name": "less",
-  "version": "2.5.1",
   "main": "dist/less.js",
   "ignore": [
     "**/.*",

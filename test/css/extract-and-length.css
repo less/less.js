@@ -1,6 +1,6 @@
 .multiunit {
   length: 6;
-  extract: abc "abc" 1 1px 1% #112233;
+  extract: abc "abc" 1 1px 1% #123;
 }
 .incorrect-index {
   v1: extract(a b c, 5);

@@ -449,6 +449,9 @@ module.exports = function (grunt) {
     // Run all tests
     grunt.registerTask('test', testTasks);
 
+    // Run all tests
+    grunt.registerTask('quicktest', testTasks.slice(0, testTasks.length -1));
+
     // generate a good test environment for testing sourcemaps
     grunt.registerTask('sourcemap-test', [
         'clean:sourcemap-test',

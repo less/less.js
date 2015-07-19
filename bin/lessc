@@ -353,6 +353,7 @@ function printUsage() {
 
     if (!sourceMapFileInline) {
         var writeSourceMap = function(output, onDone) {
+            output = output || "";
             var filename = sourceMapOptions.sourceMapFullFilename;
             ensureDirectory(filename);
             fs.writeFile(filename, output, 'utf8', function (err) {

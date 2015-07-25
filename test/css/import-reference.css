@@ -91,3 +91,7 @@ div#id.class[a=1][b=2].class:not(1) {
     color: red;
   }
 }
+div {
+  this isn't very valid CSS.
+}
+this isn't very valid CSS.

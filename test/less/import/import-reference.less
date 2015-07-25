@@ -88,5 +88,11 @@
   @rules2: {property: value;};
 }
 
-@import (inline) "invalid-css.less";
+@import (inline, multiple) "invalid-css.less";
 @import "import-inline-invalid-css.less";
+.print-referenced-import-inline() {
+  div {
+    @import (inline, multiple) "invalid-css.less";
+  }
+  @import (inline, multiple) "invalid-css.less";
+}

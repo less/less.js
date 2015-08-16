@@ -269,3 +269,12 @@
 #guarded-deeper {
   #top > #deeper > .mixin(1);
 }
+
+// namespaced & guarded mixin in root
+// outputs nothing but should pass:
+
+@guarded-mixin-for-root: true;
+#ns {
+    .guarded-mixin-for-root() when (@guarded-mixin-for-root) {}
+}
+#ns > .guarded-mixin-for-root();

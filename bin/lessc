@@ -2,7 +2,7 @@
 
 var path = require('path'),
     fs = require('../lib/less-node/fs'),
-    os = require('os'),
+    os = require("os"),
     errno,
     mkdirp;
 
@@ -153,7 +153,10 @@ function printUsage() {
                 break;
             case 'include-path':
                 if (checkArgFunc(arg, match[2])) {
-                    options.paths = match[2].split(os.type().match(/Windows/) ? ';' : ':')
+                    // ; supported on windows.
+                    // : supported on windows and linux, excluding a drive letter like C:\ so C:\file:D:\file parses to 2
+                    options.paths = match[2]
+                        .split(os.type().match(/Windows/) ? /:(?!\\)|;/ : ':')
                         .map(function(p) {
                             if (p) {
                                 return path.resolve(process.cwd(), p);
@@ -350,6 +353,7 @@ function printUsage() {
 
     if (!sourceMapFileInline) {
         var writeSourceMap = function(output, onDone) {
+            output = output || "";
             var filename = sourceMapOptions.sourceMapFullFilename;
             ensureDirectory(filename);
             fs.writeFile(filename, output, 'utf8', function (err) {

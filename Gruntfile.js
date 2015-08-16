@@ -36,7 +36,7 @@ module.exports = function (grunt) {
                 command: 'node test'
             },
             benchmark: {
-                command: 'node benchmark/less-benchmark.js'
+                command: 'node benchmark/index.js'
             },
             "sourcemap-test": {
                 command: [
@@ -448,6 +448,9 @@ module.exports = function (grunt) {
 
     // Run all tests
     grunt.registerTask('test', testTasks);
+
+    // Run all tests
+    grunt.registerTask('quicktest', testTasks.slice(0, testTasks.length -1));
 
     // generate a good test environment for testing sourcemaps
     grunt.registerTask('sourcemap-test', [

@@ -1,3 +1,32 @@
+# 2.5.1
+
+2015-05-21
+
+ - Fix problems with less being async in some browsers
+ - Minor fix only likely to affect programmatic usage of ruleset find
+ - Fix  error when a namespaced mixin is invoked in global scope
+
+# 2.5.0
+
+2015-04-03
+
+ - supports the scoped `@plugin` directive to load function plugins
+ - All directives are bubbled (e.g. supports), not just media
+ - Performance improvements to the parser - should help non-chrome browsers with very large less files to be a lot quicker.
+ - the image size function respects include paths like other file functions
+ - colour functions take a relative argument that applies percentages relatively instead of absolutely
+ - include paths now allows : as a separator on windows (recognising and not splitting drive names by the backslash)
+ - `@import (css)` does not pull the directive above comments
+ - Fix for import statements without quotes sometimes causing issues
+ - replace supports dimensions and colours
+ - the browser field is set in the package.json for use with browserify
+ - another fix to support paths being passed as a string instead of an array
+ - detached rulesets can be used as default arguments
+ - Fix a lot of false warnings about extends
+ - errors written to stderr more consistently
+ - consistently keep units if strict units is off
+ - Better support for comments in function all arguments
+
 # 2.4.0
 
 2015-02-07
@@ -5,7 +34,7 @@
  - Support for plugins that pre-process (to add libraries silently etc.)
  - Empty sourcemaps now work
  - Extract and Length functions now ignore comments in a list (more work to come to fix the general problem)
- - fragment url's are treated absolute since they refer to the html document
+ - fragment urls are treated absolute since they refer to the html document
  - Extends on a selector joined with `&` now work better
  - Nested mixins work better with !important (regression in 2.3.0)
  - The promise dependency is now actually optional (introduced in 2.0.0)
@@ -23,7 +52,7 @@
 
 2015-01-27
 
- - add isruleset function
+ - add `isruleset` function
  - add optional import option, causing less to not fail if file not found
  - Fix browsers-side cache.
  - Many fixes to import reference - support `@support` and keyframe
@@ -47,12 +76,12 @@
  - The node version of less now has image-size, image-width, image-height which return the image dimensions of a file
  - Fixed an issue that could cause the parse to occur more than once and the callback be called multiple times
  - if you are outputting to the console, lessc defaults to silent so warnings do not end up in output
- - isunit function supports '' to test if a dimension has no unit
+ - `isunit` function supports `''` to test if a dimension has no unit
  - data-uri function now counts characters after base64 encoding instead of bytes before encoding to determine ie8 support
  - fix bug effecting guards on pseudo class selectors
  - do not cache on the browser when used with modifyVars
  - detection if less does not parse last character in file
- - detection of whether a file is css now requires /css, .css, ?css, &css instead of just css. You can still tell less the type of file using import options.
+ - detection of whether a file is css now requires `/css`, `.css`, `?css`, `&css` instead of just `css`. You can still tell less the type of file using import options.
  - remove extra new line added to sourcemap entry inline file
  - support safari extension
  - less.parse now exposes a way to get the AST. We do not recommend you use this unless you need to.
@@ -69,7 +98,7 @@
 2014-11-27
 
  - Improved keyword and anonymous usage with the replace function
- - Added getCSSAppendage to sourcemap builder to avoid duplication in plugins
+ - Added `getCSSAppendage` to sourcemap builder to avoid duplication in plugins
  - Fix problem with plugins when used with the promises version of render
  - If the render callback throws an exception it now propogates instead of calling the callback again with an error
 
@@ -77,7 +106,7 @@
 
 2014-11-23
 
- - Fixed isSync option, it was using sync file operations but promises are guaranteed to call back async. We now support promises as a feature rather than the 1st class way of doing things.
+ - Fixed `isSync` option, it was using sync file operations but promises are guaranteed to call back async. We now support promises as a feature rather than the 1st class way of doing things.
  - Browser code is now synchronous again, like in v1, meaning it blocks the site until less is compiled
  - Some fixes for variable imports which affected filemanagers when synchronous
  - Fixed lessc makefile dependencies option
@@ -97,7 +126,7 @@
  - browser tests now pass in IE 8-11 and FF
  - added index.js and browser.js in root as shortcuts
  - fixed some local variable spellings
- - support for @counter-style directive
+ - support for `@counter-style` directive
 
 # 2.0.0-b3
 
@@ -106,7 +135,7 @@
  - some refactoring of browser structure to allow use of api vs normal browser bundle
  - browser bundle no longer leaks require
  - browser can now be scoped with just window
- - browser useFileCache defaults to true, but file cache is now cleared when refreshing or in watch mode
+ - browser `useFileCache` defaults to `true`, but file cache is now cleared when refreshing or in watch mode
 
 # 2.0.0-b2
 

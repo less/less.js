@@ -37,6 +37,12 @@
 .block_4 .four {
   background-color: yellow;
 }
+a {
+  background-color: red, foo;
+}
+ab {
+  background: red, foo;
+}
 .value_as_property {
   prop1: color;
   color: #ff0000;

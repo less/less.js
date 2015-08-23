@@ -43,6 +43,15 @@
   color: blue;
   .mixin2();
 }
+// property merging
+a {
+    background-color+: red;
+    background-color+: foo;
+
+    &b {
+        background: $background-color;
+    }
+}
 
 .value_as_property {
   prop1: color;

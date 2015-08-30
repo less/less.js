@@ -59,7 +59,7 @@ div#id.class[a=1][b=2].class:not(1) {
   color: green;
 }
 .y {
-  pulled-in: yes;
+  pulled-in: yes /* inline comment survives */;
 }
 /* comment pulled in */
 .visible {

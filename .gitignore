@@ -4,6 +4,7 @@
 *~
 .#*
 .idea
+*.iml
 *.sublime-*
 
 # npm

@@ -3,7 +3,7 @@
 }
 .variables {
   height: 24px;
-  color: #888888;
+  color: #888;
   font-family: "Trebuchet MS", Verdana, sans-serif;
   quotes: "~" "~";
 }
@@ -16,10 +16,10 @@
 .values {
   minus-one: -1;
   font-family: 'Trebuchet', 'Trebuchet', 'Trebuchet';
-  color: #888888 !important;
-  same-color: #888888 !important;
-  same-again: #888888 !important;
-  multi-important: #888888 #888888, 'Trebuchet' !important;
+  color: #888 !important;
+  same-color: #888 !important;
+  same-again: #888 !important;
+  multi-important: #888 #888, 'Trebuchet' !important;
   multi: something 'A', B, C, 'Trebuchet';
 }
 .variable-names .quoted {

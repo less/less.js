@@ -158,3 +158,6 @@ mixins-args-expand-op-9 {
   a4: and;
   a8: 5;
 }
+#test-mixin-matching-when-default-2645 {
+  height: 20px;
+}

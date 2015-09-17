@@ -248,3 +248,16 @@ mixins-args-expand-op- {
     a8: extract(@a, 8);
   }
 }
+#test-mixin-matching-when-default-2645 {
+  .mixin(@height) {
+    height: @height;
+  }
+
+  .mixin(@width, @height: 10px) {
+    width: @width;
+
+    .mixin(@height: @height);
+  }
+
+  .mixin(@height: 20px);
+}

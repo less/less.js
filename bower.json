@@ -20,5 +20,6 @@
     ".gitattributes",
     ".jshintrc",
     ".npmignore"
-  ]
+  ],
+  "version": "2.5.2"
 }

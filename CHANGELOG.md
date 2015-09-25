@@ -1,3 +1,14 @@
+# 2.5.2
+
+2015-09-24
+
+ - No output should result in an empty sourcemap
+ - Import inline located inside file imported by reference should not be present in output
+ - Shorthand colors will stay shorthand
+ - Make percentage work like other math functions and throw an error on NaN
+ - Fixed mixin definition matching problem when mixin definition contains parameters with default values
+ - Observe reference for imported comments
+
 # 2.5.1
 
 2015-05-21

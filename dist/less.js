@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v2.5.2
+ * Less - Leaner CSS v2.5.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2015, Alexis Sellier <self@cloudhead.net>
@@ -2390,7 +2390,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 5, 2],
+        version: [2, 5, 3],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -6401,7 +6401,12 @@ Import.prototype.eval = function (context) {
     }
 
     if (this.options.inline) {
-        var contents = new Anonymous(this.root, 0, {filename: this.importedFilename, reference: this.path.currentFileInfo.reference}, true, true, false);
+        var contents = new Anonymous(this.root, 0,
+          {
+              filename: this.importedFilename,
+              reference: this.path.currentFileInfo && this.path.currentFileInfo.reference
+          }, true, true, false);
+
         return this.features ? new Media([contents], this.features.value) : [contents];
     } else if (this.css) {
         var newImport = new Import(this.evalPath(context), features, this.options, this.index);

@@ -361,18 +361,11 @@ module.exports = function (grunt) {
         'test'
     ]);
 
-    grunt.registerTask('updateBowerJson', function () {
-        var bowerJson = require('./bower.json');
-        bowerJson.version = grunt.config('pkg.version');
-        fs.writeFileSync('./bower.json', JSON.stringify(bowerJson, null, 2));
-    });
-
     // Release
     grunt.registerTask('dist', [
         'browserify:browser',
         'concat:dist',
-        'uglify:dist',
-        'updateBowerJson'
+        'uglify:dist'
     ]);
 
     // Release Rhino Version

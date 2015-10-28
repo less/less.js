@@ -35,7 +35,7 @@
   "scripts": {
     "test": "grunt test"
   },
-  "optionalDependencies": {
+  "dependencies": {
     "errno": "^0.1.1",
     "graceful-fs": "^3.0.5",
     "image-size": "~0.3.5",

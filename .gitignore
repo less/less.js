@@ -4,6 +4,7 @@
 *~
 .#*
 .idea
+*.iml
 *.sublime-*
 
 # npm
@@ -16,6 +17,7 @@ test/browser/less.js
 test/sourcemaps/**/*.map
 test/sourcemaps/*.map
 test/sourcemaps/*.css
+test/less-bom
 
 # grunt
 .grunt

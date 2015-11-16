@@ -3,7 +3,7 @@
 }
 .variables {
   height: 24px;
-  color: #888888;
+  color: #888;
   font-family: "Trebuchet MS", Verdana, sans-serif;
   quotes: "~" "~";
 }
@@ -16,10 +16,19 @@
 .values {
   minus-one: -1;
   font-family: 'Trebuchet', 'Trebuchet', 'Trebuchet';
-  color: #888888 !important;
+  color: #888 !important;
+  same-color: #888 !important;
+  same-again: #888 !important;
+  multi-important: #888 #888, 'Trebuchet' !important;
   multi: something 'A', B, C, 'Trebuchet';
 }
-.variable-names {
+.variable-names .quoted {
+  name: 'hello';
+}
+.variable-names .unquoted {
+  name: 'hello';
+}
+.variable-names .color-keyword {
   name: 'hello';
 }
 .alpha {
@@ -42,4 +51,18 @@
   custom-unit-cancelling: 18dogs;
   mix-units: 2px;
   invalid-units: 1px;
+}
+.units .fallback {
+  div-px-1: 10px;
+  div-px-2: 1px;
+  sub-px-1: 12.6px;
+  sub-cm-1: 9.666625cm;
+  mul-px-1: 19.6px;
+  mul-em-1: 19.6em;
+  mul-em-2: 196em;
+  mul-cm-1: 196cm;
+  add-px-1: 15.4px;
+  add-px-2: 393.35275591px;
+  mul-px-2: 140px;
+  mul-px-3: 140px;
 }

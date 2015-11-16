@@ -101,3 +101,12 @@ header {
 .a {
   .mixin();
 }
+// as mixin argument default
+.mixin-definition(@a: {}; @b: {default: works;};) {
+  @a();
+  @b();
+}
+.argument-default {
+  .mixin-definition();
+  .mixin-definition({direct: works;}; @b: {named: works;});
+}

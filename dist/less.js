@@ -1,16 +1,91 @@
 /*!
- * Less - Leaner CSS v2.0.0-b1
+ * Less - Leaner CSS v2.5.3
  * http://lesscss.org
  *
- * Copyright (c) 2009-2014, Alexis Sellier <self@cloudhead.net>
- * Licensed under the Apache v2 License.
+ * Copyright (c) 2009-2015, Alexis Sellier <self@cloudhead.net>
+ * Licensed under the  License.
  *
  */
 
- /** * @license Apache v2
+ /** * @license 
  */
 
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.less = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var addDataAttr = require("./utils").addDataAttr,
+    browser = require("./browser");
+
+module.exports = function(window, options) {
+
+    // use options from the current script tag data attribues
+    addDataAttr(options, browser.currentScript(window));
+
+    if (options.isFileProtocol === undefined) {
+        options.isFileProtocol = /^(file|(chrome|safari)(-extension)?|resource|qrc|app):/.test(window.location.protocol);
+    }
+
+    // Load styles asynchronously (default: false)
+    //
+    // This is set to `false` by default, so that the body
+    // doesn't start loading before the stylesheets are parsed.
+    // Setting this to `true` can result in flickering.
+    //
+    options.async = options.async || false;
+    options.fileAsync = options.fileAsync || false;
+
+    // Interval between watch polls
+    options.poll = options.poll || (options.isFileProtocol ? 1000 : 1500);
+
+    options.env = options.env || (window.location.hostname == '127.0.0.1' ||
+        window.location.hostname == '0.0.0.0'   ||
+        window.location.hostname == 'localhost' ||
+        (window.location.port &&
+            window.location.port.length > 0)      ||
+        options.isFileProtocol                   ? 'development'
+        : 'production');
+
+    var dumpLineNumbers = /!dumpLineNumbers:(comments|mediaquery|all)/.exec(window.location.hash);
+    if (dumpLineNumbers) {
+        options.dumpLineNumbers = dumpLineNumbers[1];
+    }
+
+    if (options.useFileCache === undefined) {
+        options.useFileCache = true;
+    }
+
+    if (options.onReady === undefined) {
+        options.onReady = true;
+    }
+
+};
+
+},{"./browser":3,"./utils":9}],2:[function(require,module,exports){
+/**
+ * Kicks off less and compiles any stylesheets
+ * used in the browser distributed version of less
+ * to kick-start less using the browser api
+ */
+/*global window */
+
+// shim Promise if required
+require('promise/polyfill.js');
+
+var options = window.less || {};
+require("./add-default-options")(window, options);
+
+var less = module.exports = require("./index")(window, options);
+
+window.less = less;
+
+if (options.onReady) {
+    if (/!watch/.test(window.location.hash)) {
+        less.watch();
+    }
+
+    less.registerStylesheetsImmediately();
+    less.pageLoadFinished = less.refresh(less.env === 'development');
+}
+
+},{"./add-default-options":1,"./index":7,"promise/polyfill.js":95}],3:[function(require,module,exports){
 var utils = require("./utils");
 module.exports = {
     createCSS: function (document, styles, sheet) {
@@ -21,74 +96,81 @@ module.exports = {
         var id = 'less:' + (sheet.title || utils.extractId(href));
 
         // If this has already been inserted into the DOM, we may need to replace it
-        var oldCss = document.getElementById(id);
-        var keepOldCss = false;
+        var oldStyleNode = document.getElementById(id);
+        var keepOldStyleNode = false;
 
         // Create a new stylesheet node for insertion or (if necessary) replacement
-        var css = document.createElement('style');
-        css.setAttribute('type', 'text/css');
+        var styleNode = document.createElement('style');
+        styleNode.setAttribute('type', 'text/css');
         if (sheet.media) {
-            css.setAttribute('media', sheet.media);
+            styleNode.setAttribute('media', sheet.media);
         }
-        css.id = id;
+        styleNode.id = id;
 
-        if (!css.styleSheet) {
-            css.appendChild(document.createTextNode(styles));
+        if (!styleNode.styleSheet) {
+            styleNode.appendChild(document.createTextNode(styles));
 
-            // If new contents match contents of oldCss, don't replace oldCss
-            keepOldCss = (oldCss !== null && oldCss.childNodes.length > 0 && css.childNodes.length > 0 &&
-                oldCss.firstChild.nodeValue === css.firstChild.nodeValue);
+            // If new contents match contents of oldStyleNode, don't replace oldStyleNode
+            keepOldStyleNode = (oldStyleNode !== null && oldStyleNode.childNodes.length > 0 && styleNode.childNodes.length > 0 &&
+                oldStyleNode.firstChild.nodeValue === styleNode.firstChild.nodeValue);
         }
 
         var head = document.getElementsByTagName('head')[0];
 
-        // If there is no oldCss, just append; otherwise, only append if we need
-        // to replace oldCss with an updated stylesheet
-        if (oldCss === null || keepOldCss === false) {
+        // If there is no oldStyleNode, just append; otherwise, only append if we need
+        // to replace oldStyleNode with an updated stylesheet
+        if (oldStyleNode === null || keepOldStyleNode === false) {
             var nextEl = sheet && sheet.nextSibling || null;
             if (nextEl) {
-                nextEl.parentNode.insertBefore(css, nextEl);
+                nextEl.parentNode.insertBefore(styleNode, nextEl);
             } else {
-                head.appendChild(css);
+                head.appendChild(styleNode);
             }
         }
-        if (oldCss && keepOldCss === false) {
-            oldCss.parentNode.removeChild(oldCss);
+        if (oldStyleNode && keepOldStyleNode === false) {
+            oldStyleNode.parentNode.removeChild(oldStyleNode);
         }
 
         // For IE.
         // This needs to happen *after* the style element is added to the DOM, otherwise IE 7 and 8 may crash.
         // See http://social.msdn.microsoft.com/Forums/en-US/7e081b65-878a-4c22-8e68-c10d39c2ed32/internet-explorer-crashes-appending-style-element-to-head
-        if (css.styleSheet) {
+        if (styleNode.styleSheet) {
             try {
-                css.styleSheet.cssText = styles;
+                styleNode.styleSheet.cssText = styles;
             } catch (e) {
                 throw new Error("Couldn't reassign styleSheet.cssText.");
             }
         }
+    },
+    currentScript: function(window) {
+        var document = window.document;
+        return document.currentScript || (function() {
+            var scripts = document.getElementsByTagName("script");
+            return scripts[scripts.length - 1];
+        })();
     }
 };
 
-},{"./utils":7}],2:[function(require,module,exports){
+},{"./utils":9}],4:[function(require,module,exports){
 // Cache system is a bit outdated and could do with work
 
 module.exports = function(window, options, logger) {
     var cache = null;
     if (options.env !== 'development') {
         try {
-            cache = (typeof(window.localStorage) === 'undefined') ? null : window.localStorage;
+            cache = (typeof window.localStorage === 'undefined') ? null : window.localStorage;
         } catch (_) {}
     }
     return {
         setCSS: function(path, lastModified, styles) {
             if (cache) {
-                logger.info('saving ' + path+ ' to cache.');
+                logger.info('saving ' + path + ' to cache.');
                 try {
                     cache.setItem(path, styles);
                     cache.setItem(path + ':timestamp', lastModified);
                 } catch(e) {
                     //TODO - could do with adding more robust error handling
-                    logger.error('failed to save');
+                    logger.error('failed to save "' + path + '" to local storage for caching.');
                 }
             }
         },
@@ -106,7 +188,7 @@ module.exports = function(window, options, logger) {
     };
 };
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var utils = require("./utils"),
     browser = require("./browser");
 
@@ -278,91 +360,92 @@ module.exports = function(window, less, options) {
     };
 };
 
-},{"./browser":1,"./utils":7}],4:[function(require,module,exports){
+},{"./browser":3,"./utils":9}],6:[function(require,module,exports){
 /*global window, XMLHttpRequest */
 
-module.exports = function(options, isFileProtocol, logger) {
+module.exports = function(options, logger) {
 
-var PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise,
-    AbstractFileManager = require("../less/environment/abstract-file-manager.js");
+    var AbstractFileManager = require("../less/environment/abstract-file-manager.js");
 
-var fileCache = {};
+    var fileCache = {};
 
-//TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
-//        isFileProtocol is global
+    //TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
 
-function getXMLHttpRequest() {
-    if (window.XMLHttpRequest && (window.location.protocol !== "file:" || !("ActiveXObject" in window))) {
-        return new XMLHttpRequest();
-    } else {
-        try {
-            /*global ActiveXObject */
-            return new ActiveXObject("Microsoft.XMLHTTP");
-        } catch (e) {
-            logger.error("browser doesn't support AJAX.");
-            return null;
-        }
-    }
-}
-
-var FileManager = function() {
-};
-
-FileManager.prototype = new AbstractFileManager();
-
-FileManager.prototype.alwaysMakePathsAbsolute = function alwaysMakePathsAbsolute() {
-    return true;
-};
-FileManager.prototype.join = function join(basePath, laterPath) {
-    if (!basePath) {
-        return laterPath;
-    }
-    return this.extractUrlParts(laterPath, basePath).path;
-};
-FileManager.prototype.doXHR = function doXHR(url, type, callback, errback) {
-
-    var xhr = getXMLHttpRequest();
-    var async = isFileProtocol ? options.fileAsync : options.async;
-
-    if (typeof(xhr.overrideMimeType) === 'function') {
-        xhr.overrideMimeType('text/css');
-    }
-    logger.debug("XHR: Getting '" + url + "'");
-    xhr.open('GET', url, async);
-    xhr.setRequestHeader('Accept', type || 'text/x-less, text/css; q=0.9, */*; q=0.5');
-    xhr.send(null);
-
-    function handleResponse(xhr, callback, errback) {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            callback(xhr.responseText,
-                xhr.getResponseHeader("Last-Modified"));
-        } else if (typeof(errback) === 'function') {
-            errback(xhr.status, url);
-        }
-    }
-
-    if (isFileProtocol && !options.fileAsync) {
-        if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 300)) {
-            callback(xhr.responseText);
+    function getXMLHttpRequest() {
+        if (window.XMLHttpRequest && (window.location.protocol !== "file:" || !("ActiveXObject" in window))) {
+            return new XMLHttpRequest();
         } else {
-            errback(xhr.status, url);
-        }
-    } else if (async) {
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                handleResponse(xhr, callback, errback);
+            try {
+                /*global ActiveXObject */
+                return new ActiveXObject("Microsoft.XMLHTTP");
+            } catch (e) {
+                logger.error("browser doesn't support AJAX.");
+                return null;
             }
-        };
-    } else {
-        handleResponse(xhr, callback, errback);
+        }
     }
-};
-FileManager.prototype.supports = function(filename, currentDirectory, options, environment) {
-    return true;
-};
 
-FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment) {
-    return new PromiseConstructor(function(fullfill, reject) {
+    var FileManager = function() {
+    };
+
+    FileManager.prototype = new AbstractFileManager();
+
+    FileManager.prototype.alwaysMakePathsAbsolute = function alwaysMakePathsAbsolute() {
+        return true;
+    };
+    FileManager.prototype.join = function join(basePath, laterPath) {
+        if (!basePath) {
+            return laterPath;
+        }
+        return this.extractUrlParts(laterPath, basePath).path;
+    };
+    FileManager.prototype.doXHR = function doXHR(url, type, callback, errback) {
+
+        var xhr = getXMLHttpRequest();
+        var async = options.isFileProtocol ? options.fileAsync : options.async;
+
+        if (typeof xhr.overrideMimeType === 'function') {
+            xhr.overrideMimeType('text/css');
+        }
+        logger.debug("XHR: Getting '" + url + "'");
+        xhr.open('GET', url, async);
+        xhr.setRequestHeader('Accept', type || 'text/x-less, text/css; q=0.9, */*; q=0.5');
+        xhr.send(null);
+
+        function handleResponse(xhr, callback, errback) {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                callback(xhr.responseText,
+                    xhr.getResponseHeader("Last-Modified"));
+            } else if (typeof errback === 'function') {
+                errback(xhr.status, url);
+            }
+        }
+
+        if (options.isFileProtocol && !options.fileAsync) {
+            if (xhr.status === 0 || (xhr.status >= 200 && xhr.status < 300)) {
+                callback(xhr.responseText);
+            } else {
+                errback(xhr.status, url);
+            }
+        } else if (async) {
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    handleResponse(xhr, callback, errback);
+                }
+            };
+        } else {
+            handleResponse(xhr, callback, errback);
+        }
+    };
+    FileManager.prototype.supports = function(filename, currentDirectory, options, environment) {
+        return true;
+    };
+
+    FileManager.prototype.clearFileCache = function() {
+        fileCache = {};
+    };
+
+    FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment, callback) {
         if (currentDirectory && !this.isPathAbsolute(filename)) {
             filename = currentDirectory + filename;
         }
@@ -377,9 +460,9 @@ FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, o
         if (options.useFileCache && fileCache[href]) {
             try {
                 var lessText = fileCache[href];
-                fullfill({ contents: lessText, filename: href, webInfo: { lastModified: new Date() }});
+                callback(null, { contents: lessText, filename: href, webInfo: { lastModified: new Date() }});
             } catch (e) {
-                reject({filename: href, message: "Error loading file " + href + " error was " + e.message});
+                callback({filename: href, message: "Error loading file " + href + " error was " + e.message});
             }
             return;
         }
@@ -389,245 +472,209 @@ FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, o
             fileCache[href] = data;
 
             // Use remote copy (re-parse)
-            fullfill({ contents: data, filename: href, webInfo: { lastModified: lastModified }});
+            callback(null, { contents: data, filename: href, webInfo: { lastModified: lastModified }});
         }, function doXHRError(status, url) {
-            reject({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
+            callback({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
         });
-    }.bind(this));
+    };
+
+    return FileManager;
 };
 
-return FileManager;
-};
-
-},{"../less/environment/abstract-file-manager.js":12,"promise":undefined}],5:[function(require,module,exports){
+},{"../less/environment/abstract-file-manager.js":14}],7:[function(require,module,exports){
 //
-// browser.js - client-side engine
+// index.js
+// Should expose the additional browser functions on to the less object
 //
-/*global window, document, location */
+var addDataAttr = require("./utils").addDataAttr,
+    browser = require("./browser");
 
-var less;
+module.exports = function(window, options) {
+    var document = window.document;
+    var less = require('../less')();
+    //module.exports = less;
+    less.options = options;
+    var environment = less.environment,
+        FileManager = require("./file-manager")(options, less.logger),
+        fileManager = new FileManager();
+    environment.addFileManager(fileManager);
+    less.FileManager = FileManager;
 
-/*
-  TODO - options is now hidden - we should expose it on the less object, but not have it "as" the less object
-         less = { fileAsync: true }
-         then access as less.environment.options.fileAsync ?
- */
+    require("./log-listener")(less, options);
+    var errors = require("./error-reporting")(window, less, options);
+    var cache = less.cache = options.cache || require("./cache")(window, options, less.logger);
 
-var isFileProtocol = /^(file|chrome(-extension)?|resource|qrc|app):/.test(window.location.protocol),
-    options = window.less || {};
-
-// shim Promise if required
-require('promise/polyfill.js');
-
-window.less = less = require('../less')();
-var environment = less.environment,
-    FileManager = require("./file-manager")(options, isFileProtocol, less.logger),
-    fileManager = new FileManager();
-environment.addFileManager(fileManager);
-less.FileManager = FileManager;
-
-require("./log-listener")(less, options);
-var errors = require("./error-reporting")(window, less, options);
-var browser = require("./browser");
-var cache = less.cache = options.cache || require("./cache")(window, options, less.logger);
-
-options.env = options.env || (window.location.hostname == '127.0.0.1' ||
-                              window.location.hostname == '0.0.0.0'   ||
-                              window.location.hostname == 'localhost' ||
-                        (window.location.port &&
-                         window.location.port.length > 0)      ||
-                        isFileProtocol                   ? 'development'
-                                                         : 'production');
-
-// Load styles asynchronously (default: false)
-//
-// This is set to `false` by default, so that the body
-// doesn't start loading before the stylesheets are parsed.
-// Setting this to `true` can result in flickering.
-//
-options.async = options.async || false;
-options.fileAsync = options.fileAsync || false;
-
-// Interval between watch polls
-options.poll = options.poll || (isFileProtocol ? 1000 : 1500);
-
-//Setup user functions
-if (options.functions) {
-    less.functions.functionRegistry.addMultiple(options.functions);
-}
-
-var dumpLineNumbers = /!dumpLineNumbers:(comments|mediaquery|all)/.exec(location.hash);
-if (dumpLineNumbers) {
-    options.dumpLineNumbers = dumpLineNumbers[1];
-}
-
-var typePattern = /^text\/(x-)?less$/;
-
-function postProcessCSS(styles) {
-    if (options.postProcessor && typeof options.postProcessor === 'function') {
-        styles = options.postProcessor.call(styles, styles) || styles;
+    //Setup user functions
+    if (options.functions) {
+        less.functions.functionRegistry.addMultiple(options.functions);
     }
-    return styles;
-}
 
-function clone(obj) {
-    var cloned = {};
-    for(var prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-            cloned[prop] = obj[prop];
+    var typePattern = /^text\/(x-)?less$/;
+
+    function postProcessCSS(styles) { // deprecated, use a plugin for postprocesstasks
+        if (options.postProcessor && typeof options.postProcessor === 'function') {
+            styles = options.postProcessor.call(styles, styles) || styles;
+        }
+        return styles;
+    }
+
+    function clone(obj) {
+        var cloned = {};
+        for (var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                cloned[prop] = obj[prop];
+            }
+        }
+        return cloned;
+    }
+
+    // only really needed for phantom
+    function bind(func, thisArg) {
+        var curryArgs = Array.prototype.slice.call(arguments, 2);
+        return function() {
+            var args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
+            return func.apply(thisArg, args);
+        };
+    }
+
+    function loadStyles(modifyVars) {
+        var styles = document.getElementsByTagName('style'),
+            style;
+
+        for (var i = 0; i < styles.length; i++) {
+            style = styles[i];
+            if (style.type.match(typePattern)) {
+                var instanceOptions = clone(options);
+                instanceOptions.modifyVars = modifyVars;
+                var lessText = style.innerHTML || '';
+                instanceOptions.filename = document.location.href.replace(/#.*$/, '');
+
+                /*jshint loopfunc:true */
+                // use closure to store current style
+                less.render(lessText, instanceOptions,
+                        bind(function(style, e, result) {
+                            if (e) {
+                                errors.add(e, "inline");
+                            } else {
+                                style.type = 'text/css';
+                                if (style.styleSheet) {
+                                    style.styleSheet.cssText = result.css;
+                                } else {
+                                    style.innerHTML = result.css;
+                                }
+                            }
+                        }, null, style));
+            }
         }
     }
-    return cloned;
-}
 
-// only really needed for phantom
-function bind(func, thisArg) {
-    var curryArgs = Array.prototype.slice.call(arguments, 2);
-    return function() {
-        var args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
-        return func.apply(thisArg, args);
-    };
-}
+    function loadStyleSheet(sheet, callback, reload, remaining, modifyVars) {
 
-function loadStyles(modifyVars) {
-    var styles = document.getElementsByTagName('style'),
-        style;
+        var instanceOptions = clone(options);
+        addDataAttr(instanceOptions, sheet);
+        instanceOptions.mime = sheet.type;
 
-    for (var i = 0; i < styles.length; i++) {
-        style = styles[i];
-        if (style.type.match(typePattern)) {
-            var instanceOptions = clone(options);
+        if (modifyVars) {
             instanceOptions.modifyVars = modifyVars;
-            var lessText = style.innerHTML || '';
-            instanceOptions.filename = document.location.href.replace(/#.*$/, '');
+        }
 
-            if (modifyVars || instanceOptions.globalVars) {
-                instanceOptions.useFileCache = true;
+        function loadInitialFileCallback(loadedFile) {
+
+            var data = loadedFile.contents,
+                path = loadedFile.filename,
+                webInfo = loadedFile.webInfo;
+
+            var newFileInfo = {
+                currentDirectory: fileManager.getPath(path),
+                filename: path,
+                rootFilename: path,
+                relativeUrls: instanceOptions.relativeUrls};
+
+            newFileInfo.entryPath = newFileInfo.currentDirectory;
+            newFileInfo.rootpath = instanceOptions.rootpath || newFileInfo.currentDirectory;
+
+            if (webInfo) {
+                webInfo.remaining = remaining;
+
+                if (!instanceOptions.modifyVars) {
+                    var css = cache.getCSS(path, webInfo);
+                    if (!reload && css) {
+                        webInfo.local = true;
+                        callback(null, css, data, sheet, webInfo, path);
+                        return;
+                    }
+                }
             }
 
-            /*jshint loopfunc:true */
-            // use closure to store current style
-            less.render(lessText, instanceOptions)
-                .then(bind(function(style, result) {
-                    style.type = 'text/css';
-                    if (style.styleSheet) {
-                        style.styleSheet.cssText = result.css;
-                    } else {
-                        style.innerHTML = result.css;
+            //TODO add tests around how this behaves when reloading
+            errors.remove(path);
+
+            instanceOptions.rootFileInfo = newFileInfo;
+            less.render(data, instanceOptions, function(e, result) {
+                if (e) {
+                    e.href = path;
+                    callback(e);
+                } else {
+                    result.css = postProcessCSS(result.css);
+                    if (!instanceOptions.modifyVars) {
+                        cache.setCSS(sheet.href, webInfo.lastModified, result.css);
                     }
-                }, null, style),
-                function(e) {
-                    errors.add(e, "inline");
-                });
+                    callback(null, result.css, data, sheet, webInfo, path);
+                }
+            });
         }
-    }
-}
 
-function loadStyleSheet(sheet, callback, reload, remaining, modifyVars) {
-
-    var instanceOptions = clone(options);
-    instanceOptions.mime = sheet.type;
-
-    if (modifyVars) {
-        instanceOptions.modifyVars = modifyVars;
-    }
-    if (modifyVars || options.globalVars) {
-        instanceOptions.useFileCache = true;
-    }
-
-    fileManager.loadFile(sheet.href, null, instanceOptions, environment)
-    .then(function loadInitialFileCallback(loadedFile) {
-
-       var data = loadedFile.contents,
-           path = loadedFile.filename,
-           webInfo = loadedFile.webInfo;
-
-        var newFileInfo = {
-            currentDirectory: fileManager.getPath(path),
-            filename: path,
-            rootFilename: path,
-            relativeUrls: instanceOptions.relativeUrls};
-
-        newFileInfo.entryPath = newFileInfo.currentDirectory;
-        newFileInfo.rootpath = instanceOptions.rootpath || newFileInfo.currentDirectory;
-
-        if (webInfo) {
-            webInfo.remaining = remaining;
-
-            var css = cache.getCSS(path, webInfo);
-            if (!reload && css) {
-                browser.createCSS(window.document, css, sheet);
-                webInfo.local = true;
-                callback(null, null, data, sheet, webInfo, path);
+        fileManager.loadFile(sheet.href, null, instanceOptions, environment, function(e, loadedFile) {
+            if (e) {
+                callback(e);
                 return;
             }
+            loadInitialFileCallback(loadedFile);
+        });
+    }
+
+    function loadStyleSheets(callback, reload, modifyVars) {
+        for (var i = 0; i < less.sheets.length; i++) {
+            loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1), modifyVars);
         }
-
-        //TODO add tests around how this behaves when reloading
-        errors.remove(path);
-
-        instanceOptions.rootFileInfo = newFileInfo;
-        less.render(data, instanceOptions)
-            .then(function(result) {
-                callback(null, result.css, data, sheet, webInfo, path);
-            },
-            function(e) {
-                e.href = path;
-                callback(e);
-            });
-    },
-    function(e) {
-        callback(e);
-    });
-}
-
-function loadStyleSheets(callback, reload, modifyVars) {
-    for (var i = 0; i < less.sheets.length; i++) {
-        loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1), modifyVars);
     }
-}
 
-function initRunningMode(){
-    if (less.env === 'development') {
-        less.watchTimer = setInterval(function () {
-            if (less.watchMode) {
-                loadStyleSheets(function (e, css, _, sheet, context) {
-                    if (e) {
-                        errors.add(e, e.href || sheet.href);
-                    } else if (css) {
-                        css = postProcessCSS(css);
-                        browser.createCSS(window.document, css, sheet);
-                        cache.setCSS(sheet.href, context.lastModified, css);
-                    }
-                });
-            }
-        }, options.poll);
+    function initRunningMode() {
+        if (less.env === 'development') {
+            less.watchTimer = setInterval(function () {
+                if (less.watchMode) {
+                    fileManager.clearFileCache();
+                    loadStyleSheets(function (e, css, _, sheet, webInfo) {
+                        if (e) {
+                            errors.add(e, e.href || sheet.href);
+                        } else if (css) {
+                            browser.createCSS(window.document, css, sheet);
+                        }
+                    });
+                }
+            }, options.poll);
+        }
     }
-}
 
-//
-// Watch mode
-//
-less.watch   = function () {
-    if (!less.watchMode ){
-        less.env = 'development';
-         initRunningMode();
-    }
-    this.watchMode = true;
-    return true;
-};
+    //
+    // Watch mode
+    //
+    less.watch   = function () {
+        if (!less.watchMode ) {
+            less.env = 'development';
+            initRunningMode();
+        }
+        this.watchMode = true;
+        return true;
+    };
 
-less.unwatch = function () {clearInterval(less.watchTimer); this.watchMode = false; return false; };
+    less.unwatch = function () {clearInterval(less.watchTimer); this.watchMode = false; return false; };
 
-if (/!watch/.test(location.hash)) {
-    less.watch();
-}
-
-//
-// Get all <link> tags with the 'rel' attribute set to "stylesheet/less"
-//
-less.registerStylesheets = function() {
-    return new Promise(function(resolve, reject) {
+    //
+    // Synchronously get all <link> tags with the 'rel' attribute set to
+    // "stylesheet/less".
+    //
+    less.registerStylesheetsImmediately = function() {
         var links = document.getElementsByTagName('link');
         less.sheets = [];
 
@@ -637,64 +684,70 @@ less.registerStylesheets = function() {
                 less.sheets.push(links[i]);
             }
         }
+    };
 
-        resolve();
-    });
-};
+    //
+    // Asynchronously get all <link> tags with the 'rel' attribute set to
+    // "stylesheet/less", returning a Promise.
+    //
+    less.registerStylesheets = function() {
+        return new Promise(function(resolve, reject) {
+            less.registerStylesheetsImmediately();
+            resolve();
+        });
+    };
 
-//
-// With this function, it's possible to alter variables and re-render
-// CSS without reloading less-files
-//
-less.modifyVars = function(record) {
-    return less.refresh(false, record);
-};
+    //
+    // With this function, it's possible to alter variables and re-render
+    // CSS without reloading less-files
+    //
+    less.modifyVars = function(record) {
+        return less.refresh(true, record, false);
+    };
 
-less.refresh = function (reload, modifyVars) {
-    return new Promise(function (resolve, reject) {
-        var startTime, endTime, totalMilliseconds;
-        startTime = endTime = new Date();
+    less.refresh = function (reload, modifyVars, clearFileCache) {
+        if ((reload || clearFileCache) && clearFileCache !== false) {
+            fileManager.clearFileCache();
+        }
+        return new Promise(function (resolve, reject) {
+            var startTime, endTime, totalMilliseconds;
+            startTime = endTime = new Date();
 
-        loadStyleSheets(function (e, css, _, sheet, webInfo) {
-            if (e) {
-                errors.add(e, e.href || sheet.href);
-                reject(e);
-            }
-            if (webInfo.local) {
-                less.logger.info("loading " + sheet.href + " from cache.");
-            } else {
-                less.logger.info("rendered " + sheet.href + " successfully.");
-                css = postProcessCSS(css);
+            loadStyleSheets(function (e, css, _, sheet, webInfo) {
+                if (e) {
+                    errors.add(e, e.href || sheet.href);
+                    reject(e);
+                    return;
+                }
+                if (webInfo.local) {
+                    less.logger.info("loading " + sheet.href + " from cache.");
+                } else {
+                    less.logger.info("rendered " + sheet.href + " successfully.");
+                }
                 browser.createCSS(window.document, css, sheet);
-                cache.setCSS(sheet.href, webInfo.lastModified, css);
-            }
-            less.logger.info("css for " + sheet.href + " generated in " + (new Date() - endTime) + 'ms');
-            if (webInfo.remaining === 0) {
-                totalMilliseconds = new Date() - startTime;
-                less.logger.info("less has finished. css generated in " + totalMilliseconds + 'ms');
-                resolve({
-                    startTime: startTime,
-                    endTime: endTime,
-                    totalMilliseconds: totalMilliseconds,
-                    sheets: less.sheets.length
-                });
-            }
-            endTime = new Date();
-        }, reload, modifyVars);
+                less.logger.info("css for " + sheet.href + " generated in " + (new Date() - endTime) + 'ms');
+                if (webInfo.remaining === 0) {
+                    totalMilliseconds = new Date() - startTime;
+                    less.logger.info("less has finished. css generated in " + totalMilliseconds + 'ms');
+                    resolve({
+                        startTime: startTime,
+                        endTime: endTime,
+                        totalMilliseconds: totalMilliseconds,
+                        sheets: less.sheets.length
+                    });
+                }
+                endTime = new Date();
+            }, reload, modifyVars);
 
-        loadStyles(modifyVars);
-    });
+            loadStyles(modifyVars);
+        });
+    };
+
+    less.refreshStyles = loadStyles;
+    return less;
 };
 
-less.refreshStyles = loadStyles;
-
-less.pageLoadFinished = less.registerStylesheets().then(
-    function () {
-        return less.refresh(less.env === 'development');
-    }
-);
-
-},{"../less":27,"./browser":1,"./cache":2,"./error-reporting":3,"./file-manager":4,"./log-listener":6,"promise/polyfill.js":undefined}],6:[function(require,module,exports){
+},{"../less":30,"./browser":3,"./cache":4,"./error-reporting":5,"./file-manager":6,"./log-listener":8,"./utils":9}],8:[function(require,module,exports){
 module.exports = function(less, options) {
 
     var logLevel_debug = 4,
@@ -708,7 +761,7 @@ module.exports = function(less, options) {
     // 1 - Errors
     // 0 - None
     // Defaults to 2
-    options.logLevel = typeof(options.logLevel) !== 'undefined' ? options.logLevel : (options.env === 'development' ?  logLevel_info : logLevel_error);
+    options.logLevel = typeof options.logLevel !== 'undefined' ? options.logLevel : (options.env === 'development' ?  logLevel_info : logLevel_error);
 
     if (!options.loggers) {
         options.loggers = [{
@@ -734,30 +787,45 @@ module.exports = function(less, options) {
             }
         }];
     }
-    for(var i = 0; i < options.loggers.length; i++) {
+    for (var i = 0; i < options.loggers.length; i++) {
         less.logger.addListener(options.loggers[i]);
     }
 };
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = {
     extractId: function(href) {
-        return href.replace(/^[a-z-]+:\/+?[^\/]+/, '' )  // Remove protocol & domain
-            .replace(/^\//,                 '' )  // Remove root /
-            .replace(/\.[a-zA-Z]+$/,        '' )  // Remove simple extension
-            .replace(/[^\.\w-]+/g,          '-')  // Replace illegal characters
-            .replace(/\./g,                 ':'); // Replace dots with colons(for valid id)
+        return href.replace(/^[a-z-]+:\/+?[^\/]+/, '')  // Remove protocol & domain
+            .replace(/[\?\&]livereload=\w+/, '')        // Remove LiveReload cachebuster
+            .replace(/^\//, '')                         // Remove root /
+            .replace(/\.[a-zA-Z]+$/, '')                // Remove simple extension
+            .replace(/[^\.\w-]+/g, '-')                 // Replace illegal characters
+            .replace(/\./g, ':');                       // Replace dots with colons(for valid id)
+    },
+    addDataAttr: function(options, tag) {
+        for (var opt in tag.dataset) {
+            if (tag.dataset.hasOwnProperty(opt)) {
+                if (opt === "env" || opt === "dumpLineNumbers" || opt === "rootpath" || opt === "errorReporting") {
+                    options[opt] = tag.dataset[opt];
+                } else {
+                    try {
+                        options[opt] = JSON.parse(tag.dataset[opt]);
+                    }
+                    catch(_) {}
+                }
+            }
+        }
     }
 };
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var contexts = {};
 module.exports = contexts;
 
 var copyFromOriginal = function copyFromOriginal(original, destination, propertiesToCopy) {
     if (!original) { return; }
 
-    for(var i = 0; i < propertiesToCopy.length; i++) {
+    for (var i = 0; i < propertiesToCopy.length; i++) {
         if (original.hasOwnProperty(propertiesToCopy[i])) {
             destination[propertiesToCopy[i]] = original[propertiesToCopy[i]];
         }
@@ -794,6 +862,7 @@ contexts.Parse = function(options) {
 };
 
 var evalCopyProperties = [
+    'paths',          // additional include paths
     'compress',       // whether to compress
     'ieCompat',       // whether to enforce IE compatibility (IE8 data-uri)
     'strictMath',     // whether math has to be within parenthesis
@@ -802,13 +871,17 @@ var evalCopyProperties = [
     'importMultiple', // whether we are currently importing multiple copies
     'urlArgs',        // whether to add args into url tokens
     'javascriptEnabled',// option - whether JavaScript is enabled. if undefined, defaults to true
-    'pluginManager'     // Used as the plugin manager for the session
+    'pluginManager',  // Used as the plugin manager for the session
+    'importantScope'  // used to bubble up !important statements
     ];
 
 contexts.Eval = function(options, frames) {
     copyFromOriginal(options, this, evalCopyProperties);
 
+    if (typeof this.paths === "string") { this.paths = [this.paths]; }
+
     this.frames = frames || [];
+    this.importantScope = this.importantScope || [];
 };
 
 contexts.Eval.prototype.inParenthesis = function () {
@@ -827,7 +900,7 @@ contexts.Eval.prototype.isMathOn = function () {
 };
 
 contexts.Eval.prototype.isPathRelative = function (path) {
-    return !/^(?:[a-z-]+:|\/)/.test(path);
+    return !/^(?:[a-z-]+:|\/|#)/i.test(path);
 };
 
 contexts.Eval.prototype.normalizePath = function( path ) {
@@ -859,8 +932,7 @@ contexts.Eval.prototype.normalizePath = function( path ) {
 
 //todo - do the same for the toCSS ?
 
-
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = {
     'aliceblue':'#f0f8ff',
     'antiquewhite':'#faebd7',
@@ -981,6 +1053,7 @@ module.exports = {
     'plum':'#dda0dd',
     'powderblue':'#b0e0e6',
     'purple':'#800080',
+    'rebeccapurple':'#663399',
     'red':'#ff0000',
     'rosybrown':'#bc8f8f',
     'royalblue':'#4169e1',
@@ -1010,13 +1083,13 @@ module.exports = {
     'yellow':'#ffff00',
     'yellowgreen':'#9acd32'
 };
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = {
     colors: require("./colors"),
     unitConversions: require("./unit-conversions")
 };
 
-},{"./colors":9,"./unit-conversions":11}],11:[function(require,module,exports){
+},{"./colors":11,"./unit-conversions":13}],13:[function(require,module,exports){
 module.exports = {
     length: {
         'm': 1,
@@ -1032,18 +1105,22 @@ module.exports = {
         'ms': 0.001
     },
     angle: {
-        'rad': 1/(2*Math.PI),
-        'deg': 1/360,
-        'grad': 1/400,
+        'rad': 1 / (2 * Math.PI),
+        'deg': 1 / 360,
+        'grad': 1 / 400,
         'turn': 1
     }
 };
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var abstractFileManager = function() {
 };
 
 abstractFileManager.prototype.getPath = function (filename) {
-    var j = filename.lastIndexOf('/');
+    var j = filename.lastIndexOf('?');
+    if (j > 0) {
+        filename = filename.slice(0, j);
+    }
+    j = filename.lastIndexOf('/');
     if (j < 0) {
         j = filename.lastIndexOf('\\');
     }
@@ -1051,6 +1128,14 @@ abstractFileManager.prototype.getPath = function (filename) {
         return "";
     }
     return filename.slice(0, j + 1);
+};
+
+abstractFileManager.prototype.tryAppendExtension = function(path, ext) {
+    return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
+};
+
+abstractFileManager.prototype.tryAppendLessExtension = function(path) {
+    return this.tryAppendExtension(path, '.less');
 };
 
 abstractFileManager.prototype.supportsSync = function() {
@@ -1062,7 +1147,7 @@ abstractFileManager.prototype.alwaysMakePathsAbsolute = function() {
 };
 
 abstractFileManager.prototype.isPathAbsolute = function(filename) {
-    return (/^(?:[a-z-]+:|\/|\\)/i).test(filename);
+    return (/^(?:[a-z-]+:|\/|\\|#)/i).test(filename);
 };
 
 abstractFileManager.prototype.join = function(basePath, laterPath) {
@@ -1081,15 +1166,15 @@ abstractFileManager.prototype.pathDiff = function pathDiff(url, baseUrl) {
         return "";
     }
     max = Math.max(baseUrlParts.directories.length, urlParts.directories.length);
-    for(i = 0; i < max; i++) {
+    for (i = 0; i < max; i++) {
         if (baseUrlParts.directories[i] !== urlParts.directories[i]) { break; }
     }
     baseUrlDirectories = baseUrlParts.directories.slice(i);
     urlDirectories = urlParts.directories.slice(i);
-    for(i = 0; i < baseUrlDirectories.length-1; i++) {
+    for (i = 0; i < baseUrlDirectories.length - 1; i++) {
         diff += "../";
     }
-    for(i = 0; i < urlDirectories.length-1; i++) {
+    for (i = 0; i < urlDirectories.length - 1; i++) {
         diff += urlDirectories[i] + "/";
     }
     return diff;
@@ -1114,7 +1199,7 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
     if (baseUrl && (!urlParts[1] || urlParts[2])) {
         baseUrlParts = baseUrl.match(urlPartsRegex);
         if (!baseUrlParts) {
-            throw new Error("Could not parse page url - '"+baseUrl+"'");
+            throw new Error("Could not parse page url - '" + baseUrl + "'");
         }
         urlParts[1] = urlParts[1] || baseUrlParts[1] || "";
         if (!urlParts[2]) {
@@ -1126,16 +1211,16 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
         directories = urlParts[3].replace(/\\/g, "/").split("/");
 
         // extract out . before .. so .. doesn't absorb a non-directory
-        for(i = 0; i < directories.length; i++) {
+        for (i = 0; i < directories.length; i++) {
             if (directories[i] === ".") {
                 directories.splice(i, 1);
                 i -= 1;
             }
         }
 
-        for(i = 0; i < directories.length; i++) {
+        for (i = 0; i < directories.length; i++) {
             if (directories[i] === ".." && i > 0) {
-                directories.splice(i-1, 2);
+                directories.splice(i - 1, 2);
                 i -= 2;
             }
         }
@@ -1151,7 +1236,8 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
 
 module.exports = abstractFileManager;
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
+var logger = require("../logger");
 var environment = function(externalEnvironment, fileManagers) {
     this.fileManagers = fileManagers || [];
     externalEnvironment = externalEnvironment || {};
@@ -1160,7 +1246,7 @@ var environment = function(externalEnvironment, fileManagers) {
         requiredFunctions = [],
         functions = requiredFunctions.concat(optionalFunctions);
 
-    for(var i = 0; i < functions.length; i++) {
+    for (var i = 0; i < functions.length; i++) {
         var propName = functions[i],
             environmentFunc = externalEnvironment[propName];
         if (environmentFunc) {
@@ -1172,11 +1258,19 @@ var environment = function(externalEnvironment, fileManagers) {
 };
 
 environment.prototype.getFileManager = function (filename, currentDirectory, options, environment, isSync) {
+
+    if (!filename) {
+        logger.warn("getFileManager called with no filename.. Please report this issue. continuing.");
+    }
+    if (currentDirectory == null) {
+        logger.warn("getFileManager called with null directory.. Please report this issue. continuing.");
+    }
+
     var fileManagers = this.fileManagers;
     if (options.pluginManager) {
         fileManagers = [].concat(fileManagers).concat(options.pluginManager.getFileManagers());
     }
-    for(var i = fileManagers.length - 1; i >= 0 ; i--) {
+    for (var i = fileManagers.length - 1; i >= 0 ; i--) {
         var fileManager = fileManagers[i];
         if (fileManager[isSync ? "supportsSync" : "supports"](filename, currentDirectory, options, environment)) {
             return fileManager;
@@ -1195,7 +1289,7 @@ environment.prototype.clearFileManagers = function () {
 
 module.exports = environment;
 
-},{}],14:[function(require,module,exports){
+},{"../logger":32}],16:[function(require,module,exports){
 var Color = require("../tree/color"),
     functionRegistry = require("./function-registry");
 
@@ -1231,9 +1325,9 @@ var colorBlendModeFunctions = {
     },
     overlay: function(cb, cs) {
         cb *= 2;
-        return (cb <= 1)
-            ? colorBlendModeFunctions.multiply(cb, cs)
-            : colorBlendModeFunctions.screen(cb - 1, cs);
+        return (cb <= 1) ?
+            colorBlendModeFunctions.multiply(cb, cs) :
+            colorBlendModeFunctions.screen(cb - 1, cs);
     },
     softlight: function(cb, cs) {
         var d = 1, e = cb;
@@ -1271,7 +1365,7 @@ for (var f in colorBlendModeFunctions) {
 
 functionRegistry.addMultiple(colorBlend);
 
-},{"../tree/color":44,"./function-registry":19}],15:[function(require,module,exports){
+},{"../tree/color":49,"./function-registry":21}],17:[function(require,module,exports){
 var Dimension = require("../tree/dimension"),
     Color = require("../tree/color"),
     Quoted = require("../tree/quoted"),
@@ -1288,7 +1382,7 @@ function hsla(color) {
 function number(n) {
     if (n instanceof Dimension) {
         return parseFloat(n.unit.is('%') ? n.value / 100 : n.value);
-    } else if (typeof(n) === 'number') {
+    } else if (typeof n === 'number') {
         return n;
     } else {
         throw {
@@ -1319,10 +1413,18 @@ colorFunctions = {
     hsla: function (h, s, l, a) {
         function hue(h) {
             h = h < 0 ? h + 1 : (h > 1 ? h - 1 : h);
-            if      (h * 6 < 1) { return m1 + (m2 - m1) * h * 6; }
-            else if (h * 2 < 1) { return m2; }
-            else if (h * 3 < 2) { return m1 + (m2 - m1) * (2/3 - h) * 6; }
-            else                { return m1; }
+            if (h * 6 < 1) {
+                return m1 + (m2 - m1) * h * 6;
+            }
+            else if (h * 2 < 1) {
+                return m2;
+            }
+            else if (h * 3 < 2) {
+                return m1 + (m2 - m1) * (2 / 3 - h) * 6;
+            }
+            else {
+                return m1;
+            }
         }
 
         h = (number(h) % 360) / 360;
@@ -1331,9 +1433,9 @@ colorFunctions = {
         var m2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
         var m1 = l * 2 - m2;
 
-        return colorFunctions.rgba(hue(h + 1/3) * 255,
+        return colorFunctions.rgba(hue(h + 1 / 3) * 255,
             hue(h)       * 255,
-            hue(h - 1/3) * 255,
+            hue(h - 1 / 3) * 255,
             a);
     },
 
@@ -1401,13 +1503,13 @@ colorFunctions = {
     },
     luminance: function (color) {
         var luminance =
-            (0.2126 * color.rgb[0] / 255)
-                + (0.7152 * color.rgb[1] / 255)
-                + (0.0722 * color.rgb[2] / 255);
+            (0.2126 * color.rgb[0] / 255) +
+                (0.7152 * color.rgb[1] / 255) +
+                (0.0722 * color.rgb[2] / 255);
 
         return new Dimension(luminance * color.alpha * 100, '%');
     },
-    saturate: function (color, amount) {
+    saturate: function (color, amount, method) {
         // filter: saturate(3.2);
         // should be kept as is, so check for color
         if (!color.rgb) {
@@ -1415,42 +1517,72 @@ colorFunctions = {
         }
         var hsl = color.toHSL();
 
-        hsl.s += amount.value / 100;
+        if (typeof method !== "undefined" && method.value === "relative") {
+            hsl.s +=  hsl.s * amount.value / 100;
+        }
+        else {
+            hsl.s += amount.value / 100;
+        }
         hsl.s = clamp(hsl.s);
         return hsla(hsl);
     },
-    desaturate: function (color, amount) {
+    desaturate: function (color, amount, method) {
         var hsl = color.toHSL();
 
-        hsl.s -= amount.value / 100;
+        if (typeof method !== "undefined" && method.value === "relative") {
+            hsl.s -=  hsl.s * amount.value / 100;
+        }
+        else {
+            hsl.s -= amount.value / 100;
+        }
         hsl.s = clamp(hsl.s);
         return hsla(hsl);
     },
-    lighten: function (color, amount) {
+    lighten: function (color, amount, method) {
         var hsl = color.toHSL();
 
-        hsl.l += amount.value / 100;
+        if (typeof method !== "undefined" && method.value === "relative") {
+            hsl.l +=  hsl.l * amount.value / 100;
+        }
+        else {
+            hsl.l += amount.value / 100;
+        }
         hsl.l = clamp(hsl.l);
         return hsla(hsl);
     },
-    darken: function (color, amount) {
+    darken: function (color, amount, method) {
         var hsl = color.toHSL();
 
-        hsl.l -= amount.value / 100;
+        if (typeof method !== "undefined" && method.value === "relative") {
+            hsl.l -=  hsl.l * amount.value / 100;
+        }
+        else {
+            hsl.l -= amount.value / 100;
+        }
         hsl.l = clamp(hsl.l);
         return hsla(hsl);
     },
-    fadein: function (color, amount) {
+    fadein: function (color, amount, method) {
         var hsl = color.toHSL();
 
-        hsl.a += amount.value / 100;
+        if (typeof method !== "undefined" && method.value === "relative") {
+            hsl.a +=  hsl.a * amount.value / 100;
+        }
+        else {
+            hsl.a += amount.value / 100;
+        }
         hsl.a = clamp(hsl.a);
         return hsla(hsl);
     },
-    fadeout: function (color, amount) {
+    fadeout: function (color, amount, method) {
         var hsl = color.toHSL();
 
-        hsl.a -= amount.value / 100;
+        if (typeof method !== "undefined" && method.value === "relative") {
+            hsl.a -=  hsl.a * amount.value / 100;
+        }
+        else {
+            hsl.a -= amount.value / 100;
+        }
         hsl.a = clamp(hsl.a);
         return hsla(hsl);
     },
@@ -1474,6 +1606,10 @@ colorFunctions = {
     // http://sass-lang.com
     //
     mix: function (color1, color2, weight) {
+        if (!color1.toHSL || !color2.toHSL) {
+            console.log(color2.type);
+            console.dir(color2);
+        }
         if (!weight) {
             weight = new Dimension(50);
         }
@@ -1533,7 +1669,7 @@ colorFunctions = {
             return new Color(c.value.slice(1));
         }
         if ((c instanceof Color) || (c = Color.fromKeyword(c.value))) {
-            c.keyword = undefined;
+            c.value = undefined;
             return c;
         }
         throw {
@@ -1542,7 +1678,7 @@ colorFunctions = {
         };
     },
     tint: function(color, amount) {
-        return colorFunctions.mix(colorFunctions.rgb(255,255,255), color, amount);
+        return colorFunctions.mix(colorFunctions.rgb(255, 255, 255), color, amount);
     },
     shade: function(color, amount) {
         return colorFunctions.mix(colorFunctions.rgb(0, 0, 0), color, amount);
@@ -1550,9 +1686,9 @@ colorFunctions = {
 };
 functionRegistry.addMultiple(colorFunctions);
 
-},{"../tree/anonymous":40,"../tree/color":44,"../tree/dimension":50,"../tree/quoted":67,"./function-registry":19}],16:[function(require,module,exports){
+},{"../tree/anonymous":45,"../tree/color":49,"../tree/dimension":55,"../tree/quoted":72,"./function-registry":21}],18:[function(require,module,exports){
 module.exports = function(environment) {
-    var Anonymous = require("../tree/anonymous"),
+    var Quoted = require("../tree/quoted"),
         URL = require("../tree/url"),
         functionRegistry = require("./function-registry"),
         fallback = function(functionThis, node) {
@@ -1562,39 +1698,44 @@ module.exports = function(environment) {
 
     functionRegistry.add("data-uri", function(mimetypeNode, filePathNode) {
 
-        var mimetype = mimetypeNode.value;
-        var filePath = (filePathNode && filePathNode.value);
-
-        var fileManager = environment.getFileManager(filePath, this.context.currentFileInfo, this.context, environment, true);
-
-        if (!fileManager) {
-            return fallback(this, filePathNode || mimetypeNode);
+        if (!filePathNode) {
+            filePathNode = mimetypeNode;
+            mimetypeNode = null;
         }
 
-        var useBase64 = false;
-
-        if (arguments.length < 2) {
-            filePath = mimetype;
-        }
+        var mimetype = mimetypeNode && mimetypeNode.value;
+        var filePath = filePathNode.value;
+        var currentFileInfo = this.currentFileInfo;
+        var currentDirectory = currentFileInfo.relativeUrls ?
+            currentFileInfo.currentDirectory : currentFileInfo.entryPath;
 
         var fragmentStart = filePath.indexOf('#');
         var fragment = '';
-        if (fragmentStart!==-1) {
+        if (fragmentStart !== -1) {
             fragment = filePath.slice(fragmentStart);
             filePath = filePath.slice(0, fragmentStart);
         }
 
-        var currentDirectory = this.currentFileInfo.relativeUrls ?
-            this.currentFileInfo.currentDirectory : this.currentFileInfo.entryPath;
+        var fileManager = environment.getFileManager(filePath, currentDirectory, this.context, environment, true);
+
+        if (!fileManager) {
+            return fallback(this, filePathNode);
+        }
+
+        var useBase64 = false;
 
         // detect the mimetype if not given
-        if (arguments.length < 2) {
+        if (!mimetypeNode) {
 
             mimetype = environment.mimeLookup(filePath);
 
-            // use base 64 unless it's an ASCII or UTF-8 format
-            var charset = environment.charsetLookup(mimetype);
-            useBase64 = ['US-ASCII', 'UTF-8'].indexOf(charset) < 0;
+            if (mimetype === "image/svg+xml") {
+                useBase64 = false;
+            } else {
+                // use base 64 unless it's an ASCII or UTF-8 format
+                var charset = environment.charsetLookup(mimetype);
+                useBase64 = ['US-ASCII', 'UTF-8'].indexOf(charset) < 0;
+            }
             if (useBase64) { mimetype += ';base64'; }
         }
         else {
@@ -1603,33 +1744,36 @@ module.exports = function(environment) {
 
         var fileSync = fileManager.loadFileSync(filePath, currentDirectory, this.context, environment);
         if (!fileSync.contents) {
-            logger.warn("Skipped data-uri embedding because file not found");
+            logger.warn("Skipped data-uri embedding of " + filePath + " because file not found");
             return fallback(this, filePathNode || mimetypeNode);
         }
         var buf = fileSync.contents;
+        if (useBase64 && !environment.encodeBase64) {
+            return fallback(this, filePathNode);
+        }
 
-        // IE8 cannot handle a data-uri larger than 32KB. If this is exceeded
+        buf = useBase64 ? environment.encodeBase64(buf) : encodeURIComponent(buf);
+
+        var uri = "data:" + mimetype + ',' + buf + fragment;
+
+        // IE8 cannot handle a data-uri larger than 32,768 characters. If this is exceeded
         // and the --ieCompat flag is enabled, return a normal url() instead.
-        var DATA_URI_MAX_KB = 32,
-            fileSizeInKB = parseInt((buf.length / 1024), 10);
-        if (fileSizeInKB >= DATA_URI_MAX_KB) {
+        var DATA_URI_MAX = 32768;
+        if (uri.length >= DATA_URI_MAX) {
 
             if (this.context.ieCompat !== false) {
-                logger.warn("Skipped data-uri embedding of %s because its size (%dKB) exceeds IE8-safe %dKB!", filePath, fileSizeInKB, DATA_URI_MAX_KB);
+                logger.warn("Skipped data-uri embedding of " + filePath + " because its size (" + uri.length +
+                    " characters) exceeds IE8-safe " + DATA_URI_MAX + " characters!");
 
                 return fallback(this, filePathNode || mimetypeNode);
             }
         }
 
-        buf = useBase64 ? buf.toString('base64')
-            : encodeURIComponent(buf);
-
-        var uri = "\"data:" + mimetype + ',' + buf + fragment + "\"";
-        return new URL(new Anonymous(uri), this.index, this.currentFileInfo);
+        return new URL(new Quoted('"' + uri + '"', uri, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
     });
 };
 
-},{"../logger":29,"../tree/anonymous":40,"../tree/url":74,"./function-registry":19}],17:[function(require,module,exports){
+},{"../logger":32,"../tree/quoted":72,"../tree/url":79,"./function-registry":21}],19:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
     functionRegistry = require("./function-registry");
 
@@ -1658,46 +1802,85 @@ functionRegistry.add("default", defaultFunc.eval.bind(defaultFunc));
 
 module.exports = defaultFunc;
 
-},{"../tree/keyword":59,"./function-registry":19}],18:[function(require,module,exports){
-var functionRegistry = require("./function-registry");
+},{"../tree/keyword":64,"./function-registry":21}],20:[function(require,module,exports){
+var Expression = require("../tree/expression");
 
 var functionCaller = function(name, context, index, currentFileInfo) {
     this.name = name.toLowerCase();
-    this.function = functionRegistry.get(this.name);
     this.index = index;
     this.context = context;
     this.currentFileInfo = currentFileInfo;
+
+    this.func = context.frames[0].functionRegistry.get(this.name);
 };
 functionCaller.prototype.isValid = function() {
-    return Boolean(this.function);
+    return Boolean(this.func);
 };
 functionCaller.prototype.call = function(args) {
-    return this.function.apply(this, args);
+
+    // This code is terrible and should be replaced as per this issue...
+    // https://github.com/less/less.js/issues/2477
+    if (Array.isArray(args)) {
+        args = args.filter(function (item) {
+            if (item.type === "Comment") {
+                return false;
+            }
+            return true;
+        })
+        .map(function(item) {
+            if (item.type === "Expression") {
+                var subNodes = item.value.filter(function (item) {
+                    if (item.type === "Comment") {
+                        return false;
+                    }
+                    return true;
+                });
+                if (subNodes.length === 1) {
+                    return subNodes[0];
+                } else {
+                    return new Expression(subNodes);
+                }
+            }
+            return item;
+        });
+    }
+
+    return this.func.apply(this, args);
 };
 
 module.exports = functionCaller;
 
-},{"./function-registry":19}],19:[function(require,module,exports){
-module.exports = {
-    _data: {},
-    add: function(name, func) {
-        if (this._data.hasOwnProperty(name)) {
-            //TODO warn
-        }
-        this._data[name] = func;
-    },
-    addMultiple: function(functions) {
-        Object.keys(functions).forEach(
-            function(name) {
-                this.add(name, functions[name]);
-            }.bind(this));
-    },
-    get: function(name) {
-        return this._data[name];
-    }
-};
+},{"../tree/expression":58}],21:[function(require,module,exports){
+function makeRegistry( base ) {
+    return {
+        _data: {},
+        add: function(name, func) {
+            // precautionary case conversion, as later querying of
+            // the registry by function-caller uses lower case as well.
+            name = name.toLowerCase();
 
-},{}],20:[function(require,module,exports){
+            if (this._data.hasOwnProperty(name)) {
+                //TODO warn
+            }
+            this._data[name] = func;
+        },
+        addMultiple: function(functions) {
+            Object.keys(functions).forEach(
+                function(name) {
+                    this.add(name, functions[name]);
+                }.bind(this));
+        },
+        get: function(name) {
+            return this._data[name] || ( base && base.get( name ));
+        },
+        inherit : function() {
+            return makeRegistry( this );
+        }
+    };
+}
+
+module.exports = makeRegistry( null );
+},{}],22:[function(require,module,exports){
 module.exports = function(environment) {
     var functions = {
         functionRegistry: require("./function-registry"),
@@ -1718,9 +1901,26 @@ module.exports = function(environment) {
     return functions;
 };
 
-},{"./color":15,"./color-blending":14,"./data-uri":16,"./default":17,"./function-caller":18,"./function-registry":19,"./math":21,"./number":22,"./string":23,"./svg":24,"./types":25}],21:[function(require,module,exports){
-var Dimension = require("../tree/dimension"),
-    functionRegistry = require("./function-registry");
+},{"./color":17,"./color-blending":16,"./data-uri":18,"./default":19,"./function-caller":20,"./function-registry":21,"./math":24,"./number":25,"./string":26,"./svg":27,"./types":28}],23:[function(require,module,exports){
+var Dimension = require("../tree/dimension");
+
+var MathHelper = function() {
+};
+MathHelper._math = function (fn, unit, n) {
+    if (!(n instanceof Dimension)) {
+        throw { type: "Argument", message: "argument must be a number" };
+    }
+    if (unit == null) {
+        unit = n.unit;
+    } else {
+        n = n.unify();
+    }
+    return new Dimension(fn(parseFloat(n.value)), unit);
+};
+module.exports = MathHelper;
+},{"../tree/dimension":55}],24:[function(require,module,exports){
+var functionRegistry = require("./function-registry"),
+    mathHelper = require("./math-helper.js");
 
 var mathFunctions = {
     // name,  unit
@@ -1736,35 +1936,24 @@ var mathFunctions = {
     acos:  "rad"
 };
 
-function _math(fn, unit, n) {
-    if (!(n instanceof Dimension)) {
-        throw { type: "Argument", message: "argument must be a number" };
-    }
-    if (unit == null) {
-        unit = n.unit;
-    } else {
-        n = n.unify();
-    }
-    return new Dimension(fn(parseFloat(n.value)), unit);
-}
-
 for (var f in mathFunctions) {
     if (mathFunctions.hasOwnProperty(f)) {
-        mathFunctions[f] = _math.bind(null, Math[f], mathFunctions[f]);
+        mathFunctions[f] = mathHelper._math.bind(null, Math[f], mathFunctions[f]);
     }
 }
 
 mathFunctions.round = function (n, f) {
-    var fraction = typeof(f) === "undefined" ? 0 : f.value;
-    return _math(function(num) { return num.toFixed(fraction); }, null, n);
+    var fraction = typeof f === "undefined" ? 0 : f.value;
+    return mathHelper._math(function(num) { return num.toFixed(fraction); }, null, n);
 };
 
 functionRegistry.addMultiple(mathFunctions);
 
-},{"../tree/dimension":50,"./function-registry":19}],22:[function(require,module,exports){
+},{"./function-registry":21,"./math-helper.js":23}],25:[function(require,module,exports){
 var Dimension = require("../tree/dimension"),
     Anonymous = require("../tree/anonymous"),
-    functionRegistry = require("./function-registry");
+    functionRegistry = require("./function-registry"),
+    mathHelper = require("./math-helper.js");
 
 var minMax = function (isMin, args) {
     args = Array.prototype.slice.call(args);
@@ -1778,7 +1967,7 @@ var minMax = function (isMin, args) {
     for (i = 0; i < args.length; i++) {
         current = args[i];
         if (!(current instanceof Dimension)) {
-            if(Array.isArray(args[i].value)) {
+            if (Array.isArray(args[i].value)) {
                 Array.prototype.push.apply(args, Array.prototype.slice.call(args[i].value));
             }
             continue;
@@ -1789,7 +1978,7 @@ var minMax = function (isMin, args) {
         unitClone = unit !== "" && unitClone === undefined ? current.unit.toString() : unitClone;
         j = values[""] !== undefined && unit !== "" && unit === unitStatic ? values[""] : values[unit];
         if (j === undefined) {
-            if(unitStatic !== undefined && unit !== unitStatic) {
+            if (unitStatic !== undefined && unit !== unitStatic) {
                 throw{ type: "Argument", message: "incompatible types" };
             }
             values[unit] = order.length;
@@ -1835,11 +2024,15 @@ functionRegistry.addMultiple({
         return new Dimension(Math.pow(x.value, y.value), x.unit);
     },
     percentage: function (n) {
-        return new Dimension(n.value * 100, '%');
+        var result = mathHelper._math(function(num) {
+            return num * 100;
+        }, '%', n);
+
+        return result;
     }
 });
 
-},{"../tree/anonymous":40,"../tree/dimension":50,"./function-registry":19}],23:[function(require,module,exports){
+},{"../tree/anonymous":45,"../tree/dimension":55,"./function-registry":21,"./math-helper.js":23}],26:[function(require,module,exports){
 var Quoted = require("../tree/quoted"),
     Anonymous = require("../tree/anonymous"),
     JavaScript = require("../tree/javascript"),
@@ -1850,12 +2043,15 @@ functionRegistry.addMultiple({
         return new Anonymous(str instanceof JavaScript ? str.evaluated : str.value);
     },
     escape: function (str) {
-        return new Anonymous(encodeURI(str.value).replace(/=/g, "%3D").replace(/:/g, "%3A").replace(/#/g, "%23").replace(/;/g, "%3B").replace(/\(/g, "%28").replace(/\)/g, "%29"));
+        return new Anonymous(
+            encodeURI(str.value).replace(/=/g, "%3D").replace(/:/g, "%3A").replace(/#/g, "%23").replace(/;/g, "%3B")
+                .replace(/\(/g, "%28").replace(/\)/g, "%29"));
     },
     replace: function (string, pattern, replacement, flags) {
         var result = string.value;
-
-        result = result.replace(new RegExp(pattern.value, flags ? flags.value : ''), replacement.value);
+        replacement = (replacement.type === "Quoted") ?
+            replacement.value : replacement.toCSS();
+        result = result.replace(new RegExp(pattern.value, flags ? flags.value : ''), replacement);
         return new Quoted(string.quote || '', result, string.escaped);
     },
     '%': function (string /* arg, arg, ...*/) {
@@ -1865,7 +2061,8 @@ functionRegistry.addMultiple({
         for (var i = 0; i < args.length; i++) {
             /*jshint loopfunc:true */
             result = result.replace(/%[sda]/i, function(token) {
-                var value = token.match(/s/i) ? args[i].value : args[i].toCSS();
+                var value = ((args[i].type === "Quoted") &&
+                    token.match(/s/i)) ? args[i].value : args[i].toCSS();
                 return token.match(/[A-Z]$/) ? encodeURIComponent(value) : value;
             });
         }
@@ -1874,32 +2071,42 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":40,"../tree/javascript":57,"../tree/quoted":67,"./function-registry":19}],24:[function(require,module,exports){
+},{"../tree/anonymous":45,"../tree/javascript":62,"../tree/quoted":72,"./function-registry":21}],27:[function(require,module,exports){
 module.exports = function(environment) {
     var Dimension = require("../tree/dimension"),
         Color = require("../tree/color"),
-        Anonymous = require("../tree/anonymous"),
+        Expression = require("../tree/expression"),
+        Quoted = require("../tree/quoted"),
         URL = require("../tree/url"),
         functionRegistry = require("./function-registry");
 
     functionRegistry.add("svg-gradient", function(direction) {
 
-        function throwArgumentDescriptor() {
-            throw { type: "Argument", message: "svg-gradient expects direction, start_color [start_position], [color position,]..., end_color [end_position]" };
-        }
-
-        if (arguments.length < 3) {
-            throwArgumentDescriptor();
-        }
-        var stops = Array.prototype.slice.call(arguments, 1),
+        var stops,
             gradientDirectionSvg,
             gradientType = "linear",
             rectangleDimension = 'x="0" y="0" width="1" height="1"',
-            useBase64 = true,
             renderEnv = {compress: false},
             returner,
             directionValue = direction.toCSS(renderEnv),
-            i, color, position, positionValue, alpha;
+			i, color, position, positionValue, alpha;
+
+        function throwArgumentDescriptor() {
+            throw { type: "Argument",
+					message: "svg-gradient expects direction, start_color [start_position], [color position,]...," +
+							" end_color [end_position] or direction, color list" };
+        }
+
+        if (arguments.length == 2) {
+            if (arguments[1].value.length < 2) {
+                throwArgumentDescriptor();
+            }
+            stops = arguments[1].value;
+        } else if (arguments.length < 3) {
+            throwArgumentDescriptor();
+        } else {
+            stops = Array.prototype.slice.call(arguments, 1);
+        }
 
         switch (directionValue) {
             case "to bottom":
@@ -1921,14 +2128,15 @@ module.exports = function(environment) {
                 rectangleDimension = 'x="-50" y="-50" width="101" height="101"';
                 break;
             default:
-                throw { type: "Argument", message: "svg-gradient direction must be 'to bottom', 'to right', 'to bottom right', 'to top right' or 'ellipse at center'" };
+                throw { type: "Argument", message: "svg-gradient direction must be 'to bottom', 'to right'," +
+                    " 'to bottom right', 'to top right' or 'ellipse at center'" };
         }
         returner = '<?xml version="1.0" ?>' +
             '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" viewBox="0 0 1 1" preserveAspectRatio="none">' +
             '<' + gradientType + 'Gradient id="gradient" gradientUnits="userSpaceOnUse" ' + gradientDirectionSvg + '>';
 
         for (i = 0; i < stops.length; i+= 1) {
-            if (stops[i].value) {
+            if (stops[i] instanceof Expression) {
                 color = stops[i].value[0];
                 position = stops[i].value[1];
             } else {
@@ -1936,7 +2144,7 @@ module.exports = function(environment) {
                 position = undefined;
             }
 
-            if (!(color instanceof Color) || (!((i === 0 || i+1 === stops.length) && position === undefined) && !(position instanceof Dimension))) {
+            if (!(color instanceof Color) || (!((i === 0 || i + 1 === stops.length) && position === undefined) && !(position instanceof Dimension))) {
                 throwArgumentDescriptor();
             }
             positionValue = position ? position.toCSS(renderEnv) : i === 0 ? "0%" : "100%";
@@ -1946,21 +2154,16 @@ module.exports = function(environment) {
         returner += '</' + gradientType + 'Gradient>' +
             '<rect ' + rectangleDimension + ' fill="url(#gradient)" /></svg>';
 
-        if (useBase64) {
-            try {
-                returner = environment.encodeBase64(returner);
-            } catch(e) {
-                useBase64 = false;
-            }
-        }
+        returner = encodeURIComponent(returner);
 
-        returner = "'data:image/svg+xml" + (useBase64 ? ";base64" : "") + "," + returner + "'";
-        return new URL(new Anonymous(returner), this.index, this.currentFileInfo);
+        returner = "data:image/svg+xml," + returner;
+        return new URL(new Quoted("'" + returner + "'", returner, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
     });
 };
 
-},{"../tree/anonymous":40,"../tree/color":44,"../tree/dimension":50,"../tree/url":74,"./function-registry":19}],25:[function(require,module,exports){
+},{"../tree/color":49,"../tree/dimension":55,"../tree/expression":58,"../tree/quoted":72,"../tree/url":79,"./function-registry":21}],28:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
+    DetachedRuleset = require("../tree/detached-ruleset"),
     Dimension = require("../tree/dimension"),
     Color = require("../tree/color"),
     Quoted = require("../tree/quoted"),
@@ -1970,12 +2173,30 @@ var Keyword = require("../tree/keyword"),
     functionRegistry = require("./function-registry");
 
 var isa = function (n, Type) {
-    return (n instanceof Type) ? Keyword.True : Keyword.False;
+        return (n instanceof Type) ? Keyword.True : Keyword.False;
     },
     isunit = function (n, unit) {
-        return (n instanceof Dimension) && n.unit.is(unit.value || unit) ? Keyword.True : Keyword.False;
+        if (unit === undefined) {
+            throw { type: "Argument", message: "missing the required second argument to isunit." };
+        }
+        unit = typeof unit.value === "string" ? unit.value : unit;
+        if (typeof unit !== "string") {
+            throw { type: "Argument", message: "Second argument to isunit should be a unit or a string." };
+        }
+        return (n instanceof Dimension) && n.unit.is(unit) ? Keyword.True : Keyword.False;
+    },
+    getItemsFromNode = function(node) {
+        // handle non-array values as an array of length 1
+        // return 'undefined' if index is invalid
+        var items = Array.isArray(node.value) ?
+            node.value : Array(node);
+
+        return items;
     };
 functionRegistry.addMultiple({
+    isruleset: function (n) {
+        return isa(n, DetachedRuleset);
+    },
     iscolor: function (n) {
         return isa(n, Color);
     },
@@ -2002,8 +2223,10 @@ functionRegistry.addMultiple({
     },
     isunit: isunit,
     unit: function (val, unit) {
-        if(!(val instanceof Dimension)) {
-            throw { type: "Argument", message: "the first argument to unit must be a number" + (val instanceof Operation ? ". Have you forgotten parenthesis?" : "") };
+        if (!(val instanceof Dimension)) {
+            throw { type: "Argument",
+                message: "the first argument to unit must be a number" +
+                    (val instanceof Operation ? ". Have you forgotten parenthesis?" : "") };
         }
         if (unit) {
             if (unit instanceof Keyword) {
@@ -2021,20 +2244,18 @@ functionRegistry.addMultiple({
     },
     extract: function(values, index) {
         index = index.value - 1; // (1-based index)
-        // handle non-array values as an array of length 1
-        // return 'undefined' if index is invalid
-        return Array.isArray(values.value) ?
-            values.value[index] : Array(values)[index];
+
+        return getItemsFromNode(values)[index];
     },
     length: function(values) {
-        var n = Array.isArray(values.value) ? values.value.length : 1;
-        return new Dimension(n);
+        return new Dimension(getItemsFromNode(values).length);
     }
 });
 
-},{"../tree/anonymous":40,"../tree/color":44,"../tree/dimension":50,"../tree/keyword":59,"../tree/operation":65,"../tree/quoted":67,"../tree/url":74,"./function-registry":19}],26:[function(require,module,exports){
+},{"../tree/anonymous":45,"../tree/color":49,"../tree/detached-ruleset":54,"../tree/dimension":55,"../tree/keyword":64,"../tree/operation":70,"../tree/quoted":72,"../tree/url":79,"./function-registry":21}],29:[function(require,module,exports){
 var contexts = require("./contexts"),
-    Parser = require('./parser/parser');
+    Parser = require('./parser/parser'),
+    FunctionImporter = require('./plugins/function-importer');
 
 module.exports = function(environment) {
 
@@ -2051,15 +2272,23 @@ module.exports = function(environment) {
         this.rootFilename = rootFileInfo.filename;
         this.paths = context.paths || [];  // Search paths, when importing
         this.contents = {};             // map - filename to contents of all the files
-        this.contentsIgnoredChars = {}; // map - filename to lines at the begining of each file to ignore
+        this.contentsIgnoredChars = {}; // map - filename to lines at the beginning of each file to ignore
         this.mime = context.mime;
         this.error = null;
         this.context = context;
         // Deprecated? Unused outside of here, could be useful.
         this.queue = [];        // Files which haven't been imported yet
-        this.files = [];        // Holds the imported parse trees.
+        this.files = {};        // Holds the imported parse trees.
     };
-    ImportManager.prototype.push = function (path, currentFileInfo, importOptions, callback) {
+    /**
+     * Add an import to be imported
+     * @param path - the raw path
+     * @param tryAppendLessExtension - whether to try appending the less extension (if the path has no extension)
+     * @param currentFileInfo - the current file info (used for instance to work out relative paths)
+     * @param importOptions - import options
+     * @param callback - callback for when it is imported
+     */
+    ImportManager.prototype.push = function (path, tryAppendLessExtension, currentFileInfo, importOptions, callback) {
         var importManager = this;
         this.queue.push(path);
 
@@ -2067,12 +2296,14 @@ module.exports = function(environment) {
             importManager.queue.splice(importManager.queue.indexOf(path), 1); // Remove the path from the queue
 
             var importedEqualsRoot = fullPath === importManager.rootFilename;
-
-            importManager.files[fullPath] = root;
-
-            if (e && !importManager.error) { importManager.error = e; }
-
-            callback(e, root, importedEqualsRoot, fullPath);
+            if (importOptions.optional && e) {
+                callback(null, {rules:[]}, false, null);
+            }
+            else {
+                importManager.files[fullPath] = root;
+                if (e && !importManager.error) { importManager.error = e; }
+                callback(e, root, importedEqualsRoot, fullPath);
+            }
         };
 
         var newFileInfo = {
@@ -2089,58 +2320,77 @@ module.exports = function(environment) {
             return;
         }
 
-        fileManager.loadFile(path, currentFileInfo.currentDirectory, this.context, environment)
-            .then(function loadFileCallback(loadedFile) {
-                var resolvedFilename = loadedFile.filename,
-                    contents = loadedFile.contents;
+        if (tryAppendLessExtension) {
+            path = fileManager.tryAppendExtension(path, importOptions.plugin ? ".js" : ".less");
+        }
 
-                // Pass on an updated rootpath if path of imported file is relative and file
-                // is in a (sub|sup) directory
-                //
-                // Examples:
-                // - If path of imported file is 'module/nav/nav.less' and rootpath is 'less/',
-                //   then rootpath should become 'less/module/nav/'
-                // - If path of imported file is '../mixins.less' and rootpath is 'less/',
-                //   then rootpath should become 'less/../'
-                newFileInfo.currentDirectory = fileManager.getPath(resolvedFilename);
-                if(newFileInfo.relativeUrls) {
-                    newFileInfo.rootpath = fileManager.join((importManager.context.rootpath || ""), fileManager.pathDiff(newFileInfo.currentDirectory, newFileInfo.entryPath));
-                    if (!fileManager.isPathAbsolute(newFileInfo.rootpath) && fileManager.alwaysMakePathsAbsolute()) {
-                        newFileInfo.rootpath = fileManager.join(newFileInfo.entryPath, newFileInfo.rootpath);
-                    }
+        var loadFileCallback = function(loadedFile) {
+            var resolvedFilename = loadedFile.filename,
+                contents = loadedFile.contents.replace(/^\uFEFF/, '');
+
+            // Pass on an updated rootpath if path of imported file is relative and file
+            // is in a (sub|sup) directory
+            //
+            // Examples:
+            // - If path of imported file is 'module/nav/nav.less' and rootpath is 'less/',
+            //   then rootpath should become 'less/module/nav/'
+            // - If path of imported file is '../mixins.less' and rootpath is 'less/',
+            //   then rootpath should become 'less/../'
+            newFileInfo.currentDirectory = fileManager.getPath(resolvedFilename);
+            if (newFileInfo.relativeUrls) {
+                newFileInfo.rootpath = fileManager.join(
+                    (importManager.context.rootpath || ""),
+                    fileManager.pathDiff(newFileInfo.currentDirectory, newFileInfo.entryPath));
+
+                if (!fileManager.isPathAbsolute(newFileInfo.rootpath) && fileManager.alwaysMakePathsAbsolute()) {
+                    newFileInfo.rootpath = fileManager.join(newFileInfo.entryPath, newFileInfo.rootpath);
                 }
-                newFileInfo.filename = resolvedFilename;
+            }
+            newFileInfo.filename = resolvedFilename;
 
-                var newEnv = new contexts.Parse(importManager.context);
+            var newEnv = new contexts.Parse(importManager.context);
 
-                newEnv.processImports = false;
-                importManager.contents[resolvedFilename] = contents;
+            newEnv.processImports = false;
+            importManager.contents[resolvedFilename] = contents;
 
-                if (currentFileInfo.reference || importOptions.reference) {
-                    newFileInfo.reference = true;
-                }
+            if (currentFileInfo.reference || importOptions.reference) {
+                newFileInfo.reference = true;
+            }
 
-                if (importOptions.inline) {
-                    fileParsedFunc(null, contents, resolvedFilename);
-                } else {
-                    new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
-                        fileParsedFunc(e, root, resolvedFilename);
-                    });
-                }
-            },
-            function(error) {
-                fileParsedFunc(error);
-            });
+            if (importOptions.plugin) {
+                new FunctionImporter(newEnv, newFileInfo).eval(contents, function (e, root) {
+                    fileParsedFunc(e, root, resolvedFilename);
+                });
+            } else if (importOptions.inline) {
+                fileParsedFunc(null, contents, resolvedFilename);
+            } else {
+                new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
+                    fileParsedFunc(e, root, resolvedFilename);
+                });
+            }
+        };
+
+        var promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, this.context, environment,
+            function(err, loadedFile) {
+            if (err) {
+                fileParsedFunc(err);
+            } else {
+                loadFileCallback(loadedFile);
+            }
+        });
+        if (promise) {
+            promise.then(loadFileCallback, fileParsedFunc);
+        }
     };
     return ImportManager;
 };
 
-},{"./contexts":8,"./parser/parser":33}],27:[function(require,module,exports){
+},{"./contexts":10,"./parser/parser":37,"./plugins/function-importer":39}],30:[function(require,module,exports){
 module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 0, "0-b1"],
+        version: [2, 5, 3],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -2151,10 +2401,11 @@ module.exports = function(environment, fileManagers) {
         functions: require('./functions')(environment),
         contexts: require("./contexts"),
         SourceMapOutput: (SourceMapOutput = require('./source-map-output')(environment)),
-        SourceMapBuilder: (SourceMapBuilder = require('./source-map-builder')(SourceMapOutput)),
+        SourceMapBuilder: (SourceMapBuilder = require('./source-map-builder')(SourceMapOutput, environment)),
         ParseTree: (ParseTree = require('./parse-tree')(SourceMapBuilder)),
         ImportManager: (ImportManager = require('./import-manager')(environment)),
         render: require("./render")(environment, ParseTree, ImportManager),
+        parse: require("./parse")(environment, ParseTree, ImportManager),
         LessError: require('./less-error'),
         transformTree: require('./transform-tree'),
         utils: require('./utils'),
@@ -2165,7 +2416,7 @@ module.exports = function(environment, fileManagers) {
     return less;
 };
 
-},{"./contexts":8,"./data":10,"./environment/abstract-file-manager":12,"./environment/environment":13,"./functions":20,"./import-manager":26,"./less-error":28,"./logger":29,"./parse-tree":30,"./parser/parser":33,"./plugin-manager":34,"./render":35,"./source-map-builder":36,"./source-map-output":37,"./transform-tree":38,"./tree":56,"./utils":77,"./visitors":80}],28:[function(require,module,exports){
+},{"./contexts":10,"./data":12,"./environment/abstract-file-manager":14,"./environment/environment":15,"./functions":22,"./import-manager":29,"./less-error":31,"./logger":32,"./parse":34,"./parse-tree":33,"./parser/parser":37,"./plugin-manager":38,"./render":40,"./source-map-builder":41,"./source-map-output":42,"./transform-tree":43,"./tree":61,"./utils":82,"./visitors":86}],31:[function(require,module,exports){
 var utils = require("./utils");
 
 var LessError = module.exports = function LessError(e, importManager, currentFilename) {
@@ -2185,7 +2436,7 @@ var LessError = module.exports = function LessError(e, importManager, currentFil
         this.type = e.type || 'Syntax';
         this.filename = filename;
         this.index = e.index;
-        this.line = typeof(line) === 'number' ? line + 1 : null;
+        this.line = typeof line === 'number' ? line + 1 : null;
         this.callLine = callLine + 1;
         this.callExtract = lines[callLine];
         this.column = col;
@@ -2199,10 +2450,17 @@ var LessError = module.exports = function LessError(e, importManager, currentFil
     this.stack = e.stack;
 };
 
-LessError.prototype = Object.create(Error.prototype);
+if (typeof Object.create === 'undefined') {
+    var F = function () {};
+    F.prototype = Error.prototype;
+    LessError.prototype = new F();
+} else {
+    LessError.prototype = Object.create(Error.prototype);
+}
+
 LessError.prototype.constructor = LessError;
 
-},{"./utils":77}],29:[function(require,module,exports){
+},{"./utils":82}],32:[function(require,module,exports){
 module.exports = {
     error: function(msg) {
         this._fireEvent("error", msg);
@@ -2220,7 +2478,7 @@ module.exports = {
         this._listeners.push(listener);
     },
     removeListener: function(listener) {
-        for(var i = 0; i < this._listeners.length; i++) {
+        for (var i = 0; i < this._listeners.length; i++) {
             if (this._listeners[i] === listener) {
                 this._listeners.splice(i, 1);
                 return;
@@ -2228,7 +2486,7 @@ module.exports = {
         }
     },
     _fireEvent: function(type, msg) {
-        for(var i = 0; i < this._listeners.length; i++) {
+        for (var i = 0; i < this._listeners.length; i++) {
             var logFunction = this._listeners[i][type];
             if (logFunction) {
                 logFunction(msg);
@@ -2238,56 +2496,139 @@ module.exports = {
     _listeners: []
 };
 
-},{}],30:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var LessError = require('./less-error'),
-    transformTree = require("./transform-tree");
+    transformTree = require("./transform-tree"),
+    logger = require("./logger");
 
 module.exports = function(SourceMapBuilder) {
-var ParseTree = function(root, imports) {
-    this.root = root;
-    this.imports = imports;
-};
+    var ParseTree = function(root, imports) {
+        this.root = root;
+        this.imports = imports;
+    };
 
-ParseTree.prototype.toCSS = function(options) {
-    var evaldRoot, result = {}, sourceMapBuilder;
-    try {
-        evaldRoot = transformTree(this.root, options);
-    } catch (e) {
-        throw new LessError(e, this.imports);
-    }
+    ParseTree.prototype.toCSS = function(options) {
+        var evaldRoot, result = {}, sourceMapBuilder;
+        try {
+            evaldRoot = transformTree(this.root, options);
+        } catch (e) {
+            throw new LessError(e, this.imports);
+        }
 
-    try {
-        var toCSSOptions = {
-            compress: Boolean(options.compress),
-            dumpLineNumbers: options.dumpLineNumbers,
-            strictUnits: Boolean(options.strictUnits),
-            numPrecision: 8};
+        try {
+            var compress = Boolean(options.compress);
+            if (compress) {
+                logger.warn("The compress option has been deprecated. We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.");
+            }
 
+            var toCSSOptions = {
+                compress: compress,
+                dumpLineNumbers: options.dumpLineNumbers,
+                strictUnits: Boolean(options.strictUnits),
+                numPrecision: 8};
+
+            if (options.sourceMap) {
+                sourceMapBuilder = new SourceMapBuilder(options.sourceMap);
+                result.css = sourceMapBuilder.toCSS(evaldRoot, toCSSOptions, this.imports);
+            } else {
+                result.css = evaldRoot.toCSS(toCSSOptions);
+            }
+        } catch (e) {
+            throw new LessError(e, this.imports);
+        }
+
+        if (options.pluginManager) {
+            var postProcessors = options.pluginManager.getPostProcessors();
+            for (var i = 0; i < postProcessors.length; i++) {
+                result.css = postProcessors[i].process(result.css, { sourceMap: sourceMapBuilder, options: options, imports: this.imports });
+            }
+        }
         if (options.sourceMap) {
-            sourceMapBuilder = new SourceMapBuilder(options.sourceMap);
-            result.css = sourceMapBuilder.toCSS(evaldRoot, toCSSOptions, this.imports);
+            result.map = sourceMapBuilder.getExternalSourceMap();
+        }
+
+        result.imports = [];
+        for (var file in this.imports.files) {
+            if (this.imports.files.hasOwnProperty(file) && file !== this.imports.rootFilename) {
+                result.imports.push(file);
+            }
+        }
+        return result;
+    };
+    return ParseTree;
+};
+
+},{"./less-error":31,"./logger":32,"./transform-tree":43}],34:[function(require,module,exports){
+var PromiseConstructor,
+    contexts = require("./contexts"),
+    Parser = require('./parser/parser'),
+    PluginManager = require('./plugin-manager');
+
+module.exports = function(environment, ParseTree, ImportManager) {
+    var parse = function (input, options, callback) {
+        options = options || {};
+
+        if (typeof options === 'function') {
+            callback = options;
+            options = {};
+        }
+
+        if (!callback) {
+            if (!PromiseConstructor) {
+                PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise;
+            }
+            var self = this;
+            return new PromiseConstructor(function (resolve, reject) {
+                parse.call(self, input, options, function(err, output) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(output);
+                    }
+                });
+            });
         } else {
-            result.css = evaldRoot.toCSS(toCSSOptions);
-        }
-    } catch (e) {
-        throw new LessError(e, this.imports);
-    }
+            var context,
+                rootFileInfo,
+                pluginManager = new PluginManager(this);
 
-    if (options.pluginManager) {
-        var postProcessors = options.pluginManager.getPostProcessors();
-        for(var i = 0; i < postProcessors.length; i++) {
-            result.css = postProcessors[i].process(result.css, { sourceMap: sourceMapBuilder, options: options, imports: this.imports });
+            pluginManager.addPlugins(options.plugins);
+            options.pluginManager = pluginManager;
+
+            context = new contexts.Parse(options);
+
+            if (options.rootFileInfo) {
+                rootFileInfo = options.rootFileInfo;
+            } else {
+                var filename = options.filename || "input";
+                var entryPath = filename.replace(/[^\/\\]*$/, "");
+                rootFileInfo = {
+                    filename: filename,
+                    relativeUrls: context.relativeUrls,
+                    rootpath: context.rootpath || "",
+                    currentDirectory: entryPath,
+                    entryPath: entryPath,
+                    rootFilename: filename
+                };
+                // add in a missing trailing slash
+                if (rootFileInfo.rootpath && rootFileInfo.rootpath.slice(-1) !== "/") {
+                    rootFileInfo.rootpath += "/";
+                }
+            }
+
+            var imports = new ImportManager(context, rootFileInfo);
+
+            new Parser(context, imports, rootFileInfo)
+                .parse(input, function (e, root) {
+                if (e) { return callback(e); }
+                callback(null, root, imports, options);
+            }, options);
         }
-    }
-    if (options.sourceMap) {
-        result.map = sourceMapBuilder.getExternalSourceMap();
-    }
-    return result;
-};
-return ParseTree;
+    };
+    return parse;
 };
 
-},{"./less-error":28,"./transform-tree":38}],31:[function(require,module,exports){
+},{"./contexts":10,"./parser/parser":37,"./plugin-manager":38,"promise":undefined}],35:[function(require,module,exports){
 // Split the input into chunks.
 module.exports = function (input, fail) {
     var len = input.length, level = 0, parenLevel = 0,
@@ -2401,7 +2742,7 @@ module.exports = function (input, fail) {
     return chunks;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var chunker = require('./chunker');
 
 module.exports = function() {
@@ -2420,7 +2761,8 @@ module.exports = function() {
         saveStack.push( { current: current, i: parserInput.i, j: j });
     };
     parserInput.restore = function(possibleErrorMessage) {
-        if (parserInput.i > furthest) {
+
+        if (parserInput.i > furthest || (parserInput.i === furthest && possibleErrorMessage && !furthestPossibleErrorMessage)) {
             furthest = parserInput.i;
             furthestPossibleErrorMessage = possibleErrorMessage;
         }
@@ -2432,55 +2774,10 @@ module.exports = function() {
     parserInput.forget = function() {
         saveStack.pop();
     };
-    function sync() {
-        if (parserInput.i > currentPos) {
-            current = current.slice(parserInput.i - currentPos);
-            currentPos = parserInput.i;
-        }
-    }
     parserInput.isWhitespace = function (offset) {
         var pos = parserInput.i + (offset || 0),
             code = input.charCodeAt(pos);
         return (code === CHARCODE_SPACE || code === CHARCODE_CR || code === CHARCODE_TAB || code === CHARCODE_LF);
-    };
-    //
-    // Parse from a token, regexp or string, and move forward if match
-    //
-    parserInput.$ = function(tok) {
-        var tokType = typeof tok,
-            match, length;
-
-        // Either match a single character in the input,
-        // or match a regexp in the current chunk (`current`).
-        //
-        if (tokType === "string") {
-            if (input.charAt(parserInput.i) !== tok) {
-                return null;
-            }
-            skipWhitespace(1);
-            return tok;
-        }
-
-        // regexp
-        sync();
-        if (! (match = tok.exec(current))) {
-            return null;
-        }
-
-        length = match[0].length;
-
-        // The match is confirmed, add the match length to `i`,
-        // and consume any extra white-space characters (' ' || '\n')
-        // which come after that. The reason for this is that LeSS's
-        // grammar is mostly white-space insensitive.
-        //
-        skipWhitespace(length);
-
-        if(typeof(match) === 'string') {
-            return match;
-        } else {
-            return match.length === 1 ? match[0] : match;
-        }
     };
 
     // Specialization of $(tok)
@@ -2489,26 +2786,68 @@ module.exports = function() {
             current = current.slice(parserInput.i - currentPos);
             currentPos = parserInput.i;
         }
+
         var m = tok.exec(current);
         if (!m) {
             return null;
         }
 
         skipWhitespace(m[0].length);
-        if(typeof m === "string") {
+        if (typeof m === "string") {
             return m;
         }
 
         return m.length === 1 ? m[0] : m;
     };
 
-    // Specialization of $(tok)
     parserInput.$char = function(tok) {
         if (input.charAt(parserInput.i) !== tok) {
             return null;
         }
         skipWhitespace(1);
         return tok;
+    };
+
+    parserInput.$str = function(tok) {
+        var tokLength = tok.length;
+
+        // https://jsperf.com/string-startswith/21
+        for (var i = 0; i < tokLength; i++) {
+            if (input.charAt(parserInput.i + i) !== tok.charAt(i)) {
+                return null;
+            }
+        }
+
+        skipWhitespace(tokLength);
+        return tok;
+    };
+
+    parserInput.$quoted = function() {
+
+        var startChar = input.charAt(parserInput.i);
+        if (startChar !== "'" && startChar !== '"') {
+            return;
+        }
+        var length = input.length,
+            currentPosition = parserInput.i;
+
+        for (var i = 1; i + currentPosition < length; i++) {
+            var nextChar = input.charAt(i + currentPosition);
+            switch(nextChar) {
+                case "\\":
+                    i++;
+                    continue;
+                case "\r":
+                case "\n":
+                    break;
+                case startChar:
+                    var str = input.substr(currentPosition, i + 1);
+                    skipWhitespace(i + 1);
+                    return str;
+                default:
+            }
+        }
+        return null;
     };
 
     var CHARCODE_SPACE = 32,
@@ -2536,10 +2875,10 @@ module.exports = function() {
             c = inp.charCodeAt(parserInput.i);
 
             if (parserInput.autoCommentAbsorb && c === CHARCODE_FORWARD_SLASH) {
-                nextChar = inp[parserInput.i + 1];
+                nextChar = inp.charAt(parserInput.i + 1);
                 if (nextChar === '/') {
                     comment = {index: parserInput.i, isLineComment: true};
-                    var nextNewLine = inp.indexOf("\n", parserInput.i + 1);
+                    var nextNewLine = inp.indexOf("\n", parserInput.i + 2);
                     if (nextNewLine < 0) {
                         nextNewLine = endIndex;
                     }
@@ -2548,12 +2887,11 @@ module.exports = function() {
                     parserInput.commentStore.push(comment);
                     continue;
                 } else if (nextChar === '*') {
-                    var haystack = inp.substr(parserInput.i);
-                    var comment_search_result = haystack.match(/^\/\*(?:[^*]|\*+[^\/*])*\*+\//);
-                    if (comment_search_result) {
+                    var nextStarSlash = inp.indexOf("*/", parserInput.i + 2);
+                    if (nextStarSlash >= 0) {
                         comment = {
                             index: parserInput.i,
-                            text: comment_search_result[0],
+                            text: inp.substr(parserInput.i, nextStarSlash + 2 - parserInput.i),
                             isLineComment: false
                         };
                         parserInput.i += comment.text.length - 1;
@@ -2573,8 +2911,7 @@ module.exports = function() {
         currentPos = parserInput.i;
 
         if (!current.length) {
-            if (j < chunks.length - 1)
-            {
+            if (j < chunks.length - 1) {
                 current = chunks[++j];
                 skipWhitespace(0); // skip space at the beginning of a chunk
                 return true; // things changed
@@ -2588,8 +2925,14 @@ module.exports = function() {
     // Same as $(), but don't change the state of the parser,
     // just return the match.
     parserInput.peek = function(tok) {
-        if (typeof(tok) === 'string') {
-            return input.charAt(parserInput.i) === tok;
+        if (typeof tok === 'string') {
+            // https://jsperf.com/string-startswith/21
+            for (var i = 0; i < tok.length; i++) {
+                if (input.charAt(parserInput.i + i) !== tok.charAt(i)) {
+                    return false;
+                }
+            }
+            return true;
         } else {
             return tok.test(current);
         }
@@ -2642,7 +2985,7 @@ module.exports = function() {
 
     parserInput.end = function() {
         var message,
-            isFinished = parserInput.i >= input.length - 1;
+            isFinished = parserInput.i >= input.length;
 
         if (parserInput.i < furthest) {
             message = furthestPossibleErrorMessage;
@@ -2660,7 +3003,7 @@ module.exports = function() {
     return parserInput;
 };
 
-},{"./chunker":31}],33:[function(require,module,exports){
+},{"./chunker":35}],37:[function(require,module,exports){
 var LessError = require('../less-error'),
     tree = require("../tree"),
     visitors = require("../visitors"),
@@ -2706,11 +3049,11 @@ var Parser = function Parser(context, imports, fileInfo) {
 
     function expect(arg, msg, index) {
         // some older browsers return typeof 'function' for RegExp
-        var result = (Object.prototype.toString.call(arg) === '[object Function]') ? arg.call(parsers) : parserInput.$(arg);
+        var result = (Object.prototype.toString.call(arg) === '[object Function]') ? arg.call(parsers) : parserInput.$re(arg);
         if (result) {
             return result;
         }
-        error(msg || (typeof(arg) === 'string' ? "expected '" + arg + "' got '" + parserInput.currentChar() + "'"
+        error(msg || (typeof arg === 'string' ? "expected '" + arg + "' got '" + parserInput.currentChar() + "'"
                                                : "unexpected token"));
     }
 
@@ -2755,17 +3098,26 @@ var Parser = function Parser(context, imports, fileInfo) {
         // @param [additionalData] An optional map which can contains vars - a map (key, value) of variables to apply
         //
         parse: function (str, callback, additionalData) {
-            var root, error = null, globalVars, modifyVars, preText = "";
+            var root, error = null, globalVars, modifyVars, ignored, preText = "";
 
             globalVars = (additionalData && additionalData.globalVars) ? Parser.serializeVars(additionalData.globalVars) + '\n' : '';
             modifyVars = (additionalData && additionalData.modifyVars) ? '\n' + Parser.serializeVars(additionalData.modifyVars) : '';
 
-            if (globalVars || (additionalData && additionalData.banner)) {
-                preText = ((additionalData && additionalData.banner) ? additionalData.banner : "") + globalVars;
-                imports.contentsIgnoredChars[fileInfo.filename] = preText.length;
+            if (context.pluginManager) {
+                var preProcessors = context.pluginManager.getPreProcessors();
+                for (var i = 0; i < preProcessors.length; i++) {
+                    str = preProcessors[i].process(str, { context: context, imports: imports, fileInfo: fileInfo });
+                }
             }
 
-            str = str.replace(/\r\n/g, '\n');
+            if (globalVars || (additionalData && additionalData.banner)) {
+                preText = ((additionalData && additionalData.banner) ? additionalData.banner : "") + globalVars;
+                ignored = imports.contentsIgnoredChars;
+                ignored[fileInfo.filename] = ignored[fileInfo.filename] || 0;
+                ignored[fileInfo.filename] += preText.length;
+            }
+
+            str = str.replace(/\r\n?/g, '\n');
             // Remove potential UTF Byte Order Mark
             str = preText + str.replace(/^\uFEFF/, '') + modifyVars;
             imports.contents[fileInfo.filename] = str;
@@ -2776,7 +3128,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             // output. The callback is called when the input is parsed.
             try {
                 parserInput.start(str, context.chunkInput, function fail(msg, index) {
-                    throw LessError({
+                    throw new LessError({
                         index: index,
                         type: 'Parse',
                         message: msg,
@@ -2867,11 +3219,11 @@ var Parser = function Parser(context, imports, fileInfo) {
         //     Ruleset (Selector '.class', [
         //         Rule ("color",  Value ([Expression [Color #fff]]))
         //         Rule ("border", Value ([Expression [Dimension 1px][Keyword "solid"][Color #000]]))
-        //         Rule ("width",  Value ([Expression [Operation "+" [Variable "@w"][Dimension 4px]]]))
+        //         Rule ("width",  Value ([Expression [Operation " + " [Variable "@w"][Dimension 4px]]]))
         //         Ruleset (Selector [Element '>', '.child'], [...])
         //     ])
         //
-        //  In general, most rules will try to parse a token with the `$()` function, and if the return
+        //  In general, most rules will try to parse a token with the `$re()` function, and if the return
         //  value is truly, will return a new node, of the relevant type. Sometimes, we need to check
         //  first, before parsing, that's when we use `peek()`.
         //
@@ -2894,22 +3246,36 @@ var Parser = function Parser(context, imports, fileInfo) {
             primary: function () {
                 var mixin = this.mixin, root = [], node;
 
-                while (!parserInput.finished)
-                {
-                    while(true) {
+                while (true) {
+                    while (true) {
                         node = this.comment();
                         if (!node) { break; }
                         root.push(node);
                     }
+                    // always process comments before deciding if finished
+                    if (parserInput.finished) {
+                        break;
+                    }
                     if (parserInput.peek('}')) {
                         break;
                     }
-                    node = this.extendRule() || mixin.definition() || this.rule() || this.ruleset() ||
+
+                    node = this.extendRule();
+                    if (node) {
+                        root = root.concat(node);
+                        continue;
+                    }
+
+                    node = mixin.definition() || this.rule() || this.ruleset() ||
                         mixin.call() || this.rulesetCall() || this.directive();
                     if (node) {
                         root.push(node);
                     } else {
-                        if (!(parserInput.$re(/^[\s\n]+/) || parserInput.$re(/^;+/))) {
+                        var foundSemiColon = false;
+                        while (parserInput.$char(";")) {
+                            foundSemiColon = true;
+                        }
+                        if (!foundSemiColon) {
                             break;
                         }
                     }
@@ -2937,12 +3303,20 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //     "milky way" 'he\'s the one!'
                 //
                 quoted: function () {
-                    var str, index = parserInput.i;
+                    var str, index = parserInput.i, isEscaped = false;
 
-                    str = parserInput.$re(/^(~)?("((?:[^"\\\r\n]|\\.)*)"|'((?:[^'\\\r\n]|\\.)*)')/);
-                    if (str) {
-                        return new(tree.Quoted)(str[2], str[3] || str[4], Boolean(str[1]), index, fileInfo);
+                    parserInput.save();
+                    if (parserInput.$char("~")) {
+                        isEscaped = true;
                     }
+                    str = parserInput.$quoted();
+                    if (!str) {
+                        parserInput.restore();
+                        return;
+                    }
+                    parserInput.forget();
+
+                    return new(tree.Quoted)(str.charAt(0), str.substr(1, str.length - 2), isEscaped, index, fileInfo);
                 },
 
                 //
@@ -2951,7 +3325,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //     black border-collapse
                 //
                 keyword: function () {
-                    var k = parserInput.$re(/^%|^[_A-Za-z-][_A-Za-z0-9-]*/);
+                    var k = parserInput.$char("%") || parserInput.$re(/^[_A-Za-z-][_A-Za-z0-9-]*/);
                     if (k) {
                         return tree.Color.fromKeyword(k) || new(tree.Keyword)(k);
                     }
@@ -2970,6 +3344,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 call: function () {
                     var name, nameLC, args, alpha, index = parserInput.i;
 
+                    // http://jsperf.com/case-insensitive-regex-vs-strtolower-then-regex/18
                     if (parserInput.peek(/^url\(/i)) {
                         return;
                     }
@@ -2984,7 +3359,8 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                     if (nameLC === 'alpha') {
                         alpha = parsers.alpha();
-                        if(alpha) {
+                        if (alpha) {
+                            parserInput.forget();
                             return alpha;
                         }
                     }
@@ -3029,16 +3405,22 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                 assignment: function () {
                     var key, value;
+                    parserInput.save();
                     key = parserInput.$re(/^\w+(?=\s?=)/i);
                     if (!key) {
+                        parserInput.restore();
                         return;
                     }
                     if (!parserInput.$char('=')) {
+                        parserInput.restore();
                         return;
                     }
                     value = parsers.entity();
                     if (value) {
+                        parserInput.forget();
                         return new(tree.Assignment)(key, value);
+                    } else {
+                        parserInput.restore();
                     }
                 },
 
@@ -3052,11 +3434,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                 url: function () {
                     var value, index = parserInput.i;
 
-                    if (parserInput.currentChar() !== 'u' || !parserInput.$re(/^url\(/)) {
+                    parserInput.autoCommentAbsorb = false;
+
+                    if (!parserInput.$str("url(")) {
+                        parserInput.autoCommentAbsorb = true;
                         return;
                     }
-
-                    parserInput.autoCommentAbsorb = false;
 
                     value = this.quoted() || this.variable() ||
                             parserInput.$re(/^(?:(?:\\[\(\)'"])|[^\(\)'"])+/) || "";
@@ -3105,12 +3488,14 @@ var Parser = function Parser(context, imports, fileInfo) {
                     var rgb;
 
                     if (parserInput.currentChar() === '#' && (rgb = parserInput.$re(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/))) {
-                        var colorCandidateString = rgb.input.match(/^#([\w]+).*/); // strip colons, brackets, whitespaces and other characters that should not definitely be part of color string
+                        // strip colons, brackets, whitespaces and other characters that should not
+                        // definitely be part of color string
+                        var colorCandidateString = rgb.input.match(/^#([\w]+).*/);
                         colorCandidateString = colorCandidateString[1];
                         if (!colorCandidateString.match(/^[A-Fa-f0-9]+$/)) { // verify if candidate consists only of allowed HEX characters
                             error("Invalid HEX color code");
                         }
-                        return new(tree.Color)(rgb[1]);
+                        return new(tree.Color)(rgb[1], undefined, '#' + colorCandidateString);
                     }
                 },
 
@@ -3152,10 +3537,22 @@ var Parser = function Parser(context, imports, fileInfo) {
                 javascript: function () {
                     var js, index = parserInput.i;
 
-                    js = parserInput.$re(/^(~)?`([^`]*)`/);
-                    if (js) {
-                        return new(tree.JavaScript)(js[2], Boolean(js[1]), index, fileInfo);
+                    parserInput.save();
+
+                    var escape = parserInput.$char("~");
+                    var jsQuote = parserInput.$char("`");
+
+                    if (!jsQuote) {
+                        parserInput.restore();
+                        return;
                     }
+
+                    js = parserInput.$re(/^[^`]*`/);
+                    if (js) {
+                        parserInput.forget();
+                        return new(tree.JavaScript)(js.substr(0, js.length - 1), Boolean(escape), index, fileInfo);
+                    }
+                    parserInput.restore("invalid javascript definition");
                 }
             },
 
@@ -3189,24 +3586,36 @@ var Parser = function Parser(context, imports, fileInfo) {
             extend: function(isRule) {
                 var elements, e, index = parserInput.i, option, extendList, extend;
 
-                if (!(isRule ? parserInput.$re(/^&:extend\(/) : parserInput.$re(/^:extend\(/))) { return; }
+                if (!parserInput.$str(isRule ? "&:extend(" : ":extend(")) {
+                    return;
+                }
 
                 do {
                     option = null;
                     elements = null;
                     while (! (option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
                         e = this.element();
-                        if (!e) { break; }
-                        if (elements) { elements.push(e); } else { elements = [ e ]; }
+                        if (!e) {
+                            break;
+                        }
+                        if (elements) {
+                            elements.push(e);
+                        } else {
+                            elements = [ e ];
+                        }
                     }
 
                     option = option && option[1];
-                    if (!elements)
+                    if (!elements) {
                         error("Missing target selector for :extend().");
+                    }
                     extend = new(tree.Extend)(new(tree.Selector)(elements), option, index);
-                    if (extendList) { extendList.push(extend); } else { extendList = [ extend ]; }
-
-                } while(parserInput.$char(","));
+                    if (extendList) {
+                        extendList.push(extend);
+                    } else {
+                        extendList = [ extend ];
+                    }
+                } while (parserInput.$char(","));
 
                 expect(/^\)/);
 
@@ -3254,7 +3663,11 @@ var Parser = function Parser(context, imports, fileInfo) {
                             break;
                         }
                         elem = new(tree.Element)(c, e, elemIndex, fileInfo);
-                        if (elements) { elements.push(elem); } else { elements = [ elem ]; }
+                        if (elements) {
+                            elements.push(elem);
+                        } else {
+                            elements = [ elem ];
+                        }
                         c = parserInput.$char('>');
                     }
 
@@ -3280,7 +3693,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                     var entities = parsers.entities,
                         returner = { args:null, variadic: false },
                         expressions = [], argsSemiColon = [], argsComma = [],
-                        isSemiColonSeperated, expressionContainsNamed, name, nameLoop, value, arg;
+                        isSemiColonSeparated, expressionContainsNamed, name, nameLoop,
+                        value, arg, expand;
 
                     parserInput.save();
 
@@ -3289,12 +3703,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                             arg = parsers.detachedRuleset() || parsers.expression();
                         } else {
                             parserInput.commentStore.length = 0;
-                            if (parserInput.currentChar() === '.' && parserInput.$re(/^\.{3}/)) {
+                            if (parserInput.$str("...")) {
                                 returner.variadic = true;
-                                if (parserInput.$char(";") && !isSemiColonSeperated) {
-                                    isSemiColonSeperated = true;
+                                if (parserInput.$char(";") && !isSemiColonSeparated) {
+                                    isSemiColonSeparated = true;
                                 }
-                                (isSemiColonSeperated ? argsSemiColon : argsComma)
+                                (isSemiColonSeparated ? argsSemiColon : argsComma)
                                     .push({ variadic: true });
                                 break;
                             }
@@ -3324,16 +3738,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (val && val instanceof tree.Variable) {
                             if (parserInput.$char(':')) {
                                 if (expressions.length > 0) {
-                                    if (isSemiColonSeperated) {
+                                    if (isSemiColonSeparated) {
                                         error("Cannot mix ; and , as delimiter types");
                                     }
                                     expressionContainsNamed = true;
                                 }
 
-                                // we do not support setting a ruleset as a default variable - it doesn't make sense
-                                // However if we do want to add it, there is nothing blocking it, just don't error
-                                // and remove isCall dependency below
-                                value = (isCall && parsers.detachedRuleset()) || parsers.expression();
+                                value = parsers.detachedRuleset() || parsers.expression();
 
                                 if (!value) {
                                     if (isCall) {
@@ -3345,14 +3756,18 @@ var Parser = function Parser(context, imports, fileInfo) {
                                     }
                                 }
                                 nameLoop = (name = val.name);
-                            } else if (!isCall && parserInput.$re(/^\.{3}/)) {
-                                returner.variadic = true;
-                                if (parserInput.$char(";") && !isSemiColonSeperated) {
-                                    isSemiColonSeperated = true;
+                            } else if (parserInput.$str("...")) {
+                                if (!isCall) {
+                                    returner.variadic = true;
+                                    if (parserInput.$char(";") && !isSemiColonSeparated) {
+                                        isSemiColonSeparated = true;
+                                    }
+                                    (isSemiColonSeparated ? argsSemiColon : argsComma)
+                                        .push({ name: arg.name, variadic: true });
+                                    break;
+                                } else {
+                                    expand = true;
                                 }
-                                (isSemiColonSeperated ? argsSemiColon : argsComma)
-                                    .push({ name: arg.name, variadic: true });
-                                break;
                             } else if (!isCall) {
                                 name = nameLoop = val.name;
                                 value = null;
@@ -3363,24 +3778,24 @@ var Parser = function Parser(context, imports, fileInfo) {
                             expressions.push(value);
                         }
 
-                        argsComma.push({ name:nameLoop, value:value });
+                        argsComma.push({ name:nameLoop, value:value, expand:expand });
 
                         if (parserInput.$char(',')) {
                             continue;
                         }
 
-                        if (parserInput.$char(';') || isSemiColonSeperated) {
+                        if (parserInput.$char(';') || isSemiColonSeparated) {
 
                             if (expressionContainsNamed) {
                                 error("Cannot mix ; and , as delimiter types");
                             }
 
-                            isSemiColonSeperated = true;
+                            isSemiColonSeparated = true;
 
                             if (expressions.length > 1) {
                                 value = new(tree.Value)(expressions);
                             }
-                            argsSemiColon.push({ name:name, value:value });
+                            argsSemiColon.push({ name:name, value:value, expand:expand });
 
                             name = null;
                             expressions = [];
@@ -3389,7 +3804,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
 
                     parserInput.forget();
-                    returner.args = isSemiColonSeperated ? argsSemiColon : argsComma;
+                    returner.args = isSemiColonSeparated ? argsSemiColon : argsComma;
                     return returner;
                 },
                 //
@@ -3440,7 +3855,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                         parserInput.commentStore.length = 0;
 
-                        if (parserInput.$re(/^when/)) { // Guard
+                        if (parserInput.$str("when")) { // Guard
                             cond = expect(parsers.conditions, 'expected condition');
                         }
 
@@ -3486,6 +3901,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             alpha: function () {
                 var value;
 
+                // http://jsperf.com/case-insensitive-regex-vs-strtolower-then-regex/18
                 if (! parserInput.$re(/^opacity=/i)) { return; }
                 value = parserInput.$re(/^\d+/);
                 if (!value) {
@@ -3512,8 +3928,10 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                 c = this.combinator();
 
-                e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) || parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
-                    parserInput.$char('*') || parserInput.$char('&') || this.attribute() || parserInput.$re(/^\([^()@]+\)/) || parserInput.$re(/^[\.#](?=@)/) ||
+                e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
+                    parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
+                    parserInput.$char('*') || parserInput.$char('&') || this.attribute() ||
+                    parserInput.$re(/^\([^&()@]+\)/) ||  parserInput.$re(/^[\.#:](?=@)/) ||
                     this.entities.variableCurly();
 
                 if (! e) {
@@ -3585,19 +4003,27 @@ var Parser = function Parser(context, imports, fileInfo) {
             // Selectors are made out of one or more Elements, see above.
             //
             selector: function (isLess) {
-                var index = parserInput.i, elements, extendList, c, e, extend, when, condition;
+                var index = parserInput.i, elements, extendList, c, e, allExtends, when, condition;
 
-                while ((isLess && (extend = this.extend())) || (isLess && (when = parserInput.$re(/^when/))) || (e = this.element())) {
+                while ((isLess && (extendList = this.extend())) || (isLess && (when = parserInput.$str("when"))) || (e = this.element())) {
                     if (when) {
                         condition = expect(this.conditions, 'expected condition');
                     } else if (condition) {
                         error("CSS guard can only be used at the end of selector");
-                    } else if (extend) {
-                        if (extendList) { extendList.push(extend); } else { extendList = [ extend ]; }
+                    } else if (extendList) {
+                        if (allExtends) {
+                            allExtends = allExtends.concat(extendList);
+                        } else {
+                            allExtends = extendList;
+                        }
                     } else {
-                        if (extendList) { error("Extend can only be used at the end of selector"); }
+                        if (allExtends) { error("Extend can only be used at the end of selector"); }
                         c = parserInput.currentChar();
-                        if (elements) { elements.push(e); } else { elements = [ e ]; }
+                        if (elements) {
+                            elements.push(e);
+                        } else {
+                            elements = [ e ];
+                        }
                         e = null;
                     }
                     if (c === '{' || c === '}' || c === ';' || c === ',' || c === ')') {
@@ -3605,8 +4031,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                 }
 
-                if (elements) { return new(tree.Selector)(elements, extendList, condition, index, fileInfo); }
-                if (extendList) { error("Extend must be used to extend a selector, it cannot be used on its own"); }
+                if (elements) { return new(tree.Selector)(elements, allExtends, condition, index, fileInfo); }
+                if (allExtends) { error("Extend must be used to extend a selector, it cannot be used on its own"); }
             },
             attribute: function () {
                 if (! parserInput.$char('[')) { return; }
@@ -3672,7 +4098,11 @@ var Parser = function Parser(context, imports, fileInfo) {
                     if (!s) {
                         break;
                     }
-                    if (selectors) { selectors.push(s); } else { selectors = [ s ]; }
+                    if (selectors) {
+                        selectors.push(s);
+                    } else {
+                        selectors = [ s ];
+                    }
                     parserInput.commentStore.length = 0;
                     if (s.condition && selectors.length > 1) {
                         error("Guards are only currently allowed on a single selector.");
@@ -3698,7 +4128,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             rule: function (tryAnonymous) {
                 var name, value, startOfRule = parserInput.i, c = parserInput.currentChar(), important, merge, isVariable;
 
-                if (c === '.' || c === '#' || c === '&') { return; }
+                if (c === '.' || c === '#' || c === '&' || c === ':') { return; }
 
                 parserInput.save();
 
@@ -3715,7 +4145,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         // a name returned by this.ruleProperty() is always an array of the form:
                         // [string-1, ..., string-n, ""] or [string-1, ..., string-n, "+"]
                         // where each item is a tree.Keyword or tree.Variable
-                        merge = !isVariable && name.pop().value;
+                        merge = !isVariable && name.length > 1 && name.pop().value;
 
                         // prefer to try to parse first if its a variable or we are compressing
                         // but always fallback on the other one
@@ -3728,7 +4158,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                             value = this.anonymousValue();
                             if (value) {
                                 parserInput.forget();
-                                // anonymous values absorb the end ';' which is reequired for them to work
+                                // anonymous values absorb the end ';' which is required for them to work
                                 return new (tree.Rule)(name, value, false, merge, startOfRule, fileInfo);
                             }
                         }
@@ -3780,15 +4210,14 @@ var Parser = function Parser(context, imports, fileInfo) {
                     if ((path = this.entities.quoted() || this.entities.url())) {
                         features = this.mediaFeatures();
 
-                        if (!parserInput.$(';')) {
+                        if (!parserInput.$char(';')) {
                             parserInput.i = index;
                             error("missing semi-colon or unrecognised media features on import");
                         }
                         features = features && new(tree.Value)(features);
                         return new(tree.Import)(path, features, options, index, fileInfo);
                     }
-                    else
-                    {
+                    else {
                         parserInput.i = index;
                         error("malformed import statement");
                     }
@@ -3809,11 +4238,11 @@ var Parser = function Parser(context, imports, fileInfo) {
                             case "css":
                                 optionName = "less";
                                 value = false;
-                            break;
+                                break;
                             case "once":
                                 optionName = "multiple";
                                 value = false;
-                            break;
+                                break;
                         }
                         options[optionName] = value;
                         if (! parserInput.$char(',')) { break; }
@@ -3824,7 +4253,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             },
 
             importOption: function() {
-                var opt = parserInput.$re(/^(less|css|multiple|once|inline|reference)/);
+                var opt = parserInput.$re(/^(less|css|multiple|once|inline|reference|optional)/);
                 if (opt) {
                     return opt[1];
                 }
@@ -3888,16 +4317,61 @@ var Parser = function Parser(context, imports, fileInfo) {
                     debugInfo = getDebugInfo(parserInput.i);
                 }
 
-                if (parserInput.$re(/^@media/)) {
+                parserInput.save();
+
+                if (parserInput.$str("@media")) {
                     features = this.mediaFeatures();
 
                     rules = this.block();
-                    if (rules) {
-                        media = new(tree.Media)(rules, features, parserInput.i, fileInfo);
-                        if (context.dumpLineNumbers) {
-                            media.debugInfo = debugInfo;
+
+                    if (!rules) {
+                        parserInput.restore("media definitions require block statements after any features");
+                        return;
+                    }
+
+                    parserInput.forget();
+
+                    media = new(tree.Media)(rules, features, parserInput.i, fileInfo);
+                    if (context.dumpLineNumbers) {
+                        media.debugInfo = debugInfo;
+                    }
+
+                    return media;
+                }
+
+                parserInput.restore();
+            },
+
+            //
+            // A @plugin directive, used to import compiler extensions dynamically.
+            //
+            //     @plugin "lib";
+            //
+            // Depending on our environment, importing is done differently:
+            // In the browser, it's an XHR request, in Node, it would be a
+            // file-system operation. The function used for importing is
+            // stored in `import`, which we pass to the Import constructor.
+            //
+            plugin: function () {
+                var path,
+                    index = parserInput.i,
+                    dir   = parserInput.$re(/^@plugin?\s+/);
+
+                if (dir) {
+                    var options = { plugin : true };
+
+                    if ((path = this.entities.quoted() || this.entities.url())) {
+
+                        if (!parserInput.$char(';')) {
+                            parserInput.i = index;
+                            error("missing semi-colon on plugin");
                         }
-                        return media;
+
+                        return new(tree.Import)(path, null, options, index, fileInfo);
+                    }
+                    else {
+                        parserInput.i = index;
+                        error("malformed plugin statement");
                     }
                 }
             },
@@ -3909,11 +4383,11 @@ var Parser = function Parser(context, imports, fileInfo) {
             //
             directive: function () {
                 var index = parserInput.i, name, value, rules, nonVendorSpecificName,
-                    hasIdentifier, hasExpression, hasUnknown, hasBlock = true;
+                    hasIdentifier, hasExpression, hasUnknown, hasBlock = true, isRooted = true;
 
                 if (parserInput.currentChar() !== '@') { return; }
 
-                value = this['import']() || this.media();
+                value = this['import']() || this.plugin() || this.media();
                 if (value) {
                     return value;
                 }
@@ -3950,8 +4424,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                     case "@right-middle":
                     case "@right-bottom":
                         hasBlock = true;
+                        isRooted = true;
                         break;
                     */
+                    case "@counter-style":
+                        hasIdentifier = true;
+                        hasBlock = true;
+                        break;
                     case "@charset":
                         hasIdentifier = true;
                         hasBlock = false;
@@ -3965,9 +4444,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                         break;
                     case "@host":
                     case "@page":
+                        hasUnknown = true;
+                        break;
                     case "@document":
                     case "@supports":
                         hasUnknown = true;
+                        isRooted = false;
                         break;
                 }
 
@@ -3996,8 +4478,11 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                 if (rules || (!hasBlock && value && parserInput.$char(';'))) {
                     parserInput.forget();
-                    return new(tree.Directive)(name, value, rules, index, fileInfo,
-                        context.dumpLineNumbers ? getDebugInfo(index) : null);
+                    return new (tree.Directive)(name, value, rules, index, fileInfo,
+                        context.dumpLineNumbers ? getDebugInfo(index) : null,
+                        false,
+                        isRooted
+                    );
                 }
 
                 parserInput.restore("directive options not recognised");
@@ -4020,7 +4505,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         expressions.push(e);
                         if (! parserInput.$char(',')) { break; }
                     }
-                } while(e);
+                } while (e);
 
                 if (expressions.length > 0) {
                     return new(tree.Value)(expressions);
@@ -4034,15 +4519,19 @@ var Parser = function Parser(context, imports, fileInfo) {
             sub: function () {
                 var a, e;
 
+                parserInput.save();
                 if (parserInput.$char('(')) {
                     a = this.addition();
-                    if (a) {
+                    if (a && parserInput.$char(')')) {
+                        parserInput.forget();
                         e = new(tree.Expression)([a]);
-                        expectChar(')');
                         e.parens = true;
                         return e;
                     }
+                    parserInput.restore("Expected ')'");
+                    return;
                 }
+                parserInput.restore();
             },
             multiplication: function () {
                 var m, a, op, operation, isSpaced;
@@ -4118,11 +4607,33 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var entities = this.entities, index = parserInput.i, negate = false,
                     a, b, c, op;
 
-                if (parserInput.$re(/^not/)) { negate = true; }
+                if (parserInput.$str("not")) { negate = true; }
                 expectChar('(');
                 a = this.addition() || entities.keyword() || entities.quoted();
                 if (a) {
-                    op = parserInput.$re(/^(?:>=|<=|=<|[<=>])/);
+                    if (parserInput.$char('>')) {
+                        if (parserInput.$char('=')) {
+                            op = ">=";
+                        } else {
+                            op = '>';
+                        }
+                    } else
+                    if (parserInput.$char('<')) {
+                        if (parserInput.$char('=')) {
+                            op = "<=";
+                        } else {
+                            op = '<';
+                        }
+                    } else
+                    if (parserInput.$char('=')) {
+                        if (parserInput.$char('>')) {
+                            op = "=>";
+                        } else if (parserInput.$char('<')) {
+                            op = '=<';
+                        } else {
+                            op = '=';
+                        }
+                    }
                     if (op) {
                         b = this.addition() || entities.keyword() || entities.quoted();
                         if (b) {
@@ -4134,7 +4645,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         c = new(tree.Condition)('=', a, new(tree.Keyword)('true'), index, negate);
                     }
                     expectChar(')');
-                    return parserInput.$re(/^and/) ? new(tree.Condition)('and', c, this.condition()) : c;
+                    return parserInput.$str("and") ? new(tree.Condition)('and', c, this.condition()) : c;
                 }
             },
 
@@ -4204,6 +4715,13 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                 parserInput.save();
 
+                var simpleProperty = parserInput.$re(/^([_a-zA-Z0-9-]+)\s*:/);
+                if (simpleProperty) {
+                    name = [new(tree.Keyword)(simpleProperty[1])];
+                    parserInput.forget();
+                    return name;
+                }
+
                 function match(re) {
                     var i = parserInput.i,
                         chunk = parserInput.$re(re);
@@ -4249,8 +4767,8 @@ Parser.serializeVars = function(vars) {
     for (var name in vars) {
         if (Object.hasOwnProperty.call(vars, name)) {
             var value = vars[name];
-            s += ((name[0] === '@') ? '' : '@') + name +': '+ value +
-                ((('' + value).slice(-1) === ';') ? '' : ';');
+            s += ((name[0] === '@') ? '' : '@') + name + ': ' + value +
+                ((String(value).slice(-1) === ';') ? '' : ';');
         }
     }
 
@@ -4259,13 +4777,14 @@ Parser.serializeVars = function(vars) {
 
 module.exports = Parser;
 
-},{"../less-error":28,"../tree":56,"../utils":77,"../visitors":80,"./parser-input":32}],34:[function(require,module,exports){
+},{"../less-error":31,"../tree":61,"../utils":82,"../visitors":86,"./parser-input":36}],38:[function(require,module,exports){
 /**
  * Plugin Manager
  */
 var PluginManager = function(less) {
     this.less = less;
     this.visitors = [];
+    this.preProcessors = [];
     this.postProcessors = [];
     this.installedPlugins = [];
     this.fileManagers = [];
@@ -4276,7 +4795,7 @@ var PluginManager = function(less) {
  */
 PluginManager.prototype.addPlugins = function(plugins) {
     if (plugins) {
-        for(var i = 0;i < plugins.length; i++) {
+        for (var i = 0; i < plugins.length; i++) {
             this.addPlugin(plugins[i]);
         }
     }
@@ -4298,13 +4817,27 @@ PluginManager.prototype.addVisitor = function(visitor) {
     this.visitors.push(visitor);
 };
 /**
+ * Adds a pre processor object
+ * @param {object} preProcessor
+ * @param {number} priority - guidelines 1 = before import, 1000 = import, 2000 = after import
+ */
+PluginManager.prototype.addPreProcessor = function(preProcessor, priority) {
+    var indexToInsertAt;
+    for (indexToInsertAt = 0; indexToInsertAt < this.preProcessors.length; indexToInsertAt++) {
+        if (this.preProcessors[indexToInsertAt].priority >= priority) {
+            break;
+        }
+    }
+    this.preProcessors.splice(indexToInsertAt, 0, {preProcessor: preProcessor, priority: priority});
+};
+/**
  * Adds a post processor object
  * @param {object} postProcessor
  * @param {number} priority - guidelines 1 = before compression, 1000 = compression, 2000 = after compression
  */
 PluginManager.prototype.addPostProcessor = function(postProcessor, priority) {
     var indexToInsertAt;
-    for(indexToInsertAt = 0; indexToInsertAt < this.postProcessors.length; indexToInsertAt++) {
+    for (indexToInsertAt = 0; indexToInsertAt < this.postProcessors.length; indexToInsertAt++) {
         if (this.postProcessors[indexToInsertAt].priority >= priority) {
             break;
         }
@@ -4323,9 +4856,21 @@ PluginManager.prototype.addFileManager = function(manager) {
  * @returns {Array}
  * @private
  */
+PluginManager.prototype.getPreProcessors = function() {
+    var preProcessors = [];
+    for (var i = 0; i < this.preProcessors.length; i++) {
+        preProcessors.push(this.preProcessors[i].preProcessor);
+    }
+    return preProcessors;
+};
+/**
+ *
+ * @returns {Array}
+ * @private
+ */
 PluginManager.prototype.getPostProcessors = function() {
     var postProcessors = [];
-    for(var i = 0; i < this.postProcessors.length; i++) {
+    for (var i = 0; i < this.postProcessors.length; i++) {
         postProcessors.push(this.postProcessors[i].postProcessor);
     }
     return postProcessors;
@@ -4348,75 +4893,88 @@ PluginManager.prototype.getFileManagers = function() {
 };
 module.exports = PluginManager;
 
-},{}],35:[function(require,module,exports){
-var PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise,
-    contexts = require("./contexts"),
-    Parser = require('./parser/parser'),
-    PluginManager = require('./plugin-manager');
+},{}],39:[function(require,module,exports){
+var LessError = require('../less-error'),
+    tree = require("../tree");
+
+var FunctionImporter = module.exports = function FunctionImporter(context, fileInfo) {
+    this.fileInfo = fileInfo;
+};
+
+FunctionImporter.prototype.eval = function(contents, callback) {
+    var loaded = {},
+        loader,
+        registry;
+
+    registry = {
+        add: function(name, func) {
+            loaded[name] = func;
+        },
+        addMultiple: function(functions) {
+            Object.keys(functions).forEach(function(name) {
+                loaded[name] = functions[name];
+            });
+        }
+    };
+
+    try {
+        loader = new Function("functions", "tree", "fileInfo", contents);
+        loader(registry, tree, this.fileInfo);
+    } catch(e) {
+        callback(new LessError({
+            message: "Plugin evaluation error: '" + e.name + ': ' + e.message.replace(/["]/g, "'") + "'" ,
+            filename: this.fileInfo.filename
+        }), null );
+    }
+
+    callback(null, { functions: loaded });
+};
+
+},{"../less-error":31,"../tree":61}],40:[function(require,module,exports){
+var PromiseConstructor;
 
 module.exports = function(environment, ParseTree, ImportManager) {
     var render = function (input, options, callback) {
-        options = options || {};
-
-        if (typeof(options) === 'function') {
+        if (typeof options === 'function') {
             callback = options;
             options = {};
         }
 
-        if (callback) {
-            render.call(this, input, options)
-                .then(function(css) {
-                    callback(null, css);
-                },
-                function(error) {
-                    callback(error);
-                });
-        } else {
-            var context,
-                rootFileInfo,
-                pluginManager = new PluginManager(this);
-
-            pluginManager.addPlugins(options.plugins);
-            options.pluginManager = pluginManager;
-
-            context = new contexts.Parse(options);
-
-            if (options.rootFileInfo) {
-                rootFileInfo = options.rootFileInfo;
-            } else {
-                var filename = options.filename || "input";
-                var entryPath = filename.replace(/[^\/\\]*$/, "");
-                rootFileInfo = {
-                    filename: filename,
-                    relativeUrls: context.relativeUrls,
-                    rootpath: context.rootpath || "",
-                    currentDirectory: entryPath,
-                    entryPath: entryPath,
-                    rootFilename: filename
-                };
+        if (!callback) {
+            if (!PromiseConstructor) {
+                PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise;
             }
-
-            var imports = new ImportManager(context, rootFileInfo);
-            var parser = new Parser(context, imports, rootFileInfo);
-
+            var self = this;
             return new PromiseConstructor(function (resolve, reject) {
-                parser.parse(input, function (e, root) {
-                    if (e) { return reject(e); }
-                    try {
-                        var parseTree = new ParseTree(root, imports);
-                        var result = parseTree.toCSS(options);
-                        resolve(result);
+                render.call(self, input, options, function(err, output) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(output);
                     }
-                    catch (err) { reject( err); }
-                }, options);
+                });
+            });
+        } else {
+            this.parse(input, options, function(err, root, imports, options) {
+                if (err) { return callback(err); }
+
+                var result;
+                try {
+                    var parseTree = new ParseTree(root, imports);
+                    result = parseTree.toCSS(options);
+                }
+                catch (err) { return callback(err); }
+
+                callback(null, result);
             });
         }
     };
+
     return render;
 };
 
-},{"./contexts":8,"./parser/parser":33,"./plugin-manager":34,"promise":undefined}],36:[function(require,module,exports){
-module.exports = function (SourceMapOutput) {
+},{"promise":undefined}],41:[function(require,module,exports){
+module.exports = function (SourceMapOutput, environment) {
 
     var SourceMapBuilder = function (options) {
         this.options = options;
@@ -4444,7 +5002,23 @@ module.exports = function (SourceMapOutput) {
         if (this.options.sourceMapInputFilename) {
             this.sourceMapInputFilename = sourceMapOutput.normalizeFilename(this.options.sourceMapInputFilename);
         }
-        return css;
+        return css + this.getCSSAppendage();
+    };
+
+    SourceMapBuilder.prototype.getCSSAppendage = function() {
+
+        var sourceMapURL = this.sourceMapURL;
+        if (this.options.sourceMapFileInline) {
+            if (this.sourceMap === undefined) {
+                return "";
+            }
+            sourceMapURL = "data:application/json;base64," + environment.encodeBase64(this.sourceMap);
+        }
+
+        if (sourceMapURL) {
+            return "/*# sourceMappingURL=" + sourceMapURL + " */";
+        }
+        return "";
     };
 
     SourceMapBuilder.prototype.getExternalSourceMap = function() {
@@ -4470,7 +5044,7 @@ module.exports = function (SourceMapOutput) {
     return SourceMapBuilder;
 };
 
-},{}],37:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 module.exports = function (environment) {
 
     var SourceMapOutput = function (options) {
@@ -4488,7 +5062,7 @@ module.exports = function (environment) {
         }
         if (options.sourceMapRootpath) {
             this._sourceMapRootpath = options.sourceMapRootpath.replace(/\\/g, '/');
-            if (this._sourceMapRootpath.charAt(this._sourceMapRootpath.length-1) !== '/') {
+            if (this._sourceMapRootpath.charAt(this._sourceMapRootpath.length - 1) !== '/') {
                 this._sourceMapRootpath += '/';
             }
         } else {
@@ -4496,7 +5070,6 @@ module.exports = function (environment) {
         }
         this._outputSourceFiles = options.outputSourceFiles;
         this._sourceMapGeneratorConstructor = environment.getSourceMapGenerator();
-        this._sourceMapFileInline = options.sourceMapFileInline;
 
         this._lineNumber = 0;
         this._column = 0;
@@ -4508,7 +5081,7 @@ module.exports = function (environment) {
         if (this._sourceMapBasepath && filename.indexOf(this._sourceMapBasepath) === 0) {
             filename = filename.substring(this._sourceMapBasepath.length);
             if (filename.charAt(0) === '\\' || filename.charAt(0) === '/') {
-               filename = filename.substring(1);
+                filename = filename.substring(1);
             }
         }
         return (this._sourceMapRootpath || "") + filename;
@@ -4540,11 +5113,11 @@ module.exports = function (environment) {
             }
             inputSource = inputSource.substring(0, index);
             sourceLines = inputSource.split("\n");
-            sourceColumns = sourceLines[sourceLines.length-1];
+            sourceColumns = sourceLines[sourceLines.length - 1];
         }
 
         lines = chunk.split("\n");
-        columns = lines[lines.length-1];
+        columns = lines[lines.length - 1];
 
         if (fileInfo) {
             if (!mapLines) {
@@ -4552,7 +5125,7 @@ module.exports = function (environment) {
                     original: { line: sourceLines.length, column: sourceColumns.length},
                     source: this.normalizeFilename(fileInfo.filename)});
             } else {
-                for(i = 0; i < lines.length; i++) {
+                for (i = 0; i < lines.length; i++) {
                     this._sourceMapGenerator.addMapping({ generated: { line: this._lineNumber + i + 1, column: i === 0 ? this._column : 0},
                         original: { line: sourceLines.length + i, column: i === 0 ? sourceColumns.length : 0},
                         source: this.normalizeFilename(fileInfo.filename)});
@@ -4578,9 +5151,8 @@ module.exports = function (environment) {
         this._sourceMapGenerator = new this._sourceMapGeneratorConstructor({ file: this._outputFilename, sourceRoot: null });
 
         if (this._outputSourceFiles) {
-            for(var filename in this._contentsMap) {
-                if (this._contentsMap.hasOwnProperty(filename))
-                {
+            for (var filename in this._contentsMap) {
+                if (this._contentsMap.hasOwnProperty(filename)) {
                     var source = this._contentsMap[filename];
                     if (this._contentsIgnoredCharsMap[filename]) {
                         source = source.slice(this._contentsIgnoredCharsMap[filename]);
@@ -4603,15 +5175,7 @@ module.exports = function (environment) {
             }
             this.sourceMapURL = sourceMapURL;
 
-            if (!this._sourceMapFileInline) {
-                this.sourceMap = sourceMapContent;
-            } else {
-                sourceMapURL = "data:application/json;base64," + environment.encodeBase64(sourceMapContent);
-            }
-
-            if (sourceMapURL) {
-                this._css.push("/*# sourceMappingURL=" + sourceMapURL + " */");
-            }
+            this.sourceMap = sourceMapContent;
         }
 
         return this._css.join('');
@@ -4620,7 +5184,7 @@ module.exports = function (environment) {
     return SourceMapOutput;
 };
 
-},{}],38:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 var contexts = require("./contexts"),
     visitor = require("./visitors"),
     tree = require("./tree");
@@ -4644,7 +5208,7 @@ module.exports = function(root, options) {
     //     ])
     //   )
     //
-    if (typeof(variables) === 'object' && !Array.isArray(variables)) {
+    if (typeof variables === 'object' && !Array.isArray(variables)) {
         variables = Object.keys(variables).map(function (k) {
             var value = variables[k];
 
@@ -4668,7 +5232,7 @@ module.exports = function(root, options) {
 
     if (options.pluginManager) {
         var pluginVisitors = options.pluginManager.getVisitors();
-        for(i =0; i < pluginVisitors.length; i++) {
+        for (i = 0; i < pluginVisitors.length; i++) {
             var pluginVisitor = pluginVisitors[i];
             if (pluginVisitor.isPreEvalVisitor) {
                 preEvalVisitors.push(pluginVisitor);
@@ -4682,20 +5246,20 @@ module.exports = function(root, options) {
         }
     }
 
-    for(i = 0; i < preEvalVisitors.length; i++) {
+    for (i = 0; i < preEvalVisitors.length; i++) {
         preEvalVisitors[i].run(root);
     }
 
     evaldRoot = root.eval(evalEnv);
 
-    for(i = 0; i < visitors.length; i++) {
+    for (i = 0; i < visitors.length; i++) {
         visitors[i].run(evaldRoot);
     }
 
     return evaldRoot;
 };
 
-},{"./contexts":8,"./tree":56,"./visitors":80}],39:[function(require,module,exports){
+},{"./contexts":10,"./tree":61,"./visitors":86}],44:[function(require,module,exports){
 var Node = require("./node");
 
 var Alpha = function (val) {
@@ -4725,20 +5289,21 @@ Alpha.prototype.genCSS = function (context, output) {
 
 module.exports = Alpha;
 
-},{"./node":64}],40:[function(require,module,exports){
+},{"./node":69}],45:[function(require,module,exports){
 var Node = require("./node");
 
-var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike) {
+var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, referenced) {
     this.value = value;
     this.index = index;
     this.mapLines = mapLines;
     this.currentFileInfo = currentFileInfo;
-    this.rulesetLike = (typeof rulesetLike === 'undefined')? false : rulesetLike;
+    this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
+    this.isReferenced = referenced || false;
 };
 Anonymous.prototype = new Node();
 Anonymous.prototype.type = "Anonymous";
 Anonymous.prototype.eval = function () {
-    return new Anonymous(this.value, this.index, this.currentFileInfo, this.mapLines, this.rulesetLike);
+    return new Anonymous(this.value, this.index, this.currentFileInfo, this.mapLines, this.rulesetLike, this.isReferenced);
 };
 Anonymous.prototype.compare = function (other) {
     return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
@@ -4749,9 +5314,16 @@ Anonymous.prototype.isRulesetLike = function() {
 Anonymous.prototype.genCSS = function (context, output) {
     output.add(this.value, this.currentFileInfo, this.index, this.mapLines);
 };
+Anonymous.prototype.markReferenced = function () {
+    this.isReferenced = true;
+};
+Anonymous.prototype.getIsReferenced = function () {
+    return !this.currentFileInfo || !this.currentFileInfo.reference || this.isReferenced;
+};
+
 module.exports = Anonymous;
 
-},{"./node":64}],41:[function(require,module,exports){
+},{"./node":69}],46:[function(require,module,exports){
 var Node = require("./node");
 
 var Assignment = function (key, val) {
@@ -4780,8 +5352,7 @@ Assignment.prototype.genCSS = function (context, output) {
 };
 module.exports = Assignment;
 
-
-},{"./node":64}],42:[function(require,module,exports){
+},{"./node":69}],47:[function(require,module,exports){
 var Node = require("./node");
 
 var Attribute = function (key, op, value) {
@@ -4810,7 +5381,7 @@ Attribute.prototype.toCSS = function (context) {
 };
 module.exports = Attribute;
 
-},{"./node":64}],43:[function(require,module,exports){
+},{"./node":69}],48:[function(require,module,exports){
 var Node = require("./node"),
     FunctionCaller = require("../functions/function-caller");
 //
@@ -4831,12 +5402,10 @@ Call.prototype.accept = function (visitor) {
 };
 //
 // When evaluating a function call,
-// we either find the function in `less.functions` [1],
+// we either find the function in the functionRegistry,
 // in which case we call it, passing the  evaluated arguments,
 // if this returns null or we cannot find the function, we
 // simply print it out as it appeared originally [2].
-//
-// The *functions.js* file contains the built-in functions.
 //
 // The reason why we evaluate the arguments, is in the case where
 // we try to pass a variable to a function, like: `saturate(@color)`.
@@ -4865,7 +5434,7 @@ Call.prototype.eval = function (context) {
 Call.prototype.genCSS = function (context, output) {
     output.add(this.name + "(", this.currentFileInfo, this.index);
 
-    for(var i = 0; i < this.args.length; i++) {
+    for (var i = 0; i < this.args.length; i++) {
         this.args[i].genCSS(context, output);
         if (i + 1 < this.args.length) {
             output.add(", ");
@@ -4876,14 +5445,14 @@ Call.prototype.genCSS = function (context, output) {
 };
 module.exports = Call;
 
-},{"../functions/function-caller":18,"./node":64}],44:[function(require,module,exports){
+},{"../functions/function-caller":20,"./node":69}],49:[function(require,module,exports){
 var Node = require("./node"),
     colors = require("../data/colors");
 
 //
 // RGB Colors - #ff0014, #eee
 //
-var Color = function (rgb, a) {
+var Color = function (rgb, a, originalForm) {
     //
     // The end goal here, is to parse the arguments
     // into an integer triplet, such as `128, 255, 0`
@@ -4901,7 +5470,10 @@ var Color = function (rgb, a) {
             return parseInt(c + c, 16);
         });
     }
-    this.alpha = typeof(a) === 'number' ? a : 1;
+    this.alpha = typeof a === 'number' ? a : 1;
+    if (typeof originalForm !== 'undefined') {
+        this.value = originalForm;
+    }
 };
 
 Color.prototype = new Node();
@@ -4935,11 +5507,11 @@ Color.prototype.genCSS = function (context, output) {
 Color.prototype.toCSS = function (context, doNotCompress) {
     var compress = context && context.compress && !doNotCompress, color, alpha;
 
-    // `keyword` is set if this color was originally
+    // `value` is set if this color was originally
     // converted from a named color string so we need
     // to respect this and try to output named color too.
-    if (this.keyword) {
-        return this.keyword;
+    if (this.value) {
+        return this.value;
     }
 
     // If we have some transparency, the only way to represent it
@@ -5028,7 +5600,7 @@ Color.prototype.toHSV = function () {
     if (max === min) {
         h = 0;
     } else {
-        switch(max){
+        switch(max) {
             case r: h = (g - b) / d + (g < b ? 6 : 0); break;
             case g: h = (b - r) / d + 2; break;
             case b: h = (r - g) / d + 4; break;
@@ -5058,13 +5630,13 @@ Color.fromKeyword = function(keyword) {
     }
 
     if (c) {
-        c.keyword = keyword;
+        c.value = keyword;
         return c;
     }
 };
 module.exports = Color;
 
-},{"../data/colors":9,"./node":64}],45:[function(require,module,exports){
+},{"../data/colors":11,"./node":69}],50:[function(require,module,exports){
 var Node = require("./node");
 
 var Combinator = function (value) {
@@ -5089,7 +5661,7 @@ Combinator.prototype.genCSS = function (context, output) {
 };
 module.exports = Combinator;
 
-},{"./node":64}],46:[function(require,module,exports){
+},{"./node":69}],51:[function(require,module,exports){
 var Node = require("./node"),
     getDebugInfo = require("./debug-info");
 
@@ -5114,12 +5686,9 @@ Comment.prototype.isSilent = function(context) {
 Comment.prototype.markReferenced = function () {
     this.isReferenced = true;
 };
-Comment.prototype.isRulesetLike = function(root) {
-    return Boolean(root);
-};
 module.exports = Comment;
 
-},{"./debug-info":48,"./node":64}],47:[function(require,module,exports){
+},{"./debug-info":53,"./node":69}],52:[function(require,module,exports){
 var Node = require("./node");
 
 var Condition = function (op, l, r, i, negate) {
@@ -5142,21 +5711,25 @@ Condition.prototype.eval = function (context) {
             case 'or':  return a || b;
             default:
                 switch (Node.compare(a, b)) {
-                    case -1: return op === '<' || op === '=<' || op === '<=';
-                    case  0: return op === '=' || op === '>=' || op === '=<' || op === '<=';
-                    case  1: return op === '>' || op === '>=';
-                        default: return false;
+                    case -1:
+                        return op === '<' || op === '=<' || op === '<=';
+                    case 0:
+                        return op === '=' || op === '>=' || op === '=<' || op === '<=';
+                    case 1:
+                        return op === '>' || op === '>=';
+                    default:
+                        return false;
                 }
         }
-    }) (this.op, this.lvalue.eval(context), this.rvalue.eval(context));
+    })(this.op, this.lvalue.eval(context), this.rvalue.eval(context));
 
     return this.negate ? !result : result;
 };
 module.exports = Condition;
 
-},{"./node":64}],48:[function(require,module,exports){
-var debugInfo = function(context, ctx, lineSeperator) {
-    var result="";
+},{"./node":69}],53:[function(require,module,exports){
+var debugInfo = function(context, ctx, lineSeparator) {
+    var result = "";
     if (context.dumpLineNumbers && !context.compress) {
         switch(context.dumpLineNumbers) {
             case 'comments':
@@ -5166,7 +5739,7 @@ var debugInfo = function(context, ctx, lineSeperator) {
                 result = debugInfo.asMediaQuery(ctx);
                 break;
             case 'all':
-                result = debugInfo.asComment(ctx) + (lineSeperator || "") + debugInfo.asMediaQuery(ctx);
+                result = debugInfo.asComment(ctx) + (lineSeparator || "") + debugInfo.asMediaQuery(ctx);
                 break;
         }
     }
@@ -5178,8 +5751,12 @@ debugInfo.asComment = function(ctx) {
 };
 
 debugInfo.asMediaQuery = function(ctx) {
+    var filenameWithProtocol = ctx.debugInfo.fileName;
+    if (!/^[a-z]+:\/\//i.test(filenameWithProtocol)) {
+        filenameWithProtocol = 'file://' + filenameWithProtocol;
+    }
     return '@media -sass-debug-info{filename{font-family:' +
-        ('file://' + ctx.debugInfo.fileName).replace(/([.:\/\\])/g, function (a) {
+        filenameWithProtocol.replace(/([.:\/\\])/g, function (a) {
             if (a == '\\') {
                 a = '\/';
             }
@@ -5190,7 +5767,7 @@ debugInfo.asMediaQuery = function(ctx) {
 
 module.exports = debugInfo;
 
-},{}],49:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 var Node = require("./node"),
     contexts = require("../contexts");
 
@@ -5213,7 +5790,7 @@ DetachedRuleset.prototype.callEval = function (context) {
 };
 module.exports = DetachedRuleset;
 
-},{"../contexts":8,"./node":64}],50:[function(require,module,exports){
+},{"../contexts":10,"./node":69}],55:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions"),
     Unit = require("./unit"),
@@ -5241,7 +5818,7 @@ Dimension.prototype.toColor = function () {
 };
 Dimension.prototype.genCSS = function (context, output) {
     if ((context && context.strictUnits) && !this.unit.isSingular()) {
-        throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: "+this.unit.toString());
+        throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: " + this.unit.toString());
     }
 
     var value = this.fround(context, this.value),
@@ -5279,16 +5856,18 @@ Dimension.prototype.operate = function (context, op, other) {
 
     if (op === '+' || op === '-') {
         if (unit.numerator.length === 0 && unit.denominator.length === 0) {
-            unit.numerator = other.unit.numerator.slice(0);
-            unit.denominator = other.unit.denominator.slice(0);
+            unit = other.unit.clone();
+            if (this.unit.backupUnit) {
+                unit.backupUnit = this.unit.backupUnit;
+            }
         } else if (other.unit.numerator.length === 0 && unit.denominator.length === 0) {
             // do nothing
         } else {
             other = other.convertTo(this.unit.usedUnits());
 
-            if(context.strictUnits && other.unit.toString() !== unit.toString()) {
-              throw new Error("Incompatible units. Change the units or use the unit function. Bad units: '" + unit.toString() +
-                "' and '" + other.unit.toString() + "'.");
+            if (context.strictUnits && other.unit.toString() !== unit.toString()) {
+                throw new Error("Incompatible units. Change the units or use the unit function. Bad units: '" + unit.toString() +
+                    "' and '" + other.unit.toString() + "'.");
             }
 
             value = this._operate(context, op, this.value, other.value);
@@ -5332,7 +5911,7 @@ Dimension.prototype.convertTo = function (conversions) {
         i, groupName, group, targetUnit, derivedConversions = {}, applyUnit;
 
     if (typeof conversions === 'string') {
-        for(i in unitConversions) {
+        for (i in unitConversions) {
             if (unitConversions[i].hasOwnProperty(conversions)) {
                 derivedConversions = {};
                 derivedConversions[i] = conversions;
@@ -5341,7 +5920,7 @@ Dimension.prototype.convertTo = function (conversions) {
         conversions = derivedConversions;
     }
     applyUnit = function (atomicUnit, denominator) {
-      /*jshint loopfunc:true */
+        /* jshint loopfunc:true */
         if (group.hasOwnProperty(atomicUnit)) {
             if (denominator) {
                 value = value / (group[atomicUnit] / group[targetUnit]);
@@ -5370,20 +5949,32 @@ Dimension.prototype.convertTo = function (conversions) {
 };
 module.exports = Dimension;
 
-},{"../data/unit-conversions":11,"./color":44,"./node":64,"./unit":73}],51:[function(require,module,exports){
+},{"../data/unit-conversions":13,"./color":49,"./node":69,"./unit":78}],56:[function(require,module,exports){
 var Node = require("./node"),
+    Selector = require("./selector"),
     Ruleset = require("./ruleset");
 
-var Directive = function (name, value, rules, index, currentFileInfo, debugInfo) {
+var Directive = function (name, value, rules, index, currentFileInfo, debugInfo, isReferenced, isRooted) {
+    var i;
+
     this.name  = name;
     this.value = value;
     if (rules) {
-        this.rules = rules;
-        this.rules.allowImports = true;
+        if (Array.isArray(rules)) {
+            this.rules = rules;
+        } else {
+            this.rules = [rules];
+            this.rules[0].selectors = (new Selector([], null, null, this.index, currentFileInfo)).createEmptySelectors();
+        }
+        for (i = 0; i < this.rules.length; i++) {
+            this.rules[i].allowImports = true;
+        }
     }
     this.index = index;
     this.currentFileInfo = currentFileInfo;
     this.debugInfo = debugInfo;
+    this.isReferenced = isReferenced;
+    this.isRooted = isRooted || false;
 };
 
 Directive.prototype = new Node();
@@ -5391,7 +5982,7 @@ Directive.prototype.type = "Directive";
 Directive.prototype.accept = function (visitor) {
     var value = this.value, rules = this.rules;
     if (rules) {
-        this.rules = visitor.visit(rules);
+        this.rules = visitor.visitArray(rules);
     }
     if (value) {
         this.value = visitor.visit(value);
@@ -5411,37 +6002,69 @@ Directive.prototype.genCSS = function (context, output) {
         value.genCSS(context, output);
     }
     if (rules) {
-        this.outputRuleset(context, output, [rules]);
+        this.outputRuleset(context, output, rules);
     } else {
         output.add(';');
     }
 };
 Directive.prototype.eval = function (context) {
-    var value = this.value, rules = this.rules;
+    var mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
+
+    //media stored inside other directive should not bubble over it
+    //backpup media bubbling information
+    mediaPathBackup = context.mediaPath;
+    mediaBlocksBackup = context.mediaBlocks;
+    //deleted media bubbling information
+    context.mediaPath = [];
+    context.mediaBlocks = [];
+
     if (value) {
         value = value.eval(context);
     }
     if (rules) {
-        rules = rules.eval(context);
-        rules.root = true;
+        // assuming that there is only one rule at this point - that is how parser constructs the rule
+        rules = [rules[0].eval(context)];
+        rules[0].root = true;
     }
+    //restore media bubbling information
+    context.mediaPath = mediaPathBackup;
+    context.mediaBlocks = mediaBlocksBackup;
+
     return new Directive(this.name, value, rules,
-        this.index, this.currentFileInfo, this.debugInfo);
+        this.index, this.currentFileInfo, this.debugInfo, this.isReferenced, this.isRooted);
 };
-Directive.prototype.variable = function (name) { if (this.rules) return Ruleset.prototype.variable.call(this.rules, name); };
-Directive.prototype.find = function () { if (this.rules) return Ruleset.prototype.find.apply(this.rules, arguments); };
-Directive.prototype.rulesets = function () { if (this.rules) return Ruleset.prototype.rulesets.apply(this.rules); };
+Directive.prototype.variable = function (name) {
+    if (this.rules) {
+        // assuming that there is only one rule at this point - that is how parser constructs the rule
+        return Ruleset.prototype.variable.call(this.rules[0], name);
+    }
+};
+Directive.prototype.find = function () {
+    if (this.rules) {
+        // assuming that there is only one rule at this point - that is how parser constructs the rule
+        return Ruleset.prototype.find.apply(this.rules[0], arguments);
+    }
+};
+Directive.prototype.rulesets = function () {
+    if (this.rules) {
+        // assuming that there is only one rule at this point - that is how parser constructs the rule
+        return Ruleset.prototype.rulesets.apply(this.rules[0]);
+    }
+};
 Directive.prototype.markReferenced = function () {
     var i, rules;
     this.isReferenced = true;
     if (this.rules) {
-        rules = this.rules.rules;
+        rules = this.rules;
         for (i = 0; i < rules.length; i++) {
             if (rules[i].markReferenced) {
                 rules[i].markReferenced();
             }
         }
     }
+};
+Directive.prototype.getIsReferenced = function () {
+    return !this.currentFileInfo || !this.currentFileInfo.reference || this.isReferenced;
 };
 Directive.prototype.outputRuleset = function (context, output, rules) {
     var ruleCnt = rules.length, i;
@@ -5476,7 +6099,7 @@ Directive.prototype.outputRuleset = function (context, output, rules) {
 };
 module.exports = Directive;
 
-},{"./node":64,"./ruleset":70}],52:[function(require,module,exports){
+},{"./node":69,"./ruleset":75,"./selector":76}],57:[function(require,module,exports){
 var Node = require("./node"),
     Paren = require("./paren"),
     Combinator = require("./combinator");
@@ -5485,7 +6108,7 @@ var Element = function (combinator, value, index, currentFileInfo) {
     this.combinator = combinator instanceof Combinator ?
                       combinator : new Combinator(combinator);
 
-    if (typeof(value) === 'string') {
+    if (typeof value === 'string') {
         this.value = value.trim();
     } else if (value) {
         this.value = value;
@@ -5531,7 +6154,7 @@ Element.prototype.toCSS = function (context) {
 };
 module.exports = Element;
 
-},{"./combinator":45,"./node":64,"./paren":66}],53:[function(require,module,exports){
+},{"./combinator":50,"./node":69,"./paren":71}],58:[function(require,module,exports){
 var Node = require("./node"),
     Paren = require("./paren"),
     Comment = require("./comment");
@@ -5539,7 +6162,7 @@ var Node = require("./node"),
 var Expression = function (value) {
     this.value = value;
     if (!value) {
-        throw new Error("Expression requires a array parameter");
+        throw new Error("Expression requires an array parameter");
     }
 };
 Expression.prototype = new Node();
@@ -5575,7 +6198,7 @@ Expression.prototype.eval = function (context) {
     return returnValue;
 };
 Expression.prototype.genCSS = function (context, output) {
-    for(var i = 0; i < this.value.length; i++) {
+    for (var i = 0; i < this.value.length; i++) {
         this.value[i].genCSS(context, output);
         if (i + 1 < this.value.length) {
             output.add(" ");
@@ -5587,9 +6210,14 @@ Expression.prototype.throwAwayComments = function () {
         return !(v instanceof Comment);
     });
 };
+Expression.prototype.markReferenced = function () {
+    this.value.forEach(function (value) {
+        if (value.markReferenced) { value.markReferenced(); }
+    });
+};
 module.exports = Expression;
 
-},{"./comment":46,"./node":64,"./paren":66}],54:[function(require,module,exports){
+},{"./comment":51,"./node":69,"./paren":71}],59:[function(require,module,exports){
 var Node = require("./node");
 
 var Extend = function Extend(selector, option, index) {
@@ -5603,11 +6231,11 @@ var Extend = function Extend(selector, option, index) {
         case "all":
             this.allowBefore = true;
             this.allowAfter = true;
-        break;
+            break;
         default:
             this.allowBefore = false;
             this.allowAfter = false;
-        break;
+            break;
     }
 };
 Extend.next_id = 0;
@@ -5628,7 +6256,7 @@ Extend.prototype.findSelfSelectors = function (selectors) {
         i,
         selectorElements;
 
-    for(i = 0; i < selectors.length; i++) {
+    for (i = 0; i < selectors.length; i++) {
         selectorElements = selectors[i].elements;
         // duplicate the logic in genCSS function inside the selector node.
         // future TODO - move both logics into the selector joiner visitor
@@ -5642,7 +6270,7 @@ Extend.prototype.findSelfSelectors = function (selectors) {
 };
 module.exports = Extend;
 
-},{"./node":64}],55:[function(require,module,exports){
+},{"./node":69}],60:[function(require,module,exports){
 var Node = require("./node"),
     Media = require("./media"),
     URL = require("./url"),
@@ -5673,7 +6301,7 @@ var Import = function (path, features, options, index, currentFileInfo) {
         this.css = !this.options.less || this.options.inline;
     } else {
         var pathValue = this.getPath();
-        if (pathValue && /css([\?;].*)?$/.test(pathValue)) {
+        if (pathValue && /[#\.\&\?\/]css([\?;].*)?$/.test(pathValue)) {
             this.css = true;
         }
     }
@@ -5695,12 +6323,12 @@ Import.prototype.accept = function (visitor) {
         this.features = visitor.visit(this.features);
     }
     this.path = visitor.visit(this.path);
-    if (!this.options.inline && this.root) {
+    if (!this.options.plugin && !this.options.inline && this.root) {
         this.root = visitor.visit(this.root);
     }
 };
 Import.prototype.genCSS = function (context, output) {
-    if (this.css) {
+    if (this.css && this.path.currentFileInfo.reference === undefined) {
         output.add("@import ", this.currentFileInfo, this.index);
         this.path.genCSS(context, output);
         if (this.features) {
@@ -5711,19 +6339,27 @@ Import.prototype.genCSS = function (context, output) {
     }
 };
 Import.prototype.getPath = function () {
-    if (this.path instanceof Quoted) {
-        var path = this.path.value;
-        return (this.css !== undefined || /(\.[a-z]*$)|([\?;].*)$/.test(path)) ? path : path + '.less';
-    } else if (this.path instanceof URL) {
-        return this.path.value.value;
-    }
-    return null;
+    return (this.path instanceof URL) ?
+        this.path.value.value : this.path.value;
 };
-Import.prototype.evalForImport = function (context) {
+Import.prototype.isVariableImport = function () {
     var path = this.path;
     if (path instanceof URL) {
         path = path.value;
     }
+    if (path instanceof Quoted) {
+        return path.containsVariables();
+    }
+
+    return true;
+};
+Import.prototype.evalForImport = function (context) {
+    var path = this.path;
+
+    if (path instanceof URL) {
+        path = path.value;
+    }
+
     return new Import(path.eval(context), this.features, this.options, this.index, this.currentFileInfo);
 };
 Import.prototype.evalPath = function (context) {
@@ -5735,7 +6371,7 @@ Import.prototype.evalPath = function (context) {
             var pathValue = path.value;
             // Add the base path if the import is relative
             if (pathValue && context.isPathRelative(pathValue)) {
-                path.value = rootpath +pathValue;
+                path.value = rootpath + pathValue;
             }
         }
         path.value = context.normalizePath(path.value);
@@ -5744,7 +6380,16 @@ Import.prototype.evalPath = function (context) {
     return path;
 };
 Import.prototype.eval = function (context) {
-    var ruleset, features = this.features && this.features.eval(context);
+    var ruleset, registry,
+        features = this.features && this.features.eval(context);
+
+    if (this.options.plugin) {
+        registry = context.frames[0] && context.frames[0].functionRegistry;
+        if ( registry && this.root && this.root.functions ) {
+            registry.addMultiple( this.root.functions );
+        }
+        return [];
+    }
 
     if (this.skip) {
         if (typeof this.skip === "function") {
@@ -5756,7 +6401,12 @@ Import.prototype.eval = function (context) {
     }
 
     if (this.options.inline) {
-        var contents = new Anonymous(this.root, 0, {filename: this.importedFilename}, true, true);
+        var contents = new Anonymous(this.root, 0,
+          {
+              filename: this.importedFilename,
+              reference: this.path.currentFileInfo && this.path.currentFileInfo.reference
+          }, true, true, false);
+
         return this.features ? new Media([contents], this.features.value) : [contents];
     } else if (this.css) {
         var newImport = new Import(this.evalPath(context), features, this.options, this.index);
@@ -5774,9 +6424,10 @@ Import.prototype.eval = function (context) {
 };
 module.exports = Import;
 
-},{"./anonymous":40,"./media":60,"./node":64,"./quoted":67,"./ruleset":70,"./url":74}],56:[function(require,module,exports){
+},{"./anonymous":45,"./media":65,"./node":69,"./quoted":72,"./ruleset":75,"./url":79}],61:[function(require,module,exports){
 var tree = {};
 
+tree.Node = require('./node');
 tree.Alpha = require('./alpha');
 tree.Color = require('./color');
 tree.Directive = require('./directive');
@@ -5816,7 +6467,7 @@ tree.RulesetCall = require('./ruleset-call');
 
 module.exports = tree;
 
-},{"./alpha":39,"./anonymous":40,"./assignment":41,"./attribute":42,"./call":43,"./color":44,"./combinator":45,"./comment":46,"./condition":47,"./detached-ruleset":49,"./dimension":50,"./directive":51,"./element":52,"./expression":53,"./extend":54,"./import":55,"./javascript":57,"./keyword":59,"./media":60,"./mixin-call":61,"./mixin-definition":62,"./negative":63,"./operation":65,"./paren":66,"./quoted":67,"./rule":68,"./ruleset":70,"./ruleset-call":69,"./selector":71,"./unicode-descriptor":72,"./unit":73,"./url":74,"./value":75,"./variable":76}],57:[function(require,module,exports){
+},{"./alpha":44,"./anonymous":45,"./assignment":46,"./attribute":47,"./call":48,"./color":49,"./combinator":50,"./comment":51,"./condition":52,"./detached-ruleset":54,"./dimension":55,"./directive":56,"./element":57,"./expression":58,"./extend":59,"./import":60,"./javascript":62,"./keyword":64,"./media":65,"./mixin-call":66,"./mixin-definition":67,"./negative":68,"./node":69,"./operation":70,"./paren":71,"./quoted":72,"./rule":73,"./ruleset":75,"./ruleset-call":74,"./selector":76,"./unicode-descriptor":77,"./unit":78,"./url":79,"./value":80,"./variable":81}],62:[function(require,module,exports){
 var JsEvalNode = require("./js-eval-node"),
     Dimension = require("./dimension"),
     Quoted = require("./quoted"),
@@ -5833,9 +6484,9 @@ JavaScript.prototype.type = "JavaScript";
 JavaScript.prototype.eval = function(context) {
     var result = this.evaluateJavaScript(this.expression, context);
 
-    if (typeof(result) === 'number') {
+    if (typeof result === 'number') {
         return new Dimension(result);
-    } else if (typeof(result) === 'string') {
+    } else if (typeof result === 'string') {
         return new Quoted('"' + result + '"', result, this.escaped, this.index);
     } else if (Array.isArray(result)) {
         return new Anonymous(result.join(', '));
@@ -5846,7 +6497,7 @@ JavaScript.prototype.eval = function(context) {
 
 module.exports = JavaScript;
 
-},{"./anonymous":40,"./dimension":50,"./js-eval-node":58,"./quoted":67}],58:[function(require,module,exports){
+},{"./anonymous":45,"./dimension":55,"./js-eval-node":63,"./quoted":72}],63:[function(require,module,exports){
 var Node = require("./node"),
     Variable = require("./variable");
 
@@ -5909,7 +6560,7 @@ JsEvalNode.prototype.jsify = function (obj) {
 
 module.exports = JsEvalNode;
 
-},{"./node":64,"./variable":76}],59:[function(require,module,exports){
+},{"./node":69,"./variable":81}],64:[function(require,module,exports){
 var Node = require("./node");
 
 var Keyword = function (value) { this.value = value; };
@@ -5925,10 +6576,9 @@ Keyword.False = new Keyword('false');
 
 module.exports = Keyword;
 
-},{"./node":64}],60:[function(require,module,exports){
+},{"./node":69}],65:[function(require,module,exports){
 var Ruleset = require("./ruleset"),
     Value = require("./value"),
-    Element = require("./element"),
     Selector = require("./selector"),
     Anonymous = require("./anonymous"),
     Expression = require("./expression"),
@@ -5938,7 +6588,7 @@ var Media = function (value, features, index, currentFileInfo) {
     this.index = index;
     this.currentFileInfo = currentFileInfo;
 
-    var selectors = this.emptySelectors();
+    var selectors = (new Selector([], null, null, this.index, this.currentFileInfo)).createEmptySelectors();
 
     this.features = new Value(features);
     this.rules = [new Ruleset(selectors, value)];
@@ -5967,7 +6617,7 @@ Media.prototype.eval = function (context) {
     }
 
     var media = new Media(null, [], this.index, this.currentFileInfo);
-    if(this.debugInfo) {
+    if (this.debugInfo) {
         this.rules[0].debugInfo = this.debugInfo;
         media.debugInfo = this.debugInfo;
     }
@@ -5988,6 +6638,7 @@ Media.prototype.eval = function (context) {
     context.mediaPath.push(media);
     context.mediaBlocks.push(media);
 
+    this.rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
     context.frames.unshift(this.rules[0]);
     media.rules = [this.rules[0].eval(context)];
     context.frames.shift();
@@ -5997,32 +6648,12 @@ Media.prototype.eval = function (context) {
     return context.mediaPath.length === 0 ? media.evalTop(context) :
                 media.evalNested(context);
 };
-//TODO merge with directive
-Media.prototype.variable = function (name) { return Ruleset.prototype.variable.call(this.rules[0], name); };
-Media.prototype.find = function () { return Ruleset.prototype.find.apply(this.rules[0], arguments); };
-Media.prototype.rulesets = function () { return Ruleset.prototype.rulesets.apply(this.rules[0]); };
-Media.prototype.emptySelectors = function() {
-    var el = new Element('', '&', this.index, this.currentFileInfo),
-        sels = [new Selector([el], null, null, this.index, this.currentFileInfo)];
-    sels[0].mediaEmpty = true;
-    return sels;
-};
-Media.prototype.markReferenced = function () {
-    var i, rules = this.rules[0].rules;
-    this.rules[0].markReferenced();
-    this.isReferenced = true;
-    for (i = 0; i < rules.length; i++) {
-        if (rules[i].markReferenced) {
-            rules[i].markReferenced();
-        }
-    }
-};
 Media.prototype.evalTop = function (context) {
     var result = this;
 
     // Render all dependent Media blocks.
     if (context.mediaBlocks.length > 1) {
-        var selectors = this.emptySelectors();
+        var selectors = (new Selector([], null, null, this.index, this.currentFileInfo)).createEmptySelectors();
         result = new Ruleset(selectors, context.mediaBlocks);
         result.multiMedia = true;
     }
@@ -6055,7 +6686,7 @@ Media.prototype.evalNested = function (context) {
             return fragment.toCSS ? fragment : new Anonymous(fragment);
         });
 
-        for(i = path.length - 1; i > 0; i--) {
+        for (i = path.length - 1; i > 0; i--) {
             path.splice(i, 0, new Anonymous("and"));
         }
 
@@ -6066,29 +6697,30 @@ Media.prototype.evalNested = function (context) {
     return new Ruleset([], []);
 };
 Media.prototype.permute = function (arr) {
-  if (arr.length === 0) {
-      return [];
-  } else if (arr.length === 1) {
-      return arr[0];
-  } else {
-      var result = [];
-      var rest = this.permute(arr.slice(1));
-      for (var i = 0; i < rest.length; i++) {
-          for (var j = 0; j < arr[0].length; j++) {
-              result.push([arr[0][j]].concat(rest[i]));
-          }
-      }
-      return result;
-  }
+    if (arr.length === 0) {
+        return [];
+    } else if (arr.length === 1) {
+        return arr[0];
+    } else {
+        var result = [];
+        var rest = this.permute(arr.slice(1));
+        for (var i = 0; i < rest.length; i++) {
+            for (var j = 0; j < arr[0].length; j++) {
+                result.push([arr[0][j]].concat(rest[i]));
+            }
+        }
+        return result;
+    }
 };
 Media.prototype.bubbleSelectors = function (selectors) {
-  if (!selectors)
-    return;
-  this.rules = [new Ruleset(selectors.slice(0), [this.rules[0]])];
+    if (!selectors) {
+        return;
+    }
+    this.rules = [new Ruleset(selectors.slice(0), [this.rules[0]])];
 };
 module.exports = Media;
 
-},{"./anonymous":40,"./directive":51,"./element":52,"./expression":53,"./ruleset":70,"./selector":71,"./value":75}],61:[function(require,module,exports){
+},{"./anonymous":45,"./directive":56,"./expression":58,"./ruleset":75,"./selector":76,"./value":80}],66:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector"),
     MixinDefinition = require("./mixin-definition"),
@@ -6096,7 +6728,7 @@ var Node = require("./node"),
 
 var MixinCall = function (elements, args, index, currentFileInfo, important) {
     this.selector = new Selector(elements);
-    this.arguments = (args && args.length) ? args : null;
+    this.arguments = args || [];
     this.index = index;
     this.currentFileInfo = currentFileInfo;
     this.important = important;
@@ -6107,22 +6739,23 @@ MixinCall.prototype.accept = function (visitor) {
     if (this.selector) {
         this.selector = visitor.visit(this.selector);
     }
-    if (this.arguments) {
+    if (this.arguments.length) {
         this.arguments = visitor.visitArray(this.arguments);
     }
 };
 MixinCall.prototype.eval = function (context) {
-    var mixins, mixin, mixinPath, args, rules = [], match = false, i, m, f, isRecursive, isOneFound, rule,
-        candidates = [], candidate, conditionResult = [], defaultResult, defFalseEitherCase=-1,
+    var mixins, mixin, mixinPath, args = [], arg, argValue,
+        rules = [], rule, match = false, i, m, f, isRecursive, isOneFound,
+        candidates = [], candidate, conditionResult = [], defaultResult, defFalseEitherCase = -1,
         defNone = 0, defTrue = 1, defFalse = 2, count, originalRuleset, noArgumentsFilter;
 
     function calcDefGroup(mixin, mixinPath) {
-        var p, namespace;
+        var f, p, namespace;
 
         for (f = 0; f < 2; f++) {
             conditionResult[f] = true;
             defaultFunc.value(f);
-            for(p = 0; p < mixinPath.length && conditionResult[f]; p++) {
+            for (p = 0; p < mixinPath.length && conditionResult[f]; p++) {
                 namespace = mixinPath[p];
                 if (namespace.matchCondition) {
                     conditionResult[f] = conditionResult[f] && namespace.matchCondition(null, context);
@@ -6143,9 +6776,18 @@ MixinCall.prototype.eval = function (context) {
         return defFalseEitherCase;
     }
 
-    args = this.arguments && this.arguments.map(function (a) {
-        return { name: a.name, value: a.value.eval(context) };
-    });
+    for (i = 0; i < this.arguments.length; i++) {
+        arg = this.arguments[i];
+        argValue = arg.value.eval(context);
+        if (arg.expand && Array.isArray(argValue.value)) {
+            argValue = argValue.value;
+            for (m = 0; m < argValue.length; m++) {
+                args.push({value: argValue[m]});
+            }
+        } else {
+            args.push({name: arg.name, value: argValue});
+        }
+    }
 
     noArgumentsFilter = function(rule) {return rule.matchArgs(null, context);};
 
@@ -6162,7 +6804,7 @@ MixinCall.prototype.eval = function (context) {
                 mixin = mixins[m].rule;
                 mixinPath = mixins[m].path;
                 isRecursive = false;
-                for(f = 0; f < context.frames.length; f++) {
+                for (f = 0; f < context.frames.length; f++) {
                     if ((!(mixin instanceof MixinDefinition)) && mixin === (context.frames[f].originalRuleset || context.frames[f])) {
                         isRecursive = true;
                         break;
@@ -6175,7 +6817,7 @@ MixinCall.prototype.eval = function (context) {
                 if (mixin.matchArgs(args, context)) {
                     candidate = {mixin: mixin, group: calcDefGroup(mixin, mixinPath)};
 
-                    if (candidate.group!==defFalseEitherCase) {
+                    if (candidate.group !== defFalseEitherCase) {
                         candidates.push(candidate);
                     }
 
@@ -6196,8 +6838,7 @@ MixinCall.prototype.eval = function (context) {
                 defaultResult = defTrue;
                 if ((count[defTrue] + count[defFalse]) > 1) {
                     throw { type: 'Runtime',
-                        message: 'Ambiguous use of `default()` found when matching for `'
-                            + this.format(args) + '`',
+                        message: 'Ambiguous use of `default()` found when matching for `' + this.format(args) + '`',
                         index: this.index, filename: this.currentFileInfo.filename };
                 }
             }
@@ -6260,7 +6901,7 @@ MixinCall.prototype.format = function (args) {
 };
 module.exports = MixinCall;
 
-},{"../functions/default":17,"./mixin-definition":62,"./node":64,"./selector":71}],62:[function(require,module,exports){
+},{"../functions/default":19,"./mixin-definition":67,"./node":69,"./selector":76}],67:[function(require,module,exports){
 var Selector = require("./selector"),
     Element = require("./element"),
     Ruleset = require("./ruleset"),
@@ -6277,10 +6918,17 @@ var Definition = function (name, params, rules, condition, variadic, frames) {
     this.arity = params.length;
     this.rules = rules;
     this._lookups = {};
+    var optionalParameters = [];
     this.required = params.reduce(function (count, p) {
-        if (!p.name || (p.name && !p.value)) { return count + 1; }
-        else                                 { return count; }
+        if (!p.name || (p.name && !p.value)) {
+            return count + 1;
+        }
+        else {
+            optionalParameters.push(p.name);
+            return count;
+        }
     }, 0);
+    this.optionalParameters = optionalParameters;
     this.frames = frames;
 };
 Definition.prototype = new Ruleset();
@@ -6302,17 +6950,20 @@ Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArgume
         params = this.params.slice(0),
         i, j, val, name, isNamedFound, argIndex, argsLength = 0;
 
+    if (mixinEnv.frames && mixinEnv.frames[0] && mixinEnv.frames[0].functionRegistry) {
+        frame.functionRegistry = mixinEnv.frames[0].functionRegistry.inherit();
+    }
     mixinEnv = new contexts.Eval(mixinEnv, [frame].concat(mixinEnv.frames));
 
     if (args) {
         args = args.slice(0);
         argsLength = args.length;
 
-        for(i = 0; i < argsLength; i++) {
+        for (i = 0; i < argsLength; i++) {
             arg = args[i];
             if (name = (arg && arg.name)) {
                 isNamedFound = false;
-                for(j = 0; j < params.length; j++) {
+                for (j = 0; j < params.length; j++) {
                     if (!evaldArguments[j] && name === params[j].name) {
                         evaldArguments[j] = arg.value.eval(context);
                         frame.prependRule(new Rule(name, arg.value.eval(context)));
@@ -6371,6 +7022,17 @@ Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArgume
 
     return frame;
 };
+Definition.prototype.makeImportant = function() {
+    var rules = !this.rules ? this.rules : this.rules.map(function (r) {
+        if (r.makeImportant) {
+            return r.makeImportant(true);
+        } else {
+            return r;
+        }
+    });
+    var result = new Definition (this.name, this.params, rules, this.condition, this.variadic, this.frames);
+    return result;
+};
 Definition.prototype.eval = function (context) {
     return new Definition(this.name, this.params, this.rules, this.condition, this.variadic, this.frames || context.frames.slice(0));
 };
@@ -6388,31 +7050,46 @@ Definition.prototype.evalCall = function (context, args, important) {
     ruleset.originalRuleset = this;
     ruleset = ruleset.eval(new contexts.Eval(context, [this, frame].concat(mixinFrames)));
     if (important) {
-        ruleset = this.makeImportant.apply(ruleset);
+        ruleset = ruleset.makeImportant();
     }
     return ruleset;
 };
 Definition.prototype.matchCondition = function (args, context) {
     if (this.condition && !this.condition.eval(
         new contexts.Eval(context,
-            [this.evalParams(context, new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames), args, [])] // the parameter variables
-                .concat(this.frames) // the parent namespace/mixin frames
-                .concat(context.frames)))) { // the current environment frames
+            [this.evalParams(context, /* the parameter variables*/
+                new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames), args, [])]
+            .concat(this.frames || []) // the parent namespace/mixin frames
+            .concat(context.frames)))) { // the current environment frames
         return false;
     }
     return true;
 };
 Definition.prototype.matchArgs = function (args, context) {
-    var argsLength = (args && args.length) || 0, len;
+    var allArgsCnt = (args && args.length) || 0, len, optionalParameters = this.optionalParameters;
+    var requiredArgsCnt = !args ? 0 : args.reduce(function (count, p) {
+        if (optionalParameters.indexOf(p.name) < 0) {
+            return count + 1;
+        } else {
+            return count;
+        }
+    }, 0);
 
     if (! this.variadic) {
-        if (argsLength < this.required)                               { return false; }
-        if (argsLength > this.params.length)                          { return false; }
+        if (requiredArgsCnt < this.required) {
+            return false;
+        }
+        if (allArgsCnt > this.params.length) {
+            return false;
+        }
     } else {
-        if (argsLength < (this.required - 1))                         { return false; }
+        if (requiredArgsCnt < (this.required - 1)) {
+            return false;
+        }
     }
 
-    len = Math.min(argsLength, this.arity);
+    // check patterns
+    len = Math.min(requiredArgsCnt, this.arity);
 
     for (var i = 0; i < len; i++) {
         if (!this.params[i].name && !this.params[i].variadic) {
@@ -6425,7 +7102,7 @@ Definition.prototype.matchArgs = function (args, context) {
 };
 module.exports = Definition;
 
-},{"../contexts":8,"./element":52,"./expression":53,"./rule":68,"./ruleset":70,"./selector":71}],63:[function(require,module,exports){
+},{"../contexts":10,"./element":57,"./expression":58,"./rule":73,"./ruleset":75,"./selector":76}],68:[function(require,module,exports){
 var Node = require("./node"),
     Operation = require("./operation"),
     Dimension = require("./dimension");
@@ -6447,7 +7124,7 @@ Negative.prototype.eval = function (context) {
 };
 module.exports = Negative;
 
-},{"./dimension":50,"./node":64,"./operation":65}],64:[function(require,module,exports){
+},{"./dimension":55,"./node":69,"./operation":70}],69:[function(require,module,exports){
 var Node = function() {
 };
 Node.prototype.toCSS = function (context) {
@@ -6523,7 +7200,7 @@ Node.numericCompare = function (a, b) {
 };
 module.exports = Node;
 
-},{}],65:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 var Node = require("./node"),
     Color = require("./color"),
     Dimension = require("./dimension");
@@ -6573,7 +7250,7 @@ Operation.prototype.genCSS = function (context, output) {
 
 module.exports = Operation;
 
-},{"./color":44,"./dimension":50,"./node":64}],66:[function(require,module,exports){
+},{"./color":49,"./dimension":55,"./node":69}],71:[function(require,module,exports){
 var Node = require("./node");
 
 var Paren = function (node) {
@@ -6591,13 +7268,13 @@ Paren.prototype.eval = function (context) {
 };
 module.exports = Paren;
 
-},{"./node":64}],67:[function(require,module,exports){
+},{"./node":69}],72:[function(require,module,exports){
 var Node = require("./node"),
     JsEvalNode = require("./js-eval-node"),
     Variable = require("./variable");
 
 var Quoted = function (str, content, escaped, index, currentFileInfo) {
-    this.escaped = escaped;
+    this.escaped = (escaped == null) ? true : escaped;
     this.value = content || '';
     this.quote = str.charAt(0);
     this.index = index;
@@ -6614,6 +7291,9 @@ Quoted.prototype.genCSS = function (context, output) {
         output.add(this.quote);
     }
 };
+Quoted.prototype.containsVariables = function() {
+    return this.value.match(/(`([^`]+)`)|@\{([\w-]+)\}/);
+};
 Quoted.prototype.eval = function (context) {
     var that = this, value = this.value;
     var javascriptReplacement = function (_, exp) {
@@ -6626,9 +7306,9 @@ Quoted.prototype.eval = function (context) {
     function iterativeReplace(value, regexp, replacementFnc) {
         var evaluatedValue = value;
         do {
-          value = evaluatedValue;
-          evaluatedValue = value.replace(regexp, replacementFnc);
-        } while  (value!==evaluatedValue);
+            value = evaluatedValue;
+            evaluatedValue = value.replace(regexp, replacementFnc);
+        } while (value !== evaluatedValue);
         return evaluatedValue;
     }
     value = iterativeReplace(value, /`([^`]+)`/g, javascriptReplacement);
@@ -6645,7 +7325,7 @@ Quoted.prototype.compare = function (other) {
 };
 module.exports = Quoted;
 
-},{"./js-eval-node":58,"./node":64,"./variable":76}],68:[function(require,module,exports){
+},{"./js-eval-node":63,"./node":69,"./variable":81}],73:[function(require,module,exports){
 var Node = require("./node"),
     Value = require("./value"),
     Keyword = require("./keyword");
@@ -6690,26 +7370,31 @@ Rule.prototype.eval = function (context) {
     if (typeof name !== "string") {
         // expand 'primitive' name directly to get
         // things faster (~10% for benchmark.less):
-        name = (name.length === 1)
-            && (name[0] instanceof Keyword)
-                ? name[0].value : evalName(context, name);
-            variable = false; // never treat expanded interpolation as new variable name
+        name = (name.length === 1) && (name[0] instanceof Keyword) ?
+                name[0].value : evalName(context, name);
+        variable = false; // never treat expanded interpolation as new variable name
     }
     if (name === "font" && !context.strictMath) {
         strictMathBypass = true;
         context.strictMath = true;
     }
     try {
+        context.importantScope.push({});
         evaldValue = this.value.eval(context);
 
         if (!this.variable && evaldValue.type === "DetachedRuleset") {
             throw { message: "Rulesets cannot be evaluated on a property.",
                     index: this.index, filename: this.currentFileInfo.filename };
         }
+        var important = this.important,
+            importantResult = context.importantScope.pop();
+        if (!important && importantResult.important) {
+            important = importantResult.important;
+        }
 
         return new Rule(name,
                           evaldValue,
-                          this.important,
+                          important,
                           this.merge,
                           this.index, this.currentFileInfo, this.inline,
                               variable);
@@ -6735,9 +7420,26 @@ Rule.prototype.makeImportant = function () {
                           this.index, this.currentFileInfo, this.inline);
 };
 
-module.exports = Rule;
+// Recursive marking for rules
+var mark = function(value) {
+    if (!Array.isArray(value)) {
+        if (value.markReferenced) {
+            value.markReferenced();
+        }
+    } else {
+        value.forEach(function (ar) {
+            mark(ar);
+        });
+    }
+};
+Rule.prototype.markReferenced = function () {
+    if (this.value) {
+        mark(this.value);
+    }
+};
 
-},{"./keyword":59,"./node":64,"./value":75}],69:[function(require,module,exports){
+module.exports = Rule;
+},{"./keyword":64,"./node":69,"./value":80}],74:[function(require,module,exports){
 var Node = require("./node"),
     Variable = require("./variable");
 
@@ -6752,12 +7454,14 @@ RulesetCall.prototype.eval = function (context) {
 };
 module.exports = RulesetCall;
 
-},{"./node":64,"./variable":76}],70:[function(require,module,exports){
+},{"./node":69,"./variable":81}],75:[function(require,module,exports){
 var Node = require("./node"),
     Rule = require("./rule"),
     Selector = require("./selector"),
     Element = require("./element"),
+    Paren = require("./paren"),
     contexts = require("../contexts"),
+    globalFunctionRegistry = require("../functions/function-registry"),
     defaultFunc = require("../functions/default"),
     getDebugInfo = require("./debug-info");
 
@@ -6812,13 +7516,26 @@ Ruleset.prototype.eval = function (context) {
     ruleset.firstRoot = this.firstRoot;
     ruleset.allowImports = this.allowImports;
 
-    if(this.debugInfo) {
+    if (this.debugInfo) {
         ruleset.debugInfo = this.debugInfo;
     }
 
     if (!hasOnePassingSelector) {
         rules.length = 0;
     }
+
+    // inherit a function registry from the frames stack when possible;
+    // otherwise from the global registry
+    ruleset.functionRegistry = (function (frames) {
+        var i = 0,
+            n = frames.length,
+            found;
+        for ( ; i !== n ; ++i ) {
+            found = frames[ i ].functionRegistry;
+            if ( found ) { return found; }
+        }
+        return globalFunctionRegistry;
+    }(context.frames)).inherit();
 
     // push the current ruleset to the frames stack
     var ctxFrames = context.frames;
@@ -6862,7 +7579,7 @@ Ruleset.prototype.eval = function (context) {
             });
             rsRules.splice.apply(rsRules, [i, 1].concat(rules));
             rsRuleCnt += rules.length - 1;
-            i += rules.length-1;
+            i += rules.length - 1;
             ruleset.resetCache();
         } else if (rsRules[i].type === "RulesetCall") {
             /*jshint loopfunc:true */
@@ -6875,7 +7592,7 @@ Ruleset.prototype.eval = function (context) {
             });
             rsRules.splice.apply(rsRules, [i, 1].concat(rules));
             rsRuleCnt += rules.length - 1;
-            i += rules.length-1;
+            i += rules.length - 1;
             ruleset.resetCache();
         }
     }
@@ -6897,7 +7614,7 @@ Ruleset.prototype.eval = function (context) {
             if (rule.selectors[0].isJustParentSelector()) {
                 rsRules.splice(i--, 1);
 
-                for(var j = 0; j < rule.rules.length; j++) {
+                for (var j = 0; j < rule.rules.length; j++) {
                     subRule = rule.rules[j];
                     if (!(subRule instanceof Rule) || !subRule.variable) {
                         rsRules.splice(++i, 0, subRule);
@@ -6928,7 +7645,7 @@ Ruleset.prototype.evalImports = function(context) {
             importRules = rules[i].eval(context);
             if (importRules && importRules.length) {
                 rules.splice.apply(rules, [i, 1].concat(importRules));
-                i+= importRules.length-1;
+                i+= importRules.length - 1;
             } else {
                 rules.splice(i, 1, importRules);
             }
@@ -6937,20 +7654,22 @@ Ruleset.prototype.evalImports = function(context) {
     }
 };
 Ruleset.prototype.makeImportant = function() {
-    return new Ruleset(this.selectors, this.rules.map(function (r) {
-                if (r.makeImportant) {
-                    return r.makeImportant();
-                } else {
-                    return r;
-                }
-            }), this.strictImports);
+    var result = new Ruleset(this.selectors, this.rules.map(function (r) {
+        if (r.makeImportant) {
+            return r.makeImportant();
+        } else {
+            return r;
+        }
+    }), this.strictImports);
+
+    return result;
 };
 Ruleset.prototype.matchArgs = function (args) {
     return !args || args.length === 0;
 };
 // lets you call a css selector with a guard
 Ruleset.prototype.matchCondition = function (args, context) {
-    var lastSelector = this.selectors[this.selectors.length-1];
+    var lastSelector = this.selectors[this.selectors.length - 1];
     if (!lastSelector.evaldCondition) {
         return false;
     }
@@ -6973,6 +7692,17 @@ Ruleset.prototype.variables = function () {
             if (r instanceof Rule && r.variable === true) {
                 hash[r.name] = r;
             }
+            // when evaluating variables in an import statement, imports have not been eval'd
+            // so we need to go inside import statements.
+            // guard against root being a string (in the case of inlined less)
+            if (r.type === "Import" && r.root && r.root.variables) {
+                var vars = r.root.variables();
+                for (var name in vars) {
+                    if (vars.hasOwnProperty(name)) {
+                        hash[name] = vars[name];
+                    }
+                }
+            }
             return hash;
         }, {});
     }
@@ -6982,7 +7712,7 @@ Ruleset.prototype.variable = function (name) {
     return this.variables()[name];
 };
 Ruleset.prototype.rulesets = function () {
-    if (!this.rules) { return null; }
+    if (!this.rules) { return []; }
 
     var filtRules = [], rules = this.rules, cnt = rules.length,
         i, rule;
@@ -6998,7 +7728,11 @@ Ruleset.prototype.rulesets = function () {
 };
 Ruleset.prototype.prependRule = function (rule) {
     var rules = this.rules;
-    if (rules) { rules.unshift(rule); } else { this.rules = [ rule ]; }
+    if (rules) {
+        rules.unshift(rule);
+    } else {
+        this.rules = [ rule ];
+    }
 };
 Ruleset.prototype.find = function (selector, self, filter) {
     self = self || this;
@@ -7013,13 +7747,13 @@ Ruleset.prototype.find = function (selector, self, filter) {
                 match = selector.match(rule.selectors[j]);
                 if (match) {
                     if (selector.elements.length > match) {
-                      if (!filter || filter(rule)) {
-                        foundMixins = rule.find(new Selector(selector.elements.slice(match)), self, filter);
-                        for (var i = 0; i < foundMixins.length; ++i) {
-                          foundMixins[i].path.push(rule);
+                        if (!filter || filter(rule)) {
+                            foundMixins = rule.find(new Selector(selector.elements.slice(match)), self, filter);
+                            for (var i = 0; i < foundMixins.length; ++i) {
+                                foundMixins[i].path.push(rule);
+                            }
+                            Array.prototype.push.apply(rules, foundMixins);
                         }
-                        Array.prototype.push.apply(rules, foundMixins);
-                      }
                     } else {
                         rules.push({ rule: rule, path: []});
                     }
@@ -7035,8 +7769,6 @@ Ruleset.prototype.genCSS = function (context, output) {
     var i, j,
         charsetRuleNodes = [],
         ruleNodes = [],
-        rulesetNodes = [],
-        rulesetNodeCnt,
         debugInfo,     // Line number debugging
         rule,
         path;
@@ -7051,33 +7783,38 @@ Ruleset.prototype.genCSS = function (context, output) {
         tabSetStr = context.compress ? '' : Array(context.tabLevel).join("  "),
         sep;
 
-    function isRulesetLikeNode(rule, root) {
-         // if it has nested rules, then it should be treated like a ruleset
-         // medias and comments do not have nested rules, but should be treated like rulesets anyway
-         // some directives and anonymous nodes are ruleset like, others are not
-         if (typeof rule.isRulesetLike === "boolean")
-         {
-             return rule.isRulesetLike;
-         } else if (typeof rule.isRulesetLike === "function")
-         {
-             return rule.isRulesetLike(root);
-         }
+    function isRulesetLikeNode(rule) {
+        // if it has nested rules, then it should be treated like a ruleset
+        // medias and comments do not have nested rules, but should be treated like rulesets anyway
+        // some directives and anonymous nodes are ruleset like, others are not
+        if (typeof rule.isRulesetLike === "boolean") {
+            return rule.isRulesetLike;
+        } else if (typeof rule.isRulesetLike === "function") {
+            return rule.isRulesetLike();
+        }
 
-         //anything else is assumed to be a rule
-         return false;
+        //anything else is assumed to be a rule
+        return false;
     }
 
+    var charsetNodeIndex = 0;
+    var importNodeIndex = 0;
     for (i = 0; i < this.rules.length; i++) {
         rule = this.rules[i];
-        if (isRulesetLikeNode(rule, this.root)) {
-            rulesetNodes.push(rule);
-        } else {
-            //charsets should float on top of everything
-            if (rule.isCharset && rule.isCharset()) {
-                charsetRuleNodes.push(rule);
-            } else {
-                ruleNodes.push(rule);
+        if (rule.type === "Comment") {
+            if (importNodeIndex === i) {
+                importNodeIndex++;
             }
+            ruleNodes.push(rule);
+        } else if (rule.isCharset && rule.isCharset()) {
+            ruleNodes.splice(charsetNodeIndex, 0, rule);
+            charsetNodeIndex++;
+            importNodeIndex++;
+        } else if (rule.type === "Import") {
+            ruleNodes.splice(importNodeIndex, 0, rule);
+            importNodeIndex++;
+        } else {
+            ruleNodes.push(rule);
         }
     }
     ruleNodes = charsetRuleNodes.concat(ruleNodes);
@@ -7118,10 +7855,13 @@ Ruleset.prototype.genCSS = function (context, output) {
     for (i = 0; i < ruleNodes.length; i++) {
         rule = ruleNodes[i];
 
-        // @page{ directive ends up with root elements inside it, a mix of rules and rulesets
-        // In this instance we do not know whether it is the last property
-        if (i + 1 === ruleNodes.length && (!this.root || rulesetNodes.length === 0 || this.firstRoot)) {
+        if (i + 1 === ruleNodes.length) {
             context.lastRule = true;
+        }
+
+        var currentLastRule = context.lastRule;
+        if (isRulesetLikeNode(rule)) {
+            context.lastRule = false;
         }
 
         if (rule.genCSS) {
@@ -7129,6 +7869,8 @@ Ruleset.prototype.genCSS = function (context, output) {
         } else if (rule.value) {
             output.add(rule.value.toString());
         }
+
+        context.lastRule = currentLastRule;
 
         if (!context.lastRule) {
             output.add(context.compress ? '' : ('\n' + tabRuleStr));
@@ -7142,211 +7884,308 @@ Ruleset.prototype.genCSS = function (context, output) {
         context.tabLevel--;
     }
 
-    sep = (context.compress ? "" : "\n") + (this.root ? tabRuleStr : tabSetStr);
-    rulesetNodeCnt = rulesetNodes.length;
-    if (rulesetNodeCnt) {
-        if (ruleNodes.length && sep) { output.add(sep); }
-        rulesetNodes[0].genCSS(context, output);
-        for (i = 1; i < rulesetNodeCnt; i++) {
-            if (sep) { output.add(sep); }
-            rulesetNodes[i].genCSS(context, output);
-        }
-    }
-
     if (!output.isEmpty() && !context.compress && this.firstRoot) {
         output.add('\n');
     }
 };
 Ruleset.prototype.markReferenced = function () {
-    if (!this.selectors) {
-        return;
+    var s;
+    if (this.selectors) {
+        for (s = 0; s < this.selectors.length; s++) {
+            this.selectors[s].markReferenced();
+        }
     }
-    for (var s = 0; s < this.selectors.length; s++) {
-        this.selectors[s].markReferenced();
+
+    if (this.rules) {
+        for (s = 0; s < this.rules.length; s++) {
+            if (this.rules[s].markReferenced) {
+                this.rules[s].markReferenced();
+            }
+        }
     }
 };
+Ruleset.prototype.getIsReferenced = function() {
+    var i, j, path, selector;
+
+    if (this.paths) {
+        for (i = 0; i < this.paths.length; i++) {
+            path = this.paths[i];
+            for (j = 0; j < path.length; j++) {
+                if (path[j].getIsReferenced && path[j].getIsReferenced()) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (this.selectors) {
+        for (i = 0; i < this.selectors.length; i++) {
+            selector = this.selectors[i];
+            if (selector.getIsReferenced && selector.getIsReferenced()) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
 Ruleset.prototype.joinSelectors = function (paths, context, selectors) {
     for (var s = 0; s < selectors.length; s++) {
         this.joinSelector(paths, context, selectors[s]);
     }
 };
+
 Ruleset.prototype.joinSelector = function (paths, context, selector) {
 
-    var i, j, k,
-        hasParentSelector, newSelectors, el, sel, parentSel,
-        newSelectorPath, afterParentJoin, newJoinedSelector,
-        newJoinedSelectorEmpty, lastSelector, currentElements,
-        selectorsMultiplied;
-
-    for (i = 0; i < selector.elements.length; i++) {
-        el = selector.elements[i];
-        if (el.value === '&') {
-            hasParentSelector = true;
-        }
-    }
-
-    if (!hasParentSelector) {
-        if (context.length > 0) {
-            for (i = 0; i < context.length; i++) {
-                paths.push(context[i].concat(selector));
-            }
-        }
-        else {
-            paths.push([selector]);
-        }
-        return;
-    }
-
-    // The paths are [[Selector]]
-    // The first list is a list of comma seperated selectors
-    // The inner list is a list of inheritance seperated selectors
-    // e.g.
-    // .a, .b {
-    //   .c {
-    //   }
-    // }
-    // == [[.a] [.c]] [[.b] [.c]]
-    //
-
-    // the elements from the current selector so far
-    currentElements = [];
-    // the current list of new selectors to add to the path.
-    // We will build it up. We initiate it with one empty selector as we "multiply" the new selectors
-    // by the parents
-    newSelectors = [[]];
-
-    for (i = 0; i < selector.elements.length; i++) {
-        el = selector.elements[i];
-        // non parent reference elements just get added
-        if (el.value !== "&") {
-            currentElements.push(el);
+    function createParenthesis(elementsToPak, originalElement) {
+        var replacementParen, j;
+        if (elementsToPak.length === 0) {
+            replacementParen = new Paren(elementsToPak[0]);
         } else {
-            // the new list of selectors to add
-            selectorsMultiplied = [];
+            var insideParent = [];
+            for (j = 0; j < elementsToPak.length; j++) {
+                insideParent.push(new Element(null, elementsToPak[j], originalElement.index, originalElement.currentFileInfo));
+            }
+            replacementParen = new Paren(new Selector(insideParent));
+        }
+        return replacementParen;
+    }
 
-            // merge the current list of non parent selector elements
-            // on to the current list of selectors to add
-            if (currentElements.length > 0) {
-                this.mergeElementsOnToSelectors(currentElements, newSelectors);
+    function createSelector(containedElement, originalElement) {
+        var element, selector;
+        element = new Element(null, containedElement, originalElement.index, originalElement.currentFileInfo);
+        selector = new Selector([element]);
+        return selector;
+    }
+
+    // replace all parent selectors inside `inSelector` by content of `context` array
+    // resulting selectors are returned inside `paths` array
+    // returns true if `inSelector` contained at least one parent selector
+    function replaceParentSelector(paths, context, inSelector) {
+        // The paths are [[Selector]]
+        // The first list is a list of comma separated selectors
+        // The inner list is a list of inheritance separated selectors
+        // e.g.
+        // .a, .b {
+        //   .c {
+        //   }
+        // }
+        // == [[.a] [.c]] [[.b] [.c]]
+        //
+        var i, j, k, currentElements, newSelectors, selectorsMultiplied, sel, el, hadParentSelector = false, length, lastSelector;
+        function findNestedSelector(element) {
+            var maybeSelector;
+            if (element.value.type !== 'Paren') {
+                return null;
             }
 
-            // loop through our current selectors
-            for (j = 0; j < newSelectors.length; j++) {
-                sel = newSelectors[j];
-                // if we don't have any parent paths, the & might be in a mixin so that it can be used
-                // whether there are parents or not
-                if (context.length === 0) {
-                    // the combinator used on el should now be applied to the next element instead so that
-                    // it is not lost
-                    if (sel.length > 0) {
-                        sel[0].elements = sel[0].elements.slice(0);
-                        sel[0].elements.push(new Element(el.combinator, '', el.index, el.currentFileInfo));
+            maybeSelector = element.value.value;
+            if (maybeSelector.type !== 'Selector') {
+                return null;
+            }
+
+            return maybeSelector;
+        }
+
+        // the elements from the current selector so far
+        currentElements = [];
+        // the current list of new selectors to add to the path.
+        // We will build it up. We initiate it with one empty selector as we "multiply" the new selectors
+        // by the parents
+        newSelectors = [
+            []
+        ];
+
+        for (i = 0; i < inSelector.elements.length; i++) {
+            el = inSelector.elements[i];
+            // non parent reference elements just get added
+            if (el.value !== "&") {
+                var nestedSelector = findNestedSelector(el);
+                if (nestedSelector != null) {
+                    // merge the current list of non parent selector elements
+                    // on to the current list of selectors to add
+                    mergeElementsOnToSelectors(currentElements, newSelectors);
+
+                    var nestedPaths = [], replaced, replacedNewSelectors = [];
+                    replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
+                    hadParentSelector = hadParentSelector || replaced;
+                    //the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
+                    for (k = 0; k < nestedPaths.length; k++) {
+                        var replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
+                        addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
                     }
-                    selectorsMultiplied.push(sel);
+                    newSelectors = replacedNewSelectors;
+                    currentElements = [];
+
+                } else {
+                    currentElements.push(el);
                 }
-                else {
-                    // and the parent selectors
-                    for (k = 0; k < context.length; k++) {
-                        parentSel = context[k];
-                        // We need to put the current selectors
-                        // then join the last selector's elements on to the parents selectors
 
-                        // our new selector path
-                        newSelectorPath = [];
-                        // selectors from the parent after the join
-                        afterParentJoin = [];
-                        newJoinedSelectorEmpty = true;
+            } else {
+                hadParentSelector = true;
+                // the new list of selectors to add
+                selectorsMultiplied = [];
 
-                        //construct the joined selector - if & is the first thing this will be empty,
-                        // if not newJoinedSelector will be the last set of elements in the selector
+                // merge the current list of non parent selector elements
+                // on to the current list of selectors to add
+                mergeElementsOnToSelectors(currentElements, newSelectors);
+
+                // loop through our current selectors
+                for (j = 0; j < newSelectors.length; j++) {
+                    sel = newSelectors[j];
+                    // if we don't have any parent paths, the & might be in a mixin so that it can be used
+                    // whether there are parents or not
+                    if (context.length === 0) {
+                        // the combinator used on el should now be applied to the next element instead so that
+                        // it is not lost
                         if (sel.length > 0) {
-                            newSelectorPath = sel.slice(0);
-                            lastSelector = newSelectorPath.pop();
-                            newJoinedSelector = selector.createDerived(lastSelector.elements.slice(0));
-                            newJoinedSelectorEmpty = false;
+                            sel[0].elements.push(new Element(el.combinator, '', el.index, el.currentFileInfo));
                         }
-                        else {
-                            newJoinedSelector = selector.createDerived([]);
+                        selectorsMultiplied.push(sel);
+                    }
+                    else {
+                        // and the parent selectors
+                        for (k = 0; k < context.length; k++) {
+                            // We need to put the current selectors
+                            // then join the last selector's elements on to the parents selectors
+                            var newSelectorPath = addReplacementIntoPath(sel, context[k], el, inSelector);
+                            // add that to our new set of selectors
+                            selectorsMultiplied.push(newSelectorPath);
                         }
-
-                        //put together the parent selectors after the join
-                        if (parentSel.length > 1) {
-                            afterParentJoin = afterParentJoin.concat(parentSel.slice(1));
-                        }
-
-                        if (parentSel.length > 0) {
-                            newJoinedSelectorEmpty = false;
-
-                            // /deep/ is a combinator that is valid without anything in front of it
-                            // so if the & does not have a combinator that is "" or " " then
-                            // and there is a combinator on the parent, then grab that.
-                            // this also allows + a { & .b { .a & { ... though not sure why you would want to do that
-                            var combinator = el.combinator,
-                                parentEl = parentSel[0].elements[0];
-                            if (combinator.emptyOrWhitespace && !parentEl.combinator.emptyOrWhitespace) {
-                                combinator = parentEl.combinator;
-                            }
-                            // join the elements so far with the first part of the parent
-                            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, el.index, el.currentFileInfo));
-                            newJoinedSelector.elements = newJoinedSelector.elements.concat(parentSel[0].elements.slice(1));
-                        }
-
-                        if (!newJoinedSelectorEmpty) {
-                            // now add the joined selector
-                            newSelectorPath.push(newJoinedSelector);
-                        }
-
-                        // and the rest of the parent
-                        newSelectorPath = newSelectorPath.concat(afterParentJoin);
-
-                        // add that to our new set of selectors
-                        selectorsMultiplied.push(newSelectorPath);
                     }
                 }
+
+                // our new selectors has been multiplied, so reset the state
+                newSelectors = selectorsMultiplied;
+                currentElements = [];
             }
-
-            // our new selectors has been multiplied, so reset the state
-            newSelectors = selectorsMultiplied;
-            currentElements = [];
         }
-    }
 
-    // if we have any elements left over (e.g. .a& .b == .b)
-    // add them on to all the current selectors
-    if (currentElements.length > 0) {
-        this.mergeElementsOnToSelectors(currentElements, newSelectors);
-    }
+        // if we have any elements left over (e.g. .a& .b == .b)
+        // add them on to all the current selectors
+        mergeElementsOnToSelectors(currentElements, newSelectors);
 
-    for (i = 0; i < newSelectors.length; i++) {
-        if (newSelectors[i].length > 0) {
-            paths.push(newSelectors[i]);
+        for (i = 0; i < newSelectors.length; i++) {
+            length = newSelectors[i].length;
+            if (length > 0) {
+                paths.push(newSelectors[i]);
+                lastSelector = newSelectors[i][length - 1];
+                newSelectors[i][length - 1] = lastSelector.createDerived(lastSelector.elements, inSelector.extendList);
+            }
         }
-    }
-};
-Ruleset.prototype.mergeElementsOnToSelectors = function(elements, selectors) {
-    var i, sel;
 
-    if (selectors.length === 0) {
-        selectors.push([ new Selector(elements) ]);
-        return;
+        return hadParentSelector;
     }
 
-    for (i = 0; i < selectors.length; i++) {
-        sel = selectors[i];
+    // joins selector path from `beginningPath` with selector path in `addPath`
+    // `replacedElement` contains element that is being replaced by `addPath`
+    // returns concatenated path
+    function addReplacementIntoPath(beginningPath, addPath, replacedElement, originalSelector) {
+        var newSelectorPath, lastSelector, newJoinedSelector;
+        // our new selector path
+        newSelectorPath = [];
 
-        // if the previous thing in sel is a parent this needs to join on to it
-        if (sel.length > 0) {
-            sel[sel.length - 1] = sel[sel.length - 1].createDerived(sel[sel.length - 1].elements.concat(elements));
+        //construct the joined selector - if & is the first thing this will be empty,
+        // if not newJoinedSelector will be the last set of elements in the selector
+        if (beginningPath.length > 0) {
+            newSelectorPath = beginningPath.slice(0);
+            lastSelector = newSelectorPath.pop();
+            newJoinedSelector = originalSelector.createDerived(lastSelector.elements.slice(0));
         }
         else {
-            sel.push(new Selector(elements));
+            newJoinedSelector = originalSelector.createDerived([]);
+        }
+
+        if (addPath.length > 0) {
+            // /deep/ is a combinator that is valid without anything in front of it
+            // so if the & does not have a combinator that is "" or " " then
+            // and there is a combinator on the parent, then grab that.
+            // this also allows + a { & .b { .a & { ... though not sure why you would want to do that
+            var combinator = replacedElement.combinator, parentEl = addPath[0].elements[0];
+            if (combinator.emptyOrWhitespace && !parentEl.combinator.emptyOrWhitespace) {
+                combinator = parentEl.combinator;
+            }
+            // join the elements so far with the first part of the parent
+            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, replacedElement.index, replacedElement.currentFileInfo));
+            newJoinedSelector.elements = newJoinedSelector.elements.concat(addPath[0].elements.slice(1));
+        }
+
+        // now add the joined selector - but only if it is not empty
+        if (newJoinedSelector.elements.length !== 0) {
+            newSelectorPath.push(newJoinedSelector);
+        }
+
+        //put together the parent selectors after the join (e.g. the rest of the parent)
+        if (addPath.length > 1) {
+            newSelectorPath = newSelectorPath.concat(addPath.slice(1));
+        }
+        return newSelectorPath;
+    }
+
+    // joins selector path from `beginningPath` with every selector path in `addPaths` array
+    // `replacedElement` contains element that is being replaced by `addPath`
+    // returns array with all concatenated paths
+    function addAllReplacementsIntoPath( beginningPath, addPaths, replacedElement, originalSelector, result) {
+        var j;
+        for (j = 0; j < beginningPath.length; j++) {
+            var newSelectorPath = addReplacementIntoPath(beginningPath[j], addPaths, replacedElement, originalSelector);
+            result.push(newSelectorPath);
+        }
+        return result;
+    }
+
+    function mergeElementsOnToSelectors(elements, selectors) {
+        var i, sel;
+
+        if (elements.length === 0) {
+            return ;
+        }
+        if (selectors.length === 0) {
+            selectors.push([ new Selector(elements) ]);
+            return;
+        }
+
+        for (i = 0; i < selectors.length; i++) {
+            sel = selectors[i];
+
+            // if the previous thing in sel is a parent this needs to join on to it
+            if (sel.length > 0) {
+                sel[sel.length - 1] = sel[sel.length - 1].createDerived(sel[sel.length - 1].elements.concat(elements));
+            }
+            else {
+                sel.push(new Selector(elements));
+            }
         }
     }
+
+    // joinSelector code follows
+    var i, newPaths, hadParentSelector;
+
+    newPaths = [];
+    hadParentSelector = replaceParentSelector(newPaths, context, selector);
+
+    if (!hadParentSelector) {
+        if (context.length > 0) {
+            newPaths = [];
+            for (i = 0; i < context.length; i++) {
+                newPaths.push(context[i].concat(selector));
+            }
+        }
+        else {
+            newPaths = [[selector]];
+        }
+    }
+
+    for (i = 0; i < newPaths.length; i++) {
+        paths.push(newPaths[i]);
+    }
+
 };
 module.exports = Ruleset;
 
-},{"../contexts":8,"../functions/default":17,"./debug-info":48,"./element":52,"./node":64,"./rule":68,"./selector":71}],71:[function(require,module,exports){
-var Node = require("./node");
+},{"../contexts":10,"../functions/default":19,"../functions/function-registry":21,"./debug-info":53,"./element":57,"./node":69,"./paren":71,"./rule":73,"./selector":76}],76:[function(require,module,exports){
+var Node = require("./node"),
+    Element = require("./element");
 
 var Selector = function (elements, extendList, condition, index, currentFileInfo, isReferenced) {
     this.elements = elements;
@@ -7378,6 +8217,12 @@ Selector.prototype.createDerived = function(elements, extendList, evaldCondition
     newSelector.mediaEmpty = this.mediaEmpty;
     return newSelector;
 };
+Selector.prototype.createEmptySelectors = function() {
+    var el = new Element('', '&', this.index, this.currentFileInfo),
+        sels = [new Selector([el], null, null, this.index, this.currentFileInfo)];
+    sels[0].mediaEmpty = true;
+    return sels;
+};
 Selector.prototype.match = function (other) {
     var elements = this.elements,
         len = elements.length,
@@ -7399,8 +8244,9 @@ Selector.prototype.match = function (other) {
     return olen; // return number of matched elements
 };
 Selector.prototype.CacheElements = function() {
-    if (this._elements)
+    if (this._elements) {
         return;
+    }
 
     var elements = this.elements.map( function(v) {
         return v.combinator.value + (v.value.value || v.value);
@@ -7438,7 +8284,7 @@ Selector.prototype.genCSS = function (context, output) {
     }
     if (!this._css) {
         //TODO caching? speed comparison?
-        for(i = 0; i < this.elements.length; i++) {
+        for (i = 0; i < this.elements.length; i++) {
             element = this.elements[i];
             element.genCSS(context, output);
         }
@@ -7455,7 +8301,7 @@ Selector.prototype.getIsOutput = function() {
 };
 module.exports = Selector;
 
-},{"./node":64}],72:[function(require,module,exports){
+},{"./element":57,"./node":69}],77:[function(require,module,exports){
 var Node = require("./node");
 
 var UnicodeDescriptor = function (value) {
@@ -7466,14 +8312,18 @@ UnicodeDescriptor.prototype.type = "UnicodeDescriptor";
 
 module.exports = UnicodeDescriptor;
 
-},{"./node":64}],73:[function(require,module,exports){
+},{"./node":69}],78:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions");
 
 var Unit = function (numerator, denominator, backupUnit) {
     this.numerator = numerator ? numerator.slice(0).sort() : [];
     this.denominator = denominator ? denominator.slice(0).sort() : [];
-    this.backupUnit = backupUnit;
+    if (backupUnit) {
+        this.backupUnit = backupUnit;
+    } else if (numerator && numerator.length) {
+        this.backupUnit = numerator[0];
+    }
 };
 
 Unit.prototype = new Node();
@@ -7482,14 +8332,14 @@ Unit.prototype.clone = function () {
     return new Unit(this.numerator.slice(0), this.denominator.slice(0), this.backupUnit);
 };
 Unit.prototype.genCSS = function (context, output) {
-    if (this.numerator.length >= 1) {
-        output.add(this.numerator[0]);
-    } else
-    if (this.denominator.length >= 1) {
-        output.add(this.denominator[0]);
-    } else
-    if ((!context || !context.strictUnits) && this.backupUnit) {
+    // Dimension checks the unit is singular and throws an error if in strict math mode.
+    var strictUnits = context && context.strictUnits;
+    if (this.numerator.length === 1) {
+        output.add(this.numerator[0]); // the ideal situation
+    } else if (!strictUnits && this.backupUnit) {
         output.add(this.backupUnit);
+    } else if (!strictUnits && this.denominator.length) {
+        output.add(this.denominator[0]);
     }
 };
 Unit.prototype.toString = function () {
@@ -7548,21 +8398,15 @@ Unit.prototype.usedUnits = function() {
     return result;
 };
 Unit.prototype.cancel = function () {
-    var counter = {}, atomicUnit, i, backup;
+    var counter = {}, atomicUnit, i;
 
     for (i = 0; i < this.numerator.length; i++) {
         atomicUnit = this.numerator[i];
-        if (!backup) {
-            backup = atomicUnit;
-        }
         counter[atomicUnit] = (counter[atomicUnit] || 0) + 1;
     }
 
     for (i = 0; i < this.denominator.length; i++) {
         atomicUnit = this.denominator[i];
-        if (!backup) {
-            backup = atomicUnit;
-        }
         counter[atomicUnit] = (counter[atomicUnit] || 0) - 1;
     }
 
@@ -7585,16 +8429,12 @@ Unit.prototype.cancel = function () {
         }
     }
 
-    if (this.numerator.length === 0 && this.denominator.length === 0 && backup) {
-        this.backupUnit = backup;
-    }
-
     this.numerator.sort();
     this.denominator.sort();
 };
 module.exports = Unit;
 
-},{"../data/unit-conversions":11,"./node":64}],74:[function(require,module,exports){
+},{"../data/unit-conversions":13,"./node":69}],79:[function(require,module,exports){
 var Node = require("./node");
 
 var URL = function (val, index, currentFileInfo, isEvald) {
@@ -7620,9 +8460,12 @@ URL.prototype.eval = function (context) {
     if (!this.isEvald) {
         // Add the base path if the URL is relative
         rootpath = this.currentFileInfo && this.currentFileInfo.rootpath;
-        if (rootpath && typeof val.value === "string" && context.isPathRelative(val.value)) {
+        if (rootpath &&
+            typeof val.value === "string" &&
+            context.isPathRelative(val.value)) {
+
             if (!val.quote) {
-                rootpath = rootpath.replace(/[\(\)'"\s]/g, function(match) { return "\\"+match; });
+                rootpath = rootpath.replace(/[\(\)'"\s]/g, function(match) { return "\\" + match; });
             }
             val.value = rootpath + val.value;
         }
@@ -7647,7 +8490,7 @@ URL.prototype.eval = function (context) {
 };
 module.exports = URL;
 
-},{"./node":64}],75:[function(require,module,exports){
+},{"./node":69}],80:[function(require,module,exports){
 var Node = require("./node");
 
 var Value = function (value) {
@@ -7674,16 +8517,16 @@ Value.prototype.eval = function (context) {
 };
 Value.prototype.genCSS = function (context, output) {
     var i;
-    for(i = 0; i < this.value.length; i++) {
+    for (i = 0; i < this.value.length; i++) {
         this.value[i].genCSS(context, output);
-        if (i+1 < this.value.length) {
+        if (i + 1 < this.value.length) {
             output.add((context && context.compress) ? ',' : ', ');
         }
     }
 };
 module.exports = Value;
 
-},{"./node":64}],76:[function(require,module,exports){
+},{"./node":69}],81:[function(require,module,exports){
 var Node = require("./node");
 
 var Variable = function (name, index, currentFileInfo) {
@@ -7712,6 +8555,10 @@ Variable.prototype.eval = function (context) {
     variable = this.find(context.frames, function (frame) {
         var v = frame.variable(name);
         if (v) {
+            if (v.important) {
+                var importantScope = context.importantScope[context.importantScope.length - 1];
+                importantScope.important = v.important;
+            }
             return v.value.eval(context);
         }
     });
@@ -7734,7 +8581,7 @@ Variable.prototype.find = function (obj, fun) {
 };
 module.exports = Variable;
 
-},{"./node":64}],77:[function(require,module,exports){
+},{"./node":69}],82:[function(require,module,exports){
 module.exports = {
     getLocation: function(index, inputStream) {
         var n = index + 1,
@@ -7756,9 +8603,10 @@ module.exports = {
     }
 };
 
-},{}],78:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 var tree = require("../tree"),
-    Visitor = require("./visitor");
+    Visitor = require("./visitor"),
+    logger = require("../logger");
 
 /*jshint loopfunc:true */
 
@@ -7789,7 +8637,7 @@ ExtendFinderVisitor.prototype = {
 
         // get &:extend(.a); rules which apply to all selectors in this ruleset
         var rules = rulesetNode.rules, ruleCnt = rules ? rules.length : 0;
-        for(i = 0; i < ruleCnt; i++) {
+        for (i = 0; i < ruleCnt; i++) {
             if (rulesetNode.rules[i] instanceof tree.Extend) {
                 allSelectorsExtendList.push(rules[i]);
                 rulesetNode.extendOnEveryPath = true;
@@ -7799,7 +8647,7 @@ ExtendFinderVisitor.prototype = {
         // now find every selector and apply the extends that apply to all extends
         // and the ones which apply to an individual extend
         var paths = rulesetNode.paths;
-        for(i = 0; i < paths.length; i++) {
+        for (i = 0; i < paths.length; i++) {
             var selectorPath = paths[i],
                 selector = selectorPath[selectorPath.length - 1],
                 selExtendList = selector.extendList;
@@ -7813,13 +8661,13 @@ ExtendFinderVisitor.prototype = {
                 });
             }
 
-            for(j = 0; j < extendList.length; j++) {
+            for (j = 0; j < extendList.length; j++) {
                 this.foundExtends = true;
                 extend = extendList[j];
                 extend.findSelfSelectors(selectorPath);
                 extend.ruleset = rulesetNode;
                 if (j === 0) { extend.firstExtendOnThisSelectorPath = true; }
-                this.allExtendsStack[this.allExtendsStack.length-1].push(extend);
+                this.allExtendsStack[this.allExtendsStack.length - 1].push(extend);
             }
         }
 
@@ -7853,23 +8701,44 @@ var ProcessExtendsVisitor = function() {
 ProcessExtendsVisitor.prototype = {
     run: function(root) {
         var extendFinder = new ExtendFinderVisitor();
+        this.extendIndicies = {};
         extendFinder.run(root);
         if (!extendFinder.foundExtends) { return root; }
         root.allExtends = root.allExtends.concat(this.doExtendChaining(root.allExtends, root.allExtends));
         this.allExtendsStack = [root.allExtends];
-        return this._visitor.visit(root);
+        var newRoot = this._visitor.visit(root);
+        this.checkExtendsForNonMatched(root.allExtends);
+        return newRoot;
+    },
+    checkExtendsForNonMatched: function(extendList) {
+        var indicies = this.extendIndicies;
+        extendList.filter(function(extend) {
+            return !extend.hasFoundMatches && extend.parent_ids.length == 1;
+        }).forEach(function(extend) {
+                var selector = "_unknown_";
+                try {
+                    selector = extend.selector.toCSS({});
+                }
+                catch(_) {}
+
+                if (!indicies[extend.index + ' ' + selector]) {
+                    indicies[extend.index + ' ' + selector] = true;
+                    logger.warn("extend '" + selector + "' has no matches");
+                }
+            });
     },
     doExtendChaining: function (extendsList, extendsListTarget, iterationCount) {
         //
-        // chaining is different from normal extension.. if we extend an extend then we are not just copying, altering and pasting
-        // the selector we would do normally, but we are also adding an extend with the same target selector
+        // chaining is different from normal extension.. if we extend an extend then we are not just copying, altering
+        // and pasting the selector we would do normally, but we are also adding an extend with the same target selector
         // this means this new extend can then go and alter other extends
         //
         // this method deals with all the chaining work - without it, extend is flat and doesn't work on other extend selectors
-        // this is also the most expensive.. and a match on one selector can cause an extension of a selector we had already processed if
-        // we look at each selector at a time, as is done in visitRuleset
+        // this is also the most expensive.. and a match on one selector can cause an extension of a selector we had already
+        // processed if we look at each selector at a time, as is done in visitRuleset
 
-        var extendIndex, targetExtendIndex, matches, extendsToAdd = [], newSelector, extendVisitor = this, selectorPath, extend, targetExtend, newExtend;
+        var extendIndex, targetExtendIndex, matches, extendsToAdd = [], newSelector, extendVisitor = this, selectorPath,
+            extend, targetExtend, newExtend;
 
         iterationCount = iterationCount || 0;
 
@@ -7879,20 +8748,22 @@ ProcessExtendsVisitor.prototype = {
         // and the second is the target.
         // the seperation into two lists allows us to process a subset of chains with a bigger set, as is the
         // case when processing media queries
-        for(extendIndex = 0; extendIndex < extendsList.length; extendIndex++){
-            for(targetExtendIndex = 0; targetExtendIndex < extendsListTarget.length; targetExtendIndex++){
+        for (extendIndex = 0; extendIndex < extendsList.length; extendIndex++) {
+            for (targetExtendIndex = 0; targetExtendIndex < extendsListTarget.length; targetExtendIndex++) {
 
                 extend = extendsList[extendIndex];
                 targetExtend = extendsListTarget[targetExtendIndex];
 
                 // look for circular references
-                if( extend.parent_ids.indexOf( targetExtend.object_id ) >= 0 ){ continue; }
+                if ( extend.parent_ids.indexOf( targetExtend.object_id ) >= 0 ) { continue; }
 
                 // find a match in the target extends self selector (the bit before :extend)
                 selectorPath = [targetExtend.selfSelectors[0]];
                 matches = extendVisitor.findMatch(extend, selectorPath);
 
                 if (matches.length) {
+
+                    extend.hasFoundMatches = true;
 
                     // we found a match, so for each self selector..
                     extend.selfSelectors.forEach(function(selfSelector) {
@@ -7905,7 +8776,7 @@ ProcessExtendsVisitor.prototype = {
                         newExtend.selfSelectors = newSelector;
 
                         // add the extend onto the list of extends for that selector
-                        newSelector[newSelector.length-1].extendList = [newExtend];
+                        newSelector[newSelector.length - 1].extendList = [newExtend];
 
                         // record that we need to add it.
                         extendsToAdd.push(newExtend);
@@ -7933,17 +8804,18 @@ ProcessExtendsVisitor.prototype = {
             if (iterationCount > 100) {
                 var selectorOne = "{unable to calculate}";
                 var selectorTwo = "{unable to calculate}";
-                try
-                {
+                try {
                     selectorOne = extendsToAdd[0].selfSelectors[0].toCSS();
                     selectorTwo = extendsToAdd[0].selector.toCSS();
                 }
                 catch(e) {}
-                throw {message: "extend circular reference detected. One of the circular extends is currently:"+selectorOne+":extend(" + selectorTwo+")"};
+                throw { message: "extend circular reference detected. One of the circular extends is currently:" +
+                    selectorOne + ":extend(" + selectorTwo + ")"};
             }
 
-            // now process the new extends on the existing rules so that we can handle a extending b extending c ectending d extending e...
-            return extendsToAdd.concat(extendVisitor.doExtendChaining(extendsToAdd, extendsListTarget, iterationCount+1));
+            // now process the new extends on the existing rules so that we can handle a extending b extending c extending
+            // d extending e...
+            return extendsToAdd.concat(extendVisitor.doExtendChaining(extendsToAdd, extendsListTarget, iterationCount + 1));
         } else {
             return extendsToAdd;
         }
@@ -7961,22 +8833,24 @@ ProcessExtendsVisitor.prototype = {
         if (rulesetNode.root) {
             return;
         }
-        var matches, pathIndex, extendIndex, allExtends = this.allExtendsStack[this.allExtendsStack.length-1], selectorsToAdd = [], extendVisitor = this, selectorPath;
+        var matches, pathIndex, extendIndex, allExtends = this.allExtendsStack[this.allExtendsStack.length - 1],
+            selectorsToAdd = [], extendVisitor = this, selectorPath;
 
         // look at each selector path in the ruleset, find any extend matches and then copy, find and replace
 
-        for(extendIndex = 0; extendIndex < allExtends.length; extendIndex++) {
-            for(pathIndex = 0; pathIndex < rulesetNode.paths.length; pathIndex++) {
+        for (extendIndex = 0; extendIndex < allExtends.length; extendIndex++) {
+            for (pathIndex = 0; pathIndex < rulesetNode.paths.length; pathIndex++) {
                 selectorPath = rulesetNode.paths[pathIndex];
 
                 // extending extends happens initially, before the main pass
                 if (rulesetNode.extendOnEveryPath) { continue; }
-                var extendList = selectorPath[selectorPath.length-1].extendList;
+                var extendList = selectorPath[selectorPath.length - 1].extendList;
                 if (extendList && extendList.length) { continue; }
 
                 matches = this.findMatch(allExtends[extendIndex], selectorPath);
 
                 if (matches.length) {
+                    allExtends[extendIndex].hasFoundMatches = true;
 
                     allExtends[extendIndex].selfSelectors.forEach(function(selfSelector) {
                         selectorsToAdd.push(extendVisitor.extendSelector(matches, selectorPath, selfSelector));
@@ -7998,24 +8872,25 @@ ProcessExtendsVisitor.prototype = {
             potentialMatches = [], potentialMatch, matches = [];
 
         // loop through the haystack elements
-        for(haystackSelectorIndex = 0; haystackSelectorIndex < haystackSelectorPath.length; haystackSelectorIndex++) {
+        for (haystackSelectorIndex = 0; haystackSelectorIndex < haystackSelectorPath.length; haystackSelectorIndex++) {
             hackstackSelector = haystackSelectorPath[haystackSelectorIndex];
 
-            for(hackstackElementIndex = 0; hackstackElementIndex < hackstackSelector.elements.length; hackstackElementIndex++) {
+            for (hackstackElementIndex = 0; hackstackElementIndex < hackstackSelector.elements.length; hackstackElementIndex++) {
 
                 haystackElement = hackstackSelector.elements[hackstackElementIndex];
 
                 // if we allow elements before our match we can add a potential match every time. otherwise only at the first element.
                 if (extend.allowBefore || (haystackSelectorIndex === 0 && hackstackElementIndex === 0)) {
-                    potentialMatches.push({pathIndex: haystackSelectorIndex, index: hackstackElementIndex, matched: 0, initialCombinator: haystackElement.combinator});
+                    potentialMatches.push({pathIndex: haystackSelectorIndex, index: hackstackElementIndex, matched: 0,
+                        initialCombinator: haystackElement.combinator});
                 }
 
-                for(i = 0; i < potentialMatches.length; i++) {
+                for (i = 0; i < potentialMatches.length; i++) {
                     potentialMatch = potentialMatches[i];
 
                     // selectors add " " onto the first element. When we use & it joins the selectors together, but if we don't
-                    // then each selector in haystackSelectorPath has a space before it added in the toCSS phase. so we need to work out
-                    // what the resulting combinator will be
+                    // then each selector in haystackSelectorPath has a space before it added in the toCSS phase. so we need to
+                    // work out what the resulting combinator will be
                     targetCombinator = haystackElement.combinator.value;
                     if (targetCombinator === '' && hackstackElementIndex === 0) {
                         targetCombinator = ' ';
@@ -8033,7 +8908,8 @@ ProcessExtendsVisitor.prototype = {
                     if (potentialMatch) {
                         potentialMatch.finished = potentialMatch.matched === needleElements.length;
                         if (potentialMatch.finished &&
-                            (!extend.allowAfter && (hackstackElementIndex+1 < hackstackSelector.elements.length || haystackSelectorIndex+1 < haystackSelectorPath.length))) {
+                            (!extend.allowAfter &&
+                                (hackstackElementIndex + 1 < hackstackSelector.elements.length || haystackSelectorIndex + 1 < haystackSelectorPath.length))) {
                             potentialMatch = null;
                         }
                     }
@@ -8079,7 +8955,7 @@ ProcessExtendsVisitor.prototype = {
             if (!(elementValue2 instanceof tree.Selector) || elementValue1.elements.length !== elementValue2.elements.length) {
                 return false;
             }
-            for(var i = 0; i <elementValue1.elements.length; i++) {
+            for (var i = 0; i  < elementValue1.elements.length; i++) {
                 if (elementValue1.elements[i].combinator.value !== elementValue2.elements[i].combinator.value) {
                     if (i !== 0 || (elementValue1.elements[i].combinator.value || ' ') !== (elementValue2.elements[i].combinator.value || ' ')) {
                         return false;
@@ -8117,7 +8993,8 @@ ProcessExtendsVisitor.prototype = {
             );
 
             if (match.pathIndex > currentSelectorPathIndex && currentSelectorPathElementIndex > 0) {
-                path[path.length - 1].elements = path[path.length - 1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
+                path[path.length - 1].elements = path[path.length - 1]
+                    .elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
                 currentSelectorPathElementIndex = 0;
                 currentSelectorPathIndex++;
             }
@@ -8146,7 +9023,8 @@ ProcessExtendsVisitor.prototype = {
         }
 
         if (currentSelectorPathIndex < selectorPath.length && currentSelectorPathElementIndex > 0) {
-            path[path.length - 1].elements = path[path.length - 1].elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
+            path[path.length - 1].elements = path[path.length - 1]
+                .elements.concat(selectorPath[currentSelectorPathIndex].elements.slice(currentSelectorPathElementIndex));
             currentSelectorPathIndex++;
         }
 
@@ -8157,165 +9035,267 @@ ProcessExtendsVisitor.prototype = {
     visitRulesetOut: function (rulesetNode) {
     },
     visitMedia: function (mediaNode, visitArgs) {
-        var newAllExtends = mediaNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length-1]);
+        var newAllExtends = mediaNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
         newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, mediaNode.allExtends));
         this.allExtendsStack.push(newAllExtends);
     },
     visitMediaOut: function (mediaNode) {
-        this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        var lastIndex = this.allExtendsStack.length - 1;
+        this.allExtendsStack.length = lastIndex;
     },
     visitDirective: function (directiveNode, visitArgs) {
-        var newAllExtends = directiveNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length-1]);
+        var newAllExtends = directiveNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
         newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, directiveNode.allExtends));
         this.allExtendsStack.push(newAllExtends);
     },
     visitDirectiveOut: function (directiveNode) {
-        this.allExtendsStack.length = this.allExtendsStack.length - 1;
+        var lastIndex = this.allExtendsStack.length - 1;
+        this.allExtendsStack.length = lastIndex;
     }
 };
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../tree":56,"./visitor":83}],79:[function(require,module,exports){
-var contexts = require("../contexts"),
-    Visitor = require("./visitor");
+},{"../logger":32,"../tree":61,"./visitor":89}],84:[function(require,module,exports){
+function ImportSequencer(onSequencerEmpty) {
+    this.imports = [];
+    this.variableImports = [];
+    this._onSequencerEmpty = onSequencerEmpty;
+    this._currentDepth = 0;
+}
 
-var ImportVisitor = function(importer, finish, evalEnv, onceFileDetectionMap, recursionDetector) {
-    this._visitor = new Visitor(this);
-    this._importer = importer;
-    this._finish = finish;
-    this.context = evalEnv || new contexts.Eval();
-    this.importCount = 0;
-    this.onceFileDetectionMap = onceFileDetectionMap || {};
-    this.recursionDetector = {};
-    if (recursionDetector) {
-        for(var fullFilename in recursionDetector) {
-            if (recursionDetector.hasOwnProperty(fullFilename)) {
-                this.recursionDetector[fullFilename] = true;
+ImportSequencer.prototype.addImport = function(callback) {
+    var importSequencer = this,
+        importItem = {
+            callback: callback,
+            args: null,
+            isReady: false
+        };
+    this.imports.push(importItem);
+    return function() {
+        importItem.args = Array.prototype.slice.call(arguments, 0);
+        importItem.isReady = true;
+        importSequencer.tryRun();
+    };
+};
+
+ImportSequencer.prototype.addVariableImport = function(callback) {
+    this.variableImports.push(callback);
+};
+
+ImportSequencer.prototype.tryRun = function() {
+    this._currentDepth++;
+    try {
+        while (true) {
+            while (this.imports.length > 0) {
+                var importItem = this.imports[0];
+                if (!importItem.isReady) {
+                    return;
+                }
+                this.imports = this.imports.slice(1);
+                importItem.callback.apply(null, importItem.args);
             }
+            if (this.variableImports.length === 0) {
+                break;
+            }
+            var variableImport = this.variableImports[0];
+            this.variableImports = this.variableImports.slice(1);
+            variableImport();
         }
+    } finally {
+        this._currentDepth--;
+    }
+    if (this._currentDepth === 0 && this._onSequencerEmpty) {
+        this._onSequencerEmpty();
     }
 };
 
+module.exports = ImportSequencer;
+
+},{}],85:[function(require,module,exports){
+var contexts = require("../contexts"),
+    Visitor = require("./visitor"),
+    ImportSequencer = require("./import-sequencer");
+
+var ImportVisitor = function(importer, finish) {
+
+    this._visitor = new Visitor(this);
+    this._importer = importer;
+    this._finish = finish;
+    this.context = new contexts.Eval();
+    this.importCount = 0;
+    this.onceFileDetectionMap = {};
+    this.recursionDetector = {};
+    this._sequencer = new ImportSequencer(this._onSequencerEmpty.bind(this));
+};
+
 ImportVisitor.prototype = {
-    isReplacing: true,
+    isReplacing: false,
     run: function (root) {
-        var error;
         try {
             // process the contents
             this._visitor.visit(root);
         }
         catch(e) {
-            error = e;
+            this.error = e;
         }
 
         this.isFinished = true;
-
-        if (this.importCount === 0) {
-            this._finish(error);
+        this._sequencer.tryRun();
+    },
+    _onSequencerEmpty: function() {
+        if (!this.isFinished) {
+            return;
         }
+        this._finish(this.error);
     },
     visitImport: function (importNode, visitArgs) {
-        var importVisitor = this,
-            evaldImportNode,
-            inlineCSS = importNode.options.inline;
+        var inlineCSS = importNode.options.inline;
 
         if (!importNode.css || inlineCSS) {
 
-            try {
-                evaldImportNode = importNode.evalForImport(this.context);
-            } catch(e){
-                if (!e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
-                // attempt to eval properly and treat as css
-                importNode.css = true;
-                // if that fails, this error will be thrown
-                importNode.error = e;
-            }
+            var context = new contexts.Eval(this.context, this.context.frames.slice(0));
+            var importParent = context.frames[0];
 
-            if (evaldImportNode && (!evaldImportNode.css || inlineCSS)) {
-                importNode = evaldImportNode;
-                this.importCount++;
-                var context = new contexts.Eval(this.context, this.context.frames.slice(0));
-
-                if (importNode.options.multiple) {
-                    context.importMultiple = true;
-                }
-
-                this._importer.push(importNode.getPath(), importNode.currentFileInfo, importNode.options, function (e, root, importedAtRoot, fullPath) {
-                    if (e && !e.filename) {
-                        e.index = importNode.index; e.filename = importNode.currentFileInfo.filename;
-                    }
-
-                    var duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
-                    if (!context.importMultiple) {
-                        if (duplicateImport) {
-                            importNode.skip = true;
-                        } else {
-                            importNode.skip = function() {
-                                if (fullPath in importVisitor.onceFileDetectionMap) {
-                                    return true;
-                                }
-                                importVisitor.onceFileDetectionMap[fullPath] = true;
-                                return false;
-                            };
-                        }
-                    }
-
-                    var subFinish = function(e) {
-                        importVisitor.importCount--;
-
-                        if (importVisitor.importCount === 0 && importVisitor.isFinished) {
-                            importVisitor._finish(e);
-                        }
-                    };
-
-                    if (root) {
-                        importNode.root = root;
-                        importNode.importedFilename = fullPath;
-
-                        if (!inlineCSS && (context.importMultiple || !duplicateImport)) {
-                            importVisitor.recursionDetector[fullPath] = true;
-                            new ImportVisitor(importVisitor._importer, subFinish, context, importVisitor.onceFileDetectionMap, importVisitor.recursionDetector)
-                                .run(root);
-                            return;
-                        }
-                    }
-
-                    subFinish();
-                });
+            this.importCount++;
+            if (importNode.isVariableImport()) {
+                this._sequencer.addVariableImport(this.processImportNode.bind(this, importNode, context, importParent));
+            } else {
+                this.processImportNode(importNode, context, importParent);
             }
         }
         visitArgs.visitDeeper = false;
-        return importNode;
+    },
+    processImportNode: function(importNode, context, importParent) {
+        var evaldImportNode,
+            inlineCSS = importNode.options.inline;
+
+        try {
+            evaldImportNode = importNode.evalForImport(context);
+        } catch(e) {
+            if (!e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
+            // attempt to eval properly and treat as css
+            importNode.css = true;
+            // if that fails, this error will be thrown
+            importNode.error = e;
+        }
+
+        if (evaldImportNode && (!evaldImportNode.css || inlineCSS)) {
+
+            if (evaldImportNode.options.multiple) {
+                context.importMultiple = true;
+            }
+
+            // try appending if we haven't determined if it is css or not
+            var tryAppendLessExtension = evaldImportNode.css === undefined;
+
+            for (var i = 0; i < importParent.rules.length; i++) {
+                if (importParent.rules[i] === importNode) {
+                    importParent.rules[i] = evaldImportNode;
+                    break;
+                }
+            }
+
+            var onImported = this.onImported.bind(this, evaldImportNode, context),
+                sequencedOnImported = this._sequencer.addImport(onImported);
+
+            this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.currentFileInfo,
+                evaldImportNode.options, sequencedOnImported);
+        } else {
+            this.importCount--;
+            if (this.isFinished) {
+                this._sequencer.tryRun();
+            }
+        }
+    },
+    onImported: function (importNode, context, e, root, importedAtRoot, fullPath) {
+        if (e) {
+            if (!e.filename) {
+                e.index = importNode.index; e.filename = importNode.currentFileInfo.filename;
+            }
+            this.error = e;
+        }
+
+        var importVisitor = this,
+            inlineCSS = importNode.options.inline,
+            isPlugin = importNode.options.plugin,
+            isOptional = importNode.options.optional,
+            duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
+
+        if (!context.importMultiple) {
+            if (duplicateImport) {
+                importNode.skip = true;
+            } else {
+                importNode.skip = function() {
+                    if (fullPath in importVisitor.onceFileDetectionMap) {
+                        return true;
+                    }
+                    importVisitor.onceFileDetectionMap[fullPath] = true;
+                    return false;
+                };
+            }
+        }
+
+        if (!fullPath && isOptional) {
+            importNode.skip = true;
+        }
+
+        if (root) {
+            importNode.root = root;
+            importNode.importedFilename = fullPath;
+
+            if (!inlineCSS && !isPlugin && (context.importMultiple || !duplicateImport)) {
+                importVisitor.recursionDetector[fullPath] = true;
+
+                var oldContext = this.context;
+                this.context = context;
+                try {
+                    this._visitor.visit(root);
+                } catch (e) {
+                    this.error = e;
+                }
+                this.context = oldContext;
+            }
+        }
+
+        importVisitor.importCount--;
+
+        if (importVisitor.isFinished) {
+            importVisitor._sequencer.tryRun();
+        }
     },
     visitRule: function (ruleNode, visitArgs) {
-        visitArgs.visitDeeper = false;
-        return ruleNode;
+        if (ruleNode.value.type === "DetachedRuleset") {
+            this.context.frames.unshift(ruleNode);
+        } else {
+            visitArgs.visitDeeper = false;
+        }
+    },
+    visitRuleOut : function(ruleNode) {
+        if (ruleNode.value.type === "DetachedRuleset") {
+            this.context.frames.shift();
+        }
     },
     visitDirective: function (directiveNode, visitArgs) {
         this.context.frames.unshift(directiveNode);
-        return directiveNode;
     },
     visitDirectiveOut: function (directiveNode) {
         this.context.frames.shift();
     },
     visitMixinDefinition: function (mixinDefinitionNode, visitArgs) {
         this.context.frames.unshift(mixinDefinitionNode);
-        return mixinDefinitionNode;
     },
     visitMixinDefinitionOut: function (mixinDefinitionNode) {
         this.context.frames.shift();
     },
     visitRuleset: function (rulesetNode, visitArgs) {
         this.context.frames.unshift(rulesetNode);
-        return rulesetNode;
     },
     visitRulesetOut: function (rulesetNode) {
         this.context.frames.shift();
     },
     visitMedia: function (mediaNode, visitArgs) {
         this.context.frames.unshift(mediaNode.rules[0]);
-        return mediaNode;
     },
     visitMediaOut: function (mediaNode) {
         this.context.frames.shift();
@@ -8323,7 +9303,7 @@ ImportVisitor.prototype = {
 };
 module.exports = ImportVisitor;
 
-},{"../contexts":8,"./visitor":83}],80:[function(require,module,exports){
+},{"../contexts":10,"./import-sequencer":84,"./visitor":89}],86:[function(require,module,exports){
 var visitors = {
     Visitor: require("./visitor"),
     ImportVisitor: require('./import-visitor'),
@@ -8334,7 +9314,7 @@ var visitors = {
 
 module.exports = visitors;
 
-},{"./extend-visitor":78,"./import-visitor":79,"./join-selector-visitor":81,"./to-css-visitor":82,"./visitor":83}],81:[function(require,module,exports){
+},{"./extend-visitor":83,"./import-visitor":85,"./join-selector-visitor":87,"./to-css-visitor":88,"./visitor":89}],87:[function(require,module,exports){
 var Visitor = require("./visitor");
 
 var JoinSelectorVisitor = function() {
@@ -8376,12 +9356,18 @@ JoinSelectorVisitor.prototype = {
     visitMedia: function (mediaNode, visitArgs) {
         var context = this.contexts[this.contexts.length - 1];
         mediaNode.rules[0].root = (context.length === 0 || context[0].multiMedia);
+    },
+    visitDirective: function (directiveNode, visitArgs) {
+        var context = this.contexts[this.contexts.length - 1];
+        if (directiveNode.rules && directiveNode.rules.length) {
+            directiveNode.rules[0].root = (directiveNode.isRooted || context.length === 0 || null);
+        }
     }
 };
 
 module.exports = JoinSelectorVisitor;
 
-},{"./visitor":83}],82:[function(require,module,exports){
+},{"./visitor":89}],88:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor");
 
@@ -8398,7 +9384,7 @@ ToCSSVisitor.prototype = {
 
     visitRule: function (ruleNode, visitArgs) {
         if (ruleNode.variable) {
-            return [];
+            return;
         }
         return ruleNode;
     },
@@ -8407,16 +9393,14 @@ ToCSSVisitor.prototype = {
         // mixin definitions do not get eval'd - this means they keep state
         // so we have to clear that state here so it isn't used if toCSS is called twice
         mixinNode.frames = [];
-        return [];
     },
 
     visitExtend: function (extendNode, visitArgs) {
-        return [];
     },
 
     visitComment: function (commentNode, visitArgs) {
         if (commentNode.isSilent(this._context)) {
-            return [];
+            return;
         }
         return commentNode;
     },
@@ -8426,38 +9410,95 @@ ToCSSVisitor.prototype = {
         visitArgs.visitDeeper = false;
 
         if (!mediaNode.rules.length) {
-            return [];
+            return;
         }
         return mediaNode;
     },
 
-    visitDirective: function(directiveNode, visitArgs) {
-        if (directiveNode.currentFileInfo.reference && !directiveNode.isReferenced) {
-            return [];
+    visitImport: function (importNode, visitArgs) {
+        if (importNode.path.currentFileInfo.reference !== undefined && importNode.css) {
+            return;
         }
+        return importNode;
+    },
+
+    visitDirective: function(directiveNode, visitArgs) {
         if (directiveNode.name === "@charset") {
+            if (!directiveNode.getIsReferenced()) {
+                return;
+            }
             // Only output the debug info together with subsequent @charset definitions
             // a comment (or @media statement) before the actual @charset directive would
             // be considered illegal css as it has to be on the first line
             if (this.charset) {
                 if (directiveNode.debugInfo) {
-                    var comment = new tree.Comment("/* " + directiveNode.toCSS(this._context).replace(/\n/g, "")+" */\n");
+                    var comment = new tree.Comment("/* " + directiveNode.toCSS(this._context).replace(/\n/g, "") + " */\n");
                     comment.debugInfo = directiveNode.debugInfo;
                     return this._visitor.visit(comment);
                 }
-                return [];
+                return;
             }
             this.charset = true;
         }
-        if (directiveNode.rules && directiveNode.rules.rules) {
-            this._mergeRules(directiveNode.rules.rules);
+        function hasVisibleChild(directiveNode) {
+            //prepare list of childs
+            var rule, bodyRules = directiveNode.rules;
+            //if there is only one nested ruleset and that one has no path, then it is
+            //just fake ruleset that got not replaced and we need to look inside it to
+            //get real childs
+            if (bodyRules.length === 1 && (!bodyRules[0].paths || bodyRules[0].paths.length === 0)) {
+                bodyRules = bodyRules[0].rules;
+            }
+            for (var r = 0; r < bodyRules.length; r++) {
+                rule = bodyRules[r];
+                if (rule.getIsReferenced && rule.getIsReferenced()) {
+                    //the directive contains something that was referenced (likely by extend)
+                    //therefore it needs to be shown in output too
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (directiveNode.rules && directiveNode.rules.length) {
+            //it is still true that it is only one ruleset in array
+            //this is last such moment
+            this._mergeRules(directiveNode.rules[0].rules);
+            //process childs
+            directiveNode.accept(this._visitor);
+            visitArgs.visitDeeper = false;
+
+            // the directive was directly referenced and therefore needs to be shown in the output
+            if (directiveNode.getIsReferenced()) {
+                return directiveNode;
+            }
+
+            if (!directiveNode.rules || !directiveNode.rules.length) {
+                return ;
+            }
+
+            //the directive was not directly referenced - we need to check whether some of its childs
+            //was referenced
+            if (hasVisibleChild(directiveNode)) {
+                //marking as referenced in case the directive is stored inside another directive
+                directiveNode.markReferenced();
+                return directiveNode;
+            }
+
+            //The directive was not directly referenced and does not contain anything that
+            //was referenced. Therefore it must not be shown in output.
+            return ;
+        } else {
+            if (!directiveNode.getIsReferenced()) {
+                return;
+            }
         }
         return directiveNode;
     },
 
     checkPropertiesInRoot: function(rules) {
         var ruleNode;
-        for(var i = 0; i < rules.length; i++) {
+        for (var i = 0; i < rules.length; i++) {
             ruleNode = rules[i];
             if (ruleNode instanceof tree.Rule && !ruleNode.variable) {
                 throw { message: "properties must be inside selector blocks, they cannot be in the root.",
@@ -8479,7 +9520,7 @@ ToCSSVisitor.prototype = {
                         if (p[0].elements[0].combinator.value === ' ') {
                             p[0].elements[0].combinator = new(tree.Combinator)('');
                         }
-                        for(i = 0; i < p.length; i++) {
+                        for (i = 0; i < p.length; i++) {
                             if (p[i].getIsReferenced() && p[i].getIsOutput()) {
                                 return true;
                             }
@@ -8544,7 +9585,7 @@ ToCSSVisitor.prototype = {
         var ruleCache = {},
             ruleList, rule, i;
 
-        for(i = rules.length - 1; i >= 0 ; i--) {
+        for (i = rules.length - 1; i >= 0 ; i--) {
             rule = rules[i];
             if (rule instanceof tree.Rule) {
                 if (!ruleCache[rule.name]) {
@@ -8611,8 +9652,8 @@ ToCSSVisitor.prototype = {
                 var spacedGroups = [];
                 var lastSpacedGroup = [];
                 parts.map(function (p) {
-                if (p.merge==="+") {
-                    if (lastSpacedGroup.length > 0) {
+                    if (p.merge === "+") {
+                        if (lastSpacedGroup.length > 0) {
                             spacedGroups.push(toExpression(lastSpacedGroup));
                         }
                         lastSpacedGroup = [];
@@ -8623,12 +9664,21 @@ ToCSSVisitor.prototype = {
                 rule.value = toValue(spacedGroups);
             }
         });
+    },
+
+    visitAnonymous: function(anonymousNode, visitArgs) {
+        if (!anonymousNode.getIsReferenced()) {
+            return ;
+        }
+
+        anonymousNode.accept(this._visitor);
+        return anonymousNode;
     }
 };
 
 module.exports = ToCSSVisitor;
 
-},{"../tree":56,"./visitor":83}],83:[function(require,module,exports){
+},{"../tree":61,"./visitor":89}],89:[function(require,module,exports){
 var tree = require("../tree");
 
 var _visitArgs = { visitDeeper: true },
@@ -8737,6 +9787,7 @@ Visitor.prototype = {
         var out = [];
         for (i = 0; i < cnt; i++) {
             var evald = this.visit(nodes[i]);
+            if (evald === undefined) { continue; }
             if (!evald.splice) {
                 out.push(evald);
             } else if (evald.length) {
@@ -8755,6 +9806,9 @@ Visitor.prototype = {
 
         for (i = 0, cnt = arr.length; i < cnt; i++) {
             item = arr[i];
+            if (item === undefined) {
+                continue;
+            }
             if (!item.splice) {
                 out.push(item);
                 continue;
@@ -8762,6 +9816,9 @@ Visitor.prototype = {
 
             for (j = 0, nestedCnt = item.length; j < nestedCnt; j++) {
                 nestedItem = item[j];
+                if (nestedItem === undefined) {
+                    continue;
+                }
                 if (!nestedItem.splice) {
                     out.push(nestedItem);
                 } else if (nestedItem.length) {
@@ -8775,50 +9832,44 @@ Visitor.prototype = {
 };
 module.exports = Visitor;
 
-},{"../tree":56}],84:[function(require,module,exports){
+},{"../tree":61}],90:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
+var queue = [];
+var draining = false;
 
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
+function drainQueue() {
+    if (draining) {
+        return;
     }
-
-    if (canPost) {
-        var queue = [];
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
     }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
 
 process.title = 'browser';
 process.browser = true;
 process.env = {};
 process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
 
 function noop() {}
 
@@ -8832,15 +9883,16 @@ process.emit = noop;
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
-}
+};
 
 // TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
+process.umask = function() { return 0; };
 
-},{}],85:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap')
@@ -8947,7 +9999,7 @@ function doResolve(fn, onFulfilled, onRejected) {
   }
 }
 
-},{"asap":87}],86:[function(require,module,exports){
+},{"asap":93}],92:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -9057,7 +10109,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 }
 
-},{"./core.js":85,"asap":87}],87:[function(require,module,exports){
+},{"./core.js":91,"asap":93}],93:[function(require,module,exports){
 (function (process){
 
 // Use the fastest possible means to execute a task in a future turn
@@ -9174,7 +10226,7 @@ module.exports = asap;
 
 
 }).call(this,require('_process'))
-},{"_process":84}],88:[function(require,module,exports){
+},{"_process":90}],94:[function(require,module,exports){
 // should work in any browser without browserify
 
 if (typeof Promise.prototype.done !== 'function') {
@@ -9187,7 +10239,7 @@ if (typeof Promise.prototype.done !== 'function') {
     })
   }
 }
-},{}],"promise/polyfill.js":[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 // not "use strict" so we can declare global "Promise"
 
 var asap = require('asap');
@@ -9199,4 +10251,5 @@ if (typeof Promise === 'undefined') {
 
 require('./polyfill-done.js');
 
-},{"./lib/core.js":85,"./lib/es6-extensions.js":86,"./polyfill-done.js":88,"asap":87}]},{},[5]);
+},{"./lib/core.js":91,"./lib/es6-extensions.js":92,"./polyfill-done.js":94,"asap":93}]},{},[2])(2)
+});

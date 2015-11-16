@@ -34,7 +34,7 @@
 }
 body {
   padding: 30px;
-  color: #ff0000;
+  color: #f00;
 }
 .scope-mix {
   width: 8;
@@ -110,4 +110,54 @@ body {
 }
 .selector3 {
   margin: 4;
+}
+mixins-args-expand-op-1 {
+  m3: 1, 2, 3;
+}
+mixins-args-expand-op-2 {
+  m3: 4, 5, 6;
+}
+mixins-args-expand-op-3a {
+  m3: a, b, c;
+}
+mixins-args-expand-op-3b {
+  m4: 0, a, b, c;
+}
+mixins-args-expand-op-3c {
+  m4: a, b, c, 4;
+}
+mixins-args-expand-op-4a {
+  m3: a, b, c, d;
+}
+mixins-args-expand-op-4b {
+  m4: 0, a, b, c, d;
+}
+mixins-args-expand-op-4c {
+  m4: a, b, c, d, 4;
+}
+mixins-args-expand-op-5a {
+  m3: 1, 2, 3;
+}
+mixins-args-expand-op-5b {
+  m4: 0, 1, 2, 3;
+}
+mixins-args-expand-op-5c {
+  m4: 1, 2, 3, 4;
+}
+mixins-args-expand-op-6 {
+  m4: 0, 1, 2, 3;
+}
+mixins-args-expand-op-7 {
+  m4: 0, 1, 2, 3;
+}
+mixins-args-expand-op-8 {
+  m4: 1, 1.5, 2, 3;
+}
+mixins-args-expand-op-9 {
+  aa: 4 5 6 1 2 3 and again 4 5 6;
+  a4: and;
+  a8: 5;
+}
+#test-mixin-matching-when-default-2645 {
+  height: 20px;
 }

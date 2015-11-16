@@ -213,3 +213,51 @@ body {
 div {
   .test-calling-one-arg-mixin(1);
 }
+
+mixins-args-expand-op- {
+  @x: 1, 2, 3;
+  @y: 4  5  6;
+
+  &1 {.m3(@x...)}
+  &2 {.m3(@y...)}
+  &3 {.wr(a, b, c)}
+  &4 {.wr(a; b; c, d)}
+  &5 {.wr(@x...)}
+  &6 {.m4(0; @x...)}
+  &7 {.m4(@x..., @a: 0)}
+  &8 {.m4(@b: 1.5; @x...)}
+  &9 {.aa(@y, @x..., and again, @y...)}
+
+  .m3(@a, @b, @c) {
+    m3: @a, @b, @c;
+  }
+
+  .m4(@a, @b, @c, @d) {
+    m4: @a, @b, @c, @d;
+  }
+
+  .wr(@a...) {
+    &a {.m3(@a...)}
+    &b {.m4(0, @a...)}
+    &c {.m4(@a..., 4)}
+  }
+
+  .aa(@a...) {
+    aa: @a;
+    a4: extract(@a, 5);
+    a8: extract(@a, 8);
+  }
+}
+#test-mixin-matching-when-default-2645 {
+  .mixin(@height) {
+    height: @height;
+  }
+
+  .mixin(@width, @height: 10px) {
+    width: @width;
+
+    .mixin(@height: @height);
+  }
+
+  .mixin(@height: 20px);
+}

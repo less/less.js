@@ -34,6 +34,14 @@ div#id.class[a=1][b=2].class:not(1) {
 .visible + .visible .sub {
   color: green;
 }
+@supports (something: else) {
+  .class {
+    something: else;
+  }
+  .nestedToo .class {
+    something: else;
+  }
+}
 .b {
   color: red;
   color: green;
@@ -51,7 +59,7 @@ div#id.class[a=1][b=2].class:not(1) {
   color: green;
 }
 .y {
-  pulled-in: yes;
+  pulled-in: yes /* inline comment survives */;
 }
 /* comment pulled in */
 .visible {
@@ -66,3 +74,24 @@ div#id.class[a=1][b=2].class:not(1) {
     color: red;
   }
 }
+.test {
+  color: red;
+}
+.test:first-child {
+  color: blue;
+}
+@keyframes some-name {
+  property: value;
+}
+@supports (animation-name: test) {
+  @keyframes some-name {
+    property: value;
+  }
+  .selector {
+    color: red;
+  }
+}
+div {
+  this isn't very valid CSS.
+}
+this isn't very valid CSS.

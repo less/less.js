@@ -79,7 +79,7 @@
   content: theme1 is not 'theme2';
   content: theme1 is theme1;
 }
-.variouse-types-comparision {
+.variouse-types-comparison {
   /**/
   content: true is not equal to false;
   content: false is not equal to true too;
@@ -121,7 +121,7 @@
   content: 1 2 is not equal to 3;
   content: 3 is not equal to 1 2 too;
 }
-.list-comparision {
+.list-comparison {
   /**/
   content: a b c is equal to a b c;
   content: a b c is equal to a b c too;

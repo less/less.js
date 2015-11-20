@@ -19,3 +19,6 @@ show-all-content .something {
   was: included;
   shall-see: another property above;
 }
+call-mixin-with-import-by-reference-inside {
+  the-only-property: nothing-below-this;
+}

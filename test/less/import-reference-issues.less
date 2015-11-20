@@ -4,7 +4,7 @@
 // * #1878 - extend inside referenced file should not extend outside selectors
 // * #2716 - A file imported by reference and then normally - multiple imports should be independent
 // * #1968 - When using an @import (reference), mixins that contain an & selector get added to the compiled output improperly
-// * #2162 - same as #1896 
+// * #2162 - Cannot put import by reference inside of a mixin (also doubles #1896)
 
 // #1878: extend inside referenced file should not extend outside selectors
 @import (reference) "import-reference-issues/global-scope-import.less";
@@ -40,3 +40,11 @@ show-all-content {
 @import "import-reference-issues/mixin-1968.less";
 @import (reference) "import-reference-issues/appender-reference-1968.less";
 
+// #2162 - Cannot put import by reference inside of a mixin (also doubles #1896)
+.mixin-with-import-by-reference-inside() {
+  the-only-property: nothing-below-this;
+  @import (reference) "import-reference-issues/simple-ruleset-2162.less";
+}
+call-mixin-with-import-by-reference-inside {
+  .mixin-with-import-by-reference-inside();
+}

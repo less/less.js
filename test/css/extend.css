@@ -1,7 +1,7 @@
 .error,
 .badError {
-  border: 1px #f00;
-  background: #fdd;
+  border: 1px #ff0000;
+  background: #ffdddd;
 }
 .error.intrusion,
 .badError.intrusion {

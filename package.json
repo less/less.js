@@ -1,5 +1,5 @@
 {
-  "name": "less",
+  "name": "less-with-imports-caching",
   "version": "2.5.3",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",

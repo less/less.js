@@ -170,7 +170,7 @@ module.exports = function (grunt) {
                 }
             },
             errors: {
-                src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less'],
+                src: ['test/less/errors/*.less', '!test/less/errors/javascript-error.less', 'test/browser/less/errors/*.less'],
                 options: {
                     timeout: 20000,
                     helpers: 'test/browser/runner-errors-options.js',

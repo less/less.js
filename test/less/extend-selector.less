@@ -97,3 +97,14 @@ div.ext5,
     &:extend( .header .header-nav all );
   }
 }
+
+.issue-2586-bordered {
+    border: solid 1px black;
+}
+.issue-2586-somepage {
+    .content:extend(.issue-2586-bordered) {
+        &>span {
+            margin-bottom: 10px;
+        }
+    }
+}

@@ -78,3 +78,10 @@ div.ext7,
 .footer .footer-nav:before {
   background: blue;
 }
+.issue-2586-bordered,
+.issue-2586-somepage .content {
+  border: solid 1px black;
+}
+.issue-2586-somepage .content > span {
+  margin-bottom: 10px;
+}

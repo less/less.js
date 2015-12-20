@@ -173,3 +173,27 @@
 #guarded-deeper {
   should: match 1;
 }
+#parenthesisNot-true {
+  parenthesisNot: just-value;
+  parenthesisNot: negated twice 1;
+  parenthesisNot: negated twice 2;
+  parenthesisNot: negated twice 3;
+}
+#parenthesisNot-false {
+  parenthesisNot: negated once inside;
+  parenthesisNot: negated once outside;
+  parenthesisNot: negated once middle;
+}
+#orderOfEvaluation-false-false-true {
+  no-parenthesis: evaluated true 3;
+  with-parenthesis: evaluated true;
+}
+#orderOfEvaluation-false-false-false {
+  orderOfEvaluation: evaluated false;
+}
+#orderOfEvaluation-true-true-false {
+  no-parenthesis: evaluated true 1;
+  no-parenthesis: evaluated true 2;
+  no-parenthesis: evaluated true 4;
+  with-parenthesis: evaluated true;
+}

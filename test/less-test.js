@@ -238,7 +238,7 @@ module.exports = function() {
                 if (err) {
                     fail("ERROR: " + (err && err.message));
                     if (isVerbose) {
-                        process.stdout.write("\n"); //fixme: meri probably here is bug
+                        process.stdout.write("\n");
                         if (err.stack) {
                             process.stdout.write(err.stack + "\n");
                         } else {

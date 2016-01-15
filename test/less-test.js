@@ -239,7 +239,12 @@ module.exports = function() {
                     fail("ERROR: " + (err && err.message));
                     if (isVerbose) {
                         process.stdout.write("\n");
-                        process.stdout.write(err.stack + "\n");
+                        if (err.stack) {
+                            process.stdout.write(err.stack + "\n");
+                        } else {
+                            //this sometimes happen - show the whole error object
+                            console.log(err);
+                        }
                     }
                     release();
                     return;

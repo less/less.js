@@ -1,0 +1,12 @@
+.named-colors-in-expressions {
+  color-0: 0 -red;
+  color-1: #000101;
+  color-2: #ff0000;
+  color-3: #ff0000;
+}
+.named-colors-in-expressions-bar-red {
+  x: y;
+}
+.named-colors-in-expressions-barred {
+  a: a;
+}

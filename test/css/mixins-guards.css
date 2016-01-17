@@ -185,15 +185,27 @@
   parenthesisNot: negated once middle;
 }
 #orderOfEvaluation-false-false-true {
+  no-parenthesis: evaluated true 1a;
+  no-parenthesis: evaluated true 1b;
+  no-parenthesis: evaluated true 1d;
   no-parenthesis: evaluated true 3;
+  no-parenthesis: evaluated true 4;
   with-parenthesis: evaluated true;
 }
 #orderOfEvaluation-false-false-false {
-  orderOfEvaluation: evaluated false;
+  no-parenthesis: evaluated true 2a;
+  no-parenthesis: evaluated true 2b;
+  no-parenthesis: evaluated true 2c;
 }
 #orderOfEvaluation-true-true-false {
-  no-parenthesis: evaluated true 1;
-  no-parenthesis: evaluated true 2;
+  no-parenthesis: evaluated true 1a;
+  no-parenthesis: evaluated true 1b;
+  no-parenthesis: evaluated true 1c;
+  no-parenthesis: evaluated true 1d;
+  no-parenthesis: evaluated true 1e;
+  no-parenthesis: evaluated true 2a;
+  no-parenthesis: evaluated true 2b;
+  no-parenthesis: evaluated true 2c;
   no-parenthesis: evaluated true 4;
   with-parenthesis: evaluated true;
 }

@@ -312,10 +312,28 @@
 }
 
 .orderOfEvaluation(@a1, @a2, @a3) when ((@a1) and (@a2) or (@a3)) {
-  no-parenthesis: evaluated true 1;
+  no-parenthesis: evaluated true 1a;
+}
+.orderOfEvaluation(@a1, @a2, @a3) when ((@a3) or (@a1) and (@a2)) {
+  no-parenthesis: evaluated true 1b;
+}
+.orderOfEvaluation(@a1, @a2, @a3) when ((@a1) and ((@a2) or (@a3))) {
+  no-parenthesis: evaluated true 1c;
+}
+.orderOfEvaluation(@a1, @a2, @a3) when (@a3), (@a1) and (@a2) {
+  no-parenthesis: evaluated true 1d;
+}
+.orderOfEvaluation(@a1, @a2, @a3) when (((@a3) or (@a1)) and (@a2)) {
+  no-parenthesis: evaluated true 1e;
 }
 .orderOfEvaluation(@a1, @a2, @a3) when ((@a1) and (@a2) or not (@a3)) {
-  no-parenthesis: evaluated true 2;
+  no-parenthesis: evaluated true 2a;
+}
+.orderOfEvaluation(@a1, @a2, @a3) when (not (@a3) or (@a1) and (@a2)) {
+  no-parenthesis: evaluated true 2b;
+}
+.orderOfEvaluation(@a1, @a2, @a3) when not (@a3), (@a1) and (@a2) {
+  no-parenthesis: evaluated true 2c;
 }
 .orderOfEvaluation(@a1, @a2, @a3) when (not (@a1) and (@a2) or (@a3)) {
   no-parenthesis: evaluated true 3;

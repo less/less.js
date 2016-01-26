@@ -144,11 +144,19 @@ body ^^ .shadow {
 #issue2066 {
   background: url('/images/icon-team.svg') 0 0 / contain;
 }
+
 @counter-style triangle {
   system: cyclic;
   symbols: ‣;
   suffix: " ";
 }
+
 @-ms-viewport{
-//width: auto !important;
+  // width: auto !important;
 }
+
+@unknown foo 42 (bar) {
+    x {y: z}    
+}
+
+@unknown foo 43;

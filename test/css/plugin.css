@@ -1,3 +1,4 @@
+@charset "utf-8";
 .other {
   trans: transitive;
 }
@@ -41,4 +42,7 @@
   .test {
     result: local;
   }
+}
+.root {
+  prop: value;
 }

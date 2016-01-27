@@ -81,5 +81,11 @@
   }
 }
 
+@plugin "./plugin/plugin-root";
+@ruleset2: test-detached-ruleset();
+.root {
+  @ruleset2();
+}
 
+test-directive();
 

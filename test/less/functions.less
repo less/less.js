@@ -223,6 +223,27 @@
   two-length: length(@two);
   two-one: extract(@two, 1);
   two-two: extract(@two, 2);
+
+  each(@list, {
+    index+: @index;
+    item@{index}: @item;
+  });
+  
+  // nested each
+  each(10px 15px, 20px 25px; { 
+    @alpha: a b c d;
+    @i: (@index - 1);
+
+    each(@item; key, val; {
+      @a: extract(@alpha, (@i * 2 + @key));
+      nest-@{a}-@{index}: @val @key;
+    });
+  });
+
+  // vector math
+  each(1 2 3 4, {
+    padding+_: (@item * 10px);
+  });
 }
 @color1: #FFF;/* comment1 */
 @color2: #FFF/* comment2 */;
@@ -230,3 +251,4 @@ html {
   color: mix(blue, @color1, 50%);
   color: mix(blue, @color2, 50%);
 }
+

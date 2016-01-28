@@ -1,3 +1,0 @@
-SyntaxError: Custom function 'test-undefined' is not registered. in {path}plugin-undefined-2.less on line 2, column 1:
-1 @plugin "../plugin/plugin-root.js";
-2 test-undefined();

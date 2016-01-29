@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v2.5.4
+ * Less - Leaner CSS v2.6.0
  * http://lesscss.org
  *
  * Copyright (c) 2009-2016, Alexis Sellier <self@cloudhead.net>
@@ -2451,7 +2451,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 5, 3],
+        version: [2, 6, 0],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),

@@ -18,3 +18,14 @@
                                     @gutter-width *             //      We strongly recommend you   */
                                     @columns);                  //      do not change this formula. */
 @total-width                :   @gridsystem-width;          //      set to 100% for fluid grid  */
+
+// .............................................................................
+
+.some-inline-comments {
+    a: yes /* comment */;
+    b: red /* comment */;
+   @c: yes /* comment */;
+   @d: red /* comment */;
+    c: @c;
+    d: @d;
+}

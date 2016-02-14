@@ -10,7 +10,7 @@
  - Fixed extend leaking through nested parent selector. #2586
  - Added "or" keyword and allowed arbitrary logical expression in guards
  - Fixing #2124 - Parsing Error "Unrecognised input" for color operations
- - Logical operator ```and``` now has higher precence then logical operator ```or```.
+ - Logical operator ```and``` now has higher precence than logical operator ```or```.
  - Allow unknown at-rules w/o {} block
 
 # 2.5.3

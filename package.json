@@ -57,7 +57,7 @@
     "grunt-jscs": "^2.7.0",
     "grunt-shell": "^1.1.1",
     "grunt-browserify": "~4.0.1",
-    "jit-grunt": "^0.9.1",
+    "jit-grunt": "^0.10.0",
     "time-grunt": "^1.0.0",
     "grunt-saucelabs": "^8.3.2"
   },

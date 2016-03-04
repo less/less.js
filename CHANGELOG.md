@@ -1,3 +1,12 @@
+# 2.6.1
+
+2016-03-04
+
+ - Update Less.js dependencies
+ - Fix comments after named color regression
+ - use instanceof operator instead of class comparison optimization
+ - disallow whitespace in variable calls
+
 # 2.6.0
 
 2016-01-29

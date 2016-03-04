@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v2.6.0
+ * Less - Leaner CSS v2.6.1
  * http://lesscss.org
  *
  * Copyright (c) 2009-2016, Alexis Sellier <self@cloudhead.net>
@@ -328,16 +328,6 @@ module.exports = function(window, less, options) {
         }
     }
 
-    function error(e, rootHref) {
-        if (!options.errorReporting || options.errorReporting === "html") {
-            errorHTML(e, rootHref);
-        } else if (options.errorReporting === "console") {
-            errorConsole(e, rootHref);
-        } else if (typeof options.errorReporting === 'function') {
-            options.errorReporting("add", e, rootHref);
-        }
-    }
-
     function removeErrorHTML(path) {
         var node = window.document.getElementById('less-error-message:' + utils.extractId(path));
         if (node) {
@@ -385,6 +375,16 @@ module.exports = function(window, less, options) {
             content += '\nStack Trace\n' + e.stack;
         }
         less.logger.error(content);
+    }
+
+    function error(e, rootHref) {
+        if (!options.errorReporting || options.errorReporting === "html") {
+            errorHTML(e, rootHref);
+        } else if (options.errorReporting === "console") {
+            errorConsole(e, rootHref);
+        } else if (typeof options.errorReporting === 'function') {
+            options.errorReporting("add", e, rootHref);
+        }
     }
 
     return {
@@ -1472,6 +1472,9 @@ colorFunctions = {
         return colorFunctions.hsla(h, s, l, 1.0);
     },
     hsla: function (h, s, l, a) {
+
+        var m1, m2;
+
         function hue(h) {
             h = h < 0 ? h + 1 : (h > 1 ? h - 1 : h);
             if (h * 6 < 1) {
@@ -1491,8 +1494,8 @@ colorFunctions = {
         h = (number(h) % 360) / 360;
         s = clamp(number(s)); l = clamp(number(l)); a = clamp(number(a));
 
-        var m2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
-        var m1 = l * 2 - m2;
+        m2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
+        m1 = l * 2 - m2;
 
         return colorFunctions.rgba(hue(h + 1 / 3) * 255,
             hue(h)       * 255,
@@ -2451,7 +2454,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var less = {
-        version: [2, 6, 0],
+        version: [2, 6, 1],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -2817,6 +2820,74 @@ module.exports = function() {
         currentPos,  // index of current chunk, in `input`
         parserInput = {};
 
+    var CHARCODE_SPACE = 32,
+        CHARCODE_TAB = 9,
+        CHARCODE_LF = 10,
+        CHARCODE_CR = 13,
+        CHARCODE_PLUS = 43,
+        CHARCODE_COMMA = 44,
+        CHARCODE_FORWARD_SLASH = 47,
+        CHARCODE_9 = 57;
+
+    function skipWhitespace(length) {
+        var oldi = parserInput.i, oldj = j,
+            curr = parserInput.i - currentPos,
+            endIndex = parserInput.i + current.length - curr,
+            mem = (parserInput.i += length),
+            inp = input,
+            c, nextChar, comment;
+
+        for (; parserInput.i < endIndex; parserInput.i++) {
+            c = inp.charCodeAt(parserInput.i);
+
+            if (parserInput.autoCommentAbsorb && c === CHARCODE_FORWARD_SLASH) {
+                nextChar = inp.charAt(parserInput.i + 1);
+                if (nextChar === '/') {
+                    comment = {index: parserInput.i, isLineComment: true};
+                    var nextNewLine = inp.indexOf("\n", parserInput.i + 2);
+                    if (nextNewLine < 0) {
+                        nextNewLine = endIndex;
+                    }
+                    parserInput.i = nextNewLine;
+                    comment.text = inp.substr(comment.i, parserInput.i - comment.i);
+                    parserInput.commentStore.push(comment);
+                    continue;
+                } else if (nextChar === '*') {
+                    var nextStarSlash = inp.indexOf("*/", parserInput.i + 2);
+                    if (nextStarSlash >= 0) {
+                        comment = {
+                            index: parserInput.i,
+                            text: inp.substr(parserInput.i, nextStarSlash + 2 - parserInput.i),
+                            isLineComment: false
+                        };
+                        parserInput.i += comment.text.length - 1;
+                        parserInput.commentStore.push(comment);
+                        continue;
+                    }
+                }
+                break;
+            }
+
+            if ((c !== CHARCODE_SPACE) && (c !== CHARCODE_LF) && (c !== CHARCODE_TAB) && (c !== CHARCODE_CR)) {
+                break;
+            }
+        }
+
+        current = current.slice(length + parserInput.i - mem + curr);
+        currentPos = parserInput.i;
+
+        if (!current.length) {
+            if (j < chunks.length - 1) {
+                current = chunks[++j];
+                skipWhitespace(0); // skip space at the beginning of a chunk
+                return true; // things changed
+            }
+            parserInput.finished = true;
+        }
+
+        return oldi !== parserInput.i || oldj !== j;
+    }
+
     parserInput.save = function() {
         currentPos = parserInput.i;
         saveStack.push( { current: current, i: parserInput.i, j: j });
@@ -2911,77 +2982,9 @@ module.exports = function() {
         return null;
     };
 
-    var CHARCODE_SPACE = 32,
-        CHARCODE_TAB = 9,
-        CHARCODE_LF = 10,
-        CHARCODE_CR = 13,
-        CHARCODE_PLUS = 43,
-        CHARCODE_COMMA = 44,
-        CHARCODE_FORWARD_SLASH = 47,
-        CHARCODE_9 = 57;
-
     parserInput.autoCommentAbsorb = true;
     parserInput.commentStore = [];
     parserInput.finished = false;
-
-    var skipWhitespace = function(length) {
-        var oldi = parserInput.i, oldj = j,
-            curr = parserInput.i - currentPos,
-            endIndex = parserInput.i + current.length - curr,
-            mem = (parserInput.i += length),
-            inp = input,
-            c, nextChar, comment;
-
-        for (; parserInput.i < endIndex; parserInput.i++) {
-            c = inp.charCodeAt(parserInput.i);
-
-            if (parserInput.autoCommentAbsorb && c === CHARCODE_FORWARD_SLASH) {
-                nextChar = inp.charAt(parserInput.i + 1);
-                if (nextChar === '/') {
-                    comment = {index: parserInput.i, isLineComment: true};
-                    var nextNewLine = inp.indexOf("\n", parserInput.i + 2);
-                    if (nextNewLine < 0) {
-                        nextNewLine = endIndex;
-                    }
-                    parserInput.i = nextNewLine;
-                    comment.text = inp.substr(comment.i, parserInput.i - comment.i);
-                    parserInput.commentStore.push(comment);
-                    continue;
-                } else if (nextChar === '*') {
-                    var nextStarSlash = inp.indexOf("*/", parserInput.i + 2);
-                    if (nextStarSlash >= 0) {
-                        comment = {
-                            index: parserInput.i,
-                            text: inp.substr(parserInput.i, nextStarSlash + 2 - parserInput.i),
-                            isLineComment: false
-                        };
-                        parserInput.i += comment.text.length - 1;
-                        parserInput.commentStore.push(comment);
-                        continue;
-                    }
-                }
-                break;
-            }
-
-            if ((c !== CHARCODE_SPACE) && (c !== CHARCODE_LF) && (c !== CHARCODE_TAB) && (c !== CHARCODE_CR)) {
-                break;
-            }
-        }
-
-        current = current.slice(length + parserInput.i - mem + curr);
-        currentPos = parserInput.i;
-
-        if (!current.length) {
-            if (j < chunks.length - 1) {
-                current = chunks[++j];
-                skipWhitespace(0); // skip space at the beginning of a chunk
-                return true; // things changed
-            }
-            parserInput.finished = true;
-        }
-
-        return oldi !== parserInput.i || oldj !== j;
-    };
 
     // Same as $(), but don't change the state of the parser,
     // just return the match.
@@ -3108,9 +3111,21 @@ var Parser = function Parser(context, imports, fileInfo) {
     var parsers,
         parserInput = getParserInput();
 
+    function error(msg, type) {
+        throw new LessError(
+            {
+                index: parserInput.i,
+                filename: fileInfo.filename,
+                type: type || 'Syntax',
+                message: msg
+            },
+            imports
+        );
+    }
+
     function expect(arg, msg, index) {
         // some older browsers return typeof 'function' for RegExp
-        var result = (Object.prototype.toString.call(arg) === '[object Function]') ? arg.call(parsers) : parserInput.$re(arg);
+        var result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
         if (result) {
             return result;
         }
@@ -3124,18 +3139,6 @@ var Parser = function Parser(context, imports, fileInfo) {
             return arg;
         }
         error(msg || "expected '" + arg + "' got '" + parserInput.currentChar() + "'");
-    }
-
-    function error(msg, type) {
-        throw new LessError(
-            {
-                index: parserInput.i,
-                filename: fileInfo.filename,
-                type: type || 'Syntax',
-                message: msg
-            },
-            imports
-        );
     }
 
     function getDebugInfo(index) {
@@ -3392,26 +3395,6 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                 },
 
-                namedColor: function () {
-                    parserInput.save();
-                    var autoCommentAbsorb = parserInput.autoCommentAbsorb;
-                    parserInput.autoCommentAbsorb = false;
-                    var k = parserInput.$re(/^[_A-Za-z-][_A-Za-z0-9-]*/);
-                    parserInput.autoCommentAbsorb = autoCommentAbsorb;
-                    if (!k) {
-                        parserInput.forget();
-                        return ;
-                    }
-                    var result = tree.Color.fromKeyword(k);
-                    if (!result) {
-                        parserInput.restore();
-                    } else {
-                        parserInput.forget();
-                        return result;
-                    }
-
-                },
-
                 //
                 // A function call
                 //
@@ -3578,8 +3561,24 @@ var Parser = function Parser(context, imports, fileInfo) {
                         }
                         return new(tree.Color)(rgb[1], undefined, '#' + colorCandidateString);
                     }
+                },
 
-                    return this.namedColor();
+                colorKeyword: function () {
+                    parserInput.save();
+                    var autoCommentAbsorb = parserInput.autoCommentAbsorb;
+                    parserInput.autoCommentAbsorb = false;
+                    var k = parserInput.$re(/^[A-Za-z]+/);
+                    parserInput.autoCommentAbsorb = autoCommentAbsorb;
+                    if (!k) {
+                        parserInput.forget();
+                        return;
+                    }
+                    parserInput.restore();
+                    var color = tree.Color.fromKeyword(k);
+                    if (color) {
+                        parserInput.$str(k);
+                        return color;
+                    }
                 },
 
                 //
@@ -3658,7 +3657,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             rulesetCall: function () {
                 var name;
 
-                if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^(@[\w-]+)\s*\(\s*\)\s*;/))) {
+                if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^(@[\w-]+)\(\s*\)\s*;/))) {
                     return new tree.RulesetCall(name[1]);
                 }
             },
@@ -4711,12 +4710,44 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
             },
             parenthesisCondition: function () {
+                function tryConditionFollowedByParenthesis(me) {
+                    var body;
+                    parserInput.save();
+                    body = me.condition();
+                    if (!body) {
+                        parserInput.restore();
+                        return ;
+                    }
+                    if (!parserInput.$char(')')) {
+                        parserInput.restore();
+                        return ;
+                    }
+                    parserInput.forget();
+                    return body;
+                }
+
                 var body;
+                parserInput.save();
                 if (!parserInput.$str("(")) {
+                    parserInput.restore();
                     return ;
                 }
-                body = this.condition() || this.atomicCondition();
-                expectChar(')');
+                body = tryConditionFollowedByParenthesis(this);
+                if (body) {
+                    parserInput.forget();
+                    return body;
+                }
+
+                body = this.atomicCondition();
+                if (!body) {
+                    parserInput.restore();
+                    return ;
+                }
+                if (!parserInput.$char(')')) {
+                    parserInput.restore("expected ')' got '" + parserInput.currentChar() + "'");
+                    return ;
+                }
+                parserInput.forget();
                 return body;
             },
             atomicCondition: function () {
@@ -4773,8 +4804,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
 
                 var o = this.sub() || entities.dimension() ||
-                        entities.variable() ||
-                        entities.call() || entities.color();
+                        entities.color() || entities.variable() ||
+                        entities.call() || entities.colorKeyword();
 
                 if (negate) {
                     o.parensInOp = true;
@@ -7144,7 +7175,7 @@ Definition.prototype.makeImportant = function() {
             return r;
         }
     });
-    var result = new Definition (this.name, this.params, rules, this.condition, this.variadic, this.frames);
+    var result = new Definition(this.name, this.params, rules, this.condition, this.variadic, this.frames);
     return result;
 };
 Definition.prototype.eval = function (context) {
@@ -8065,6 +8096,91 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         return selector;
     }
 
+    // joins selector path from `beginningPath` with selector path in `addPath`
+    // `replacedElement` contains element that is being replaced by `addPath`
+    // returns concatenated path
+    function addReplacementIntoPath(beginningPath, addPath, replacedElement, originalSelector) {
+        var newSelectorPath, lastSelector, newJoinedSelector;
+        // our new selector path
+        newSelectorPath = [];
+
+        //construct the joined selector - if & is the first thing this will be empty,
+        // if not newJoinedSelector will be the last set of elements in the selector
+        if (beginningPath.length > 0) {
+            newSelectorPath = beginningPath.slice(0);
+            lastSelector = newSelectorPath.pop();
+            newJoinedSelector = originalSelector.createDerived(lastSelector.elements.slice(0));
+        }
+        else {
+            newJoinedSelector = originalSelector.createDerived([]);
+        }
+
+        if (addPath.length > 0) {
+            // /deep/ is a combinator that is valid without anything in front of it
+            // so if the & does not have a combinator that is "" or " " then
+            // and there is a combinator on the parent, then grab that.
+            // this also allows + a { & .b { .a & { ... though not sure why you would want to do that
+            var combinator = replacedElement.combinator, parentEl = addPath[0].elements[0];
+            if (combinator.emptyOrWhitespace && !parentEl.combinator.emptyOrWhitespace) {
+                combinator = parentEl.combinator;
+            }
+            // join the elements so far with the first part of the parent
+            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, replacedElement.index, replacedElement.currentFileInfo));
+            newJoinedSelector.elements = newJoinedSelector.elements.concat(addPath[0].elements.slice(1));
+        }
+
+        // now add the joined selector - but only if it is not empty
+        if (newJoinedSelector.elements.length !== 0) {
+            newSelectorPath.push(newJoinedSelector);
+        }
+
+        //put together the parent selectors after the join (e.g. the rest of the parent)
+        if (addPath.length > 1) {
+            var restOfPath = addPath.slice(1);
+            restOfPath = restOfPath.map(function (selector) {
+                return selector.createDerived(selector.elements, []);
+            });
+            newSelectorPath = newSelectorPath.concat(restOfPath);
+        }
+        return newSelectorPath;
+    }
+
+    // joins selector path from `beginningPath` with every selector path in `addPaths` array
+    // `replacedElement` contains element that is being replaced by `addPath`
+    // returns array with all concatenated paths
+    function addAllReplacementsIntoPath( beginningPath, addPaths, replacedElement, originalSelector, result) {
+        var j;
+        for (j = 0; j < beginningPath.length; j++) {
+            var newSelectorPath = addReplacementIntoPath(beginningPath[j], addPaths, replacedElement, originalSelector);
+            result.push(newSelectorPath);
+        }
+        return result;
+    }
+
+    function mergeElementsOnToSelectors(elements, selectors) {
+        var i, sel;
+
+        if (elements.length === 0) {
+            return ;
+        }
+        if (selectors.length === 0) {
+            selectors.push([ new Selector(elements) ]);
+            return;
+        }
+
+        for (i = 0; i < selectors.length; i++) {
+            sel = selectors[i];
+
+            // if the previous thing in sel is a parent this needs to join on to it
+            if (sel.length > 0) {
+                sel[sel.length - 1] = sel[sel.length - 1].createDerived(sel[sel.length - 1].elements.concat(elements));
+            }
+            else {
+                sel.push(new Selector(elements));
+            }
+        }
+    }
+
     // replace all parent selectors inside `inSelector` by content of `context` array
     // resulting selectors are returned inside `paths` array
     // returns true if `inSelector` contained at least one parent selector
@@ -8183,91 +8299,6 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         }
 
         return hadParentSelector;
-    }
-
-    // joins selector path from `beginningPath` with selector path in `addPath`
-    // `replacedElement` contains element that is being replaced by `addPath`
-    // returns concatenated path
-    function addReplacementIntoPath(beginningPath, addPath, replacedElement, originalSelector) {
-        var newSelectorPath, lastSelector, newJoinedSelector;
-        // our new selector path
-        newSelectorPath = [];
-
-        //construct the joined selector - if & is the first thing this will be empty,
-        // if not newJoinedSelector will be the last set of elements in the selector
-        if (beginningPath.length > 0) {
-            newSelectorPath = beginningPath.slice(0);
-            lastSelector = newSelectorPath.pop();
-            newJoinedSelector = originalSelector.createDerived(lastSelector.elements.slice(0));
-        }
-        else {
-            newJoinedSelector = originalSelector.createDerived([]);
-        }
-
-        if (addPath.length > 0) {
-            // /deep/ is a combinator that is valid without anything in front of it
-            // so if the & does not have a combinator that is "" or " " then
-            // and there is a combinator on the parent, then grab that.
-            // this also allows + a { & .b { .a & { ... though not sure why you would want to do that
-            var combinator = replacedElement.combinator, parentEl = addPath[0].elements[0];
-            if (combinator.emptyOrWhitespace && !parentEl.combinator.emptyOrWhitespace) {
-                combinator = parentEl.combinator;
-            }
-            // join the elements so far with the first part of the parent
-            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, replacedElement.index, replacedElement.currentFileInfo));
-            newJoinedSelector.elements = newJoinedSelector.elements.concat(addPath[0].elements.slice(1));
-        }
-
-        // now add the joined selector - but only if it is not empty
-        if (newJoinedSelector.elements.length !== 0) {
-            newSelectorPath.push(newJoinedSelector);
-        }
-
-        //put together the parent selectors after the join (e.g. the rest of the parent)
-        if (addPath.length > 1) {
-            var restOfPath = addPath.slice(1);
-            restOfPath = restOfPath.map(function (selector) {
-                return selector.createDerived(selector.elements, []);
-            });
-            newSelectorPath = newSelectorPath.concat(restOfPath);
-        }
-        return newSelectorPath;
-    }
-
-    // joins selector path from `beginningPath` with every selector path in `addPaths` array
-    // `replacedElement` contains element that is being replaced by `addPath`
-    // returns array with all concatenated paths
-    function addAllReplacementsIntoPath( beginningPath, addPaths, replacedElement, originalSelector, result) {
-        var j;
-        for (j = 0; j < beginningPath.length; j++) {
-            var newSelectorPath = addReplacementIntoPath(beginningPath[j], addPaths, replacedElement, originalSelector);
-            result.push(newSelectorPath);
-        }
-        return result;
-    }
-
-    function mergeElementsOnToSelectors(elements, selectors) {
-        var i, sel;
-
-        if (elements.length === 0) {
-            return ;
-        }
-        if (selectors.length === 0) {
-            selectors.push([ new Selector(elements) ]);
-            return;
-        }
-
-        for (i = 0; i < selectors.length; i++) {
-            sel = selectors[i];
-
-            // if the previous thing in sel is a parent this needs to join on to it
-            if (sel.length > 0) {
-                sel[sel.length - 1] = sel[sel.length - 1].createDerived(sel[sel.length - 1].elements.concat(elements));
-            }
-            else {
-                sel.push(new Selector(elements));
-            }
-        }
     }
 
     function deriveSelector(visibilityInfo, deriveFrom) {
@@ -8498,7 +8529,7 @@ Unit.prototype.map = function(callback) {
     }
 };
 Unit.prototype.usedUnits = function() {
-    var group, result = {}, mapUnit;
+    var group, result = {}, mapUnit, groupName;
 
     mapUnit = function (atomicUnit) {
         /*jshint loopfunc:true */
@@ -8509,7 +8540,7 @@ Unit.prototype.usedUnits = function() {
         return atomicUnit;
     };
 
-    for (var groupName in unitConversions) {
+    for (groupName in unitConversions) {
         if (unitConversions.hasOwnProperty(groupName)) {
             group = unitConversions[groupName];
 

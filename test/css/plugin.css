@@ -46,3 +46,4 @@
 .root {
   prop: value;
 }
+@arbitrary value after ();

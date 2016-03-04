@@ -1,3 +1,27 @@
+# 2.6.1
+
+2016-03-04
+
+ - Update Less.js dependencies
+ - Fix comments after named color regression
+ - use instanceof operator instead of class comparison optimization
+ - disallow whitespace in variable calls
+
+# 2.6.0
+
+2016-01-29
+
+ - Underscore now allowed in dimension unit
+ - Fixes for import by reference
+ - Fix for #2384 Changes HTTPRequest "sync" setting to simply hide the page until less has rendered, browser version is now orders of magnitude faster.
+ - Added ability to cache stylesheets while using modifyVars
+ - Error when when image-size functions are used in browser-less
+ - Fixed extend leaking through nested parent selector. #2586
+ - Added "or" keyword and allowed arbitrary logical expression in guards
+ - Fixing #2124 - Parsing Error "Unrecognised input" for color operations
+ - Logical operator ```and``` now has higher precedence than logical operator ```or```.
+ - Allow unknown at-rules w/o {} block
+
 # 2.5.3
 
 2015-09-25

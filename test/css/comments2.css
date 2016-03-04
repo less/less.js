@@ -10,3 +10,9 @@
   margin: 10px;
   total-width: (1 * 6em * 12) + (2em * 12);
 }
+.some-inline-comments {
+  a: yes /* comment */;
+  b: red /* comment */;
+  c: yes /* comment */;
+  d: red /* comment */;
+}

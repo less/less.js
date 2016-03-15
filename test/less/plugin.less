@@ -81,5 +81,13 @@
   }
 }
 
+@plugin "./plugin/plugin-tree-nodes";
+@ruleset2: test-detached-ruleset();
+.root {
+  @ruleset2();
+}
+
+test-directive("@charset"; '"utf-8"');
+test-directive("@arbitrary"; "value after ()");
 
 

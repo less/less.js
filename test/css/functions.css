@@ -54,6 +54,8 @@
   contrast-dark-thresh-per: #eeeeee;
   contrast-high-thresh-per: #eeeeee;
   contrast-low-thresh-per: #eeeeee;
+  contrast-high-alpha: rgba(0, 0, 0, 0.9);
+  contrast-low-alpha: #eeeeee;
   replace: "Hello, World!";
   replace-captured: "This is a new string.";
   replace-with-flags: "2 + 2 = 4";

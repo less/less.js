@@ -6,19 +6,40 @@ jasmine.getEnv().addReporter(new jasmine.JSReporter2());
 
 var logMessages = [];
 window.less = window.less || {};
+
+var logLevel_debug = 4,
+    logLevel_info = 3,
+    logLevel_warn = 2,
+    logLevel_error = 1;
+
+// The amount of logging in the javascript console.
+// 3 - Debug, information and errors
+// 2 - Information and errors
+// 1 - Errors
+// 0 - None
+// Defaults to 2
+
 less.loggers = [
     {
-        info: function (msg) {
-            logMessages.push(msg);
+        debug: function(msg) {
+            if (less.options.logLevel >= logLevel_debug) {
+                logMessages.push(msg);
+            }
         },
-        debug: function (msg) {
-            logMessages.push(msg);
+        info: function(msg) {
+            if (less.options.logLevel >= logLevel_info) {
+                logMessages.push(msg);
+            }
         },
-        warn: function (msg) {
-            logMessages.push(msg);
+        warn: function(msg) {
+            if (less.options.logLevel >= logLevel_warn) {
+                logMessages.push(msg);
+            }
         },
-        error: function (msg) {
-            logMessages.push(msg);
+        error: function(msg) {
+            if (less.options.logLevel >= logLevel_error) {
+                logMessages.push(msg);
+            }
         }
     }
 ];

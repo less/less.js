@@ -18,7 +18,8 @@
     "url": "https://github.com/less/less.js.git"
   },
   "master": {
-    "url": "https://github.com/less/less.js/blob/master/"
+    "url": "https://github.com/less/less.js/blob/master/",
+    "raw": "https://raw.githubusercontent.com/less/less.js/master/"
   },
   "license": "Apache-2.0",
   "bin": {
@@ -88,5 +89,7 @@
     "stylesheet",
     "variables in css",
     "css less"
-  ]
+  ],
+  "rawcurrent": "https://raw.github.com/less/less.js/v",
+  "sourcearchive": "https://github.com/less/less.js/archive/v"
 }

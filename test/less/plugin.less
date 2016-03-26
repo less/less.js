@@ -90,4 +90,12 @@
 test-directive("@charset"; '"utf-8"');
 test-directive("@arbitrary"; "value after ()");
 
+@plugin "./plugin/plugin-custom-directives";
+
+@make-directive new-directive;
+@eval-rules test {
+  foo: bar;
+}
+
+
 

@@ -47,3 +47,7 @@
   prop: value;
 }
 @arbitrary value after ();
+@new-directive success;
+test {
+  foo: bar;
+}

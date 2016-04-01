@@ -3026,7 +3026,7 @@ module.exports = function() {
         input = str;
         parserInput.i = j = currentPos = furthest = 0;
 
-        // chunking apparantly makes things quicker (but my tests indicate
+        // chunking apparently makes things quicker (but my tests indicate
         // it might actually make things slower in node at least)
         // and it is a non-perfect parse - it can't recognise
         // unquoted urls, meaning it can't distinguish comments
@@ -3532,7 +3532,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                 },
 
-                // A variable entity useing the protective {} e.g. @{var}
+                // A variable entity using the protective {} e.g. @{var}
                 variableCurly: function () {
                     var curly, index = parserInput.i;
 
@@ -3969,7 +3969,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             //
             // A Rule terminator. Note that we use `peek()` to check for '}',
             // because the `block` rule will be expecting it, but we still need to make sure
-            // it's there, if ';' was ommitted.
+            // it's there, if ';' was omitted.
             //
             end: function () {
                 return parserInput.$char(';') || parserInput.peek('}');
@@ -8854,7 +8854,7 @@ var ProcessExtendsVisitor = function() {
 ProcessExtendsVisitor.prototype = {
     run: function(root) {
         var extendFinder = new ExtendFinderVisitor();
-        this.extendIndicies = {};
+        this.extendIndices = {};
         extendFinder.run(root);
         if (!extendFinder.foundExtends) { return root; }
         root.allExtends = root.allExtends.concat(this.doExtendChaining(root.allExtends, root.allExtends));
@@ -8864,7 +8864,7 @@ ProcessExtendsVisitor.prototype = {
         return newRoot;
     },
     checkExtendsForNonMatched: function(extendList) {
-        var indicies = this.extendIndicies;
+        var indices = this.extendIndices;
         extendList.filter(function(extend) {
             return !extend.hasFoundMatches && extend.parent_ids.length == 1;
         }).forEach(function(extend) {
@@ -8874,8 +8874,8 @@ ProcessExtendsVisitor.prototype = {
                 }
                 catch(_) {}
 
-                if (!indicies[extend.index + ' ' + selector]) {
-                    indicies[extend.index + ' ' + selector] = true;
+                if (!indices[extend.index + ' ' + selector]) {
+                    indices[extend.index + ' ' + selector] = true;
                     logger.warn("extend '" + selector + "' has no matches");
                 }
             });
@@ -8899,7 +8899,7 @@ ProcessExtendsVisitor.prototype = {
         // a target extend is the one on the ruleset we are looking at copy/edit/pasting in place
         // e.g.  .a:extend(.b) {}  and .b:extend(.c) {} then the first extend extends the second one
         // and the second is the target.
-        // the seperation into two lists allows us to process a subset of chains with a bigger set, as is the
+        // the separation into two lists allows us to process a subset of chains with a bigger set, as is the
         // case when processing media queries
         for (extendIndex = 0; extendIndex < extendsList.length; extendIndex++) {
             for (targetExtendIndex = 0; targetExtendIndex < extendsListTarget.length; targetExtendIndex++) {

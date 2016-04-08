@@ -26,22 +26,22 @@
   .second-transform();
 }
 .test2 {
-  // Wont merge values without +: merge directive, for backwards compatibility with css
+  // Won't merge values without +: merge directive, for backwards compatibility with css
   .first-transform();
   .third-transform();
 }
 .test3 {
-  // Wont merge values from two sources with different properties
+  // Won't merge values from two sources with different properties
   .fourth-transform();
   .first-background();
 }
 .test4 {
-  // Wont merge values from sources that merked as !important, for backwards compatibility with css
+  // Won't merge values from sources that merked as !important, for backwards compatibility with css
   .first-transform();
   .fifth-transform();
 }
 .test5 {
-  // Wont merge values from mixins that merked as !important, for backwards compatibility with css
+  // Won't merge values from mixins that merked as !important, for backwards compatibility with css
   .first-transform();
   .second-transform() !important;
 }

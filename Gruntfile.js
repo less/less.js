@@ -14,18 +14,17 @@ module.exports = function (grunt) {
         build: grunt.file.readYAML('build/build.yml'),
         pkg: grunt.file.readJSON('package.json'),
         meta: {
-            license: '<%= _.pluck(pkg.licenses, "type").join(", ") %>',
             copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
             banner: '/*!\n' +
                 ' * Less - <%= pkg.description %> v<%= pkg.version %>\n' +
                 ' * http://lesscss.org\n' +
                 ' *\n' +
                 ' * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>>\n' +
-                ' * Licensed under the <%= meta.license %> License.\n' +
+                ' * Licensed under the <%= pkg.license %> License.\n' +
                 ' *\n' +
                 ' */\n\n' +
                 ' /**' +
-                ' * @license <%= meta.license %>\n' +
+                ' * @license <%= pkg.license %>\n' +
                 ' */\n\n'
         },
 

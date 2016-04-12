@@ -383,7 +383,9 @@ function printUsage() {
     };
 
     var writeOutput = function(output, result, onSuccess) {
-        if (output) {
+        if (options.depends) {
+            onSuccess();
+        } else if (output) {
             ensureDirectory(output);
             fs.writeFile(output, result.css, {encoding: 'utf8'}, function (err) {
                 if (err) {

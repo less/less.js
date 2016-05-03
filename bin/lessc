@@ -40,18 +40,32 @@ var silent = false,
     plugins: plugins
 };
 var sourceMapOptions = {};
-var continueProcessing = true,
-    currentErrorcode;
+var continueProcessing = true;
 
-// calling process.exit does not flush stdout always
-// so use this to set the exit code
-process.on('exit', function() { process.reallyExit(currentErrorcode); });
+// Calling process.exit does not flush stdout always. Instead of exiting the process, we set the process' exitCode,
+// close all handles and wait for the event loop to exit the process.
+// @see https://github.com/nodejs/node/issues/6409
+// Unfortunately, node 0.10.x does not support setting process.exitCode, so we need to call reallyExit() explicitly.
+// @see https://nodejs.org/api/process.html#process_process_exitcode
+// Additionally we also need to make sure that uncaughtExceptions are never swallowed.
+// @see https://github.com/less/less.js/issues/2881
+// This code can safely be removed if node 0.10.x is not supported anymore.
+process.on("exit", function() { process.reallyExit(process.exitCode); });
+process.on("uncaughtException", function(err) {
+    console.error(err);
+    process.exitCode = 1;
+});
+// This code will still be required because otherwise rejected promises would not be reported to the user
+process.on("unhandledRejection", function(err) {
+    console.error(err);
+    process.exitCode = 1;
+});
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
         console.error(arg + " option requires a parameter");
         continueProcessing = false;
-        currentErrorcode = 1;
+        process.exitCode = 1;
         return false;
     }
     return true;
@@ -62,7 +76,7 @@ var checkBooleanArg = function(arg) {
     if (!onOff) {
         console.error(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
-        currentErrorcode = 1;
+        process.exitCode = 1;
         return false;
     }
     return Boolean(onOff[2]);
@@ -252,7 +266,7 @@ function printUsage() {
                 } else {
                     console.error("Unable to load plugin " + name +
                         " please make sure that it is installed under or at the same level as less");
-                    currentErrorcode = 1;
+                    process.exitCode = 1;
                 }
                 break;
             default:
@@ -263,7 +277,7 @@ function printUsage() {
                     console.error("Unable to interpret argument " + arg +
                         " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under or at" +
                         " the same level as less");
-                    currentErrorcode = 1;
+                    process.exitCode = 1;
                 }
                 break;
         }
@@ -288,8 +302,9 @@ function printUsage() {
         sourceMapOptions.sourceMapInputFilename = input;
         if (!sourceMapOptions.sourceMapFullFilename) {
             if (!output && !sourceMapFileInline) {
-                console.log("the sourcemap option only has an optional filename if the css filename is given");
-                console.log("consider adding --source-map-map-inline which embeds the sourcemap into the css");
+                console.error("the sourcemap option only has an optional filename if the css filename is given");
+                console.error("consider adding --source-map-map-inline which embeds the sourcemap into the css");
+                process.exitCode = 1;
                 return;
             }
             // its in the same directory, so always just the basename
@@ -325,7 +340,7 @@ function printUsage() {
         console.error("lessc: no input files");
         console.error("");
         printUsage();
-        currentErrorcode = 1;
+        process.exitCode = 1;
         return;
     }
 
@@ -345,7 +360,8 @@ function printUsage() {
 
     if (options.depends) {
         if (!outputbase) {
-            console.log("option --depends requires an output path to be specified");
+            console.error("option --depends requires an output path to be specified");
+            process.exitCode = 1;
             return;
         }
         process.stdout.write(outputbase + ": ");
@@ -366,6 +382,7 @@ function printUsage() {
                     }
                     console.error('lessc: failed to create file ' + filename);
                     console.error(description);
+                    process.exitCode = 1;
                 } else {
                     less.logger.info('lessc: wrote ' + filename);
                 }
@@ -397,6 +414,7 @@ function printUsage() {
                     }
                     console.error('lessc: failed to create file ' + output);
                     console.error(description);
+                    process.exitCode = 1;
                 } else {
                     less.logger.info('lessc: wrote ' + output);
                     onSuccess();
@@ -421,7 +439,7 @@ function printUsage() {
     var parseLessFile = function (e, data) {
         if (e) {
             console.error("lessc: " + e.message);
-            currentErrorcode = 1;
+            process.exitCode = 1;
             return;
         }
 
@@ -468,7 +486,7 @@ function printUsage() {
             },
             function(err) {
                 less.writeError(err, options);
-                currentErrorcode = 1;
+                process.exitCode = 1;
             });
     };
 

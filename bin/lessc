@@ -40,18 +40,13 @@ var silent = false,
     plugins: plugins
 };
 var sourceMapOptions = {};
-var continueProcessing = true,
-    currentErrorcode;
-
-// calling process.exit does not flush stdout always
-// so use this to set the exit code
-process.on('exit', function() { process.reallyExit(currentErrorcode); });
+var continueProcessing = true;
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
         console.error(arg + " option requires a parameter");
         continueProcessing = false;
-        currentErrorcode = 1;
+        process.exitCode = 1;
         return false;
     }
     return true;
@@ -62,7 +57,7 @@ var checkBooleanArg = function(arg) {
     if (!onOff) {
         console.error(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
         continueProcessing = false;
-        currentErrorcode = 1;
+        process.exitCode = 1;
         return false;
     }
     return Boolean(onOff[2]);
@@ -252,7 +247,7 @@ function printUsage() {
                 } else {
                     console.error("Unable to load plugin " + name +
                         " please make sure that it is installed under or at the same level as less");
-                    currentErrorcode = 1;
+                    process.exitCode = 1;
                 }
                 break;
             default:
@@ -263,7 +258,7 @@ function printUsage() {
                     console.error("Unable to interpret argument " + arg +
                         " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under or at" +
                         " the same level as less");
-                    currentErrorcode = 1;
+                    process.exitCode = 1;
                 }
                 break;
         }
@@ -325,7 +320,7 @@ function printUsage() {
         console.error("lessc: no input files");
         console.error("");
         printUsage();
-        currentErrorcode = 1;
+        process.exitCode = 1;
         return;
     }
 
@@ -421,7 +416,7 @@ function printUsage() {
     var parseLessFile = function (e, data) {
         if (e) {
             console.error("lessc: " + e.message);
-            currentErrorcode = 1;
+            process.exitCode = 1;
             return;
         }
 
@@ -468,7 +463,7 @@ function printUsage() {
             },
             function(err) {
                 less.writeError(err, options);
-                currentErrorcode = 1;
+                process.exitCode = 1;
             });
     };
 

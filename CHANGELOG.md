@@ -1,3 +1,16 @@
+# 2.7.0
+
+2016-05-07
+
+ - Fixes for contrast() function
+ - Allow root functions for plugins
+ - Allow semi-colon separators in functions
+ - Performance improvements for source maps
+ - Fix "blank page" issue in browser
+ - Compatibility fixes for Node 6.x
+ - Fix AST to include single-line comments
+ - Fix reversion for "color-like" words (outputting color values)
+
 # 2.6.1
 
 2016-03-04

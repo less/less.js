@@ -1,3 +1,9 @@
+# 2.7.1 HOTFIX
+
+2016-05-09
+
+ - Revert commit 470af20 (source map performance) which broke source maps
+
 # 2.7.0
 
 2016-05-07

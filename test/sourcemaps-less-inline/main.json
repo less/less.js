@@ -1,0 +1,1 @@
+{"version":3,"sources":["testweb/sourcemaps-less-inline/main.less"],"names":[],"mappings":"AAMA;EAHE,UAAA;EAKA,iBAAA","file":"sourcemaps-less-inline/main.css","sourcesContent":["@var: black;\n\n.a() {\n  color: red;\n}\n\n.b {\n  .a();\n  background: @var;\n}\n"]}

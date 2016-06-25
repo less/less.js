@@ -1,8 +1,8 @@
 // importing plugin globally
-@plugin "./plugin/plugin-global";
+@use "./extension/extension-global";
 
 // transitively include plugins from importing another sheet
-@import "./plugin/plugin-transitive";
+@import "./extension/extension-transitive";
 
 
 // `test-global` function should be reachable
@@ -18,7 +18,7 @@
   // `test-local`  function should be reachable
   // `test-shadow` function should return local version, shadowing global version
   .local {
-    @plugin "./plugin/plugin-local";
+    @use "./extension/extension-local";
     global : test-global();
     local  : test-local();
     shadow : test-shadow();
@@ -28,19 +28,19 @@
 // calling a mixin or detached ruleset should not bubble local plugins
 // imported inside either into the parent scope.
 .mixin() {
-  @plugin "./plugin/plugin-local";
+  @use "./extension/extension-local";
   mixin-local  : test-local();
   mixin-global : test-global();
   mixin-shadow : test-shadow();
 }
 @ruleset : {
-  @plugin "./plugin/plugin-local";
+  @use "./extension/extension-local";
   ruleset-local  : test-local();
   ruleset-global : test-global();
   ruleset-shadow : test-shadow();
 };
 #ns {
-  @plugin "./plugin/plugin-local";
+  @use "./extension/extension-local";
   .mixin() {
     ns-mixin-global : test-global();
     ns-mixin-local  : test-local();
@@ -76,12 +76,12 @@
 
 .test {
   @media screen {
-    @plugin "./plugin/plugin-local";
+    @use "./extension/extension-local";
     result : test-local();
   }
 }
 
-@plugin "./plugin/plugin-tree-nodes";
+@use "./extension/extension-tree-nodes";
 @ruleset2: test-detached-ruleset();
 .root {
   @ruleset2();

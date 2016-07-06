@@ -1,2 +1,0 @@
-SyntaxError: @plugin is deprecated. Use @use in {path}functions-16-old-syntax.less on line 1, column 1:
-1 @plugin "../extension/extension-tree-nodes";

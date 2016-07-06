@@ -1,5 +1,5 @@
 {
-    "disallowImplicitTypeConversion": ["numeric", "boolean", "binary", "string"],
+    "disallowImplicitTypeConversion": ["numeric", "binary", "string"],
     "disallowKeywords": ["with"],
     "disallowMixedSpacesAndTabs": true,
     "disallowMultipleLineBreaks": true,
@@ -14,7 +14,7 @@
     "disallowSpacesInNamedFunctionExpression": {
         "beforeOpeningRoundBrace": true},
     "disallowTrailingComma": true,
-    "disallowTrailingWhitespace": true,
+    "disallowTrailingWhitespace": false,
     "maximumLineLength": 160,
     "requireCommaBeforeLineBreak": true,
     "requireCurlyBraces": [   "if",

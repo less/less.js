@@ -31,7 +31,7 @@ module.exports = function (grunt) {
         shell: {
             options: {stdout: true, failOnError: true},
             test: {
-                command: 'node test'
+                command: 'node test/index.js'
             },
             benchmark: {
                 command: 'node benchmark/index.js'
@@ -239,14 +239,6 @@ module.exports = function (grunt) {
                     helpers: 'test/browser/runner-global-vars-options.js',
                     specs: 'test/browser/runner-global-vars-spec.js',
                     outfile: 'tmp/browser/test-runner-global-vars.html'
-                }
-            },
-            postProcessor: {
-                src: ['test/browser/less/postProcessor/*.less'],
-                options: {
-                    helpers: 'test/browser/runner-postProcessor-options.js',
-                    specs: 'test/browser/runner-postProcessor.js',
-                    outfile: 'tmp/browser/test-runner-post-processor.html'
                 }
             },
             postProcessorPlugin: {

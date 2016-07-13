@@ -16,10 +16,11 @@ function getErrorPathReplacementFunction(dir) {
 }
 
 console.log("\n" + stylize("Less", 'underline') + "\n");
+
 lessTester.prepBomTest();
-lessTester.runTestSet({strictMath: true, relativeUrls: true, silent: true});
-lessTester.runTestSet({strictMath: true, strictUnits: true}, "errors/",
-    lessTester.testErrors, null, getErrorPathReplacementFunction("errors"));
+lessTester.runTestSet({strictMath: true, relativeUrls: true, silent: true, javascriptEnabled: true});
+lessTester.runTestSet({strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
+     lessTester.testErrors, null, getErrorPathReplacementFunction("errors"));
 lessTester.runTestSet({strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
     lessTester.testErrors, null, getErrorPathReplacementFunction("no-js-errors"));
 lessTester.runTestSet({strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,

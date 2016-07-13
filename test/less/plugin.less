@@ -40,7 +40,7 @@
   ruleset-shadow : test-shadow();
 };
 #ns {
-  @plugin "./plugin/plugin-local";
+  @plugin (test=test) "./plugin/plugin-local";
   .mixin() {
     ns-mixin-global : test-global();
     ns-mixin-local  : test-local();

@@ -6,3 +6,9 @@ functions.addMultiple({
         return new tree.Anonymous( "local" );
     }
 });
+
+return {
+    setOptions: function(raw) {
+        // do nothing
+    }
+}

@@ -1,6 +1,7 @@
 /* Add js reporter for sauce */
 
 jasmine.getEnv().addReporter(new jasmine.JSReporter2());
+jasmine.getEnv().defaultTimeoutInterval = 3000;
 
 /* record log messages for testing */
 

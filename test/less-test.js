@@ -58,7 +58,8 @@ module.exports = function() {
 
     var totalTests = 0,
         failedTests = 0,
-        passedTests = 0;
+        passedTests = 0,
+        finishTimer = setInterval(endTest, 500);
 
     less.functions.functionRegistry.addMultiple({
         add: function (a, b) {
@@ -221,47 +222,48 @@ module.exports = function() {
             var doubleCallCheck = false;
             queue(function() {
                 toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
-                if (doubleCallCheck) {
-                    totalTests++;
-                    fail("less is calling back twice");
-                    process.stdout.write(doubleCallCheck + "\n");
-                    process.stdout.write((new Error()).stack + "\n");
-                    return;
-                }
-                doubleCallCheck = (new Error()).stack;
+                    
+                    if (doubleCallCheck) {
+                        totalTests++;
+                        fail("less is calling back twice");
+                        process.stdout.write(doubleCallCheck + "\n");
+                        process.stdout.write((new Error()).stack + "\n");
+                        return;
+                    }
+                    doubleCallCheck = (new Error()).stack;
 
-                if (verifyFunction) {
-                    var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
-                    release();
-                    return verificationResult;
-                }
-                if (err) {
-                    fail("ERROR: " + (err && err.message));
-                    if (isVerbose) {
-                        process.stdout.write("\n");
-                        if (err.stack) {
-                            process.stdout.write(err.stack + "\n");
-                        } else {
-                            //this sometimes happen - show the whole error object
-                            console.log(err);
+                    if (verifyFunction) {
+                        var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
+                        release();
+                        return verificationResult;
+                    }
+                    if (err) {
+                        fail("ERROR: " + (err && err.message));
+                        if (isVerbose) {
+                            process.stdout.write("\n");
+                            if (err.stack) {
+                                process.stdout.write(err.stack + "\n");
+                            } else {
+                                //this sometimes happen - show the whole error object
+                                console.log(err);
+                            }
                         }
+                        release();
+                        return;
                     }
-                    release();
-                    return;
-                }
-                var css_name = name;
-                if (nameModifier) { css_name = nameModifier(name); }
-                fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                    process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
+                    var css_name = name;
+                    if (nameModifier) { css_name = nameModifier(name); }
+                    fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
+                        process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
-                    css = css && doReplacements(css, path.join(baseFolder, foldername));
-                    if (result.css === css) { ok('OK'); }
-                    else {
-                        difference("FAIL", css, result.css);
-                    }
-                    release();
+                        css = css && doReplacements(css, path.join(baseFolder, foldername));
+                        if (result.css === css) { ok('OK'); }
+                        else {
+                            difference("FAIL", css, result.css);
+                        }
+                        release();
+                    });
                 });
-            });
             });
         });
     }
@@ -305,8 +307,8 @@ module.exports = function() {
 
     function endTest() {
         if (isFinished && ((failedTests + passedTests) >= totalTests)) {
+            clearInterval(finishTimer);
             var leaked = checkGlobalLeaks();
-
             process.stdout.write("\n");
             if (failedTests > 0) {
                 process.stdout.write(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed\n");

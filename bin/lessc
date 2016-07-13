@@ -14,31 +14,43 @@ try {
 
 var less = require('../lib/less-node'),
     pluginLoader = new less.PluginLoader(less),
-    plugin,
-    plugins = [];
-
-var args = process.argv.slice(1);
-var silent = false,
+    plugins = [],
+    queuePlugins = [],
+    args = process.argv.slice(1),
+    silent = false,
     verbose = false,
     options = {
-    depends: false,
-    compress: false,
-    max_line_len: -1,
-    lint: false,
-    paths: [],
-    color: true,
-    strictImports: false,
-    insecure: false,
-    rootpath: '',
-    relativeUrls: false,
-    ieCompat: true,
-    strictMath: false,
-    strictUnits: false,
-    globalVars: null,
-    modifyVars: null,
-    urlArgs: '',
-    plugins: plugins
-};
+        depends: false,
+        compress: false,
+        max_line_len: -1,
+        lint: false,
+        paths: [],
+        color: true,
+        strictImports: false,
+        insecure: false,
+        rootpath: '',
+        relativeUrls: false,
+        ieCompat: true,
+        strictMath: false,
+        strictUnits: false,
+        globalVars: null,
+        modifyVars: null,
+        urlArgs: '',
+        plugins: plugins
+    }; 
+
+if (less.options) {
+    for (var i = 0, keys = Object.keys(options); i < keys.length; i++) {
+        if (!less.options[keys[i]]) {
+            less.options[keys[i]] = options[keys[i]];
+        }
+    }
+    options = less.options;
+}
+else {
+    less.options = options;
+}
+
 var sourceMapOptions = {};
 var continueProcessing = true;
 
@@ -94,194 +106,7 @@ function printUsage() {
     pluginLoader.printUsage(plugins);
     continueProcessing = false;
 }
-
-// self executing function so we can return
-(function() {
-    args = args.filter(function (arg) {
-        var match;
-
-        match = arg.match(/^-I(.+)$/);
-        if (match) {
-            options.paths.push(match[1]);
-            return false;
-        }
-
-        match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i);
-        if (match) {
-            arg = match[1];
-        } else {
-            return arg;
-        }
-
-        switch (arg) {
-            case 'v':
-            case 'version':
-                console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
-                continueProcessing = false;
-                break;
-            case 'verbose':
-                verbose = true;
-                break;
-            case 's':
-            case 'silent':
-                silent = true;
-                break;
-            case 'l':
-            case 'lint':
-                options.lint = true;
-                break;
-            case 'strict-imports':
-                options.strictImports = true;
-                break;
-            case 'h':
-            case 'help':
-                printUsage();
-                break;
-            case 'x':
-            case 'compress':
-                options.compress = true;
-                break;
-            case 'insecure':
-                options.insecure = true;
-                break;
-            case 'M':
-            case 'depends':
-                options.depends = true;
-                break;
-            case 'max-line-len':
-                if (checkArgFunc(arg, match[2])) {
-                    options.maxLineLen = parseInt(match[2], 10);
-                    if (options.maxLineLen <= 0) {
-                        options.maxLineLen = -1;
-                    }
-                }
-                break;
-            case 'no-color':
-                options.color = false;
-                break;
-            case 'no-ie-compat':
-                options.ieCompat = false;
-                break;
-            case 'no-js':
-                options.javascriptEnabled = false;
-                break;
-            case 'include-path':
-                if (checkArgFunc(arg, match[2])) {
-                    // ; supported on windows.
-                    // : supported on windows and linux, excluding a drive letter like C:\ so C:\file:D:\file parses to 2
-                    options.paths = match[2]
-                        .split(os.type().match(/Windows/) ? /:(?!\\)|;/ : ':')
-                        .map(function(p) {
-                            if (p) {
-                                return path.resolve(process.cwd(), p);
-                            }
-                        });
-                }
-                break;
-            case 'line-numbers':
-                if (checkArgFunc(arg, match[2])) {
-                    options.dumpLineNumbers = match[2];
-                }
-                break;
-            case 'source-map':
-                options.sourceMap = true;
-                if (match[2]) {
-                    sourceMapOptions.sourceMapFullFilename = match[2];
-                }
-                break;
-            case 'source-map-rootpath':
-                if (checkArgFunc(arg, match[2])) {
-                    sourceMapOptions.sourceMapRootpath = match[2];
-                }
-                break;
-            case 'source-map-basepath':
-                if (checkArgFunc(arg, match[2])) {
-                    sourceMapOptions.sourceMapBasepath = match[2];
-                }
-                break;
-            case 'source-map-map-inline':
-                sourceMapFileInline = true;
-                options.sourceMap = true;
-                break;
-            case 'source-map-less-inline':
-                sourceMapOptions.outputSourceFiles = true;
-                break;
-            case 'source-map-url':
-                if (checkArgFunc(arg, match[2])) {
-                    sourceMapOptions.sourceMapURL = match[2];
-                }
-                break;
-            case 'rp':
-            case 'rootpath':
-                if (checkArgFunc(arg, match[2])) {
-                    options.rootpath = match[2].replace(/\\/g, '/');
-                }
-                break;
-            case "ru":
-            case "relative-urls":
-                options.relativeUrls = true;
-                break;
-            case "sm":
-            case "strict-math":
-                if (checkArgFunc(arg, match[2])) {
-                    options.strictMath = checkBooleanArg(match[2]);
-                }
-                break;
-            case "su":
-            case "strict-units":
-                if (checkArgFunc(arg, match[2])) {
-                    options.strictUnits = checkBooleanArg(match[2]);
-                }
-                break;
-            case "global-var":
-                if (checkArgFunc(arg, match[2])) {
-                    if (!options.globalVars) {
-                        options.globalVars = {};
-                    }
-                    parseVariableOption(match[2], options.globalVars);
-                }
-                break;
-            case "modify-var":
-                if (checkArgFunc(arg, match[2])) {
-                    if (!options.modifyVars) {
-                        options.modifyVars = {};
-                    }
-
-                    parseVariableOption(match[2], options.modifyVars);
-                }
-                break;
-            case 'url-args':
-                if (checkArgFunc(arg, match[2])) {
-                    options.urlArgs = match[2];
-                }
-                break;
-            case 'plugin':
-                var splitupArg = match[2].match(/^([^=]+)(=(.*))?/),
-                    name = splitupArg[1],
-                    pluginOptions = splitupArg[3];
-
-                plugin = pluginLoader.tryLoadPlugin(name, pluginOptions);
-                if (plugin) {
-                    plugins.push(plugin);
-                } else {
-                    console.error("Unable to load plugin " + name +
-                        " please make sure that it is installed under or at the same level as less");
-                    process.exitCode = 1;
-                }
-                break;
-            default:
-                plugin = pluginLoader.tryLoadPlugin("less-plugin-" + arg, match[2]);
-                if (plugin) {
-                    plugins.push(plugin);
-                } else {
-                    console.error("Unable to interpret argument " + arg +
-                        " - if it is a plugin (less-plugin-" + arg + "), make sure that it is installed under or at" +
-                        " the same level as less");
-                    process.exitCode = 1;
-                }
-                break;
-        }
-    });
+function render() {
 
     if (!continueProcessing) {
         return;
@@ -505,4 +330,219 @@ function printUsage() {
             parseLessFile(false, buffer);
         });
     }
+}
+
+function processPluginQueue() {
+    var x = 0;
+
+    function pluginError(name) {
+        console.error("Unable to load plugin " + name +
+            " please make sure that it is installed under or at the same level as less");
+        process.exitCode = 1;
+    }
+    function pluginFinished(plugin) {
+        x++;
+        plugins.push(plugin);
+        if (x === queuePlugins.length) {
+            render();
+        }
+    }
+    queuePlugins.forEach(function(queue) {
+        pluginLoader.tryLoadPlugin(queue.name, function(err, data) {
+            if (err) {
+                pluginError(queue.name);
+            }
+            else {
+                pluginFinished({
+                    fileContent: data.contents,
+                    filename: data.filename,
+                    options: queue.options
+                });
+            }
+        });
+    });
+}
+
+// self executing function so we can return
+(function() {
+    args = args.filter(function (arg) {
+        var match;
+
+        match = arg.match(/^-I(.+)$/);
+        if (match) {
+            options.paths.push(match[1]);
+            return false;
+        }
+
+        match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i);
+        if (match) {
+            arg = match[1];
+        } else {
+            return arg;
+        }
+
+        switch (arg) {
+            case 'v':
+            case 'version':
+                console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
+                continueProcessing = false;
+                break;
+            case 'verbose':
+                verbose = true;
+                break;
+            case 's':
+            case 'silent':
+                silent = true;
+                break;
+            case 'l':
+            case 'lint':
+                options.lint = true;
+                break;
+            case 'strict-imports':
+                options.strictImports = true;
+                break;
+            case 'h':
+            case 'help':
+                printUsage();
+                break;
+            case 'x':
+            case 'compress':
+                options.compress = true;
+                break;
+            case 'insecure':
+                options.insecure = true;
+                break;
+            case 'M':
+            case 'depends':
+                options.depends = true;
+                break;
+            case 'max-line-len':
+                if (checkArgFunc(arg, match[2])) {
+                    options.maxLineLen = parseInt(match[2], 10);
+                    if (options.maxLineLen <= 0) {
+                        options.maxLineLen = -1;
+                    }
+                }
+                break;
+            case 'no-color':
+                options.color = false;
+                break;
+            case 'no-ie-compat':
+                options.ieCompat = false;
+                break;
+            case 'inline-js':
+                options.javascriptEnabled = true;
+                break;
+            case 'no-js':
+                console.error('The "--no-js" argument is deprecated. Use "--inline-js" to enable inline JavaScript.');
+                break;
+            case 'include-path':
+                if (checkArgFunc(arg, match[2])) {
+                    // ; supported on windows.
+                    // : supported on windows and linux, excluding a drive letter like C:\ so C:\file:D:\file parses to 2
+                    options.paths = match[2]
+                        .split(os.type().match(/Windows/) ? /:(?!\\)|;/ : ':')
+                        .map(function(p) {
+                            if (p) {
+                                return path.resolve(process.cwd(), p);
+                            }
+                        });
+                }
+                break;
+            case 'line-numbers':
+                if (checkArgFunc(arg, match[2])) {
+                    options.dumpLineNumbers = match[2];
+                }
+                break;
+            case 'source-map':
+                options.sourceMap = true;
+                if (match[2]) {
+                    sourceMapOptions.sourceMapFullFilename = match[2];
+                }
+                break;
+            case 'source-map-rootpath':
+                if (checkArgFunc(arg, match[2])) {
+                    sourceMapOptions.sourceMapRootpath = match[2];
+                }
+                break;
+            case 'source-map-basepath':
+                if (checkArgFunc(arg, match[2])) {
+                    sourceMapOptions.sourceMapBasepath = match[2];
+                }
+                break;
+            case 'source-map-map-inline':
+                sourceMapFileInline = true;
+                options.sourceMap = true;
+                break;
+            case 'source-map-less-inline':
+                sourceMapOptions.outputSourceFiles = true;
+                break;
+            case 'source-map-url':
+                if (checkArgFunc(arg, match[2])) {
+                    sourceMapOptions.sourceMapURL = match[2];
+                }
+                break;
+            case 'rp':
+            case 'rootpath':
+                if (checkArgFunc(arg, match[2])) {
+                    options.rootpath = match[2].replace(/\\/g, '/');
+                }
+                break;
+            case "ru":
+            case "relative-urls":
+                options.relativeUrls = true;
+                break;
+            case "sm":
+            case "strict-math":
+                if (checkArgFunc(arg, match[2])) {
+                    options.strictMath = checkBooleanArg(match[2]);
+                }
+                break;
+            case "su":
+            case "strict-units":
+                if (checkArgFunc(arg, match[2])) {
+                    options.strictUnits = checkBooleanArg(match[2]);
+                }
+                break;
+            case "global-var":
+                if (checkArgFunc(arg, match[2])) {
+                    if (!options.globalVars) {
+                        options.globalVars = {};
+                    }
+                    parseVariableOption(match[2], options.globalVars);
+                }
+                break;
+            case "modify-var":
+                if (checkArgFunc(arg, match[2])) {
+                    if (!options.modifyVars) {
+                        options.modifyVars = {};
+                    }
+
+                    parseVariableOption(match[2], options.modifyVars);
+                }
+                break;
+            case 'url-args':
+                if (checkArgFunc(arg, match[2])) {
+                    options.urlArgs = match[2];
+                }
+                break;
+            case 'plugin':
+                var splitupArg = match[2].match(/^([^=]+)(=(.*))?/),
+                    name = splitupArg[1],
+                    pluginOptions = splitupArg[3];
+                queuePlugins.push({ name: name, options: pluginOptions });
+                break;
+            default:
+                queuePlugins.push({ name: arg, options: match[2], default: true });
+                break;
+        }
+    });
+
+    if (queuePlugins.length > 0) {
+        processPluginQueue();
+    }
+    else {
+        render();
+    }
+
 })();

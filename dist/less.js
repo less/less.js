@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.0.0-pre.1
+ * Less - Leaner CSS v3.0.0-pre.2
  * http://lesscss.org
  *
  * Copyright (c) 2009-2016, Alexis Sellier <self@cloudhead.net>
@@ -1434,8 +1434,8 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, pluginOp
     registry = functionRegistry.create();
 
     try {
-        loader = new Function("module", "require", "functions", "tree", "fileInfo", "less", contents);
-        pluginObj = loader(localModule, this.require, registry, this.less.tree, fileInfo, this.less);
+        loader = new Function("module", "require", "functions", "tree", "fileInfo", contents);
+        pluginObj = loader(localModule, this.require, registry, this.less.tree, fileInfo);
 
         if (!pluginObj) {
             pluginObj = localModule.exports;
@@ -2132,8 +2132,8 @@ var functionCaller = function(name, context, index, currentFileInfo) {
 functionCaller.prototype.isValid = function() {
     return Boolean(this.func);
 };
-functionCaller.prototype.call = function(args) {
 
+functionCaller.prototype.call = function(args) {
     // This code is terrible and should be replaced as per this issue...
     // https://github.com/less/less.js/issues/2477
     if (Array.isArray(args)) {
@@ -5819,9 +5819,9 @@ var Node = require("./node");
 
 var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
     this.value = value;
-    this.index = index;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.mapLines = mapLines;
-    this.currentFileInfo = currentFileInfo;
     this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
     this.allowRoot = true;
     this.copyVisibilityInfo(visibilityInfo);
@@ -5829,7 +5829,7 @@ var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, 
 Anonymous.prototype = new Node();
 Anonymous.prototype.type = "Anonymous";
 Anonymous.prototype.eval = function () {
-    return new Anonymous(this.value, this.index, this.currentFileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
+    return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
 };
 Anonymous.prototype.compare = function (other) {
     return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
@@ -5838,7 +5838,7 @@ Anonymous.prototype.isRulesetLike = function() {
     return this.rulesetLike;
 };
 Anonymous.prototype.genCSS = function (context, output) {
-    output.add(this.value, this.currentFileInfo, this.index, this.mapLines);
+    output.add(this.value, this._fileInfo, this._index, this.mapLines);
 };
 module.exports = Anonymous;
 
@@ -5886,14 +5886,15 @@ var AtRule = function (name, value, rules, index, currentFileInfo, debugInfo, is
             this.rules = rules;
         } else {
             this.rules = [rules];
-            this.rules[0].selectors = (new Selector([], null, null, this.index, currentFileInfo)).createEmptySelectors();
+            this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
         }
         for (i = 0; i < this.rules.length; i++) {
             this.rules[i].allowImports = true;
         }
+        this.setParent(this.rules, this);
     }
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.debugInfo = debugInfo;
     this.isRooted = isRooted || false;
     this.copyVisibilityInfo(visibilityInfo);
@@ -5919,7 +5920,7 @@ AtRule.prototype.isCharset = function() {
 };
 AtRule.prototype.genCSS = function (context, output) {
     var value = this.value, rules = this.rules;
-    output.add(this.name, this.currentFileInfo, this.index);
+    output.add(this.name, this.fileInfo(), this.getIndex());
     if (value) {
         output.add(' ');
         value.genCSS(context, output);
@@ -5954,7 +5955,7 @@ AtRule.prototype.eval = function (context) {
     context.mediaBlocks = mediaBlocksBackup;
 
     return new AtRule(this.name, value, rules,
-        this.index, this.currentFileInfo, this.debugInfo, this.isRooted, this.visibilityInfo());
+        this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo());
 };
 AtRule.prototype.variable = function (name) {
     if (this.rules) {
@@ -6045,8 +6046,8 @@ var Node = require("./node"),
 var Call = function (name, args, index, currentFileInfo) {
     this.name = name;
     this.args = args;
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
 };
 Call.prototype = new Node();
 Call.prototype.type = "Call";
@@ -6068,8 +6069,8 @@ Call.prototype.accept = function (visitor) {
 //
 Call.prototype.eval = function (context) {
     var args = this.args.map(function (a) { return a.eval(context); }),
-        result, funcCaller = new FunctionCaller(this.name, context, this.index, this.currentFileInfo);
-
+        result, funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
+    
     if (funcCaller.isValid()) {
         try {
             result = funcCaller.call(args);
@@ -6078,24 +6079,24 @@ Call.prototype.eval = function (context) {
                 type: e.type || "Runtime",
                 message: "error evaluating function `" + this.name + "`" +
                          (e.message ? ': ' + e.message : ''),
-                index: this.index, 
-                filename: this.currentFileInfo.filename,
+                index: this.getIndex(), 
+                filename: this.fileInfo().filename,
                 line: e.lineNumber,
                 column: e.columnNumber
             };
         }
 
         if (result != null) {
-            result.index = this.index;
-            result.currentFileInfo = this.currentFileInfo;
+            result._index = this._index;
+            result._fileInfo = this._fileInfo;
             return result;
         }
     }
 
-    return new Call(this.name, args, this.index, this.currentFileInfo);
+    return new Call(this.name, args, this.getIndex(), this.fileInfo());
 };
 Call.prototype.genCSS = function (context, output) {
-    output.add(this.name + "(", this.currentFileInfo, this.index);
+    output.add(this.name + "(", this.fileInfo(), this.getIndex());
 
     for (var i = 0; i < this.args.length; i++) {
         this.args[i].genCSS(context, output);
@@ -6210,7 +6211,7 @@ Color.prototype.toCSS = function (context, doNotCompress) {
 // we create a new Color node to hold the result.
 //
 Color.prototype.operate = function (context, op, other) {
-    var rgb = [];
+    var rgb = new Array(3);
     var alpha = this.alpha * (1 - other.alpha) + other.alpha;
     for (var c = 0; c < 3; c++) {
         rgb[c] = this._operate(context, op, this.rgb[c], other.rgb[c]);
@@ -6331,15 +6332,15 @@ var Node = require("./node"),
 var Comment = function (value, isLineComment, index, currentFileInfo) {
     this.value = value;
     this.isLineComment = isLineComment;
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.allowRoot = true;
 };
 Comment.prototype = new Node();
 Comment.prototype.type = "Comment";
 Comment.prototype.genCSS = function (context, output) {
     if (this.debugInfo) {
-        output.add(getDebugInfo(context, this), this.currentFileInfo, this.index);
+        output.add(getDebugInfo(context, this), this.fileInfo(), this.getIndex());
     }
     output.add(this.value);
 };
@@ -6356,7 +6357,7 @@ var Condition = function (op, l, r, i, negate) {
     this.op = op.trim();
     this.lvalue = l;
     this.rvalue = r;
-    this.index = i;
+    this._index = i;
     this.negate = negate;
 };
 Condition.prototype = new Node();
@@ -6438,12 +6439,13 @@ var Declaration = function (name, value, important, merge, index, currentFileInf
     this.value = (value instanceof Node) ? value : new Value([value]); //value instanceof tree.Value || value instanceof tree.Ruleset ??
     this.important = important ? ' ' + important.trim() : '';
     this.merge = merge;
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.inline = inline || false;
     this.variable = (variable !== undefined) ? variable
         : (name.charAt && (name.charAt(0) === '@'));
     this.allowRoot = true;
+    this.setParent(this.value, this);
 };
 
 function evalName(context, name) {
@@ -6458,16 +6460,16 @@ function evalName(context, name) {
 Declaration.prototype = new Node();
 Declaration.prototype.type = "Declaration";
 Declaration.prototype.genCSS = function (context, output) {
-    output.add(this.name + (context.compress ? ':' : ': '), this.currentFileInfo, this.index);
+    output.add(this.name + (context.compress ? ':' : ': '), this.fileInfo(), this.getIndex());
     try {
         this.value.genCSS(context, output);
     }
     catch(e) {
-        e.index = this.index;
-        e.filename = this.currentFileInfo.filename;
+        e.index = this._index;
+        e.filename = this._fileInfo.filename;
         throw e;
     }
-    output.add(this.important + ((this.inline || (context.lastRule && context.compress)) ? "" : ";"), this.currentFileInfo, this.index);
+    output.add(this.important + ((this.inline || (context.lastRule && context.compress)) ? "" : ";"), this._fileInfo, this._index);
 };
 Declaration.prototype.eval = function (context) {
     var strictMathBypass = false, name = this.name, evaldValue, variable = this.variable;
@@ -6488,7 +6490,7 @@ Declaration.prototype.eval = function (context) {
 
         if (!this.variable && evaldValue.type === "DetachedRuleset") {
             throw { message: "Rulesets cannot be evaluated on a property.",
-                    index: this.index, filename: this.currentFileInfo.filename };
+                    index: this.getIndex(), filename: this.fileInfo().filename };
         }
         var important = this.important,
             importantResult = context.importantScope.pop();
@@ -6500,13 +6502,13 @@ Declaration.prototype.eval = function (context) {
                           evaldValue,
                           important,
                           this.merge,
-                          this.index, this.currentFileInfo, this.inline,
+                          this.getIndex(), this.fileInfo(), this.inline,
                               variable);
     }
     catch(e) {
         if (typeof e.index !== 'number') {
-            e.index = this.index;
-            e.filename = this.currentFileInfo.filename;
+            e.index = this.getIndex();
+            e.filename = this.fileInfo().filename;
         }
         throw e;
     }
@@ -6521,17 +6523,19 @@ Declaration.prototype.makeImportant = function () {
                           this.value,
                           "!important",
                           this.merge,
-                          this.index, this.currentFileInfo, this.inline);
+                          this.getIndex(), this.fileInfo(), this.inline);
 };
 
 module.exports = Declaration;
 },{"./keyword":68,"./node":73,"./value":84}],58:[function(require,module,exports){
 var Node = require("./node"),
-    contexts = require("../contexts");
+    contexts = require("../contexts"),
+    utils = require("../utils");
 
 var DetachedRuleset = function (ruleset, frames) {
     this.ruleset = ruleset;
     this.frames = frames;
+    this.setParent(this.ruleset, this);
 };
 DetachedRuleset.prototype = new Node();
 DetachedRuleset.prototype.type = "DetachedRuleset";
@@ -6540,7 +6544,7 @@ DetachedRuleset.prototype.accept = function (visitor) {
     this.ruleset = visitor.visit(this.ruleset);
 };
 DetachedRuleset.prototype.eval = function (context) {
-    var frames = this.frames || context.frames.slice(0);
+    var frames = this.frames || utils.copyArray(context.frames);
     return new DetachedRuleset(this.ruleset, frames);
 };
 DetachedRuleset.prototype.callEval = function (context) {
@@ -6548,7 +6552,7 @@ DetachedRuleset.prototype.callEval = function (context) {
 };
 module.exports = DetachedRuleset;
 
-},{"../contexts":12,"./node":73}],59:[function(require,module,exports){
+},{"../contexts":12,"../utils":86,"./node":73}],59:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions"),
     Unit = require("./unit"),
@@ -6561,6 +6565,7 @@ var Dimension = function (value, unit) {
     this.value = parseFloat(value);
     this.unit = (unit && unit instanceof Unit) ? unit :
       new Unit(unit ? [unit] : undefined);
+    this.setParent(this.unit, this);
 };
 
 Dimension.prototype = new Node();
@@ -6725,7 +6730,7 @@ var Node = require("./node"),
     Paren = require("./paren"),
     Combinator = require("./combinator");
 
-var Element = function (combinator, value, index, currentFileInfo, info) {
+var Element = function (combinator, value, index, currentFileInfo, visibilityInfo) {
     this.combinator = combinator instanceof Combinator ?
                       combinator : new Combinator(combinator);
 
@@ -6736,9 +6741,10 @@ var Element = function (combinator, value, index, currentFileInfo, info) {
     } else {
         this.value = "";
     }
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
-    this.copyVisibilityInfo(info);
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.copyVisibilityInfo(visibilityInfo);
+    this.setParent(this.combinator, this);
 };
 Element.prototype = new Node();
 Element.prototype.type = "Element";
@@ -6752,17 +6758,17 @@ Element.prototype.accept = function (visitor) {
 Element.prototype.eval = function (context) {
     return new Element(this.combinator,
                              this.value.eval ? this.value.eval(context) : this.value,
-                             this.index,
-                             this.currentFileInfo, this.visibilityInfo());
+                             this.getIndex(),
+                             this.fileInfo(), this.visibilityInfo());
 };
 Element.prototype.clone = function () {
     return new Element(this.combinator,
         this.value,
-        this.index,
-        this.currentFileInfo, this.visibilityInfo());
+        this.getIndex(),
+        this.fileInfo(), this.visibilityInfo());
 };
 Element.prototype.genCSS = function (context, output) {
-    output.add(this.toCSS(context), this.currentFileInfo, this.index);
+    output.add(this.toCSS(context), this.fileInfo(), this.getIndex());
 };
 Element.prototype.toCSS = function (context) {
     context = context || {};
@@ -6847,10 +6853,10 @@ var Node = require("./node"),
 var Extend = function Extend(selector, option, index, currentFileInfo, visibilityInfo) {
     this.selector = selector;
     this.option = option;
-    this.index = index;
     this.object_id = Extend.next_id++;
     this.parent_ids = [this.object_id];
-    this.currentFileInfo = currentFileInfo || {};
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.copyVisibilityInfo(visibilityInfo);
     this.allowRoot = true;
 
@@ -6864,6 +6870,7 @@ var Extend = function Extend(selector, option, index, currentFileInfo, visibilit
             this.allowAfter = false;
             break;
     }
+    this.setParent(this.selector, this);
 };
 Extend.next_id = 0;
 
@@ -6873,10 +6880,10 @@ Extend.prototype.accept = function (visitor) {
     this.selector = visitor.visit(this.selector);
 };
 Extend.prototype.eval = function (context) {
-    return new Extend(this.selector.eval(context), this.option, this.index, this.currentFileInfo, this.visibilityInfo());
+    return new Extend(this.selector.eval(context), this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
 };
 Extend.prototype.clone = function (context) {
-    return new Extend(this.selector, this.option, this.index, this.currentFileInfo, this.visibilityInfo());
+    return new Extend(this.selector, this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
 };
 //it concatenates (joins) all selectors in selector array
 Extend.prototype.findSelfSelectors = function (selectors) {
@@ -6905,7 +6912,8 @@ var Node = require("./node"),
     URL = require("./url"),
     Quoted = require("./quoted"),
     Ruleset = require("./ruleset"),
-    Anonymous = require("./anonymous");
+    Anonymous = require("./anonymous"),
+    utils = require("../utils");
 
 //
 // CSS @import node
@@ -6921,10 +6929,10 @@ var Node = require("./node"),
 //
 var Import = function (path, features, options, index, currentFileInfo, visibilityInfo) {
     this.options = options;
-    this.index = index;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.path = path;
     this.features = features;
-    this.currentFileInfo = currentFileInfo;
     this.allowRoot = true;
 
     if (this.options.less !== undefined || this.options.inline) {
@@ -6936,6 +6944,8 @@ var Import = function (path, features, options, index, currentFileInfo, visibili
         }
     }
     this.copyVisibilityInfo(visibilityInfo);
+    this.setParent(this.features, this);
+    this.setParent(this.path, this);
 };
 
 //
@@ -6959,8 +6969,8 @@ Import.prototype.accept = function (visitor) {
     }
 };
 Import.prototype.genCSS = function (context, output) {
-    if (this.css && this.path.currentFileInfo.reference === undefined) {
-        output.add("@import ", this.currentFileInfo, this.index);
+    if (this.css && this.path._fileInfo.reference === undefined) {
+        output.add("@import ", this._fileInfo, this._index);
         this.path.genCSS(context, output);
         if (this.features) {
             output.add(" ");
@@ -6991,11 +7001,11 @@ Import.prototype.evalForImport = function (context) {
         path = path.value;
     }
 
-    return new Import(path.eval(context), this.features, this.options, this.index, this.currentFileInfo, this.visibilityInfo());
+    return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
 };
 Import.prototype.evalPath = function (context) {
     var path = this.path.eval(context);
-    var rootpath = this.currentFileInfo && this.currentFileInfo.rootpath;
+    var rootpath = this._fileInfo && this._fileInfo.rootpath;
 
     if (!(path instanceof URL)) {
         if (rootpath) {
@@ -7051,18 +7061,18 @@ Import.prototype.doEval = function (context) {
         var contents = new Anonymous(this.root, 0,
           {
               filename: this.importedFilename,
-              reference: this.path.currentFileInfo && this.path.currentFileInfo.reference
+              reference: this.path._fileInfo && this.path._fileInfo.reference
           }, true, true);
 
         return this.features ? new Media([contents], this.features.value) : [contents];
     } else if (this.css) {
-        var newImport = new Import(this.evalPath(context), features, this.options, this.index);
+        var newImport = new Import(this.evalPath(context), features, this.options, this._index);
         if (!newImport.css && this.error) {
             throw this.error;
         }
         return newImport;
     } else {
-        ruleset = new Ruleset(null, this.root.rules.slice(0));
+        ruleset = new Ruleset(null, utils.copyArray(this.root.rules));
         ruleset.evalImports(context);
 
         return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
@@ -7070,7 +7080,7 @@ Import.prototype.doEval = function (context) {
 };
 module.exports = Import;
 
-},{"./anonymous":47,"./media":69,"./node":73,"./quoted":76,"./ruleset":79,"./url":83}],65:[function(require,module,exports){
+},{"../utils":86,"./anonymous":47,"./media":69,"./node":73,"./quoted":76,"./ruleset":79,"./url":83}],65:[function(require,module,exports){
 var tree = {};
 
 tree.Node = require('./node');
@@ -7126,8 +7136,8 @@ var JsEvalNode = require("./js-eval-node"),
 var JavaScript = function (string, escaped, index, currentFileInfo) {
     this.escaped = escaped;
     this.expression = string;
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
 };
 JavaScript.prototype = new JsEvalNode();
 JavaScript.prototype.type = "JavaScript";
@@ -7137,7 +7147,7 @@ JavaScript.prototype.eval = function(context) {
     if (typeof result === 'number') {
         return new Dimension(result);
     } else if (typeof result === 'string') {
-        return new Quoted('"' + result + '"', result, this.escaped, this.index);
+        return new Quoted('"' + result + '"', result, this.escaped, this._index);
     } else if (Array.isArray(result)) {
         return new Anonymous(result.join(', '));
     } else {
@@ -7162,20 +7172,20 @@ JsEvalNode.prototype.evaluateJavaScript = function (expression, context) {
 
     if (!context.javascriptEnabled) {
         throw { message: "Inline JavaScript is not enabled. Is it set in your options?",
-            filename: this.currentFileInfo.filename,
-            index: this.index };
+            filename: this.fileInfo().filename,
+            index: this.getIndex() };
     }
 
     expression = expression.replace(/@\{([\w-]+)\}/g, function (_, name) {
-        return that.jsify(new Variable('@' + name, that.index, that.currentFileInfo).eval(context));
+        return that.jsify(new Variable('@' + name, that.getIndex(), that.fileInfo()).eval(context));
     });
 
     try {
         expression = new Function('return (' + expression + ')');
     } catch (e) {
         throw { message: "JavaScript evaluation error: " + e.message + " from `" + expression + "`" ,
-            filename: this.currentFileInfo.filename,
-            index: this.index };
+            filename: this.fileInfo().filename,
+            index: this.getIndex() };
     }
 
     var variables = context.frames[0].variables();
@@ -7195,8 +7205,8 @@ JsEvalNode.prototype.evaluateJavaScript = function (expression, context) {
         result = expression.call(evalContext);
     } catch (e) {
         throw { message: "JavaScript evaluation error: '" + e.name + ': ' + e.message.replace(/["]/g, "'") + "'" ,
-            filename: this.currentFileInfo.filename,
-            index: this.index };
+            filename: this.fileInfo().filename,
+            index: this.getIndex() };
     }
     return result;
 };
@@ -7232,19 +7242,23 @@ var Ruleset = require("./ruleset"),
     Selector = require("./selector"),
     Anonymous = require("./anonymous"),
     Expression = require("./expression"),
-    AtRule = require("./atrule");
+    AtRule = require("./atrule"),
+    utils = require("../utils");
 
 var Media = function (value, features, index, currentFileInfo, visibilityInfo) {
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
 
-    var selectors = (new Selector([], null, null, this.index, this.currentFileInfo)).createEmptySelectors();
+    var selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
 
     this.features = new Value(features);
     this.rules = [new Ruleset(selectors, value)];
     this.rules[0].allowImports = true;
     this.copyVisibilityInfo(visibilityInfo);
     this.allowRoot = true;
+    this.setParent(selectors, this);
+    this.setParent(this.features, this);
+    this.setParent(this.rules, this);
 };
 Media.prototype = new AtRule();
 Media.prototype.type = "Media";
@@ -7258,7 +7272,7 @@ Media.prototype.accept = function (visitor) {
     }
 };
 Media.prototype.genCSS = function (context, output) {
-    output.add('@media ', this.currentFileInfo, this.index);
+    output.add('@media ', this._fileInfo, this._index);
     this.features.genCSS(context, output);
     this.outputRuleset(context, output, this.rules);
 };
@@ -7268,7 +7282,7 @@ Media.prototype.eval = function (context) {
         context.mediaPath = [];
     }
 
-    var media = new Media(null, [], this.index, this.currentFileInfo, this.visibilityInfo());
+    var media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo());
     if (this.debugInfo) {
         this.rules[0].debugInfo = this.debugInfo;
         media.debugInfo = this.debugInfo;
@@ -7305,10 +7319,11 @@ Media.prototype.evalTop = function (context) {
 
     // Render all dependent Media blocks.
     if (context.mediaBlocks.length > 1) {
-        var selectors = (new Selector([], null, null, this.index, this.currentFileInfo)).createEmptySelectors();
+        var selectors = (new Selector([], null, null, this.getIndex(), this.fileInfo())).createEmptySelectors();
         result = new Ruleset(selectors, context.mediaBlocks);
         result.multiMedia = true;
         result.copyVisibilityInfo(this.visibilityInfo());
+        this.setParent(result, this);
     }
 
     delete context.mediaBlocks;
@@ -7345,6 +7360,7 @@ Media.prototype.evalNested = function (context) {
 
         return new Expression(path);
     }));
+    this.setParent(this.features, this);
 
     // Fake a tree-node that doesn't output anything.
     return new Ruleset([], []);
@@ -7369,11 +7385,12 @@ Media.prototype.bubbleSelectors = function (selectors) {
     if (!selectors) {
         return;
     }
-    this.rules = [new Ruleset(selectors.slice(0), [this.rules[0]])];
+    this.rules = [new Ruleset(utils.copyArray(selectors), [this.rules[0]])];
+    this.setParent(this.rules, this);
 };
 module.exports = Media;
 
-},{"./anonymous":47,"./atrule":49,"./expression":62,"./ruleset":79,"./selector":80,"./value":84}],70:[function(require,module,exports){
+},{"../utils":86,"./anonymous":47,"./atrule":49,"./expression":62,"./ruleset":79,"./selector":80,"./value":84}],70:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector"),
     MixinDefinition = require("./mixin-definition"),
@@ -7382,10 +7399,11 @@ var Node = require("./node"),
 var MixinCall = function (elements, args, index, currentFileInfo, important) {
     this.selector = new Selector(elements);
     this.arguments = args || [];
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.important = important;
     this.allowRoot = true;
+    this.setParent(this.selector, this);
 };
 MixinCall.prototype = new Node();
 MixinCall.prototype.type = "MixinCall";
@@ -7493,7 +7511,7 @@ MixinCall.prototype.eval = function (context) {
                 if ((count[defTrue] + count[defFalse]) > 1) {
                     throw { type: 'Runtime',
                         message: 'Ambiguous use of `default()` found when matching for `' + this.format(args) + '`',
-                        index: this.index, filename: this.currentFileInfo.filename };
+                        index: this.getIndex(), filename: this.fileInfo().filename };
                 }
             }
 
@@ -7511,7 +7529,7 @@ MixinCall.prototype.eval = function (context) {
                         this._setVisibilityToReplacement(newRules);
                         Array.prototype.push.apply(rules, newRules);
                     } catch (e) {
-                        throw { message: e.message, index: this.index, filename: this.currentFileInfo.filename, stack: e.stack };
+                        throw { message: e.message, index: this.getIndex(), filename: this.fileInfo().filename, stack: e.stack };
                     }
                 }
             }
@@ -7524,11 +7542,11 @@ MixinCall.prototype.eval = function (context) {
     if (isOneFound) {
         throw { type:    'Runtime',
             message: 'No matching definition was found for `' + this.format(args) + '`',
-            index:   this.index, filename: this.currentFileInfo.filename };
+            index:   this.getIndex(), filename: this.fileInfo().filename };
     } else {
         throw { type:    'Name',
             message: this.selector.toCSS().trim() + " is undefined",
-            index:   this.index, filename: this.currentFileInfo.filename };
+            index:   this.getIndex(), filename: this.fileInfo().filename };
     }
 };
 
@@ -7564,11 +7582,12 @@ var Selector = require("./selector"),
     Ruleset = require("./ruleset"),
     Declaration = require("./declaration"),
     Expression = require("./expression"),
-    contexts = require("../contexts");
+    contexts = require("../contexts"),
+    utils = require("../utils");
 
 var Definition = function (name, params, rules, condition, variadic, frames, visibilityInfo) {
     this.name = name;
-    this.selectors = [new Selector([new Element(null, name, this.index, this.currentFileInfo)])];
+    this.selectors = [new Selector([new Element(null, name, this._index, this._fileInfo)])];
     this.params = params;
     this.condition = condition;
     this.variadic = variadic;
@@ -7606,7 +7625,7 @@ Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArgume
     /*jshint boss:true */
     var frame = new Ruleset(null, null),
         varargs, arg,
-        params = this.params.slice(0),
+        params = utils.copyArray(this.params),
         i, j, val, name, isNamedFound, argIndex, argsLength = 0;
 
     if (mixinEnv.frames && mixinEnv.frames[0] && mixinEnv.frames[0].functionRegistry) {
@@ -7615,7 +7634,7 @@ Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArgume
     mixinEnv = new contexts.Eval(mixinEnv, [frame].concat(mixinEnv.frames));
 
     if (args) {
-        args = args.slice(0);
+        args = utils.copyArray(args);
         argsLength = args.length;
 
         for (i = 0; i < argsLength; i++) {
@@ -7693,7 +7712,7 @@ Definition.prototype.makeImportant = function() {
     return result;
 };
 Definition.prototype.eval = function (context) {
-    return new Definition(this.name, this.params, this.rules, this.condition, this.variadic, this.frames || context.frames.slice(0));
+    return new Definition(this.name, this.params, this.rules, this.condition, this.variadic, this.frames || utils.copyArray(context.frames));
 };
 Definition.prototype.evalCall = function (context, args, important) {
     var _arguments = [],
@@ -7703,7 +7722,7 @@ Definition.prototype.evalCall = function (context, args, important) {
 
     frame.prependRule(new Declaration('@arguments', new Expression(_arguments).eval(context)));
 
-    rules = this.rules.slice(0);
+    rules = utils.copyArray(this.rules);
 
     ruleset = new Ruleset(null, rules);
     ruleset.originalRuleset = this;
@@ -7761,7 +7780,7 @@ Definition.prototype.matchArgs = function (args, context) {
 };
 module.exports = Definition;
 
-},{"../contexts":12,"./declaration":57,"./element":61,"./expression":62,"./ruleset":79,"./selector":80}],72:[function(require,module,exports){
+},{"../contexts":12,"../utils":86,"./declaration":57,"./element":61,"./expression":62,"./ruleset":79,"./selector":80}],72:[function(require,module,exports){
 var Node = require("./node"),
     Operation = require("./operation"),
     Dimension = require("./dimension");
@@ -7785,6 +7804,37 @@ module.exports = Negative;
 
 },{"./dimension":59,"./node":73,"./operation":74}],73:[function(require,module,exports){
 var Node = function() {
+    this.parent = null;
+    this.visibilityBlocks = undefined;
+    this.nodeVisible = undefined;
+
+    var self = this;
+    Object.defineProperty(this, "currentFileInfo", {
+        get: function() { return self.fileInfo(); }
+    });
+    Object.defineProperty(this, "index", {
+        get: function() { return self.getIndex(); }
+    });
+
+};
+Node.prototype.setParent = function(nodes, parent) {
+    function set(node) {
+        if (node && node instanceof Node) {
+            node.parent = parent;
+        }
+    }
+    if (Array.isArray(nodes)) {
+        nodes.forEach(set);
+    }
+    else {
+        set(nodes);
+    }
+};
+Node.prototype.getIndex = function() {
+    return this._index || (this.parent && this.parent.getIndex()) || 0;
+};
+Node.prototype.fileInfo = function() {
+    return this._fileInfo || (this.parent && this.parent.fileInfo()) || {};
 };
 Node.prototype.toCSS = function (context) {
     var strs = [];
@@ -7985,14 +8035,14 @@ var Quoted = function (str, content, escaped, index, currentFileInfo) {
     this.escaped = (escaped == null) ? true : escaped;
     this.value = content || '';
     this.quote = str.charAt(0);
-    this.index = index;
-    this.currentFileInfo = currentFileInfo;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
 };
 Quoted.prototype = new JsEvalNode();
 Quoted.prototype.type = "Quoted";
 Quoted.prototype.genCSS = function (context, output) {
     if (!this.escaped) {
-        output.add(this.quote, this.currentFileInfo, this.index);
+        output.add(this.quote, this.fileInfo(), this.getIndex());
     }
     output.add(this.value);
     if (!this.escaped) {
@@ -8008,7 +8058,7 @@ Quoted.prototype.eval = function (context) {
         return String(that.evaluateJavaScript(exp, context));
     };
     var interpolationReplacement = function (_, name) {
-        var v = new Variable('@' + name, that.index, that.currentFileInfo).eval(context, true);
+        var v = new Variable('@' + name, that.getIndex(), that.fileInfo()).eval(context, true);
         return (v instanceof Quoted) ? v.value : v.toCSS();
     };
     function iterativeReplace(value, regexp, replacementFnc) {
@@ -8021,7 +8071,7 @@ Quoted.prototype.eval = function (context) {
     }
     value = iterativeReplace(value, /`([^`]+)`/g, javascriptReplacement);
     value = iterativeReplace(value, /@\{([\w-]+)\}/g, interpolationReplacement);
-    return new Quoted(this.quote + value + this.quote, value, this.escaped, this.index, this.currentFileInfo);
+    return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
 };
 Quoted.prototype.compare = function (other) {
     // when comparing quoted strings allow the quote to differ
@@ -8071,7 +8121,8 @@ var Node = require("./node"),
     contexts = require("../contexts"),
     globalFunctionRegistry = require("../functions/function-registry"),
     defaultFunc = require("../functions/default"),
-    getDebugInfo = require("./debug-info");
+    getDebugInfo = require("./debug-info"),
+    utils = require("../utils");
 
 var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
     this.selectors = selectors;
@@ -8080,6 +8131,9 @@ var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
     this.strictImports = strictImports;
     this.copyVisibilityInfo(visibilityInfo);
     this.allowRoot = true;
+    this.setParent(this.selectors, this);
+    this.setParent(this.rules, this);
+
 };
 Ruleset.prototype = new Node();
 Ruleset.prototype.type = "Ruleset";
@@ -8100,14 +8154,14 @@ Ruleset.prototype.eval = function (context) {
         selCnt, selector, i, hasOnePassingSelector = false;
 
     if (thisSelectors && (selCnt = thisSelectors.length)) {
-        selectors = [];
+        selectors = new Array(selCnt);
         defaultFunc.error({
             type: "Syntax",
             message: "it is currently only allowed in parametric mixin guards,"
         });
         for (i = 0; i < selCnt; i++) {
             selector = thisSelectors[i].eval(context);
-            selectors.push(selector);
+            selectors[i] = selector;
             if (selector.evaldCondition) {
                 hasOnePassingSelector = true;
             }
@@ -8117,7 +8171,7 @@ Ruleset.prototype.eval = function (context) {
         hasOnePassingSelector = true;
     }
 
-    var rules = this.rules ? this.rules.slice(0) : null,
+    var rules = this.rules ? utils.copyArray(this.rules) : null,
         ruleset = new Ruleset(selectors, rules, this.strictImports, this.visibilityInfo()),
         rule, subRule;
 
@@ -8346,6 +8400,7 @@ Ruleset.prototype.prependRule = function (rule) {
     } else {
         this.rules = [ rule ];
     }
+    this.setParent(rule, this);
 };
 Ruleset.prototype.find = function (selector, self, filter) {
     self = self || this;
@@ -8518,9 +8573,9 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         if (elementsToPak.length === 0) {
             replacementParen = new Paren(elementsToPak[0]);
         } else {
-            var insideParent = [];
+            var insideParent = new Array(elementsToPak.length);
             for (j = 0; j < elementsToPak.length; j++) {
-                insideParent.push(new Element(null, elementsToPak[j], originalElement.index, originalElement.currentFileInfo));
+                insideParent[j] = new Element(null, elementsToPak[j], originalElement._index, originalElement._fileInfo);
             }
             replacementParen = new Paren(new Selector(insideParent));
         }
@@ -8529,7 +8584,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 
     function createSelector(containedElement, originalElement) {
         var element, selector;
-        element = new Element(null, containedElement, originalElement.index, originalElement.currentFileInfo);
+        element = new Element(null, containedElement, originalElement._index, originalElement._fileInfo);
         selector = new Selector([element]);
         return selector;
     }
@@ -8545,9 +8600,9 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         //construct the joined selector - if & is the first thing this will be empty,
         // if not newJoinedSelector will be the last set of elements in the selector
         if (beginningPath.length > 0) {
-            newSelectorPath = beginningPath.slice(0);
+            newSelectorPath = utils.copyArray(beginningPath);
             lastSelector = newSelectorPath.pop();
-            newJoinedSelector = originalSelector.createDerived(lastSelector.elements.slice(0));
+            newJoinedSelector = originalSelector.createDerived(utils.copyArray(lastSelector.elements));
         }
         else {
             newJoinedSelector = originalSelector.createDerived([]);
@@ -8563,7 +8618,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
                 combinator = parentEl.combinator;
             }
             // join the elements so far with the first part of the parent
-            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, replacedElement.index, replacedElement.currentFileInfo));
+            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, replacedElement._index, replacedElement._fileInfo));
             newJoinedSelector.elements = newJoinedSelector.elements.concat(addPath[0].elements.slice(1));
         }
 
@@ -8700,7 +8755,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
                         // the combinator used on el should now be applied to the next element instead so that
                         // it is not lost
                         if (sel.length > 0) {
-                            sel[0].elements.push(new Element(el.combinator, '', el.index, el.currentFileInfo));
+                            sel[0].elements.push(new Element(el.combinator, '', el._index, el._fileInfo));
                         }
                         selectorsMultiplied.push(sel);
                     }
@@ -8732,7 +8787,6 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
                 paths.push(newSelectors[i]);
                 lastSelector = newSelectors[i][length - 1];
                 newSelectors[i][length - 1] = lastSelector.createDerived(lastSelector.elements, inSelector.extendList);
-                //newSelectors[i][length - 1].copyVisibilityInfo(inSelector.visibilityInfo());
             }
         }
 
@@ -8755,12 +8809,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         if (context.length > 0) {
             newPaths = [];
             for (i = 0; i < context.length; i++) {
-                //var concatenated = [];
-                //context[i].forEach(function(entry) {
-                //    var newEntry = entry.createDerived(entry.elements, entry.extendList, entry.evaldCondition);
-                //    newEntry.copyVisibilityInfo(selector.visibilityInfo());
-                //    concatenated.push(newEntry);
-                //}, this);
+
                 var concatenated = context[i].map(deriveSelector.bind(this, selector.visibilityInfo()));
 
                 concatenated.push(selector);
@@ -8779,7 +8828,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 };
 module.exports = Ruleset;
 
-},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"./debug-info":56,"./declaration":57,"./element":61,"./node":73,"./paren":75,"./selector":80}],80:[function(require,module,exports){
+},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"../utils":86,"./debug-info":56,"./declaration":57,"./element":61,"./node":73,"./paren":75,"./selector":80}],80:[function(require,module,exports){
 var Node = require("./node"),
     Element = require("./element");
 
@@ -8787,11 +8836,13 @@ var Selector = function (elements, extendList, condition, index, currentFileInfo
     this.elements = elements;
     this.extendList = extendList;
     this.condition = condition;
-    this.currentFileInfo = currentFileInfo || {};
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     if (!condition) {
         this.evaldCondition = true;
     }
     this.copyVisibilityInfo(visibilityInfo);
+    this.setParent(this.elements, this);
 };
 Selector.prototype = new Node();
 Selector.prototype.type = "Selector";
@@ -8809,14 +8860,14 @@ Selector.prototype.accept = function (visitor) {
 Selector.prototype.createDerived = function(elements, extendList, evaldCondition) {
     var info = this.visibilityInfo();
     evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
-    var newSelector = new Selector(elements, extendList || this.extendList, null, this.index, this.currentFileInfo, info);
+    var newSelector = new Selector(elements, extendList || this.extendList, null, this.getIndex(), this.fileInfo(), info);
     newSelector.evaldCondition = evaldCondition;
     newSelector.mediaEmpty = this.mediaEmpty;
     return newSelector;
 };
 Selector.prototype.createEmptySelectors = function() {
-    var el = new Element('', '&', this.index, this.currentFileInfo),
-        sels = [new Selector([el], null, null, this.index, this.currentFileInfo)];
+    var el = new Element('', '&', this._index, this._fileInfo),
+        sels = [new Selector([el], null, null, this._index, this._fileInfo)];
     sels[0].mediaEmpty = true;
     return sels;
 };
@@ -8877,7 +8928,7 @@ Selector.prototype.eval = function (context) {
 Selector.prototype.genCSS = function (context, output) {
     var i, element;
     if ((!context || !context.firstSelector) && this.elements[0].combinator.value === "") {
-        output.add(' ', this.currentFileInfo, this.index);
+        output.add(' ', this.fileInfo(), this.getIndex());
     }
     if (!this._css) {
         //TODO caching? speed comparison?
@@ -8905,11 +8956,12 @@ module.exports = UnicodeDescriptor;
 
 },{"./node":73}],82:[function(require,module,exports){
 var Node = require("./node"),
-    unitConversions = require("../data/unit-conversions");
+    unitConversions = require("../data/unit-conversions"),
+    utils = require("../utils");
 
 var Unit = function (numerator, denominator, backupUnit) {
-    this.numerator = numerator ? numerator.slice(0).sort() : [];
-    this.denominator = denominator ? denominator.slice(0).sort() : [];
+    this.numerator = numerator ? utils.copyArray(numerator).sort() : [];
+    this.denominator = denominator ? utils.copyArray(denominator).sort() : [];
     if (backupUnit) {
         this.backupUnit = backupUnit;
     } else if (numerator && numerator.length) {
@@ -8920,7 +8972,7 @@ var Unit = function (numerator, denominator, backupUnit) {
 Unit.prototype = new Node();
 Unit.prototype.type = "Unit";
 Unit.prototype.clone = function () {
-    return new Unit(this.numerator.slice(0), this.denominator.slice(0), this.backupUnit);
+    return new Unit(utils.copyArray(this.numerator), utils.copyArray(this.denominator), this.backupUnit);
 };
 Unit.prototype.genCSS = function (context, output) {
     // Dimension checks the unit is singular and throws an error if in strict math mode.
@@ -9025,13 +9077,13 @@ Unit.prototype.cancel = function () {
 };
 module.exports = Unit;
 
-},{"../data/unit-conversions":15,"./node":73}],83:[function(require,module,exports){
+},{"../data/unit-conversions":15,"../utils":86,"./node":73}],83:[function(require,module,exports){
 var Node = require("./node");
 
 var URL = function (val, index, currentFileInfo, isEvald) {
     this.value = val;
-    this.currentFileInfo = currentFileInfo;
-    this.index = index;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.isEvald = isEvald;
 };
 URL.prototype = new Node();
@@ -9050,7 +9102,7 @@ URL.prototype.eval = function (context) {
 
     if (!this.isEvald) {
         // Add the base path if the URL is relative
-        rootpath = this.currentFileInfo && this.currentFileInfo.rootpath;
+        rootpath = this.fileInfo() && this.fileInfo().rootpath;
         if (rootpath &&
             typeof val.value === "string" &&
             context.isPathRelative(val.value)) {
@@ -9077,7 +9129,7 @@ URL.prototype.eval = function (context) {
         }
     }
 
-    return new URL(val, this.index, this.currentFileInfo, true);
+    return new URL(val, this.getIndex(), this.fileInfo(), true);
 };
 module.exports = URL;
 
@@ -9122,8 +9174,8 @@ var Node = require("./node");
 
 var Variable = function (name, index, currentFileInfo) {
     this.name = name;
-    this.index = index;
-    this.currentFileInfo = currentFileInfo || {};
+    this._index = index;
+    this._fileInfo = currentFileInfo;
 };
 Variable.prototype = new Node();
 Variable.prototype.type = "Variable";
@@ -9131,14 +9183,14 @@ Variable.prototype.eval = function (context) {
     var variable, name = this.name;
 
     if (name.indexOf('@@') === 0) {
-        name = '@' + new Variable(name.slice(1), this.index, this.currentFileInfo).eval(context).value;
+        name = '@' + new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value;
     }
 
     if (this.evaluating) {
         throw { type: 'Name',
                 message: "Recursive variable definition for " + name,
-                filename: this.currentFileInfo.filename,
-                index: this.index };
+                filename: this.fileInfo().filename,
+                index: this.getIndex() };
     }
 
     this.evaluating = true;
@@ -9159,8 +9211,8 @@ Variable.prototype.eval = function (context) {
     } else {
         throw { type: 'Name',
                 message: "variable " + name + " is undefined",
-                filename: this.currentFileInfo.filename,
-                index: this.index };
+                filename: this.fileInfo().filename,
+                index: this.getIndex() };
     }
 };
 Variable.prototype.find = function (obj, fun) {
@@ -9191,13 +9243,23 @@ module.exports = {
             line: line,
             column: column
         };
+    },
+    copyArray: function(arr) {
+        var i, length = arr.length,
+            copy = new Array(length);
+        
+        for (i = 0; i < length; i++) {
+            copy[i] = arr[i];
+        }
+        return copy;
     }
 };
 
 },{}],87:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor"),
-    logger = require("../logger");
+    logger = require("../logger"),
+    utils = require("../utils");
 
 /*jshint loopfunc:true */
 
@@ -9243,7 +9305,7 @@ ExtendFinderVisitor.prototype = {
                 selector = selectorPath[selectorPath.length - 1],
                 selExtendList = selector.extendList;
 
-            extendList = selExtendList ? selExtendList.slice(0).concat(allSelectorsExtendList)
+            extendList = selExtendList ? utils.copyArray(selExtendList).concat(allSelectorsExtendList)
                                        : allSelectorsExtendList;
 
             if (extendList) {
@@ -9363,7 +9425,7 @@ ProcessExtendsVisitor.prototype = {
                         newSelector = extendVisitor.extendSelector(matches, selectorPath, selfSelector, extend.isVisible());
 
                         // but now we create a new extend from it
-                        newExtend = new(tree.Extend)(targetExtend.selector, targetExtend.option, 0, targetExtend.currentFileInfo, info);
+                        newExtend = new(tree.Extend)(targetExtend.selector, targetExtend.option, 0, targetExtend.fileInfo(), info);
                         newExtend.selfSelectors = newSelector;
 
                         // add the extend onto the list of extends for that selector
@@ -9581,8 +9643,8 @@ ProcessExtendsVisitor.prototype = {
             firstElement = new tree.Element(
                 match.initialCombinator,
                 replacementSelector.elements[0].value,
-                replacementSelector.elements[0].index,
-                replacementSelector.elements[0].currentFileInfo
+                replacementSelector.elements[0].getIndex(),
+                replacementSelector.elements[0].fileInfo()
             );
 
             if (match.pathIndex > currentSelectorPathIndex && currentSelectorPathElementIndex > 0) {
@@ -9656,7 +9718,7 @@ ProcessExtendsVisitor.prototype = {
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../logger":35,"../tree":65,"./visitor":94}],88:[function(require,module,exports){
+},{"../logger":35,"../tree":65,"../utils":86,"./visitor":94}],88:[function(require,module,exports){
 function ImportSequencer(onSequencerEmpty) {
     this.imports = [];
     this.variableImports = [];
@@ -9715,7 +9777,8 @@ module.exports = ImportSequencer;
 },{}],89:[function(require,module,exports){
 var contexts = require("../contexts"),
     Visitor = require("./visitor"),
-    ImportSequencer = require("./import-sequencer");
+    ImportSequencer = require("./import-sequencer"),
+    utils = require("../utils");
 
 var ImportVisitor = function(importer, finish) {
 
@@ -9754,7 +9817,7 @@ ImportVisitor.prototype = {
 
         if (!importNode.css || inlineCSS) {
 
-            var context = new contexts.Eval(this.context, this.context.frames.slice(0));
+            var context = new contexts.Eval(this.context, utils.copyArray(this.context.frames));
             var importParent = context.frames[0];
 
             this.importCount++;
@@ -9773,7 +9836,7 @@ ImportVisitor.prototype = {
         try {
             evaldImportNode = importNode.evalForImport(context);
         } catch(e) {
-            if (!e.filename) { e.index = importNode.index; e.filename = importNode.currentFileInfo.filename; }
+            if (!e.filename) { e.index = importNode.getIndex(); e.filename = importNode.fileInfo().filename; }
             // attempt to eval properly and treat as css
             importNode.css = true;
             // if that fails, this error will be thrown
@@ -9799,7 +9862,7 @@ ImportVisitor.prototype = {
             var onImported = this.onImported.bind(this, evaldImportNode, context),
                 sequencedOnImported = this._sequencer.addImport(onImported);
 
-            this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.currentFileInfo,
+            this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.fileInfo(),
                 evaldImportNode.options, sequencedOnImported);
         } else {
             this.importCount--;
@@ -9811,7 +9874,7 @@ ImportVisitor.prototype = {
     onImported: function (importNode, context, e, root, importedAtRoot, fullPath) {
         if (e) {
             if (!e.filename) {
-                e.index = importNode.index; e.filename = importNode.currentFileInfo.filename;
+                e.index = importNode.getIndex(); e.filename = importNode.fileInfo().filename;
             }
             this.error = e;
         }
@@ -9903,7 +9966,7 @@ ImportVisitor.prototype = {
 };
 module.exports = ImportVisitor;
 
-},{"../contexts":12,"./import-sequencer":88,"./visitor":94}],90:[function(require,module,exports){
+},{"../contexts":12,"../utils":86,"./import-sequencer":88,"./visitor":94}],90:[function(require,module,exports){
 var visitors = {
     Visitor: require("./visitor"),
     ImportVisitor: require('./import-visitor'),
@@ -10217,15 +10280,15 @@ ToCSSVisitor.prototype = {
             var ruleNode = rules[i];
             if (isRoot && ruleNode instanceof tree.Declaration && !ruleNode.variable) {
                 throw { message: "Properties must be inside selector blocks. They cannot be in the root",
-                    index: ruleNode.index, filename: ruleNode.currentFileInfo && ruleNode.currentFileInfo.filename};
+                    index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename};
             }
             if (ruleNode instanceof tree.Call) {
                 throw { message: "Function '" + ruleNode.name + "' is undefined",
-                    index: ruleNode.index, filename: ruleNode.currentFileInfo && ruleNode.currentFileInfo.filename};
+                    index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename};
             }
             if (ruleNode.type && !ruleNode.allowRoot) {
                 throw { message: ruleNode.type + " node returned by a function is not valid here",
-                    index: ruleNode.index, filename: ruleNode.currentFileInfo && ruleNode.currentFileInfo.filename};
+                    index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename};
             }
         }
     },

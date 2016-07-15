@@ -86,6 +86,11 @@
 .root {
   @ruleset2();
 }
+.test-empty {
+  val1: foo;
+  test-collapse();
+  val2: foo;
+}
 
 test-directive("@charset"; '"utf-8"');
 test-directive("@arbitrary"; "value after ()");

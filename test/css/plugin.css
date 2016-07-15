@@ -46,4 +46,8 @@
 .root {
   prop: value;
 }
+.test-empty {
+  val1: foo;
+  val2: foo;
+}
 @arbitrary value after ();

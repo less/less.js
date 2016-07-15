@@ -24,9 +24,13 @@ functions.addMultiple({
     "test-ruleset-call": function() {
         return new tree.Combinator(' ');
     },
-    // Functions must return something. Must 'return true' if they produce no output.
-    "test-undefined": function() { },
-
+    // Functions must return something, even if it's false/true
+    "test-undefined": function() { 
+        return;
+    },
+    "test-collapse": function() { 
+        return true;
+    },
     // These cause root errors
     "test-alpha": function() {
         return new tree.Alpha(30);
@@ -47,8 +51,8 @@ functions.addMultiple({
         return new tree.Condition('<', new tree.Value([0]), new tree.Value([1]));
     },
     "test-detached-ruleset" : function() {
-        var rule = new tree.Rule('prop', new tree.Anonymous('value'));
-        return new tree.DetachedRuleset(new tree.Ruleset("", [ rule ]));
+        var decl = new tree.Declaration('prop', new tree.Anonymous('value'));
+        return new tree.DetachedRuleset(new tree.Ruleset("", [ decl ]));
     },
     "test-dimension": function() {
         return new tree.Dimension(1, 'px');

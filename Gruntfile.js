@@ -278,27 +278,33 @@ module.exports = function (grunt) {
         'saucelabs-jasmine': {
             all: {
                 options: {
-                    urls: ["filemanager-plugin","visitor-plugin","pre-processor-plugin","post-processor-plugin","post-processor", "global-vars", "modify-vars", "production", "rootpath-relative",
+                    urls: ["filemanager-plugin","visitor-plugin","pre-processor-plugin","post-processor-plugin","global-vars", "modify-vars", "production", "rootpath-relative",
                            "rootpath", "relative-urls", "browser", "no-js-errors", "legacy", "strict-units"
                     ].map(function(testName) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";
                     }),
                     testname: 'Sauce Unit Test for less.js',
-                    browsers: [{
+                    browsers: [
+                    // Desktop browsers
+                    {
                         browserName: "chrome",
-                        version: '',
-                        platform: 'Windows 8'
+                        version: 'latest',
+                        platform: 'Windows 7'
                     },
                     {
                         browserName: "firefox",
-                        version: '33',
+                        version: 'latest',
                         platform: 'Linux'
                     },
                     {
-                        browserName: "iPad",
-                        version: '8.0',
-                        platform: 'OS X 10.9',
-                        'device-orientation': 'portrait'
+                        browserName: 'safari',
+                        version: '9.1',
+                        platform: 'OS X 10.10'
+                    },
+                    {
+                        browserName: 'safari',
+                        version: '8',
+                        platform: 'OS X 10.10'
                     },
                     {
                         browserName: "internet explorer",
@@ -312,20 +318,47 @@ module.exports = function (grunt) {
                     },
                     {
                         browserName: "internet explorer",
-                        version: '10',
-                        platform: 'Windows 7'
-                    },
-                    {
-                        browserName: "internet explorer",
                         version: '11',
                         platform: 'Windows 8.1'
-                    }],
+                    },
+                    {
+                        browserName: "edge",
+                        version: '13',
+                        platform: 'Windows 10'
+                    },
+                    // Mobile browsers
+                    {
+                        browserName: "ipad",
+                        version: '8.0',
+                        platform: 'OS X 10.9',
+                        'device-orientation': 'portrait'
+                    },
+                    {
+                        browserName: 'iphone',
+                        version: '7.1',
+                        platform: 'OS X 10.9'
+                    },
+                    {
+                        browserName: 'iphone',
+                        version: '9.3',
+                        platform: 'OS X 10.10'
+                    },
+                    {
+                        browerName: 'android',
+                        version: '4.2',
+                        platform: 'Linux'
+                    }
+                    ],
+                    public: 'public',
+                    concurrency: 3,
+                    recordVideo: false,
+                    videoUploadOnPass: false,
+                    recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
+                    build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
+                    tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
+                    'max-duration': 120,
                     sauceConfig: {
-                        'record-video': process.env.TRAVIS_BRANCH !== "master",
-                        'record-screenshots': process.env.TRAVIS_BRANCH !== "master",
-                        'idle-timeout': 100, 'max-duration': 120,
-                        build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
-                        tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH]
+                        'idle-timeout': 100
                     },
                     throttled: 3
                 }
@@ -341,6 +374,7 @@ module.exports = function (grunt) {
     });
 
     // Load these plugins to provide the necessary tasks
+    grunt.loadNpmTasks('grunt-saucelabs');
     require('jit-grunt')(grunt);
 
     // Actually load this plugin's task(s).

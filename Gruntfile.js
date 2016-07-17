@@ -73,72 +73,7 @@ module.exports = function (grunt) {
             platform: 'Linux'
         }
     ];
-       var browsers = [
-        // Desktop browsers
-        {
-            browserName: "chrome",
-            version: 'latest',
-            platform: 'Windows 7'
-        },
-        {
-            browserName: "firefox",
-            version: 'latest',
-            platform: 'Linux'
-        },
-        {
-            browserName: 'safari',
-            version: '9',
-            platform: 'OS X 10.11'
-        },
-        {
-            browserName: 'safari',
-            version: '8',
-            platform: 'OS X 10.10'
-        },
-        {
-            browserName: "internet explorer",
-            version: '8',
-            platform: 'Windows XP'
-        },
-        {
-            browserName: "internet explorer",
-            version: '9',
-            platform: 'Windows 7'
-        },
-        {
-            browserName: "internet explorer",
-            version: '11',
-            platform: 'Windows 8.1'
-        },
-        {
-            browserName: "edge",
-            version: '13',
-            platform: 'Windows 10'
-        },
-        // Mobile browsers
-        {
-            browserName: "ipad",
-            version: '8.0',
-            platform: 'OS X 10.9',
-            'device-orientation': 'portrait'
-        },
-        {
-            browserName: 'iphone',
-            version: '7.1',
-            platform: 'OS X 10.9'
-        },
-        {
-            browserName: 'iphone',
-            version: '9.3',
-            platform: 'OS X 10.10'
-        },
-        {
-            browerName: 'android',
-            version: '4.2',
-            platform: 'Linux'
-        }
-    ];
-
+       
     // var sauceJobs = {};
 
     // [   "main",

@@ -591,8 +591,8 @@ module.exports = function (grunt) {
     ];
 
     if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
-        Number(process.env.TRAVIS_NODE_VERSION) === 0.11 &&
-        (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "sauce")) {
+        Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
+        (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "3.x")) {
         testTasks.push("force:on");
         testTasks.push("sauce-after-setup");
         testTasks.push("force:off");

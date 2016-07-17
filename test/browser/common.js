@@ -3,6 +3,41 @@
 jasmine.getEnv().addReporter(new jasmine.JSReporter2());
 jasmine.getEnv().defaultTimeoutInterval = 3000;
 
+// From https://github.com/axemclion/grunt-saucelabs/issues/109#issuecomment-166767282
+// (function () {
+//     var oldJSReport = window.jasmine.getJSReport;
+//     window.jasmine.getJSReport = function () {
+//         var results = oldJSReport();
+//         if (results) {
+//             return {
+//                 durationSec: results.durationSec,
+//                 suites: removePassingTests(results.suites),
+//                 passed: results.passed
+//             };
+//         } else {
+//             return null;
+//         }
+//     };
+
+//     function removePassingTests (suites) {
+//         return suites.filter(specFailed)
+//             .map(mapSuite);
+//     }
+
+//     function mapSuite (suite) {
+//         var result = {};
+//         for (var s in suite) {
+//             result[s] = suite[s];
+//         }
+//         result.specs = suite.specs.filter(specFailed);
+//         result.suites = removePassingTests(suite.suites);
+//         return result;
+//     }
+
+//     function specFailed (item) {
+//         return !item.passed;
+//     }
+// })();
 /* record log messages for testing */
 
 var logMessages = [];
@@ -45,15 +80,15 @@ less.loggers = [
     }
 ];
 
-var testLessEqualsInDocument = function () {
+testLessEqualsInDocument = function () {
     testLessInDocument(testSheet);
 };
 
-var testLessErrorsInDocument = function (isConsole) {
+testLessErrorsInDocument = function (isConsole) {
     testLessInDocument(isConsole ? testErrorSheetConsole : testErrorSheet);
 };
 
-var testLessInDocument = function (testFunc) {
+testLessInDocument = function (testFunc) {
     var links = document.getElementsByTagName('link'),
         typePattern = /^text\/(x-)?less$/;
 
@@ -65,7 +100,7 @@ var testLessInDocument = function (testFunc) {
     }
 };
 
-var ieFormat = function(text) {
+ieFormat = function(text) {
     var styleNode = document.createElement('style');
     styleNode.setAttribute('type', 'text/css');
     var headNode = document.getElementsByTagName('head')[0];
@@ -84,7 +119,7 @@ var ieFormat = function(text) {
     return transformedText;
 };
 
-var testSheet = function (sheet) {
+testSheet = function (sheet) {
     it(sheet.id + " should match the expected output", function (done) {
         var lessOutputId = sheet.id.replace("original-", ""),
             expectedOutputId = "expected-" + lessOutputId,
@@ -123,7 +158,7 @@ function extractId(href) {
         .replace(/\./g, ':'); // Replace dots with colons(for valid id)
 }
 
-var waitFor = function (waitFunc) {
+waitFor = function (waitFunc) {
     return new Promise(function (resolve) {
         var timeoutId = setInterval(function () {
             if (waitFunc()) {
@@ -134,7 +169,7 @@ var waitFor = function (waitFunc) {
     });
 };
 
-var testErrorSheet = function (sheet) {
+testErrorSheet = function (sheet) {
     it(sheet.id + " should match an error", function (done) {
         var lessHref = sheet.href,
             id = "less-error-message:" + extractId(lessHref),
@@ -183,7 +218,7 @@ var testErrorSheet = function (sheet) {
     });
 };
 
-var testErrorSheetConsole = function (sheet) {
+testErrorSheetConsole = function (sheet) {
     it(sheet.id + " should match an error", function (done) {
         var lessHref = sheet.href,
             id = sheet.id.replace(/^original-less:/, "less-error-message:"),
@@ -212,7 +247,7 @@ var testErrorSheetConsole = function (sheet) {
     });
 };
 
-var loadFile = function (href) {
+loadFile = function (href) {
     return new Promise(function (resolve, reject) {
         var request = new XMLHttpRequest();
         request.open('GET', href, true);

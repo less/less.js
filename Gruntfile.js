@@ -7,6 +7,174 @@ module.exports = function (grunt) {
 
     var COMPRESS_FOR_TESTS = true;
 
+   // Sauce Labs browser
+    var browsers = [
+        // Desktop browsers
+        {
+            browserName: "chrome",
+            version: 'latest',
+            platform: 'Windows 7'
+        },
+        {
+            browserName: "firefox",
+            version: 'latest',
+            platform: 'Linux'
+        },
+        {
+            browserName: 'safari',
+            version: '9',
+            platform: 'OS X 10.11'
+        },
+        {
+            browserName: 'safari',
+            version: '8',
+            platform: 'OS X 10.10'
+        },
+        {
+            browserName: "internet explorer",
+            version: '8',
+            platform: 'Windows XP'
+        },
+        {
+            browserName: "internet explorer",
+            version: '9',
+            platform: 'Windows 7'
+        },
+        {
+            browserName: "internet explorer",
+            version: '11',
+            platform: 'Windows 8.1'
+        },
+        {
+            browserName: "edge",
+            version: '13',
+            platform: 'Windows 10'
+        },
+        // Mobile browsers
+        {
+            browserName: "ipad",
+            version: '8.0',
+            platform: 'OS X 10.9',
+            'device-orientation': 'portrait'
+        },
+        {
+            browserName: 'iphone',
+            version: '7.1',
+            platform: 'OS X 10.9'
+        },
+        {
+            browserName: 'iphone',
+            version: '9.3',
+            platform: 'OS X 10.10'
+        },
+        {
+            browerName: 'android',
+            version: '4.2',
+            platform: 'Linux'
+        }
+    ];
+       var browsers = [
+        // Desktop browsers
+        {
+            browserName: "chrome",
+            version: 'latest',
+            platform: 'Windows 7'
+        },
+        {
+            browserName: "firefox",
+            version: 'latest',
+            platform: 'Linux'
+        },
+        {
+            browserName: 'safari',
+            version: '9',
+            platform: 'OS X 10.11'
+        },
+        {
+            browserName: 'safari',
+            version: '8',
+            platform: 'OS X 10.10'
+        },
+        {
+            browserName: "internet explorer",
+            version: '8',
+            platform: 'Windows XP'
+        },
+        {
+            browserName: "internet explorer",
+            version: '9',
+            platform: 'Windows 7'
+        },
+        {
+            browserName: "internet explorer",
+            version: '11',
+            platform: 'Windows 8.1'
+        },
+        {
+            browserName: "edge",
+            version: '13',
+            platform: 'Windows 10'
+        },
+        // Mobile browsers
+        {
+            browserName: "ipad",
+            version: '8.0',
+            platform: 'OS X 10.9',
+            'device-orientation': 'portrait'
+        },
+        {
+            browserName: 'iphone',
+            version: '7.1',
+            platform: 'OS X 10.9'
+        },
+        {
+            browserName: 'iphone',
+            version: '9.3',
+            platform: 'OS X 10.10'
+        },
+        {
+            browerName: 'android',
+            version: '4.2',
+            platform: 'Linux'
+        }
+    ];
+
+    // var sauceJobs = {};
+
+    // [   "main",
+    //     "filemanager-plugin",
+    //     "visitor-plugin",
+    //     "pre-processor-plugin",
+    //     "post-processor-plugin",
+    //     "global-vars", 
+    //     "modify-vars", 
+    //     "production", 
+    //     "rootpath-relative",
+    //     "rootpath", 
+    //     "relative-urls", 
+    //     "browser", 
+    //     "no-js-errors", 
+    //     "legacy", 
+    //     "strict-units"
+    // ].map(function(testName) {
+    //     sauceJobs[testName] = {
+    //         options: {
+    //             urls: ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
+    //             testname: 'Less.js test - ' + testName,
+    //             browsers: browsers,
+    //             public: 'public',
+    //             recordVideo: false,
+    //             videoUploadOnPass: false,
+    //             recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
+    //             build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
+    //             tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
+    //             sauceConfig: {
+    //                 'idle-timeout': 100
+    //             },
+    //             throttled: 5
+    //         }
+    //     };
+    // });
     // Project configuration.
     grunt.initConfig({
 
@@ -278,89 +446,56 @@ module.exports = function (grunt) {
         'saucelabs-jasmine': {
             all: {
                 options: {
-                    urls: ["filemanager-plugin","visitor-plugin","pre-processor-plugin","post-processor-plugin","global-vars", "modify-vars", "production", "rootpath-relative",
+                    urls: ["main", "filemanager-plugin","visitor-plugin","pre-processor-plugin","post-processor-plugin","global-vars", "modify-vars", "production", "rootpath-relative",
                            "rootpath", "relative-urls", "browser", "no-js-errors", "legacy", "strict-units"
                     ].map(function(testName) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";
                     }),
                     testname: 'Sauce Unit Test for less.js',
-                    browsers: [
-                    // Desktop browsers
-                    {
-                        browserName: "chrome",
-                        version: 'latest',
-                        platform: 'Windows 7'
-                    },
-                    {
-                        browserName: "firefox",
-                        version: 'latest',
-                        platform: 'Linux'
-                    },
-                    {
-                        browserName: 'safari',
-                        version: '9.1',
-                        platform: 'OS X 10.10'
-                    },
-                    {
-                        browserName: 'safari',
-                        version: '8',
-                        platform: 'OS X 10.10'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '8',
-                        platform: 'Windows XP'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '9',
-                        platform: 'Windows 7'
-                    },
-                    {
-                        browserName: "internet explorer",
-                        version: '11',
-                        platform: 'Windows 8.1'
-                    },
-                    {
-                        browserName: "edge",
-                        version: '13',
-                        platform: 'Windows 10'
-                    },
-                    // Mobile browsers
-                    {
-                        browserName: "ipad",
-                        version: '8.0',
-                        platform: 'OS X 10.9',
-                        'device-orientation': 'portrait'
-                    },
-                    {
-                        browserName: 'iphone',
-                        version: '7.1',
-                        platform: 'OS X 10.9'
-                    },
-                    {
-                        browserName: 'iphone',
-                        version: '9.3',
-                        platform: 'OS X 10.10'
-                    },
-                    {
-                        browerName: 'android',
-                        version: '4.2',
-                        platform: 'Linux'
-                    }
-                    ],
+                    browsers: browsers,
                     public: 'public',
-                    concurrency: 3,
+                    pollInterval: 2000,
+                    statusCheckAttempts: 30,
                     recordVideo: false,
                     videoUploadOnPass: false,
                     recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
                     build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
                     tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
-                    'max-duration': 120,
                     sauceConfig: {
                         'idle-timeout': 100
                     },
-                    throttled: 3
+                    throttled: 5,
+                    onTestComplete: function(result, callback) {
+                        // Called after a unit test is done, per page, per browser
+                        // 'result' param is the object returned by the test framework's reporter
+                        // 'callback' is a Node.js style callback function. You must invoke it after you
+                        // finish your work.
+                        // Pass a non-null value as the callback's first parameter if you want to throw an
+                        // exception. If your function is synchronous you can also throw exceptions
+                        // directly.
+                        // Passing true or false as the callback's second parameter passes or fails the
+                        // test. Passing undefined does not alter the test result. Please note that this
+                        // only affects the grunt task's result. You have to explicitly update the Sauce
+                        // Labs job's status via its REST API, if you want so.
+                
+                        // This should be the encrypted value in Travis
+                        var user = process.env.SAUCE_USERNAME;
+                        var pass = process.env.SAUCE_ACCESS_KEY;
+
+                        require('request').put({
+                            url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
+                            auth: { user: user, pass: pass },
+                            json: { passed: result.passed }
+                        }, function (error, response, body) {
+                          if (error) {
+                            callback(error);
+                          } else if (response.statusCode !== 200) {
+                            callback(new Error('Unexpected response status'));
+                          } else {
+                            callback(null, result.passed);
+                          }
+                        });
+                    }
                 }
             }
         },

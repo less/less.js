@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.0.0-pre.2
+ * Less - Leaner CSS v3.0.0-pre.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2016, Alexis Sellier <self@cloudhead.net>
@@ -68,8 +68,9 @@ module.exports = function(window, options) {
  */
 /*global window, document */
 
-// shim Promise if required
-require('promise/polyfill.js');
+// TODO - consider switching this out for a recommendation for this polyfill:
+// <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+require("promise/polyfill");
 
 var options = window.less || {};
 require("./add-default-options")(window, options);
@@ -113,7 +114,7 @@ if (options.onReady) {
     less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
 }
 
-},{"./add-default-options":1,"./index":8,"promise/polyfill.js":102}],3:[function(require,module,exports){
+},{"./add-default-options":1,"./index":8,"promise/polyfill":101}],3:[function(require,module,exports){
 var utils = require("./utils");
 module.exports = {
     createCSS: function (document, styles, sheet) {
@@ -405,21 +406,6 @@ module.exports = function(options, logger) {
     var fileCache = {};
 
     //TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
-
-    function getXMLHttpRequest() {
-        if (window.XMLHttpRequest && (window.location.protocol !== "file:" || !("ActiveXObject" in window))) {
-            return new XMLHttpRequest();
-        } else {
-            try {
-                /*global ActiveXObject */
-                return new ActiveXObject("Microsoft.XMLHTTP");
-            } catch (e) {
-                logger.error("browser doesn't support AJAX.");
-                return null;
-            }
-        }
-    }
-
     var FileManager = function() {
     };
 
@@ -436,7 +422,7 @@ module.exports = function(options, logger) {
     };
     FileManager.prototype.doXHR = function doXHR(url, type, callback, errback) {
 
-        var xhr = getXMLHttpRequest();
+        var xhr = new XMLHttpRequest();
         var async = options.isFileProtocol ? options.fileAsync : true;
 
         if (typeof xhr.overrideMimeType === 'function') {
@@ -1372,6 +1358,7 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
     returner.hostPart = urlParts[1];
     returner.directories = directories;
     returner.path = (urlParts[1] || "") + directories.join("/");
+    returner.filename = urlParts[4];
     returner.fileUrl = returner.path + (urlParts[4] || "");
     returner.url = returner.fileUrl + (urlParts[5] || "");
     return returner;
@@ -1414,13 +1401,15 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, pluginOp
             filename = fileInfo.filename;
         }
     }
+    var shortname = (new this.less.FileManager()).extractUrlParts(filename).filename;
+
     if (filename) {
         pluginObj = pluginManager.get(filename);
 
         if (pluginObj) {
-            this.trySetOptions(pluginObj, filename, pluginOptions);
+            this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
             if (pluginObj.use) {
-                pluginObj.use(this.less);
+                pluginObj.use.call(this.context, pluginObj);
             }
             return pluginObj;
         }
@@ -1440,28 +1429,27 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, pluginOp
         if (!pluginObj) {
             pluginObj = localModule.exports;
         }
-
-        pluginObj = this.validatePlugin(pluginObj, filename);
+        pluginObj = this.validatePlugin(pluginObj, filename, shortname);
 
         if (pluginObj) {
             // Run on first load
-            pluginManager.addPlugin(pluginObj, fileInfo.filename);
+            pluginManager.addPlugin(pluginObj, fileInfo.filename, registry);
             pluginObj.functions = registry.getLocalFunctions();
 
-            this.trySetOptions(pluginObj, filename, pluginOptions);
+            this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
 
             // Run every @plugin call
             if (pluginObj.use) {
-                pluginObj.use(this.less);
+                pluginObj.use.call(this.context, pluginObj);
             }
         }
         else {
-            throw new SyntaxError("Not a valid plugin");
+            return new this.less.LessError({ message: "Not a valid plugin" });
         }
 
     } catch(e) {
         // TODO pass the error
-        console.log(e);
+        console.log(e.stack);
         return new this.less.LessError({
             message: "Plugin evaluation error: '" + e.name + ': ' + e.message.replace(/["]/g, "'") + "'" ,
             filename: filename,
@@ -1474,8 +1462,7 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, pluginOp
 
 };
 
-AbstractPluginLoader.prototype.trySetOptions = function(plugin, filename, options) {
-    var name = require('path').basename(filename);
+AbstractPluginLoader.prototype.trySetOptions = function(plugin, filename, name, options) {
     if (options) {
         if (!plugin.setOptions) {
             error("Options have been provided but the plugin " + name + " does not support any options.");
@@ -1491,14 +1478,14 @@ AbstractPluginLoader.prototype.trySetOptions = function(plugin, filename, option
     }
 };
 
-AbstractPluginLoader.prototype.validatePlugin = function(plugin, filename) {
+AbstractPluginLoader.prototype.validatePlugin = function(plugin, filename, name) {
     if (plugin) {
         // support plugins being a function
         // so that the plugin can be more usable programmatically
         if (typeof plugin === "function") {
             plugin = new plugin();
         }
-        var name = require('path').basename(filename);
+
         if (plugin.minVersion) {
             if (this.compareVersion(plugin.minVersion, this.less.version) < 0) {
                 error("Plugin " + name + " requires version " + this.versionToString(plugin.minVersion));
@@ -1541,7 +1528,7 @@ AbstractPluginLoader.prototype.printUsage = function(plugins) {
 module.exports = AbstractPluginLoader;
 
 
-},{"../functions/function-registry":24,"../less-error":34,"path":97}],18:[function(require,module,exports){
+},{"../functions/function-registry":24,"../less-error":34}],18:[function(require,module,exports){
 var logger = require("../logger");
 var environment = function(externalEnvironment, fileManagers) {
     this.fileManagers = fileManagers || [];
@@ -2002,7 +1989,7 @@ colorFunctions = {
 };
 functionRegistry.addMultiple(colorFunctions);
 
-},{"../tree/anonymous":47,"../tree/color":52,"../tree/dimension":59,"../tree/quoted":76,"./function-registry":24}],21:[function(require,module,exports){
+},{"../tree/anonymous":47,"../tree/color":52,"../tree/dimension":59,"../tree/quoted":77,"./function-registry":24}],21:[function(require,module,exports){
 module.exports = function(environment) {
     var Quoted = require("../tree/quoted"),
         URL = require("../tree/url"),
@@ -2089,7 +2076,7 @@ module.exports = function(environment) {
     });
 };
 
-},{"../logger":35,"../tree/quoted":76,"../tree/url":83,"./function-registry":24}],22:[function(require,module,exports){
+},{"../logger":35,"../tree/quoted":77,"../tree/url":84,"./function-registry":24}],22:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
     functionRegistry = require("./function-registry");
 
@@ -2393,7 +2380,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":47,"../tree/javascript":66,"../tree/quoted":76,"./function-registry":24}],30:[function(require,module,exports){
+},{"../tree/anonymous":47,"../tree/javascript":66,"../tree/quoted":77,"./function-registry":24}],30:[function(require,module,exports){
 module.exports = function(environment) {
     var Dimension = require("../tree/dimension"),
         Color = require("../tree/color"),
@@ -2483,7 +2470,7 @@ module.exports = function(environment) {
     });
 };
 
-},{"../tree/color":52,"../tree/dimension":59,"../tree/expression":62,"../tree/quoted":76,"../tree/url":83,"./function-registry":24}],31:[function(require,module,exports){
+},{"../tree/color":52,"../tree/dimension":59,"../tree/expression":62,"../tree/quoted":77,"../tree/url":84,"./function-registry":24}],31:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
     DetachedRuleset = require("../tree/detached-ruleset"),
     Dimension = require("../tree/dimension"),
@@ -2574,7 +2561,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":47,"../tree/color":52,"../tree/detached-ruleset":58,"../tree/dimension":59,"../tree/keyword":68,"../tree/operation":74,"../tree/quoted":76,"../tree/url":83,"./function-registry":24}],32:[function(require,module,exports){
+},{"../tree/anonymous":47,"../tree/color":52,"../tree/detached-ruleset":58,"../tree/dimension":59,"../tree/keyword":68,"../tree/operation":74,"../tree/quoted":77,"../tree/url":84,"./function-registry":24}],32:[function(require,module,exports){
 var contexts = require("./contexts"),
     Parser = require('./parser/parser'),
     LessError = require('./less-error');
@@ -2758,7 +2745,7 @@ module.exports = function(environment, fileManagers) {
     return less;
 };
 
-},{"./contexts":12,"./data":14,"./environment/abstract-file-manager":16,"./environment/abstract-plugin-loader":17,"./environment/environment":18,"./functions":25,"./import-manager":32,"./less-error":34,"./logger":35,"./parse":37,"./parse-tree":36,"./parser/parser":40,"./plugin-manager":41,"./render":42,"./source-map-builder":43,"./source-map-output":44,"./transform-tree":45,"./tree":65,"./utils":86,"./visitors":90}],34:[function(require,module,exports){
+},{"./contexts":12,"./data":14,"./environment/abstract-file-manager":16,"./environment/abstract-plugin-loader":17,"./environment/environment":18,"./functions":25,"./import-manager":32,"./less-error":34,"./logger":35,"./parse":37,"./parse-tree":36,"./parser/parser":40,"./plugin-manager":41,"./render":42,"./source-map-builder":43,"./source-map-output":44,"./transform-tree":45,"./tree":65,"./utils":87,"./visitors":91}],34:[function(require,module,exports){
 var utils = require("./utils");
 
 var LessError = module.exports = function LessError(e, importManager, currentFilename) {
@@ -2802,7 +2789,7 @@ if (typeof Object.create === 'undefined') {
 
 LessError.prototype.constructor = LessError;
 
-},{"./utils":86}],35:[function(require,module,exports){
+},{"./utils":87}],35:[function(require,module,exports){
 module.exports = {
     error: function(msg) {
         this._fireEvent("error", msg);
@@ -2959,20 +2946,17 @@ module.exports = function(environment, ParseTree, ImportManager) {
             }
 
             var imports = new ImportManager(this, context, rootFileInfo);
-            
+            this.importManager = imports;
+
             if (options.plugins) {
                 options.plugins.forEach(function(plugin) {
                     var evalResult, contents;
                     if (plugin.fileContent) {
                         contents = plugin.fileContent.replace(/^\uFEFF/, '');
                         evalResult = pluginManager.Loader.evalPlugin(contents, context, plugin.options, plugin.filename);
-                        if (!(evalResult instanceof LessError)) {
-                            pluginManager.addPlugin(plugin);
-                        }
-                        else {
+                        if (evalResult instanceof LessError) {
                             return callback(evalResult);
                         }
-                        
                     }
                     else {
                         pluginManager.addPlugin(plugin);
@@ -3452,7 +3436,9 @@ var Parser = function Parser(context, imports, fileInfo) {
     // The Parser
     //
     return {
-
+        parserInput: parserInput,
+        imports: imports,
+        fileInfo: fileInfo,
         //
         // Parse an input string into an abstract syntax tree,
         // @param str A string containing 'less' markup
@@ -3498,9 +3484,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }, imports);
                 });
 
+                tree.Node.prototype.parse = this;
+
                 root = new(tree.Ruleset)(null, this.parsers.primary());
                 root.root = true;
                 root.firstRoot = true;
+                
             } catch (e) {
                 return callback(new LessError(e, imports, fileInfo.filename));
             }
@@ -3835,15 +3824,17 @@ var Parser = function Parser(context, imports, fileInfo) {
                         return;
                     }
 
-                    value = this.quoted() || this.variable() ||
+                    value = this.quoted() || this.variable() || this.property() ||
                             parserInput.$re(/^(?:(?:\\[\(\)'"])|[^\(\)'"])+/) || "";
 
                     parserInput.autoCommentAbsorb = true;
 
                     expectChar(')');
 
-                    return new(tree.URL)((value.value != null || value instanceof tree.Variable) ?
-                                        value : new(tree.Anonymous)(value), index, fileInfo);
+                    return new(tree.URL)((value.value != null || 
+                        value instanceof tree.Variable || 
+                        value instanceof tree.Property) ?
+                        value : new(tree.Anonymous)(value, index), index, fileInfo);
                 },
 
                 //
@@ -3870,7 +3861,27 @@ var Parser = function Parser(context, imports, fileInfo) {
                         return new(tree.Variable)("@" + curly[1], index, fileInfo);
                     }
                 },
+                //
+                // A Property accessor, such as `$color`, in
+                //
+                //     background-color: $color
+                //
+                property: function () {
+                    var name, index = parserInput.i;
 
+                    if (parserInput.currentChar() === '$' && (name = parserInput.$re(/^\$[\w-]+/))) {
+                        return new(tree.Property)(name, index, fileInfo);
+                    }
+                },
+
+                // A property entity useing the protective {} e.g. @{prop}
+                propertyCurly: function () {
+                    var curly, index = parserInput.i;
+
+                    if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
+                        return new(tree.Property)("$" + curly[1], index, fileInfo);
+                    }
+                },
                 //
                 // A Hexadecimal color
                 //
@@ -4124,7 +4135,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                                     .push({ variadic: true });
                                 break;
                             }
-                            arg = entities.variable() || entities.literal() || entities.keyword();
+                            arg = entities.variable() || entities.property() || entities.literal() || entities.keyword();
                         }
 
                         if (!arg) {
@@ -4147,7 +4158,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                             val = arg;
                         }
 
-                        if (val && val instanceof tree.Variable) {
+                        if (val && (val instanceof tree.Variable || val instanceof tree.Property)) {
                             if (parserInput.$char(':')) {
                                 if (expressions.length > 0) {
                                     if (isSemiColonSeparated) {
@@ -4293,7 +4304,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var entities = this.entities;
 
                 return this.comment() || entities.literal() || entities.variable() || entities.url() ||
-                       entities.call()    || entities.keyword()  || entities.javascript();
+                       entities.property() || entities.call() || entities.keyword()  || entities.javascript();
             },
 
             //
@@ -4537,7 +4548,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.restore();
                 }
             },
-            declaration: function (tryAnonymous) {
+            declaration: function () {
                 var name, value, startOfRule = parserInput.i, c = parserInput.currentChar(), important, merge, isVariable;
 
                 if (c === '.' || c === '#' || c === '&' || c === ':') { return; }
@@ -4559,22 +4570,16 @@ var Parser = function Parser(context, imports, fileInfo) {
                         // where each item is a tree.Keyword or tree.Variable
                         merge = !isVariable && name.length > 1 && name.pop().value;
 
-                        // prefer to try to parse first if its a variable or we are compressing
-                        // but always fallback on the other one
-                        var tryValueFirst = !tryAnonymous && (context.compress || isVariable);
+                        // Try to store values as anonymous
+                        // If we need the value later we'll re-parse it in ruleset.parseValue
+                        value = this.anonymousValue();
+                        if (value) {
+                            parserInput.forget();
+                            // anonymous values absorb the end ';' which is required for them to work
+                            return new (tree.Declaration)(name, value, false, merge, startOfRule, fileInfo);
+                        }
 
-                        if (tryValueFirst) {
-                            value = this.value();
-                        }
                         if (!value) {
-                            value = this.anonymousValue();
-                            if (value) {
-                                parserInput.forget();
-                                // anonymous values absorb the end ';' which is required for them to work
-                                return new (tree.Declaration)(name, value, false, merge, startOfRule, fileInfo);
-                            }
-                        }
-                        if (!tryValueFirst && !value) {
                             value = this.value();
                         }
 
@@ -4584,20 +4589,19 @@ var Parser = function Parser(context, imports, fileInfo) {
                     if (value && this.end()) {
                         parserInput.forget();
                         return new (tree.Declaration)(name, value, important, merge, startOfRule, fileInfo);
-                    } else {
+                    }
+                    else {
                         parserInput.restore();
-                        if (value && !tryAnonymous) {
-                            return this.declaration(true);
-                        }
                     }
                 } else {
-                    parserInput.forget();
+                    parserInput.restore();
                 }
             },
             anonymousValue: function () {
-                var match = parserInput.$re(/^([^@+\/'"*`(;{}-]*);/);
+                var index = parserInput.i;
+                var match = parserInput.$re(/^([^@\$+\/'"*`(;{}-]*);/);
                 if (match) {
-                    return new(tree.Anonymous)(match[1]);
+                    return new(tree.Anonymous)(match[1], index);
                 }
             },
 
@@ -4902,7 +4906,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             // and before the `;`.
             //
             value: function () {
-                var e, expressions = [];
+                var e, expressions = [], index = parserInput.i;
 
                 do {
                     e = this.expression();
@@ -4913,7 +4917,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 } while (e);
 
                 if (expressions.length > 0) {
-                    return new(tree.Value)(expressions);
+                    return new(tree.Value)(expressions, index);
                 }
             },
             important: function () {
@@ -5152,13 +5156,14 @@ var Parser = function Parser(context, imports, fileInfo) {
             operand: function () {
                 var entities = this.entities, negate;
 
-                if (parserInput.peek(/^-[@\(]/)) {
+                if (parserInput.peek(/^-[@\$\(]/)) {
                     negate = parserInput.$char('-');
                 }
 
                 var o = this.sub() || entities.dimension() ||
                         entities.color() || entities.variable() ||
-                        entities.call() || entities.colorKeyword();
+                        entities.property() || entities.call() ||
+                        entities.colorKeyword();
 
                 if (negate) {
                     o.parensInOp = true;
@@ -5176,7 +5181,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             //     @var * 2
             //
             expression: function () {
-                var entities = [], e, delim;
+                var entities = [], e, delim, index = parserInput.i;
 
                 do {
                     e = this.comment();
@@ -5191,7 +5196,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!parserInput.peek(/^\/[\/*]/)) {
                             delim = parserInput.$char('/');
                             if (delim) {
-                                entities.push(new(tree.Anonymous)(delim));
+                                entities.push(new(tree.Anonymous)(delim, index));
                             }
                         }
                     }
@@ -5229,7 +5234,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                 match(/^(\*?)/);
                 while (true) {
-                    if (!match(/^((?:[\w-]+)|(?:@\{[\w-]+\}))/)) {
+                    if (!match(/^((?:[\w-]+)|(?:[@\$]\{[\w-]+\}))/)) {
                         break;
                     }
                 }
@@ -5245,10 +5250,11 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                     for (k = 0; k < name.length; k++) {
                         s = name[k];
-                        name[k] = (s.charAt(0) !== '@') ?
+                        name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
                             new(tree.Keyword)(s) :
-                            new(tree.Variable)('@' + s.slice(2, -1),
-                                index[k], fileInfo);
+                            (s.charAt(0) === '@' ?
+                                new(tree.Variable)('@' + s.slice(2, -1), index[k], fileInfo) :
+                                new(tree.Property)('$' + s.slice(2, -1), index[k], fileInfo));
                     }
                     return name;
                 }
@@ -5273,7 +5279,7 @@ Parser.serializeVars = function(vars) {
 
 module.exports = Parser;
 
-},{"../less-error":34,"../tree":65,"../utils":86,"../visitors":90,"./parser-input":39}],41:[function(require,module,exports){
+},{"../less-error":34,"../tree":65,"../utils":87,"../visitors":91,"./parser-input":39}],41:[function(require,module,exports){
 /**
  * Plugin Manager
  */
@@ -5312,13 +5318,13 @@ PluginManager.prototype.addPlugins = function(plugins) {
  * @param plugin
  * @param {String} filename
  */
-PluginManager.prototype.addPlugin = function(plugin, filename) {
+PluginManager.prototype.addPlugin = function(plugin, filename, functionRegistry) {
     this.installedPlugins.push(plugin);
     if (filename) {
         this.pluginCache[filename] = plugin;
     }
     if (plugin.install) {
-        plugin.install(this.less, this);
+        plugin.install(this.less, this, functionRegistry || this.less.functions.functionRegistry);
     }
 };
 /**
@@ -5784,7 +5790,7 @@ module.exports = function(root, options) {
     return evaldRoot;
 };
 
-},{"./contexts":12,"./tree":65,"./visitors":90}],46:[function(require,module,exports){
+},{"./contexts":12,"./tree":65,"./visitors":91}],46:[function(require,module,exports){
 var Node = require("./node");
 
 var Alpha = function (val) {
@@ -5838,7 +5844,10 @@ Anonymous.prototype.isRulesetLike = function() {
     return this.rulesetLike;
 };
 Anonymous.prototype.genCSS = function (context, output) {
-    output.add(this.value, this._fileInfo, this._index, this.mapLines);
+    this.nodeVisible = Boolean(this.value);
+    if (this.nodeVisible) {
+        output.add(this.value, this._fileInfo, this._index, this.mapLines);
+    }
 };
 module.exports = Anonymous;
 
@@ -6008,7 +6017,7 @@ AtRule.prototype.outputRuleset = function (context, output, rules) {
 };
 module.exports = AtRule;
 
-},{"./node":73,"./ruleset":79,"./selector":80}],50:[function(require,module,exports){
+},{"./node":73,"./ruleset":80,"./selector":81}],50:[function(require,module,exports){
 var Node = require("./node");
 
 var Attribute = function (key, op, value) {
@@ -6039,6 +6048,7 @@ module.exports = Attribute;
 
 },{"./node":73}],51:[function(require,module,exports){
 var Node = require("./node"),
+    Anonymous = require("./anonymous"),
     FunctionCaller = require("../functions/function-caller");
 //
 // A function call node.
@@ -6086,11 +6096,17 @@ Call.prototype.eval = function (context) {
             };
         }
 
-        if (result != null) {
+        if (result !== null && result !== undefined) {
+            // All returned results must be Nodes,
+            // so anything other than a Node is a null Node
+            if (!(result instanceof Node)) {
+                result = new Anonymous(null);
+            }
             result._index = this._index;
             result._fileInfo = this._fileInfo;
             return result;
         }
+
     }
 
     return new Call(this.name, args, this.getIndex(), this.fileInfo());
@@ -6109,7 +6125,7 @@ Call.prototype.genCSS = function (context, output) {
 };
 module.exports = Call;
 
-},{"../functions/function-caller":23,"./node":73}],52:[function(require,module,exports){
+},{"../functions/function-caller":23,"./anonymous":47,"./node":73}],52:[function(require,module,exports){
 var Node = require("./node"),
     colors = require("../data/colors");
 
@@ -6527,7 +6543,7 @@ Declaration.prototype.makeImportant = function () {
 };
 
 module.exports = Declaration;
-},{"./keyword":68,"./node":73,"./value":84}],58:[function(require,module,exports){
+},{"./keyword":68,"./node":73,"./value":85}],58:[function(require,module,exports){
 var Node = require("./node"),
     contexts = require("../contexts"),
     utils = require("../utils");
@@ -6552,7 +6568,7 @@ DetachedRuleset.prototype.callEval = function (context) {
 };
 module.exports = DetachedRuleset;
 
-},{"../contexts":12,"../utils":86,"./node":73}],59:[function(require,module,exports){
+},{"../contexts":12,"../utils":87,"./node":73}],59:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions"),
     Unit = require("./unit"),
@@ -6712,7 +6728,7 @@ Dimension.prototype.convertTo = function (conversions) {
 };
 module.exports = Dimension;
 
-},{"../data/unit-conversions":15,"./color":52,"./node":73,"./unit":82}],60:[function(require,module,exports){
+},{"../data/unit-conversions":15,"./color":52,"./node":73,"./unit":83}],60:[function(require,module,exports){
 // Backwards compatibility shim for Directive (AtRule)
 var AtRule = require("./atrule");
 
@@ -6906,7 +6922,7 @@ Extend.prototype.findSelfSelectors = function (selectors) {
 };
 module.exports = Extend;
 
-},{"./node":73,"./selector":80}],64:[function(require,module,exports){
+},{"./node":73,"./selector":81}],64:[function(require,module,exports){
 var Node = require("./node"),
     Media = require("./media"),
     URL = require("./url"),
@@ -7046,6 +7062,7 @@ Import.prototype.doEval = function (context) {
         if ( registry && this.root && this.root.functions ) {
             registry.addMultiple( this.root.functions );
         }
+
         return [];
     }
 
@@ -7080,7 +7097,7 @@ Import.prototype.doEval = function (context) {
 };
 module.exports = Import;
 
-},{"../utils":86,"./anonymous":47,"./media":69,"./node":73,"./quoted":76,"./ruleset":79,"./url":83}],65:[function(require,module,exports){
+},{"../utils":87,"./anonymous":47,"./media":69,"./node":73,"./quoted":77,"./ruleset":80,"./url":84}],65:[function(require,module,exports){
 var tree = {};
 
 tree.Node = require('./node');
@@ -7095,6 +7112,7 @@ tree.Dimension = require('./dimension');
 tree.Unit = require('./unit');
 tree.Keyword = require('./keyword');
 tree.Variable = require('./variable');
+tree.Property = require('./property');
 tree.Ruleset = require('./ruleset');
 tree.Element = require('./element');
 tree.Attribute = require('./attribute');
@@ -7127,7 +7145,7 @@ tree.RulesetCall = require('./ruleset-call');
 
 module.exports = tree;
 
-},{"./alpha":46,"./anonymous":47,"./assignment":48,"./atrule":49,"./attribute":50,"./call":51,"./color":52,"./combinator":53,"./comment":54,"./condition":55,"./declaration":57,"./detached-ruleset":58,"./dimension":59,"./directive":60,"./element":61,"./expression":62,"./extend":63,"./import":64,"./javascript":66,"./keyword":68,"./media":69,"./mixin-call":70,"./mixin-definition":71,"./negative":72,"./node":73,"./operation":74,"./paren":75,"./quoted":76,"./rule":77,"./ruleset":79,"./ruleset-call":78,"./selector":80,"./unicode-descriptor":81,"./unit":82,"./url":83,"./value":84,"./variable":85}],66:[function(require,module,exports){
+},{"./alpha":46,"./anonymous":47,"./assignment":48,"./atrule":49,"./attribute":50,"./call":51,"./color":52,"./combinator":53,"./comment":54,"./condition":55,"./declaration":57,"./detached-ruleset":58,"./dimension":59,"./directive":60,"./element":61,"./expression":62,"./extend":63,"./import":64,"./javascript":66,"./keyword":68,"./media":69,"./mixin-call":70,"./mixin-definition":71,"./negative":72,"./node":73,"./operation":74,"./paren":75,"./property":76,"./quoted":77,"./rule":78,"./ruleset":80,"./ruleset-call":79,"./selector":81,"./unicode-descriptor":82,"./unit":83,"./url":84,"./value":85,"./variable":86}],66:[function(require,module,exports){
 var JsEvalNode = require("./js-eval-node"),
     Dimension = require("./dimension"),
     Quoted = require("./quoted"),
@@ -7157,7 +7175,7 @@ JavaScript.prototype.eval = function(context) {
 
 module.exports = JavaScript;
 
-},{"./anonymous":47,"./dimension":59,"./js-eval-node":67,"./quoted":76}],67:[function(require,module,exports){
+},{"./anonymous":47,"./dimension":59,"./js-eval-node":67,"./quoted":77}],67:[function(require,module,exports){
 var Node = require("./node"),
     Variable = require("./variable");
 
@@ -7220,7 +7238,7 @@ JsEvalNode.prototype.jsify = function (obj) {
 
 module.exports = JsEvalNode;
 
-},{"./node":73,"./variable":85}],68:[function(require,module,exports){
+},{"./node":73,"./variable":86}],68:[function(require,module,exports){
 var Node = require("./node");
 
 var Keyword = function (value) { this.value = value; };
@@ -7262,7 +7280,7 @@ var Media = function (value, features, index, currentFileInfo, visibilityInfo) {
 };
 Media.prototype = new AtRule();
 Media.prototype.type = "Media";
-Media.prototype.isRulesetLike = true;
+Media.prototype.isRulesetLike = function() { return true; };
 Media.prototype.accept = function (visitor) {
     if (this.features) {
         this.features = visitor.visit(this.features);
@@ -7390,7 +7408,7 @@ Media.prototype.bubbleSelectors = function (selectors) {
 };
 module.exports = Media;
 
-},{"../utils":86,"./anonymous":47,"./atrule":49,"./expression":62,"./ruleset":79,"./selector":80,"./value":84}],70:[function(require,module,exports){
+},{"../utils":87,"./anonymous":47,"./atrule":49,"./expression":62,"./ruleset":80,"./selector":81,"./value":85}],70:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector"),
     MixinDefinition = require("./mixin-definition"),
@@ -7576,7 +7594,7 @@ MixinCall.prototype.format = function (args) {
 };
 module.exports = MixinCall;
 
-},{"../functions/default":22,"./mixin-definition":71,"./node":73,"./selector":80}],71:[function(require,module,exports){
+},{"../functions/default":22,"./mixin-definition":71,"./node":73,"./selector":81}],71:[function(require,module,exports){
 var Selector = require("./selector"),
     Element = require("./element"),
     Ruleset = require("./ruleset"),
@@ -7780,7 +7798,7 @@ Definition.prototype.matchArgs = function (args, context) {
 };
 module.exports = Definition;
 
-},{"../contexts":12,"../utils":86,"./declaration":57,"./element":61,"./expression":62,"./ruleset":79,"./selector":80}],72:[function(require,module,exports){
+},{"../contexts":12,"../utils":87,"./declaration":57,"./element":61,"./expression":62,"./ruleset":80,"./selector":81}],72:[function(require,module,exports){
 var Node = require("./node"),
     Operation = require("./operation"),
     Dimension = require("./dimension");
@@ -7807,6 +7825,8 @@ var Node = function() {
     this.parent = null;
     this.visibilityBlocks = undefined;
     this.nodeVisible = undefined;
+    this.rootNode = null;
+    this.parsed = null;
 
     var self = this;
     Object.defineProperty(this, "currentFileInfo", {
@@ -7836,6 +7856,7 @@ Node.prototype.getIndex = function() {
 Node.prototype.fileInfo = function() {
     return this._fileInfo || (this.parent && this.parent.fileInfo()) || {};
 };
+Node.prototype.isRulesetLike = function() { return false; };
 Node.prototype.toCSS = function (context) {
     var strs = [];
     this.genCSS(context, {
@@ -8028,8 +8049,81 @@ module.exports = Paren;
 
 },{"./node":73}],76:[function(require,module,exports){
 var Node = require("./node"),
+    Declaration = require("./declaration");
+
+var Property = function (name, index, currentFileInfo) {
+    this.name = name;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+};
+Property.prototype = new Node();
+Property.prototype.type = "Property";
+Property.prototype.eval = function (context) {
+    var property, name = this.name;
+    // TODO: shorten this reference
+    var mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
+
+    if (this.evaluating) {
+        throw { type: 'Name',
+                message: "Recursive property reference for " + name,
+                filename: this.fileInfo().filename,
+                index: this.getIndex() };
+    }
+
+    this.evaluating = true;
+
+    property = this.find(context.frames, function (frame) {
+
+        var v, vArr = frame.property(name);
+        if (vArr) {
+            for (var i = 0; i < vArr.length; i++) {
+                v = vArr[i];
+
+                vArr[i] = new Declaration(v.name,
+                    v.value,
+                    v.important,
+                    v.merge,
+                    v.index,
+                    v.currentFileInfo,
+                    v.inline,
+                    v.variable
+                );
+            }
+            mergeRules(vArr);
+
+            v = vArr[vArr.length - 1];
+            if (v.important) {
+                var importantScope = context.importantScope[context.importantScope.length - 1];
+                importantScope.important = v.important;
+            }
+            v = v.value.eval(context);
+            return v;
+        }
+    });
+    if (property) {
+        this.evaluating = false;
+        return property;
+    } else {
+        throw { type: 'Name',
+                message: "Property '" + name + "' is undefined",
+                filename: this.currentFileInfo.filename,
+                index: this.index };
+    }
+};
+Property.prototype.find = function (obj, fun) {
+    for (var i = 0, r; i < obj.length; i++) {
+        r = fun.call(obj, obj[i]);
+        if (r) { return r; }
+    }
+    return null;
+};
+module.exports = Property;
+
+},{"./declaration":57,"./node":73}],77:[function(require,module,exports){
+var Node = require("./node"),
     JsEvalNode = require("./js-eval-node"),
-    Variable = require("./variable");
+    Variable = require("./variable"),
+    Property = require("./property");
 
 var Quoted = function (str, content, escaped, index, currentFileInfo) {
     this.escaped = (escaped == null) ? true : escaped;
@@ -8057,8 +8151,12 @@ Quoted.prototype.eval = function (context) {
     var javascriptReplacement = function (_, exp) {
         return String(that.evaluateJavaScript(exp, context));
     };
-    var interpolationReplacement = function (_, name) {
+    var variableReplacement = function (_, name) {
         var v = new Variable('@' + name, that.getIndex(), that.fileInfo()).eval(context, true);
+        return (v instanceof Quoted) ? v.value : v.toCSS();
+    };
+    var propertyReplacement = function (_, name) {
+        var v = new Property('$' + name, that.getIndex(), that.fileInfo()).eval(context, true);
         return (v instanceof Quoted) ? v.value : v.toCSS();
     };
     function iterativeReplace(value, regexp, replacementFnc) {
@@ -8070,7 +8168,8 @@ Quoted.prototype.eval = function (context) {
         return evaluatedValue;
     }
     value = iterativeReplace(value, /`([^`]+)`/g, javascriptReplacement);
-    value = iterativeReplace(value, /@\{([\w-]+)\}/g, interpolationReplacement);
+    value = iterativeReplace(value, /@\{([\w-]+)\}/g, variableReplacement);
+    value = iterativeReplace(value, /\$\{([\w-]+)\}/g, propertyReplacement);
     return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
 };
 Quoted.prototype.compare = function (other) {
@@ -8083,7 +8182,7 @@ Quoted.prototype.compare = function (other) {
 };
 module.exports = Quoted;
 
-},{"./js-eval-node":67,"./node":73,"./variable":85}],77:[function(require,module,exports){
+},{"./js-eval-node":67,"./node":73,"./property":76,"./variable":86}],78:[function(require,module,exports){
 // Backwards compatibility shim for Rule (Declaration)
 var Declaration = require("./declaration");
 
@@ -8096,7 +8195,7 @@ Rule.prototype = Object.create(Declaration.prototype);
 Rule.prototype.constructor = Rule;
 
 module.exports = Rule;
-},{"./declaration":57}],78:[function(require,module,exports){
+},{"./declaration":57}],79:[function(require,module,exports){
 var Node = require("./node"),
     Variable = require("./variable");
 
@@ -8112,25 +8211,32 @@ RulesetCall.prototype.eval = function (context) {
 };
 module.exports = RulesetCall;
 
-},{"./node":73,"./variable":85}],79:[function(require,module,exports){
+},{"./node":73,"./variable":86}],80:[function(require,module,exports){
 var Node = require("./node"),
     Declaration = require("./declaration"),
+    Keyword = require("./keyword"),
+    Comment = require("./comment"),
+    Paren = require("./paren"),
     Selector = require("./selector"),
     Element = require("./element"),
-    Paren = require("./paren"),
+    Anonymous = require("./anonymous"),
     contexts = require("../contexts"),
     globalFunctionRegistry = require("../functions/function-registry"),
     defaultFunc = require("../functions/default"),
     getDebugInfo = require("./debug-info"),
+    LessError = require("../less-error"),
     utils = require("../utils");
 
 var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
     this.selectors = selectors;
     this.rules = rules;
     this._lookups = {};
+    this._variables = null;
+    this._properties = null;
     this.strictImports = strictImports;
     this.copyVisibilityInfo(visibilityInfo);
     this.allowRoot = true;
+
     this.setParent(this.selectors, this);
     this.setParent(this.rules, this);
 
@@ -8138,7 +8244,7 @@ var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
 Ruleset.prototype = new Node();
 Ruleset.prototype.type = "Ruleset";
 Ruleset.prototype.isRuleset = true;
-Ruleset.prototype.isRulesetLike = true;
+Ruleset.prototype.isRulesetLike = function() { return true; };
 Ruleset.prototype.accept = function (visitor) {
     if (this.paths) {
         this.paths = visitor.visitArray(this.paths, true);
@@ -8219,20 +8325,20 @@ Ruleset.prototype.eval = function (context) {
 
     // Store the frames around mixin definitions,
     // so they can be evaluated like closures when the time comes.
-    var rsRules = ruleset.rules, rsRuleCnt = rsRules ? rsRules.length : 0;
-    for (i = 0; i < rsRuleCnt; i++) {
-        if (rsRules[i].evalFirst) {
-            rsRules[i] = rsRules[i].eval(context);
+    var rsRules = ruleset.rules;
+    for (i = 0; (rule = rsRules[i]); i++) {
+        if (rule.evalFirst) {
+            rsRules[i] = rule.eval(context);
         }
     }
 
     var mediaBlockCount = (context.mediaBlocks && context.mediaBlocks.length) || 0;
 
     // Evaluate mixin calls.
-    for (i = 0; i < rsRuleCnt; i++) {
-        if (rsRules[i].type === "MixinCall") {
+    for (i = 0; (rule = rsRules[i]); i++) {
+        if (rule.type === "MixinCall") {
             /*jshint loopfunc:true */
-            rules = rsRules[i].eval(context).filter(function(r) {
+            rules = rule.eval(context).filter(function(r) {
                 if ((r instanceof Declaration) && r.variable) {
                     // do not pollute the scope if the variable is
                     // already there. consider returning false here
@@ -8242,12 +8348,11 @@ Ruleset.prototype.eval = function (context) {
                 return true;
             });
             rsRules.splice.apply(rsRules, [i, 1].concat(rules));
-            rsRuleCnt += rules.length - 1;
             i += rules.length - 1;
             ruleset.resetCache();
-        } else if (rsRules[i].type === "RulesetCall") {
+        } else if (rule.type ===  "RulesetCall") {
             /*jshint loopfunc:true */
-            rules = rsRules[i].eval(context).rules.filter(function(r) {
+            rules = rule.eval(context).rules.filter(function(r) {
                 if ((r instanceof Declaration) && r.variable) {
                     // do not pollute the scope at all
                     return false;
@@ -8255,31 +8360,27 @@ Ruleset.prototype.eval = function (context) {
                 return true;
             });
             rsRules.splice.apply(rsRules, [i, 1].concat(rules));
-            rsRuleCnt += rules.length - 1;
             i += rules.length - 1;
             ruleset.resetCache();
         }
     }
 
     // Evaluate everything else
-    for (i = 0; i < rsRules.length; i++) {
-        rule = rsRules[i];
+    for (i = 0; (rule = rsRules[i]); i++) {
         if (!rule.evalFirst) {
             rsRules[i] = rule = rule.eval ? rule.eval(context) : rule;
         }
     }
 
     // Evaluate everything else
-    for (i = 0; i < rsRules.length; i++) {
-        rule = rsRules[i];
+    for (i = 0; (rule = rsRules[i]); i++) {
         // for rulesets, check if it is a css guard and can be removed
         if (rule instanceof Ruleset && rule.selectors && rule.selectors.length === 1) {
             // check if it can be folded in (e.g. & where)
             if (rule.selectors[0].isJustParentSelector()) {
                 rsRules.splice(i--, 1);
 
-                for (var j = 0; j < rule.rules.length; j++) {
-                    subRule = rule.rules[j];
+                for (var j = 0; (subRule = rule.rules[j]); j++) {
                     if (subRule instanceof Node) {
                         subRule.copyVisibilityInfo(rule.visibilityInfo());
                         if (!(subRule instanceof Declaration) || !subRule.variable) {
@@ -8351,6 +8452,7 @@ Ruleset.prototype.matchCondition = function (args, context) {
 Ruleset.prototype.resetCache = function () {
     this._rulesets = null;
     this._variables = null;
+    this._properties = null;
     this._lookups = {};
 };
 Ruleset.prototype.variables = function () {
@@ -8375,17 +8477,86 @@ Ruleset.prototype.variables = function () {
     }
     return this._variables;
 };
+Ruleset.prototype.properties = function () {
+    if (!this._properties) {
+        this._properties = !this.rules ? {} : this.rules.reduce(function (hash, r) {
+            if (r instanceof Declaration && r.variable !== true) {
+                var name = (r.name.length === 1) && (r.name[0] instanceof Keyword) ?
+                    r.name[0].value : r.name;
+                // Properties don't overwrite as they can merge
+                if (!hash['$' + name]) {
+                    hash['$' + name] = [ r ];
+                }
+                else {
+                    hash['$' + name].push(r);
+                }
+            }
+            return hash;
+        }, {});
+    }
+    return this._properties;
+};
 Ruleset.prototype.variable = function (name) {
-    return this.variables()[name];
+    var decl = this.variables()[name];
+    if (decl) {
+        return this.parseValue(decl);
+    }
+};
+Ruleset.prototype.property = function (name) {
+    var decl = this.properties()[name];
+    if (decl) {
+        return this.parseValue(decl);
+    }
+};
+Ruleset.prototype.parseValue = function(toParse) {
+    var self = this;
+    function transformDeclaration(decl) {
+        if (decl.value instanceof Anonymous && !decl.parsed) {
+            try {
+                this.parse.parserInput.start(decl.value.value, false, function fail(msg, index) {
+                    decl.parsed = true;
+                    return decl;
+                });
+                var result = this.parse.parsers.value();
+                var important = this.parse.parsers.important();
+
+                var endInfo = this.parse.parserInput.end();
+                if (endInfo.isFinished) {
+                    decl.value = result;
+                    decl.imporant = important;
+                    decl.parsed = true;
+                }
+            } catch (e) {
+                throw new LessError({
+                    index: e.index + decl.value.getIndex(),
+                    message: e.message
+                }, this.parse.imports, decl.fileInfo().filename);
+            }
+
+            return decl;
+        }
+        else {
+            return decl;
+        }
+    }
+    if (!Array.isArray(toParse)) {
+        return transformDeclaration.call(self, toParse);
+    }
+    else {
+        var nodes = [];
+        toParse.forEach(function(n) {
+            nodes.push(transformDeclaration.call(self, n));
+        });
+        return nodes;
+    }
 };
 Ruleset.prototype.rulesets = function () {
     if (!this.rules) { return []; }
 
-    var filtRules = [], rules = this.rules, cnt = rules.length,
+    var filtRules = [], rules = this.rules,
         i, rule;
 
-    for (i = 0; i < cnt; i++) {
-        rule = rules[i];
+    for (i = 0; (rule = rules[i]); i++) {
         if (rule.isRuleset) {
             filtRules.push(rule);
         }
@@ -8451,41 +8622,23 @@ Ruleset.prototype.genCSS = function (context, output) {
         tabSetStr = context.compress ? '' : Array(context.tabLevel).join("  "),
         sep;
 
-    function isRulesetLikeNode(rule) {
-        // if it has nested rules, then it should be treated like a ruleset
-        // medias and comments do not have nested rules, but should be treated like rulesets anyway
-        // some atrules and anonymous nodes are ruleset like, others are not
-        if (typeof rule.isRulesetLike === "boolean") {
-            return rule.isRulesetLike;
-        } else if (typeof rule.isRulesetLike === "function") {
-            return rule.isRulesetLike();
-        }
-
-        //anything else is assumed to be a rule
-        return false;
-    }
-
     var charsetNodeIndex = 0;
     var importNodeIndex = 0;
-    for (i = 0; i < this.rules.length; i++) {
-        rule = this.rules[i];
-        // Plugins may return something other than Nodes
-        if (rule instanceof Node) {
-            if (rule.type === "Comment") {
-                if (importNodeIndex === i) {
-                    importNodeIndex++;
-                }
-                ruleNodes.push(rule);
-            } else if (rule.isCharset && rule.isCharset()) {
-                ruleNodes.splice(charsetNodeIndex, 0, rule);
-                charsetNodeIndex++;
+    for (i = 0; (rule = this.rules[i]); i++) {
+        if (rule instanceof Comment) {
+            if (importNodeIndex === i) {
                 importNodeIndex++;
-            } else if (rule.type === "Import") {
-                ruleNodes.splice(importNodeIndex, 0, rule);
-                importNodeIndex++;
-            } else {
-                ruleNodes.push(rule);
             }
+            ruleNodes.push(rule);
+        } else if (rule.isCharset && rule.isCharset()) {
+            ruleNodes.splice(charsetNodeIndex, 0, rule);
+            charsetNodeIndex++;
+            importNodeIndex++;
+        } else if (rule.type === "Import") {
+            ruleNodes.splice(importNodeIndex, 0, rule);
+            importNodeIndex++;
+        } else {
+            ruleNodes.push(rule);
         }
     }
     ruleNodes = charsetRuleNodes.concat(ruleNodes);
@@ -8523,15 +8676,14 @@ Ruleset.prototype.genCSS = function (context, output) {
     }
 
     // Compile rules and rulesets
-    for (i = 0; i < ruleNodes.length; i++) {
-        rule = ruleNodes[i];
+    for (i = 0; (rule = ruleNodes[i]); i++) {
 
         if (i + 1 === ruleNodes.length) {
             context.lastRule = true;
         }
 
         var currentLastRule = context.lastRule;
-        if (isRulesetLikeNode(rule)) {
+        if (rule.isRulesetLike(rule)) {
             context.lastRule = false;
         }
 
@@ -8543,7 +8695,7 @@ Ruleset.prototype.genCSS = function (context, output) {
 
         context.lastRule = currentLastRule;
 
-        if (!context.lastRule) {
+        if (!context.lastRule && rule.isVisible()) {
             output.add(context.compress ? '' : ('\n' + tabRuleStr));
         } else {
             context.lastRule = false;
@@ -8661,9 +8813,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
             return;
         }
 
-        for (i = 0; i < selectors.length; i++) {
-            sel = selectors[i];
-
+        for (i = 0; (sel = selectors[i]); i++) {
             // if the previous thing in sel is a parent this needs to join on to it
             if (sel.length > 0) {
                 sel[sel.length - 1] = sel[sel.length - 1].createDerived(sel[sel.length - 1].elements.concat(elements));
@@ -8691,12 +8841,12 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         var i, j, k, currentElements, newSelectors, selectorsMultiplied, sel, el, hadParentSelector = false, length, lastSelector;
         function findNestedSelector(element) {
             var maybeSelector;
-            if (element.value.type !== 'Paren') {
+            if (!(element.value instanceof Paren)) {
                 return null;
             }
 
             maybeSelector = element.value.value;
-            if (maybeSelector.type !== 'Selector') {
+            if (!(maybeSelector instanceof Selector)) {
                 return null;
             }
 
@@ -8712,8 +8862,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
             []
         ];
 
-        for (i = 0; i < inSelector.elements.length; i++) {
-            el = inSelector.elements[i];
+        for (i = 0; (el = inSelector.elements[i]); i++) {
             // non parent reference elements just get added
             if (el.value !== "&") {
                 var nestedSelector = findNestedSelector(el);
@@ -8828,7 +8977,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 };
 module.exports = Ruleset;
 
-},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"../utils":86,"./debug-info":56,"./declaration":57,"./element":61,"./node":73,"./paren":75,"./selector":80}],80:[function(require,module,exports){
+},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"../less-error":34,"../utils":87,"./anonymous":47,"./comment":54,"./debug-info":56,"./declaration":57,"./element":61,"./keyword":68,"./node":73,"./paren":75,"./selector":81}],81:[function(require,module,exports){
 var Node = require("./node"),
     Element = require("./element");
 
@@ -8943,7 +9092,7 @@ Selector.prototype.getIsOutput = function() {
 };
 module.exports = Selector;
 
-},{"./element":61,"./node":73}],81:[function(require,module,exports){
+},{"./element":61,"./node":73}],82:[function(require,module,exports){
 var Node = require("./node");
 
 var UnicodeDescriptor = function (value) {
@@ -8954,7 +9103,7 @@ UnicodeDescriptor.prototype.type = "UnicodeDescriptor";
 
 module.exports = UnicodeDescriptor;
 
-},{"./node":73}],82:[function(require,module,exports){
+},{"./node":73}],83:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions"),
     utils = require("../utils");
@@ -9077,7 +9226,7 @@ Unit.prototype.cancel = function () {
 };
 module.exports = Unit;
 
-},{"../data/unit-conversions":15,"../utils":86,"./node":73}],83:[function(require,module,exports){
+},{"../data/unit-conversions":15,"../utils":87,"./node":73}],84:[function(require,module,exports){
 var Node = require("./node");
 
 var URL = function (val, index, currentFileInfo, isEvald) {
@@ -9133,7 +9282,7 @@ URL.prototype.eval = function (context) {
 };
 module.exports = URL;
 
-},{"./node":73}],84:[function(require,module,exports){
+},{"./node":73}],85:[function(require,module,exports){
 var Node = require("./node");
 
 var Value = function (value) {
@@ -9169,7 +9318,7 @@ Value.prototype.genCSS = function (context, output) {
 };
 module.exports = Value;
 
-},{"./node":73}],85:[function(require,module,exports){
+},{"./node":73}],86:[function(require,module,exports){
 var Node = require("./node");
 
 var Variable = function (name, index, currentFileInfo) {
@@ -9224,7 +9373,7 @@ Variable.prototype.find = function (obj, fun) {
 };
 module.exports = Variable;
 
-},{"./node":73}],86:[function(require,module,exports){
+},{"./node":73}],87:[function(require,module,exports){
 module.exports = {
     getLocation: function(index, inputStream) {
         var n = index + 1,
@@ -9255,7 +9404,7 @@ module.exports = {
     }
 };
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor"),
     logger = require("../logger"),
@@ -9718,7 +9867,7 @@ ProcessExtendsVisitor.prototype = {
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../logger":35,"../tree":65,"../utils":86,"./visitor":94}],88:[function(require,module,exports){
+},{"../logger":35,"../tree":65,"../utils":87,"./visitor":95}],89:[function(require,module,exports){
 function ImportSequencer(onSequencerEmpty) {
     this.imports = [];
     this.variableImports = [];
@@ -9774,7 +9923,7 @@ ImportSequencer.prototype.tryRun = function() {
 
 module.exports = ImportSequencer;
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 var contexts = require("../contexts"),
     Visitor = require("./visitor"),
     ImportSequencer = require("./import-sequencer"),
@@ -9966,7 +10115,7 @@ ImportVisitor.prototype = {
 };
 module.exports = ImportVisitor;
 
-},{"../contexts":12,"../utils":86,"./import-sequencer":88,"./visitor":94}],90:[function(require,module,exports){
+},{"../contexts":12,"../utils":87,"./import-sequencer":89,"./visitor":95}],91:[function(require,module,exports){
 var visitors = {
     Visitor: require("./visitor"),
     ImportVisitor: require('./import-visitor'),
@@ -9978,7 +10127,7 @@ var visitors = {
 
 module.exports = visitors;
 
-},{"./extend-visitor":87,"./import-visitor":89,"./join-selector-visitor":91,"./set-tree-visibility-visitor":92,"./to-css-visitor":93,"./visitor":94}],91:[function(require,module,exports){
+},{"./extend-visitor":88,"./import-visitor":90,"./join-selector-visitor":92,"./set-tree-visibility-visitor":93,"./to-css-visitor":94,"./visitor":95}],92:[function(require,module,exports){
 var Visitor = require("./visitor");
 
 var JoinSelectorVisitor = function() {
@@ -10031,7 +10180,7 @@ JoinSelectorVisitor.prototype = {
 
 module.exports = JoinSelectorVisitor;
 
-},{"./visitor":94}],92:[function(require,module,exports){
+},{"./visitor":95}],93:[function(require,module,exports){
 var SetTreeVisibilityVisitor = function(visible) {
     this.visible = visible;
 };
@@ -10070,7 +10219,7 @@ SetTreeVisibilityVisitor.prototype.visit = function(node) {
     return node;
 };
 module.exports = SetTreeVisibilityVisitor;
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor");
 
@@ -10465,7 +10614,7 @@ ToCSSVisitor.prototype = {
 
 module.exports = ToCSSVisitor;
 
-},{"../tree":65,"./visitor":94}],94:[function(require,module,exports){
+},{"../tree":65,"./visitor":95}],95:[function(require,module,exports){
 var tree = require("../tree");
 
 var _visitArgs = { visitDeeper: true },
@@ -10619,7 +10768,7 @@ Visitor.prototype = {
 };
 module.exports = Visitor;
 
-},{"../tree":65}],95:[function(require,module,exports){
+},{"../tree":65}],96:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -10687,7 +10836,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":96}],96:[function(require,module,exports){
+},{"./raw":97}],97:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -10911,356 +11060,7 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],97:[function(require,module,exports){
-(function (process){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-  for (var i = parts.length - 1; i >= 0; i--) {
-    var last = parts[i];
-    if (last === '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  }
-
-  // if the path is allowed to go above the root, restore leading ..s
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-}
-
-// Split a filename into [root, dir, basename, ext], unix version
-// 'root' is just a slash, or nothing.
-var splitPathRe =
-    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-var splitPath = function(filename) {
-  return splitPathRe.exec(filename).slice(1);
-};
-
-// path.resolve([from ...], to)
-// posix version
-exports.resolve = function() {
-  var resolvedPath = '',
-      resolvedAbsolute = false;
-
-  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = (i >= 0) ? arguments[i] : process.cwd();
-
-    // Skip empty and invalid entries
-    if (typeof path !== 'string') {
-      throw new TypeError('Arguments to path.resolve must be strings');
-    } else if (!path) {
-      continue;
-    }
-
-    resolvedPath = path + '/' + resolvedPath;
-    resolvedAbsolute = path.charAt(0) === '/';
-  }
-
-  // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-  // Normalize the path
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-};
-
-// path.normalize(path)
-// posix version
-exports.normalize = function(path) {
-  var isAbsolute = exports.isAbsolute(path),
-      trailingSlash = substr(path, -1) === '/';
-
-  // Normalize the path
-  path = normalizeArray(filter(path.split('/'), function(p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-};
-
-// posix version
-exports.isAbsolute = function(path) {
-  return path.charAt(0) === '/';
-};
-
-// posix version
-exports.join = function() {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
-    if (typeof p !== 'string') {
-      throw new TypeError('Arguments to path.join must be strings');
-    }
-    return p;
-  }).join('/'));
-};
-
-
-// path.relative(from, to)
-// posix version
-exports.relative = function(from, to) {
-  from = exports.resolve(from).substr(1);
-  to = exports.resolve(to).substr(1);
-
-  function trim(arr) {
-    var start = 0;
-    for (; start < arr.length; start++) {
-      if (arr[start] !== '') break;
-    }
-
-    var end = arr.length - 1;
-    for (; end >= 0; end--) {
-      if (arr[end] !== '') break;
-    }
-
-    if (start > end) return [];
-    return arr.slice(start, end - start + 1);
-  }
-
-  var fromParts = trim(from.split('/'));
-  var toParts = trim(to.split('/'));
-
-  var length = Math.min(fromParts.length, toParts.length);
-  var samePartsLength = length;
-  for (var i = 0; i < length; i++) {
-    if (fromParts[i] !== toParts[i]) {
-      samePartsLength = i;
-      break;
-    }
-  }
-
-  var outputParts = [];
-  for (var i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push('..');
-  }
-
-  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-  return outputParts.join('/');
-};
-
-exports.sep = '/';
-exports.delimiter = ':';
-
-exports.dirname = function(path) {
-  var result = splitPath(path),
-      root = result[0],
-      dir = result[1];
-
-  if (!root && !dir) {
-    // No dirname whatsoever
-    return '.';
-  }
-
-  if (dir) {
-    // It has a dirname, strip trailing slash
-    dir = dir.substr(0, dir.length - 1);
-  }
-
-  return root + dir;
-};
-
-
-exports.basename = function(path, ext) {
-  var f = splitPath(path)[2];
-  // TODO: make this comparison case-insensitive on windows?
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-  return f;
-};
-
-
-exports.extname = function(path) {
-  return splitPath(path)[3];
-};
-
-function filter (xs, f) {
-    if (xs.filter) return xs.filter(f);
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (f(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
-}
-
-// String.prototype.substr - negative index don't work in IE8
-var substr = 'ab'.substr(-1) === 'b'
-    ? function (str, start, len) { return str.substr(start, len) }
-    : function (str, start, len) {
-        if (start < 0) start = str.length + start;
-        return str.substr(start, len);
-    }
-;
-
-}).call(this,require('_process'))
-},{"_process":98}],98:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-(function () {
-  try {
-    cachedSetTimeout = setTimeout;
-  } catch (e) {
-    cachedSetTimeout = function () {
-      throw new Error('setTimeout is not defined');
-    }
-  }
-  try {
-    cachedClearTimeout = clearTimeout;
-  } catch (e) {
-    cachedClearTimeout = function () {
-      throw new Error('clearTimeout is not defined');
-    }
-  }
-} ())
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = cachedSetTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    cachedClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        cachedSetTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],99:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -11475,7 +11275,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":96}],100:[function(require,module,exports){
+},{"asap/raw":97}],99:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -11584,7 +11384,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":99}],101:[function(require,module,exports){
+},{"./core.js":98}],100:[function(require,module,exports){
 // should work in any browser without browserify
 
 if (typeof Promise.prototype.done !== 'function') {
@@ -11597,7 +11397,7 @@ if (typeof Promise.prototype.done !== 'function') {
     })
   }
 }
-},{}],102:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 // not "use strict" so we can declare global "Promise"
 
 var asap = require('asap');
@@ -11609,5 +11409,5 @@ if (typeof Promise === 'undefined') {
 
 require('./polyfill-done.js');
 
-},{"./lib/core.js":99,"./lib/es6-extensions.js":100,"./polyfill-done.js":101,"asap":95}]},{},[2])(2)
+},{"./lib/core.js":98,"./lib/es6-extensions.js":99,"./polyfill-done.js":100,"asap":96}]},{},[2])(2)
 });

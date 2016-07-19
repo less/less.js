@@ -2,7 +2,8 @@
 .block_1 {
   color: red;
   background-color: $color;
-  width: 50px;
+  @width: 50px;
+  width: @width;
   height: ($width / 2);
   @color: red;
   border: 1px solid lighten($color, 10%);

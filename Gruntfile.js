@@ -46,14 +46,14 @@ module.exports = function (grunt) {
             platform: 'Windows 8.1'
         },
         {
-            browserName: "edge",
+            browserName: "MicrosoftEdge",
             version: '13',
             platform: 'Windows 10'
         },
         // Mobile browsers
         {
             browserName: "ipad",
-            version: '8.0',
+            version: '8.4',
             platform: 'OS X 10.9',
             'device-orientation': 'portrait'
         },
@@ -93,7 +93,7 @@ module.exports = function (grunt) {
         sauceJobs[testName] = {
             options: {
                 urls: ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
-                testname: 'Less.js test - ' + testName,
+                testname: testName,
                 browsers: browsers,
                 public: 'public',
                 recordVideo: false,

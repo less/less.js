@@ -19,6 +19,14 @@ module.exports = function() {
     var normalFolder = 'test/less';
     var bomFolder = 'test/less-bom';
 
+    // Define String.prototype.endsWith if it doesn't exist (in older versions of node)
+    // This is required by the testSourceMap function below
+    if (typeof String.prototype.endsWith !== 'function') {
+        String.prototype.endsWith = function (str) {
+            return this.slice(-str.length) === str;
+        }
+    }
+
     less.logger.addListener({
         info: function(msg) {
             if (isVerbose) {

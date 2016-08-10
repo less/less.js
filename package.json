@@ -37,7 +37,8 @@
     "node": ">=0.12"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "grunt": "grunt"
   },
   "optionalDependencies": {
     "errno": "^0.1.1",

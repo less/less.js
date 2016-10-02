@@ -26,19 +26,9 @@ module.exports = function (grunt) {
             platform: 'OS X 10.11'
         },
         {
-            browserName: 'safari',
-            version: '8',
-            platform: 'OS X 10.10'
-        },
-        {
             browserName: "internet explorer",
             version: '8',
             platform: 'Windows XP'
-        },
-        {
-            browserName: "internet explorer",
-            version: '9',
-            platform: 'Windows 7'
         },
         {
             browserName: "internet explorer",
@@ -53,14 +43,9 @@ module.exports = function (grunt) {
         // Mobile browsers
         {
             browserName: "ipad",
-            version: '8.0',
+            version: '8.4',
             platform: 'OS X 10.9',
             'device-orientation': 'portrait'
-        },
-        {
-            browserName: 'iphone',
-            version: '7.1',
-            platform: 'OS X 10.9'
         },
         {
             browserName: 'iphone',
@@ -93,7 +78,7 @@ module.exports = function (grunt) {
         sauceJobs[testName] = {
             options: {
                 urls: ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
-                testname: 'Less.js test - ' + testName,
+                testname: testName,
                 browsers: browsers,
                 public: 'public',
                 recordVideo: false,

@@ -5,7 +5,7 @@ module.exports = function (grunt) {
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
 
-    var COMPRESS_FOR_TESTS = true;
+    var COMPRESS_FOR_TESTS = false;
 
    // Sauce Labs browser
     var browsers = [
@@ -29,11 +29,6 @@ module.exports = function (grunt) {
             browserName: 'safari',
             version: '8',
             platform: 'OS X 10.10'
-        },
-        {
-            browserName: "internet explorer",
-            version: '8',
-            platform: 'Windows XP'
         },
         {
             browserName: "internet explorer",
@@ -76,18 +71,20 @@ module.exports = function (grunt) {
        
     var sauceJobs = {};
 
-    var browserTests = [   "filemanager-plugin",
-                            "visitor-plugin",
-                            "global-vars", 
-                            "modify-vars", 
-                            "production", 
-                            "rootpath-relative",
-                            "rootpath", 
-                            "relative-urls", 
-                            "browser", 
-                            "no-js-errors", 
-                            "legacy"
-                        ];
+    var browserTests = [   
+        "main",
+        "browser",
+        /**
+         * Some of these were combined into 'all' (one page load), but many tests
+         * require a fresh browser load. TODO: allow browser tests to run in one page load */
+        "all",  
+
+        "relativeUrls",
+        "rootpath",
+        "rootpathRelative",
+        "modify-vars", 
+        "errors"
+    ];
 
     browserTests.map(function(testName) {
         sauceJobs[testName] = {
@@ -276,6 +273,38 @@ module.exports = function (grunt) {
                 host: 'http://localhost:8081/',
                 vendor: ['test/browser/jasmine-jsreporter.js', 'test/browser/common.js', 'test/browser/less.js'],
                 template: 'test/browser/test-runner-template.tmpl'
+            },
+            all: {
+                // src is used to build list of less files to compile
+                src: [
+                    'test/less/legacy/*.less',
+                    'test/less/strict-units/*.less',
+                    'test/less/no-js-errors/*.less',
+                    'test/browser/less/*.less',
+                    'test/browser/less/console-errors/*.less',
+                    'test/browser/less/relative-urls/*.less',
+                    'test/browser/less/rootpath/*.less',
+                    'test/browser/less/rootpath-relative/*.less',
+                    'test/browser/less/production/*.less',
+                    'test/browser/less/modify-vars/*.less',
+                    'test/browser/less/global-vars/*.less',
+                    'test/browser/less/urls/*.less',
+                    'test/less/postProcessorPlugin/*.less',
+                    'test/less/preProcessorPlugin/*.less',
+                    'test/less/visitorPlugin/*.less',
+                    'test/less/filemanagerPlugin/*.less'
+                ],
+                options: {
+                    helpers: [
+                        'test/plugins/filemanager/index.js',
+                        'test/plugins/postprocess/index.js',
+                        'test/plugins/preprocess/index.js',
+                        'test/plugins/visitor/index.js',
+                        'test/browser/runner-main-options.js'
+                    ],
+                    specs: 'test/browser/runner-all-spec.js',
+                    outfile: 'tmp/browser/test-runner-all.html'
+                }
             },
             main: {
                 // src is used to build list of less files to compile

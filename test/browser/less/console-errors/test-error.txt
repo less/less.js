@@ -1,2 +1,4 @@
-less: OperationError: Can't subtract or divide a color from a number in {pathhref}console-errors/test-error.less on line null, column 0:
-1   prop: (3 / #fff);
+SyntaxError: Multiple units in dimension. Correct the units or use the unit function. Bad unit: px/em in {pathhref}console-errors/test-error.less on line 2, column 3:
+1 .a {
+2   prop: (3px / 1em);
+3 }

@@ -3,25 +3,33 @@
   <head>
     <meta charset="utf-8">
     <title>Jasmine Spec Runner</title>
-    
-    <!-- Polyfill shim for older browsers -->
-    <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
-    <script>
-    var SCRIPT_TAGS = "";
-    </script>
+
     <% var generateScriptTags = function(allScripts) { allScripts.forEach(function(script){ %>
         <script src='<%= script %>'></script>
     <% }); }; %>
 
     <!-- for each test, generate CSS/LESS link tags -->
-    <% scripts.src.forEach(function(fullLessName) {
-      var pathParts = fullLessName.split('/');
-      var fullCssName = fullLessName.replace(/less/g, 'css');
-      var lessName = pathParts[pathParts.length - 1];
-      var name = lessName.split('.')[0]; %>
-      <link id="original-less:test-less-<%= name %>" title="test-less-<%= name %>" rel="stylesheet/less" type="text/css" href="<%= fullLessName %>">
-      <link id="expected-less:test-less-<%= name %>" rel="stylesheet" type="text/css" href="<%= fullCssName %>">
-    <% }); %>
+
+    <%
+      var all = scripts.specs[0].indexOf('runner-all-spec') > -1;
+      var subSpecs = []; 
+
+      scripts.src.forEach(function(fullLessName) {
+        var pathParts = fullLessName.split('/');
+        var fullCssName = fullLessName.replace(/less/g, 'css');
+        var subfolder = pathParts[pathParts.indexOf('less') + 1];
+        var lessName = pathParts[pathParts.length - 1];
+        var name = lessName.split('.')[0]; 
+        if (!all) {
+        %>
+        <link id="original-less:test-less-<%= name %>" title="test-less-<%= name %>" rel="stylesheet/less" type="text/css" href="<%= fullLessName %>" media="projection">
+        <link id="expected-less:test-less-<%= name %>" rel="stylesheet" type="text/css" href="<%= fullCssName %>" media="projection">
+    <% 
+        }
+        else {
+          subSpecs.push('[\"' + fullLessName + '\", \"' + subfolder + '\"]');
+        }
+      }); %>
 
     <!-- generate grunt-contrib-jasmine link tags -->
     <% css.forEach(function(style){ %>
@@ -29,6 +37,17 @@
     <% }) %>
     <script>
           window.jasmine = { getJSReport: function() { } };
+          var specArray = [<%= subSpecs.join() %>];
+          var specs = {};
+          specArray.forEach(function(spec) {
+            if(!specs[spec[1]]) {
+              specs[spec[1]] = [ spec[0] ];
+            }
+            else {
+              specs[spec[1]].push(spec[0]);
+            }
+          });
+           
     </script>
 
   <%

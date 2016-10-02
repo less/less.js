@@ -1,43 +1,8 @@
 /* Add js reporter for sauce */
 
 jasmine.getEnv().addReporter(new jasmine.JSReporter2());
-jasmine.getEnv().defaultTimeoutInterval = 3000;
+jasmine.getEnv().defaultTimeoutInterval = 2000;
 
-// From https://github.com/axemclion/grunt-saucelabs/issues/109#issuecomment-166767282
-// (function () {
-//     var oldJSReport = window.jasmine.getJSReport;
-//     window.jasmine.getJSReport = function () {
-//         var results = oldJSReport();
-//         if (results) {
-//             return {
-//                 durationSec: results.durationSec,
-//                 suites: removePassingTests(results.suites),
-//                 passed: results.passed
-//             };
-//         } else {
-//             return null;
-//         }
-//     };
-
-//     function removePassingTests (suites) {
-//         return suites.filter(specFailed)
-//             .map(mapSuite);
-//     }
-
-//     function mapSuite (suite) {
-//         var result = {};
-//         for (var s in suite) {
-//             result[s] = suite[s];
-//         }
-//         result.specs = suite.specs.filter(specFailed);
-//         result.suites = removePassingTests(suite.suites);
-//         return result;
-//     }
-
-//     function specFailed (item) {
-//         return !item.passed;
-//     }
-// })();
 /* record log messages for testing */
 
 var logMessages = [];
@@ -55,7 +20,7 @@ var logLevel_debug = 4,
 // 0 - None
 // Defaults to 2
 
-less.loggers = [
+var loggers = less.loggers = [
     {
         debug: function(msg) {
             if (less.options.logLevel >= logLevel_debug) {
@@ -81,11 +46,50 @@ less.loggers = [
 ];
 
 testLessEqualsInDocument = function () {
+    // logMessages = [];
     testLessInDocument(testSheet);
 };
 
 testLessErrorsInDocument = function (isConsole) {
+    // logMessages = [];
     testLessInDocument(isConsole ? testErrorSheetConsole : testErrorSheet);
+};
+
+testLessEquals = function(files, options, callback) {
+    // logMessages = [];
+
+    var calls = 0, cb = function() {
+        calls++;
+        if (calls === files.length && callback) {
+            callback();
+        }
+    };
+    if (files) {
+        for (var i = 0; i < files.length; i++) {
+            testFile(files[i], options, cb);
+        }
+    }
+    else if (callback) {
+        callback();
+    }
+};
+
+testLessErrors = function(files, options, callback) {
+    // logMessages = [];
+    var calls = 0, cb = function() {
+        calls++;
+        if (calls === files.length && callback) {
+            callback();
+        }
+    };
+    if (files) {
+        for (var i = 0; i < files.length; i++) {
+            testErrorFile(files[i], options, cb);
+        }
+    }
+    else if (callback) {
+        callback();
+    }
 };
 
 testLessInDocument = function (testFunc) {
@@ -98,6 +102,12 @@ testLessInDocument = function (testFunc) {
             testFunc(links[i]);
         }
     }
+};
+
+qualifyURL = function(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.href;
 };
 
 ieFormat = function(text) {
@@ -117,6 +127,90 @@ ieFormat = function(text) {
     var transformedText = styleNode.styleSheet ? styleNode.styleSheet.cssText : styleNode.innerText;
     headNode.removeChild(styleNode);
     return transformedText;
+};
+
+/**
+ * Use with testing less.render calls directly (without <link /> references)
+ */
+testFile = function(lessPath, options, callback) {
+    var filename = lessPath.match(/[\w-]+\.less/)[0];
+    var cssPath = lessPath.replace(/less/g, 'css');
+
+    it(filename + " should match the expected output", function (done) {
+        
+        var lessContents = loadFile(lessPath),
+            cssContents = loadFile(cssPath);
+        
+        lessContents.then(function(str) {
+
+            options.filename = qualifyURL(lessPath);
+
+            less.render(str, options, function(err, result) {
+
+                // TODO - This should happen automatically
+
+                expect(err).toBeFalsy();
+                if(err) {
+                    less.errors.add(err);
+                    done(err);
+                }
+
+                cssContents
+                    .then(function (text) {
+                        if (window.navigator.userAgent.indexOf("MSIE") >= 0 ||
+                            window.navigator.userAgent.indexOf("Trident/") >= 0) {
+                            text = ieFormat(text);
+                        }
+
+                        expect(result.css).toEqual(text);
+                        if (callback) callback();
+                        done();
+                    }); 
+            });
+        });
+
+        
+    });
+};
+
+testErrorFile = function (lessPath, options, callback) {
+    var filename = lessPath.match(/[\w-]+\.less/)[0];
+    var errorPath = lessPath.replace(/\.less$/, '.txt');
+
+    it(filename + " should match an error", function (done) {
+        
+        var lessContents = loadFile(lessPath),
+            errorContents = loadFile(errorPath);
+
+        lessContents.then(function(str) {
+
+            options.filename = qualifyURL(lessPath);
+
+            less.render(str, options, function(err, result) {
+            if(err) {
+                less.errors.add(err);
+            }
+
+            var actualErrorMsg = logMessages[logMessages.length - 1]
+                .replace(/\nStack Trace\n[\s\S]*/, "");
+
+                errorContents
+                    .then(function (errorTxt) {
+                       errorTxt = errorTxt
+                            .replace(/\{path\}/g, qualifyURL(lessPath.replace(/[\w-]+\.less/, '')))
+                            .replace(/\{pathrel\}/g, "")
+                            .replace(/\{pathhref\}/g, "http://localhost:8081/test/browser/less/")
+                            .replace(/\{404status\}/g, " (404)")
+                            .replace(/\{node\}.*\{\/node\}/g, "")
+                            .trim();
+                        expect(actualErrorMsg).toEqual(errorTxt);
+                        if (callback) callback();
+                        done();
+                    }); 
+            });
+        });
+
+    });
 };
 
 testSheet = function (sheet) {
@@ -217,6 +311,7 @@ testErrorSheet = function (sheet) {
             });
     });
 };
+
 
 testErrorSheetConsole = function (sheet) {
     it(sheet.id + " should match an error", function (done) {

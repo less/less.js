@@ -19,6 +19,14 @@ module.exports = function() {
     var normalFolder = 'test/less';
     var bomFolder = 'test/less-bom';
 
+    // Define String.prototype.endsWith if it doesn't exist (in older versions of node)
+    // This is required by the testSourceMap function below
+    if (typeof String.prototype.endsWith !== 'function') {
+        String.prototype.endsWith = function (str) {
+            return this.slice(-str.length) === str;
+        }
+    }
+
     less.logger.addListener({
         info: function(msg) {
             if (isVerbose) {
@@ -74,6 +82,25 @@ module.exports = function() {
     });
 
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        // Check the sourceMappingURL at the bottom of the file
+        var expectedSourceMapURL = name + ".css.map",
+            sourceMappingPrefix = "/*# sourceMappingURL=",
+            sourceMappingSuffix = " */",
+            expectedCSSAppendage = sourceMappingPrefix + expectedSourceMapURL + sourceMappingSuffix;
+        if (!compiledLess.endsWith(expectedCSSAppendage)) {
+            // To display a better error message, we need to figure out what the actual sourceMappingURL value was, if it was even present
+            var indexOfSourceMappingPrefix = compiledLess.indexOf(sourceMappingPrefix);
+            if (indexOfSourceMappingPrefix === -1) {
+                fail("ERROR: sourceMappingURL was not found in " + baseFolder + "/" + name + ".css.");
+                return;
+            }
+
+            var startOfSourceMappingValue = indexOfSourceMappingPrefix + sourceMappingPrefix.length,
+                indexOfNextSpace = compiledLess.indexOf(" ", startOfSourceMappingValue),
+                actualSourceMapURL = compiledLess.substring(startOfSourceMappingValue, indexOfNextSpace === -1 ? compiledLess.length : indexOfNextSpace);
+            fail("ERROR: sourceMappingURL should be \"" + expectedSourceMapURL + "\" but is \"" + actualSourceMapURL + "\".");
+        }
+
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
             process.stdout.write("- " + path.join(baseFolder, name) + ": ");
             if (sourcemap === expectedSourcemap) {
@@ -213,6 +240,11 @@ module.exports = function() {
                 options.sourceMapRootpath = "testweb/";
                 // TODO separate options?
                 options.sourceMap = options;
+
+                // This options is normally set by the bin/lessc script. Setting it causes the sourceMappingURL comment to be appended to the CSS
+                // output. The value is designed to allow the sourceMapBasepath option to be tested, as it should be removed by less before
+                // setting the sourceMappingURL value, leaving just the sourceMapOutputFilename and .map extension.
+                options.sourceMapFilename = options.sourceMapBasepath + "/" + options.sourceMapOutputFilename + ".map";
             }
 
             options.getVars = function(file) {

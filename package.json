@@ -49,7 +49,7 @@
     "source-map": "^0.5.3"
   },
   "devDependencies": {
-    "diff": "^2.2.2",
+    "diff": "^3.0.1",
     "grunt": "~0.4.5",
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-clean": "^1.0.0",

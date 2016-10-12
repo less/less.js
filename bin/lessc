@@ -37,7 +37,7 @@ var less = require('../lib/less-node'),
         modifyVars: null,
         urlArgs: '',
         plugins: plugins
-    }; 
+    };
 
 if (less.options) {
     for (var i = 0, keys = Object.keys(options); i < keys.length; i++) {
@@ -310,7 +310,11 @@ function render() {
                 }
             },
             function(err) {
-                less.writeError(err, options);
+                if (!options.silent) {
+                    console.error(err.toString({
+                        stylize: options.color && less.lesscHelper.stylize
+                    }));
+                }
                 process.exitCode = 1;
             });
     };

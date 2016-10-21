@@ -434,7 +434,8 @@ function processPluginQueue() {
                 options.javascriptEnabled = true;
                 break;
             case 'no-js':
-                console.error('The "--no-js" argument is deprecated, as inline JavaScript is disabled by default. Use "--js" to enable inline JavaScript (not recommended).');
+                console.error('The "--no-js" argument is deprecated, as inline JavaScript ' + 
+                    'is disabled by default. Use "--js" to enable inline JavaScript (not recommended).');
                 break;
             case 'include-path':
                 if (checkArgFunc(arg, match[2])) {

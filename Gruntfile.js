@@ -74,16 +74,14 @@ module.exports = function (grunt) {
                             "legacy"
                         ];
 
-    (['all'].concat(browserTests)).map(makeJob);
-
     function makeJob(testName) {
         sauceJobs[testName] = {
             options: {
-                urls: testName === 'all'
-                    ? browserTests.map(function(name) {
+                urls: testName === 'all' ?
+                    browserTests.map(function(name) {
                         return "http://localhost:8081/tmp/browser/test-runner-" + name + ".html";
-                    })
-                    : ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
+                    }) :
+                    ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
                 testname: testName === 'all' ? 'Unit Tests for Less.js' : testName,
                 browsers: browsers,
                 public: 'public',
@@ -132,6 +130,10 @@ module.exports = function (grunt) {
             }
         };
     }
+
+    // Make the SauceLabs jobs
+    (['all'].concat(browserTests)).map(makeJob);
+
     // Project configuration.
     grunt.initConfig({
 

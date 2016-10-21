@@ -74,11 +74,17 @@ module.exports = function (grunt) {
                             "legacy"
                         ];
 
-    browserTests.map(function(testName) {
+    (['all'].concat(browserTests)).map(makeJob);
+
+    function makeJob(testName) {
         sauceJobs[testName] = {
             options: {
-                urls: ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
-                testname: testName,
+                urls: testName === 'all'
+                    ? browserTests.map(function(name) {
+                        return "http://localhost:8081/tmp/browser/test-runner-" + name + ".html";
+                    })
+                    : ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
+                testname: testName === 'all' ? 'Unit Tests for Less.js' : testName,
                 browsers: browsers,
                 public: 'public',
                 recordVideo: false,
@@ -125,7 +131,7 @@ module.exports = function (grunt) {
                 }
             }
         };
-    });
+    }
     // Project configuration.
     grunt.initConfig({
 
@@ -305,7 +311,7 @@ module.exports = function (grunt) {
                 }
             },
             browser: {
-                src: ['test/browser/less/*.less'],
+                src: ['test/browser/less/*.less', 'test/browser/less/plugin/*.less'],
                 options: {
                     helpers: 'test/browser/runner-browser-options.js',
                     specs: 'test/browser/runner-browser-spec.js',
@@ -396,62 +402,6 @@ module.exports = function (grunt) {
 
         'saucelabs-jasmine': sauceJobs,
 
-        //     {
-        //     all: {
-        //         options: {
-        //             urls: ["filemanager-plugin","visitor-plugin","pre-processor-plugin","post-processor-plugin","global-vars", "modify-vars", "production", "rootpath-relative",
-        //                    "rootpath", "relative-urls", "browser", "no-js-errors", "legacy", "strict-units"
-        //             ].map(function(testName) {
-        //                 return "http://localhost:8081/tmp/browser/test-runner-" + testName + ".html";
-        //             }),
-        //             testname: 'Sauce Unit Test for less.js',
-        //             browsers: browsers,
-        //             public: 'public',
-        //             pollInterval: 2000,
-        //             statusCheckAttempts: 30,
-        //             recordVideo: false,
-        //             videoUploadOnPass: false,
-        //             recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
-        //             build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
-        //             tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
-        //             sauceConfig: {
-        //                 'idle-timeout': 100
-        //             },
-        //             throttled: 5,
-        //             onTestComplete: function(result, callback) {
-        //                 // Called after a unit test is done, per page, per browser
-        //                 // 'result' param is the object returned by the test framework's reporter
-        //                 // 'callback' is a Node.js style callback function. You must invoke it after you
-        //                 // finish your work.
-        //                 // Pass a non-null value as the callback's first parameter if you want to throw an
-        //                 // exception. If your function is synchronous you can also throw exceptions
-        //                 // directly.
-        //                 // Passing true or false as the callback's second parameter passes or fails the
-        //                 // test. Passing undefined does not alter the test result. Please note that this
-        //                 // only affects the grunt task's result. You have to explicitly update the Sauce
-        //                 // Labs job's status via its REST API, if you want so.
-                
-        //                 // This should be the encrypted value in Travis
-        //                 var user = process.env.SAUCE_USERNAME;
-        //                 var pass = process.env.SAUCE_ACCESS_KEY;
-
-        //                 require('request').put({
-        //                     url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
-        //                     auth: { user: user, pass: pass },
-        //                     json: { passed: result.passed }
-        //                 }, function (error, response, body) {
-        //                   if (error) {
-        //                     callback(error);
-        //                   } else if (response.statusCode !== 200) {
-        //                     callback(new Error('Unexpected response status'));
-        //                   } else {
-        //                     callback(null, result.passed);
-        //                   }
-        //                 });
-        //             }
-        //         }
-        //     }
-        // },
 
         // Clean the version of less built for the tests
         clean: {
@@ -529,12 +479,15 @@ module.exports = function (grunt) {
         'sauce-after-setup'
     ]);
 
-    var sauceTests = [];
-    browserTests.map(function(testName) {
-        sauceTests.push('saucelabs-jasmine:' + testName);
-    });
-    sauceTests.push('clean:sauce_log');
-    grunt.registerTask('sauce-after-setup', sauceTests);
+    // var sauceTests = [];
+    // browserTests.map(function(testName) {
+    //     sauceTests.push('saucelabs-jasmine:' + testName);
+    // });
+
+    grunt.registerTask('sauce-after-setup', [
+        'saucelabs-jasmine:all',
+        'clean:sauce_log'
+    ]);
 
     var testTasks = [
         'clean',

@@ -6,6 +6,7 @@ module.exports = function (grunt) {
     require('time-grunt')(grunt);
 
     var COMPRESS_FOR_TESTS = true;
+    var git = require('git-rev');
 
    // Sauce Labs browser
     var browsers = [
@@ -42,19 +43,24 @@ module.exports = function (grunt) {
         },
         // Mobile browsers
         {
-            browserName: "ipad",
+            browserName: 'ipad',
+            deviceName: 'iPad Air Simulator',
+            deviceOrientation: 'portrait',
             version: '8.4',
-            platform: 'OS X 10.9',
-            'device-orientation': 'portrait'
+            platform: 'OS X 10.9'
         },
         {
             browserName: 'iphone',
+            deviceName: 'iPhone 5 Simulator',
+            deviceOrientation: 'portrait',
             version: '9.3',
-            platform: 'OS X 10.10'
+            platform: 'OS X 10.11'
         },
         {
-            browerName: 'android',
-            version: '4.2',
+            browserName: 'android',
+            deviceName: 'Google Nexus 7 HD Emulator',
+            deviceOrientation: 'portrait',
+            version: '4.4',
             platform: 'Linux'
         }
     ];
@@ -90,6 +96,7 @@ module.exports = function (grunt) {
                 recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
                 build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
                 tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
+                statusCheckAttempts: -1,
                 sauceConfig: {
                     'idle-timeout': 100
                 },
@@ -111,21 +118,27 @@ module.exports = function (grunt) {
                     var user = process.env.SAUCE_USERNAME;
                     var pass = process.env.SAUCE_ACCESS_KEY;
 
-                    require('request').put({
-                        url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
-                        auth: { user: user, pass: pass },
-                        json: { passed: result.passed }
-                    }, function (error, response, body) {
-                      if (error) {
-                        console.log(error);
-                        callback(error);
-                      } else if (response.statusCode !== 200) {
-                        console.log(response);
-                        callback(new Error('Unexpected response status'));
-                      } else {
-                        callback(null, result.passed);
-                      }
+                    git.short(function(hash) {
+                        require('request').put({
+                            url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
+                            auth: { user: user, pass: pass },
+                            json: {
+                                passed: result.passed,
+                                build: 'build-' + hash
+                            }
+                        }, function (error, response, body) {
+                          if (error) {
+                            console.log(error);
+                            callback(error);
+                          } else if (response.statusCode !== 200) {
+                            console.log(response);
+                            callback(new Error('Unexpected response status'));
+                          } else {
+                            callback(null, result.passed);
+                          }
+                        });
                     });
+                        
                 }
             }
         };
@@ -415,6 +428,7 @@ module.exports = function (grunt) {
 
     // Load these plugins to provide the necessary tasks
     grunt.loadNpmTasks('grunt-saucelabs');
+
     require('jit-grunt')(grunt);
 
     // Actually load this plugin's task(s).

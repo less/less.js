@@ -1526,6 +1526,35 @@ colorFunctions = {
             a);
     },
 
+    hcg: function(h, c, gr) {
+        return colorFunctions.hcga(h, c, gr, 1.0);
+    },
+
+    hcga: function(h, c, gr, a) {
+        h  = (number(h) % 360) / 360 * 6;
+        c  = number(c); gr = number(gr);
+
+        if (c <= 0) {
+            return [gr * 255, gr * 255, gr * 255];
+        }
+
+        var i = Math.floor(h),
+            f = h - i,
+            q = c * (1 - f), t = c * f,
+            mod = i % 6,
+            r = [c, q, 0, 0, t, c][mod],
+            g = [t, c, c, q, 0, 0][mod],
+            b = [0, 0, t, c, c, q][mod],
+            m = (1 - c) * gr;
+
+        return colorFunctions.rgba(
+          (r + m) * 255,
+          (g + m) * 255,
+          (b + m) * 255,
+          a
+        );
+    },
+
     hsv: function(h, s, v) {
         return colorFunctions.hsva(h, s, v, 1.0);
     },
@@ -5784,6 +5813,28 @@ Color.prototype.toHSL = function () {
     }
     return { h: h * 360, s: s, l: l, a: a };
 };
+Color.prototype.toHCG = function () {
+    var r = this.rgb[0] / 255,
+        g = this.rgb[1] / 255,
+        b = this.rgb[2] / 255,
+        a = this.alpha;
+
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var c = (max - min), gr = 0, h = 0;
+
+    if (c < 1) { gr = min / (1 - c); }
+
+    if (c > 0) {
+        switch (max) {
+            case r: h = (g - b) / c + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / c + 2; break;
+            case b: h = (r - g) / c + 4; break;
+        }
+        h /= 6;
+    }
+
+    return {h: h * 360, c: c, g: gr, a: a};
+};
 //Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 Color.prototype.toHSV = function () {
     var r = this.rgb[0] / 255,
@@ -5872,6 +5923,7 @@ var Node = require("./node"),
 var Comment = function (value, isLineComment, index, currentFileInfo) {
     this.value = value;
     this.isLineComment = isLineComment;
+    this.index = index;
     this.currentFileInfo = currentFileInfo;
     this.allowRoot = true;
 };

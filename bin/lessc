@@ -308,10 +308,14 @@ function printUsage() {
                 return;
             }
             // its in the same directory, so always just the basename
-            sourceMapOptions.sourceMapOutputFilename = path.basename(output);
-            sourceMapOptions.sourceMapFullFilename = output + ".map";
+            if (output) {
+                sourceMapOptions.sourceMapOutputFilename = path.basename(output);
+                sourceMapOptions.sourceMapFullFilename = output + ".map";
+            }
             // its in the same directory, so always just the basename
-            sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+            if ('sourceMapFullFilename' in sourceMapOptions) {
+                sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+            }
         } else if (options.sourceMap && !sourceMapFileInline) {
             var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename),
                 mapDir = path.dirname(mapFilename),
@@ -331,7 +335,7 @@ function printUsage() {
     }
 
     if (sourceMapOptions.sourceMapRootpath === undefined) {
-        var pathToMap = path.dirname(sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename || '.'),
+        var pathToMap = path.dirname((sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename) || '.'),
             pathToInput = path.dirname(sourceMapOptions.sourceMapInputFilename || '.');
         sourceMapOptions.sourceMapRootpath = path.relative(pathToMap, pathToInput);
     }

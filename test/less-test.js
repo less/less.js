@@ -136,20 +136,20 @@ module.exports = function() {
 
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
-            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
+            process.stdout.write('- ' + path.join(baseFolder, name) + ": ");
             expectedErr = doReplacements(expectedErr, baseFolder);
             if (!err) {
                 if (compiledLess) {
-                    fail("No Error", 'red');
+                    fail('No Error', 'red');
                 } else {
-                    fail("No Error, No Output");
+                    fail('No Error, No Output');
                 }
             } else {
-                var errMessage = less.formatError(err);
+                var errMessage = err.toString();
                 if (errMessage === expectedErr) {
                     ok('OK');
                 } else {
-                    difference("FAIL", expectedErr, errMessage);
+                    difference('FAIL', expectedErr, errMessage);
                 }
             }
         });
@@ -254,7 +254,7 @@ module.exports = function() {
             var doubleCallCheck = false;
             queue(function() {
                 toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
-                    
+
                     if (doubleCallCheck) {
                         totalTests++;
                         fail("less is calling back twice");

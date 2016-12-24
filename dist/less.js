@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.0.0-pre.3
+ * Less - Leaner CSS v3.0.0-pre.5
  * http://lesscss.org
  *
  * Copyright (c) 2009-2016, Alexis Sellier <self@cloudhead.net>
@@ -858,6 +858,8 @@ module.exports = function(less, options) {
 };
 
 },{}],10:[function(require,module,exports){
+/*global window */
+
 var AbstractPluginLoader = require("../less/environment/abstract-plugin-loader.js");
 
 /**
@@ -893,10 +895,15 @@ PluginLoader.prototype.tryLoadPlugin = function(name, basePath, callback) {
 };
 
 PluginLoader.prototype.tryLoadFromEnvironment = function(filename, basePath, explicit, callback) {
-    var fileManager = new this.less.FileManager();
+    var fileManager = new this.less.FileManager(),
+        extract = fileManager.extractUrlParts;
 
     if (basePath) {
-        filename = (fileManager.extractUrlParts(filename, basePath)).url;
+        filename = (extract(filename, basePath)).url;
+    }
+
+    if (extract(filename).hostPart !== extract(window.location.href).hostPart) {
+        callback({ message: 'Cross Site Scripting (XSS) plugins are not allowed'});
     }
 
     if (filename) {
@@ -1277,7 +1284,7 @@ abstractFileManager.prototype.alwaysMakePathsAbsolute = function() {
 abstractFileManager.prototype.isPathAbsolute = function(filename) {
     return (/^(?:[a-z-]+:|\/|\\|#)/i).test(filename);
 };
-// TODO: pull out - this is part of Node & Browserify
+// TODO: pull out / replace?
 abstractFileManager.prototype.join = function(basePath, laterPath) {
     if (!basePath) {
         return laterPath;
@@ -1423,8 +1430,8 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, pluginOp
     registry = functionRegistry.create();
 
     try {
-        loader = new Function("module", "require", "functions", "tree", "fileInfo", contents);
-        pluginObj = loader(localModule, this.require, registry, this.less.tree, fileInfo);
+        loader = new Function("module", "require", "functions", "tree", "less", "fileInfo", contents);
+        pluginObj = loader(localModule, this.require, registry, this.less.tree, this.less, fileInfo);
 
         if (!pluginObj) {
             pluginObj = localModule.exports;
@@ -2717,7 +2724,7 @@ module.exports = function(environment) {
 module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
-    var less = {
+    var initial = {
         version: [3, 0, 0],
         data: require('./data'),
         tree: require('./tree'),
@@ -2742,14 +2749,59 @@ module.exports = function(environment, fileManagers) {
         logger: require('./logger')
     };
 
-    return less;
+    // Create a public API
+
+    var ctor = function(t) {
+        return function() {
+            var obj = Object.create(t.prototype);
+            t.apply(obj, Array.prototype.slice.call(arguments, 0));
+            return obj;
+        };
+    };
+    var t, api = Object.create(initial);
+    for (var n in initial.tree) {
+        /*jshint forin: false */
+        t = initial.tree[n];
+        if (typeof t === "function") {
+            api[n] = ctor(t);
+        }
+        else {
+            api[n] = Object.create(null);
+            for (var o in t) {
+                /*jshint forin: false */
+                api[n][o] = ctor(t[o]);
+            }
+        }
+    }
+
+    return api;
 };
 
 },{"./contexts":12,"./data":14,"./environment/abstract-file-manager":16,"./environment/abstract-plugin-loader":17,"./environment/environment":18,"./functions":25,"./import-manager":32,"./less-error":34,"./logger":35,"./parse":37,"./parse-tree":36,"./parser/parser":40,"./plugin-manager":41,"./render":42,"./source-map-builder":43,"./source-map-output":44,"./transform-tree":45,"./tree":65,"./utils":87,"./visitors":91}],34:[function(require,module,exports){
-var utils = require("./utils");
-
+var utils = require('./utils');
+/**
+ * This is a centralized class of any error that could be thrown internally (mostly by the parser).
+ * Besides standard .message it keeps some additional data like a path to the file where the error
+ * occurred along with line and column numbers.
+ *
+ * @class
+ * @extends Error
+ * @type {module.LessError}
+ *
+ * @prop {string} type
+ * @prop {string} filename
+ * @prop {number} index
+ * @prop {number} line
+ * @prop {number} column
+ * @prop {number} callLine
+ * @prop {number} callExtract
+ * @prop {string[]} extract
+ *
+ * @param {Object} e              - An error object to wrap around or just a descriptive object
+ * @param {Object} importManager  - An instance of ImportManager (see import-manager.js)
+ * @param {string} [currentFilename]
+ */
 var LessError = module.exports = function LessError(e, importManager, currentFilename) {
-
     Error.call(this);
 
     var filename = e.filename || currentFilename;
@@ -2788,6 +2840,63 @@ if (typeof Object.create === 'undefined') {
 }
 
 LessError.prototype.constructor = LessError;
+
+/**
+ * An overridden version of the default Object.prototype.toString
+ * which uses additional information to create a helpful message.
+ *
+ * @param {Object} options
+ * @returns {string}
+ */
+LessError.prototype.toString = function(options) {
+    options = options || {};
+
+    var message = '';
+    var extract = this.extract;
+    var error = [];
+    var stylize = function (str) { return str; };
+    if (options.stylize) {
+        var type = typeof options.stylize;
+        if (type !== 'function') {
+            throw Error('options.stylize should be a function, got a ' + type + '!');
+        }
+        stylize = options.stylize;
+    }
+
+    if (typeof extract[0] === 'string') {
+        error.push(stylize((this.line - 1) + ' ' + extract[0], 'grey'));
+    }
+
+    if (typeof extract[1] === 'string') {
+        var errorTxt = this.line + ' ';
+        if (extract[1]) {
+            errorTxt += extract[1].slice(0, this.column) +
+                stylize(stylize(stylize(extract[1].substr(this.column, 1), 'bold') +
+                    extract[1].slice(this.column + 1), 'red'), 'inverse');
+        }
+        error.push(errorTxt);
+    }
+
+    if (typeof extract[2] === 'string') {
+        error.push(stylize((this.line + 1) + ' ' + extract[2], 'grey'));
+    }
+    error = error.join('\n') + stylize('', 'reset') + '\n';
+
+    message += stylize(this.type + 'Error: ' + this.message, 'red');
+    if (this.filename) {
+        message += stylize(' in ', 'red') + this.filename +
+            stylize(' on line ' + this.line + ', column ' + (this.column + 1) + ':', 'grey');
+    }
+
+    message += '\n' + error;
+
+    if (this.callLine) {
+        message += stylize('from ', 'red') + (this.filename || '') + '/n';
+        message += stylize(this.callLine, 'grey') + ' ' + this.callExtract + '/n';
+    }
+
+    return message;
+};
 
 },{"./utils":87}],35:[function(require,module,exports){
 module.exports = {
@@ -3432,6 +3541,53 @@ var Parser = function Parser(context, imports, fileInfo) {
         };
     }
 
+    /**
+     *  Used after initial parsing to create nodes on the fly
+     * 
+     *  @param {String} str          - string to parse 
+     *  @param {Array}  parseList    - array of parsers to run input through e.g. ["value", "important"]
+     *  @param {Number} currentIndex - start number to begin indexing
+     *  @param {Object} fileInfo     - fileInfo to attach to created nodes
+     */
+    function parseNode(str, parseList, currentIndex, fileInfo, callback) {
+        var result, returnNodes = [];
+        var parser = parserInput;
+
+        try {
+            parser.start(str, false, function fail(msg, index) {
+                callback({
+                    message: msg,
+                    index: index + currentIndex
+                });
+            });
+            for (var x = 0, p, i; (p = parseList[x]); x++) {
+                i = parser.i;
+                result = parsers[p]();
+                if (result) {
+                    result._index = i + currentIndex;
+                    result._fileInfo = fileInfo;
+                    returnNodes.push(result);
+                }
+                else {
+                    returnNodes.push(null);
+                }
+            }
+
+            var endInfo = parser.end();
+            if (endInfo.isFinished) {
+                callback(null, returnNodes);
+            }
+            else {
+                callback(true, null);
+            }
+        } catch (e) {
+            throw new LessError({
+                index: e.index + currentIndex,
+                message: e.message
+            }, imports, fileInfo.filename);
+        }
+    }
+    
     //
     // The Parser
     //
@@ -3439,6 +3595,7 @@ var Parser = function Parser(context, imports, fileInfo) {
         parserInput: parserInput,
         imports: imports,
         fileInfo: fileInfo,
+        parseNode: parseNode,
         //
         // Parse an input string into an abstract syntax tree,
         // @param str A string containing 'less' markup
@@ -3485,8 +3642,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 });
 
                 tree.Node.prototype.parse = this;
-
-                root = new(tree.Ruleset)(null, this.parsers.primary());
+                root = new tree.Ruleset(null, this.parsers.primary());
+                tree.Node.prototype.rootNode = root;
                 root.root = true;
                 root.firstRoot = true;
                 
@@ -4360,7 +4517,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 if (! e) {
                     parserInput.save();
                     if (parserInput.$char('(')) {
-                        if ((v = this.selector()) && parserInput.$char(')')) {
+                        if ((v = this.selector(false)) && parserInput.$char(')')) {
                             e = new(tree.Paren)(v);
                             parserInput.forget();
                         } else {
@@ -4411,14 +4568,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
             },
             //
-            // A CSS selector (see selector below)
-            // with less extensions e.g. the ability to extend and guard
-            //
-            lessSelector: function () {
-                return this.selector(true);
-            },
-            //
             // A CSS Selector
+            // with less extensions e.g. the ability to extend and guard
             //
             //     .class > div + h1
             //     li a:hover
@@ -4427,7 +4578,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             //
             selector: function (isLess) {
                 var index = parserInput.i, elements, extendList, c, e, allExtends, when, condition;
-
+                isLess = isLess !== false;
                 while ((isLess && (extendList = this.extend())) || (isLess && (when = parserInput.$str("when"))) || (e = this.element())) {
                     if (when) {
                         condition = expect(this.conditions, 'expected condition');
@@ -4517,7 +4668,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
 
                 while (true) {
-                    s = this.lessSelector();
+                    s = this.selector();
                     if (!s) {
                         break;
                     }
@@ -5280,6 +5431,7 @@ Parser.serializeVars = function(vars) {
 module.exports = Parser;
 
 },{"../less-error":34,"../tree":65,"../utils":87,"../visitors":91,"./parser-input":39}],41:[function(require,module,exports){
+var utils = require('./utils');
 /**
  * Plugin Manager
  */
@@ -5335,13 +5487,9 @@ PluginManager.prototype.get = function(filename) {
     return this.pluginCache[filename];
 };
 
-// Object.getPrototypeOf shim for visitor upgrade
-if (!Object.getPrototypeOf) {
-    Object.getPrototypeOf = function getPrototypeOf(object) {
-        return object.constructor ? object.constructor.prototype : void 0;
-    };
-}
-
+/**
+ * Deprecate eventually 
+ */
 function upgradeVisitors(visitor, oldType, newType) {
 
     if (visitor['visit' + oldType] && !visitor['visit' + newType]) {
@@ -5360,7 +5508,7 @@ PluginManager.prototype.addVisitor = function(visitor) {
     var proto;
     // 2.x to 3.x visitor compatibility
     try {
-        proto = Object.getPrototypeOf(visitor);
+        proto = utils.getPrototype(visitor);
         upgradeVisitors(proto, 'Directive', 'AtRule');
         upgradeVisitors(proto, 'Rule', 'Declaration');
     }
@@ -5461,7 +5609,7 @@ PluginManager.prototype.getFileManagers = function() {
 // 
 module.exports = PluginManagerFactory;
 
-},{}],42:[function(require,module,exports){
+},{"./utils":87}],42:[function(require,module,exports){
 var PromiseConstructor;
 
 module.exports = function(environment, ParseTree, ImportManager) {
@@ -5532,6 +5680,9 @@ module.exports = function (SourceMapOutput, environment) {
         this.sourceMapURL = sourceMapOutput.sourceMapURL;
         if (this.options.sourceMapInputFilename) {
             this.sourceMapInputFilename = sourceMapOutput.normalizeFilename(this.options.sourceMapInputFilename);
+        }
+        if (this.options.sourceMapBasepath !== undefined && this.sourceMapURL !== undefined) {
+            this.sourceMapURL = sourceMapOutput.removeBasepath(this.sourceMapURL);
         }
         return css + this.getCSSAppendage();
     };
@@ -5606,15 +5757,20 @@ module.exports = function (environment) {
         this._column = 0;
     };
 
-    SourceMapOutput.prototype.normalizeFilename = function(filename) {
-        filename = filename.replace(/\\/g, '/');
-
-        if (this._sourceMapBasepath && filename.indexOf(this._sourceMapBasepath) === 0) {
-            filename = filename.substring(this._sourceMapBasepath.length);
-            if (filename.charAt(0) === '\\' || filename.charAt(0) === '/') {
-                filename = filename.substring(1);
+    SourceMapOutput.prototype.removeBasepath = function(path) {
+        if (this._sourceMapBasepath && path.indexOf(this._sourceMapBasepath) === 0) {
+            path = path.substring(this._sourceMapBasepath.length);
+            if (path.charAt(0) === '\\' || path.charAt(0) === '/') {
+                path = path.substring(1);
             }
         }
+
+        return path;
+    };
+
+    SourceMapOutput.prototype.normalizeFilename = function(filename) {
+        filename = filename.replace(/\\/g, '/');
+        filename = this.removeBasepath(filename);
         return (this._sourceMapRootpath || "") + filename;
     };
 
@@ -5883,13 +6039,14 @@ module.exports = Assignment;
 },{"./node":73}],49:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector"),
-    Ruleset = require("./ruleset");
+    Ruleset = require("./ruleset"),
+    Anonymous = require('./anonymous');
 
 var AtRule = function (name, value, rules, index, currentFileInfo, debugInfo, isRooted, visibilityInfo) {
     var i;
 
     this.name  = name;
-    this.value = value;
+    this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
     if (rules) {
         if (Array.isArray(rules)) {
             this.rules = rules;
@@ -6017,7 +6174,7 @@ AtRule.prototype.outputRuleset = function (context, output, rules) {
 };
 module.exports = AtRule;
 
-},{"./node":73,"./ruleset":80,"./selector":81}],50:[function(require,module,exports){
+},{"./anonymous":47,"./node":73,"./ruleset":80,"./selector":81}],50:[function(require,module,exports){
 var Node = require("./node");
 
 var Attribute = function (key, op, value) {
@@ -6448,11 +6605,12 @@ module.exports = debugInfo;
 },{}],57:[function(require,module,exports){
 var Node = require("./node"),
     Value = require("./value"),
-    Keyword = require("./keyword");
+    Keyword = require("./keyword"),
+    Anonymous = require("./anonymous");
 
 var Declaration = function (name, value, important, merge, index, currentFileInfo, inline, variable) {
     this.name = name;
-    this.value = (value instanceof Node) ? value : new Value([value]); //value instanceof tree.Value || value instanceof tree.Ruleset ??
+    this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
     this.important = important ? ' ' + important.trim() : '';
     this.merge = merge;
     this._index = index;
@@ -6543,7 +6701,7 @@ Declaration.prototype.makeImportant = function () {
 };
 
 module.exports = Declaration;
-},{"./keyword":68,"./node":73,"./value":85}],58:[function(require,module,exports){
+},{"./anonymous":47,"./keyword":68,"./node":73,"./value":85}],58:[function(require,module,exports){
 var Node = require("./node"),
     contexts = require("../contexts"),
     utils = require("../utils");
@@ -6955,7 +7113,7 @@ var Import = function (path, features, options, index, currentFileInfo, visibili
         this.css = !this.options.less || this.options.inline;
     } else {
         var pathValue = this.getPath();
-        if (pathValue && /[#\.\&\?\/]css([\?;].*)?$/.test(pathValue)) {
+        if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
             this.css = true;
         }
     }
@@ -7098,7 +7256,7 @@ Import.prototype.doEval = function (context) {
 module.exports = Import;
 
 },{"../utils":87,"./anonymous":47,"./media":69,"./node":73,"./quoted":77,"./ruleset":80,"./url":84}],65:[function(require,module,exports){
-var tree = {};
+var tree = Object.create(null);
 
 tree.Node = require('./node');
 tree.Alpha = require('./alpha');
@@ -8224,7 +8382,6 @@ var Node = require("./node"),
     globalFunctionRegistry = require("../functions/function-registry"),
     defaultFunc = require("../functions/default"),
     getDebugInfo = require("./debug-info"),
-    LessError = require("../less-error"),
     utils = require("../utils");
 
 var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
@@ -8512,26 +8669,21 @@ Ruleset.prototype.parseValue = function(toParse) {
     var self = this;
     function transformDeclaration(decl) {
         if (decl.value instanceof Anonymous && !decl.parsed) {
-            try {
-                this.parse.parserInput.start(decl.value.value, false, function fail(msg, index) {
-                    decl.parsed = true;
-                    return decl;
+            this.parse.parseNode(
+                decl.value.value, 
+                ["value", "important"], 
+                decl.value.getIndex(), 
+                decl.fileInfo(), 
+                function(err, result) {
+                    if (err) {
+                        decl.parsed = true;
+                    }
+                    if (result) {
+                        decl.value = result[0];
+                        decl.important = result[1] || '';
+                        decl.parsed = true;
+                    }
                 });
-                var result = this.parse.parsers.value();
-                var important = this.parse.parsers.important();
-
-                var endInfo = this.parse.parserInput.end();
-                if (endInfo.isFinished) {
-                    decl.value = result;
-                    decl.imporant = important;
-                    decl.parsed = true;
-                }
-            } catch (e) {
-                throw new LessError({
-                    index: e.index + decl.value.getIndex(),
-                    message: e.message
-                }, this.parse.imports, decl.fileInfo().filename);
-            }
 
             return decl;
         }
@@ -8977,16 +9129,17 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 };
 module.exports = Ruleset;
 
-},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"../less-error":34,"../utils":87,"./anonymous":47,"./comment":54,"./debug-info":56,"./declaration":57,"./element":61,"./keyword":68,"./node":73,"./paren":75,"./selector":81}],81:[function(require,module,exports){
+},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"../utils":87,"./anonymous":47,"./comment":54,"./debug-info":56,"./declaration":57,"./element":61,"./keyword":68,"./node":73,"./paren":75,"./selector":81}],81:[function(require,module,exports){
 var Node = require("./node"),
-    Element = require("./element");
+    Element = require("./element"),
+    LessError = require("../less-error");
 
 var Selector = function (elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
-    this.elements = elements;
     this.extendList = extendList;
     this.condition = condition;
     this._index = index;
     this._fileInfo = currentFileInfo;
+    this.elements = this.getElements(elements);
     if (!condition) {
         this.evaldCondition = true;
     }
@@ -9007,12 +9160,32 @@ Selector.prototype.accept = function (visitor) {
     }
 };
 Selector.prototype.createDerived = function(elements, extendList, evaldCondition) {
+    elements = this.getElements(elements);
     var info = this.visibilityInfo();
     evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
     var newSelector = new Selector(elements, extendList || this.extendList, null, this.getIndex(), this.fileInfo(), info);
     newSelector.evaldCondition = evaldCondition;
     newSelector.mediaEmpty = this.mediaEmpty;
     return newSelector;
+};
+Selector.prototype.getElements = function(els) {
+    if (typeof els === "string") {
+        this.parse.parseNode(
+            els, 
+            ["selector"],
+            this._index, 
+            this._fileInfo, 
+            function(err, result) {
+                if (err) {
+                    throw new LessError({
+                        index: err.index,
+                        message: err.message
+                    }, this.parse.imports, this._fileInfo.filename);
+                }
+                els = result[0].elements;
+            });
+    }
+    return els;
 };
 Selector.prototype.createEmptySelectors = function() {
     var el = new Element('', '&', this._index, this._fileInfo),
@@ -9025,7 +9198,7 @@ Selector.prototype.match = function (other) {
         len = elements.length,
         olen, i;
 
-    other.CacheElements();
+    other.cacheElements();
 
     olen = other._elements.length;
     if (olen === 0 || len < olen) {
@@ -9040,7 +9213,7 @@ Selector.prototype.match = function (other) {
 
     return olen; // return number of matched elements
 };
-Selector.prototype.CacheElements = function() {
+Selector.prototype.cacheElements = function() {
     if (this._elements) {
         return;
     }
@@ -9092,7 +9265,7 @@ Selector.prototype.getIsOutput = function() {
 };
 module.exports = Selector;
 
-},{"./element":61,"./node":73}],82:[function(require,module,exports){
+},{"../less-error":34,"./element":61,"./node":73}],82:[function(require,module,exports){
 var Node = require("./node");
 
 var UnicodeDescriptor = function (value) {
@@ -9286,9 +9459,14 @@ module.exports = URL;
 var Node = require("./node");
 
 var Value = function (value) {
-    this.value = value;
     if (!value) {
         throw new Error("Value requires an array argument");
+    }
+    if (!Array.isArray(value)) {
+        this.value = [ value ];
+    }
+    else {
+        this.value = value;
     }
 };
 Value.prototype = new Node();
@@ -9374,6 +9552,7 @@ Variable.prototype.find = function (obj, fun) {
 module.exports = Variable;
 
 },{"./node":73}],87:[function(require,module,exports){
+/* jshint proto: true */
 module.exports = {
     getLocation: function(index, inputStream) {
         var n = index + 1,
@@ -9401,6 +9580,19 @@ module.exports = {
             copy[i] = arr[i];
         }
         return copy;
+    },
+    getPrototype: function(obj) {
+        if (Object.getPrototypeOf) {
+            return Object.getPrototypeOf(obj);
+        }
+        else {
+            if ("".__proto__ === String.prototype) {
+                return obj.__proto__;
+            }
+            else if (obj.constructor) {
+                return obj.constructor.prototype;
+            }
+        }
     }
 };
 
@@ -10627,21 +10819,21 @@ function _noop(node) {
 function indexNodeTypes(parent, ticker) {
     // add .typeIndex to tree node types for lookup table
     var key, child;
-    for (key in parent) {
-        if (parent.hasOwnProperty(key)) {
-            child = parent[key];
-            switch (typeof child) {
-                case "function":
-                    // ignore bound functions directly on tree which do not have a prototype
-                    // or aren't nodes
-                    if (child.prototype && child.prototype.type) {
-                        child.prototype.typeIndex = ticker++;
-                    }
-                    break;
-                case "object":
-                    ticker = indexNodeTypes(child, ticker);
-                    break;
-            }
+    for (key in parent) { 
+        /*jshint forin: false */
+        child = parent[key];
+        switch (typeof child) {
+            case "function":
+                // ignore bound functions directly on tree which do not have a prototype
+                // or aren't nodes
+                if (child.prototype && child.prototype.type) {
+                    child.prototype.typeIndex = ticker++;
+                }
+                break;
+            case "object":
+                ticker = indexNodeTypes(child, ticker);
+                break;
+        
         }
     }
     return ticker;

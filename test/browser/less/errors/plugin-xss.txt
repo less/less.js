@@ -1,0 +1,3 @@
+SyntaxError: Cross Site Scripting (XSS) plugins are not allowed in plugin-xss.less on line 1, column 1:
+1 @plugin "https://raw.githubusercontent.com/less/less.js/3.x/test/less/plugin/plugin-local.js";
+2 .test {

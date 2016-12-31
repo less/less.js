@@ -7,8 +7,8 @@ functions.addMultiple({
     }
 });
 
-return {
+registerPlugin({
     setOptions: function(raw) {
         // do nothing
     }
-}
+});

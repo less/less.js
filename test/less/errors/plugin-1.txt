@@ -1,0 +1,1 @@
+SyntaxError: Unexpected token ) in {path}plugin/plugin-error.js

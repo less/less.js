@@ -161,7 +161,7 @@ function render() {
         sourceMapOptions.sourceMapRootpath = path.relative(pathToMap, pathToInput);
     }
 
-    if (! input) {
+    if (!input) {
         console.error("lessc: no input files");
         console.error("");
         printUsage();
@@ -176,7 +176,7 @@ function render() {
         if (!existsSync(dir)) {
             if (mkdirp === undefined) {
                 try {mkdirp = require('mkdirp');}
-                catch(e) { mkdirp = null; }
+                catch (e) { mkdirp = null; }
             }
             cmd = mkdirp && mkdirp.sync || fs.mkdirSync;
             cmd(dir);

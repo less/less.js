@@ -68,17 +68,17 @@ module.exports = function (grunt) {
     var sauceJobs = {};
 
     var browserTests = [   "filemanager-plugin",
-                            "visitor-plugin",
-                            "global-vars", 
-                            "modify-vars", 
-                            "production", 
-                            "rootpath-relative",
-                            "rootpath", 
-                            "relative-urls", 
-                            "browser", 
-                            "no-js-errors", 
-                            "legacy"
-                        ];
+        "visitor-plugin",
+        "global-vars", 
+        "modify-vars", 
+        "production", 
+        "rootpath-relative",
+        "rootpath", 
+        "relative-urls", 
+        "browser", 
+        "no-js-errors", 
+        "legacy"
+    ];
 
     function makeJob(testName) {
         sauceJobs[testName] = {
@@ -127,15 +127,15 @@ module.exports = function (grunt) {
                                 build: 'build-' + hash
                             }
                         }, function (error, response, body) {
-                          if (error) {
-                            console.log(error);
-                            callback(error);
-                          } else if (response.statusCode !== 200) {
-                            console.log(response);
-                            callback(new Error('Unexpected response status'));
-                          } else {
-                            callback(null, result.passed);
-                          }
+                            if (error) {
+                                console.log(error);
+                                callback(error);
+                            } else if (response.statusCode !== 200) {
+                                console.log(response);
+                                callback(new Error('Unexpected response status'));
+                            } else {
+                                callback(null, result.passed);
+                            }
                         });
                     });
                         
@@ -247,24 +247,16 @@ module.exports = function (grunt) {
             }
         },
 
-        jshint: {
-            options: {jshintrc: '.jshintrc'},
-            files: {
-                src: [
-                    'Gruntfile.js',
-                    'lib/less/**/*.js',
-                    'lib/less-node/**/*.js',
-                    'lib/less-browser/**/*.js',
-                    'lib/less-rhino/**/*.js',
-                    'bin/lessc'
-                ]
-            }
-        },
-
-        jscs: {
-            src: ["test/**/*.js", "lib/less*/**/*.js", "bin/lessc"],
+        eslint: {
+            target: ["Gruntfile.js", 
+                "test/**/*.js", 
+                "lib/less*/**/*.js", 
+                "bin/lessc", 
+                "!test/browser/jasmine-jsreporter.js",
+                "!test/less/errors/plugin/plugin-error.js"
+            ],
             options: {
-                config: ".jscsrc"
+                configFile: ".eslintrc.json"
             }
         },
 
@@ -507,8 +499,7 @@ module.exports = function (grunt) {
 
     var testTasks = [
         'clean',
-        'jshint',
-        'jscs',
+        'eslint',
         'shell:test',
         'browsertest'
     ];
@@ -525,7 +516,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test', testTasks);
 
     // Run all tests
-    grunt.registerTask('quicktest', testTasks.slice(0, testTasks.length -1));
+    grunt.registerTask('quicktest', testTasks.slice(0, testTasks.length - 1));
 
     // generate a good test environment for testing sourcemaps
     grunt.registerTask('sourcemap-test', [

@@ -1,5 +1,5 @@
 var less = require('../lib/less'),
-  fs = require('fs');
+    fs = require('fs');
 
 var input = fs.readFileSync("./test/less/modifyVars/extended.less", 'utf8');
 var expectedCss = fs.readFileSync('./test/css/modifyVars/extended.css', 'utf8');

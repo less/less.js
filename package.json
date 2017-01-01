@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "3.0.0-pre.5",
+  "version": "3.0.0-alpha.1",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -94,5 +94,6 @@
     "css less"
   ],
   "rawcurrent": "https://raw.github.com/less/less.js/v",
-  "sourcearchive": "https://github.com/less/less.js/archive/v"
+  "sourcearchive": "https://github.com/less/less.js/archive/v",
+  "dependencies": {}
 }

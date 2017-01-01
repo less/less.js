@@ -137,7 +137,7 @@ module.exports = function() {
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ": ");
-            expectedErr = doReplacements(expectedErr, baseFolder, err.filename);
+            expectedErr = doReplacements(expectedErr, baseFolder, err && err.filename);
             if (!err) {
                 if (compiledLess) {
                     fail('No Error', 'red');

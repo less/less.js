@@ -207,7 +207,7 @@ testErrorSheet = function (sheet) {
                             .replace(/\{pathrel\}/g, "")
                             .replace(/\{pathhref\}/g, "http://localhost:8081/test/less/errors/")
                             .replace(/\{404status\}/g, " (404)")
-                            .replace(/\{node\}.*\{\/node\}/g, "")
+                            .replace(/\{node\}[\s\S]*\{\/node\}/g, "")
                             .replace(/\n$/, "")
                             .trim();
                         expect(actualErrorMsg).toEqual(errorTxt);

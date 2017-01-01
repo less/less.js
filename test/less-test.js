@@ -137,7 +137,7 @@ module.exports = function() {
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ": ");
-            expectedErr = doReplacements(expectedErr, baseFolder);
+            expectedErr = doReplacements(expectedErr, baseFolder, err.filename);
             if (!err) {
                 if (compiledLess) {
                     fail('No Error', 'red');
@@ -155,13 +155,19 @@ module.exports = function() {
         });
     }
 
-    function globalReplacements(input, directory) {
-        var p = path.join(process.cwd(), directory),
+    function globalReplacements(input, directory, filename) {
+        var path = require('path');
+        var p = filename ? path.join(path.dirname(filename), '/') : path.join(process.cwd(), directory),
             pathimport = path.join(process.cwd(), directory + "import/"),
             pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
             pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
         return input.replace(/\{path\}/g, p)
+                .replace(/\{node\}/g, "")
+                .replace(/\{\/node\}/g, "")
+                .replace(/\{pathhref\}/g, "")
+                .replace(/\{404status\}/g, "")
+                .replace(/\{pathrel\}/g, path.join(path.relative(process.cwd(), p), '/')) 
                 .replace(/\{pathesc\}/g, pathesc)
                 .replace(/\{pathimport\}/g, pathimport)
                 .replace(/\{pathimportesc\}/g, pathimportesc)
@@ -224,7 +230,7 @@ module.exports = function() {
         }
 
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (! /\.less/.test(file)) { return; }
+            if (!/\.less/.test(file)) { return; }
 
             var name = getBasename(file);
 
@@ -399,7 +405,7 @@ module.exports = function() {
         try {
             process.stdout.write("- Integration - creating parser without options: ");
             less.render("");
-        } catch(e) {
+        } catch (e) {
             fail(stylize("FAIL\n", "red"));
             return;
         }

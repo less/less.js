@@ -3,27 +3,15 @@ var lessTest = require("./less-test"),
     path = require("path"),
     stylize = require('../lib/less-node/lessc-helper').stylize;
 
-function getErrorPathReplacementFunction(dir) {
-    return function(input, baseDir) {
-        return input.replace(/\{path\}/g, path.join(process.cwd(), baseDir, dir + "/"))
-            .replace(/\{node\}/g, "")
-            .replace(/\{\/node\}/g, "")
-            .replace(/\{pathrel\}/g, path.join(baseDir, dir + "/"))
-            .replace(/\{pathhref\}/g, "")
-            .replace(/\{404status\}/g, "")
-            .replace(/\r\n/g, '\n');
-    };
-}
-
 console.log("\n" + stylize("Less", 'underline') + "\n");
 
 lessTester.prepBomTest();
 var testMap = [
     [{strictMath: true, relativeUrls: true, silent: true, javascriptEnabled: true}],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
-        lessTester.testErrors, null, getErrorPathReplacementFunction("errors")],
+        lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
-        lessTester.testErrors, null, getErrorPathReplacementFunction("no-js-errors")],
+        lessTester.testErrors, null],
     [{strictMath: true, dumpLineNumbers: 'comments'}, "debug/", null,
         function(name) { return name + '-comments'; }],
     [{strictMath: true, dumpLineNumbers: 'mediaquery'}, "debug/", null,

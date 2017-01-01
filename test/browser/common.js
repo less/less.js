@@ -183,7 +183,7 @@ testErrorSheet = function (sheet) {
             actualErrorElement = document.getElementById(id);
             return actualErrorElement !== null;
         }).then(function () {
-                var innerText = (actualErrorElement.innerHTML
+            var innerText = (actualErrorElement.innerHTML
                         .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, "")
                         .replace(/<\/h3>/ig, " ")
                         .replace(/<li>|<\/ul>|<br>/ig, "\n"))
@@ -191,15 +191,16 @@ testErrorSheet = function (sheet) {
                         // for IE8
                         .replace(/\r\n/g, "\n")
                         .replace(/\. \nin/, ". in");
-                actualErrorMsg = innerText
+            actualErrorMsg = innerText
                     .replace(/\n\d+/g, function (lineNo) {
                         return lineNo + " ";
                     })
                     .replace(/\n\s*in /g, " in ")
                     .replace(/\n{2,}/g, "\n")
                     .replace(/\nStack Trace\n[\s\S]*/i, "")
-                    .replace(/\n$/, "");
-                errorFile
+                    .replace(/\n$/, "")
+                    .trim();
+            errorFile
                     .then(function (errorTxt) {
                         errorTxt = errorTxt
                             .replace(/\{path\}/g, "")
@@ -207,14 +208,15 @@ testErrorSheet = function (sheet) {
                             .replace(/\{pathhref\}/g, "http://localhost:8081/test/less/errors/")
                             .replace(/\{404status\}/g, " (404)")
                             .replace(/\{node\}.*\{\/node\}/g, "")
-                            .replace(/\n$/, "");
+                            .replace(/\n$/, "")
+                            .trim();
                         expect(actualErrorMsg).toEqual(errorTxt);
                         if (errorTxt == actualErrorMsg) {
                             actualErrorElement.style.display = "none";
                         }
                         done();
                     });
-            });
+        });
     });
 };
 

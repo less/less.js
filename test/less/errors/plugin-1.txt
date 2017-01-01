@@ -1,1 +1,1 @@
-SyntaxError: Unexpected token ) in {path}plugin/plugin-error.js
+SyntaxError: Parse error in {path}plugin-error.js

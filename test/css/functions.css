@@ -38,7 +38,7 @@
   saturate-filter: saturate(5%);
   contrast-white: #000000;
   contrast-black: #ffffff;
-  contrast-red: #000000;
+  contrast-red: #ffffff;
   contrast-green: #000000;
   contrast-blue: #ffffff;
   contrast-yellow: #000000;
@@ -49,11 +49,11 @@
   contrast-light-thresh: #111111;
   contrast-dark-thresh: #eeeeee;
   contrast-high-thresh: #eeeeee;
-  contrast-low-thresh: #eeeeee;
+  contrast-low-thresh: #111111;
   contrast-light-thresh-per: #111111;
   contrast-dark-thresh-per: #eeeeee;
   contrast-high-thresh-per: #eeeeee;
-  contrast-low-thresh-per: #eeeeee;
+  contrast-low-thresh-per: #111111;
   replace: "Hello, World!";
   replace-captured: "This is a new string.";
   replace-with-flags: "2 + 2 = 4";

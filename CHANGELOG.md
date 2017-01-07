@@ -1,3 +1,9 @@
+# 2.7.2
+
+2017-01-04
+
+  - Revert changes to contrast() function in 2.7.0
+
 # 2.7.1 HOTFIX
 
 2016-05-09

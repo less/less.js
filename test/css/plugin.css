@@ -50,4 +50,7 @@
   val1: foo;
   val2: foo;
 }
+.test-simple {
+  value: 3.141592653589793;
+}
 @arbitrary value after ();

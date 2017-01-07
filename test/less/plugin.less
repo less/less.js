@@ -91,6 +91,10 @@
   test-collapse();
   val2: foo;
 }
+.test-simple {
+  @plugin "./plugin/plugin-simple";
+  value: pi();
+}
 
 test-atrule("@charset"; '"utf-8"');
 test-atrule("@arbitrary"; "value after ()");

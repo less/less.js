@@ -19,25 +19,9 @@ var less = require('../lib/less-node'),
     args = process.argv.slice(1),
     silent = false,
     verbose = false,
-    options = {
-        depends: false,
-        compress: false,
-        max_line_len: -1,
-        lint: false,
-        paths: [],
-        color: true,
-        strictImports: false,
-        insecure: false,
-        rootpath: '',
-        relativeUrls: false,
-        ieCompat: true,
-        strictMath: false,
-        strictUnits: false,
-        globalVars: null,
-        modifyVars: null,
-        urlArgs: '',
-        plugins: plugins
-    };
+    options = require('../lib/less/default-options')();
+
+options.plugins = plugins;
 
 if (less.options) {
     for (var i = 0, keys = Object.keys(options); i < keys.length; i++) {
@@ -431,8 +415,8 @@ function processPluginQueue() {
             case 'no-color':
                 options.color = false;
                 break;
-            case 'no-ie-compat':
-                options.ieCompat = false;
+            case 'ie-compat':
+                options.ieCompat = true;
                 break;
             case 'js':
                 options.javascriptEnabled = true;
@@ -475,10 +459,12 @@ function processPluginQueue() {
                     sourceMapOptions.sourceMapBasepath = match[2];
                 }
                 break;
+            case 'source-map-inline':
             case 'source-map-map-inline':
                 sourceMapFileInline = true;
                 options.sourceMap = true;
                 break;
+            case 'source-map-include-source':
             case 'source-map-less-inline':
                 sourceMapOptions.outputSourceFiles = true;
                 break;

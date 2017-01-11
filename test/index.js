@@ -20,7 +20,7 @@ var testMap = [
         function(name) { return name + '-all'; }],
     [{strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/"],
     [{strictMath: true, compress: true}, "compression/"],
-    [{strictMath: true, strictUnits: true}, "strict-units/"],
+    [{strictMath: false, strictUnits: true}, "strict-units/"],
     [{}, "legacy/"],
     [{strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, "sourcemaps/",
         lessTester.testSourcemap, null, null,

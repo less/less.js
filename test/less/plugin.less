@@ -93,7 +93,28 @@
 }
 .test-simple {
   @plugin "./plugin/plugin-simple";
-  value: pi();
+  value: pi-anon();
+  value: (pi() * 2);
+}
+.test-conflicts {
+  @plugin "./plugin/plugin-scope1";
+  value: foo();
+}
+.test-conflicts {
+  @plugin "./plugin/plugin-scope2";
+  value: foo();
+}
+.test-conflicts {
+  @plugin "./plugin/plugin-scope1";
+  value: foo();
+}
+.test-collection {
+  @plugin "./plugin/plugin-collection";
+  @var: 32;
+  store(@var);
+  store(5);
+  store("bird");
+  list: list();
 }
 
 test-atrule("@charset"; '"utf-8"');

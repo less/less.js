@@ -74,7 +74,7 @@ module.exports = function (grunt) {
         "production", 
         "rootpath-relative",
         "rootpath", 
-        "relative-urls", 
+        "rewrite-urls", 
         "browser", 
         "no-js-errors", 
         "legacy"
@@ -325,12 +325,12 @@ module.exports = function (grunt) {
                     outfile: 'tmp/browser/test-runner-browser.html'
                 }
             },
-            relativeUrls: {
-                src: ['test/browser/less/relative-urls/*.less'],
+            rewriteUrls: {
+                src: ['test/browser/less/rewrite-urls/*.less'],
                 options: {
-                    helpers: 'test/browser/runner-relative-urls-options.js',
-                    specs: 'test/browser/runner-relative-urls-spec.js',
-                    outfile: 'tmp/browser/test-runner-relative-urls.html'
+                    helpers: 'test/browser/runner-rewrite-urls-options.js',
+                    specs: 'test/browser/runner-rewrite-urls-spec.js',
+                    outfile: 'tmp/browser/test-runner-rewrite-urls.html'
                 }
             },
             rootpath: {

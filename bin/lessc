@@ -479,9 +479,11 @@ function processPluginQueue() {
                     options.rootpath = match[2].replace(/\\/g, '/');
                 }
                 break;
-            case "ru":
-            case "relative-urls":
-                options.relativeUrls = true;
+            case 'relative-urls':
+                console.warn('The relative-urls option has been replaced by the rewrite-urls option and will be removed');
+            case 'ru':
+            case 'rewrite-urls':
+                options.rewriteUrls = match[2] || 'all';
                 break;
             case "sm":
             case "strict-math":

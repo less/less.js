@@ -7,7 +7,7 @@ console.log("\n" + stylize("Less", 'underline') + "\n");
 
 lessTester.prepBomTest();
 var testMap = [
-    [{strictMath: true, relativeUrls: true, silent: true, javascriptEnabled: true}],
+    [{strictMath: true, rewriteUrls: 'all', silent: true, javascriptEnabled: true}],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
         lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
@@ -18,7 +18,7 @@ var testMap = [
         function(name) { return name + '-mediaquery'; }],
     [{strictMath: true, dumpLineNumbers: 'all'}, "debug/", null,
         function(name) { return name + '-all'; }],
-    [{strictMath: true, relativeUrls: false, rootpath: "folder (1)/"}, "static-urls/"],
+    [{strictMath: true, rewriteUrls: false, rootpath: "folder (1)/"}, "static-urls/"],
     [{strictMath: true, compress: true}, "compression/"],
     [{strictMath: false, strictUnits: true}, "strict-units/"],
     [{}, "legacy/"],

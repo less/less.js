@@ -1,0 +1,17 @@
+@import "./folder/file.less";
+
+#correct-normalize {
+  background-url: url(./relative/path);
+  background-url: url("./relative/path");
+  background-url: url('./relative/path');
+  background-url: url(../relative/path);
+  background-url: url("../relative/path");
+  background-url: url('../relative/path');
+  background-url: url(./relative/../path);
+  background-url: url(./relative/../path/..);
+  background-url: url(module);
+  background-url: url(module/path);
+  background-url: url("module");
+  background-url: url("module/path");
+  background-url: url(module/path/../relative/path);
+}

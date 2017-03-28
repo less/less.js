@@ -37,6 +37,8 @@ var testMap = [
     [{modifyVars: true}, "modifyVars/",
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
     [{urlArgs: '424242'}, "url-args/"],
+    [{rewriteUrls: 'all'}, 'rewrite-urls-all/'],
+    [{rewriteUrls: 'relative'}, 'rewrite-urls-relative/'],
     [{paths: ['test/data/', 'test/less/import/']}, "include-path/"],
     [{paths: 'test/data/'}, "include-path-string/"],
     [{plugin: 'test/plugins/postprocess/'}, "postProcessorPlugin/"],

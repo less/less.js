@@ -51,6 +51,6 @@ Copyright (c) 2009-2016 [Alexis Sellier](http://cloudhead.io) & The Core Less Te
 Licensed under the [Apache License](LICENSE).
 
 
-[so]: http://stackoverflow.com/questions/tagged/twitter-bootstrap+less "StackOverflow.com"
+[so]: http://stackoverflow.com/questions/tagged/less "StackOverflow.com"
 [issues]: https://github.com/less/less.js/issues "GitHub Issues for Less.js"
 [download]: https://github.com/less/less.js/zipball/master "Download Less.js"

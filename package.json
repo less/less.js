@@ -33,6 +33,17 @@
     "main": "./dist/less.js"
   },
   "browser": "./dist/less.js",
+  "files": [
+    "index.js",
+    "browser.js",
+    "bin/",
+    "dist/",
+    "lib/",
+    "test/copy-bom.js",
+    "test/index.js",
+    "test/less-test.js",
+    "test/modify-vars.js"
+  ],
   "engines": {
     "node": ">=0.12"
   },

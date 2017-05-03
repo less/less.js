@@ -56,4 +56,5 @@ lessTester.runTestSet({}, "no-strict-math/");
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();
+lessTester.testRenderReturnsPromise();
 lessTester.finished();

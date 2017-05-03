@@ -194,6 +194,14 @@
   two-length: 2;
   two-one: b;
   two-two: 2;
+  index: 1, 2;
+  item1: a 1;
+  item2: b 2;
+  nest-a-1: 10px 1;
+  nest-b-1: 15px 2;
+  nest-c-2: 20px 1;
+  nest-d-2: 25px 2;
+  padding: 10px 20px 30px 40px;
 }
 /* comment1 */
 html {

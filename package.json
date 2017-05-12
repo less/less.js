@@ -57,7 +57,7 @@
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-contrib-jasmine": "^1.0.3",
-    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-uglify": "^3.0.0",
     "grunt-eslint": "^19.0.0",
     "grunt-saucelabs": "^9.0.0",
     "grunt-shell": "^1.3.0",

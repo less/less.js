@@ -19,21 +19,9 @@ var less = require('../lib/less-node'),
     args = process.argv.slice(1),
     silent = false,
     verbose = false,
-    options = require('../lib/less/default-options')();
+    options = less.options;
 
 options.plugins = plugins;
-
-if (less.options) {
-    for (var i = 0, keys = Object.keys(options); i < keys.length; i++) {
-        if (!less.options[keys[i]]) {
-            less.options[keys[i]] = options[keys[i]];
-        }
-    }
-    options = less.options;
-}
-else {
-    less.options = options;
-}
 
 var sourceMapOptions = {};
 var continueProcessing = true;

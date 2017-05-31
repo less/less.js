@@ -1,4 +1,4 @@
-/*jshint latedef: nofunc */
+/* jshint latedef: nofunc */
 
 module.exports = function() {
     var path = require('path'),
@@ -45,21 +45,21 @@ module.exports = function() {
         queueRunning = false;
     function queue(func) {
         if (queueRunning) {
-            //console.log("adding to queue");
+            // console.log("adding to queue");
             queueList.push(func);
         } else {
-            //console.log("first in queue - starting");
+            // console.log("first in queue - starting");
             queueRunning = true;
             func();
         }
     }
     function release() {
         if (queueList.length) {
-            //console.log("running next in queue");
+            // console.log("running next in queue");
             var func = queueList.shift();
             setTimeout(func, 0);
         } else {
-            //console.log("stopping queue");
+            // console.log("stopping queue");
             queueRunning = false;
         }
     }
@@ -282,7 +282,7 @@ module.exports = function() {
                             if (err.stack) {
                                 process.stdout.write(err.stack + "\n");
                             } else {
-                                //this sometimes happen - show the whole error object
+                                // this sometimes happen - show the whole error object
                                 console.log(err);
                             }
                         }

@@ -72,6 +72,7 @@
       "all"
     ],
     "space-infix-ops": 2,
+    "spaced-comment": 1,
     "space-before-blocks": [
       2,
       "always"

@@ -148,7 +148,7 @@ testSheet = function (sheet) {
     });
 };
 
-//TODO: do it cleaner - the same way as in css
+// TODO: do it cleaner - the same way as in css
 
 function extractId(href) {
     return href.replace(/^[a-z-]+:\/+?[^\/]+/i, '') // Remove protocol & domain

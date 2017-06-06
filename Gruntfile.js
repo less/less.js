@@ -504,9 +504,18 @@ module.exports = function (grunt) {
         'browsertest'
     ];
 
-    if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
-        Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
+    console.log("BAMBA!");
+    console.log("process.env.TRAVIS_PULL_REQUEST" + process.env.TRAVIS_PULL_REQUEST);
+    console.log("process.env.TRAVIS_NODE_VERSION" + process.env.TRAVIS_NODE_VERSION);
+    console.log("process.env.TRAVIS_BRANCH" + process.env.TRAVIS_BRANCH);
+    console.log("BAMBA!");
+
+    // isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
+    if (Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
         (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "3.x")) {
+
+        console.log("adding sauce test! bisli!");
+
         testTasks.push("force:on");
         testTasks.push("sauce-after-setup");
         testTasks.push("force:off");

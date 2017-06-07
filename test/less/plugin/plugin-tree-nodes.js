@@ -32,9 +32,6 @@ functions.addMultiple({
         return true;
     },
     // These cause root errors
-    "test-alpha": function() {
-        return less.Alpha(30);
-    },
     "test-assignment": function() {
         return less.Assignment("bird", "robin");
     },

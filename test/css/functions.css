@@ -199,3 +199,16 @@
 html {
   color: #8080ff;
 }
+#boolean {
+  a: true;
+  b: false;
+  c: false;
+}
+#if {
+  a: 1;
+  b: 2;
+  c: 3;
+  e: ;
+  f: 6;
+  /* results in void */
+}

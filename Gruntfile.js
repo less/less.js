@@ -2,6 +2,9 @@
 
 module.exports = function (grunt) {
 
+
+    grunt.option('stack', true)
+    
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
 
@@ -438,7 +441,7 @@ module.exports = function (grunt) {
         'uglify:dist'
     ]);
 
-    // Release Rhino Version
+    // Release Rhino Version (UNSUPPORTED)
     grunt.registerTask('rhino', [
         'browserify:rhino',
         'concat:rhino',

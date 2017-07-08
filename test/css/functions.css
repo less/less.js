@@ -123,7 +123,7 @@
   shade: #686868;
   shade-full: #000000;
   shade-percent: #686868;
-  shade-negative: #868686;
+  shade-negative: #878787;
   fade-out: rgba(255, 0, 0, 0.95);
   fade-in: rgba(255, 0, 0, 0.95);
   fade-out-relative: rgba(255, 0, 0, 0.95);
@@ -136,6 +136,7 @@
   mix-0: #ffff00;
   mix-100: #ff0000;
   mix-weightless: #ff8000;
+  mix-floating-point: #ff1a1a;
   mixt: rgba(255, 0, 0, 0.5);
 }
 #built-in .is-a {

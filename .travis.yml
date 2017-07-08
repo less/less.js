@@ -3,6 +3,7 @@ cache:
   directories:
     - travis-phantomjs
 node_js:
+  - "8"
   - "6"
   - "4"
   - "0.12"

@@ -197,7 +197,7 @@ function render() {
     };
 
     var writeOutput = function(output, result, onSuccess) {
-        if (options.depends) {
+        if (options.noCss) {
             onSuccess();
         } else if (output) {
             ensureDirectory(output);
@@ -217,7 +217,7 @@ function render() {
                     onSuccess();
                 }
             });
-        } else if (!options.depends) {
+        } else {
             process.stdout.write(result.css);
             onSuccess();
         }
@@ -391,6 +391,9 @@ function processPluginQueue() {
             case 'M':
             case 'depends':
                 options.depends = true;
+                break;
+            case 'no-css':
+                options.noCss = true;
                 break;
             case 'max-line-len':
                 if (checkArgFunc(arg, match[2])) {

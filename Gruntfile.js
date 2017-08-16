@@ -119,14 +119,15 @@ module.exports = function (grunt) {
                     var pass = process.env.SAUCE_ACCESS_KEY;
 
                     git.short(function(hash) {
-                        require('request').put({
+                        require('phin')({
+                            method: 'PUT',
                             url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
                             auth: { user: user, pass: pass },
-                            json: {
+                            data: {
                                 passed: result.passed,
                                 build: 'build-' + hash
                             }
-                        }, function (error, response, body) {
+                        }, function (error, response) {
                             if (error) {
                                 console.log(error);
                                 callback(error);

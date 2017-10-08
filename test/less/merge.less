@@ -36,17 +36,20 @@
   .first-background();
 }
 .test4 {
-  // Won't merge values from sources that merked as !important, for backwards compatibility with css
   .first-transform();
   .fifth-transform();
 }
 .test5 {
-  // Won't merge values from mixins that merked as !important, for backwards compatibility with css
   .first-transform();
   .second-transform() !important;
 }
 .test6 {
-  // Ignores !merge if no peers found
+  .second-transform();
+}
+.test7 {
+  // inherit !important from merged subrules
+  .second-transform();
+  .second-transform() !important;
   .second-transform();
 }
 

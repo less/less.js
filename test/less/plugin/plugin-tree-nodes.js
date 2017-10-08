@@ -7,19 +7,19 @@ functions.addMultiple({
         return less.AtRule(arg1.value, arg2.value);
     },
     "test-extend": function() {
-        //TODO
+        // TODO
     },
     "test-import": function() {
-        //TODO
+        // TODO
     },
     "test-media": function() {
-        //TODO
+        // TODO
     },
     "test-mixin-call": function() {
-        //TODO
+        // TODO
     },
     "test-mixin-definition": function() {
-        //TODO
+        // TODO
     },
     "test-ruleset-call": function() {
         return less.Combinator(' ');
@@ -32,9 +32,6 @@ functions.addMultiple({
         return true;
     },
     // These cause root errors
-    "test-alpha": function() {
-        return less.Alpha(30);
-    },
     "test-assignment": function() {
         return less.Assignment("bird", "robin");
     },

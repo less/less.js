@@ -8,7 +8,7 @@ module.exports = function (grunt) {
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
 
-    var COMPRESS_FOR_TESTS = true;
+    var COMPRESS_FOR_TESTS = false;
     var git = require('git-rev');
 
    // Sauce Labs browser
@@ -173,7 +173,13 @@ module.exports = function (grunt) {
         },
 
         shell: {
-            options: {stdout: true, failOnError: true},
+            options: {
+                stdout: true, 
+                failOnError: true,
+                execOptions: {
+                    maxBuffer: Infinity
+                }
+            },
             test: {
                 command: 'node test/index.js'
             },
@@ -281,7 +287,14 @@ module.exports = function (grunt) {
             },
             main: {
                 // src is used to build list of less files to compile
-                src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less', '!test/less/empty.less'],
+                src: [
+                    'test/less/*.less',
+                    // Don't test NPM import, obviously 
+                    '!test/less/plugin-module.less',
+                    '!test/less/javascript.less', 
+                    '!test/less/urls.less', 
+                    '!test/less/empty.less'
+                ],
                 options: {
                     helpers: 'test/browser/runner-main-options.js',
                     specs: 'test/browser/runner-main-spec.js',

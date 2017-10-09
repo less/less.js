@@ -3,5 +3,5 @@ functions.add('pi-anon', function() {
 });
 
 functions.add('pi', function() {
-    return less.Dimension(Math.PI);
+    return less.dimension(Math.PI);
 });

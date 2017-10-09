@@ -1,10 +1,10 @@
 functions.addMultiple({
 
     "test-comment": function() {
-        return less.Combinator(' ');
+        return less.combinator(' ');
     },
     "test-atrule": function(arg1, arg2) {
-        return less.AtRule(arg1.value, arg2.value);
+        return less.atrule(arg1.value, arg2.value);
     },
     "test-extend": function() {
         // TODO
@@ -22,7 +22,7 @@ functions.addMultiple({
         // TODO
     },
     "test-ruleset-call": function() {
-        return less.Combinator(' ');
+        return less.combinator(' ');
     },
     // Functions must return something, even if it's false/true
     "test-undefined": function() { 
@@ -33,50 +33,50 @@ functions.addMultiple({
     },
     // These cause root errors
     "test-assignment": function() {
-        return less.Assignment("bird", "robin");
+        return less.assignment("bird", "robin");
     },
     "test-attribute": function() {
-        return less.Attribute("foo", "=", "bar");
+        return less.attribute("foo", "=", "bar");
     },
     "test-call": function() {
-        return less.Call("foo");
+        return less.call("foo");
     },
     "test-color": function() {
-        return less.Color([50, 50, 50]);
+        return less.color([50, 50, 50]);
     },
     "test-condition": function() {
-        return less.Condition('<', less.Value([0]), less.Value([1]));
+        return less.condition('<', less.value([0]), less.value([1]));
     },
     "test-detached-ruleset" : function() {
-        var decl = less.Declaration('prop', 'value');
-        return less.DetachedRuleset(less.Ruleset("", [ decl ]));
+        var decl = less.declaration('prop', 'value');
+        return less.detachedruleset(less.ruleset("", [ decl ]));
     },
     "test-dimension": function() {
-        return less.Dimension(1, 'px');
+        return less.dimension(1, 'px');
     },
     "test-element": function() {
-        return less.Element('+', 'a');
+        return less.element('+', 'a');
     },
     "test-expression": function() {
-        return less.Expression([1, 2, 3]);
+        return less.expression([1, 2, 3]);
     },
     "test-keyword": function() {
-        return less.Keyword('foo');
+        return less.keyword('foo');
     },
     "test-operation": function() {
-        return less.Operation('+', [1, 2]);
+        return less.operation('+', [1, 2]);
     },
     "test-quoted": function() {
-        return less.Quoted('"', 'foo');
+        return less.quoted('"', 'foo');
     },
     "test-selector": function() {
-        var sel = less.Selector('.a.b');
+        var sel = less.selector('.a.b');
         return sel;
     },
     "test-url": function() {
-        return less.URL('http://google.com');
+        return less.url('http://google.com');
     },
     "test-value": function() {
-        return less.Value([1]);
+        return less.value([1]);
     }
 });

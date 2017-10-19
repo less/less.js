@@ -48,7 +48,7 @@ See the [changelog](CHANGELOG.md)
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-2016 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
+Copyright (c) 2009-2017 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 

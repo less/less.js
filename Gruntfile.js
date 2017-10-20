@@ -291,6 +291,7 @@ module.exports = function (grunt) {
                     'test/less/*.less',
                     // Don't test NPM import, obviously 
                     '!test/less/plugin-module.less',
+                    '!test/less/import-module.less',
                     '!test/less/javascript.less', 
                     '!test/less/urls.less', 
                     '!test/less/empty.less'

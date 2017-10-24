@@ -1,17 +1,59 @@
+// Test if the environment is Java Nashorn/jjs
+if (typeof Java !== 'undefined' && Java && typeof Java.type === 'function') {
+    isNashornMode = true;
+
+    // Initialize the require function
+    if (typeof require === 'undefined') {
+        // Probe for the libLessNashornPath and this directory
+        // NOTE: If __DIR__ is specified that should be the only condition needed, just-in-case fallback to __FILE__
+        if (typeof __DIR__ !== 'undefined' && java.nio.file.Files.isRegularFile(java.nio.file.Paths.get(__DIR__).resolve('../lib/less-nashorn/require.js')) === true) {
+            libLessNashornPath = java.nio.file.Paths.get('').toAbsolutePath().relativize(java.nio.file.Paths.get(__DIR__).resolve('../lib/less-nashorn/.')).normalize();
+        }
+        else if (typeof __FILE__ !== 'undefined' && java.nio.file.Files.isRegularFile(java.nio.file.Paths.get(__FILE__).getParent().resolve('../lib/less-nashorn/require.js')) === true) {
+            libLessNashornPath = java.nio.file.Paths.get('').toAbsolutePath().relativize(java.nio.file.Paths.get(__FILE__).getParent().resolve('../lib/less-nashorn/.').toAbsolutePath()).normalize();
+        }
+        else {
+            throw new Error("Could not locate lib/less-nashorn/require.js, __DIR__ or __FILE__ should be defined");
+        }
+        var __rootDir = java.nio.file.Paths.get('').toAbsolutePath();
+        var __dir = __rootDir.relativize(java.nio.file.Paths.get(libLessNashornPath).resolve('../../test').toAbsolutePath().normalize()).normalize();
+        var __file = __dir.resolve('index.js');
+
+        eval('//# sourceURL='+libLessNashornPath.resolve('require.js')+'\n' + new java.lang.String(java.nio.file.Files.readAllBytes(libLessNashornPath.resolve('require.js'))));
+    }
+}
+else {
+    isNashornMode = false;
+}
+
+
+if (isNashornMode) {
+    // Global var's used in less-test.js
+    global = this; // Used for testing global variable leaks
+    logLevel = 'verbose';
+
+    // Global node polyfill's
+    require("process");
+    require("console");
+}
 var lessTest = require("./less-test"),
     lessTester = lessTest(),
     path = require("path"),
-    stylize = require('../lib/less-node/lessc-helper').stylize;
+    stylize = (isNashornMode ? require('../lib/less-nashorn/lessjjsc-helper'):require('../lib/less-node/lessc-helper')).stylize;
 
 function getErrorPathReplacementFunction(dir) {
     return function(input, baseDir) {
-        return input.replace(/\{path\}/g, path.join(process.cwd(), baseDir, dir + "/"))
+        var modifiedInput = input.replace(/\{path\}/g, path.join(process.cwd(), baseDir, dir + "/"))
             .replace(/\{node\}/g, "")
             .replace(/\{\/node\}/g, "")
             .replace(/\{pathrel\}/g, path.join(baseDir, dir + "/"))
             .replace(/\{pathhref\}/g, "")
             .replace(/\{404status\}/g, "")
             .replace(/\r\n/g, '\n');
+        if (isNashornMode) {
+            modifiedInput = modifiedInput.replace(/Cannot read property '([^']*)' of /g, "Cannot read property '$1' from ");
+        }
+        return modifiedInput;
     };
 }
 

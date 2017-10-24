@@ -6,15 +6,20 @@ module.exports = function() {
         copyBom = require('./copy-bom')(),
         doBomTest = false;
 
-    var less = require('../lib/less-node');
-    var stylize = require('../lib/less-node/lessc-helper').stylize;
-
+    if (isNashornMode) {
+        var less = require('../lib/less-nashorn');
+        var stylize = require('../lib/less-nashorn/lessjjsc-helper').stylize;
+    }
+    else {
+        var less = require('../lib/less-node');
+        var stylize = require('../lib/less-node/lessc-helper').stylize;
+    }
     var globals = Object.keys(global);
 
     var oneTestOnly = process.argv[2],
         isFinished = false;
 
-    var isVerbose = process.env.npm_config_loglevel === 'verbose';
+    var isVerbose = (isNashornMode ? logLevel : process.env.npm_config_loglevel) === 'verbose';
 
     var normalFolder = 'test/less';
     var bomFolder = 'test/less-bom';
@@ -267,15 +272,33 @@ module.exports = function() {
     }
 
     function diff(left, right) {
-        require('diff').diffLines(left, right).forEach(function(item) {
-            if (item.added || item.removed) {
-                var text = item.value && item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
-                process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
-            } else {
-                process.stdout.write(item.value && item.value.replace('\ufeff', '[[BOM]]'));
+        if (isNashornMode) {
+            var leftLines = left.match(/^.*([\n\r]+|$)/gm);
+            var rightLines = right.match(/^.*([\n\r]+|$)/gm);
+            if (leftLines.length == rightLines.length) {
+                for(var i = 0; i < leftLines.length; i++) {
+                    if (leftLines[i] != rightLines[i])
+                    {
+                        print('[Line ' + i + ' Expect] ' + leftLines[i].replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]'));
+                        java.lang.System.err.println('[Line ' + i + ' Result] ' + rightLines[i].replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]'));
+                    }
+                }
             }
-        });
-        process.stdout.write("\n");
+            else
+                print('TODO: diff w/mismatch line count');
+            // TODO: diff w/mismatch line count
+        }
+        else {
+            require('diff').diffLines(left, right).forEach(function(item) {
+                if (item.added || item.removed) {
+                    var text = item.value && item.value.replace("\n", String.fromCharCode(182) + "\n").replace('\ufeff', '[[BOM]]');
+                    process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
+                } else {
+                    process.stdout.write(item.value && item.value.replace('\ufeff', '[[BOM]]'));
+                }
+            });
+            process.stdout.write("\n");
+        }
     }
 
     function fail(msg) {

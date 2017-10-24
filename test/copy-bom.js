@@ -8,7 +8,7 @@ module.exports = function() {
         fs = require('fs');
 
     var BUF_LENGTH = 64 * 1024;
-    var _buff = new Buffer(BUF_LENGTH);
+    var _buff = isNashornMode ? null : new Buffer(BUF_LENGTH);
 
     function copyFolderWithBom(src, dest) {
         var stats = fs.lstatSync(src);
@@ -50,6 +50,10 @@ module.exports = function() {
     }
 
     function copyFileSync(srcFile, destFile) {
+        if (isNashornMode) {
+            java.nio.file.Files.copy(java.nio.file.Paths.get(srcFile), java.nio.file.Paths.get(destFile), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
         var fdr = fs.openSync(srcFile, 'r');
         var stat = fs.fstatSync(fdr);
         var fdw = fs.openSync(destFile, 'w', stat.mode);

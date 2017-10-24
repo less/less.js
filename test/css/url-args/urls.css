@@ -54,3 +54,8 @@
   background-image: url(data:image/x-png,f9difSSFIIGFIFJD1f982FSDKAA9==);
   background-image: url(' data:image/x-png,f9difSSFIIGFIFJD1f982FSDKAA9==');
 }
+#normalize-urls {
+  background-image: url(normal?424242);
+  background-image: url(relative?424242);
+  background-image: url("relative?424242");
+}

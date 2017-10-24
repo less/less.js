@@ -1,0 +1,19 @@
+#imported-file {
+  background-url: url(./folder/relative/path);
+  background-url: url(./relative/path);
+  background-url: url(../relative/path);
+  background-url: url(module/path);
+}
+#correct-normalize {
+  background-url: url(./relative/path);
+  background-url: url("./relative/path");
+  background-url: url('./relative/path');
+  background-url: url(../relative/path);
+  background-url: url("../relative/path");
+  background-url: url('../relative/path');
+  background-url: url(./path);
+  background-url: url(.);
+  background-url: url(module);
+  background-url: url(module/path);
+  background-url: url(module/relative/path);
+}

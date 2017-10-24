@@ -255,9 +255,10 @@ module.exports = function() {
                     process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
                     css = css && doReplacements(css, path.join(baseFolder, foldername));
-                    if (result.css === css) { ok('OK'); }
+                    var actualCss = result.css && doReplacements(result.css, path.join(baseFolder, foldername));
+                    if (actualCss === css) { ok('OK'); }
                     else {
-                        difference("FAIL", css, result.css);
+                        difference("FAIL", css, actualCss);
                     }
                     release();
                 });
@@ -372,6 +373,16 @@ module.exports = function() {
         ok(stylize("OK\n", "green"));
     }
 
+    /**
+     * Source maps are different on different platforms (OS vs Unix). But we don't
+     * care about testing the source map library anyway, so replace inline
+     * source maps with "FakeMap".
+     */
+    function normalizeSourceMap(css) {
+        return css.replace(/sourceMappingURL=data:application\/json;base64,[a-zA-Z0-9=]* /,
+                           'sourceMappingURL=data:application/json;base64,FakeMap ')
+    }
+
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
@@ -381,6 +392,7 @@ module.exports = function() {
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         prepBomTest: prepBomTest,
-        finished: finished
+        finished: finished,
+        normalizeSourceMap: normalizeSourceMap
     };
 };

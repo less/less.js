@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.0.0-alpha.1
+ * Less - Leaner CSS v3.0.0-alpha.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2017, Alexis Sellier <self@cloudhead.net>
@@ -66,14 +66,29 @@ module.exports = function(window, options) {
  * used in the browser distributed version of less
  * to kick-start less using the browser api
  */
-/*global window, document */
+/* global window, document */
 
-// TODO - consider switching this out for a recommendation for this polyfill:
+// TODO - consider switching this out for a recommendation for this polyfill?
 // <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+// Browsers have good Promise support
 require("promise/polyfill");
 
-var options = window.less || {};
+var options = require('../less/default-options')();
+
+if (window.less) {
+    for (key in window.less) {
+        if (window.less.hasOwnProperty(key)) {
+            options[key] = window.less[key];
+        }
+    }
+}
 require("./add-default-options")(window, options);
+
+options.plugins = options.plugins || [];
+
+if (window.LESS_PLUGINS) {
+    options.plugins = options.plugins.concat(window.LESS_PLUGINS);
+}
 
 var less = module.exports = require("./index")(window, options);
 
@@ -95,7 +110,7 @@ if (options.onReady) {
     if (/!watch/.test(window.location.hash)) {
         less.watch();
     }
-    // Simulate synchronous stylesheet loading by blocking page rendering
+    // Simulate synchronous stylesheet loading by hiding page rendering
     if (!options.async) {
         css = 'body { display: none !important }';
         head = document.head || document.getElementsByTagName('head')[0];
@@ -114,7 +129,7 @@ if (options.onReady) {
     less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
 }
 
-},{"./add-default-options":1,"./index":8,"promise/polyfill":101}],3:[function(require,module,exports){
+},{"../less/default-options":16,"./add-default-options":1,"./index":8,"promise/polyfill":102}],3:[function(require,module,exports){
 var utils = require("./utils");
 module.exports = {
     createCSS: function (document, styles, sheet) {
@@ -201,7 +216,7 @@ module.exports = function(window, options, logger) {
                         cache.setItem(path + ':vars', JSON.stringify(modifyVars));
                     }
                 } catch (e) {
-                    //TODO - could do with adding more robust error handling
+                    // TODO - could do with adding more robust error handling
                     logger.error('failed to save "' + path + '" to local storage for caching.');
                 }
             }
@@ -339,7 +354,7 @@ module.exports = function(window, less, options) {
     }
 
     function removeErrorConsole(path) {
-        //no action
+        // no action
     }
 
     function removeError(path) {
@@ -397,7 +412,7 @@ module.exports = function(window, less, options) {
 };
 
 },{"./browser":3,"./utils":11}],6:[function(require,module,exports){
-/*global window, XMLHttpRequest */
+/* global window, XMLHttpRequest */
 
 module.exports = function(options, logger) {
 
@@ -405,7 +420,7 @@ module.exports = function(options, logger) {
 
     var fileCache = {};
 
-    //TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
+    // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
     var FileManager = function() {
     };
 
@@ -466,10 +481,15 @@ module.exports = function(options, logger) {
         fileCache = {};
     };
 
-    FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment, callback) {
+    FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment) {
+        // TODO: Add prefix support like less-node?
+        // What about multiple paths?
+
         if (currentDirectory && !this.isPathAbsolute(filename)) {
             filename = currentDirectory + filename;
         }
+
+        filename = options.ext ? this.tryAppendExtension(filename, options.ext) : filename;
 
         options = options || {};
 
@@ -477,32 +497,34 @@ module.exports = function(options, logger) {
         // some context variables for imports
         var hrefParts = this.extractUrlParts(filename, window.location.href);
         var href      = hrefParts.url;
-
-        if (options.useFileCache && fileCache[href]) {
-            try {
-                var lessText = fileCache[href];
-                callback(null, { contents: lessText, filename: href, webInfo: { lastModified: new Date() }});
-            } catch (e) {
-                callback({filename: href, message: "Error loading file " + href + " error was " + e.message});
+        var self      = this;
+        
+        return new Promise(function(resolve, reject) {
+            if (options.useFileCache && fileCache[href]) {
+                try {
+                    var lessText = fileCache[href];
+                    return resolve({ contents: lessText, filename: href, webInfo: { lastModified: new Date() }});
+                } catch (e) {
+                    return reject({ filename: href, message: "Error loading file " + href + " error was " + e.message });
+                }
             }
-            return;
-        }
 
-        this.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
-            // per file cache
-            fileCache[href] = data;
+            self.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
+                // per file cache
+                fileCache[href] = data;
 
-            // Use remote copy (re-parse)
-            callback(null, { contents: data, filename: href, webInfo: { lastModified: lastModified }});
-        }, function doXHRError(status, url) {
-            callback({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
+                // Use remote copy (re-parse)
+                resolve({ contents: data, filename: href, webInfo: { lastModified: lastModified }});
+            }, function doXHRError(status, url) {
+                reject({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
+            });
         });
     };
 
     return FileManager;
 };
 
-},{"../less/environment/abstract-file-manager.js":16}],7:[function(require,module,exports){
+},{"../less/environment/abstract-file-manager.js":17}],7:[function(require,module,exports){
 module.exports = function() {
 
     var functionRegistry = require("./../less/functions/function-registry");
@@ -532,7 +554,7 @@ module.exports = function() {
     functionRegistry.addMultiple(imageFunctions);
 };
 
-},{"./../less/functions/function-registry":24}],8:[function(require,module,exports){
+},{"./../less/functions/function-registry":26}],8:[function(require,module,exports){
 //
 // index.js
 // Should expose the additional browser functions on to the less object
@@ -557,7 +579,7 @@ module.exports = function(window, options) {
     var cache = less.cache = options.cache || require("./cache")(window, options, less.logger);
     require('./image-size')(less.environment);
 
-    //Setup user functions - Deprecate?
+    // Setup user functions - Deprecate?
     if (options.functions) {
         less.functions.functionRegistry.addMultiple(options.functions);
     }
@@ -565,13 +587,7 @@ module.exports = function(window, options) {
     var typePattern = /^text\/(x-)?less$/;
 
     function clone(obj) {
-        var cloned = {};
-        for (var prop in obj) {
-            if (obj.hasOwnProperty(prop)) {
-                cloned[prop] = obj[prop];
-            }
-        }
-        return cloned;
+        return JSON.parse(JSON.stringify(obj || {}));
     }
 
     // only really needed for phantom
@@ -595,7 +611,7 @@ module.exports = function(window, options) {
                 var lessText = style.innerHTML || '';
                 instanceOptions.filename = document.location.href.replace(/#.*$/, '');
 
-                /*jshint loopfunc:true */
+                /* jshint loopfunc:true */
                 // use closure to store current style
                 less.render(lessText, instanceOptions,
                         bind(function(style, e, result) {
@@ -651,7 +667,7 @@ module.exports = function(window, options) {
 
             }
 
-            //TODO add tests around how this behaves when reloading
+            // TODO add tests around how this behaves when reloading
             errors.remove(path);
 
             instanceOptions.rootFileInfo = newFileInfo;
@@ -666,13 +682,14 @@ module.exports = function(window, options) {
             });
         }
 
-        fileManager.loadFile(sheet.href, null, instanceOptions, environment, function(e, loadedFile) {
-            if (e) {
-                callback(e);
-                return;
-            }
-            loadInitialFileCallback(loadedFile);
-        });
+        fileManager.loadFile(sheet.href, null, instanceOptions, environment)
+            .then(function(loadedFile) {
+                loadInitialFileCallback(loadedFile);
+            }).catch(function(err) {
+                console.log(err);
+                callback(err);
+            });
+
     }
 
     function loadStyleSheets(callback, reload, modifyVars) {
@@ -812,7 +829,7 @@ module.exports = function(window, options) {
     return less;
 };
 
-},{"../less":33,"./browser":3,"./cache":4,"./error-reporting":5,"./file-manager":6,"./image-size":7,"./log-listener":9,"./plugin-loader":10,"./utils":11}],9:[function(require,module,exports){
+},{"../less":35,"./browser":3,"./cache":4,"./error-reporting":5,"./file-manager":6,"./image-size":7,"./log-listener":9,"./plugin-loader":10,"./utils":11}],9:[function(require,module,exports){
 module.exports = function(less, options) {
 
     var logLevel_debug = 4,
@@ -858,6 +875,7 @@ module.exports = function(less, options) {
 };
 
 },{}],10:[function(require,module,exports){
+// TODO: Add tests for browser @plugin
 /*global window */
 
 var AbstractPluginLoader = require("../less/environment/abstract-plugin-loader.js");
@@ -867,68 +885,23 @@ var AbstractPluginLoader = require("../less/environment/abstract-plugin-loader.j
  */
 var PluginLoader = function(less) {
     this.less = less;
+    // shim for browser require?
     this.require = require;
 };
 
 PluginLoader.prototype = new AbstractPluginLoader();
 
-PluginLoader.prototype.tryLoadPlugin = function(name, basePath, callback) {
-    var self = this;
-    var prefix = name.slice(0, 1);
-    var explicit = prefix === "." || prefix === "/" || name.slice(-3).toLowerCase() === ".js";
-    this.tryLoadFromEnvironment(name, basePath, explicit, function(err, data) {
-        if (explicit) {
-            callback(err, data);
-        }
-        else {
-            if (!err) {
-                callback(null, data);
-            }
-            else {
-                self.tryLoadFromEnvironment('less-plugin-' + name, basePath, explicit, function(err2, data) {
-                    callback(err, data);
-                });
-            }
-        }
-    });
-
-};
-
-PluginLoader.prototype.tryLoadFromEnvironment = function(filename, basePath, explicit, callback) {
-    var fileManager = new this.less.FileManager(),
-        extract = fileManager.extractUrlParts;
-
-    if (basePath) {
-        filename = (extract(filename, basePath)).url;
-    }
-
-    if (extract(filename).hostPart !== extract(window.location.href).hostPart) {
-        callback({ message: 'Cross Site Scripting (XSS) plugins are not allowed'});
-    }
-
-    if (filename) {
-
-        filename = fileManager.tryAppendExtension(filename, '.js');
-        
-        var done = function(err, data) {
-            if (err) {
-                callback(err);
-            } else {
-                callback(null, data);
-            }
-        };
-        fileManager.loadFile(filename, null, null, null, done);
-
-    }
-    else {
-        callback({ message: 'Plugin could not be found.'});
-    }
+PluginLoader.prototype.loadPlugin = function(filename, basePath, context, environment, fileManager) {
+    return new Promise(function(fulfill, reject) {
+        fileManager.loadFile(filename, basePath, context, environment)
+            .then(fulfill).catch(reject);
+    });        
 };
 
 module.exports = PluginLoader;
 
 
-},{"../less/environment/abstract-plugin-loader.js":17}],11:[function(require,module,exports){
+},{"../less/environment/abstract-plugin-loader.js":18}],11:[function(require,module,exports){
 module.exports = {
     extractId: function(href) {
         return href.replace(/^[a-z-]+:\/+?[^\/]+/, '')  // Remove protocol & domain
@@ -997,17 +970,17 @@ contexts.Parse = function(options) {
 };
 
 var evalCopyProperties = [
-    'paths',          // additional include paths
-    'compress',       // whether to compress
-    'ieCompat',       // whether to enforce IE compatibility (IE8 data-uri)
-    'strictMath',     // whether math has to be within parenthesis
-    'strictUnits',    // whether units need to evaluate correctly
-    'sourceMap',      // whether to output a source map
-    'importMultiple', // whether we are currently importing multiple copies
-    'urlArgs',        // whether to add args into url tokens
-    'javascriptEnabled',// option - whether Inline JavaScript is enabled. if undefined, defaults to false
-    'pluginManager',  // Used as the plugin manager for the session
-    'importantScope'  // used to bubble up !important statements
+    'paths',             // additional include paths
+    'compress',          // whether to compress
+    'ieCompat',          // whether to enforce IE compatibility (IE8 data-uri)
+    'strictMath',        // whether math has to be within parenthesis
+    'strictUnits',       // whether units need to evaluate correctly
+    'sourceMap',         // whether to output a source map
+    'importMultiple',    // whether we are currently importing multiple copies
+    'urlArgs',           // whether to add args into url tokens
+    'javascriptEnabled', // option - whether Inline JavaScript is enabled. if undefined, defaults to false
+    'pluginManager',     // Used as the plugin manager for the session
+    'importantScope'     // used to bubble up !important statements
 ];
 
 contexts.Eval = function(options, frames) {
@@ -1065,7 +1038,7 @@ contexts.Eval.prototype.normalizePath = function( path ) {
     return path.join("/");
 };
 
-//todo - do the same for the toCSS ?
+// todo - do the same for the toCSS ?
 
 },{}],13:[function(require,module,exports){
 module.exports = {
@@ -1247,6 +1220,72 @@ module.exports = {
     }
 };
 },{}],16:[function(require,module,exports){
+// Export a new default each time
+module.exports = function() {
+    return {
+        /* Outputs a makefile import dependency list to stdout. */
+        depends: false,
+
+        /* Compress using less built-in compression. 
+         * This does an okay job but does not utilise all the tricks of 
+         * dedicated css compression. */
+        compress: false,
+
+        /* Runs the less parser and just reports errors without any output. */
+        lint: false,
+
+        /* Sets available include paths.
+         * If the file in an @import rule does not exist at that exact location, 
+         * less will look for it at the location(s) passed to this option. 
+         * You might use this for instance to specify a path to a library which 
+         * you want to be referenced simply and relatively in the less files. */
+        paths: [],
+
+        /* color output in the terminal */
+        color: true,
+
+        /* The strictImports controls whether the compiler will allow an @import inside of either 
+         * @media blocks or (a later addition) other selector blocks.
+         * See: https://github.com/less/less.js/issues/656 */
+        strictImports: false,
+
+        /* Allow Imports from Insecure HTTPS Hosts */
+        insecure: false,
+
+        /* Allows you to add a path to every generated import and url in your css. 
+         * This does not affect less import statements that are processed, just ones 
+         * that are left in the output css. */
+        rootpath: '',
+
+        /* By default URLs are kept as-is, so if you import a file in a sub-directory 
+         * that references an image, exactly the same URL will be output in the css. 
+         * This option allows you to re-write URL's in imported files so that the 
+         * URL is always relative to the base imported file */
+        relativeUrls: false,
+
+        /* Compatibility with IE8. Used for limiting data-uri length */
+        ieCompat: false,  // true until 3.0
+
+        /* Without this option on, Less will try and process all math in your css */
+        strictMath: false,
+
+        /* Without this option, less attempts to guess at the output unit when it does maths. */
+        strictUnits: false,
+
+        /* Effectively the declaration is put at the top of your base Less file, 
+         * meaning it can be used but it also can be overridden if this variable 
+         * is defined in the file. */
+        globalVars: null,
+
+        /* As opposed to the global variable option, this puts the declaration at the
+         * end of your base file, meaning it will override anything defined in your Less file. */
+        modifyVars: null,
+
+        /* This option allows you to specify a argument to go on to every URL.  */
+        urlArgs: ''
+    }
+}
+},{}],17:[function(require,module,exports){
 var abstractFileManager = function() {
 };
 
@@ -1325,7 +1364,7 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
 
     var urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i,
         urlParts = url.match(urlPartsRegex),
-        returner = {}, directories = [], i, baseUrlParts;
+        returner = {}, rawDirectories = [], directories = [], i, baseUrlParts;
 
     if (!urlParts) {
         throw new Error("Could not parse sheet href - '" + url + "'");
@@ -1344,26 +1383,24 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
     }
 
     if (urlParts[3]) {
-        directories = urlParts[3].replace(/\\/g, "/").split("/");
+        rawDirectories = urlParts[3].replace(/\\/g, "/").split("/");
 
-        // extract out . before .. so .. doesn't absorb a non-directory
-        for (i = 0; i < directories.length; i++) {
-            if (directories[i] === ".") {
-                directories.splice(i, 1);
-                i -= 1;
-            }
-        }
+        // collapse '..' and skip '.'
+        for (i = 0; i < rawDirectories.length; i++) {
 
-        for (i = 0; i < directories.length; i++) {
-            if (directories[i] === ".." && i > 0) {
-                directories.splice(i - 1, 2);
-                i -= 2;
+            if (rawDirectories[i] === "..") {
+                directories.pop();
             }
+            else if (rawDirectories[i] !== ".") {
+                directories.push(rawDirectories[i]);
+            }
+        
         }
     }
 
     returner.hostPart = urlParts[1];
     returner.directories = directories;
+    returner.rawPath = (urlParts[1] || "") + rawDirectories.join("/");
     returner.path = (urlParts[1] || "") + directories.join("/");
     returner.filename = urlParts[4];
     returner.fileUrl = returner.path + (urlParts[4] || "");
@@ -1373,7 +1410,7 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
 
 module.exports = abstractFileManager;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var functionRegistry = require("../functions/function-registry"),
     LessError = require('../less-error');
 
@@ -1394,7 +1431,6 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         registry,
         pluginObj,
         localModule,
-        localExports,
         pluginManager,
         filename;
 
@@ -1432,7 +1468,6 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         pluginManager: pluginManager,
         fileInfo: fileInfo
     };
-    localExports = localModule.exports;
     registry = functionRegistry.create();
     
     var registerPlugin = function(obj) {
@@ -1443,7 +1478,7 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         loader = new Function("module", "require", "registerPlugin", "functions", "tree", "less", "fileInfo", contents);
         loader(localModule, this.require, registerPlugin, registry, this.less.tree, this.less, fileInfo);
     } catch (e) {
-        return new this.less.LessError({ message: 'Parse error' }, imports, filename);
+        return new this.less.LessError(e, imports, filename);
     }
       
     if (!pluginObj) {
@@ -1546,7 +1581,7 @@ AbstractPluginLoader.prototype.printUsage = function(plugins) {
 module.exports = AbstractPluginLoader;
 
 
-},{"../functions/function-registry":24,"../less-error":34}],18:[function(require,module,exports){
+},{"../functions/function-registry":26,"../less-error":36}],19:[function(require,module,exports){
 var logger = require("../logger");
 var environment = function(externalEnvironment, fileManagers) {
     this.fileManagers = fileManagers || [];
@@ -1599,7 +1634,24 @@ environment.prototype.clearFileManagers = function () {
 
 module.exports = environment;
 
-},{"../logger":35}],19:[function(require,module,exports){
+},{"../logger":37}],20:[function(require,module,exports){
+
+var functionRegistry = require("./function-registry"),
+    Anonymous = require("../tree/anonymous"),
+    Keyword = require("../tree/keyword");
+
+functionRegistry.addMultiple({
+    boolean: function(condition) {
+        return condition ? Keyword.True : Keyword.False;
+    },
+
+    'if': function(condition, trueValue, falseValue) {
+        return condition ? trueValue
+            : (falseValue || new Anonymous);
+    }
+});
+
+},{"../tree/anonymous":48,"../tree/keyword":69,"./function-registry":26}],21:[function(require,module,exports){
 var Color = require("../tree/color"),
     functionRegistry = require("./function-registry");
 
@@ -1675,7 +1727,7 @@ for (var f in colorBlendModeFunctions) {
 
 functionRegistry.addMultiple(colorBlend);
 
-},{"../tree/color":52,"./function-registry":24}],20:[function(require,module,exports){
+},{"../tree/color":53,"./function-registry":26}],22:[function(require,module,exports){
 var Dimension = require("../tree/dimension"),
     Color = require("../tree/color"),
     Quoted = require("../tree/quoted"),
@@ -1944,43 +1996,73 @@ colorFunctions = {
     greyscale: function (color) {
         return colorFunctions.desaturate(color, new Dimension(100));
     },
-    contrast: function (color, color1, color2, threshold) {
-        // Return which of `color1` and `color2` has the greatest contrast with `color`
-        // according to the standard WCAG contrast ratio calculation.
-        // http://www.w3.org/TR/WCAG20/#contrast-ratiodef
-        // The threshold param is no longer used, in line with SASS.
+    contrast: function (color, dark, light, threshold) {
         // filter: contrast(3.2);
         // should be kept as is, so check for color
         if (!color.rgb) {
             return null;
         }
-        if (typeof color1 === 'undefined') {
-            color1 = colorFunctions.rgba(0, 0, 0, 1.0);
+        if (typeof light === 'undefined') {
+            light = colorFunctions.rgba(255, 255, 255, 1.0);
         }
-        if (typeof color2 === 'undefined') {
-            color2 = colorFunctions.rgba(255, 255, 255, 1.0);
+        if (typeof dark === 'undefined') {
+            dark = colorFunctions.rgba(0, 0, 0, 1.0);
         }
-        var contrast1, contrast2;
-        var luma = color.luma();
-        var luma1 = color1.luma();
-        var luma2 = color2.luma();
-        // Calculate contrast ratios for each color
-        if (luma > luma1) {
-            contrast1 = (luma + 0.05) / (luma1 + 0.05);
+        // Figure out which is actually light and dark:
+        if (dark.luma() > light.luma()) {
+            var t = light;
+            light = dark;
+            dark = t;
+        }
+        if (typeof threshold === 'undefined') {
+            threshold = 0.43;
         } else {
-            contrast1 = (luma1 + 0.05) / (luma + 0.05);
+            threshold = number(threshold);
         }
-        if (luma > luma2) {
-            contrast2 = (luma + 0.05) / (luma2 + 0.05);
+        if (color.luma() < threshold) {
+            return light;
         } else {
-            contrast2 = (luma2 + 0.05) / (luma + 0.05);
-        }
-        if (contrast1 > contrast2) {
-            return color1;
-        } else {
-            return color2;
+            return dark;
         }
     },
+    // Changes made in 2.7.0 - Reverted in 3.0.0
+    // contrast: function (color, color1, color2, threshold) {
+    //     // Return which of `color1` and `color2` has the greatest contrast with `color`
+    //     // according to the standard WCAG contrast ratio calculation.
+    //     // http://www.w3.org/TR/WCAG20/#contrast-ratiodef
+    //     // The threshold param is no longer used, in line with SASS.
+    //     // filter: contrast(3.2);
+    //     // should be kept as is, so check for color
+    //     if (!color.rgb) {
+    //         return null;
+    //     }
+    //     if (typeof color1 === 'undefined') {
+    //         color1 = colorFunctions.rgba(0, 0, 0, 1.0);
+    //     }
+    //     if (typeof color2 === 'undefined') {
+    //         color2 = colorFunctions.rgba(255, 255, 255, 1.0);
+    //     }
+    //     var contrast1, contrast2;
+    //     var luma = color.luma();
+    //     var luma1 = color1.luma();
+    //     var luma2 = color2.luma();
+    //     // Calculate contrast ratios for each color
+    //     if (luma > luma1) {
+    //         contrast1 = (luma + 0.05) / (luma1 + 0.05);
+    //     } else {
+    //         contrast1 = (luma1 + 0.05) / (luma + 0.05);
+    //     }
+    //     if (luma > luma2) {
+    //         contrast2 = (luma + 0.05) / (luma2 + 0.05);
+    //     } else {
+    //         contrast2 = (luma2 + 0.05) / (luma + 0.05);
+    //     }
+    //     if (contrast1 > contrast2) {
+    //         return color1;
+    //     } else {
+    //         return color2;
+    //     }
+    // },
     argb: function (color) {
         return new Anonymous(color.toARGB());
     },
@@ -2007,10 +2089,11 @@ colorFunctions = {
 };
 functionRegistry.addMultiple(colorFunctions);
 
-},{"../tree/anonymous":47,"../tree/color":52,"../tree/dimension":59,"../tree/quoted":77,"./function-registry":24}],21:[function(require,module,exports){
+},{"../tree/anonymous":48,"../tree/color":53,"../tree/dimension":60,"../tree/quoted":78,"./function-registry":26}],23:[function(require,module,exports){
 module.exports = function(environment) {
     var Quoted = require("../tree/quoted"),
         URL = require("../tree/url"),
+        utils = require('../utils'),
         functionRegistry = require("./function-registry"),
         fallback = function(functionThis, node) {
             return new URL(node, functionThis.index, functionThis.currentFileInfo).eval(functionThis.context);
@@ -2036,8 +2119,10 @@ module.exports = function(environment) {
             fragment = filePath.slice(fragmentStart);
             filePath = filePath.slice(0, fragmentStart);
         }
+        var context = utils.clone(this.context);
+        context.rawBuffer = true;
 
-        var fileManager = environment.getFileManager(filePath, currentDirectory, this.context, environment, true);
+        var fileManager = environment.getFileManager(filePath, currentDirectory, context, environment, true);
 
         if (!fileManager) {
             return fallback(this, filePathNode);
@@ -2063,7 +2148,7 @@ module.exports = function(environment) {
             useBase64 = /;base64$/.test(mimetype);
         }
 
-        var fileSync = fileManager.loadFileSync(filePath, currentDirectory, this.context, environment);
+        var fileSync = fileManager.loadFileSync(filePath, currentDirectory, context, environment);
         if (!fileSync.contents) {
             logger.warn("Skipped data-uri embedding of " + filePath + " because file not found");
             return fallback(this, filePathNode || mimetypeNode);
@@ -2094,7 +2179,7 @@ module.exports = function(environment) {
     });
 };
 
-},{"../logger":35,"../tree/quoted":77,"../tree/url":84,"./function-registry":24}],22:[function(require,module,exports){
+},{"../logger":37,"../tree/quoted":78,"../tree/url":84,"../utils":88,"./function-registry":26}],24:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
     functionRegistry = require("./function-registry");
 
@@ -2123,7 +2208,7 @@ functionRegistry.add("default", defaultFunc.eval.bind(defaultFunc));
 
 module.exports = defaultFunc;
 
-},{"../tree/keyword":68,"./function-registry":24}],23:[function(require,module,exports){
+},{"../tree/keyword":69,"./function-registry":26}],25:[function(require,module,exports){
 var Expression = require("../tree/expression");
 
 var functionCaller = function(name, context, index, currentFileInfo) {
@@ -2171,7 +2256,7 @@ functionCaller.prototype.call = function(args) {
 
 module.exports = functionCaller;
 
-},{"../tree/expression":62}],24:[function(require,module,exports){
+},{"../tree/expression":63}],26:[function(require,module,exports){
 function makeRegistry( base ) {
     return {
         _data: {},
@@ -2181,7 +2266,7 @@ function makeRegistry( base ) {
             name = name.toLowerCase();
 
             if (this._data.hasOwnProperty(name)) {
-                //TODO warn
+                // TODO warn
             }
             this._data[name] = func;
         },
@@ -2207,14 +2292,15 @@ function makeRegistry( base ) {
 }
 
 module.exports = makeRegistry( null );
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function(environment) {
     var functions = {
         functionRegistry: require("./function-registry"),
         functionCaller: require("./function-caller")
     };
 
-    //register functions
+    // register functions
+    require("./boolean");
     require("./default");
     require("./color");
     require("./color-blending");
@@ -2228,7 +2314,7 @@ module.exports = function(environment) {
     return functions;
 };
 
-},{"./color":20,"./color-blending":19,"./data-uri":21,"./default":22,"./function-caller":23,"./function-registry":24,"./math":27,"./number":28,"./string":29,"./svg":30,"./types":31}],26:[function(require,module,exports){
+},{"./boolean":20,"./color":22,"./color-blending":21,"./data-uri":23,"./default":24,"./function-caller":25,"./function-registry":26,"./math":29,"./number":30,"./string":31,"./svg":32,"./types":33}],28:[function(require,module,exports){
 var Dimension = require("../tree/dimension");
 
 var MathHelper = function() {
@@ -2245,7 +2331,7 @@ MathHelper._math = function (fn, unit, n) {
     return new Dimension(fn(parseFloat(n.value)), unit);
 };
 module.exports = MathHelper;
-},{"../tree/dimension":59}],27:[function(require,module,exports){
+},{"../tree/dimension":60}],29:[function(require,module,exports){
 var functionRegistry = require("./function-registry"),
     mathHelper = require("./math-helper.js");
 
@@ -2276,7 +2362,7 @@ mathFunctions.round = function (n, f) {
 
 functionRegistry.addMultiple(mathFunctions);
 
-},{"./function-registry":24,"./math-helper.js":26}],28:[function(require,module,exports){
+},{"./function-registry":26,"./math-helper.js":28}],30:[function(require,module,exports){
 var Dimension = require("../tree/dimension"),
     Anonymous = require("../tree/anonymous"),
     functionRegistry = require("./function-registry"),
@@ -2359,7 +2445,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":47,"../tree/dimension":59,"./function-registry":24,"./math-helper.js":26}],29:[function(require,module,exports){
+},{"../tree/anonymous":48,"../tree/dimension":60,"./function-registry":26,"./math-helper.js":28}],31:[function(require,module,exports){
 var Quoted = require("../tree/quoted"),
     Anonymous = require("../tree/anonymous"),
     JavaScript = require("../tree/javascript"),
@@ -2381,12 +2467,12 @@ functionRegistry.addMultiple({
         result = result.replace(new RegExp(pattern.value, flags ? flags.value : ''), replacement);
         return new Quoted(string.quote || '', result, string.escaped);
     },
-    '%': function (string /* arg, arg, ...*/) {
+    '%': function (string /* arg, arg, ... */) {
         var args = Array.prototype.slice.call(arguments, 1),
             result = string.value;
 
         for (var i = 0; i < args.length; i++) {
-            /*jshint loopfunc:true */
+            /* jshint loopfunc:true */
             result = result.replace(/%[sda]/i, function(token) {
                 var value = ((args[i].type === "Quoted") &&
                     token.match(/s/i)) ? args[i].value : args[i].toCSS();
@@ -2398,7 +2484,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":47,"../tree/javascript":66,"../tree/quoted":77,"./function-registry":24}],30:[function(require,module,exports){
+},{"../tree/anonymous":48,"../tree/javascript":67,"../tree/quoted":78,"./function-registry":26}],32:[function(require,module,exports){
 module.exports = function(environment) {
     var Dimension = require("../tree/dimension"),
         Color = require("../tree/color"),
@@ -2488,7 +2574,7 @@ module.exports = function(environment) {
     });
 };
 
-},{"../tree/color":52,"../tree/dimension":59,"../tree/expression":62,"../tree/quoted":77,"../tree/url":84,"./function-registry":24}],31:[function(require,module,exports){
+},{"../tree/color":53,"../tree/dimension":60,"../tree/expression":63,"../tree/quoted":78,"../tree/url":84,"./function-registry":26}],33:[function(require,module,exports){
 var Keyword = require("../tree/keyword"),
     DetachedRuleset = require("../tree/detached-ruleset"),
     Dimension = require("../tree/dimension"),
@@ -2579,10 +2665,12 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":47,"../tree/color":52,"../tree/detached-ruleset":58,"../tree/dimension":59,"../tree/keyword":68,"../tree/operation":74,"../tree/quoted":77,"../tree/url":84,"./function-registry":24}],32:[function(require,module,exports){
+},{"../tree/anonymous":48,"../tree/color":53,"../tree/detached-ruleset":59,"../tree/dimension":60,"../tree/keyword":69,"../tree/operation":75,"../tree/quoted":78,"../tree/url":84,"./function-registry":26}],34:[function(require,module,exports){
 var contexts = require("./contexts"),
     Parser = require('./parser/parser'),
-    LessError = require('./less-error');
+    LessError = require('./less-error'),
+    utils = require('./utils'),
+    PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise;
 
 module.exports = function(environment) {
 
@@ -2608,6 +2696,7 @@ module.exports = function(environment) {
         this.queue = [];        // Files which haven't been imported yet
         this.files = {};        // Holds the imported parse trees.
     };
+    
     /**
      * Add an import to be imported
      * @param path - the raw path
@@ -2630,7 +2719,9 @@ module.exports = function(environment) {
                 callback(null, {rules:[]}, false, null);
             }
             else {
-                importManager.files[fullPath] = root;
+                if (!importManager.files[fullPath]) {
+                    importManager.files[fullPath] = { root: root, options: importOptions };
+                } 
                 if (e && !importManager.error) { importManager.error = e; }
                 callback(e, root, importedEqualsRoot, fullPath);
             }
@@ -2648,10 +2739,6 @@ module.exports = function(environment) {
         if (!fileManager) {
             fileParsedFunc({ message: "Could not find a file-manager for " + path });
             return;
-        }
-
-        if (tryAppendExtension) {
-            path = importOptions.isPlugin ? path : fileManager.tryAppendExtension(path, ".less");
         }
 
         var loadFileCallback = function(loadedFile) {
@@ -2699,39 +2786,50 @@ module.exports = function(environment) {
             } else if (importOptions.inline) {
                 fileParsedFunc(null, contents, resolvedFilename);
             } else {
-                new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
-                    fileParsedFunc(e, root, resolvedFilename);
-                });
+                
+                // import (multiple) parse trees apparently get altered and can't be cached.
+                // TODO: investigate why this is
+                if (importManager.files[resolvedFilename] 
+                    && !importManager.files[resolvedFilename].options.multiple
+                    && !importOptions.multiple) {
+
+                    fileParsedFunc(null, importManager.files[resolvedFilename].root, resolvedFilename);
+                }
+                else {
+                    new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
+                        fileParsedFunc(e, root, resolvedFilename);
+                    });
+                }
             }
         };
-        var promise;
-        var done = function(err, loadedFile) {
-            if (err) {
-                fileParsedFunc(err);
-            } else {
-                loadFileCallback(loadedFile);
-            }
-        };
+        var promise, context = utils.clone(this.context);
+
+        if (tryAppendExtension) {
+            context.ext = importOptions.isPlugin ? ".js" : ".less";
+        }
+
         if (importOptions.isPlugin) {
-            try {
-                pluginLoader.tryLoadPlugin(path, currentFileInfo.currentDirectory, done);
-            }
-            catch (e) {
-                callback(e);
-            }
+            promise = pluginLoader.loadPlugin(path, currentFileInfo.currentDirectory, context, environment, fileManager);
         }
         else {
-            promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, this.context, environment, done);
-            if (promise) {
-                promise.then(loadFileCallback, fileParsedFunc);
-            }
+            promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, context, environment, 
+                function(err, loadedFile) {
+                    if (err) {
+                        fileParsedFunc(err);
+                    } else {
+                        loadFileCallback(loadedFile);
+                    }
+                });
         }
-        
+        if (promise) {
+            promise.then(loadFileCallback, fileParsedFunc);
+        }
+
     };
     return ImportManager;
 };
 
-},{"./contexts":12,"./less-error":34,"./parser/parser":40}],33:[function(require,module,exports){
+},{"./contexts":12,"./less-error":36,"./parser/parser":42,"./utils":88,"promise":undefined}],35:[function(require,module,exports){
 module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
@@ -2771,7 +2869,7 @@ module.exports = function(environment, fileManagers) {
     };
     var t, api = Object.create(initial);
     for (var n in initial.tree) {
-        /*eslint guard-for-in: 0 */
+        /* eslint guard-for-in: 0 */
         t = initial.tree[n];
         if (typeof t === "function") {
             api[n] = ctor(t);
@@ -2779,7 +2877,7 @@ module.exports = function(environment, fileManagers) {
         else {
             api[n] = Object.create(null);
             for (var o in t) {
-                /*eslint guard-for-in: 0 */
+                /* eslint guard-for-in: 0 */
                 api[n][o] = ctor(t[o]);
             }
         }
@@ -2788,7 +2886,7 @@ module.exports = function(environment, fileManagers) {
     return api;
 };
 
-},{"./contexts":12,"./data":14,"./environment/abstract-file-manager":16,"./environment/abstract-plugin-loader":17,"./environment/environment":18,"./functions":25,"./import-manager":32,"./less-error":34,"./logger":35,"./parse":37,"./parse-tree":36,"./parser/parser":40,"./plugin-manager":41,"./render":42,"./source-map-builder":43,"./source-map-output":44,"./transform-tree":45,"./tree":65,"./utils":87,"./visitors":91}],34:[function(require,module,exports){
+},{"./contexts":12,"./data":14,"./environment/abstract-file-manager":17,"./environment/abstract-plugin-loader":18,"./environment/environment":19,"./functions":27,"./import-manager":34,"./less-error":36,"./logger":37,"./parse":39,"./parse-tree":38,"./parser/parser":42,"./plugin-manager":43,"./render":44,"./source-map-builder":45,"./source-map-output":46,"./transform-tree":47,"./tree":66,"./utils":88,"./visitors":92}],36:[function(require,module,exports){
 var utils = require('./utils');
 /**
  * This is a centralized class of any error that could be thrown internally (mostly by the parser).
@@ -2931,7 +3029,7 @@ LessError.prototype.toString = function(options) {
     return message;
 };
 
-},{"./utils":87}],35:[function(require,module,exports){
+},{"./utils":88}],37:[function(require,module,exports){
 module.exports = {
     error: function(msg) {
         this._fireEvent("error", msg);
@@ -2967,7 +3065,7 @@ module.exports = {
     _listeners: []
 };
 
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var LessError = require('./less-error'),
     transformTree = require("./transform-tree"),
     logger = require("./logger");
@@ -3029,20 +3127,23 @@ module.exports = function(SourceMapBuilder) {
     return ParseTree;
 };
 
-},{"./less-error":34,"./logger":35,"./transform-tree":45}],37:[function(require,module,exports){
+},{"./less-error":36,"./logger":37,"./transform-tree":47}],39:[function(require,module,exports){
 var PromiseConstructor,
     contexts = require("./contexts"),
     Parser = require('./parser/parser'),
     PluginManager = require('./plugin-manager'),
-    LessError = require('./less-error');
+    LessError = require('./less-error'),
+    utils = require('./utils');
 
 module.exports = function(environment, ParseTree, ImportManager) {
     var parse = function (input, options, callback) {
-        options = options || {};
 
         if (typeof options === 'function') {
             callback = options;
-            options = {};
+            options = utils.defaults(this.options, {});
+        }
+        else {
+            options = utils.defaults(this.options, options || {});
         }
 
         if (!callback) {
@@ -3090,6 +3191,9 @@ module.exports = function(environment, ParseTree, ImportManager) {
             var imports = new ImportManager(this, context, rootFileInfo);
             this.importManager = imports;
 
+            // TODO: allow the plugins to be just a list of paths or names
+            // Do an async plugin queue like lessc
+
             if (options.plugins) {
                 options.plugins.forEach(function(plugin) {
                     var evalResult, contents;
@@ -3116,7 +3220,7 @@ module.exports = function(environment, ParseTree, ImportManager) {
     return parse;
 };
 
-},{"./contexts":12,"./less-error":34,"./parser/parser":40,"./plugin-manager":41,"promise":undefined}],38:[function(require,module,exports){
+},{"./contexts":12,"./less-error":36,"./parser/parser":42,"./plugin-manager":43,"./utils":88,"promise":undefined}],40:[function(require,module,exports){
 // Split the input into chunks.
 module.exports = function (input, fail) {
     var len = input.length, level = 0, parenLevel = 0,
@@ -3230,15 +3334,15 @@ module.exports = function (input, fail) {
     return chunks;
 };
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var chunker = require('./chunker');
 
 module.exports = function() {
-    var input,       // LeSS input string
+    var input,       // Less input string
         j,           // current chunk
         saveStack = [],   // holds state for backtracking
         furthest,    // furthest index the parser has gone to
-        furthestPossibleErrorMessage,// if this is furthest we got to, this is the probably cause
+        furthestPossibleErrorMessage, // if this is furthest we got to, this is the probably cause
         chunks,      // chunkified input
         current,     // current chunk
         currentPos,  // index of current chunk, in `input`
@@ -3442,7 +3546,7 @@ module.exports = function() {
 
     parserInput.peekNotNumeric = function() {
         var c = input.charCodeAt(parserInput.i);
-        //Is the first char of the dimension 0-9, '.', '+' or '-'
+        // Is the first char of the dimension 0-9, '.', '+' or '-'
         return (c > CHARCODE_9 || c < CHARCODE_PLUS) || c === CHARCODE_FORWARD_SLASH || c === CHARCODE_COMMA;
     };
 
@@ -3491,7 +3595,7 @@ module.exports = function() {
     return parserInput;
 };
 
-},{"./chunker":38}],40:[function(require,module,exports){
+},{"./chunker":40}],42:[function(require,module,exports){
 var LessError = require('../less-error'),
     tree = require("../tree"),
     visitors = require("../visitors"),
@@ -3529,8 +3633,8 @@ var LessError = require('../less-error'),
 //    Token matching is done with the `$` function, which either takes
 //    a terminal string or regexp, or a non-terminal function to call.
 //    It also takes care of moving all the indices forwards.
-//`
 //
+
 var Parser = function Parser(context, imports, fileInfo) {
     var parsers,
         parserInput = getParserInput();
@@ -3808,7 +3912,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
 
                     node = mixin.definition() || this.declaration() || this.ruleset() ||
-                        mixin.call() || this.rulesetCall() || this.entities.call() || this.atrule();
+                        mixin.call() || this.variableCall() || this.entities.call() || this.atrule();
                     if (node) {
                         root.push(node);
                     } else {
@@ -3877,13 +3981,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //
                 //     rgb(255, 0, 255)
                 //
-                // We also try to catch IE's `alpha()`, but let the `alpha` parser
-                // deal with the details.
-                //
                 // The arguments are parsed with the `entities.arguments` parser.
                 //
                 call: function () {
-                    var name, nameLC, args, alpha, index = parserInput.i;
+                    var name, args, func, index = parserInput.i;
 
                     // http://jsperf.com/case-insensitive-regex-vs-strtolower-then-regex/18
                     if (parserInput.peek(/^url\(/i)) {
@@ -3893,20 +3994,22 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.save();
 
                     name = parserInput.$re(/^([\w-]+|%|progid:[\w\.]+)\(/);
-                    if (!name) { parserInput.forget(); return; }
+                    if (!name) {
+                        parserInput.forget(); 
+                        return;
+                    }
 
                     name = name[1];
-                    nameLC = name.toLowerCase();
-
-                    if (nameLC === 'alpha') {
-                        alpha = parsers.alpha();
-                        if (alpha) {
+                    func = this.customFuncCall(name);
+                    if (func) {
+                        args = func.parse();
+                        if (args && func.stop) {
                             parserInput.forget();
-                            return alpha;
+                            return args;
                         }
                     }
 
-                    args = this.arguments();
+                    args = this.arguments(args);
 
                     if (!parserInput.$char(')')) {
                         parserInput.restore("Could not parse call arguments or missing ')'");
@@ -3916,47 +4019,72 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.forget();
                     return new(tree.Call)(name, args, index, fileInfo);
                 },
-                arguments: function () {
-                    var argsSemiColon = [], argsComma = [],
-                        expressions = [],
-                        isSemiColonSeparated, value, arg;
+                
+                //
+                // Parsing rules for functions with non-standard args, e.g.:
+                //
+                //     boolean(not(2 > 1))
+                //
+                //     This is a quick prototype, to be modified/improved when
+                //     more custom-parsed funcs come (e.g. `selector(...)`)
+                //
+
+                customFuncCall: function (name) {
+                    /* Ideally the table is to be moved out of here for faster perf.,
+                       but it's quite tricky since it relies on all these `parsers`
+                       and `expect` available only here */
+                    return {
+                        alpha:   f(parsers.ieAlpha, true),
+                        boolean: f(condition),
+                        'if':    f(condition)
+                    }[name.toLowerCase()];
+
+                    function f(parse, stop) {
+                        return {
+                            parse: parse, // parsing function
+                            stop:  stop   // when true - stop after parse() and return its result, 
+                                          // otherwise continue for plain args
+                        };
+                    }
+                
+                    function condition() {
+                        return [expect(parsers.condition, 'expected condition')];
+                    }
+                },
+
+                arguments: function (prevArgs) {
+                    var argsComma = prevArgs || [],
+                        argsSemiColon = [],
+                        isSemiColonSeparated, value;
 
                     parserInput.save();
 
                     while (true) {
+                        if (prevArgs) {
+                            prevArgs = false;
+                        } else {
+                            value = parsers.detachedRuleset() || this.assignment() || parsers.expression();
+                            if (!value) {
+                                break;
+                            }
 
-                        arg = parsers.detachedRuleset() || this.assignment() || parsers.expression();
+                            if (value.value && value.value.length == 1) {
+                                value = value.value[0];
+                            }
 
-                        if (!arg) {
-                            break;
+                            argsComma.push(value);
                         }
-
-                        value = arg;
-
-                        if (arg.value && arg.value.length == 1) {
-                            value = arg.value[0];
-                        }
-
-                        if (value) {
-                            expressions.push(value);
-                        }
-
-                        argsComma.push(value);
 
                         if (parserInput.$char(',')) {
                             continue;
                         }
 
                         if (parserInput.$char(';') || isSemiColonSeparated) {
-
                             isSemiColonSeparated = true;
-
-                            if (expressions.length > 1) {
-                                value = new(tree.Value)(expressions);
-                            }
+                            value = (argsComma.length < 1) ? argsComma[0]
+                                : new tree.Value(argsComma);
                             argsSemiColon.push(value);
-
-                            expressions = [];
+                            argsComma = [];
                         }
                     }
 
@@ -4181,15 +4309,17 @@ var Parser = function Parser(context, imports, fileInfo) {
             },
 
             //
-            // The variable part of a variable definition. Used in the `rule` parser
+            // Call a variable value
             //
-            //     @fink();
+            //     @fink()
             //
-            rulesetCall: function () {
+            variableCall: function () {
                 var name;
 
-                if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^(@[\w-]+)\(\s*\)\s*;/))) {
-                    return new tree.RulesetCall(name[1]);
+                if (parserInput.currentChar() === '@'
+                    && (name = parserInput.$re(/^(@[\w-]+)\(\s*\)/))
+                    && parsers.end()) {
+                    return new tree.VariableCall(name[1]);
                 }
             },
 
@@ -4511,17 +4641,18 @@ var Parser = function Parser(context, imports, fileInfo) {
             //
             //     alpha(opacity=88)
             //
-            alpha: function () {
+            ieAlpha: function () {
                 var value;
 
                 // http://jsperf.com/case-insensitive-regex-vs-strtolower-then-regex/18
                 if (!parserInput.$re(/^opacity=/i)) { return; }
                 value = parserInput.$re(/^\d+/);
                 if (!value) {
-                    value = expect(this.entities.variable, "Could not parse alpha");
+                    value = expect(parsers.entities.variable, "Could not parse alpha");
+                    value = '@{' + value.name.slice(1) + '}';
                 }
                 expectChar(')');
-                return new(tree.Alpha)(value);
+                return new tree.Quoted('', 'alpha(opacity=' + value + ')');
             },
 
             //
@@ -5463,7 +5594,7 @@ Parser.serializeVars = function(vars) {
 
 module.exports = Parser;
 
-},{"../less-error":34,"../tree":65,"../utils":87,"../visitors":91,"./parser-input":39}],41:[function(require,module,exports){
+},{"../less-error":36,"../tree":66,"../utils":88,"../visitors":92,"./parser-input":41}],43:[function(require,module,exports){
 var utils = require('./utils');
 /**
  * Plugin Manager
@@ -5642,14 +5773,18 @@ PluginManager.prototype.getFileManagers = function() {
 // 
 module.exports = PluginManagerFactory;
 
-},{"./utils":87}],42:[function(require,module,exports){
-var PromiseConstructor;
+},{"./utils":88}],44:[function(require,module,exports){
+var PromiseConstructor,
+    utils = require('./utils');
 
 module.exports = function(environment, ParseTree, ImportManager) {
     var render = function (input, options, callback) {
         if (typeof options === 'function') {
             callback = options;
-            options = {};
+            options = utils.defaults(this.options, {});
+        }
+        else {
+            options = utils.defaults(this.options, options || {});
         }
 
         if (!callback) {
@@ -5685,7 +5820,7 @@ module.exports = function(environment, ParseTree, ImportManager) {
     return render;
 };
 
-},{"promise":undefined}],43:[function(require,module,exports){
+},{"./utils":88,"promise":undefined}],45:[function(require,module,exports){
 module.exports = function (SourceMapOutput, environment) {
 
     var SourceMapBuilder = function (options) {
@@ -5759,7 +5894,7 @@ module.exports = function (SourceMapOutput, environment) {
     return SourceMapBuilder;
 };
 
-},{}],44:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 module.exports = function (environment) {
 
     var SourceMapOutput = function (options) {
@@ -5809,7 +5944,7 @@ module.exports = function (environment) {
 
     SourceMapOutput.prototype.add = function(chunk, fileInfo, index, mapLines) {
 
-        //ignore adding empty strings
+        // ignore adding empty strings
         if (!chunk) {
             return;
         }
@@ -5904,7 +6039,7 @@ module.exports = function (environment) {
     return SourceMapOutput;
 };
 
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 var contexts = require("./contexts"),
     visitor = require("./visitors"),
     tree = require("./tree");
@@ -5979,37 +6114,7 @@ module.exports = function(root, options) {
     return evaldRoot;
 };
 
-},{"./contexts":12,"./tree":65,"./visitors":91}],46:[function(require,module,exports){
-var Node = require("./node");
-
-var Alpha = function (val) {
-    this.value = val;
-};
-Alpha.prototype = new Node();
-Alpha.prototype.type = "Alpha";
-
-Alpha.prototype.accept = function (visitor) {
-    this.value = visitor.visit(this.value);
-};
-Alpha.prototype.eval = function (context) {
-    if (this.value.eval) { return new Alpha(this.value.eval(context)); }
-    return this;
-};
-Alpha.prototype.genCSS = function (context, output) {
-    output.add("alpha(opacity=");
-
-    if (this.value.genCSS) {
-        this.value.genCSS(context, output);
-    } else {
-        output.add(this.value);
-    }
-
-    output.add(")");
-};
-
-module.exports = Alpha;
-
-},{"./node":73}],47:[function(require,module,exports){
+},{"./contexts":12,"./tree":66,"./visitors":92}],48:[function(require,module,exports){
 var Node = require("./node");
 
 var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
@@ -6040,7 +6145,7 @@ Anonymous.prototype.genCSS = function (context, output) {
 };
 module.exports = Anonymous;
 
-},{"./node":73}],48:[function(require,module,exports){
+},{"./node":74}],49:[function(require,module,exports){
 var Node = require("./node");
 
 var Assignment = function (key, val) {
@@ -6069,7 +6174,7 @@ Assignment.prototype.genCSS = function (context, output) {
 };
 module.exports = Assignment;
 
-},{"./node":73}],49:[function(require,module,exports){
+},{"./node":74}],50:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector"),
     Ruleset = require("./ruleset"),
@@ -6133,11 +6238,11 @@ AtRule.prototype.genCSS = function (context, output) {
 AtRule.prototype.eval = function (context) {
     var mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
 
-    //media stored inside other atrule should not bubble over it
-    //backpup media bubbling information
+    // media stored inside other atrule should not bubble over it
+    // backpup media bubbling information
     mediaPathBackup = context.mediaPath;
     mediaBlocksBackup = context.mediaBlocks;
-    //deleted media bubbling information
+    // deleted media bubbling information
     context.mediaPath = [];
     context.mediaBlocks = [];
 
@@ -6149,7 +6254,7 @@ AtRule.prototype.eval = function (context) {
         rules = [rules[0].eval(context)];
         rules[0].root = true;
     }
-    //restore media bubbling information
+    // restore media bubbling information
     context.mediaPath = mediaPathBackup;
     context.mediaBlocks = mediaBlocksBackup;
 
@@ -6207,7 +6312,7 @@ AtRule.prototype.outputRuleset = function (context, output, rules) {
 };
 module.exports = AtRule;
 
-},{"./anonymous":47,"./node":73,"./ruleset":80,"./selector":81}],50:[function(require,module,exports){
+},{"./anonymous":48,"./node":74,"./ruleset":80,"./selector":81}],51:[function(require,module,exports){
 var Node = require("./node");
 
 var Attribute = function (key, op, value) {
@@ -6236,7 +6341,7 @@ Attribute.prototype.toCSS = function (context) {
 };
 module.exports = Attribute;
 
-},{"./node":73}],51:[function(require,module,exports){
+},{"./node":74}],52:[function(require,module,exports){
 var Node = require("./node"),
     Anonymous = require("./anonymous"),
     FunctionCaller = require("../functions/function-caller");
@@ -6287,10 +6392,16 @@ Call.prototype.eval = function (context) {
         }
 
         if (result !== null && result !== undefined) {
-            // All returned results must be Nodes,
-            // so anything other than a Node is a null Node
+            // Results that that are not nodes are cast as Anonymous nodes
+            // Falsy values or booleans are returned as empty nodes
             if (!(result instanceof Node)) {
-                result = new Anonymous(null);
+                if (!result || result === true) {
+                    result = new Anonymous(null); 
+                }
+                else {
+                    result = new Anonymous(result.toString()); 
+                }
+                
             }
             result._index = this._index;
             result._fileInfo = this._fileInfo;
@@ -6315,7 +6426,7 @@ Call.prototype.genCSS = function (context, output) {
 };
 module.exports = Call;
 
-},{"../functions/function-caller":23,"./anonymous":47,"./node":73}],52:[function(require,module,exports){
+},{"../functions/function-caller":25,"./anonymous":48,"./node":74}],53:[function(require,module,exports){
 var Node = require("./node"),
     colors = require("../data/colors");
 
@@ -6450,7 +6561,7 @@ Color.prototype.toHSL = function () {
     }
     return { h: h * 360, s: s, l: l, a: a };
 };
-//Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+// Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
 Color.prototype.toHSV = function () {
     var r = this.rgb[0] / 255,
         g = this.rgb[1] / 255,
@@ -6506,7 +6617,7 @@ Color.fromKeyword = function(keyword) {
 };
 module.exports = Color;
 
-},{"../data/colors":13,"./node":73}],53:[function(require,module,exports){
+},{"../data/colors":13,"./node":74}],54:[function(require,module,exports){
 var Node = require("./node");
 
 var Combinator = function (value) {
@@ -6531,7 +6642,7 @@ Combinator.prototype.genCSS = function (context, output) {
 };
 module.exports = Combinator;
 
-},{"./node":73}],54:[function(require,module,exports){
+},{"./node":74}],55:[function(require,module,exports){
 var Node = require("./node"),
     getDebugInfo = require("./debug-info");
 
@@ -6556,7 +6667,7 @@ Comment.prototype.isSilent = function(context) {
 };
 module.exports = Comment;
 
-},{"./debug-info":56,"./node":73}],55:[function(require,module,exports){
+},{"./debug-info":57,"./node":74}],56:[function(require,module,exports){
 var Node = require("./node");
 
 var Condition = function (op, l, r, i, negate) {
@@ -6595,7 +6706,7 @@ Condition.prototype.eval = function (context) {
 };
 module.exports = Condition;
 
-},{"./node":73}],56:[function(require,module,exports){
+},{"./node":74}],57:[function(require,module,exports){
 var debugInfo = function(context, ctx, lineSeparator) {
     var result = "";
     if (context.dumpLineNumbers && !context.compress) {
@@ -6635,7 +6746,7 @@ debugInfo.asMediaQuery = function(ctx) {
 
 module.exports = debugInfo;
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 var Node = require("./node"),
     Value = require("./value"),
     Keyword = require("./keyword"),
@@ -6734,7 +6845,7 @@ Declaration.prototype.makeImportant = function () {
 };
 
 module.exports = Declaration;
-},{"./anonymous":47,"./keyword":68,"./node":73,"./value":85}],58:[function(require,module,exports){
+},{"./anonymous":48,"./keyword":69,"./node":74,"./value":85}],59:[function(require,module,exports){
 var Node = require("./node"),
     contexts = require("../contexts"),
     utils = require("../utils");
@@ -6759,7 +6870,7 @@ DetachedRuleset.prototype.callEval = function (context) {
 };
 module.exports = DetachedRuleset;
 
-},{"../contexts":12,"../utils":87,"./node":73}],59:[function(require,module,exports){
+},{"../contexts":12,"../utils":88,"./node":74}],60:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions"),
     Unit = require("./unit"),
@@ -6770,6 +6881,9 @@ var Node = require("./node"),
 //
 var Dimension = function (value, unit) {
     this.value = parseFloat(value);
+    if (isNaN(this.value)) {
+        throw new Error("Dimension is not a number.");
+    }
     this.unit = (unit && unit instanceof Unit) ? unit :
       new Unit(unit ? [unit] : undefined);
     this.setParent(this.unit, this);
@@ -6820,7 +6934,7 @@ Dimension.prototype.genCSS = function (context, output) {
 // we default to the first Dimension's unit,
 // so `1px + 2` will yield `3px`.
 Dimension.prototype.operate = function (context, op, other) {
-    /*jshint noempty:false */
+    /* jshint noempty:false */
     var value = this._operate(context, op, this.value, other.value),
         unit = this.unit.clone();
 
@@ -6919,7 +7033,7 @@ Dimension.prototype.convertTo = function (conversions) {
 };
 module.exports = Dimension;
 
-},{"../data/unit-conversions":15,"./color":52,"./node":73,"./unit":83}],60:[function(require,module,exports){
+},{"../data/unit-conversions":15,"./color":53,"./node":74,"./unit":83}],61:[function(require,module,exports){
 // Backwards compatibility shim for Directive (AtRule)
 var AtRule = require("./atrule");
 
@@ -6932,7 +7046,7 @@ Directive.prototype = Object.create(AtRule.prototype);
 Directive.prototype.constructor = Directive;
 
 module.exports = Directive;
-},{"./atrule":49}],61:[function(require,module,exports){
+},{"./atrule":50}],62:[function(require,module,exports){
 var Node = require("./node"),
     Paren = require("./paren"),
     Combinator = require("./combinator");
@@ -6995,7 +7109,7 @@ Element.prototype.toCSS = function (context) {
 };
 module.exports = Element;
 
-},{"./combinator":53,"./node":73,"./paren":75}],62:[function(require,module,exports){
+},{"./combinator":54,"./node":74,"./paren":76}],63:[function(require,module,exports){
 var Node = require("./node"),
     Paren = require("./paren"),
     Comment = require("./comment");
@@ -7053,7 +7167,7 @@ Expression.prototype.throwAwayComments = function () {
 };
 module.exports = Expression;
 
-},{"./comment":54,"./node":73,"./paren":75}],63:[function(require,module,exports){
+},{"./comment":55,"./node":74,"./paren":76}],64:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector");
 
@@ -7092,7 +7206,7 @@ Extend.prototype.eval = function (context) {
 Extend.prototype.clone = function (context) {
     return new Extend(this.selector, this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
 };
-//it concatenates (joins) all selectors in selector array
+// it concatenates (joins) all selectors in selector array
 Extend.prototype.findSelfSelectors = function (selectors) {
     var selfElements = [],
         i,
@@ -7113,7 +7227,7 @@ Extend.prototype.findSelfSelectors = function (selectors) {
 };
 module.exports = Extend;
 
-},{"./node":73,"./selector":81}],64:[function(require,module,exports){
+},{"./node":74,"./selector":81}],65:[function(require,module,exports){
 var Node = require("./node"),
     Media = require("./media"),
     URL = require("./url"),
@@ -7295,11 +7409,10 @@ Import.prototype.doEval = function (context) {
 };
 module.exports = Import;
 
-},{"../less-error":34,"../utils":87,"./anonymous":47,"./media":69,"./node":73,"./quoted":77,"./ruleset":80,"./url":84}],65:[function(require,module,exports){
+},{"../less-error":36,"../utils":88,"./anonymous":48,"./media":70,"./node":74,"./quoted":78,"./ruleset":80,"./url":84}],66:[function(require,module,exports){
 var tree = Object.create(null);
 
 tree.Node = require('./node');
-tree.Alpha = require('./alpha');
 tree.Color = require('./color');
 tree.AtRule = require('./atrule');
 // Backwards compatibility
@@ -7339,11 +7452,11 @@ tree.Media = require('./media');
 tree.UnicodeDescriptor = require('./unicode-descriptor');
 tree.Negative = require('./negative');
 tree.Extend = require('./extend');
-tree.RulesetCall = require('./ruleset-call');
+tree.VariableCall = require('./variable-call');
 
 module.exports = tree;
 
-},{"./alpha":46,"./anonymous":47,"./assignment":48,"./atrule":49,"./attribute":50,"./call":51,"./color":52,"./combinator":53,"./comment":54,"./condition":55,"./declaration":57,"./detached-ruleset":58,"./dimension":59,"./directive":60,"./element":61,"./expression":62,"./extend":63,"./import":64,"./javascript":66,"./keyword":68,"./media":69,"./mixin-call":70,"./mixin-definition":71,"./negative":72,"./node":73,"./operation":74,"./paren":75,"./property":76,"./quoted":77,"./rule":78,"./ruleset":80,"./ruleset-call":79,"./selector":81,"./unicode-descriptor":82,"./unit":83,"./url":84,"./value":85,"./variable":86}],66:[function(require,module,exports){
+},{"./anonymous":48,"./assignment":49,"./atrule":50,"./attribute":51,"./call":52,"./color":53,"./combinator":54,"./comment":55,"./condition":56,"./declaration":58,"./detached-ruleset":59,"./dimension":60,"./directive":61,"./element":62,"./expression":63,"./extend":64,"./import":65,"./javascript":67,"./keyword":69,"./media":70,"./mixin-call":71,"./mixin-definition":72,"./negative":73,"./node":74,"./operation":75,"./paren":76,"./property":77,"./quoted":78,"./rule":79,"./ruleset":80,"./selector":81,"./unicode-descriptor":82,"./unit":83,"./url":84,"./value":85,"./variable":87,"./variable-call":86}],67:[function(require,module,exports){
 var JsEvalNode = require("./js-eval-node"),
     Dimension = require("./dimension"),
     Quoted = require("./quoted"),
@@ -7373,7 +7486,7 @@ JavaScript.prototype.eval = function(context) {
 
 module.exports = JavaScript;
 
-},{"./anonymous":47,"./dimension":59,"./js-eval-node":67,"./quoted":77}],67:[function(require,module,exports){
+},{"./anonymous":48,"./dimension":60,"./js-eval-node":68,"./quoted":78}],68:[function(require,module,exports){
 var Node = require("./node"),
     Variable = require("./variable");
 
@@ -7407,7 +7520,7 @@ JsEvalNode.prototype.evaluateJavaScript = function (expression, context) {
     var variables = context.frames[0].variables();
     for (var k in variables) {
         if (variables.hasOwnProperty(k)) {
-            /*jshint loopfunc:true */
+            /* jshint loopfunc:true */
             evalContext[k.slice(1)] = {
                 value: variables[k].value,
                 toJS: function () {
@@ -7436,7 +7549,7 @@ JsEvalNode.prototype.jsify = function (obj) {
 
 module.exports = JsEvalNode;
 
-},{"./node":73,"./variable":86}],68:[function(require,module,exports){
+},{"./node":74,"./variable":87}],69:[function(require,module,exports){
 var Node = require("./node");
 
 var Keyword = function (value) { this.value = value; };
@@ -7452,7 +7565,7 @@ Keyword.False = new Keyword('false');
 
 module.exports = Keyword;
 
-},{"./node":73}],69:[function(require,module,exports){
+},{"./node":74}],70:[function(require,module,exports){
 var Ruleset = require("./ruleset"),
     Value = require("./value"),
     Selector = require("./selector"),
@@ -7503,19 +7616,8 @@ Media.prototype.eval = function (context) {
         this.rules[0].debugInfo = this.debugInfo;
         media.debugInfo = this.debugInfo;
     }
-    var strictMathBypass = false;
-    if (!context.strictMath) {
-        strictMathBypass = true;
-        context.strictMath = true;
-    }
-    try {
-        media.features = this.features.eval(context);
-    }
-    finally {
-        if (strictMathBypass) {
-            context.strictMath = false;
-        }
-    }
+    
+    media.features = this.features.eval(context);
 
     context.mediaPath.push(media);
     context.mediaBlocks.push(media);
@@ -7606,7 +7708,7 @@ Media.prototype.bubbleSelectors = function (selectors) {
 };
 module.exports = Media;
 
-},{"../utils":87,"./anonymous":47,"./atrule":49,"./expression":62,"./ruleset":80,"./selector":81,"./value":85}],70:[function(require,module,exports){
+},{"../utils":88,"./anonymous":48,"./atrule":50,"./expression":63,"./ruleset":80,"./selector":81,"./value":85}],71:[function(require,module,exports){
 var Node = require("./node"),
     Selector = require("./selector"),
     MixinDefinition = require("./mixin-definition"),
@@ -7792,7 +7894,7 @@ MixinCall.prototype.format = function (args) {
 };
 module.exports = MixinCall;
 
-},{"../functions/default":22,"./mixin-definition":71,"./node":73,"./selector":81}],71:[function(require,module,exports){
+},{"../functions/default":24,"./mixin-definition":72,"./node":74,"./selector":81}],72:[function(require,module,exports){
 var Selector = require("./selector"),
     Element = require("./element"),
     Ruleset = require("./ruleset"),
@@ -7838,7 +7940,7 @@ Definition.prototype.accept = function (visitor) {
     }
 };
 Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArguments) {
-    /*jshint boss:true */
+    /* jshint boss:true */
     var frame = new Ruleset(null, null),
         varargs, arg,
         params = utils.copyArray(this.params),
@@ -7951,7 +8053,7 @@ Definition.prototype.evalCall = function (context, args, important) {
 Definition.prototype.matchCondition = function (args, context) {
     if (this.condition && !this.condition.eval(
         new contexts.Eval(context,
-            [this.evalParams(context, /* the parameter variables*/
+            [this.evalParams(context, /* the parameter variables */
                 new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames), args, [])]
             .concat(this.frames || []) // the parent namespace/mixin frames
             .concat(context.frames)))) { // the current environment frames
@@ -7996,7 +8098,7 @@ Definition.prototype.matchArgs = function (args, context) {
 };
 module.exports = Definition;
 
-},{"../contexts":12,"../utils":87,"./declaration":57,"./element":61,"./expression":62,"./ruleset":80,"./selector":81}],72:[function(require,module,exports){
+},{"../contexts":12,"../utils":88,"./declaration":58,"./element":62,"./expression":63,"./ruleset":80,"./selector":81}],73:[function(require,module,exports){
 var Node = require("./node"),
     Operation = require("./operation"),
     Dimension = require("./dimension");
@@ -8018,7 +8120,7 @@ Negative.prototype.eval = function (context) {
 };
 module.exports = Negative;
 
-},{"./dimension":59,"./node":73,"./operation":74}],73:[function(require,module,exports){
+},{"./dimension":60,"./node":74,"./operation":75}],74:[function(require,module,exports){
 var Node = function() {
     this.parent = null;
     this.visibilityBlocks = undefined;
@@ -8084,8 +8186,8 @@ Node.prototype._operate = function (context, op, a, b) {
 };
 Node.prototype.fround = function(context, value) {
     var precision = context && context.numPrecision;
-    //add "epsilon" to ensure numbers like 1.000000005 (represented as 1.000000004999....) are properly rounded...
-    return (precision == null) ? value : Number((value + 2e-16).toFixed(precision));
+    // add "epsilon" to ensure numbers like 1.000000005 (represented as 1.000000004999...) are properly rounded:
+    return (precision) ? Number((value + 2e-16).toFixed(precision)) : value;
 };
 Node.compare = function (a, b) {
     /* returns:
@@ -8145,13 +8247,13 @@ Node.prototype.removeVisibilityBlock = function () {
     }
     this.visibilityBlocks = this.visibilityBlocks - 1;
 };
-//Turns on node visibility - if called node will be shown in output regardless
-//of whether it comes from import by reference or not
+// Turns on node visibility - if called node will be shown in output regardless
+// of whether it comes from import by reference or not
 Node.prototype.ensureVisibility = function () {
     this.nodeVisible = true;
 };
-//Turns off node visibility - if called node will NOT be shown in output regardless
-//of whether it comes from import by reference or not
+// Turns off node visibility - if called node will NOT be shown in output regardless
+// of whether it comes from import by reference or not
 Node.prototype.ensureInvisibility = function () {
     this.nodeVisible = false;
 };
@@ -8177,7 +8279,7 @@ Node.prototype.copyVisibilityInfo = function(info) {
 };
 module.exports = Node;
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 var Node = require("./node"),
     Color = require("./color"),
     Dimension = require("./dimension");
@@ -8227,7 +8329,7 @@ Operation.prototype.genCSS = function (context, output) {
 
 module.exports = Operation;
 
-},{"./color":52,"./dimension":59,"./node":73}],75:[function(require,module,exports){
+},{"./color":53,"./dimension":60,"./node":74}],76:[function(require,module,exports){
 var Node = require("./node");
 
 var Paren = function (node) {
@@ -8245,7 +8347,7 @@ Paren.prototype.eval = function (context) {
 };
 module.exports = Paren;
 
-},{"./node":73}],76:[function(require,module,exports){
+},{"./node":74}],77:[function(require,module,exports){
 var Node = require("./node"),
     Declaration = require("./declaration");
 
@@ -8317,7 +8419,7 @@ Property.prototype.find = function (obj, fun) {
 };
 module.exports = Property;
 
-},{"./declaration":57,"./node":73}],77:[function(require,module,exports){
+},{"./declaration":58,"./node":74}],78:[function(require,module,exports){
 var Node = require("./node"),
     JsEvalNode = require("./js-eval-node"),
     Variable = require("./variable"),
@@ -8330,7 +8432,7 @@ var Quoted = function (str, content, escaped, index, currentFileInfo) {
     this._index = index;
     this._fileInfo = currentFileInfo;
 };
-Quoted.prototype = new JsEvalNode();
+Quoted.prototype = new Node();
 Quoted.prototype.type = "Quoted";
 Quoted.prototype.genCSS = function (context, output) {
     if (!this.escaped) {
@@ -8342,13 +8444,10 @@ Quoted.prototype.genCSS = function (context, output) {
     }
 };
 Quoted.prototype.containsVariables = function() {
-    return this.value.match(/(`([^`]+)`)|@\{([\w-]+)\}/);
+    return this.value.match(/@\{([\w-]+)\}/);
 };
 Quoted.prototype.eval = function (context) {
     var that = this, value = this.value;
-    var javascriptReplacement = function (_, exp) {
-        return String(that.evaluateJavaScript(exp, context));
-    };
     var variableReplacement = function (_, name) {
         var v = new Variable('@' + name, that.getIndex(), that.fileInfo()).eval(context, true);
         return (v instanceof Quoted) ? v.value : v.toCSS();
@@ -8365,7 +8464,6 @@ Quoted.prototype.eval = function (context) {
         } while (value !== evaluatedValue);
         return evaluatedValue;
     }
-    value = iterativeReplace(value, /`([^`]+)`/g, javascriptReplacement);
     value = iterativeReplace(value, /@\{([\w-]+)\}/g, variableReplacement);
     value = iterativeReplace(value, /\$\{([\w-]+)\}/g, propertyReplacement);
     return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
@@ -8380,7 +8478,7 @@ Quoted.prototype.compare = function (other) {
 };
 module.exports = Quoted;
 
-},{"./js-eval-node":67,"./node":73,"./property":76,"./variable":86}],78:[function(require,module,exports){
+},{"./js-eval-node":68,"./node":74,"./property":77,"./variable":87}],79:[function(require,module,exports){
 // Backwards compatibility shim for Rule (Declaration)
 var Declaration = require("./declaration");
 
@@ -8393,23 +8491,7 @@ Rule.prototype = Object.create(Declaration.prototype);
 Rule.prototype.constructor = Rule;
 
 module.exports = Rule;
-},{"./declaration":57}],79:[function(require,module,exports){
-var Node = require("./node"),
-    Variable = require("./variable");
-
-var RulesetCall = function (variable) {
-    this.variable = variable;
-    this.allowRoot = true;
-};
-RulesetCall.prototype = new Node();
-RulesetCall.prototype.type = "RulesetCall";
-RulesetCall.prototype.eval = function (context) {
-    var detachedRuleset = new Variable(this.variable).eval(context);
-    return detachedRuleset.callEval(context);
-};
-module.exports = RulesetCall;
-
-},{"./node":73,"./variable":86}],80:[function(require,module,exports){
+},{"./declaration":58}],80:[function(require,module,exports){
 var Node = require("./node"),
     Declaration = require("./declaration"),
     Keyword = require("./keyword"),
@@ -8534,7 +8616,7 @@ Ruleset.prototype.eval = function (context) {
     // Evaluate mixin calls.
     for (i = 0; (rule = rsRules[i]); i++) {
         if (rule.type === "MixinCall") {
-            /*jshint loopfunc:true */
+            /* jshint loopfunc:true */
             rules = rule.eval(context).filter(function(r) {
                 if ((r instanceof Declaration) && r.variable) {
                     // do not pollute the scope if the variable is
@@ -8547,8 +8629,8 @@ Ruleset.prototype.eval = function (context) {
             rsRules.splice.apply(rsRules, [i, 1].concat(rules));
             i += rules.length - 1;
             ruleset.resetCache();
-        } else if (rule.type ===  "RulesetCall") {
-            /*jshint loopfunc:true */
+        } else if (rule.type ===  "VariableCall") {
+            /* jshint loopfunc:true */
             rules = rule.eval(context).rules.filter(function(r) {
                 if ((r instanceof Declaration) && r.variable) {
                     // do not pollute the scope at all
@@ -8941,7 +9023,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         // our new selector path
         newSelectorPath = [];
 
-        //construct the joined selector - if & is the first thing this will be empty,
+        // construct the joined selector - if & is the first thing this will be empty,
         // if not newJoinedSelector will be the last set of elements in the selector
         if (beginningPath.length > 0) {
             newSelectorPath = utils.copyArray(beginningPath);
@@ -8971,7 +9053,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
             newSelectorPath.push(newJoinedSelector);
         }
 
-        //put together the parent selectors after the join (e.g. the rest of the parent)
+        // put together the parent selectors after the join (e.g. the rest of the parent)
         if (addPath.length > 1) {
             var restOfPath = addPath.slice(1);
             restOfPath = restOfPath.map(function (selector) {
@@ -9066,7 +9148,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
                     var nestedPaths = [], replaced, replacedNewSelectors = [];
                     replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
                     hadParentSelector = hadParentSelector || replaced;
-                    //the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
+                    // the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
                     for (k = 0; k < nestedPaths.length; k++) {
                         var replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
                         addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
@@ -9169,7 +9251,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 };
 module.exports = Ruleset;
 
-},{"../contexts":12,"../functions/default":22,"../functions/function-registry":24,"../utils":87,"./anonymous":47,"./comment":54,"./debug-info":56,"./declaration":57,"./element":61,"./keyword":68,"./node":73,"./paren":75,"./selector":81}],81:[function(require,module,exports){
+},{"../contexts":12,"../functions/default":24,"../functions/function-registry":26,"../utils":88,"./anonymous":48,"./comment":55,"./debug-info":57,"./declaration":58,"./element":62,"./keyword":69,"./node":74,"./paren":76,"./selector":81}],81:[function(require,module,exports){
 var Node = require("./node"),
     Element = require("./element"),
     LessError = require("../less-error");
@@ -9177,12 +9259,11 @@ var Node = require("./node"),
 var Selector = function (elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
     this.extendList = extendList;
     this.condition = condition;
+    this.evaldCondition = !condition;
     this._index = index;
     this._fileInfo = currentFileInfo;
     this.elements = this.getElements(elements);
-    if (!condition) {
-        this.evaldCondition = true;
-    }
+    this.mixinElements_ = undefined;
     this.copyVisibilityInfo(visibilityInfo);
     this.setParent(this.elements, this);
 };
@@ -9201,10 +9282,9 @@ Selector.prototype.accept = function (visitor) {
 };
 Selector.prototype.createDerived = function(elements, extendList, evaldCondition) {
     elements = this.getElements(elements);
-    var info = this.visibilityInfo();
-    evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
-    var newSelector = new Selector(elements, extendList || this.extendList, null, this.getIndex(), this.fileInfo(), info);
-    newSelector.evaldCondition = evaldCondition;
+    var newSelector = new Selector(elements, extendList || this.extendList,
+        null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
+    newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
     newSelector.mediaEmpty = this.mediaEmpty;
     return newSelector;
 };
@@ -9238,14 +9318,13 @@ Selector.prototype.match = function (other) {
         len = elements.length,
         olen, i;
 
-    other.cacheElements();
-
-    olen = other._elements.length;
+    other = other.mixinElements();
+    olen = other.length;
     if (olen === 0 || len < olen) {
         return 0;
     } else {
         for (i = 0; i < olen; i++) {
-            if (elements[i].value !== other._elements[i]) {
+            if (elements[i].value !== other[i]) {
                 return 0;
             }
         }
@@ -9253,9 +9332,9 @@ Selector.prototype.match = function (other) {
 
     return olen; // return number of matched elements
 };
-Selector.prototype.cacheElements = function() {
-    if (this._elements) {
-        return;
+Selector.prototype.mixinElements = function() {
+    if (this.mixinElements_) {
+        return this.mixinElements_;
     }
 
     var elements = this.elements.map( function(v) {
@@ -9270,7 +9349,7 @@ Selector.prototype.cacheElements = function() {
         elements = [];
     }
 
-    this._elements = elements;
+    return (this.mixinElements_ = elements);
 };
 Selector.prototype.isJustParentSelector = function() {
     return !this.mediaEmpty &&
@@ -9292,12 +9371,9 @@ Selector.prototype.genCSS = function (context, output) {
     if ((!context || !context.firstSelector) && this.elements[0].combinator.value === "") {
         output.add(' ', this.fileInfo(), this.getIndex());
     }
-    if (!this._css) {
-        //TODO caching? speed comparison?
-        for (i = 0; i < this.elements.length; i++) {
-            element = this.elements[i];
-            element.genCSS(context, output);
-        }
+    for (i = 0; i < this.elements.length; i++) {
+        element = this.elements[i];
+        element.genCSS(context, output);
     }
 };
 Selector.prototype.getIsOutput = function() {
@@ -9305,7 +9381,7 @@ Selector.prototype.getIsOutput = function() {
 };
 module.exports = Selector;
 
-},{"../less-error":34,"./element":61,"./node":73}],82:[function(require,module,exports){
+},{"../less-error":36,"./element":62,"./node":74}],82:[function(require,module,exports){
 var Node = require("./node");
 
 var UnicodeDescriptor = function (value) {
@@ -9316,7 +9392,7 @@ UnicodeDescriptor.prototype.type = "UnicodeDescriptor";
 
 module.exports = UnicodeDescriptor;
 
-},{"./node":73}],83:[function(require,module,exports){
+},{"./node":74}],83:[function(require,module,exports){
 var Node = require("./node"),
     unitConversions = require("../data/unit-conversions"),
     utils = require("../utils");
@@ -9384,7 +9460,7 @@ Unit.prototype.usedUnits = function() {
     var group, result = {}, mapUnit, groupName;
 
     mapUnit = function (atomicUnit) {
-        /*jshint loopfunc:true */
+        /* jshint loopfunc:true */
         if (group.hasOwnProperty(atomicUnit) && !result[groupName]) {
             result[groupName] = atomicUnit;
         }
@@ -9439,7 +9515,7 @@ Unit.prototype.cancel = function () {
 };
 module.exports = Unit;
 
-},{"../data/unit-conversions":15,"../utils":87,"./node":73}],84:[function(require,module,exports){
+},{"../data/unit-conversions":15,"../utils":88,"./node":74}],84:[function(require,module,exports){
 var Node = require("./node");
 
 var URL = function (val, index, currentFileInfo, isEvald) {
@@ -9495,7 +9571,7 @@ URL.prototype.eval = function (context) {
 };
 module.exports = URL;
 
-},{"./node":73}],85:[function(require,module,exports){
+},{"./node":74}],85:[function(require,module,exports){
 var Node = require("./node");
 
 var Value = function (value) {
@@ -9536,7 +9612,23 @@ Value.prototype.genCSS = function (context, output) {
 };
 module.exports = Value;
 
-},{"./node":73}],86:[function(require,module,exports){
+},{"./node":74}],86:[function(require,module,exports){
+var Node = require("./node"),
+    Variable = require("./variable");
+
+var VariableCall = function (variable) {
+    this.variable = variable;
+    this.allowRoot = true;
+};
+VariableCall.prototype = new Node();
+VariableCall.prototype.type = "VariableCall";
+VariableCall.prototype.eval = function (context) {
+    var detachedRuleset = new Variable(this.variable).eval(context);
+    return detachedRuleset.callEval(context);
+};
+module.exports = VariableCall;
+
+},{"./node":74,"./variable":87}],87:[function(require,module,exports){
 var Node = require("./node");
 
 var Variable = function (name, index, currentFileInfo) {
@@ -9591,7 +9683,7 @@ Variable.prototype.find = function (obj, fun) {
 };
 module.exports = Variable;
 
-},{"./node":73}],87:[function(require,module,exports){
+},{"./node":74}],88:[function(require,module,exports){
 /* jshint proto: true */
 module.exports = {
     getLocation: function(index, inputStream) {
@@ -9621,6 +9713,45 @@ module.exports = {
         }
         return copy;
     },
+    clone: function (obj) {
+        var cloned = {};
+        for (var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                cloned[prop] = obj[prop];
+            }
+        }
+        return cloned;
+    },
+    defaults: function(obj1, obj2) {
+        if (!obj2._defaults || obj2._defaults !== obj1) {
+            for (var prop in obj1) {
+                if (obj1.hasOwnProperty(prop)) {
+                    if (!obj2.hasOwnProperty(prop)) {
+                        obj2[prop] = obj1[prop];
+                    }
+                    else if (Array.isArray(obj1[prop])
+                        && Array.isArray(obj2[prop])) {
+
+                        obj1[prop].forEach(function(p) {
+                            if (obj2[prop].indexOf(p) === -1) {
+                                obj2[prop].push(p);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        obj2._defaults = obj1;
+        return obj2;
+    },
+    merge: function(obj1, obj2) {
+        for (var prop in obj2) {
+            if (obj2.hasOwnProperty(prop)) {
+                obj1[prop] = obj2[prop];
+            }
+        }
+        return obj1;
+    },
     getPrototype: function(obj) {
         if (Object.getPrototypeOf) {
             return Object.getPrototypeOf(obj);
@@ -9636,13 +9767,13 @@ module.exports = {
     }
 };
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor"),
     logger = require("../logger"),
     utils = require("../utils");
 
-/*jshint loopfunc:true */
+/* jshint loopfunc:true */
 
 var ExtendFinderVisitor = function() {
     this._visitor = new Visitor(this);
@@ -9776,7 +9907,7 @@ ProcessExtendsVisitor.prototype = {
 
         iterationCount = iterationCount || 0;
 
-        //loop through comparing every extend with every target extend.
+        // loop through comparing every extend with every target extend.
         // a target extend is the one on the ruleset we are looking at copy/edit/pasting in place
         // e.g.  .a:extend(.b) {}  and .b:extend(.c) {} then the first extend extends the second one
         // and the second is the target.
@@ -10007,7 +10138,7 @@ ProcessExtendsVisitor.prototype = {
     },
     extendSelector:function (matches, selectorPath, replacementSelector, isVisible) {
 
-        //for a set of matches, replace each match with the replacement selector
+        // for a set of matches, replace each match with the replacement selector
 
         var currentSelectorPathIndex = 0,
             currentSelectorPathElementIndex = 0,
@@ -10099,7 +10230,7 @@ ProcessExtendsVisitor.prototype = {
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../logger":35,"../tree":65,"../utils":87,"./visitor":95}],89:[function(require,module,exports){
+},{"../logger":37,"../tree":66,"../utils":88,"./visitor":96}],90:[function(require,module,exports){
 function ImportSequencer(onSequencerEmpty) {
     this.imports = [];
     this.variableImports = [];
@@ -10155,7 +10286,7 @@ ImportSequencer.prototype.tryRun = function() {
 
 module.exports = ImportSequencer;
 
-},{}],90:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 var contexts = require("../contexts"),
     Visitor = require("./visitor"),
     ImportSequencer = require("./import-sequencer"),
@@ -10347,7 +10478,7 @@ ImportVisitor.prototype = {
 };
 module.exports = ImportVisitor;
 
-},{"../contexts":12,"../utils":87,"./import-sequencer":89,"./visitor":95}],91:[function(require,module,exports){
+},{"../contexts":12,"../utils":88,"./import-sequencer":90,"./visitor":96}],92:[function(require,module,exports){
 var visitors = {
     Visitor: require("./visitor"),
     ImportVisitor: require('./import-visitor'),
@@ -10359,7 +10490,7 @@ var visitors = {
 
 module.exports = visitors;
 
-},{"./extend-visitor":88,"./import-visitor":90,"./join-selector-visitor":92,"./set-tree-visibility-visitor":93,"./to-css-visitor":94,"./visitor":95}],92:[function(require,module,exports){
+},{"./extend-visitor":89,"./import-visitor":91,"./join-selector-visitor":93,"./set-tree-visibility-visitor":94,"./to-css-visitor":95,"./visitor":96}],93:[function(require,module,exports){
 var Visitor = require("./visitor");
 
 var JoinSelectorVisitor = function() {
@@ -10412,7 +10543,7 @@ JoinSelectorVisitor.prototype = {
 
 module.exports = JoinSelectorVisitor;
 
-},{"./visitor":95}],93:[function(require,module,exports){
+},{"./visitor":96}],94:[function(require,module,exports){
 var SetTreeVisibilityVisitor = function(visible) {
     this.visible = visible;
 };
@@ -10451,7 +10582,7 @@ SetTreeVisibilityVisitor.prototype.visit = function(node) {
     return node;
 };
 module.exports = SetTreeVisibilityVisitor;
-},{}],94:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 var tree = require("../tree"),
     Visitor = require("./visitor");
 
@@ -10463,14 +10594,14 @@ var CSSVisitorUtils = function(context) {
 CSSVisitorUtils.prototype = {
     containsSilentNonBlockedChild: function(bodyRules) {
         var rule;
-        if (bodyRules == null) {
+        if (!bodyRules) {
             return false;
         }
         for (var r = 0; r < bodyRules.length; r++) {
             rule = bodyRules[r];
             if (rule.isSilent && rule.isSilent(this._context) && !rule.blocksVisibility()) {
-                //the atrule contains something that was referenced (likely by extend)
-                //therefore it needs to be shown in output too
+                // the atrule contains something that was referenced (likely by extend)
+                // therefore it needs to be shown in output too
                 return true;
             }
         }
@@ -10478,28 +10609,21 @@ CSSVisitorUtils.prototype = {
     },
 
     keepOnlyVisibleChilds: function(owner) {
-        if (owner == null || owner.rules == null) {
-            return ;
+        if (owner && owner.rules) {
+            owner.rules = owner.rules.filter(function(thing) {
+                return thing.isVisible();
+            });
         }
-
-        owner.rules = owner.rules.filter(function(thing) {
-            return thing.isVisible();
-        }
-        );
     },
 
     isEmpty: function(owner) {
-        if (owner == null || owner.rules == null) {
-            return true;
-        }
-        return owner.rules.length === 0;
+        return (owner && owner.rules) 
+            ? (owner.rules.length === 0) : true;
     },
 
     hasVisibleSelector: function(rulesetNode) {
-        if (rulesetNode == null || rulesetNode.paths == null) {
-            return false;
-        }
-        return rulesetNode.paths.length > 0;
+        return (rulesetNode && rulesetNode.paths)
+            ? (rulesetNode.paths.length > 0) : false;
     },
 
     resolveVisibility: function (node, originalRules) {
@@ -10600,9 +10724,16 @@ ToCSSVisitor.prototype = {
         }
     },
 
+    visitAnonymous: function(anonymousNode, visitArgs) {
+        if (!anonymousNode.blocksVisibility()) {
+            anonymousNode.accept(this._visitor);
+            return anonymousNode;
+        }
+    },
+
     visitAtRuleWithBody: function(atRuleNode, visitArgs) {
-        //if there is only one nested ruleset and that one has no path, then it is
-        //just fake ruleset
+        // if there is only one nested ruleset and that one has no path, then it is
+        // just fake ruleset
         function hasFakeRuleset(atRuleNode) {
             var bodyRules = atRuleNode.rules;
             return bodyRules.length === 1 && (!bodyRules[0].paths || bodyRules[0].paths.length === 0);
@@ -10615,9 +10746,9 @@ ToCSSVisitor.prototype = {
 
             return nodeRules;
         }
-        //it is still true that it is only one ruleset in array
-        //this is last such moment
-        //process childs
+        // it is still true that it is only one ruleset in array
+        // this is last such moment
+        // process childs
         var originalRules = getBodyRules(atRuleNode);
         atRuleNode.accept(this._visitor);
         visitArgs.visitDeeper = false;
@@ -10675,13 +10806,13 @@ ToCSSVisitor.prototype = {
     },
 
     visitRuleset: function (rulesetNode, visitArgs) {
-        //at this point rulesets are nested into each other
+        // at this point rulesets are nested into each other
         var rule, rulesets = [];
 
         this.checkValidNodes(rulesetNode.rules, rulesetNode.firstRoot);
 
         if (!rulesetNode.root) {
-            //remove invisible paths
+            // remove invisible paths
             this._compileRulesetPaths(rulesetNode);
 
             // remove rulesets from this ruleset body and compile them separately
@@ -10707,7 +10838,7 @@ ToCSSVisitor.prototype = {
             }
             visitArgs.visitDeeper = false;
 
-        } else { //if (! rulesetNode.root) {
+        } else { // if (! rulesetNode.root) {
             rulesetNode.accept(this._visitor);
             visitArgs.visitDeeper = false;
         }
@@ -10717,7 +10848,7 @@ ToCSSVisitor.prototype = {
             this._removeDuplicateRules(rulesetNode.rules);
         }
 
-        //now decide whether we keep the ruleset
+        // now decide whether we keep the ruleset
         if (this.utils.isVisibleRuleset(rulesetNode)) {
             rulesetNode.ensureVisibility();
             rulesets.splice(0, 0, rulesetNode);
@@ -10775,78 +10906,45 @@ ToCSSVisitor.prototype = {
         }
     },
 
-    _mergeRules: function (rules) {
-        if (!rules) { return; }
+    _mergeRules: function(rules) {
+        if (!rules) {
+            return; 
+        }
 
-        var groups = {},
-            parts,
-            rule,
-            key;
-
+        var groups    = {},
+            groupsArr = [];
+        
         for (var i = 0; i < rules.length; i++) {
-            rule = rules[i];
-
-            if ((rule instanceof tree.Declaration) && rule.merge) {
-                key = [rule.name,
-                    rule.important ? "!" : ""].join(",");
-
-                if (!groups[key]) {
-                    groups[key] = [];
-                } else {
-                    rules.splice(i--, 1);
-                }
-
+            var rule = rules[i];
+            if (rule.merge) {
+                var key = rule.name;
+                groups[key] ? rules.splice(i--, 1) : 
+                    groupsArr.push(groups[key] = []);
                 groups[key].push(rule);
             }
         }
 
-        Object.keys(groups).map(function (k) {
-
-            function toExpression(values) {
-                return new (tree.Expression)(values.map(function (p) {
-                    return p.value;
-                }));
-            }
-
-            function toValue(values) {
-                return new (tree.Value)(values.map(function (p) {
-                    return p;
-                }));
-            }
-
-            parts = groups[k];
-
-            if (parts.length > 1) {
-                rule = parts[0];
-                var spacedGroups = [];
-                var lastSpacedGroup = [];
-                parts.map(function (p) {
-                    if (p.merge === "+") {
-                        if (lastSpacedGroup.length > 0) {
-                            spacedGroups.push(toExpression(lastSpacedGroup));
-                        }
-                        lastSpacedGroup = [];
+        groupsArr.forEach(function(group) {
+            if (group.length > 0) {
+                var result = group[0],
+                    space  = [],
+                    comma  = [new tree.Expression(space)];
+                group.forEach(function(rule) {
+                    if ((rule.merge === '+') && (space.length > 0)) {
+                        comma.push(new tree.Expression(space = []));
                     }
-                    lastSpacedGroup.push(p);
+                    space.push(rule.value);
+                    result.important = result.important || rule.important;
                 });
-                spacedGroups.push(toExpression(lastSpacedGroup));
-                rule.value = toValue(spacedGroups);
+                result.value = new tree.Value(comma);
             }
         });
-    },
-
-    visitAnonymous: function(anonymousNode, visitArgs) {
-        if (anonymousNode.blocksVisibility()) {
-            return ;
-        }
-        anonymousNode.accept(this._visitor);
-        return anonymousNode;
     }
 };
 
 module.exports = ToCSSVisitor;
 
-},{"../tree":65,"./visitor":95}],95:[function(require,module,exports){
+},{"../tree":66,"./visitor":96}],96:[function(require,module,exports){
 var tree = require("../tree");
 
 var _visitArgs = { visitDeeper: true },
@@ -10860,7 +10958,7 @@ function indexNodeTypes(parent, ticker) {
     // add .typeIndex to tree node types for lookup table
     var key, child;
     for (key in parent) { 
-        /*eslint guard-for-in: 0 */
+        /* eslint guard-for-in: 0 */
         child = parent[key];
         switch (typeof child) {
             case "function":
@@ -11000,7 +11098,7 @@ Visitor.prototype = {
 };
 module.exports = Visitor;
 
-},{"../tree":65}],96:[function(require,module,exports){
+},{"../tree":66}],97:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -11068,7 +11166,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":97}],97:[function(require,module,exports){
+},{"./raw":98}],98:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -11148,9 +11246,12 @@ function flush() {
 
 // Safari 6 and 6.1 for desktop, iPad, and iPhone are the only browsers that
 // have WebKitMutationObserver but not un-prefixed MutationObserver.
-// Must use `global` instead of `window` to work in both frames and web
+// Must use `global` or `self` instead of `window` to work in both frames and web
 // workers. `global` is a provision of Browserify, Mr, Mrs, or Mop.
-var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationObserver;
+
+/* globals self */
+var scope = typeof global !== "undefined" ? global : self;
+var BrowserMutationObserver = scope.MutationObserver || scope.WebKitMutationObserver;
 
 // MutationObservers are desirable because they have high priority and work
 // reliably everywhere they are implemented.
@@ -11292,7 +11393,7 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],98:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -11351,17 +11452,17 @@ function Promise(fn) {
     throw new TypeError('Promises must be constructed via new');
   }
   if (typeof fn !== 'function') {
-    throw new TypeError('not a function');
+    throw new TypeError('Promise constructor\'s argument is not a function');
   }
-  this._45 = 0;
-  this._81 = 0;
-  this._65 = null;
-  this._54 = null;
+  this._40 = 0;
+  this._65 = 0;
+  this._55 = null;
+  this._72 = null;
   if (fn === noop) return;
   doResolve(fn, this);
 }
-Promise._10 = null;
-Promise._97 = null;
+Promise._37 = null;
+Promise._87 = null;
 Promise._61 = noop;
 
 Promise.prototype.then = function(onFulfilled, onRejected) {
@@ -11379,26 +11480,26 @@ function safeThen(self, onFulfilled, onRejected) {
     res.then(resolve, reject);
     handle(self, new Handler(onFulfilled, onRejected, res));
   });
-};
+}
 function handle(self, deferred) {
-  while (self._81 === 3) {
-    self = self._65;
+  while (self._65 === 3) {
+    self = self._55;
   }
-  if (Promise._10) {
-    Promise._10(self);
+  if (Promise._37) {
+    Promise._37(self);
   }
-  if (self._81 === 0) {
-    if (self._45 === 0) {
-      self._45 = 1;
-      self._54 = deferred;
+  if (self._65 === 0) {
+    if (self._40 === 0) {
+      self._40 = 1;
+      self._72 = deferred;
       return;
     }
-    if (self._45 === 1) {
-      self._45 = 2;
-      self._54 = [self._54, deferred];
+    if (self._40 === 1) {
+      self._40 = 2;
+      self._72 = [self._72, deferred];
       return;
     }
-    self._54.push(deferred);
+    self._72.push(deferred);
     return;
   }
   handleResolved(self, deferred);
@@ -11406,16 +11507,16 @@ function handle(self, deferred) {
 
 function handleResolved(self, deferred) {
   asap(function() {
-    var cb = self._81 === 1 ? deferred.onFulfilled : deferred.onRejected;
+    var cb = self._65 === 1 ? deferred.onFulfilled : deferred.onRejected;
     if (cb === null) {
-      if (self._81 === 1) {
-        resolve(deferred.promise, self._65);
+      if (self._65 === 1) {
+        resolve(deferred.promise, self._55);
       } else {
-        reject(deferred.promise, self._65);
+        reject(deferred.promise, self._55);
       }
       return;
     }
-    var ret = tryCallOne(cb, self._65);
+    var ret = tryCallOne(cb, self._55);
     if (ret === IS_ERROR) {
       reject(deferred.promise, LAST_ERROR);
     } else {
@@ -11443,8 +11544,8 @@ function resolve(self, newValue) {
       then === self.then &&
       newValue instanceof Promise
     ) {
-      self._81 = 3;
-      self._65 = newValue;
+      self._65 = 3;
+      self._55 = newValue;
       finale(self);
       return;
     } else if (typeof then === 'function') {
@@ -11452,29 +11553,29 @@ function resolve(self, newValue) {
       return;
     }
   }
-  self._81 = 1;
-  self._65 = newValue;
+  self._65 = 1;
+  self._55 = newValue;
   finale(self);
 }
 
 function reject(self, newValue) {
-  self._81 = 2;
-  self._65 = newValue;
-  if (Promise._97) {
-    Promise._97(self, newValue);
+  self._65 = 2;
+  self._55 = newValue;
+  if (Promise._87) {
+    Promise._87(self, newValue);
   }
   finale(self);
 }
 function finale(self) {
-  if (self._45 === 1) {
-    handle(self, self._54);
-    self._54 = null;
+  if (self._40 === 1) {
+    handle(self, self._72);
+    self._72 = null;
   }
-  if (self._45 === 2) {
-    for (var i = 0; i < self._54.length; i++) {
-      handle(self, self._54[i]);
+  if (self._40 === 2) {
+    for (var i = 0; i < self._72.length; i++) {
+      handle(self, self._72[i]);
     }
-    self._54 = null;
+    self._72 = null;
   }
 }
 
@@ -11500,14 +11601,14 @@ function doResolve(fn, promise) {
     if (done) return;
     done = true;
     reject(promise, reason);
-  })
+  });
   if (!done && res === IS_ERROR) {
     done = true;
     reject(promise, LAST_ERROR);
   }
 }
 
-},{"asap/raw":97}],99:[function(require,module,exports){
+},{"asap/raw":98}],100:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -11527,8 +11628,8 @@ var EMPTYSTRING = valuePromise('');
 
 function valuePromise(value) {
   var p = new Promise(Promise._61);
-  p._81 = 1;
-  p._65 = value;
+  p._65 = 1;
+  p._55 = value;
   return p;
 }
 Promise.resolve = function (value) {
@@ -11565,11 +11666,11 @@ Promise.all = function (arr) {
     function res(i, val) {
       if (val && (typeof val === 'object' || typeof val === 'function')) {
         if (val instanceof Promise && val.then === Promise.prototype.then) {
-          while (val._81 === 3) {
-            val = val._65;
+          while (val._65 === 3) {
+            val = val._55;
           }
-          if (val._81 === 1) return res(i, val._65);
-          if (val._81 === 2) reject(val._65);
+          if (val._65 === 1) return res(i, val._55);
+          if (val._65 === 2) reject(val._55);
           val.then(function (val) {
             res(i, val);
           }, reject);
@@ -11616,7 +11717,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":98}],100:[function(require,module,exports){
+},{"./core.js":99}],101:[function(require,module,exports){
 // should work in any browser without browserify
 
 if (typeof Promise.prototype.done !== 'function') {
@@ -11629,7 +11730,7 @@ if (typeof Promise.prototype.done !== 'function') {
     })
   }
 }
-},{}],101:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 // not "use strict" so we can declare global "Promise"
 
 var asap = require('asap');
@@ -11641,5 +11742,5 @@ if (typeof Promise === 'undefined') {
 
 require('./polyfill-done.js');
 
-},{"./lib/core.js":98,"./lib/es6-extensions.js":99,"./polyfill-done.js":100,"asap":96}]},{},[2])(2)
+},{"./lib/core.js":99,"./lib/es6-extensions.js":100,"./polyfill-done.js":101,"asap":97}]},{},[2])(2)
 });

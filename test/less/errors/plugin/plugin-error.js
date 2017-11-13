@@ -1,2 +1,1 @@
-functions.addMultiple({
-    "test-parse-error" : function() {
+throw new Error('Error');

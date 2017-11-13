@@ -7,7 +7,14 @@ console.log("\n" + stylize("Less", 'underline') + "\n");
 
 lessTester.prepBomTest();
 var testMap = [
-    [{strictMath: true, relativeUrls: true, silent: true, javascriptEnabled: true}],
+    [{
+        strictMath: true, 
+        relativeUrls: true, 
+        silent: true, 
+        javascriptEnabled: true,
+        // Set explicitly for legacy tests for >3.0
+        ieCompat: true
+    }],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
         lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
@@ -45,11 +52,11 @@ var testMap = [
     [{plugin: 'test/plugins/filemanager/'}, "filemanagerPlugin/"],
     [{}, "no-strict-math/"]
 ];
-
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
 lessTester.testSyncronous({syncImport: true}, "import");
 lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();
+lessTester.testJSImport();
 lessTester.finished();

@@ -1,3 +1,6 @@
+### This is the Less 3.0 Alpha branch (non-production ready). For the stable branch of Less, go [here](https://github.com/less/less.js/tree/master).
+
+
 [![npm version](https://badge.fury.io/js/less.svg)](http://badge.fury.io/js/less) [![Build Status](https://travis-ci.org/less/less.js.svg?branch=master)](https://travis-ci.org/less/less.js) [![Build status](https://ci.appveyor.com/api/projects/status/bx2qspy3qbuxpl9q/branch/3.x?svg=true)](https://ci.appveyor.com/project/lukeapage/less-js/branch/3.x) [![Dependencies](https://david-dm.org/less/less.js.svg)](https://david-dm.org/less/less.js) [![devDependency Status](https://david-dm.org/less/less.js/dev-status.svg)](https://david-dm.org/less/less.js#info=devDependencies) [![optionalDependency Status](https://david-dm.org/less/less.js/optional-status.svg)](https://david-dm.org/less/less.js#info=optionalDependencies) [![Twitter Follow](https://img.shields.io/twitter/follow/lesstocss.svg?style=flat-square)](https://twitter.com/lesstocss) [![Join the chat at https://gitter.im/less/less.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/less/less.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) <sup>Chat with Less.js users</sup>
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/less.svg)](https://saucelabs.com/u/less)
@@ -45,7 +48,7 @@ See the [changelog](CHANGELOG.md)
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-2016 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
+Copyright (c) 2009-2017 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 

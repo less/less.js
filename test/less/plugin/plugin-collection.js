@@ -5,5 +5,5 @@ functions.add('store', function(val) {
     return false;
 });
 functions.add('list', function() {
-    return less.Value(collection);
+    return less.value(collection);
 });

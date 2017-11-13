@@ -155,6 +155,24 @@ module.exports = function() {
         });
     }
 
+    // https://github.com/less/less.js/issues/3112
+    function testJSImport() {
+        process.stdout.write("- Testing root function registry");
+        less.functions.functionRegistry.add('ext', function() { 
+            return new less.tree.Anonymous('file');
+        });
+        var expected = "@charset \"utf-8\";\n";
+        toCSS({}, require('path').join(process.cwd(), 'test/less/root-registry/root.less'), function(error, output) {
+            if (error) {
+                return fail("ERROR: " + error);
+            }
+            if (output.css === expected) {
+                return ok('OK');
+            }
+            difference("FAIL", expected, output.css);
+        });
+    }
+
     function globalReplacements(input, directory, filename) {
         var path = require('path');
         var p = filename ? path.join(path.dirname(filename), '/') : path.join(process.cwd(), directory),
@@ -167,6 +185,7 @@ module.exports = function() {
                 .replace(/\{\/node\}/g, "")
                 .replace(/\{pathhref\}/g, "")
                 .replace(/\{404status\}/g, "")
+                .replace(/\{nodepath\}/g, path.join(process.cwd(), 'node_modules', '/'))
                 .replace(/\{pathrel\}/g, path.join(path.relative(process.cwd(), p), '/')) 
                 .replace(/\{pathesc\}/g, pathesc)
                 .replace(/\{pathimport\}/g, pathimport)
@@ -421,6 +440,7 @@ module.exports = function() {
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         prepBomTest: prepBomTest,
+        testJSImport: testJSImport,
         finished: finished
     };
 };

@@ -2,10 +2,13 @@
 
 module.exports = function (grunt) {
 
+
+    grunt.option('stack', true)
+    
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
 
-    var COMPRESS_FOR_TESTS = true;
+    var COMPRESS_FOR_TESTS = false;
     var git = require('git-rev');
 
     // Sauce Labs browser
@@ -119,14 +122,15 @@ module.exports = function (grunt) {
                     var pass = process.env.SAUCE_ACCESS_KEY;
 
                     git.short(function(hash) {
-                        require('request').put({
+                        require('phin')({
+                            method: 'PUT',
                             url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
                             auth: { user: user, pass: pass },
-                            json: {
+                            data: {
                                 passed: result.passed,
                                 build: 'build-' + hash
                             }
-                        }, function (error, response, body) {
+                        }, function (error, response) {
                             if (error) {
                                 console.log(error);
                                 callback(error);
@@ -169,7 +173,13 @@ module.exports = function (grunt) {
         },
 
         shell: {
-            options: {stdout: true, failOnError: true},
+            options: {
+                stdout: true, 
+                failOnError: true,
+                execOptions: {
+                    maxBuffer: Infinity
+                }
+            },
             test: {
                 command: 'node test/index.js'
             },
@@ -307,7 +317,15 @@ module.exports = function (grunt) {
             },
             main: {
                 // src is used to build list of less files to compile
-                src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less', '!test/less/empty.less'],
+                src: [
+                    'test/less/*.less',
+                    // Don't test NPM import, obviously 
+                    '!test/less/plugin-module.less',
+                    '!test/less/import-module.less',
+                    '!test/less/javascript.less', 
+                    '!test/less/urls.less', 
+                    '!test/less/empty.less'
+                ],
                 options: {
                     helpers: 'test/browser/runner-main-options.js',
                     specs: 'test/browser/runner-main-spec.js',
@@ -470,7 +488,7 @@ module.exports = function (grunt) {
         'uglify:dist'
     ]);
 
-    // Release Rhino Version
+    // Release Rhino Version (UNSUPPORTED)
     grunt.registerTask('rhino', [
         'browserify:rhino',
         'concat:rhino',

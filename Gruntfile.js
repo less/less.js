@@ -8,7 +8,7 @@ module.exports = function (grunt) {
     var COMPRESS_FOR_TESTS = true;
     var git = require('git-rev');
 
-   // Sauce Labs browser
+    // Sauce Labs browser
     var browsers = [
         // Desktop browsers
         {
@@ -194,6 +194,36 @@ module.exports = function (grunt) {
                     }
                 },
                 dest: 'tmp/less.js'
+            }
+        },
+        rollup: {
+            options: {
+                banner: '/* eslint-disable */',
+                format: 'umd',
+                moduleName: 'less',
+                external: [
+                    'promise/polyfill'
+                ],
+                plugins: [
+                    require('rollup-plugin-babel')({
+                        plugins: [
+                            'transform-es2015-block-scoping',
+                            'transform-es2015-parameters',
+                            ['transform-es2015-spread', { loose: true }],
+                            'transform-class-properties',
+                            'transform-es2015-shorthand-properties',
+                            'transform-es2015-template-literals',
+                            'transform-es2015-arrow-functions',
+                            'external-helpers',
+                            ['transform-es2015-classes', { loose: true }],
+                            'minify-dead-code-elimination'
+                        ]
+                    })
+                ]
+            },
+            files: {
+                dest: 'tmp/less.js',
+                src: './lib/less-browser/bootstrap.js'
             }
         },
         concat: {
@@ -431,9 +461,11 @@ module.exports = function (grunt) {
         'test'
     ]);
 
+    grunt.loadNpmTasks('grunt-rollup');
+
     // Release
     grunt.registerTask('dist', [
-        'browserify:browser',
+        'rollup',
         'concat:dist',
         'uglify:dist'
     ]);

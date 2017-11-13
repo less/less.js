@@ -2,6 +2,11 @@
   "env": {
     "node": true
   },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  },
   "globals": {},
   "rules": {
     "no-eval": 2,
@@ -11,10 +16,10 @@
         "functions": false
       }
     ],
-    "no-undef": 0,
+    "no-undef": 1,
     "no-unused-vars": 1,
     "no-caller": 2,
-    "no-eq-null": 1,
+    "no-eq-null": 0,
     "guard-for-in": 2,
     "no-implicit-coercion": [
       2,
@@ -83,6 +88,8 @@
       {
         "SwitchCase": 1
       }
-    ]
+    ],
+    "prefer-const": 2,
+    "constructor-super": 2
   }
 }

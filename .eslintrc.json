@@ -16,10 +16,10 @@
         "functions": false
       }
     ],
-    "no-undef": 1,
+    "no-undef": 0,
     "no-unused-vars": 1,
     "no-caller": 2,
-    "no-eq-null": 0,
+    "no-eq-null": 1,
     "guard-for-in": 2,
     "no-implicit-coercion": [
       2,

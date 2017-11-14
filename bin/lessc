@@ -141,6 +141,13 @@ function render() {
         return;
     }
 
+    if (options.depends) {
+        if (!output && (!options.dependsFile || !options.dependsTarget)) {
+            console.error("option --depends requires an output path to be specified, or --depends-file and --depends-target");
+            process.exit(1);
+        }
+    }
+
     var ensureDirectory = function (filepath) {
         var dir = path.dirname(filepath),
             cmd,
@@ -154,15 +161,6 @@ function render() {
             cmd(dir);
         }
     };
-
-    if (options.depends) {
-        if (!outputbase) {
-            console.error("option --depends requires an output path to be specified");
-            process.exitCode = 1;
-            return;
-        }
-        process.stdout.write(outputbase + ": ");
-    }
 
     if (!sourceMapFileInline) {
         var writeSourceMap = function(output, onDone) {
@@ -196,40 +194,85 @@ function render() {
         }
     };
 
+    var logError = function(err) {
+        if (errno && errno.errno[err.errno]) {
+            console.error("Error: " + errno.errno[err.errno].description);
+        } else {
+            console.error("Error: " + err.code + " " + err.message);
+        }
+    }
+
     var writeOutput = function(output, result, onSuccess) {
-        if (options.depends) {
+        if (options.noCss) {
             onSuccess();
         } else if (output) {
             ensureDirectory(output);
             fs.writeFile(output, result.css, {encoding: 'utf8'}, function (err) {
                 if (err) {
-                    var description = "Error: ";
-                    if (errno && errno.errno[err.errno]) {
-                        description += errno.errno[err.errno].description;
-                    } else {
-                        description += err.code + " " + err.message;
-                    }
                     console.error('lessc: failed to create file ' + output);
-                    console.error(description);
+                    logError(err);
                     process.exitCode = 1;
                 } else {
                     less.logger.info('lessc: wrote ' + output);
                     onSuccess();
                 }
             });
-        } else if (!options.depends) {
+        } else {
             process.stdout.write(result.css);
             onSuccess();
         }
     };
 
-    var logDependencies = function(options, result) {
-        if (options.depends) {
-            var depends = "";
-            for (var i = 0; i < result.imports.length; i++) {
-                depends += result.imports[i] + " ";
+
+    var writeDependencies = function(stream, options, dependencies) {
+        var target = options.dependsTarget || output;
+
+        stream.write(target);
+        stream.write(':');
+        if (input) {
+            stream.write(' ');
+            stream.write(input);
+        }
+
+        for (var i = 0; i < dependencies.length; i++) {
+            stream.write(' ');
+            stream.write(dependencies[i]);
+        }
+        stream.write('\n');
+
+        if (options.dependsPhony) {
+            for (var i = 0; i < dependencies.length; i++) {
+                stream.write(dependencies[i]);
+                stream.write(':\n');
             }
-            console.log(depends);
+        }
+    }
+
+    var logDependencies = function(options, result, onSuccess) {
+        if (!options.depends) {
+            return;
+        }
+
+        if (!options.dependsFile) {
+            writeDependencies(process.stdout, options, result.imports);
+            if (onSuccess) {
+                onSuccess();
+            }
+        } else {
+            var stream = fs.createWriteStream(options.dependsFile);
+            stream.on('error', function (error) {
+                console.error('lessc: failed to create file ' + options.dependsFile);
+                logError(error);
+                stream.close();
+                process.exitCode = 1;
+            });
+            stream.on('open', function() {
+                writeDependencies(stream, options, result.imports);
+                stream.end();
+                if (onSuccess) {
+                    onSuccess();
+                }
+            });
         }
     };
 
@@ -391,6 +434,28 @@ function processPluginQueue() {
             case 'M':
             case 'depends':
                 options.depends = true;
+                break;
+            case 'MP':
+            case 'depends-phony':
+                options.depends      = true;
+                options.dependsPhony = true;
+                break;
+            case 'MT':
+            case 'depends-target':
+                if (checkArgFunc(arg, match[2])) {
+                    options.depends       = true;
+                    options.dependsTarget = match[2];
+                }
+                break;
+            case 'MF':
+            case 'depends-file':
+                if (checkArgFunc(arg, match[2])) {
+                    options.depends      = true;
+                    options.dependsFile  = match[2];
+                }
+                break;
+            case 'no-css':
+                options.noCss = true;
                 break;
             case 'max-line-len':
                 if (checkArgFunc(arg, match[2])) {

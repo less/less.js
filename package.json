@@ -57,6 +57,7 @@
     "babel-preset-minify": "^0.2.0",
     "babel-preset-stage-2": "^6.24.1",
     "diff": "^3.2.0",
+    "fast-deep-equal": "^1.0.0",
     "git-rev": "^0.2.1",
     "grunt": "~0.4.5",
     "grunt-browserify": "^5.0.0",

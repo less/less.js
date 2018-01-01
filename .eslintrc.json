@@ -2,6 +2,11 @@
   "env": {
     "node": true
   },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  },
   "globals": {},
   "rules": {
     "no-eval": 2,
@@ -83,6 +88,8 @@
       {
         "SwitchCase": 1
       }
-    ]
+    ],
+    "prefer-const": 2,
+    "constructor-super": 2
   }
 }

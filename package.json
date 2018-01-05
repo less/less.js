@@ -34,7 +34,7 @@
   },
   "browser": "./dist/less.js",
   "engines": {
-    "node": ">=0.12"
+    "node": ">=4"
   },
   "scripts": {
     "test": "grunt test"

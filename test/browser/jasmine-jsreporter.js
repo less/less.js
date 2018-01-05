@@ -206,7 +206,9 @@
      */
     var _extend = function (obj1, obj2) {
         for (var prop in obj2) {
-            obj1[prop] = obj2[prop];
+            if (obj2.hasOwnProperty(prop)) {
+                obj1[prop] = obj2[prop];
+            }
         }
         return obj1;
     };

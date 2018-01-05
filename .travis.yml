@@ -27,6 +27,9 @@ install:
   # Seems related to: https://github.com/npm/npm/issues/8152
   # using <travis_retry> solves this.
   - travis_retry npm install
+script:
+  - npm run lint
+  - npm run test
 env:
   global:
     - PHANTOMJS_CDNURL=http://cnpmjs.org/downloads

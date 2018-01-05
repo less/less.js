@@ -181,16 +181,16 @@ module.exports = function() {
             pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
         return input.replace(/\{path\}/g, p)
-                .replace(/\{node\}/g, "")
-                .replace(/\{\/node\}/g, "")
-                .replace(/\{pathhref\}/g, "")
-                .replace(/\{404status\}/g, "")
-                .replace(/\{nodepath\}/g, path.join(process.cwd(), 'node_modules', '/'))
-                .replace(/\{pathrel\}/g, path.join(path.relative(process.cwd(), p), '/')) 
-                .replace(/\{pathesc\}/g, pathesc)
-                .replace(/\{pathimport\}/g, pathimport)
-                .replace(/\{pathimportesc\}/g, pathimportesc)
-                .replace(/\r\n/g, '\n');
+            .replace(/\{node\}/g, "")
+            .replace(/\{\/node\}/g, "")
+            .replace(/\{pathhref\}/g, "")
+            .replace(/\{404status\}/g, "")
+            .replace(/\{nodepath\}/g, path.join(process.cwd(), 'node_modules', '/'))
+            .replace(/\{pathrel\}/g, path.join(path.relative(process.cwd(), p), '/')) 
+            .replace(/\{pathesc\}/g, pathesc)
+            .replace(/\{pathimport\}/g, pathimport)
+            .replace(/\{pathimportesc\}/g, pathimportesc)
+            .replace(/\r\n/g, '\n');
     }
 
     function checkGlobalLeaks() {

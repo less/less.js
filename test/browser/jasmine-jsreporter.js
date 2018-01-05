@@ -106,7 +106,7 @@
 
         // Loop over all the Suite's sub-Suites
         for (i = 0, ilen = suites.length; i < ilen; ++i) {
-            suiteData.suites[i] = getSuiteData(suites[i]); //< recursive population
+            suiteData.suites[i] = getSuiteData(suites[i]); // < recursive population
             suiteData.passed = !suiteData.suites[i].passed ? false : suiteData.passed;
             suiteData.durationSec += suiteData.suites[i].durationSec;
         }

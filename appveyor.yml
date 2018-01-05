@@ -8,13 +8,6 @@ environment:
 
 # Install scripts. (runs after repo cloning)
 install:
-  # Get the latest stable version of Node 0.STABLE.latest
-  - ps: Install-Product node $env:nodejs_version
-  # Use npm v2
-  - npm -g install npm@2
-  - set PATH=%APPDATA%\npm;%PATH%
-  - npm -v
-
   # node 0.10 & 0.12 have race condition issues when running custom install scripts
   # this can cause phantomjs-prebuilt install script to fail with the error:
   # <Cannot find module 'boom'>

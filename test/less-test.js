@@ -199,27 +199,6 @@ module.exports = function() {
         });
     }
 
-    function testSyncronous(options, filenameNoExtension) {
-        if (oneTestOnly && ("Test Sync " + filenameNoExtension) !== oneTestOnly) {
-            return;
-        }
-        totalTests++;
-        queue(function() {
-            var isSync = true;
-            toCSS(options, path.join(normalFolder, filenameNoExtension + ".less"), function (err, result) {
-                process.stdout.write("- Test Sync " + filenameNoExtension + ": ");
-
-                if (isSync) {
-                    ok("OK");
-                } else {
-                    fail("Not Sync");
-                }
-                release();
-            });
-            isSync = false;
-        });
-    }
-
     function prepBomTest() {
         copyBom.copyFolderWithBom(normalFolder, bomFolder);
         doBomTest = true;
@@ -413,7 +392,11 @@ module.exports = function() {
             var Plugin = require(require('path').resolve(process.cwd(), options.plugin));
             options.plugins = [Plugin];
         }
-        less.render(str, options, callback);
+        less.render(str, options).then(function(result) {
+            callback(null, result);
+        }, function(err) {
+            callback(err);
+        });
     }
 
     function testNoOptions() {
@@ -434,7 +417,6 @@ module.exports = function() {
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
-        testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
         testEmptySourcemap: testEmptySourcemap,

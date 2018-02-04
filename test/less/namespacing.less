@@ -1,0 +1,18 @@
+@varToGet: default-color;
+.foo {
+  color: @defaults[@default-color];
+  color: @defaults[@@varToGet];
+  prop: #ns1[foo];
+  var: #ns1[@foo];
+  sub: #ns1.vars[$sub];
+}
+@defaults: {
+  @default-color: red;
+};
+#ns1 {
+  foo: bar;
+  @foo: baz;
+  .vars() {
+    sub: value;
+  }
+}

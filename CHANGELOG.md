@@ -1,3 +1,29 @@
+# 3.0.0
+2018-02-04
+  - Rename Directive -> AtRule & Rule -> Declaration 
+  - Cross-platform `@plugin` loading! (Node & Browser)
+  - Numerous changes / improvements to plugin architecture
+  - Simplified API calls in plugins (`less.atrule()` vs `new less.tree.AtRule()`)
+  - Property accessors (`$width` to refer to `width: 300px` value)
+  - Inline JavaScript disabled by default for security reasons (use `@plugin`)
+  - Improvements in Less error reporting
+  - Added feature: returning `null` / `false` from Less functions will remove that line
+  - Simple `boolean()` and `if()` functions added
+  - Bug fixes
+  - Removal of unnecessary nodes from API (like IE's `alpha()`)
+
+# 2.7.3
+2017-10-23
+
+  - Bump `request` dependency
+
+# 2.7.2
+2017-01-04
+
+  - Revert breaking changes to contrast() function
+  - Fix error reporting of lessc executable
+  - Changed octals to hex for ES6 strict mode
+
 # 2.7.1 HOTFIX
 
 2016-05-09

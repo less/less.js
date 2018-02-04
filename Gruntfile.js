@@ -257,19 +257,6 @@ module.exports = function (grunt) {
             }
         },
 
-        eslint: {
-            target: ["Gruntfile.js", 
-                "test/**/*.js", 
-                "lib/less*/**/*.js", 
-                "bin/lessc", 
-                "!test/browser/jasmine-jsreporter.js",
-                "!test/less/errors/plugin/plugin-error.js"
-            ],
-            options: {
-                configFile: ".eslintrc.json"
-            }
-        },
-
         connect: {
             server: {
                 options: {
@@ -517,7 +504,6 @@ module.exports = function (grunt) {
 
     var testTasks = [
         'clean',
-        'eslint',
         'shell:test',
         'browsertest'
     ];

@@ -106,7 +106,7 @@
 
         // Loop over all the Suite's sub-Suites
         for (i = 0, ilen = suites.length; i < ilen; ++i) {
-            suiteData.suites[i] = getSuiteData(suites[i]); //< recursive population
+            suiteData.suites[i] = getSuiteData(suites[i]); // < recursive population
             suiteData.passed = !suiteData.suites[i].passed ? false : suiteData.passed;
             suiteData.durationSec += suiteData.suites[i].durationSec;
         }
@@ -206,7 +206,9 @@
      */
     var _extend = function (obj1, obj2) {
         for (var prop in obj2) {
-            obj1[prop] = obj2[prop];
+            if (obj2.hasOwnProperty(prop)) {
+                obj1[prop] = obj2[prop];
+            }
         }
         return obj1;
     };

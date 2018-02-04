@@ -1,8 +1,8 @@
 /*!
- * Less - Leaner CSS v3.0.0-alpha.3
+ * Less - Leaner CSS v3.0.0-RC.1
  * http://lesscss.org
  *
- * Copyright (c) 2009-2017, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  */
@@ -2872,13 +2872,13 @@ module.exports = function(environment, fileManagers) {
         /* eslint guard-for-in: 0 */
         t = initial.tree[n];
         if (typeof t === "function") {
-            api[n] = ctor(t);
+            api[n.toLowerCase()] = ctor(t);
         }
         else {
             api[n] = Object.create(null);
             for (var o in t) {
                 /* eslint guard-for-in: 0 */
-                api[n][o] = ctor(t[o]);
+                api[n][o.toLowerCase()] = ctor(t[o]);
             }
         }
     }
@@ -3600,7 +3600,8 @@ var LessError = require('../less-error'),
     tree = require("../tree"),
     visitors = require("../visitors"),
     getParserInput = require("./parser-input"),
-    utils = require("../utils");
+    utils = require("../utils"),
+    functionRegistry = require('../functions/function-registry');
 
 //
 // less.js - parser
@@ -3783,6 +3784,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 tree.Node.prototype.rootNode = root;
                 root.root = true;
                 root.firstRoot = true;
+                root.functionRegistry = functionRegistry.inherit();
                 
             } catch (e) {
                 return callback(new LessError(e, imports, fileInfo.filename));
@@ -5594,7 +5596,7 @@ Parser.serializeVars = function(vars) {
 
 module.exports = Parser;
 
-},{"../less-error":36,"../tree":66,"../utils":88,"../visitors":92,"./parser-input":41}],43:[function(require,module,exports){
+},{"../functions/function-registry":26,"../less-error":36,"../tree":66,"../utils":88,"../visitors":92,"./parser-input":41}],43:[function(require,module,exports){
 var utils = require('./utils');
 /**
  * Plugin Manager

@@ -7,13 +7,12 @@ var options = {
     modifyVars: JSON.parse(fs.readFileSync("./test/less/modifyVars/extended.json", 'utf8'))
 };
 
-less.render(input, options, function (err, result) {
-    if (err) {
-        console.log(err);
-    }
+less.render(input, options).then(function(result) {
     if (result.css === expectedCss) {
         console.log("PASS");
     } else {
         console.log("FAIL");
     }
+}).catch(function(err) {
+    console.log(err);
 });

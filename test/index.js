@@ -55,8 +55,6 @@ var testMap = [
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
-lessTester.testSyncronous({syncImport: true}, "import");
-lessTester.testSyncronous({syncImport: true}, "css");
 lessTester.testNoOptions();
 lessTester.testJSImport();
 lessTester.finished();

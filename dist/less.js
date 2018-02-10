@@ -1003,7 +1003,11 @@ contexts.Eval.prototype.outOfParenthesis = function () {
     this.parensStack.pop();
 };
 
+contexts.Eval.prototype.mathOn = true;
 contexts.Eval.prototype.isMathOn = function () {
+    if (!this.mathOn) {
+        return false;
+    }
     return this.strictMath ? (this.parensStack && this.parensStack.length) : true;
 };
 
@@ -4019,6 +4023,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
 
                     parserInput.forget();
+                    
                     return new(tree.Call)(name, args, index, fileInfo);
                 },
                 
@@ -4194,7 +4199,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                 },
 
-                // A property entity useing the protective {} e.g. @{prop}
+                // A property entity useing the protective {} e.g. ${prop}
                 propertyCurly: function () {
                     var curly, index = parserInput.i;
 
@@ -6331,6 +6336,7 @@ var Node = require("./node"),
 var Call = function (name, args, index, currentFileInfo) {
     this.name = name;
     this.args = args;
+    this.mathOn = name === 'calc' ? false : true;
     this._index = index;
     this._fileInfo = currentFileInfo;
 };
@@ -6353,8 +6359,16 @@ Call.prototype.accept = function (visitor) {
 // The function should receive the value, not the variable.
 //
 Call.prototype.eval = function (context) {
-    var args = this.args.map(function (a) { return a.eval(context); }),
-        result, funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
+
+    /**
+     * Turn off math for calc(), and switch back on for evaluating nested functions
+     */
+    var currentMathContext = context.mathOn;
+    context.mathOn = this.mathOn;
+    var args = this.args.map(function (a) { return a.eval(context); });
+    context.mathOn = currentMathContext;
+
+    var result, funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
     
     if (funcCaller.isValid()) {
         try {
@@ -8384,7 +8398,6 @@ module.exports = Property;
 
 },{"./declaration":58,"./node":73}],77:[function(require,module,exports){
 var Node = require("./node"),
-    JsEvalNode = require("./js-eval-node"),
     Variable = require("./variable"),
     Property = require("./property");
 
@@ -8441,7 +8454,7 @@ Quoted.prototype.compare = function (other) {
 };
 module.exports = Quoted;
 
-},{"./js-eval-node":67,"./node":73,"./property":76,"./variable":85}],78:[function(require,module,exports){
+},{"./node":73,"./property":76,"./variable":85}],78:[function(require,module,exports){
 var Node = require("./node"),
     Declaration = require("./declaration"),
     Keyword = require("./keyword"),

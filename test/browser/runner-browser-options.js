@@ -2,7 +2,7 @@ var less = {
     logLevel: 4, 
     errorReporting: "console", 
     javascriptEnabled: true,
-    strictMath: true
+    strictMath: false
 };
 
 // There originally run inside describe method. However, since they have not

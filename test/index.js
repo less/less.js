@@ -8,13 +8,17 @@ console.log("\n" + stylize("Less", 'underline') + "\n");
 lessTester.prepBomTest();
 var testMap = [
     [{
-        strictMath: true, 
+        strictMath: false, 
         relativeUrls: true, 
         silent: true, 
         javascriptEnabled: true,
         // Set explicitly for legacy tests for >3.0
         ieCompat: true
     }],
+    [{
+        strictMath: true,
+        ieCompat: true
+    }, "strict-math/"],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
         lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",
@@ -56,7 +60,7 @@ testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
 lessTester.testSyncronous({syncImport: true}, "import");
-lessTester.testSyncronous({syncImport: true}, "css");
+lessTester.testSyncronous({syncImport: true}, "strict-math/css");
 lessTester.testNoOptions();
 lessTester.testJSImport();
 lessTester.finished();

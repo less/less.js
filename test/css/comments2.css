@@ -8,7 +8,7 @@
 .first,
 .planning {
   margin: 10px;
-  total-width: (1 * 6em * 12) + (2em * 12);
+  total-width: 96em;
 }
 .some-inline-comments {
   a: yes /* comment */;

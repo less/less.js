@@ -1,0 +1,3 @@
+.no-math {
+  width: calc(50% + (25vh - 20px));
+}

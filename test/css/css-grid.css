@@ -1,0 +1,11 @@
+.wrapper {
+  display: grid;
+  grid-template-columns: [col1-start] 9fr [col1-end] 10px [col2-start] 3fr [col2-end];
+  grid-template-rows: auto;
+}
+.wrapper {
+  display: grid;
+  grid-template-columns: 9fr 1.875em 3fr;
+  grid-template-rows: auto;
+  grid-template-areas: "header header header" "content . sidebar" "footer footer footer";
+}

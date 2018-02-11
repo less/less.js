@@ -230,3 +230,21 @@ html {
   color: mix(blue, @color1, 50%);
   color: mix(blue, @color2, 50%);
 }
+
+#boolean {
+  a: boolean(not(2 < 1));
+  b: boolean(not(2 > 1) and (true));
+  c: boolean(not(boolean((true))));
+}
+
+#if {
+  a: if(not(false), 1, 2);
+  b: if(not(true), 1, 2);
+  @1: if(not(false), {c: 3}, {d: 4}); @1();
+
+  e: if(not(true), 5);
+  @f: boolean((3 = 4));
+  f: if(not(@f), 6);
+
+  if((false), {g: 7}); /* results in void */
+}

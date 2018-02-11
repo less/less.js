@@ -2,6 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <script>
+        // allow sauce to query for the jasmine report
+        // because we have to load the page before starting the test, so the thing
+        // sauce queries for might not be setup yet
+        var JASMINE;
+        if(Object.defineProperty) {
+            Object.defineProperty(window, 'jasmine', {
+              get: function() { return JASMINE; },
+              set: function(jsm) { 
+                JASMINE = jsm || {};
+                if(!JASMINE.getJSReport || typeof JASMINE.getJSReport !== 'function') {
+                    JASMINE.getJSReport = function() { };
+                }
+              }
+            });
+        }
+        else {
+            window.jasmine = { getJSReport: function() { } };
+        }
+    </script>
+    
     <title>Jasmine Spec Runner</title>
 
     <!-- generate script tags for tests -->
@@ -57,27 +78,29 @@
             document.body.appendChild(script);
         };
 
-
-        // allow sauce to query for the jasmine report
-        // because we have to load the page before starting the test, so the thing
-        // sauce queries for might not be setup yet
-        window.jasmine = { getJSReport: function() { } };
-        setTimeout(function() {
-            var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
+        var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
                 helpers = <% toArray(scripts.helpers) %>,
                 vendor = <% toArray(scripts.vendor) %>,
                 specs = <% toArray(scripts.specs) %>,
                 reporters = <% toArray([].concat(scripts.reporters)) %>,
-                allScripts = jasmine.concat(helpers).concat(vendor).concat(specs).concat(reporters);
+                setupScripts = jasmine.concat(helpers).concat(vendor),
+                runScripts = specs.concat(reporters);
+        </script>
+
+       <% generateScriptTags(scripts.polyfills); %>
+       <% generateScriptTags(scripts.jasmine); %>
+       <% generateScriptTags(scripts.boot); %>
+       <% generateScriptTags(scripts.helpers); %>
+       <% generateScriptTags(scripts.vendor); %>
+
+       <script>
+        setTimeout(function() {
 
             function addNextScript() {
                 // for sauce, see above. Additional step needed between loading jasmine and loading
                 // the js reporter
-                if (!jasmine.getJSReport) {
-                    jasmine.getJSReport = function() {};
-                }
-                if (allScripts.length) {
-                    var scriptSrc = allScripts.shift();
+                if (runScripts.length) {
+                    var scriptSrc = runScripts.shift();
                     loadScript(scriptSrc, addNextScript);
                 } else {
                     window.onload();

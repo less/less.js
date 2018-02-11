@@ -23,7 +23,7 @@
 @ratio_large: 16;
 @ratio_small: 9;
 
-@media all and (device-aspect-ratio: @ratio_large / @ratio_small) {
+@media all and (device-aspect-ratio: ~"@{ratio_large} / @{ratio_small}") {
    body { max-width: 800px; }
 }
 
@@ -177,7 +177,7 @@ body {
   }
 }
 
-@media (-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-resolution: 2dppx), (min-resolution: 128dpcm) {
+@media (-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: ~"2/1"), (min-resolution: 2dppx), (min-resolution: 128dpcm) {
   .b {
     background: red;
   }

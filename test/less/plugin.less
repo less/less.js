@@ -1,5 +1,5 @@
 // importing plugin globally
-@plugin "./plugin/plugin-global";
+@plugin "plugin/plugin-global";
 
 // transitively include plugins from importing another sheet
 @import "./plugin/plugin-transitive";
@@ -40,7 +40,7 @@
   ruleset-shadow : test-shadow();
 };
 #ns {
-  @plugin "./plugin/plugin-local";
+  @plugin (test=test) "./plugin/plugin-local";
   .mixin() {
     ns-mixin-global : test-global();
     ns-mixin-local  : test-local();
@@ -86,8 +86,38 @@
 .root {
   @ruleset2();
 }
+.test-empty {
+  val1: foo;
+  test-collapse();
+  val2: foo;
+}
+.test-simple {
+  @plugin "./plugin/plugin-simple";
+  value: pi-anon();
+  value: (pi() * 2);
+}
+.test-conflicts {
+  @plugin "./plugin/plugin-scope1";
+  value: foo();
+}
+.test-conflicts {
+  @plugin "./plugin/plugin-scope2";
+  value: foo();
+}
+.test-conflicts {
+  @plugin "./plugin/plugin-scope1";
+  value: foo();
+}
+.test-collection {
+  @plugin "./plugin/plugin-collection";
+  @var: 32;
+  store(@var);
+  store(5);
+  store("bird");
+  list: list();
+}
 
-test-directive("@charset"; '"utf-8"');
-test-directive("@arbitrary"; "value after ()");
+test-atrule("@charset"; '"utf-8"');
+test-atrule("@arbitrary"; "value after ()");
 
 

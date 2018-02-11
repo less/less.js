@@ -1,4 +1,4 @@
-/*jshint latedef: nofunc */
+/* jshint latedef: nofunc */
 
 // This is used to copy a folder (the test/less/* files & sub-folders), adding a BOM to the start of each LESS and CSS file.
 // This is a based on the copySync method from fs-extra (https://github.com/jprichardson/node-fs-extra/).

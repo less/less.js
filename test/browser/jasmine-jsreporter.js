@@ -42,7 +42,7 @@
      * @param startMs Start time in Milliseconds
      * @param finishMs Finish time in Milliseconds
      * @return Elapsed time in Seconds */
-    function elapsedSec (startMs, finishMs) {
+    function elapsedSec(startMs, finishMs) {
         return (finishMs - startMs) / 1000;
     }
 
@@ -52,7 +52,7 @@
      * @param amount Amount to round
      * @param numOfDecDigits Number of Digits to round to. Default value is '2'.
      * @return Rounded amount */
-    function round (amount, numOfDecDigits) {
+    function round(amount, numOfDecDigits) {
         numOfDecDigits = numOfDecDigits || 2;
         return Math.round(amount * Math.pow(10, numOfDecDigits)) / Math.pow(10, numOfDecDigits);
     }
@@ -61,7 +61,7 @@
      * Create a new array which contains only the failed items.
      * @param items Items which will be filtered
      * @returns {Array} of failed items */
-    function failures (items) {
+    function failures(items) {
         var fs = [], i, v;
         for (i = 0; i < items.length; i += 1) {
             v = items[i];
@@ -76,7 +76,7 @@
      * Collect information about a Suite, recursively, and return a JSON result.
      * @param suite The Jasmine Suite to get data from
      */
-    function getSuiteData (suite) {
+    function getSuiteData(suite) {
         var suiteData = {
                 description : suite.description,
                 durationSec : 0,

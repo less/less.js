@@ -1,80 +1,82 @@
 functions.addMultiple({
 
     "test-comment": function() {
-        return new tree.Combinator(' ');
+        return less.combinator(' ');
     },
-    "test-directive": function(arg1, arg2) {
-        return new tree.Directive(arg1.value, new tree.Anonymous(arg2.value));
+    "test-atrule": function(arg1, arg2) {
+        return less.atrule(arg1.value, arg2.value);
     },
     "test-extend": function() {
-        //TODO
+        // TODO
     },
     "test-import": function() {
-        //TODO
+        // TODO
     },
     "test-media": function() {
-        //TODO
+        // TODO
     },
     "test-mixin-call": function() {
-        //TODO
+        // TODO
     },
     "test-mixin-definition": function() {
-        //TODO
+        // TODO
     },
     "test-ruleset-call": function() {
-        return new tree.Combinator(' ');
+        return less.combinator(' ');
     },
-    // Functions must return something. Must 'return true' if they produce no output.
-    "test-undefined": function() { },
-
+    // Functions must return something, even if it's false/true
+    "test-undefined": function() { 
+        return;
+    },
+    "test-collapse": function() { 
+        return true;
+    },
     // These cause root errors
-    "test-alpha": function() {
-        return new tree.Alpha(30);
-    },
     "test-assignment": function() {
-        return new tree.Assignment("bird", "robin");
+        return less.assignment("bird", "robin");
     },
     "test-attribute": function() {
-        return new tree.Attribute("foo", "=", "bar");
+        return less.attribute("foo", "=", "bar");
     },
     "test-call": function() {
-        return new tree.Call("foo");
+        return less.call("foo");
     },
     "test-color": function() {
-        return new tree.Color([50, 50, 50]);
+        return less.color([50, 50, 50]);
     },
     "test-condition": function() {
-        return new tree.Condition('<', new tree.Value([0]), new tree.Value([1]));
+        return less.condition('<', less.value([0]), less.value([1]));
     },
     "test-detached-ruleset" : function() {
-        var rule = new tree.Rule('prop', new tree.Anonymous('value'));
-        return new tree.DetachedRuleset(new tree.Ruleset("", [ rule ]));
+        var decl = less.declaration('prop', 'value');
+        return less.detachedruleset(less.ruleset("", [ decl ]));
     },
     "test-dimension": function() {
-        return new tree.Dimension(1, 'px');
+        return less.dimension(1, 'px');
     },
     "test-element": function() {
-        return new tree.Element('+', 'a');
+        return less.element('+', 'a');
     },
     "test-expression": function() {
-        return new tree.Expression([1, 2, 3]);
+        return less.expression([1, 2, 3]);
     },
     "test-keyword": function() {
-        return new tree.Keyword('foo');
+        return less.keyword('foo');
     },
     "test-operation": function() {
-        return new tree.Operation('+', [1, 2]);
+        return less.operation('+', [1, 2]);
     },
     "test-quoted": function() {
-        return new tree.Quoted('"', 'foo');
+        return less.quoted('"', 'foo');
     },
     "test-selector": function() {
-        return new tree.Selector([new tree.Element('a')]);
+        var sel = less.selector('.a.b');
+        return sel;
     },
     "test-url": function() {
-        return new tree.URL('http://google.com');
+        return less.url('http://google.com');
     },
     "test-value": function() {
-        return new tree.Value([1]);
+        return less.value([1]);
     }
 });

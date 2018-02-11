@@ -46,4 +46,24 @@
 .root {
   prop: value;
 }
+.test-empty {
+  val1: foo;
+  val2: foo;
+}
+.test-simple {
+  value: 3.141592653589793;
+  value: 6.28318531;
+}
+.test-conflicts {
+  value: foo;
+}
+.test-conflicts {
+  value: bar;
+}
+.test-conflicts {
+  value: foo;
+}
+.test-collection {
+  list: 32, 5, "bird";
+}
 @arbitrary value after ();

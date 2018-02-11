@@ -2,7 +2,6 @@ var less = {
     logLevel: 4,
     errorReporting: "console"
 };
-less.strictMath = true;
 less.functions = {
     add: function(a, b) {
         return new(less.tree.Dimension)(a.value + b.value);

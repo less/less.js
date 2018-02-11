@@ -17,8 +17,8 @@ describe("less.js modify vars", function () {
                     var2: "purple",
                     scale: 20
                 }).then(function () {
-                        done();
-                    });
+                    done();
+                });
             });
     });
 

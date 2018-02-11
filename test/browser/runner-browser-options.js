@@ -1,4 +1,9 @@
-var less = {logLevel: 4, errorReporting: "console"};
+var less = {
+    logLevel: 4, 
+    errorReporting: "console", 
+    javascriptEnabled: true,
+    strictMath: false
+};
 
 // There originally run inside describe method. However, since they have not
 // been inside it, they run at jasmine compile time (not runtime). It all

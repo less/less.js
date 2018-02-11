@@ -1,4 +1,4 @@
-/*jshint latedef: nofunc */
+/* jshint latedef: nofunc */
 
 module.exports = function() {
     var path = require('path'),
@@ -19,6 +19,14 @@ module.exports = function() {
     var normalFolder = 'test/less';
     var bomFolder = 'test/less-bom';
 
+    // Define String.prototype.endsWith if it doesn't exist (in older versions of node)
+    // This is required by the testSourceMap function below
+    if (typeof String.prototype.endsWith !== 'function') {
+        String.prototype.endsWith = function (str) {
+            return this.slice(-str.length) === str;
+        }
+    }
+
     less.logger.addListener({
         info: function(msg) {
             if (isVerbose) {
@@ -37,28 +45,29 @@ module.exports = function() {
         queueRunning = false;
     function queue(func) {
         if (queueRunning) {
-            //console.log("adding to queue");
+            // console.log("adding to queue");
             queueList.push(func);
         } else {
-            //console.log("first in queue - starting");
+            // console.log("first in queue - starting");
             queueRunning = true;
             func();
         }
     }
     function release() {
         if (queueList.length) {
-            //console.log("running next in queue");
+            // console.log("running next in queue");
             var func = queueList.shift();
             setTimeout(func, 0);
         } else {
-            //console.log("stopping queue");
+            // console.log("stopping queue");
             queueRunning = false;
         }
     }
 
     var totalTests = 0,
         failedTests = 0,
-        passedTests = 0;
+        passedTests = 0,
+        finishTimer = setInterval(endTest, 500);
 
     less.functions.functionRegistry.addMultiple({
         add: function (a, b) {
@@ -73,6 +82,25 @@ module.exports = function() {
     });
 
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        // Check the sourceMappingURL at the bottom of the file
+        var expectedSourceMapURL = name + ".css.map",
+            sourceMappingPrefix = "/*# sourceMappingURL=",
+            sourceMappingSuffix = " */",
+            expectedCSSAppendage = sourceMappingPrefix + expectedSourceMapURL + sourceMappingSuffix;
+        if (!compiledLess.endsWith(expectedCSSAppendage)) {
+            // To display a better error message, we need to figure out what the actual sourceMappingURL value was, if it was even present
+            var indexOfSourceMappingPrefix = compiledLess.indexOf(sourceMappingPrefix);
+            if (indexOfSourceMappingPrefix === -1) {
+                fail("ERROR: sourceMappingURL was not found in " + baseFolder + "/" + name + ".css.");
+                return;
+            }
+
+            var startOfSourceMappingValue = indexOfSourceMappingPrefix + sourceMappingPrefix.length,
+                indexOfNextSpace = compiledLess.indexOf(" ", startOfSourceMappingValue),
+                actualSourceMapURL = compiledLess.substring(startOfSourceMappingValue, indexOfNextSpace === -1 ? compiledLess.length : indexOfNextSpace);
+            fail("ERROR: sourceMappingURL should be \"" + expectedSourceMapURL + "\" but is \"" + actualSourceMapURL + "\".");
+        }
+
         fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
             process.stdout.write("- " + path.join(baseFolder, name) + ": ");
             if (sourcemap === expectedSourcemap) {
@@ -108,32 +136,57 @@ module.exports = function() {
 
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
-            process.stdout.write("- " + path.join(baseFolder, name) + ": ");
-            expectedErr = doReplacements(expectedErr, baseFolder);
+            process.stdout.write('- ' + path.join(baseFolder, name) + ": ");
+            expectedErr = doReplacements(expectedErr, baseFolder, err && err.filename);
             if (!err) {
                 if (compiledLess) {
-                    fail("No Error", 'red');
+                    fail('No Error', 'red');
                 } else {
-                    fail("No Error, No Output");
+                    fail('No Error, No Output');
                 }
             } else {
-                var errMessage = less.formatError(err);
+                var errMessage = err.toString();
                 if (errMessage === expectedErr) {
                     ok('OK');
                 } else {
-                    difference("FAIL", expectedErr, errMessage);
+                    difference('FAIL', expectedErr, errMessage);
                 }
             }
         });
     }
 
-    function globalReplacements(input, directory) {
-        var p = path.join(process.cwd(), directory),
+    // https://github.com/less/less.js/issues/3112
+    function testJSImport() {
+        process.stdout.write("- Testing root function registry");
+        less.functions.functionRegistry.add('ext', function() { 
+            return new less.tree.Anonymous('file');
+        });
+        var expected = "@charset \"utf-8\";\n";
+        toCSS({}, require('path').join(process.cwd(), 'test/less/root-registry/root.less'), function(error, output) {
+            if (error) {
+                return fail("ERROR: " + error);
+            }
+            if (output.css === expected) {
+                return ok('OK');
+            }
+            difference("FAIL", expected, output.css);
+        });
+    }
+
+    function globalReplacements(input, directory, filename) {
+        var path = require('path');
+        var p = filename ? path.join(path.dirname(filename), '/') : path.join(process.cwd(), directory),
             pathimport = path.join(process.cwd(), directory + "import/"),
             pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
             pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
         return input.replace(/\{path\}/g, p)
+                .replace(/\{node\}/g, "")
+                .replace(/\{\/node\}/g, "")
+                .replace(/\{pathhref\}/g, "")
+                .replace(/\{404status\}/g, "")
+                .replace(/\{nodepath\}/g, path.join(process.cwd(), 'node_modules', '/'))
+                .replace(/\{pathrel\}/g, path.join(path.relative(process.cwd(), p), '/')) 
                 .replace(/\{pathesc\}/g, pathesc)
                 .replace(/\{pathimport\}/g, pathimport)
                 .replace(/\{pathimportesc\}/g, pathimportesc)
@@ -196,7 +249,7 @@ module.exports = function() {
         }
 
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (! /\.less/.test(file)) { return; }
+            if (!/\.less/.test(file)) { return; }
 
             var name = getBasename(file);
 
@@ -212,6 +265,11 @@ module.exports = function() {
                 options.sourceMapRootpath = "testweb/";
                 // TODO separate options?
                 options.sourceMap = options;
+
+                // This options is normally set by the bin/lessc script. Setting it causes the sourceMappingURL comment to be appended to the CSS
+                // output. The value is designed to allow the sourceMapBasepath option to be tested, as it should be removed by less before
+                // setting the sourceMappingURL value, leaving just the sourceMapOutputFilename and .map extension.
+                options.sourceMapFilename = options.sourceMapBasepath + "/" + options.sourceMapOutputFilename + ".map";
             }
 
             options.getVars = function(file) {
@@ -221,47 +279,48 @@ module.exports = function() {
             var doubleCallCheck = false;
             queue(function() {
                 toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
-                if (doubleCallCheck) {
-                    totalTests++;
-                    fail("less is calling back twice");
-                    process.stdout.write(doubleCallCheck + "\n");
-                    process.stdout.write((new Error()).stack + "\n");
-                    return;
-                }
-                doubleCallCheck = (new Error()).stack;
 
-                if (verifyFunction) {
-                    var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
-                    release();
-                    return verificationResult;
-                }
-                if (err) {
-                    fail("ERROR: " + (err && err.message));
-                    if (isVerbose) {
-                        process.stdout.write("\n");
-                        if (err.stack) {
-                            process.stdout.write(err.stack + "\n");
-                        } else {
-                            //this sometimes happen - show the whole error object
-                            console.log(err);
+                    if (doubleCallCheck) {
+                        totalTests++;
+                        fail("less is calling back twice");
+                        process.stdout.write(doubleCallCheck + "\n");
+                        process.stdout.write((new Error()).stack + "\n");
+                        return;
+                    }
+                    doubleCallCheck = (new Error()).stack;
+
+                    if (verifyFunction) {
+                        var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
+                        release();
+                        return verificationResult;
+                    }
+                    if (err) {
+                        fail("ERROR: " + (err && err.message));
+                        if (isVerbose) {
+                            process.stdout.write("\n");
+                            if (err.stack) {
+                                process.stdout.write(err.stack + "\n");
+                            } else {
+                                // this sometimes happen - show the whole error object
+                                console.log(err);
+                            }
                         }
+                        release();
+                        return;
                     }
-                    release();
-                    return;
-                }
-                var css_name = name;
-                if (nameModifier) { css_name = nameModifier(name); }
-                fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
-                    process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
+                    var css_name = name;
+                    if (nameModifier) { css_name = nameModifier(name); }
+                    fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
+                        process.stdout.write("- " + path.join(baseFolder, css_name) + ": ");
 
-                    css = css && doReplacements(css, path.join(baseFolder, foldername));
-                    if (result.css === css) { ok('OK'); }
-                    else {
-                        difference("FAIL", css, result.css);
-                    }
-                    release();
+                        css = css && doReplacements(css, path.join(baseFolder, foldername));
+                        if (result.css === css) { ok('OK'); }
+                        else {
+                            difference("FAIL", css, result.css);
+                        }
+                        release();
+                    });
                 });
-            });
             });
         });
     }
@@ -305,8 +364,8 @@ module.exports = function() {
 
     function endTest() {
         if (isFinished && ((failedTests + passedTests) >= totalTests)) {
+            clearInterval(finishTimer);
             var leaked = checkGlobalLeaks();
-
             process.stdout.write("\n");
             if (failedTests > 0) {
                 process.stdout.write(failedTests + stylize(" Failed", "red") + ", " + passedTests + " passed\n");
@@ -365,7 +424,7 @@ module.exports = function() {
         try {
             process.stdout.write("- Integration - creating parser without options: ");
             less.render("");
-        } catch(e) {
+        } catch (e) {
             fail(stylize("FAIL\n", "red"));
             return;
         }
@@ -381,6 +440,7 @@ module.exports = function() {
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         prepBomTest: prepBomTest,
+        testJSImport: testJSImport,
         finished: finished
     };
 };

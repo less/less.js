@@ -1,5 +1,6 @@
 functions.addMultiple({
     "test-transitive" : function() {
-        return new tree.Anonymous( "transitive" );
+        var anon = new tree.Anonymous( "transitive" );
+        return anon;
     }
 });

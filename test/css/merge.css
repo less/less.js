@@ -10,15 +10,16 @@
   background: url(data://img1.png);
 }
 .test4 {
-  transform: rotate(90deg), skew(30deg);
-  transform: scale(2, 4) !important;
+  transform: rotate(90deg), skew(30deg), scale(2, 4) !important;
 }
 .test5 {
-  transform: rotate(90deg), skew(30deg);
-  transform: scale(2, 4) !important;
+  transform: rotate(90deg), skew(30deg), scale(2, 4) !important;
 }
 .test6 {
   transform: scale(2, 4);
+}
+.test7 {
+  transform: scale(2, 4), scale(2, 4), scale(2, 4) !important;
 }
 .test-interleaved {
   transform: t1, t2, t3;

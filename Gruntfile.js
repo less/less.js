@@ -4,7 +4,7 @@ module.exports = function (grunt) {
 
 
     grunt.option('stack', true)
-    
+
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
 
@@ -67,19 +67,19 @@ module.exports = function (grunt) {
             platform: 'Linux'
         }
     ];
-       
+
     var sauceJobs = {};
 
     var browserTests = [   "filemanager-plugin",
         "visitor-plugin",
-        "global-vars", 
-        "modify-vars", 
-        "production", 
+        "global-vars",
+        "modify-vars",
+        "production",
         "rootpath-relative",
-        "rootpath", 
-        "relative-urls", 
-        "browser", 
-        "no-js-errors", 
+        "rootpath",
+        "relative-urls",
+        "browser",
+        "no-js-errors",
         "legacy"
     ];
 
@@ -116,7 +116,7 @@ module.exports = function (grunt) {
                     // test. Passing undefined does not alter the test result. Please note that this
                     // only affects the grunt task's result. You have to explicitly update the Sauce
                     // Labs job's status via its REST API, if you want so.
-            
+
                     // This should be the encrypted value in Travis
                     var user = process.env.SAUCE_USERNAME;
                     var pass = process.env.SAUCE_ACCESS_KEY;
@@ -142,7 +142,7 @@ module.exports = function (grunt) {
                             }
                         });
                     });
-                        
+
                 }
             }
         };
@@ -174,7 +174,7 @@ module.exports = function (grunt) {
 
         shell: {
             options: {
-                stdout: true, 
+                stdout: true,
                 failOnError: true,
                 execOptions: {
                     maxBuffer: Infinity
@@ -185,6 +185,9 @@ module.exports = function (grunt) {
             },
             benchmark: {
                 command: 'node benchmark/index.js'
+            },
+            plugin: {
+                command: 'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css'
             },
             "sourcemap-test": {
                 command: [
@@ -258,10 +261,10 @@ module.exports = function (grunt) {
         },
 
         eslint: {
-            target: ["Gruntfile.js", 
-                "test/**/*.js", 
-                "lib/less*/**/*.js", 
-                "bin/lessc", 
+            target: ["Gruntfile.js",
+                "test/**/*.js",
+                "lib/less*/**/*.js",
+                "bin/lessc",
                 "!test/browser/jasmine-jsreporter.js",
                 "!test/less/errors/plugin/plugin-error.js"
             ],
@@ -289,11 +292,11 @@ module.exports = function (grunt) {
                 // src is used to build list of less files to compile
                 src: [
                     'test/less/*.less',
-                    // Don't test NPM import, obviously 
+                    // Don't test NPM import, obviously
                     '!test/less/plugin-module.less',
                     '!test/less/import-module.less',
-                    '!test/less/javascript.less', 
-                    '!test/less/urls.less', 
+                    '!test/less/javascript.less',
+                    '!test/less/urls.less',
                     '!test/less/empty.less'
                 ],
                 options: {
@@ -422,7 +425,7 @@ module.exports = function (grunt) {
                     specs: 'test/browser/runner-filemanagerPlugin.js',
                     outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
                 }
-            }            
+            }
         },
 
         'saucelabs-jasmine': sauceJobs,
@@ -519,6 +522,7 @@ module.exports = function (grunt) {
         'clean',
         'eslint',
         'shell:test',
+        'shell:plugin',
         'browsertest'
     ];
 

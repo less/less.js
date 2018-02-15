@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.0.0
+ * Less - Leaner CSS v3.0.1
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -895,7 +895,7 @@ PluginLoader.prototype.loadPlugin = function(filename, basePath, context, enviro
     return new Promise(function(fulfill, reject) {
         fileManager.loadFile(filename, basePath, context, environment)
             .then(fulfill).catch(reject);
-    });        
+    });
 };
 
 module.exports = PluginLoader;
@@ -1473,7 +1473,7 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         fileInfo: fileInfo
     };
     registry = functionRegistry.create();
-    
+
     var registerPlugin = function(obj) {
         pluginObj = obj;
     };
@@ -1484,7 +1484,7 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     } catch (e) {
         return new this.less.LessError(e, imports, filename);
     }
-      
+
     if (!pluginObj) {
         pluginObj = localModule.exports;
     }
@@ -1509,7 +1509,7 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
             e.message = 'Error during @plugin call';
             return new this.less.LessError(e, imports, filename);
         }
-        
+
     }
     else {
         return new this.less.LessError({ message: "Not a valid plugin" });
@@ -1586,6 +1586,11 @@ module.exports = AbstractPluginLoader;
 
 
 },{"../functions/function-registry":26,"../less-error":36}],19:[function(require,module,exports){
+/**
+ * @todo Document why this abstraction exists, and the relationship between
+ *       environment, file managers, and plugin manager
+ */
+
 var logger = require("../logger");
 var environment = function(externalEnvironment, fileManagers) {
     this.fileManagers = fileManagers || [];
@@ -2838,7 +2843,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 0, 0],
+        version: [3, 0, 1],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),
@@ -2911,10 +2916,10 @@ var utils = require('./utils');
  * @prop {string[]} extract
  *
  * @param {Object} e              - An error object to wrap around or just a descriptive object
- * @param {Object} importManager  - An instance of ImportManager (see import-manager.js)
+ * @param {Object} fileContentMap - An object with file contents in 'contents' property (like importManager) @todo - move to fileManager?
  * @param {string} [currentFilename]
  */
-var LessError = module.exports = function LessError(e, importManager, currentFilename) {
+var LessError = module.exports = function LessError(e, fileContentMap, currentFilename) {
     Error.call(this);
 
     var filename = e.filename || currentFilename;
@@ -2922,13 +2927,13 @@ var LessError = module.exports = function LessError(e, importManager, currentFil
     this.message = e.message;
     this.stack = e.stack;
 
-    if (importManager && filename) {
-        var input = importManager.contents[filename],
+    if (fileContentMap && filename) {
+        var input = fileContentMap.contents[filename],
             loc = utils.getLocation(e.index, input),
             line = loc.line,
             col  = loc.column,
             callLine = e.call && utils.getLocation(e.call, input).line,
-            lines = input.split('\n');
+            lines = input ? input.split('\n') : '';
 
         this.type = e.type || 'Syntax';
         this.filename = filename;
@@ -2951,7 +2956,7 @@ var LessError = module.exports = function LessError(e, importManager, currentFil
 
         this.callLine = callLine + 1;
         this.callExtract = lines[callLine];
-        
+
         this.extract = [
             lines[this.line - 2],
             lines[this.line - 1],
@@ -3167,7 +3172,7 @@ module.exports = function(environment, ParseTree, ImportManager) {
         } else {
             var context,
                 rootFileInfo,
-                pluginManager = new PluginManager(this, true);
+                pluginManager = new PluginManager(this, !options.reUsePluginManager);
 
             options.pluginManager = pluginManager;
 
@@ -3213,7 +3218,7 @@ module.exports = function(environment, ParseTree, ImportManager) {
                     }
                 });
             }
-            
+
             new Parser(context, imports, rootFileInfo)
                 .parse(input, function (e, root) {
                     if (e) { return callback(e); }
@@ -5755,7 +5760,7 @@ PluginManager.prototype.getFileManagers = function() {
     return this.fileManagers;
 };
 
-// 
+//
 module.exports = PluginManagerFactory;
 
 },{}],44:[function(require,module,exports){

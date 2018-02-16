@@ -3,6 +3,7 @@
 var path = require('path'),
     fs = require('../lib/less-node/fs'),
     os = require("os"),
+    utils = require('../lib/less/utils'),
     errno,
     mkdirp;
 
@@ -13,7 +14,8 @@ try {
 }
 
 var less = require('../lib/less-node'),
-    pluginLoader = new less.PluginLoader(less),
+    pluginManager = new less.PluginManager(less),
+    fileManager = new less.FileManager(),
     plugins = [],
     queuePlugins = [],
     args = process.argv.slice(1),
@@ -22,6 +24,7 @@ var less = require('../lib/less-node'),
     options = less.options;
 
 options.plugins = plugins;
+options.reUsePluginManager = true;
 
 var sourceMapOptions = {};
 var continueProcessing = true;
@@ -75,7 +78,7 @@ var sourceMapFileInline = false;
 
 function printUsage() {
     less.lesscHelper.printUsage();
-    pluginLoader.printUsage(plugins);
+    pluginManager.Loader.printUsage(plugins);
     continueProcessing = false;
 }
 function render() {
@@ -105,10 +108,14 @@ function render() {
                 return;
             }
             // its in the same directory, so always just the basename
-            sourceMapOptions.sourceMapOutputFilename = path.basename(output);
-            sourceMapOptions.sourceMapFullFilename = output + ".map";
+            if (output) {
+                sourceMapOptions.sourceMapOutputFilename = path.basename(output);
+                sourceMapOptions.sourceMapFullFilename = output + ".map";
+            }
             // its in the same directory, so always just the basename
-            sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+            if ('sourceMapFullFilename' in sourceMapOptions) {
+                sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+            }
         } else if (options.sourceMap && !sourceMapFileInline) {
             var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename),
                 mapDir = path.dirname(mapFilename),
@@ -128,10 +135,11 @@ function render() {
     }
 
     if (sourceMapOptions.sourceMapRootpath === undefined) {
-        var pathToMap = path.dirname(sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename || '.'),
+        var pathToMap = path.dirname((sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename) || '.'),
             pathToInput = path.dirname(sourceMapOptions.sourceMapInputFilename || '.');
         sourceMapOptions.sourceMapRootpath = path.relative(pathToMap, pathToInput);
     }
+
 
     if (!input) {
         console.error("lessc: no input files");
@@ -324,18 +332,18 @@ function processPluginQueue() {
         }
     }
     queuePlugins.forEach(function(queue) {
-        pluginLoader.tryLoadPlugin(queue.name, function(err, data) {
-            if (err) {
-                pluginError(queue.name);
-            }
-            else {
+        var context = utils.clone(options);
+        pluginManager.Loader.loadPlugin(queue.name, process.cwd(), context, less.environment, fileManager)
+            .then(function(data) {
                 pluginFinished({
                     fileContent: data.contents,
                     filename: data.filename,
                     options: queue.options
                 });
-            }
-        });
+            })
+            .catch(function() {
+                pluginError(queue.name);
+            });
     });
 }
 
@@ -410,7 +418,7 @@ function processPluginQueue() {
                 options.javascriptEnabled = true;
                 break;
             case 'no-js':
-                console.error('The "--no-js" argument is deprecated, as inline JavaScript ' + 
+                console.error('The "--no-js" argument is deprecated, as inline JavaScript ' +
                     'is disabled by default. Use "--js" to enable inline JavaScript (not recommended).');
                 break;
             case 'include-path':

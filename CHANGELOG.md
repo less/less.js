@@ -1,5 +1,6 @@
 # 3.0.0
-2018-02-04
+2018-02-10
+  - Fix `calc()` function to not do math operations on compile
   - Rename Directive -> AtRule & Rule -> Declaration 
   - Cross-platform `@plugin` loading! (Node & Browser)
   - Numerous changes / improvements to plugin architecture

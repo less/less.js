@@ -150,6 +150,12 @@
   pixel: true;
   percent: true;
   em: true;
+  rem: true;
+  vw: true;
+  vh: true;
+  vmin: true;
+  vmax: true;
+  ch: true;
   cat: true;
   no-unit-is-empty: true;
   case-insensitive-1: true;

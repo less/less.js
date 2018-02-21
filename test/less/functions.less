@@ -134,11 +134,11 @@
 
   fade-out: fadeout(red, 5%); // support fadeOut and fadeout
   fade-in: fadein(fadeout(red, 10%), 5%);
-  fade-out-relative: fadeout(red, 5%,relative); 
+  fade-out-relative: fadeout(red, 5%,relative);
   fade-in-relative: fadein(fadeout(red, 10%, relative), 5%, relative);
-  fade-out2:  fadeout(fadeout(red, 50%), 50%); 
+  fade-out2:  fadeout(fadeout(red, 50%), 50%);
   fade-out2-relative: fadeout(fadeout(red, 50%, relative), 50%, relative);
-  
+
   hsv: hsv(5, 50%, 30%);
   hsva: hsva(3, 50%, 30%, 0.2);
 
@@ -163,6 +163,12 @@
     pixel: ispixel(32px);
     percent: ispercentage(32%);
     em: isem(32em);
+    rem: isrem(32rem);
+    vw: isvw(32vw);
+    vh: isvh(32vh);
+    vmin: isvmin(32vmin);
+    vmax: isvmax(32vmax);
+    ch: isch(32ch);
     cat: isunit(32cat, cat);
     no-unit-is-empty: isunit(32, '');
     case-insensitive-1: isunit(32CAT, cat);

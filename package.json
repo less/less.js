@@ -37,7 +37,8 @@
     "node": ">=4"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "grunt": "grunt"
   },
   "optionalDependencies": {
     "errno": "^0.1.1",
@@ -53,6 +54,7 @@
     "git-rev": "^0.2.1",
     "grunt": "~0.4.5",
     "grunt-browserify": "^5.0.0",
+    "grunt-cli": "^1.2.0",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",

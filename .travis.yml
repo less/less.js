@@ -6,7 +6,6 @@ node_js:
   - "9"
   - "8"
   - "6"
-  - "4"
 before_install:
   # from https://github.com/travis-ci/travis-ci/issues/3225#issuecomment-177592725
   # and also from https://github.com/travis-ci/travis-ci/issues/3225#issuecomment-200965782

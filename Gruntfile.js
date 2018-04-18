@@ -187,13 +187,17 @@ module.exports = function (grunt) {
                 command: 'node benchmark/index.js'
             },
             plugin: {
-                command: 'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css'
+                command: [
+                    'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'cd lib',
+                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css'
+                ].join(' && ')
             },
             "sourcemap-test": {
                 command: [
                     'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
                     'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
-                ].join('&&')
+                ].join(' && ')
             }
         },
 
@@ -508,11 +512,6 @@ module.exports = function (grunt) {
         'sauce-after-setup'
     ]);
 
-    // var sauceTests = [];
-    // browserTests.map(function(testName) {
-    //     sauceTests.push('saucelabs-jasmine:' + testName);
-    // });
-
     grunt.registerTask('sauce-after-setup', [
         'saucelabs-jasmine:all',
         'clean:sauce_log'
@@ -536,6 +535,9 @@ module.exports = function (grunt) {
 
     // Run all tests
     grunt.registerTask('test', testTasks);
+
+    // Run shell plugin test
+    grunt.registerTask('shell-plugin', ['shell:plugin']);
 
     // Run all tests
     grunt.registerTask('quicktest', testTasks.slice(0, -1));

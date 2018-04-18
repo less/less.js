@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.0.1
+ * Less - Leaner CSS v3.0.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2728,7 +2728,10 @@ module.exports = function(environment) {
                 callback(null, {rules:[]}, false, null);
             }
             else {
-                if (!importManager.files[fullPath]) {
+                // Inline imports aren't cached here.
+                // If we start to cache them, please make sure they won't conflict with non-inline imports of the
+                // same name as they used to do before this comment and the condition below have been added.
+                if (!importManager.files[fullPath] && !importOptions.inline) {
                     importManager.files[fullPath] = { root: root, options: importOptions };
                 } 
                 if (e && !importManager.error) { importManager.error = e; }
@@ -2843,7 +2846,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 0, 1],
+        version: [3, 0, 3],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require("./environment/environment")),

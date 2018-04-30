@@ -163,12 +163,12 @@
     pixel: ispixel(32px);
     percent: ispercentage(32%);
     em: isem(32em);
-    rem: isrem(32rem);
-    vw: isvw(32vw);
-    vh: isvh(32vh);
-    vmin: isvmin(32vmin);
-    vmax: isvmax(32vmax);
-    ch: isch(32ch);
+    rem: isunit(32rem, rem);
+    vw: isunit(32vw, vw);
+    vh: isunit(32vh, vh);
+    vmin: isunit(32vmin, vmin);
+    vmax: isunit(32vmax, vmax);
+    ch: isunit(32ch, ch);
     cat: isunit(32cat, cat);
     no-unit-is-empty: isunit(32, '');
     case-insensitive-1: isunit(32CAT, cat);

@@ -1,6 +1,6 @@
 ## 3.0.4
 2018-05-06
-  - Update source-map to 0.6.x ( #3180 ). Enforces node 6+ though.
+  - Update source-map to 0.6.x (#3180). Enforces node 6+ though.
 
 # 3.0.0
 2018-02-10

@@ -1,7 +1,11 @@
+## 3.0.4
+2018-05-06
+  - Update source-map to 0.6.x ( #3180 ). Enforces node 6+ though.
+
 # 3.0.0
 2018-02-10
   - Fix `calc()` function to not do math operations on compile
-  - Rename Directive -> AtRule & Rule -> Declaration 
+  - Rename Directive -> AtRule & Rule -> Declaration
   - Cross-platform `@plugin` loading! (Node & Browser)
   - Numerous changes / improvements to plugin architecture
   - Simplified API calls in plugins (`less.atrule()` vs `new less.tree.AtRule()`)

@@ -1,0 +1,4 @@
+SyntaxError: @unknown rule is missing block or ending semi-colon in {path}at-rules-unmatching-block.less on line 2, column 10:
+1 
+2 @unknown url( {
+3     50% {width: 20px;}

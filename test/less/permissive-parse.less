@@ -1,4 +1,6 @@
-@-moz-document regexp("(\d{0,15})") {
+@function-name: regexp;
+@d-value: 15;
+@-moz-document @{function-name}("(\d{0,@{d-value}})") {
 	a {
 		color: red;
 	}

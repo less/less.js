@@ -10,3 +10,8 @@
     even other stuff;
   };
 }
+
+@iostat: 1;
+.var {
+  --fortran: read (*, *, iostat=@{iostat}) radius, height;
+}

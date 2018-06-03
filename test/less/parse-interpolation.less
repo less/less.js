@@ -20,3 +20,10 @@
         background-color: red;
     }
 }
+
+@list: apple, satsuma, banana, pear;
+@{list} {
+  .fruit-& {
+    content: "Just a test.";
+  }
+}

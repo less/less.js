@@ -13,3 +13,9 @@ textarea:focus {
 .master-page-1 .selector-2 {
   background-color: red;
 }
+.fruit-apple,
+.fruit-satsuma,
+.fruit-banana,
+.fruit-pear {
+  content: "Just a test.";
+}

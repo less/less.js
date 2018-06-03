@@ -1,6 +1,6 @@
-input[type=text]:focus, 
-input[type=email]:focus, 
-input[type=password]:focus, 
+input[type=text]:focus,
+input[type=email]:focus,
+input[type=password]:focus,
 textarea:focus {
   foo: bar;
-} 
+}

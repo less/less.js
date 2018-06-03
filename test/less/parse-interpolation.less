@@ -13,3 +13,10 @@
     color: blue; 
   }
 }
+
+@my-selector: ~'.selector-1, .selector-2';
+.master-page-1 {
+    @{my-selector} {
+        background-color: red;
+    }
+}

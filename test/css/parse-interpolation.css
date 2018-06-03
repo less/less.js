@@ -4,3 +4,8 @@ input[type=password]:focus,
 textarea:focus {
   foo: bar;
 }
+.a + .z,
+.b + .z,
+.c + .z {
+  color: blue;
+}

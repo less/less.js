@@ -14,7 +14,7 @@ module.exports = function() {
     var oneTestOnly = process.argv[2],
         isFinished = false;
 
-    var isVerbose = process.env.npm_config_loglevel !== 'concise';
+    var isVerbose = process.env.npm_config_loglevel === 'verbose';
 
     var normalFolder = 'test/less';
     var bomFolder = 'test/less-bom';

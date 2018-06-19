@@ -6,11 +6,47 @@
   }
 } 
 
-@classes: ~".a, .b, .c";
+@classes: ~".a, .b,.c";
 
 @{classes} {  
   + .z {
     color: blue; 
+  }
+}
+
+.bar {
+  .d@{classes}&:hover, baz {
+    color: blue;
+  }
+}
+
+@c: ~'.a, .b';
+@d: ~' > .c';
+@e: ~' + .d';
+
+@{c}@{d}@{e} {
+  foo: bar;
+}
+
+@textClasses: ~'[class="text"], .text';
+
+input@{textClasses} {
+  background: red;
+}
+
+.form {
+  > @{textClasses} {
+    background: grey;
+  }
+}
+
+@textClasses2: ~'> [class="text"], > .text';
+.form {
+  @{textClasses2} {
+    background: grey;
+  }
+  > @{textClasses2} {
+    background: grey;
   }
 }
 

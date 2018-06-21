@@ -6,11 +6,11 @@
 .custom-property {
   --this: () => {
     basically anything until final semi-colon;
-    even other stuff; // i'm serious;
+    even other stuff; // i\'m serious;
   };
   --that: () => {
     basically anything until final semi-colon;
-    even other stuff; // i'm serious;
+    even other stuff; // i\'m serious;
   };
   --custom-color: #ff3333;
   custom-color: #ff3333;

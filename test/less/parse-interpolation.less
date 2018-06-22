@@ -6,7 +6,7 @@
   }
 } 
 
-@classes: ~".a, .b,.c";
+@classes: .a, .b, .c;
 
 @{classes} {  
   + .z {
@@ -21,32 +21,20 @@
 }
 
 @c: ~'.a, .b';
-@d: ~' > .c';
-@e: ~' + .d';
+@d: ~'.c, .d';
+@e: ~' + .e';
 
-@{c}@{d}@{e} {
-  foo: bar;
-}
-
-@textClasses: ~'[class="text"], .text';
-
-input@{textClasses} {
-  background: red;
-}
-
-.form {
-  > @{textClasses} {
-    background: grey;
+@{c}@{d} {
+  @{e} {
+    foo: bar;
   }
 }
 
-@textClasses2: ~'> [class="text"], > .text';
-.form {
-  @{textClasses2} {
-    background: grey;
-  }
-  > @{textClasses2} {
-    background: grey;
+@textClasses: ~'&[class="text"], &.text';
+
+input {
+  @{textClasses} {
+    background: red;
   }
 }
 

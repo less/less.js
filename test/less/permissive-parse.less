@@ -43,3 +43,9 @@
     this: works;
   }
 }
+// @todo - fix comment absorption after property
+.test-comment {
+  --value: /* { ; } */;
+  --comment-within: ( /* okay?; comment; */ );
+  --empty: ;
+}

@@ -29,3 +29,8 @@
     this: works;
   }
 }
+.test-comment {
+  --value: ;
+  --comment-within: ( /* okay?; comment; */ );
+  --empty: ;
+}

@@ -17,7 +17,7 @@
   };
   --that: @this;
   @red: lighten(red, 10%);
-  --custom-color: @red;
+  --custom-color: @red lighten(red, 10%);
   custom-color: $--custom-color;
 }
 
@@ -45,7 +45,6 @@
 }
 // @todo - fix comment absorption after property
 .test-comment {
-  --value: /* { ; } */;
+  --value: a/* { ; } */;
   --comment-within: ( /* okay?; comment; */ );
-  --empty: ;
 }

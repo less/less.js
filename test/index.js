@@ -19,6 +19,9 @@ var testMap = [
         strictMath: true,
         ieCompat: true
     }, "strict-math/"],
+    [{
+        strictMath: 'division'
+    }, "strict-math-division/"],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
         lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: false}, "no-js-errors/",

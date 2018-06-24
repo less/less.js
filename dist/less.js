@@ -10,7 +10,7 @@
  /** * @license Apache-2.0
  */
 
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.less = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.less = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var addDataAttr = require("./utils").addDataAttr,
     browser = require("./browser");
 
@@ -56,6 +56,7 @@ module.exports = function(window, options) {
         options.onReady = true;
     }
 
+    // TODO: deprecate and remove 'inlineJavaScript' thing - where it came from at all?
     options.javascriptEnabled = (options.javascriptEnabled || options.inlineJavaScript) ? true : false;
 
 };
@@ -2679,7 +2680,8 @@ var contexts = require("./contexts"),
     Parser = require('./parser/parser'),
     LessError = require('./less-error'),
     utils = require('./utils'),
-    PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise;
+    PromiseConstructor = typeof Promise === 'undefined' ? require('promise') : Promise,
+    logger = require('./logger');
 
 module.exports = function(environment) {
 
@@ -2705,7 +2707,7 @@ module.exports = function(environment) {
         this.queue = [];        // Files which haven't been imported yet
         this.files = {};        // Holds the imported parse trees.
     };
-    
+
     /**
      * Add an import to be imported
      * @param path - the raw path
@@ -2726,6 +2728,7 @@ module.exports = function(environment) {
             var importedEqualsRoot = fullPath === importManager.rootFilename;
             if (importOptions.optional && e) {
                 callback(null, {rules:[]}, false, null);
+                logger.info("The file " + fullPath + " was skipped because it was not found and the import was marked optional.");
             }
             else {
                 // Inline imports aren't cached here.
@@ -2733,7 +2736,7 @@ module.exports = function(environment) {
                 // same name as they used to do before this comment and the condition below have been added.
                 if (!importManager.files[fullPath] && !importOptions.inline) {
                     importManager.files[fullPath] = { root: root, options: importOptions };
-                } 
+                }
                 if (e && !importManager.error) { importManager.error = e; }
                 callback(e, root, importedEqualsRoot, fullPath);
             }
@@ -2798,10 +2801,10 @@ module.exports = function(environment) {
             } else if (importOptions.inline) {
                 fileParsedFunc(null, contents, resolvedFilename);
             } else {
-                
+
                 // import (multiple) parse trees apparently get altered and can't be cached.
                 // TODO: investigate why this is
-                if (importManager.files[resolvedFilename] 
+                if (importManager.files[resolvedFilename]
                     && !importManager.files[resolvedFilename].options.multiple
                     && !importOptions.multiple) {
 
@@ -2824,7 +2827,7 @@ module.exports = function(environment) {
             promise = pluginLoader.loadPlugin(path, currentFileInfo.currentDirectory, context, environment, fileManager);
         }
         else {
-            promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, context, environment, 
+            promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, context, environment,
                 function(err, loadedFile) {
                     if (err) {
                         fileParsedFunc(err);
@@ -2841,7 +2844,7 @@ module.exports = function(environment) {
     return ImportManager;
 };
 
-},{"./contexts":12,"./less-error":36,"./parser/parser":42,"./utils":86,"promise":undefined}],35:[function(require,module,exports){
+},{"./contexts":12,"./less-error":36,"./logger":37,"./parser/parser":42,"./utils":86,"promise":undefined}],35:[function(require,module,exports){
 module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
@@ -3494,14 +3497,15 @@ module.exports = function() {
         return tok;
     };
 
-    parserInput.$quoted = function() {
+    parserInput.$quoted = function(loc) {
+        var pos = loc || parserInput.i,
+            startChar = input.charAt(pos);
 
-        var startChar = input.charAt(parserInput.i);
         if (startChar !== "'" && startChar !== '"') {
             return;
         }
         var length = input.length,
-            currentPosition = parserInput.i;
+            currentPosition = pos;
 
         for (var i = 1; i + currentPosition < length; i++) {
             var nextChar = input.charAt(i + currentPosition);
@@ -3514,13 +3518,133 @@ module.exports = function() {
                     break;
                 case startChar:
                     var str = input.substr(currentPosition, i + 1);
-                    skipWhitespace(i + 1);
-                    return str;
+                    if (!loc && loc !== 0) {
+                        skipWhitespace(i + 1);
+                        return str
+                    }
+                    return [startChar, str];
                 default:
             }
         }
         return null;
     };
+
+    /**
+     * Permissive parsing. Ignores everything except matching {} [] () and quotes
+     * until matching token (outside of blocks)
+     */
+    parserInput.$parseUntil = function(tok) {
+        var quote = '',
+            returnVal = null,
+            inComment = false,
+            blockDepth = 0,
+            blockStack = [],
+            parseGroups = [],
+            length = input.length,
+            startPos = parserInput.i,
+            lastPos = parserInput.i,
+            i = parserInput.i,
+            loop = true,
+            testChar;
+
+        if (typeof tok === 'string') {
+            testChar = function(char) {
+                return char === tok;
+            }
+        } else {
+            testChar = function(char) {
+                return tok.test(char);
+            }
+        }
+
+        do {
+            var prevChar, nextChar = input.charAt(i);
+            if (blockDepth === 0 && testChar(nextChar)) {
+                returnVal = input.substr(lastPos, i - lastPos);
+                if (returnVal) {
+                    parseGroups.push(returnVal);
+                    returnVal = parseGroups;
+                }
+                else {
+                    returnVal = [' '];
+                }
+                skipWhitespace(i - startPos);
+                loop = false
+            } else {
+                if (inComment) {
+                    if (nextChar === "*" && 
+                        input.charAt(i + 1) === "/") {
+                        i++;
+                        blockDepth--;
+                        inComment = false;
+                    }
+                    i++;
+                    continue;
+                }
+                switch (nextChar) {
+                    case '\\':
+                        i++;
+                        nextChar = input.charAt(i);
+                        parseGroups.push(input.substr(lastPos, i - lastPos + 1));
+                        lastPos = i + 1;
+                        break;
+                    case "/":
+                        if (input.charAt(i + 1) === "*") {
+                            i++;
+                            console.log(input.substr(lastPos, i - lastPos));
+                            inComment = true;
+                            blockDepth++;
+                        }
+                        break;
+                    case "'":
+                    case '"':
+                        quote = parserInput.$quoted(i);
+                        if (quote) {
+                            parseGroups.push(input.substr(lastPos, i - lastPos), quote);
+                            i += quote[1].length - 1;
+                            lastPos = i + 1;
+                        }
+                        else {
+                            skipWhitespace(i - startPos);
+                            returnVal = nextChar;
+                            loop = false;
+                        }
+                        break;
+                    case "{":
+                        blockStack.push("}");
+                        blockDepth++;
+                        break;
+                    case "(":
+                        blockStack.push(")");
+                        blockDepth++;
+                        break;
+                    case "[":
+                        blockStack.push("]");
+                        blockDepth++;
+                        break;
+                    case "}":
+                    case ")":
+                    case "]":
+                        var expected = blockStack.pop();
+                        if (nextChar === expected) {
+                            blockDepth--;
+                        } else {
+                            // move the parser to the error and return expected
+                            skipWhitespace(i - startPos);
+                            returnVal = expected;
+                            loop = false;
+                        }
+                }
+                i++;
+                if (i > length) {
+                    loop = false;
+                }
+            }
+            prevChar = nextChar;
+        } while (loop);
+
+        return returnVal ? returnVal : null;
+    }
 
     parserInput.autoCommentAbsorb = true;
     parserInput.commentStore = [];
@@ -4879,7 +5003,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
             },
             declaration: function () {
-                var name, value, startOfRule = parserInput.i, c = parserInput.currentChar(), important, merge, isVariable;
+                var name, value, index = parserInput.i, 
+                    c = parserInput.currentChar(), important, merge, isVariable;
 
                 if (c === '.' || c === '#' || c === '&' || c === ':') { return; }
 
@@ -4900,13 +5025,19 @@ var Parser = function Parser(context, imports, fileInfo) {
                         // where each item is a tree.Keyword or tree.Variable
                         merge = !isVariable && name.length > 1 && name.pop().value;
 
+                        // Custom property values get permissive parsing
+                        if (name[0].value && name[0].value.slice(0, 2) === '--') {
+                            value = this.permissiveValue(';');
+                        }
                         // Try to store values as anonymous
                         // If we need the value later we'll re-parse it in ruleset.parseValue
-                        value = this.anonymousValue();
+                        else {
+                            value = this.anonymousValue();
+                        }
                         if (value) {
                             parserInput.forget();
                             // anonymous values absorb the end ';' which is required for them to work
-                            return new (tree.Declaration)(name, value, false, merge, startOfRule, fileInfo);
+                            return new (tree.Declaration)(name, value, false, merge, index, fileInfo);
                         }
 
                         if (!value) {
@@ -4914,11 +5045,16 @@ var Parser = function Parser(context, imports, fileInfo) {
                         }
 
                         important = this.important();
+
+                        // As a last resort, let a variable try to be parsed as a permissive value
+                        if (!value && isVariable) {
+                            value = this.permissiveValue(';');
+                        }
                     }
 
                     if (value && this.end()) {
                         parserInput.forget();
-                        return new (tree.Declaration)(name, value, important, merge, startOfRule, fileInfo);
+                        return new (tree.Declaration)(name, value, important, merge, index, fileInfo);
                     }
                     else {
                         parserInput.restore();
@@ -4932,6 +5068,44 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var match = parserInput.$re(/^([^@\$+\/'"*`(;{}-]*);/);
                 if (match) {
                     return new(tree.Anonymous)(match[1], index);
+                }
+            },
+            /**
+             * Used for custom properties and custom at-rules
+             * Parses almost anything inside of {} [] () "" blocks
+             * until it reaches outer-most tokens.
+             */
+            permissiveValue: function (untilTokens) {
+                var i, index = parserInput.i,
+                    value = parserInput.$parseUntil(untilTokens);
+
+                if (value) {
+                    if (typeof value === 'string') {
+                        error("Expected '" + value + "'", "Parse");
+                    }
+                    if (value.length === 1 && value[0] === ' ') {
+                        return new tree.Anonymous('', index);
+                    }
+                    var item, args = [];
+                    for (i = 0; i < value.length; i++) {
+                        item = value[i];
+                        if (Array.isArray(item)) {
+                            // Treat actual quotes as normal quoted values
+                            args.push(new tree.Quoted(item[0], item[1], true, index, fileInfo));
+                        }
+                        else {
+                            if (i === value.length - 1) {
+                                item = item.trim();
+                            }
+                            // Treat like quoted values, but replace vars like unquoted expressions
+                            var quote = new tree.Quoted("'", item, true, index, fileInfo);
+                            quote.variableRegex = /@([\w-]+)/g;
+                            quote.propRegex = /\$([\w-]+)/g;
+                            quote.reparse = true;
+                            args.push(quote);
+                        }
+                    }
+                    return new tree.Expression(args, true);
                 }
             },
 
@@ -5205,10 +5379,15 @@ var Parser = function Parser(context, imports, fileInfo) {
                         error("expected " + name + " expression");
                     }
                 } else if (hasUnknown) {
-                    value = (parserInput.$re(/^[^{;]+/) || '').trim();
-                    hasBlock = (parserInput.currentChar() == '{');
-                    if (value) {
-                        value = new(tree.Anonymous)(value);
+                    value = this.permissiveValue(/^[{;]/);
+                    hasBlock = (parserInput.currentChar() === '{');
+                    if (!value) {
+                        if (!hasBlock && parserInput.currentChar() !== ';') {
+                            error(name + " rule is missing block or ending semi-colon");
+                        }
+                    }
+                    else if (!value.value) {
+                        value = null;
                     }
                 }
 
@@ -7103,8 +7282,9 @@ var Node = require("./node"),
     Paren = require("./paren"),
     Comment = require("./comment");
 
-var Expression = function (value) {
+var Expression = function (value, noSpacing) {
     this.value = value;
+    this.noSpacing = noSpacing;
     if (!value) {
         throw new Error("Expression requires an array parameter");
     }
@@ -7124,7 +7304,7 @@ Expression.prototype.eval = function (context) {
     if (this.value.length > 1) {
         returnValue = new Expression(this.value.map(function (e) {
             return e.eval(context);
-        }));
+        }), this.noSpacing);
     } else if (this.value.length === 1) {
         if (this.value[0].parens && !this.value[0].parensInOp) {
             doubleParen = true;
@@ -7144,7 +7324,7 @@ Expression.prototype.eval = function (context) {
 Expression.prototype.genCSS = function (context, output) {
     for (var i = 0; i < this.value.length; i++) {
         this.value[i].genCSS(context, output);
-        if (i + 1 < this.value.length) {
+        if (!this.noSpacing && i + 1 < this.value.length) {
             output.add(" ");
         }
     }
@@ -8415,6 +8595,8 @@ var Quoted = function (str, content, escaped, index, currentFileInfo) {
     this.quote = str.charAt(0);
     this._index = index;
     this._fileInfo = currentFileInfo;
+    this.variableRegex = /@\{([\w-]+)\}/g;
+    this.propRegex = /\$\{([\w-]+)\}/g;
 };
 Quoted.prototype = new Node();
 Quoted.prototype.type = "Quoted";
@@ -8428,7 +8610,7 @@ Quoted.prototype.genCSS = function (context, output) {
     }
 };
 Quoted.prototype.containsVariables = function() {
-    return this.value.match(/@\{([\w-]+)\}/);
+    return this.value.match(this.variableRegex);
 };
 Quoted.prototype.eval = function (context) {
     var that = this, value = this.value;
@@ -8448,8 +8630,8 @@ Quoted.prototype.eval = function (context) {
         } while (value !== evaluatedValue);
         return evaluatedValue;
     }
-    value = iterativeReplace(value, /@\{([\w-]+)\}/g, variableReplacement);
-    value = iterativeReplace(value, /\$\{([\w-]+)\}/g, propertyReplacement);
+    value = iterativeReplace(value, this.variableRegex, variableReplacement);
+    value = iterativeReplace(value, this.propRegex, propertyReplacement);
     return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
 };
 Quoted.prototype.compare = function (other) {
@@ -8762,21 +8944,25 @@ Ruleset.prototype.parseValue = function(toParse) {
     var self = this;
     function transformDeclaration(decl) {
         if (decl.value instanceof Anonymous && !decl.parsed) {
-            this.parse.parseNode(
-                decl.value.value, 
-                ["value", "important"], 
-                decl.value.getIndex(), 
-                decl.fileInfo(), 
-                function(err, result) {
-                    if (err) {
-                        decl.parsed = true;
-                    }
-                    if (result) {
-                        decl.value = result[0];
-                        decl.important = result[1] || '';
-                        decl.parsed = true;
-                    }
-                });
+            if (typeof decl.value.value === "string") {
+                this.parse.parseNode(
+                    decl.value.value,
+                    ["value", "important"], 
+                    decl.value.getIndex(), 
+                    decl.fileInfo(), 
+                    function(err, result) {
+                        if (err) {
+                            decl.parsed = true;
+                        }
+                        if (result) {
+                            decl.value = result[0];
+                            decl.important = result[1] || '';
+                            decl.parsed = true;
+                        }
+                    });
+            } else {
+                decl.parsed = true;
+            }
 
             return decl;
         }

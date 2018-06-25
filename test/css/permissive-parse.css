@@ -21,7 +21,9 @@
 @-moz-whatever (foo: "(" bam ")") {
   bar: foo;
 }
-#selector, .bar, foo[attr="blah"] {
+#selector,
+.bar,
+foo[attr="blah"] {
   bar: value;
 }
 @media (min-width: 640px) {

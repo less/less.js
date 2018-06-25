@@ -1,6 +1,6 @@
 var less = {
     logLevel: 4,
-    errorReporting: "console"
+    errorReporting: 'console'
 };
 less.functions = {
     add: function(a, b) {
@@ -10,8 +10,8 @@ less.functions = {
         return new(less.tree.Dimension)(a.value + 1);
     },
     _color: function(str) {
-        if (str.value === "evil red") {
-            return new(less.tree.Color)("600");
+        if (str.value === 'evil red') {
+            return new(less.tree.Color)('600');
         }
     }
 };

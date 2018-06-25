@@ -1,7 +1,7 @@
 var less = {
     logLevel: 4,
-    errorReporting: "console",
+    errorReporting: 'console',
     globalVars: {
-        "@global-var": "red"
+        '@global-var': 'red'
     }
 };

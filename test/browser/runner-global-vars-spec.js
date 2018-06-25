@@ -1,3 +1,3 @@
-describe("less.js global vars", function() {
+describe('less.js global vars', function() {
     testLessEqualsInDocument();
 });

@@ -1,5 +1,5 @@
 registerPlugin({
     eval: function() {
-        throw new Error("An error was here.")
+        throw new Error('An error was here.')
     }
 });

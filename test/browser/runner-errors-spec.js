@@ -1,3 +1,3 @@
-describe("less.js error tests", function() {
+describe('less.js error tests', function() {
     testLessErrorsInDocument();
 });

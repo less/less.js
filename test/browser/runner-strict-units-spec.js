@@ -1,3 +1,3 @@
-describe("less.js strict units tests", function() {
+describe('less.js strict units tests', function() {
     testLessEqualsInDocument();
 });

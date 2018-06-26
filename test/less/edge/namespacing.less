@@ -1,7 +1,9 @@
 @varToGet: default-color;
 .foo {
   color: @defaults[@default-color];
-  // color: @defaults[@nested][@color];
+  color2: @defaults[@nested][@color];
+  color3: @theme[color];
+  color4: @theme[@nested][color];
   // color: @defaults[@@varToGet];
   // prop: #ns1[foo];
   // var: #ns1[@foo];
@@ -14,10 +16,17 @@
     @color: yellow;
   }
 };
-#ns1 {
-  foo: bar;
-  @foo: baz;
-  .vars() {
-    sub: value;
+
+@theme: {
+  color: red;
+  @nested: {
+    color: yellow;
   }
-}
+};
+// #ns1 {
+//   foo: bar;
+//   @foo: baz;
+//   .vars() {
+//     sub: value;
+//   }
+// }

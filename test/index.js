@@ -50,6 +50,8 @@ var testMap = [
     [{urlArgs: '424242'}, 'url-args/'],
     [{rewriteUrls: 'all'}, 'rewrite-urls-all/'],
     [{rewriteUrls: 'local'}, 'rewrite-urls-local/'],
+    [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'all'}, 'rootpath-rewrite-urls-all/'],
+    [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'local'}, 'rootpath-rewrite-urls-local/'],
     [{paths: ['test/data/', 'test/less/import/']}, 'include-path/'],
     [{paths: 'test/data/'}, 'include-path-string/'],
     [{plugin: 'test/plugins/postprocess/'}, 'postProcessorPlugin/'],

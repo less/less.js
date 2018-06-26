@@ -2,22 +2,25 @@
 
 module.exports = function (grunt) {
 
+
+    grunt.option('stack', true)
+
     // Report the elapsed execution time of tasks.
     require('time-grunt')(grunt);
 
-    var COMPRESS_FOR_TESTS = true;
+    var COMPRESS_FOR_TESTS = false;
     var git = require('git-rev');
 
    // Sauce Labs browser
     var browsers = [
         // Desktop browsers
         {
-            browserName: "chrome",
+            browserName: 'chrome',
             version: 'latest',
             platform: 'Windows 7'
         },
         {
-            browserName: "firefox",
+            browserName: 'firefox',
             version: 'latest',
             platform: 'Linux'
         },
@@ -27,17 +30,17 @@ module.exports = function (grunt) {
             platform: 'OS X 10.11'
         },
         {
-            browserName: "internet explorer",
+            browserName: 'internet explorer',
             version: '8',
             platform: 'Windows XP'
         },
         {
-            browserName: "internet explorer",
+            browserName: 'internet explorer',
             version: '11',
             platform: 'Windows 8.1'
         },
         {
-            browserName: "edge",
+            browserName: 'edge',
             version: '13',
             platform: 'Windows 10'
         },
@@ -64,20 +67,21 @@ module.exports = function (grunt) {
             platform: 'Linux'
         }
     ];
-       
+
     var sauceJobs = {};
 
-    var browserTests = [   "filemanager-plugin",
-        "visitor-plugin",
-        "global-vars", 
-        "modify-vars", 
-        "production", 
-        "rootpath-relative",
-        "rootpath", 
-        "rewrite-urls", 
-        "browser", 
-        "no-js-errors", 
-        "legacy"
+
+    var browserTests = [   'filemanager-plugin',
+        'visitor-plugin',
+        'global-vars',
+        'modify-vars',
+        'production',
+        'rootpath-relative',
+        'rootpath',
+        'rewrite-urls',
+        'browser',
+        'no-js-errors',
+        'legacy'
     ];
 
     function makeJob(testName) {
@@ -85,16 +89,16 @@ module.exports = function (grunt) {
             options: {
                 urls: testName === 'all' ?
                     browserTests.map(function(name) {
-                        return "http://localhost:8081/tmp/browser/test-runner-" + name + ".html";
+                        return 'http://localhost:8081/tmp/browser/test-runner-' + name + '.html';
                     }) :
-                    ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
+                    ['http://localhost:8081/tmp/browser/test-runner-' + testName + '.html'],
                 testname: testName === 'all' ? 'Unit Tests for Less.js' : testName,
                 browsers: browsers,
                 public: 'public',
                 recordVideo: false,
                 videoUploadOnPass: false,
-                recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
-                build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
+                recordScreenshots: process.env.TRAVIS_BRANCH !== 'master',
+                build: process.env.TRAVIS_BRANCH === 'master' ? process.env.TRAVIS_JOB_ID : undefined,
                 tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
                 statusCheckAttempts: -1,
                 sauceConfig: {
@@ -113,20 +117,21 @@ module.exports = function (grunt) {
                     // test. Passing undefined does not alter the test result. Please note that this
                     // only affects the grunt task's result. You have to explicitly update the Sauce
                     // Labs job's status via its REST API, if you want so.
-            
+
                     // This should be the encrypted value in Travis
                     var user = process.env.SAUCE_USERNAME;
                     var pass = process.env.SAUCE_ACCESS_KEY;
 
                     git.short(function(hash) {
-                        require('request').put({
+                        require('phin')({
+                            method: 'PUT',
                             url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
                             auth: { user: user, pass: pass },
-                            json: {
+                            data: {
                                 passed: result.passed,
                                 build: 'build-' + hash
                             }
-                        }, function (error, response, body) {
+                        }, function (error, response) {
                             if (error) {
                                 console.log(error);
                                 callback(error);
@@ -138,7 +143,7 @@ module.exports = function (grunt) {
                             }
                         });
                     });
-                        
+
                 }
             }
         };
@@ -169,18 +174,31 @@ module.exports = function (grunt) {
         },
 
         shell: {
-            options: {stdout: true, failOnError: true},
+            options: {
+                stdout: true,
+                failOnError: true,
+                execOptions: {
+                    maxBuffer: Infinity
+                }
+            },
             test: {
                 command: 'node test/index.js'
             },
             benchmark: {
                 command: 'node benchmark/index.js'
             },
-            "sourcemap-test": {
+            plugin: {
+                command: [
+                    'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'cd lib',
+                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css'
+                ].join(' && ')
+            },
+            'sourcemap-test': {
                 command: [
                     'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
                     'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
-                ].join('&&')
+                ].join(' && ')
             }
         },
 
@@ -188,7 +206,7 @@ module.exports = function (grunt) {
             browser: {
                 src: ['./lib/less-browser/bootstrap.js'],
                 options: {
-                    exclude: ["promise"],
+                    exclude: ['promise'],
                     browserifyOptions: {
                         standalone: 'less'
                     }
@@ -248,15 +266,15 @@ module.exports = function (grunt) {
         },
 
         eslint: {
-            target: ["Gruntfile.js", 
-                "test/**/*.js", 
-                "lib/less*/**/*.js", 
-                "bin/lessc", 
-                "!test/browser/jasmine-jsreporter.js",
-                "!test/less/errors/plugin/plugin-error.js"
+            target: ['Gruntfile.js',
+                'test/**/*.js',
+                'lib/less*/**/*.js',
+                'bin/lessc',
+                '!test/browser/jasmine-jsreporter.js',
+                '!test/less/errors/plugin/plugin-error.js'
             ],
             options: {
-                configFile: ".eslintrc.json"
+                configFile: '.eslintrc.json'
             }
         },
 
@@ -277,7 +295,15 @@ module.exports = function (grunt) {
             },
             main: {
                 // src is used to build list of less files to compile
-                src: ['test/less/*.less', '!test/less/javascript.less', '!test/less/urls.less', '!test/less/empty.less'],
+                src: [
+                    'test/less/*.less',
+                    // Don't test NPM import, obviously
+                    '!test/less/plugin-module.less',
+                    '!test/less/import-module.less',
+                    '!test/less/javascript.less',
+                    '!test/less/urls.less',
+                    '!test/less/empty.less'
+                ],
                 options: {
                     helpers: 'test/browser/runner-main-options.js',
                     specs: 'test/browser/runner-main-spec.js',
@@ -404,7 +430,7 @@ module.exports = function (grunt) {
                     specs: 'test/browser/runner-filemanagerPlugin.js',
                     outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
                 }
-            }            
+            }
         },
 
         'saucelabs-jasmine': sauceJobs,
@@ -413,8 +439,8 @@ module.exports = function (grunt) {
         // Clean the version of less built for the tests
         clean: {
             test: ['test/browser/less.js', 'tmp', 'test/less-bom'],
-            "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map'],
-            sauce_log: ["sc_*.log"]
+            'sourcemap-test': ['test/sourcemaps/*.css', 'test/sourcemaps/*.map'],
+            sauce_log: ['sc_*.log']
         }
     });
 
@@ -438,7 +464,7 @@ module.exports = function (grunt) {
         'uglify:dist'
     ]);
 
-    // Release Rhino Version
+    // Release Rhino Version (UNSUPPORTED)
     grunt.registerTask('rhino', [
         'browserify:rhino',
         'concat:rhino',
@@ -466,17 +492,17 @@ module.exports = function (grunt) {
         'connect::keepalive'
     ]);
 
-    var previous_force_state = grunt.option("force");
+    var previous_force_state = grunt.option('force');
 
-    grunt.registerTask("force",function(set) {
-        if (set === "on") {
-            grunt.option("force",true);
+    grunt.registerTask('force',function(set) {
+        if (set === 'on') {
+            grunt.option('force',true);
         }
-        else if (set === "off") {
-            grunt.option("force",false);
+        else if (set === 'off') {
+            grunt.option('force',false);
         }
-        else if (set === "restore") {
-            grunt.option("force",previous_force_state);
+        else if (set === 'restore') {
+            grunt.option('force',previous_force_state);
         }
     });
 
@@ -487,11 +513,6 @@ module.exports = function (grunt) {
         'sauce-after-setup'
     ]);
 
-    // var sauceTests = [];
-    // browserTests.map(function(testName) {
-    //     sauceTests.push('saucelabs-jasmine:' + testName);
-    // });
-
     grunt.registerTask('sauce-after-setup', [
         'saucelabs-jasmine:all',
         'clean:sauce_log'
@@ -501,22 +522,26 @@ module.exports = function (grunt) {
         'clean',
         'eslint',
         'shell:test',
+        'shell:plugin',
         'browsertest'
     ];
 
     if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
         Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
-        (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "3.x")) {
-        testTasks.push("force:on");
-        testTasks.push("sauce-after-setup");
-        testTasks.push("force:off");
+        (process.env.TRAVIS_BRANCH === 'master' || process.env.TRAVIS_BRANCH === '3.x')) {
+        testTasks.push('force:on');
+        testTasks.push('sauce-after-setup');
+        testTasks.push('force:off');
     }
 
     // Run all tests
     grunt.registerTask('test', testTasks);
 
+    // Run shell plugin test
+    grunt.registerTask('shell-plugin', ['shell:plugin']);
+
     // Run all tests
-    grunt.registerTask('quicktest', testTasks.slice(0, testTasks.length - 1));
+    grunt.registerTask('quicktest', testTasks.slice(0, -1));
 
     // generate a good test environment for testing sourcemaps
     grunt.registerTask('sourcemap-test', [

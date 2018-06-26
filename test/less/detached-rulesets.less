@@ -31,8 +31,8 @@
 .wrap-mixin(@ruleset);
 
 .desktop-and-old-ie(@rules) {
-  @media screen and (min-width: 1200) { @rules(); }
-  html.lt-ie9 &                       { @rules(); }
+  @media screen and (min-width: 1200) { @rules() }
+  html.lt-ie9 &                       { @rules() }
 }
 
 header {

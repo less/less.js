@@ -163,6 +163,18 @@
     pixel: ispixel(32px);
     percent: ispercentage(32%);
     em: isem(32em);
+    ex: isunit(32ex, ex);
+    rem: isunit(32rem, rem);
+    vw: isunit(32vw, vw);
+    vh: isunit(32vh, vh);
+    vmin: isunit(32vmin, vmin);
+    vmax: isunit(32vmax, vmax);
+    ch: isunit(32ch, ch);
+    cm: isunit(32cm, cm);
+    mm: isunit(32mm, mm);
+    pt: isunit(32pt, pt);
+    q: isunit(32q, q);
+    in: isunit(32in, in);
     cat: isunit(32cat, cat);
     no-unit-is-empty: isunit(32, '');
     case-insensitive-1: isunit(32CAT, cat);
@@ -231,3 +243,20 @@ html {
   color: mix(blue, @color2, 50%);
 }
 
+#boolean {
+  a: boolean(not(2 < 1));
+  b: boolean(not(2 > 1) and (true));
+  c: boolean(not(boolean((true))));
+}
+
+#if {
+  a: if(not(false), 1, 2);
+  b: if(not(true), 1, 2);
+  @1: if(not(false), {c: 3}, {d: 4}); @1();
+
+  e: if(not(true), 5);
+  @f: boolean((3 = 4));
+  f: if(not(@f), 6);
+
+  if((false), {g: 7}); /* results in void */
+}

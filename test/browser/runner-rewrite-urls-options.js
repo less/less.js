@@ -1,3 +1,4 @@
 var less = {logLevel: 4,
-    errorReporting: "console"};
-less.rewriteUrls = "all";
+
+    errorReporting: 'console'};
+less.rewriteUrls = 'all';

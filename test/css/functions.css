@@ -150,6 +150,18 @@
   pixel: true;
   percent: true;
   em: true;
+  ex: true;
+  rem: true;
+  vw: true;
+  vh: true;
+  vmin: true;
+  vmax: true;
+  ch: true;
+  cm: true;
+  mm: true;
+  pt: true;
+  q: true;
+  in: true;
   cat: true;
   no-unit-is-empty: true;
   case-insensitive-1: true;
@@ -198,4 +210,17 @@
 /* comment1 */
 html {
   color: #8080ff;
+}
+#boolean {
+  a: true;
+  b: false;
+  c: false;
+}
+#if {
+  a: 1;
+  b: 2;
+  c: 3;
+  e: ;
+  f: 6;
+  /* results in void */
 }

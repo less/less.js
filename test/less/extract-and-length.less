@@ -1,4 +1,17 @@
 
+// test late parsing
+@cols: 1, 2;
+
+.a(@i: length(@cols)) when (@i > 0) {
+  @divider: e(extract(@cols, @i));
+}
+.a;
+
+.b(@j: 1) when (@j < length(@cols)) {
+  @divider: e(extract(@cols, @j));
+}
+.b;
+
 // simple array/list:
 
 .multiunit {

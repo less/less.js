@@ -4,6 +4,10 @@
   },
   "globals": {},
   "rules": {
+    "quotes": [
+      1,
+      "single"
+    ],
     "no-eval": 2,
     "no-use-before-define": [
       2,
@@ -72,6 +76,7 @@
       "all"
     ],
     "space-infix-ops": 2,
+    "spaced-comment": 1,
     "space-before-blocks": [
       2,
       "always"

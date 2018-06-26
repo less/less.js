@@ -1,6 +1,6 @@
 var alreadyRun = false;
 
-describe("less.js modify vars", function () {
+describe('less.js modify vars', function () {
     beforeEach(function (done) {
         // simulating "setUp" or "beforeAll" method
         if (alreadyRun) {
@@ -13,8 +13,8 @@ describe("less.js modify vars", function () {
         less.pageLoadFinished
             .then(function () {
                 less.modifyVars({
-                    var1: "green",
-                    var2: "purple",
+                    var1: 'green',
+                    var2: 'purple',
                     scale: 20
                 }).then(function () {
                     done();
@@ -23,7 +23,7 @@ describe("less.js modify vars", function () {
     });
 
     testLessEqualsInDocument();
-    it("Should log only 2 XHR requests", function (done) {
+    it('Should log only 2 XHR requests', function (done) {
         var xhrLogMessages = logMessages.filter(function (item) {
             return (/XHR: Getting '/).test(item);
         });

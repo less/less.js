@@ -111,7 +111,7 @@ ieFormat = function(text) {
             styleNode.innerText = text;
         }
     } catch (e) {
-        throw new Error("Couldn't reassign styleSheet.cssText.");
+        throw new Error('Couldn\'t reassign styleSheet.cssText.');
     }
     var transformedText = styleNode.styleSheet ? styleNode.styleSheet.cssText : styleNode.innerText;
     headNode.removeChild(styleNode);
@@ -119,9 +119,9 @@ ieFormat = function(text) {
 };
 
 testSheet = function (sheet) {
-    it(sheet.id + " should match the expected output", function (done) {
-        var lessOutputId = sheet.id.replace("original-", ""),
-            expectedOutputId = "expected-" + lessOutputId,
+    it(sheet.id + ' should match the expected output', function (done) {
+        var lessOutputId = sheet.id.replace('original-', ''),
+            expectedOutputId = 'expected-' + lessOutputId,
             lessOutputObj,
             lessOutput,
             expectedOutputHref = document.getElementById(expectedOutputId).href,
@@ -136,8 +136,8 @@ testSheet = function (sheet) {
 
                 expectedOutput
                     .then(function (text) {
-                        if (window.navigator.userAgent.indexOf("MSIE") >= 0 ||
-                            window.navigator.userAgent.indexOf("Trident/") >= 0) {
+                        if (window.navigator.userAgent.indexOf('MSIE') >= 0 ||
+                            window.navigator.userAgent.indexOf('Trident/') >= 0) {
                             text = ieFormat(text);
                         }
                         expect(lessOutput).toEqual(text);
@@ -169,10 +169,10 @@ waitFor = function (waitFunc) {
 };
 
 testErrorSheet = function (sheet) {
-    it(sheet.id + " should match an error", function (done) {
+    it(sheet.id + ' should match an error', function (done) {
         var lessHref = sheet.href,
-            id = "less-error-message:" + extractId(lessHref),
-            errorHref = lessHref.replace(/.less$/, ".txt"),
+            id = 'less-error-message:' + extractId(lessHref),
+            errorHref = lessHref.replace(/.less$/, '.txt'),
             errorFile = loadFile(errorHref),
             actualErrorElement,
             actualErrorMsg;
@@ -183,35 +183,35 @@ testErrorSheet = function (sheet) {
             return actualErrorElement !== null;
         }).then(function () {
             var innerText = (actualErrorElement.innerHTML
-                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, "")
-                        .replace(/<\/h3>/ig, " ")
-                        .replace(/<li>|<\/ul>|<br>/ig, "\n"))
-                        .replace(/&amp;/ig, "&")
+                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, '')
+                        .replace(/<\/h3>/ig, ' ')
+                        .replace(/<li>|<\/ul>|<br>/ig, '\n'))
+                        .replace(/&amp;/ig, '&')
                         // for IE8
-                        .replace(/\r\n/g, "\n")
-                        .replace(/\. \nin/, ". in");
+                        .replace(/\r\n/g, '\n')
+                        .replace(/\. \nin/, '. in');
             actualErrorMsg = innerText
                     .replace(/\n\d+/g, function (lineNo) {
-                        return lineNo + " ";
+                        return lineNo + ' ';
                     })
-                    .replace(/\n\s*in /g, " in ")
-                    .replace(/\n{2,}/g, "\n")
-                    .replace(/\nStack Trace\n[\s\S]*/i, "")
-                    .replace(/\n$/, "")
+                    .replace(/\n\s*in /g, ' in ')
+                    .replace(/\n{2,}/g, '\n')
+                    .replace(/\nStack Trace\n[\s\S]*/i, '')
+                    .replace(/\n$/, '')
                     .trim();
             errorFile
                     .then(function (errorTxt) {
                         errorTxt = errorTxt
-                            .replace(/\{path\}/g, "")
-                            .replace(/\{pathrel\}/g, "")
-                            .replace(/\{pathhref\}/g, "http://localhost:8081/test/less/errors/")
-                            .replace(/\{404status\}/g, " (404)")
-                            .replace(/\{node\}[\s\S]*\{\/node\}/g, "")
-                            .replace(/\n$/, "")
+                            .replace(/\{path\}/g, '')
+                            .replace(/\{pathrel\}/g, '')
+                            .replace(/\{pathhref\}/g, 'http://localhost:8081/test/less/errors/')
+                            .replace(/\{404status\}/g, ' (404)')
+                            .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
+                            .replace(/\n$/, '')
                             .trim();
                         expect(actualErrorMsg).toEqual(errorTxt);
                         if (errorTxt == actualErrorMsg) {
-                            actualErrorElement.style.display = "none";
+                            actualErrorElement.style.display = 'none';
                         }
                         done();
                     });
@@ -220,27 +220,27 @@ testErrorSheet = function (sheet) {
 };
 
 testErrorSheetConsole = function (sheet) {
-    it(sheet.id + " should match an error", function (done) {
+    it(sheet.id + ' should match an error', function (done) {
         var lessHref = sheet.href,
-            id = sheet.id.replace(/^original-less:/, "less-error-message:"),
-            errorHref = lessHref.replace(/.less$/, ".txt"),
+            id = sheet.id.replace(/^original-less:/, 'less-error-message:'),
+            errorHref = lessHref.replace(/.less$/, '.txt'),
             errorFile = loadFile(errorHref),
             actualErrorElement = document.getElementById(id),
             actualErrorMsg = logMessages[logMessages.length - 1]
-                .replace(/\nStack Trace\n[\s\S]*/, "");
+                .replace(/\nStack Trace\n[\s\S]*/, '');
 
-        describe("the error", function () {
+        describe('the error', function () {
             expect(actualErrorElement).toBe(null);
         });
 
         errorFile
             .then(function (errorTxt) {
                 errorTxt
-                    .replace(/\{path\}/g, "")
-                    .replace(/\{pathrel\}/g, "")
-                    .replace(/\{pathhref\}/g, "http://localhost:8081/browser/less/")
-                    .replace(/\{404status\}/g, " (404)")
-                    .replace(/\{node\}.*\{\/node\}/g, "")
+                    .replace(/\{path\}/g, '')
+                    .replace(/\{pathrel\}/g, '')
+                    .replace(/\{pathhref\}/g, 'http://localhost:8081/browser/less/')
+                    .replace(/\{404status\}/g, ' (404)')
+                    .replace(/\{node\}.*\{\/node\}/g, '')
                     .trim();
                 expect(actualErrorMsg).toEqual(errorTxt);
                 done();
@@ -254,7 +254,7 @@ loadFile = function (href) {
         request.open('GET', href, true);
         request.onreadystatechange = function () {
             if (request.readyState == 4) {
-                resolve(request.responseText.replace(/\r/g, ""));
+                resolve(request.responseText.replace(/\r/g, ''));
             }
         };
         request.send(null);

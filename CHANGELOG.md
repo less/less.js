@@ -1,7 +1,20 @@
+# 3.5.0-beta
+
+2018-06-24
+  - Adds permissive parsing for at-rules and custom properties - fixes #3147 #2715 
+  - Updates dependencies
+  - Fixes file caching issue (not reloading modified files in "watched" environments)
+
+# 3.0.4
+
+2018-05-06
+  - Update source-map to 0.6.x (#3180). Enforces node 6+ though.
+
 # 3.0.0
+
 2018-02-10
   - Fix `calc()` function to not do math operations on compile
-  - Rename Directive -> AtRule & Rule -> Declaration 
+  - Rename Directive -> AtRule & Rule -> Declaration
   - Cross-platform `@plugin` loading! (Node & Browser)
   - Numerous changes / improvements to plugin architecture
   - Simplified API calls in plugins (`less.atrule()` vs `new less.tree.AtRule()`)
@@ -14,11 +27,13 @@
   - Removal of unnecessary nodes from API (like IE's `alpha()`)
 
 # 2.7.3
+
 2017-10-23
 
   - Bump `request` dependency
 
 # 2.7.2
+
 2017-01-04
 
   - Revert breaking changes to contrast() function

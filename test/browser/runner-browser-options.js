@@ -1,6 +1,6 @@
 var less = {
     logLevel: 4, 
-    errorReporting: "console", 
+    errorReporting: 'console', 
     javascriptEnabled: true,
     strictMath: false
 };
@@ -16,7 +16,7 @@ var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 
     testSheets = [];
 
 // IE 8-10 does not support less in style tags
-if (window.navigator.userAgent.indexOf("MSIE") >= 0) {
+if (window.navigator.userAgent.indexOf('MSIE') >= 0) {
     testFiles.length = 0;
 }
 

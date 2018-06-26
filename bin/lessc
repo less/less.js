@@ -483,12 +483,12 @@ function processPluginQueue() {
             case 'rewrite-urls':
                 if (match[2] === 'all' || match[2] === 'local') {
                     options.rewriteUrls = match[2];
-                } if (match[2] === 'off') {
+                } else if (match[2] === 'off') {
                     options.rewriteUrls = false;
                 } else if (!match[2]) {
                     options.rewriteUrls = 'all';
                 } else {
-                    console.error('Unkown rewrite-urls argument ' + match[2]);
+                    console.error('Unknown rewrite-urls argument ' + match[2]);
                     continueProcessing = false;
                     process.exitCode = 1;
                 }

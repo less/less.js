@@ -9,7 +9,8 @@ lessTester.prepBomTest();
 var testMap = [
     [{
         strictMath: false, 
-        rewriteUrls: 'all', 
+        // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
+        relativeUrls: true,
         silent: true, 
         javascriptEnabled: true,
         // Set explicitly for legacy tests for >3.0
@@ -29,7 +30,8 @@ var testMap = [
         function(name) { return name + '-mediaquery'; }],
     [{strictMath: true, dumpLineNumbers: 'all'}, 'debug/', null,
         function(name) { return name + '-all'; }],
-    [{strictMath: true, rewriteUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
+    // TODO: Change this to rewriteUrls: false once the relativeUrls option is removed
+    [{strictMath: true, relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
     [{strictMath: true, compress: true}, 'compression/'],
     [{strictMath: false, strictUnits: true}, 'strict-units/'],
     [{}, 'legacy/'],

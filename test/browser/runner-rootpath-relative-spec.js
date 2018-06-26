@@ -1,3 +1,3 @@
-describe('less.js browser test - rootpath and rewrite urls', function() {
+describe('less.js browser test - rootpath and relative urls', function() {
     testLessEqualsInDocument();
 });

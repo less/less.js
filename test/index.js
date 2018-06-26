@@ -49,7 +49,7 @@ var testMap = [
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
     [{urlArgs: '424242'}, 'url-args/'],
     [{rewriteUrls: 'all'}, 'rewrite-urls-all/'],
-    [{rewriteUrls: 'explicit-relative'}, 'rewrite-urls-explicit-relative/'],
+    [{rewriteUrls: 'local'}, 'rewrite-urls-local/'],
     [{paths: ['test/data/', 'test/less/import/']}, 'include-path/'],
     [{paths: 'test/data/'}, 'include-path-string/'],
     [{plugin: 'test/plugins/postprocess/'}, 'postProcessorPlugin/'],

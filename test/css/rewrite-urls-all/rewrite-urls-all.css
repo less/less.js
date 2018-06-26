@@ -1,23 +1,23 @@
 #imported-file {
-  background-url: url(./folder/relative/path);
-  background-url: url(./relative/path);
-  background-url: url(../relative/path);
-  background-url: url(folder/module);
-  background-url: url(folder/module/path);
-  background-url: url(folder/module/relative/path);
+  background-image: url(./folder/relative/path);
+  background-image: url(./relative/path);
+  background-image: url(../relative/path);
+  background-image: url(folder/module);
+  background-image: url(folder/module/path);
+  background-image: url(folder/module/relative/path);
 }
-#correct-normalize {
-  background-url: url(./relative/path);
-  background-url: url("./relative/path");
-  background-url: url('./relative/path');
-  background-url: url(../relative/path);
-  background-url: url("../relative/path");
-  background-url: url('../relative/path');
-  background-url: url(./path);
-  background-url: url(./);
-  background-url: url(module);
-  background-url: url(module/path);
-  background-url: url("module");
-  background-url: url("module/path");
-  background-url: url(module/relative/path);
+#rewrite-urls-all {
+  background-image: url(./relative/path);
+  background-image: url("./relative/path");
+  background-image: url('./relative/path');
+  background-image: url(../relative/path);
+  background-image: url("../relative/path");
+  background-image: url('../relative/path');
+  background-image: url(./path);
+  background-image: url(./);
+  background-image: url(module);
+  background-image: url(module/path);
+  background-image: url("module");
+  background-image: url("module/path");
+  background-image: url(module/relative/path);
 }

@@ -23,7 +23,7 @@
 @ratio_large: 16;
 @ratio_small: 9;
 
-@media all and (device-aspect-ratio: ~"@{ratio_large} / @{ratio_small}") {
+@media all and (device-aspect-ratio: @ratio_large / @ratio_small) {
    body { max-width: 800px; }
 }
 

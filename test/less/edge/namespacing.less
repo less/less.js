@@ -1,13 +1,13 @@
 @varToGet: default-color;
 .foo {
-  color: @defaults[@default-color];
+  color1: @defaults[@default-color];
   color2: @defaults[@nested][@color];
   color3: @theme[color];
   color4: @theme[@nested][color];
-  // color: @defaults[@@varToGet];
-  // prop: #ns1[foo];
-  // var: #ns1[@foo];
-  // sub: #ns1.vars[$sub];
+  color5: @defaults[@@varToGet];
+  prop: #ns1[foo];
+  var: #ns1[@foo];
+  sub: #ns1.vars[$sub];
 }
 
 @defaults: {
@@ -23,10 +23,20 @@
     color: yellow;
   }
 };
-// #ns1 {
-//   foo: bar;
-//   @foo: baz;
-//   .vars() {
-//     sub: value;
-//   }
-// }
+
+#ns1 {
+  foo: bar;
+  @foo: baz;
+  .vars() {
+    sub: value;
+  }
+}
+
+// Test that it matches more than one mixin
+#ns1 {
+  foo: uno;
+  @foo: dos;
+  .vars() {
+    sub: tres;
+  }
+}

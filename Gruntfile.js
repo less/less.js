@@ -298,7 +298,7 @@ module.exports = function (grunt) {
             main: {
                 // src is used to build list of less files to compile
                 src: [
-                    'test/less/*.less',
+                    'test/less/plugin.less',
                     // Don't test NPM import, obviously
                     '!test/less/plugin-module.less',
                     '!test/less/import-module.less',

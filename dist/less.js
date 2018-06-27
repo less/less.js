@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta
+ * Less - Leaner CSS v3.5.0-beta.2
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -993,6 +993,21 @@ contexts.Eval = function(options, frames) {
     this.importantScope = this.importantScope || [];
 };
 
+contexts.Eval.prototype.enterCalc = function () {
+    if (!this.calcStack) {
+        this.calcStack = [];
+    }
+    this.calcStack.push(true);
+    this.inCalc = true;
+};
+
+contexts.Eval.prototype.exitCalc = function () {
+    this.calcStack.pop();
+    if (!this.calcStack) {
+        this.inCalc = false;
+    }
+};
+
 contexts.Eval.prototype.inParenthesis = function () {
     if (!this.parensStack) {
         this.parensStack = [];
@@ -1004,6 +1019,7 @@ contexts.Eval.prototype.outOfParenthesis = function () {
     this.parensStack.pop();
 };
 
+contexts.Eval.prototype.inCalc = false;
 contexts.Eval.prototype.mathOn = true;
 contexts.Eval.prototype.isMathOn = function () {
     if (!this.mathOn) {
@@ -3591,7 +3607,6 @@ module.exports = function() {
                     case '/':
                         if (input.charAt(i + 1) === '*') {
                             i++;
-                            console.log(input.substr(lastPos, i - lastPos));
                             inComment = true;
                             blockDepth++;
                         }
@@ -3674,6 +3689,10 @@ module.exports = function() {
 
     parserInput.currentChar = function() {
         return input.charAt(parserInput.i);
+    };
+
+    parserInput.prevChar = function() {
+        return input.charAt(parserInput.i - 1);
     };
 
     parserInput.getInput = function() {
@@ -4085,13 +4104,17 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //
                 //     "milky way" 'he\'s the one!'
                 //
-                quoted: function () {
+                quoted: function (forceEscaped) {
                     var str, index = parserInput.i, isEscaped = false;
 
                     parserInput.save();
                     if (parserInput.$char('~')) {
                         isEscaped = true;
+                    } else if (forceEscaped) {
+                        parserInput.restore();
+                        return;
                     }
+
                     str = parserInput.$quoted();
                     if (!str) {
                         parserInput.restore();
@@ -4544,7 +4567,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!e) {
                             break;
                         }
-                        elem = new(tree.Element)(c, e, elemIndex, fileInfo);
+                        elem = new(tree.Element)(c, e, false, elemIndex, fileInfo);
                         if (elements) {
                             elements.push(elem);
                         } else {
@@ -4831,7 +4854,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                 }
 
-                if (e) { return new(tree.Element)(c, e, index, fileInfo); }
+                if (e) { return new(tree.Element)(c, e, e instanceof tree.Variable, index, fileInfo); }
             },
 
             //
@@ -4911,6 +4934,30 @@ var Parser = function Parser(context, imports, fileInfo) {
                 if (elements) { return new(tree.Selector)(elements, allExtends, condition, index, fileInfo); }
                 if (allExtends) { error('Extend must be used to extend a selector, it cannot be used on its own'); }
             },
+            selectors: function () {
+                var s, selectors;
+                while (true) {
+                    s = this.selector();
+                    if (!s) {
+                        break;
+                    }
+                    if (selectors) {
+                        selectors.push(s);
+                    } else {
+                        selectors = [ s ];
+                    }
+                    parserInput.commentStore.length = 0;
+                    if (s.condition && selectors.length > 1) {
+                        error("Guards are only currently allowed on a single selector.");
+                    }
+                    if (!parserInput.$char(',')) { break; }
+                    if (s.condition) {
+                        error("Guards are only currently allowed on a single selector.");
+                    }
+                    parserInput.commentStore.length = 0;
+                }
+                return selectors;
+            },
             attribute: function () {
                 if (!parserInput.$char('[')) { return; }
 
@@ -4962,7 +5009,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             // div, .class, body > p {...}
             //
             ruleset: function () {
-                var selectors, s, rules, debugInfo;
+                var selectors, rules, debugInfo;
 
                 parserInput.save();
 
@@ -4970,26 +5017,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     debugInfo = getDebugInfo(parserInput.i);
                 }
 
-                while (true) {
-                    s = this.selector();
-                    if (!s) {
-                        break;
-                    }
-                    if (selectors) {
-                        selectors.push(s);
-                    } else {
-                        selectors = [ s ];
-                    }
-                    parserInput.commentStore.length = 0;
-                    if (s.condition && selectors.length > 1) {
-                        error('Guards are only currently allowed on a single selector.');
-                    }
-                    if (!parserInput.$char(',')) { break; }
-                    if (s.condition) {
-                        error('Guards are only currently allowed on a single selector.');
-                    }
-                    parserInput.commentStore.length = 0;
-                }
+                selectors = this.selectors();
 
                 if (selectors && (rules = this.block())) {
                     parserInput.forget();
@@ -5027,7 +5055,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                         // Custom property values get permissive parsing
                         if (name[0].value && name[0].value.slice(0, 2) === '--') {
-                            value = this.permissiveValue(';');
+                            value = this.permissiveValue();
                         }
                         // Try to store values as anonymous
                         // If we need the value later we'll re-parse it in ruleset.parseValue
@@ -5043,13 +5071,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!value) {
                             value = this.value();
                         }
+                        // As a last resort, try permissiveValue
+                        if (!value && isVariable) {
+                            value = this.permissiveValue();
+                        }
 
                         important = this.important();
-
-                        // As a last resort, let a variable try to be parsed as a permissive value
-                        if (!value && isVariable) {
-                            value = this.permissiveValue(';');
-                        }
                     }
 
                     if (value && this.end()) {
@@ -5071,27 +5098,76 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
             },
             /**
-             * Used for custom properties and custom at-rules
+             * Used for custom properties, at-rules, and variables (as fallback)
              * Parses almost anything inside of {} [] () "" blocks
              * until it reaches outer-most tokens.
+             * 
+             * First, it will try to parse comments and entities to reach
+             * the end. This is mostly like the Expression parser except no
+             * math is allowed.
              */
             permissiveValue: function (untilTokens) {
-                var i, index = parserInput.i,
-                    value = parserInput.$parseUntil(untilTokens);
+                var i, e, done, value, 
+                    tok = untilTokens || ';',
+                    index = parserInput.i, result = [];
+
+                function testCurrentChar() {
+                    var char = parserInput.currentChar();
+                    if (typeof tok === 'string') {
+                        return char === tok;
+                    } else {
+                        return tok.test(char);
+                    }
+                }
+                if (testCurrentChar()) {
+                    return;
+                }
+                value = [];
+                do {
+                    e = this.comment();
+                    if (e) {
+                        value.push(e);
+                        continue;
+                    }
+                    e = this.entity();
+                    if (e) {
+                        value.push(e);
+                    }
+                } while (e);
+
+                done = testCurrentChar();
+                
+                if (value.length > 0) {
+                    value = new(tree.Expression)(value);
+                    if (done) {
+                        return value;
+                    }
+                    else {
+                        result.push(value);
+                    }
+                    // Preserve space before $parseUntil as it will not
+                    if (parserInput.prevChar() === ' ') {
+                        result.push(new tree.Anonymous(' ', index));
+                    }
+                }
+                parserInput.save();
+                
+                value = parserInput.$parseUntil(tok);
 
                 if (value) {
                     if (typeof value === 'string') {
                         error('Expected \'' + value + '\'', 'Parse');
                     }
                     if (value.length === 1 && value[0] === ' ') {
+                        parserInput.forget();
                         return new tree.Anonymous('', index);
                     }
-                    var item, args = [];
+                    var item;
                     for (i = 0; i < value.length; i++) {
                         item = value[i];
                         if (Array.isArray(item)) {
                             // Treat actual quotes as normal quoted values
-                            args.push(new tree.Quoted(item[0], item[1], true, index, fileInfo));
+                            result.push(new tree.Quoted(item[0], item[1], true, index, fileInfo));
                         }
                         else {
                             if (i === value.length - 1) {
@@ -5101,12 +5177,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                             var quote = new tree.Quoted('\'', item, true, index, fileInfo);
                             quote.variableRegex = /@([\w-]+)/g;
                             quote.propRegex = /\$([\w-]+)/g;
-                            quote.reparse = true;
-                            args.push(quote);
+                            result.push(quote);
                         }
                     }
-                    return new tree.Expression(args, true);
+                    parserInput.forget();
+                    return new tree.Expression(result, true);
                 }
+                parserInput.restore();
             },
 
             //
@@ -5188,7 +5265,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
                         p = this.property();
-                        e = this.value();
+                        e = this.permissiveValue(')');
                         if (parserInput.$char(')')) {
                             if (p && e) {
                                 nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i, fileInfo, true)));
@@ -5672,7 +5749,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var o = this.sub() || entities.dimension() ||
                         entities.color() || entities.variable() ||
                         entities.property() || entities.call() ||
-                        entities.colorKeyword();
+                        entities.quoted(true) || entities.colorKeyword();
 
                 if (negate) {
                     o.parensInOp = true;
@@ -6255,29 +6332,49 @@ module.exports = function(root, options) {
             new visitor.MarkVisibleSelectorsVisitor(true),
             new visitor.ExtendVisitor(),
             new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
-        ], v, visitorIterator;
+        ], preEvalVisitors = [], v, visitorIterator;
 
-    // first() / get() allows visitors to be added while visiting
+    /**
+     * first() / get() allows visitors to be added while visiting
+     * 
+     * @todo Add scoping for visitors just like functions for @plugin; right now they're global
+     */
     if (options.pluginManager) {
         visitorIterator = options.pluginManager.visitor();
-        visitorIterator.first();
-        while ((v = visitorIterator.get())) {
-            if (v.isPreEvalVisitor) {
-                v.run(root);
+        for (var i = 0; i < 2; i++) {
+            visitorIterator.first();
+            while ((v = visitorIterator.get())) {
+                if (v.isPreEvalVisitor) {
+                    if (i === 0 || preEvalVisitors.indexOf(v) === -1) {
+                        preEvalVisitors.push(v);
+                        v.run(root);
+                    }
+                }
+                else {
+                    if (i === 0 || visitors.indexOf(v) === -1) {
+                        if (v.isPreVisitor) {
+                            visitors.unshift(v);
+                        }
+                        else {
+                            visitors.push(v);
+                        }
+                    }
+                }
             }
         }
     }
-
+    
     evaldRoot = root.eval(evalEnv);
 
     for (var i = 0; i < visitors.length; i++) {
         visitors[i].run(evaldRoot);
     }
 
+    // Run any remaining visitors added after eval pass
     if (options.pluginManager) {
         visitorIterator.first();
         while ((v = visitorIterator.get())) {
-            if (!v.isPreEvalVisitor) {
+            if (visitors.indexOf(v) === -1 && preEvalVisitors.indexOf(v) === -1) {
                 v.run(evaldRoot);
             }
         }
@@ -6523,7 +6620,7 @@ var Node = require('./node'),
 var Call = function (name, args, index, currentFileInfo) {
     this.name = name;
     this.args = args;
-    this.mathOn = name === 'calc' ? false : true;
+    this.calc = name === 'calc';
     this._index = index;
     this._fileInfo = currentFileInfo;
 };
@@ -6546,13 +6643,18 @@ Call.prototype.accept = function (visitor) {
 // The function should receive the value, not the variable.
 //
 Call.prototype.eval = function (context) {
-
     /**
      * Turn off math for calc(), and switch back on for evaluating nested functions
      */
     var currentMathContext = context.mathOn;
-    context.mathOn = this.mathOn;
+    context.mathOn = !this.calc;
+    if (this.calc || context.inCalc) {
+        context.enterCalc();
+    }
     var args = this.args.map(function (a) { return a.eval(context); });
+    if (this.calc || context.inCalc) {
+        context.exitCalc();
+    }
     context.mathOn = currentMathContext;
 
     var result, funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
@@ -7219,7 +7321,7 @@ var Node = require('./node'),
     Paren = require('./paren'),
     Combinator = require('./combinator');
 
-var Element = function (combinator, value, index, currentFileInfo, visibilityInfo) {
+var Element = function (combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
     this.combinator = combinator instanceof Combinator ?
                       combinator : new Combinator(combinator);
 
@@ -7230,6 +7332,7 @@ var Element = function (combinator, value, index, currentFileInfo, visibilityInf
     } else {
         this.value = '';
     }
+    this.isVariable = isVariable;
     this._index = index;
     this._fileInfo = currentFileInfo;
     this.copyVisibilityInfo(visibilityInfo);
@@ -7247,12 +7350,14 @@ Element.prototype.accept = function (visitor) {
 Element.prototype.eval = function (context) {
     return new Element(this.combinator,
                              this.value.eval ? this.value.eval(context) : this.value,
+                             this.isVariable,
                              this.getIndex(),
                              this.fileInfo(), this.visibilityInfo());
 };
 Element.prototype.clone = function () {
     return new Element(this.combinator,
         this.value,
+        this.isVariable,
         this.getIndex(),
         this.fileInfo(), this.visibilityInfo());
 };
@@ -7296,6 +7401,7 @@ Expression.prototype.accept = function (visitor) {
 };
 Expression.prototype.eval = function (context) {
     var returnValue,
+        mathOn = context.isMathOn(),
         inParenthesis = this.parens && !this.parensInOp,
         doubleParen = false;
     if (inParenthesis) {
@@ -7303,10 +7409,13 @@ Expression.prototype.eval = function (context) {
     }
     if (this.value.length > 1) {
         returnValue = new Expression(this.value.map(function (e) {
+            if (!e.eval) {
+                return e;
+            }
             return e.eval(context);
         }), this.noSpacing);
     } else if (this.value.length === 1) {
-        if (this.value[0].parens && !this.value[0].parensInOp) {
+        if (this.value[0].parens && !this.value[0].parensInOp && !context.inCalc) {
             doubleParen = true;
         }
         returnValue = this.value[0].eval(context);
@@ -7316,7 +7425,7 @@ Expression.prototype.eval = function (context) {
     if (inParenthesis) {
         context.outOfParenthesis();
     }
-    if (this.parens && this.parensInOp && !(context.isMathOn()) && !doubleParen) {
+    if (this.parens && this.parensInOp && !mathOn && !doubleParen) {
         returnValue = new Paren(returnValue);
     }
     return returnValue;
@@ -8070,7 +8179,7 @@ var Selector = require('./selector'),
 
 var Definition = function (name, params, rules, condition, variadic, frames, visibilityInfo) {
     this.name = name;
-    this.selectors = [new Selector([new Element(null, name, this._index, this._fileInfo)])];
+    this.selectors = [new Selector([new Element(null, name, false, this._index, this._fileInfo)])];
     this.params = params;
     this.condition = condition;
     this.variadic = variadic;
@@ -8688,22 +8797,47 @@ Ruleset.prototype.accept = function (visitor) {
     }
 };
 Ruleset.prototype.eval = function (context) {
-    var thisSelectors = this.selectors, selectors,
-        selCnt, selector, i, hasOnePassingSelector = false;
+    var that = this, selectors, selCnt, selector, i, hasVariable, hasOnePassingSelector = false;
 
-    if (thisSelectors && (selCnt = thisSelectors.length)) {
+    if (this.selectors && (selCnt = this.selectors.length)) {
         selectors = new Array(selCnt);
         defaultFunc.error({
             type: 'Syntax',
             message: 'it is currently only allowed in parametric mixin guards,'
         });
+
         for (i = 0; i < selCnt; i++) {
-            selector = thisSelectors[i].eval(context);
+            selector = this.selectors[i].eval(context);
+            for (var j = 0; j < selector.elements.length; j++) {
+                if (selector.elements[j].isVariable) {
+                    hasVariable = true;
+                    break;
+                }
+            }
             selectors[i] = selector;
             if (selector.evaldCondition) {
                 hasOnePassingSelector = true;
             }
         }
+
+        if (hasVariable) {
+            var toParseSelectors = new Array(selCnt);
+            for (i = 0; i < selCnt; i++) {
+                selector = selectors[i];
+                toParseSelectors[i] = selector.toCSS(context);
+            }
+            this.parse.parseNode(
+                toParseSelectors.join(','),
+                ["selectors"], 
+                selectors[0].getIndex(), 
+                selectors[0].fileInfo(), 
+                function(err, result) {
+                    if (result) {
+                        selectors = utils.flattenArray(result);
+                    }
+                });
+        }
+
         defaultFunc.reset();
     } else {
         hasOnePassingSelector = true;
@@ -8809,7 +8943,7 @@ Ruleset.prototype.eval = function (context) {
         // for rulesets, check if it is a css guard and can be removed
         if (rule instanceof Ruleset && rule.selectors && rule.selectors.length === 1) {
             // check if it can be folded in (e.g. & where)
-            if (rule.selectors[0].isJustParentSelector()) {
+            if (rule.selectors[0] && rule.selectors[0].isJustParentSelector()) {
                 rsRules.splice(i--, 1);
 
                 for (var j = 0; (subRule = rule.rules[j]); j++) {
@@ -9158,7 +9292,13 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         } else {
             var insideParent = new Array(elementsToPak.length);
             for (j = 0; j < elementsToPak.length; j++) {
-                insideParent[j] = new Element(null, elementsToPak[j], originalElement._index, originalElement._fileInfo);
+                insideParent[j] = new Element(
+                    null,
+                    elementsToPak[j],
+                    originalElement.isVariable,
+                    originalElement._index,
+                    originalElement._fileInfo
+                );
             }
             replacementParen = new Paren(new Selector(insideParent));
         }
@@ -9167,7 +9307,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 
     function createSelector(containedElement, originalElement) {
         var element, selector;
-        element = new Element(null, containedElement, originalElement._index, originalElement._fileInfo);
+        element = new Element(null, containedElement, originalElement.isVariable, originalElement._index, originalElement._fileInfo);
         selector = new Selector([element]);
         return selector;
     }
@@ -9192,7 +9332,8 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
         }
 
         if (addPath.length > 0) {
-            // /deep/ is a combinator that is valid without anything in front of it
+            // /deep/ is a CSS4 selector - (removed, so should deprecate)
+            // that is valid without anything in front of it
             // so if the & does not have a combinator that is "" or " " then
             // and there is a combinator on the parent, then grab that.
             // this also allows + a { & .b { .a & { ... though not sure why you would want to do that
@@ -9201,7 +9342,13 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
                 combinator = parentEl.combinator;
             }
             // join the elements so far with the first part of the parent
-            newJoinedSelector.elements.push(new Element(combinator, parentEl.value, replacedElement._index, replacedElement._fileInfo));
+            newJoinedSelector.elements.push(new Element(
+                combinator,
+                parentEl.value,
+                replacedElement.isVariable,
+                replacedElement._index,
+                replacedElement._fileInfo
+            ));
             newJoinedSelector.elements = newJoinedSelector.elements.concat(addPath[0].elements.slice(1));
         }
 
@@ -9335,7 +9482,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
                         // the combinator used on el should now be applied to the next element instead so that
                         // it is not lost
                         if (sel.length > 0) {
-                            sel[0].elements.push(new Element(el.combinator, '', el._index, el._fileInfo));
+                            sel[0].elements.push(new Element(el.combinator, '', el.isVariable, el._index, el._fileInfo));
                         }
                         selectorsMultiplied.push(sel);
                     }
@@ -9465,7 +9612,7 @@ Selector.prototype.getElements = function(els) {
     return els;
 };
 Selector.prototype.createEmptySelectors = function() {
-    var el = new Element('', '&', this._index, this._fileInfo),
+    var el = new Element('', '&', false, this._index, this._fileInfo),
         sels = [new Selector([el], null, null, this._index, this._fileInfo)];
     sels[0].mediaEmpty = true;
     return sels;
@@ -9842,7 +9989,7 @@ module.exports = Variable;
 
 },{"./node":73}],86:[function(require,module,exports){
 /* jshint proto: true */
-module.exports = {
+var utils = {
     getLocation: function(index, inputStream) {
         var n = index + 1,
             line = null,
@@ -9908,9 +10055,24 @@ module.exports = {
             }
         }
         return obj1;
+    },
+    flattenArray: function(arr, result) {
+        result = result || [];
+        for (var i = 0, length = arr.length; i < length; i++) {
+            var value = arr[i];
+            if (Array.isArray(value)) {
+                utils.flattenArray(value, result);
+            } else {
+                if (value !== undefined) {
+                    result.push(value);
+                }
+            }
+        }
+        return result;
     }
 };
 
+module.exports = utils;
 },{}],87:[function(require,module,exports){
 var tree = require('../tree'),
     Visitor = require('./visitor'),
@@ -10299,6 +10461,7 @@ ProcessExtendsVisitor.prototype = {
             firstElement = new tree.Element(
                 match.initialCombinator,
                 replacementSelector.elements[0].value,
+                replacementSelector.elements[0].isVariable,
                 replacementSelector.elements[0].getIndex(),
                 replacementSelector.elements[0].fileInfo()
             );
@@ -11123,7 +11286,8 @@ function indexNodeTypes(parent, ticker) {
 
 var Visitor = function(implementation) {
     this._implementation = implementation;
-    this._visitFnCache = [];
+    this._visitInCache = {};
+    this._visitOutCache = {};
 
     if (!_hasIndexed) {
         indexNodeTypes(tree, 1);
@@ -11139,15 +11303,16 @@ Visitor.prototype = {
 
         var nodeTypeIndex = node.typeIndex;
         if (!nodeTypeIndex) {
+            // MixinCall args aren't a node type?
+            if (node.value && node.value.typeIndex) {
+                this.visit(node.value);
+            }
             return node;
         }
 
-        var visitFnCache = this._visitFnCache,
-            impl = this._implementation,
-            aryIndx = nodeTypeIndex << 1,
-            outAryIndex = aryIndx | 1,
-            func = visitFnCache[aryIndx],
-            funcOut = visitFnCache[outAryIndex],
+        var impl = this._implementation,
+            func = this._visitInCache[nodeTypeIndex],
+            funcOut = this._visitOutCache[nodeTypeIndex],
             visitArgs = _visitArgs,
             fnName;
 
@@ -11157,13 +11322,13 @@ Visitor.prototype = {
             fnName = 'visit' + node.type;
             func = impl[fnName] || _noop;
             funcOut = impl[fnName + 'Out'] || _noop;
-            visitFnCache[aryIndx] = func;
-            visitFnCache[outAryIndex] = funcOut;
+            this._visitInCache[nodeTypeIndex] = func;
+            this._visitOutCache[nodeTypeIndex] = funcOut;
         }
 
         if (func !== _noop) {
             var newNode = func.call(impl, node, visitArgs);
-            if (impl.isReplacing) {
+            if (node && impl.isReplacing) {
                 node = newNode;
             }
         }

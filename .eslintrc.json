@@ -3,11 +3,8 @@
     "node": true
   },
   "globals": {},
+
   "rules": {
-    "quotes": [
-      1,
-      "single"
-    ],
     "no-eval": 2,
     "no-use-before-define": [
       2,

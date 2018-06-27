@@ -1,8 +1,8 @@
 var optionsStack = [
     'option1',
-    null,
+    undefined,
     'option2',
-    null,
+    undefined,
     'option3'
 ];
 
@@ -15,8 +15,10 @@ registerPlugin({
         }
     },
     use: function() {
-        if (options != optionsStack.shift()) {
-            error = 'setOptions() not setting option correctly';
+        var pos = optionsStack.indexOf(options);
+
+        if (pos === -1) {
+            error = 'setOptions() not setting option "' + opt + '" correctly';
         }
         if (error) {
             throw new Error(error);

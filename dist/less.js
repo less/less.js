@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v4.0.0-alpha.1
+ * Less - Leaner CSS v3.5.0-beta.2
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -3607,7 +3607,6 @@ module.exports = function() {
                     case '/':
                         if (input.charAt(i + 1) === '*') {
                             i++;
-                            console.log(input.substr(lastPos, i - lastPos));
                             inComment = true;
                             blockDepth++;
                         }
@@ -3690,6 +3689,10 @@ module.exports = function() {
 
     parserInput.currentChar = function() {
         return input.charAt(parserInput.i);
+    };
+
+    parserInput.prevChar = function() {
+        return input.charAt(parserInput.i - 1);
     };
 
     parserInput.getInput = function() {
@@ -5052,7 +5055,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                         // Custom property values get permissive parsing
                         if (name[0].value && name[0].value.slice(0, 2) === '--') {
-                            value = this.permissiveValue(';');
+                            value = this.permissiveValue();
                         }
                         // Try to store values as anonymous
                         // If we need the value later we'll re-parse it in ruleset.parseValue
@@ -5068,13 +5071,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!value) {
                             value = this.value();
                         }
+                        // As a last resort, try permissiveValue
+                        if (!value && isVariable) {
+                            value = this.permissiveValue();
+                        }
 
                         important = this.important();
-
-                        // As a last resort, let a variable try to be parsed as a permissive value
-                        if (!value && isVariable) {
-                            value = this.permissiveValue(';');
-                        }
                     }
 
                     if (value && this.end()) {
@@ -5088,35 +5090,6 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.restore();
                 }
             },
-            /**
-             * Will parse until regex, unless token is within {},(),[]
-             * Treat like a quoted value for variable interpolation
-             * 
-             * @todo WIP for custom properties
-             */
-            parseUntil: function(re) {
-                var str = '', e = '', 
-                    match, ch,
-                    index = parserInput.i,
-                    regex = new RegExp('^[^\{\(\[]+' + re);
-
-                do {
-                    match = parserInput.$re(regex) || '';
-                    ch = parserInput.currentChar();
-                    if (ch === '{') {
-                        e = parserInput.$re(/^[^\}]+\}/);
-                    }
-                    else if (ch === '(') {
-                        e = parserInput.$re(/^[^\)]+\)/);
-                    }
-                    else if (ch === '[') {
-                        e = parserInput.$re(/^[^\]]+\]/);
-                    }
-                    str += match + e;
-                } while (match);
-
-                return new(tree.Quoted)('', str.slice(0, -1), true, index, fileInfo);
-            },
             anonymousValue: function () {
                 var index = parserInput.i;
                 var match = parserInput.$re(/^([^@\$+\/'"*`(;{}-]*);/);
@@ -5125,27 +5098,76 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
             },
             /**
-             * Used for custom properties and custom at-rules
+             * Used for custom properties, at-rules, and variables (as fallback)
              * Parses almost anything inside of {} [] () "" blocks
              * until it reaches outer-most tokens.
+             * 
+             * First, it will try to parse comments and entities to reach
+             * the end. This is mostly like the Expression parser except no
+             * math is allowed.
              */
             permissiveValue: function (untilTokens) {
-                var i, index = parserInput.i,
-                    value = parserInput.$parseUntil(untilTokens);
+                var i, e, done, value, 
+                    tok = untilTokens || ';',
+                    index = parserInput.i, result = [];
+
+                function testCurrentChar() {
+                    var char = parserInput.currentChar();
+                    if (typeof tok === 'string') {
+                        return char === tok;
+                    } else {
+                        return tok.test(char);
+                    }
+                }
+                if (testCurrentChar()) {
+                    return;
+                }
+                value = [];
+                do {
+                    e = this.comment();
+                    if (e) {
+                        value.push(e);
+                        continue;
+                    }
+                    e = this.entity();
+                    if (e) {
+                        value.push(e);
+                    }
+                } while (e);
+
+                done = testCurrentChar();
+                
+                if (value.length > 0) {
+                    value = new(tree.Expression)(value);
+                    if (done) {
+                        return value;
+                    }
+                    else {
+                        result.push(value);
+                    }
+                    // Preserve space before $parseUntil as it will not
+                    if (parserInput.prevChar() === ' ') {
+                        result.push(new tree.Anonymous(' ', index));
+                    }
+                }
+                parserInput.save();
+                
+                value = parserInput.$parseUntil(tok);
 
                 if (value) {
                     if (typeof value === 'string') {
                         error('Expected \'' + value + '\'', 'Parse');
                     }
                     if (value.length === 1 && value[0] === ' ') {
+                        parserInput.forget();
                         return new tree.Anonymous('', index);
                     }
-                    var item, args = [];
+                    var item;
                     for (i = 0; i < value.length; i++) {
                         item = value[i];
                         if (Array.isArray(item)) {
                             // Treat actual quotes as normal quoted values
-                            args.push(new tree.Quoted(item[0], item[1], true, index, fileInfo));
+                            result.push(new tree.Quoted(item[0], item[1], true, index, fileInfo));
                         }
                         else {
                             if (i === value.length - 1) {
@@ -5155,12 +5177,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                             var quote = new tree.Quoted('\'', item, true, index, fileInfo);
                             quote.variableRegex = /@([\w-]+)/g;
                             quote.propRegex = /\$([\w-]+)/g;
-                            quote.reparse = true;
-                            args.push(quote);
+                            result.push(quote);
                         }
                     }
-                    return new tree.Expression(args, true);
+                    parserInput.forget();
+                    return new tree.Expression(result, true);
                 }
+                parserInput.restore();
             },
 
             //
@@ -5242,7 +5265,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
                         p = this.property();
-                        e = this.value();
+                        e = this.permissiveValue(')');
                         if (parserInput.$char(')')) {
                             if (p && e) {
                                 nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i, fileInfo, true)));
@@ -6309,29 +6332,49 @@ module.exports = function(root, options) {
             new visitor.MarkVisibleSelectorsVisitor(true),
             new visitor.ExtendVisitor(),
             new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
-        ], v, visitorIterator;
+        ], preEvalVisitors = [], v, visitorIterator;
 
-    // first() / get() allows visitors to be added while visiting
+    /**
+     * first() / get() allows visitors to be added while visiting
+     * 
+     * @todo Add scoping for visitors just like functions for @plugin; right now they're global
+     */
     if (options.pluginManager) {
         visitorIterator = options.pluginManager.visitor();
-        visitorIterator.first();
-        while ((v = visitorIterator.get())) {
-            if (v.isPreEvalVisitor) {
-                v.run(root);
+        for (var i = 0; i < 2; i++) {
+            visitorIterator.first();
+            while ((v = visitorIterator.get())) {
+                if (v.isPreEvalVisitor) {
+                    if (i === 0 || preEvalVisitors.indexOf(v) === -1) {
+                        preEvalVisitors.push(v);
+                        v.run(root);
+                    }
+                }
+                else {
+                    if (i === 0 || visitors.indexOf(v) === -1) {
+                        if (v.isPreVisitor) {
+                            visitors.unshift(v);
+                        }
+                        else {
+                            visitors.push(v);
+                        }
+                    }
+                }
             }
         }
     }
-
+    
     evaldRoot = root.eval(evalEnv);
 
     for (var i = 0; i < visitors.length; i++) {
         visitors[i].run(evaldRoot);
     }
 
+    // Run any remaining visitors added after eval pass
     if (options.pluginManager) {
         visitorIterator.first();
         while ((v = visitorIterator.get())) {
-            if (!v.isPreEvalVisitor) {
+            if (visitors.indexOf(v) === -1 && preEvalVisitors.indexOf(v) === -1) {
                 v.run(evaldRoot);
             }
         }
@@ -7366,6 +7409,9 @@ Expression.prototype.eval = function (context) {
     }
     if (this.value.length > 1) {
         returnValue = new Expression(this.value.map(function (e) {
+            if (!e.eval) {
+                return e;
+            }
             return e.eval(context);
         }), this.noSpacing);
     } else if (this.value.length === 1) {
@@ -11240,7 +11286,8 @@ function indexNodeTypes(parent, ticker) {
 
 var Visitor = function(implementation) {
     this._implementation = implementation;
-    this._visitFnCache = [];
+    this._visitInCache = {};
+    this._visitOutCache = {};
 
     if (!_hasIndexed) {
         indexNodeTypes(tree, 1);
@@ -11256,15 +11303,16 @@ Visitor.prototype = {
 
         var nodeTypeIndex = node.typeIndex;
         if (!nodeTypeIndex) {
+            // MixinCall args aren't a node type?
+            if (node.value && node.value.typeIndex) {
+                this.visit(node.value);
+            }
             return node;
         }
 
-        var visitFnCache = this._visitFnCache,
-            impl = this._implementation,
-            aryIndx = nodeTypeIndex << 1,
-            outAryIndex = aryIndx | 1,
-            func = visitFnCache[aryIndx],
-            funcOut = visitFnCache[outAryIndex],
+        var impl = this._implementation,
+            func = this._visitInCache[nodeTypeIndex],
+            funcOut = this._visitOutCache[nodeTypeIndex],
             visitArgs = _visitArgs,
             fnName;
 
@@ -11274,13 +11322,13 @@ Visitor.prototype = {
             fnName = 'visit' + node.type;
             func = impl[fnName] || _noop;
             funcOut = impl[fnName + 'Out'] || _noop;
-            visitFnCache[aryIndx] = func;
-            visitFnCache[outAryIndex] = funcOut;
+            this._visitInCache[nodeTypeIndex] = func;
+            this._visitOutCache[nodeTypeIndex] = funcOut;
         }
 
         if (func !== _noop) {
             var newNode = func.call(impl, node, visitArgs);
-            if (impl.isReplacing) {
+            if (node && impl.isReplacing) {
                 node = newNode;
             }
         }

@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.2
+ * Less - Leaner CSS v3.5.0-beta.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -887,8 +887,7 @@ var AbstractPluginLoader = require('../less/environment/abstract-plugin-loader.j
  */
 var PluginLoader = function(less) {
     this.less = less;
-    // shim for browser require?
-    this.require = require;
+    // Should we shim this.require for browser? Probably not?
 };
 
 PluginLoader.prototype = new AbstractPluginLoader();
@@ -1437,16 +1436,12 @@ var functionRegistry = require('../functions/function-registry'),
     LessError = require('../less-error');
 
 var AbstractPluginLoader = function() {
+    // Implemented by Node.js plugin loader
+    this.require = function() {
+        return null;
+    }
 };
 
-function error(msg, type) {
-    throw new LessError(
-        {
-            type: type || 'Syntax',
-            message: msg
-        }
-    );
-}
 AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports, pluginOptions, fileInfo) {
 
     var loader,
@@ -1454,7 +1449,8 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         pluginObj,
         localModule,
         pluginManager,
-        filename;
+        filename,
+        result;
 
     pluginManager = context.pluginManager;
 
@@ -1472,15 +1468,18 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         pluginObj = pluginManager.get(filename);
 
         if (pluginObj) {
-            this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+            result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+            if (result) {
+                return result;
+            }
             try {
                 if (pluginObj.use) {
                     pluginObj.use.call(this.context, pluginObj);
                 }
             }
             catch (e) {
-                e.message = 'Error during @plugin call';
-                return new this.less.LessError(e, imports, filename);
+                e.message = e.message || 'Error during @plugin call';
+                return new LessError(e, imports, filename);
             }
             return pluginObj;
         }
@@ -1498,9 +1497,9 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
 
     try {
         loader = new Function('module', 'require', 'registerPlugin', 'functions', 'tree', 'less', 'fileInfo', contents);
-        loader(localModule, this.require, registerPlugin, registry, this.less.tree, this.less, fileInfo);
+        loader(localModule, this.require(filename), registerPlugin, registry, this.less.tree, this.less, fileInfo);
     } catch (e) {
-        return new this.less.LessError(e, imports, filename);
+        return new LessError(e, imports, filename);
     }
 
     if (!pluginObj) {
@@ -1508,14 +1507,28 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     }
     pluginObj = this.validatePlugin(pluginObj, filename, shortname);
 
+    if (pluginObj instanceof LessError) {
+        return pluginObj;
+    }
+
     if (pluginObj) {
+        // For 2.x back-compatibility - setOptions() before install()
+        pluginObj.imports = imports;
+        pluginObj.filename = filename;
+        result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+        if (result) {
+            return result;
+        }
+
         // Run on first load
         pluginManager.addPlugin(pluginObj, fileInfo.filename, registry);
         pluginObj.functions = registry.getLocalFunctions();
-        pluginObj.imports = imports;
-        pluginObj.filename = filename;
 
-        this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+        // Need to call setOptions again because the pluginObj might have functions
+        result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+        if (result) {
+            return result;
+        }
 
         // Run every @plugin call
         try {
@@ -1524,13 +1537,13 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
             }
         }
         catch (e) {
-            e.message = 'Error during @plugin call';
-            return new this.less.LessError(e, imports, filename);
+            e.message = e.message || 'Error during @plugin call';
+            return new LessError(e, imports, filename);
         }
 
     }
     else {
-        return new this.less.LessError({ message: 'Not a valid plugin' });
+        return new LessError({ message: 'Not a valid plugin' }, imports, filename);
     }
 
     return pluginObj;
@@ -1538,18 +1551,17 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
 };
 
 AbstractPluginLoader.prototype.trySetOptions = function(plugin, filename, name, options) {
-    if (options) {
-        if (!plugin.setOptions) {
-            error('Options have been provided but the plugin ' + name + ' does not support any options.');
-            return null;
-        }
-        try {
-            plugin.setOptions(options);
-        }
-        catch (e) {
-            error('Error setting options on plugin ' + name + '\n' + e.message);
-            return null;
-        }
+    if (options && !plugin.setOptions) {
+        return new LessError({
+            message: 'Options have been provided but the plugin ' +
+                name + ' does not support any options.'
+        });
+    }
+    try {
+        plugin.setOptions && plugin.setOptions(options);
+    }
+    catch (e) {
+        return new LessError(e);
     }
 };
 
@@ -1563,8 +1575,10 @@ AbstractPluginLoader.prototype.validatePlugin = function(plugin, filename, name)
 
         if (plugin.minVersion) {
             if (this.compareVersion(plugin.minVersion, this.less.version) < 0) {
-                error('Plugin ' + name + ' requires version ' + this.versionToString(plugin.minVersion));
-                return null;
+                return new LessError({
+                    message: 'Plugin ' + name + ' requires version ' +
+                        this.versionToString(plugin.minVersion)
+                });
             }
         }
         return plugin;
@@ -2689,6 +2703,9 @@ functionRegistry.addMultiple({
     },
     length: function(values) {
         return new Dimension(getItemsFromNode(values).length);
+    },
+    _SELF: function(n) {
+        return n;
     }
 });
 
@@ -4518,7 +4535,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         important = true;
                     }
 
-                    var call = new tree.VariableCall(name);
+                    var call = new tree.VariableCall(name, i, fileInfo);
                     if (!inValue && parsers.end()) {
                         parserInput.forget();
                         return call;
@@ -4606,42 +4623,31 @@ var Parser = function Parser(context, imports, fileInfo) {
                 // selector for now.
                 //
                 call: function (inValue) {
-                    var s = parserInput.currentChar(), important = false, index = parserInput.i, elemIndex,
-                        elements, elem, e, c, args;
+                    var s = parserInput.currentChar(), important = false,
+                        index = parserInput.i, elements, args, hasParens;
 
                     if (s !== '.' && s !== '#') { return; }
 
                     parserInput.save(); // stop us absorbing part of an invalid selector
 
-                    while (true) {
-                        elemIndex = parserInput.i;
-                        e = parserInput.$re(/^[#.](?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/);
-                        if (!e) {
-                            break;
-                        }
-                        elem = new(tree.Element)(c, e, false, elemIndex, fileInfo);
-                        if (elements) {
-                            elements.push(elem);
-                        } else {
-                            elements = [ elem ];
-                        }
-                        c = parserInput.$char('>');
-                    }
+                    elements = this.elements();
 
                     if (elements) {
                         if (parserInput.$char('(')) {
                             args = this.args(true).args;
                             expectChar(')');
+                            hasParens = true;
                         }
 
                         var lookups = this.ruleLookups();
 
-                        if (inValue && !lookups) {
+                        if (inValue && !lookups && !hasParens) {
+                            // This isn't a valid in-value mixin call
                             parserInput.restore();
                             return;
                         }
 
-                        if (parsers.important()) {
+                        if (!inValue && parsers.important()) {
                             important = true;
                         }
 
@@ -4658,6 +4664,30 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
 
                     parserInput.restore();
+                },
+                /**
+                 * Matching elements for mixins
+                 * (Start with . or # and can have > )
+                 */
+                elements: function() {
+                    var elements, e, c, elem, elemIndex,
+                        re = /^[#.](?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/;
+                    while (true) {
+                        elemIndex = parserInput.i;
+                        e = parserInput.$re(re);
+                        
+                        if (!e) {
+                            break;
+                        }
+                        elem = new(tree.Element)(c, e, false, elemIndex, fileInfo);
+                        if (elements) {
+                            elements.push(elem);
+                        } else {
+                            elements = [ elem ];
+                        }
+                        c = parserInput.$char('>');
+                    }
+                    return elements;
                 },
                 args: function (isCall) {
                     var entities = parsers.entities,
@@ -8124,6 +8154,8 @@ MixinCall.prototype.eval = function (context) {
         candidates = [], candidate, conditionResult = [], defaultResult, defFalseEitherCase = -1,
         defNone = 0, defTrue = 1, defFalse = 2, count, originalRuleset, noArgumentsFilter;
 
+    this.selector = this.selector.eval(context);
+
     function calcDefGroup(mixin, mixinPath) {
         var f, p, namespace;
 
@@ -8284,6 +8316,7 @@ var Selector = require('./selector'),
     Element = require('./element'),
     Ruleset = require('./ruleset'),
     Declaration = require('./declaration'),
+    DetachedRuleset = require('./detached-ruleset'),
     Expression = require('./expression'),
     contexts = require('../contexts'),
     utils = require('../utils');
@@ -8379,7 +8412,13 @@ Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArgume
             } else {
                 val = arg && arg.value;
                 if (val) {
-                    val = val.eval(context);
+                    // This was a mixin call, pass in a detached ruleset of it's eval'd rules
+                    if (Array.isArray(val)) {
+                        val = new DetachedRuleset(new Ruleset('', val));
+                    }
+                    else {
+                        val = val.eval(context);
+                    }
                 } else if (params[i].value) {
                     val = params[i].value.eval(mixinEnv);
                     frame.resetCache();
@@ -8483,13 +8522,13 @@ Definition.prototype.matchArgs = function (args, context) {
 };
 module.exports = Definition;
 
-},{"../contexts":12,"../utils":87,"./declaration":58,"./element":61,"./expression":62,"./ruleset":79,"./selector":80}],72:[function(require,module,exports){
+},{"../contexts":12,"../utils":87,"./declaration":58,"./detached-ruleset":59,"./element":61,"./expression":62,"./ruleset":79,"./selector":80}],72:[function(require,module,exports){
 var Node = require('./node'),
     Variable = require('./variable');
 
 
 var NamespaceValue = function (ruleCall, lookups, important, index, fileInfo) {
-    this.ruleCall = ruleCall;
+    this.value = ruleCall;
     this.lookups = lookups;
     this.important = important;
     this._index = index;
@@ -8499,7 +8538,7 @@ NamespaceValue.prototype = new Node();
 NamespaceValue.prototype.type = 'NamespaceValue';
 NamespaceValue.prototype.eval = function (context) {
     var i, j, name, found,
-        rules = this.ruleCall.eval(context);
+        rules = this.value.eval(context);
     
     for (i = 0; i < this.lookups.length; i++) {
         name = this.lookups[i];
@@ -10116,22 +10155,45 @@ module.exports = Value;
 
 },{"./node":74}],85:[function(require,module,exports){
 var Node = require('./node'),
-    Variable = require('./variable');
+    Variable = require('./variable'),
+    Ruleset = require('./ruleset'),
+    DetachedRuleset = require('./detached-ruleset'),
+    LessError = require('../less-error');
 
-var VariableCall = function (variable) {
+var VariableCall = function (variable, index, currentFileInfo) {
     this.variable = variable;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
     this.allowRoot = true;
 };
 VariableCall.prototype = new Node();
 VariableCall.prototype.type = 'VariableCall';
 VariableCall.prototype.eval = function (context) {
-    var detachedRuleset = new Variable(this.variable).eval(context);
-    return detachedRuleset.callEval(context);
+    var rules, detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context),
+        error = new LessError({message: 'Could not evaluate variable call ' + this.variable});
+
+    if (!detachedRuleset.ruleset) {
+        if (Array.isArray(detachedRuleset)) {
+            rules = detachedRuleset;
+        }
+        else if (Array.isArray(detachedRuleset.value)) {
+            rules = detachedRuleset.value;
+        }
+        else {
+            throw error;
+        }
+        detachedRuleset = new DetachedRuleset(new Ruleset('', rules));
+    }
+    if (detachedRuleset.ruleset) {
+        return detachedRuleset.callEval(context);
+    }
+    throw error;
 };
 module.exports = VariableCall;
 
-},{"./node":74,"./variable":86}],86:[function(require,module,exports){
-var Node = require('./node');
+},{"../less-error":36,"./detached-ruleset":59,"./node":74,"./ruleset":79,"./variable":86}],86:[function(require,module,exports){
+var Node = require('./node'),
+    Call = require('./call');
 
 var Variable = function (name, index, currentFileInfo) {
     this.name = name;
@@ -10163,7 +10225,13 @@ Variable.prototype.eval = function (context) {
                 var importantScope = context.importantScope[context.importantScope.length - 1];
                 importantScope.important = v.important;
             }
-            return v.value.eval(context);
+            // If in calc, wrap vars in a function call to cascade evaluate args first
+            if (context.inCalc) {
+                return (new Call('_SELF', [v.value])).eval(context);
+            }
+            else {
+                return v.value.eval(context);
+            }
         }
     });
     if (variable) {
@@ -10185,7 +10253,7 @@ Variable.prototype.find = function (obj, fun) {
 };
 module.exports = Variable;
 
-},{"./node":74}],87:[function(require,module,exports){
+},{"./call":52,"./node":74}],87:[function(require,module,exports){
 /* jshint proto: true */
 var utils = {
     getLocation: function(index, inputStream) {

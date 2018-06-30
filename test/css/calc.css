@@ -1,4 +1,6 @@
 .no-math {
+  root: calc(100% - 30px);
+  root2: calc(100% - 40px);
   width: calc(50% + (25vh - 20px));
   height: calc(50% + (25vh - 20px));
   min-height: calc((10vh) + calc(5vh));

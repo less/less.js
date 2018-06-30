@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.2
+ * Less - Leaner CSS v3.5.0-beta.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -228,11 +228,12 @@ module.exports = function(window, options, logger) {
                 vars      = cache && cache.getItem(path + ':vars');
 
             modifyVars = modifyVars || {};
+            vars = vars || "{}"; // if not set, treat as the JSON representation of an empty object
 
             if (timestamp && webInfo.lastModified &&
                 (new Date(webInfo.lastModified).valueOf() ===
                     new Date(timestamp).valueOf()) &&
-                (!modifyVars && !vars || JSON.stringify(modifyVars) === vars)) {
+                JSON.stringify(modifyVars) === vars) {
                 // Use local copy
                 return css;
             }
@@ -886,8 +887,7 @@ var AbstractPluginLoader = require('../less/environment/abstract-plugin-loader.j
  */
 var PluginLoader = function(less) {
     this.less = less;
-    // shim for browser require?
-    this.require = require;
+    // Should we shim this.require for browser? Probably not?
 };
 
 PluginLoader.prototype = new AbstractPluginLoader();
@@ -1436,16 +1436,12 @@ var functionRegistry = require('../functions/function-registry'),
     LessError = require('../less-error');
 
 var AbstractPluginLoader = function() {
+    // Implemented by Node.js plugin loader
+    this.require = function() {
+        return null;
+    }
 };
 
-function error(msg, type) {
-    throw new LessError(
-        {
-            type: type || 'Syntax',
-            message: msg
-        }
-    );
-}
 AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports, pluginOptions, fileInfo) {
 
     var loader,
@@ -1453,7 +1449,8 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         pluginObj,
         localModule,
         pluginManager,
-        filename;
+        filename,
+        result;
 
     pluginManager = context.pluginManager;
 
@@ -1471,15 +1468,18 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
         pluginObj = pluginManager.get(filename);
 
         if (pluginObj) {
-            this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+            result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+            if (result) {
+                return result;
+            }
             try {
                 if (pluginObj.use) {
                     pluginObj.use.call(this.context, pluginObj);
                 }
             }
             catch (e) {
-                e.message = 'Error during @plugin call';
-                return new this.less.LessError(e, imports, filename);
+                e.message = e.message || 'Error during @plugin call';
+                return new LessError(e, imports, filename);
             }
             return pluginObj;
         }
@@ -1497,9 +1497,9 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
 
     try {
         loader = new Function('module', 'require', 'registerPlugin', 'functions', 'tree', 'less', 'fileInfo', contents);
-        loader(localModule, this.require, registerPlugin, registry, this.less.tree, this.less, fileInfo);
+        loader(localModule, this.require(filename), registerPlugin, registry, this.less.tree, this.less, fileInfo);
     } catch (e) {
-        return new this.less.LessError(e, imports, filename);
+        return new LessError(e, imports, filename);
     }
 
     if (!pluginObj) {
@@ -1507,14 +1507,28 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     }
     pluginObj = this.validatePlugin(pluginObj, filename, shortname);
 
+    if (pluginObj instanceof LessError) {
+        return pluginObj;
+    }
+
     if (pluginObj) {
+        // For 2.x back-compatibility - setOptions() before install()
+        pluginObj.imports = imports;
+        pluginObj.filename = filename;
+        result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+        if (result) {
+            return result;
+        }
+
         // Run on first load
         pluginManager.addPlugin(pluginObj, fileInfo.filename, registry);
         pluginObj.functions = registry.getLocalFunctions();
-        pluginObj.imports = imports;
-        pluginObj.filename = filename;
 
-        this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+        // Need to call setOptions again because the pluginObj might have functions
+        result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+        if (result) {
+            return result;
+        }
 
         // Run every @plugin call
         try {
@@ -1523,13 +1537,13 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
             }
         }
         catch (e) {
-            e.message = 'Error during @plugin call';
-            return new this.less.LessError(e, imports, filename);
+            e.message = e.message || 'Error during @plugin call';
+            return new LessError(e, imports, filename);
         }
 
     }
     else {
-        return new this.less.LessError({ message: 'Not a valid plugin' });
+        return new LessError({ message: 'Not a valid plugin' }, imports, filename);
     }
 
     return pluginObj;
@@ -1537,18 +1551,17 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
 };
 
 AbstractPluginLoader.prototype.trySetOptions = function(plugin, filename, name, options) {
-    if (options) {
-        if (!plugin.setOptions) {
-            error('Options have been provided but the plugin ' + name + ' does not support any options.');
-            return null;
-        }
-        try {
-            plugin.setOptions(options);
-        }
-        catch (e) {
-            error('Error setting options on plugin ' + name + '\n' + e.message);
-            return null;
-        }
+    if (options && !plugin.setOptions) {
+        return new LessError({
+            message: 'Options have been provided but the plugin ' +
+                name + ' does not support any options.'
+        });
+    }
+    try {
+        plugin.setOptions && plugin.setOptions(options);
+    }
+    catch (e) {
+        return new LessError(e);
     }
 };
 
@@ -1562,8 +1575,10 @@ AbstractPluginLoader.prototype.validatePlugin = function(plugin, filename, name)
 
         if (plugin.minVersion) {
             if (this.compareVersion(plugin.minVersion, this.less.version) < 0) {
-                error('Plugin ' + name + ' requires version ' + this.versionToString(plugin.minVersion));
-                return null;
+                return new LessError({
+                    message: 'Plugin ' + name + ' requires version ' +
+                        this.versionToString(plugin.minVersion)
+                });
             }
         }
         return plugin;
@@ -2688,6 +2703,9 @@ functionRegistry.addMultiple({
     },
     length: function(values) {
         return new Dimension(getItemsFromNode(values).length);
+    },
+    _SELF: function(n) {
+        return n;
     }
 });
 
@@ -9933,7 +9951,8 @@ VariableCall.prototype.eval = function (context) {
 module.exports = VariableCall;
 
 },{"./node":73,"./variable":85}],85:[function(require,module,exports){
-var Node = require('./node');
+var Node = require('./node'),
+    Call = require('./call');
 
 var Variable = function (name, index, currentFileInfo) {
     this.name = name;
@@ -9965,7 +9984,13 @@ Variable.prototype.eval = function (context) {
                 var importantScope = context.importantScope[context.importantScope.length - 1];
                 importantScope.important = v.important;
             }
-            return v.value.eval(context);
+            // If in calc, wrap vars in a function call to cascade evaluate args first
+            if (context.inCalc) {
+                return (new Call('_SELF', [v.value])).eval(context);
+            }
+            else {
+                return v.value.eval(context);
+            }
         }
     });
     if (variable) {
@@ -9987,7 +10012,7 @@ Variable.prototype.find = function (obj, fun) {
 };
 module.exports = Variable;
 
-},{"./node":73}],86:[function(require,module,exports){
+},{"./call":52,"./node":73}],86:[function(require,module,exports){
 /* jshint proto: true */
 var utils = {
     getLocation: function(index, inputStream) {

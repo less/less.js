@@ -7,6 +7,7 @@ console.log('\n' + stylize('Less', 'underline') + '\n');
 
 lessTester.prepBomTest();
 var testMap = [
+    [{}, 'edge/'],
     [{
         strictMath: false, 
         // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed

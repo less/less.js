@@ -1,4 +1,9 @@
+@val: 10px;
 .no-math {
+  @c: 10px + 20px;
+  @calc: (@val + 30px);
+  root: calc(100% - @c);
+  root2: calc(100% - @calc);
   @var: 50vh/2;
   width: calc(50% + (@var - 20px));
   height: calc(50% + ((@var - 20px)));

@@ -194,7 +194,10 @@ module.exports = function (grunt) {
                 command: [
                     'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
                     'cd lib',
-                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css'
+                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css',
+                    'cd ..',
+                    // Test multiple plugins
+                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
                 ].join(' && ')
             },
             'sourcemap-test': {
@@ -299,7 +302,7 @@ module.exports = function (grunt) {
             main: {
                 // src is used to build list of less files to compile
                 src: [
-                    'test/less/*.less',
+                    'test/less/plugin.less',
                     // Don't test NPM import, obviously
                     '!test/less/plugin-module.less',
                     '!test/less/import-module.less',

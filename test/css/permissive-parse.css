@@ -12,8 +12,8 @@
     basically anything until final semi-colon;
     even other stuff; // i\'m serious;
   };
-  --custom-color: #ff3333;
-  custom-color: #ff3333;
+  --custom-color: #ff3333 #ff3333;
+  custom-color: #ff3333 #ff3333;
 }
 .var {
   --fortran: read (*, *, iostat=1) radius, height;
@@ -32,7 +32,6 @@ foo[attr="blah"] {
   }
 }
 .test-comment {
-  --value: ;
+  --value: a /* { ; } */;
   --comment-within: ( /* okay?; comment; */ );
-  --empty: ;
 }

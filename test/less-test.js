@@ -249,7 +249,7 @@ module.exports = function() {
         }
 
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (!/\.less/.test(file)) { return; }
+            if (!/\.less$/.test(file)) { return; }
 
             var name = getBasename(file);
 

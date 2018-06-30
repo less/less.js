@@ -7,6 +7,7 @@ console.log('\n' + stylize('Less', 'underline') + '\n');
 
 lessTester.prepBomTest();
 var testMap = [
+    [{}, 'edge/'],
     [{
         strictMath: false, 
         relativeUrls: true, 

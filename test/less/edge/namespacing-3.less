@@ -1,0 +1,20 @@
+@map: {
+  @width: 400px;
+  @colors: {
+    toolbar-background: red;
+    toolbar-foreground: white;
+  }
+};
+
+#ns {
+  .mixin() {
+    @height: 200px;
+  }
+}
+
+.toolbar {
+  width: @map[@width];
+  height: #ns.mixin[@height];
+  background: @map[@colors][toolbar-background];
+  color: @map[@colors][toolbar-foreground];
+}

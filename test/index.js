@@ -10,7 +10,8 @@ var testMap = [
     [{}, 'edge/'],
     [{
         strictMath: false, 
-        relativeUrls: true, 
+        // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
+        relativeUrls: true,
         silent: true, 
         javascriptEnabled: true,
         // Set explicitly for legacy tests for >3.0
@@ -30,6 +31,7 @@ var testMap = [
         function(name) { return name + '-mediaquery'; }],
     [{strictMath: true, dumpLineNumbers: 'all'}, 'debug/', null,
         function(name) { return name + '-all'; }],
+    // TODO: Change this to rewriteUrls: false once the relativeUrls option is removed
     [{strictMath: true, relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
     [{strictMath: true, compress: true}, 'compression/'],
     [{strictMath: false, strictUnits: true}, 'strict-units/'],
@@ -49,6 +51,10 @@ var testMap = [
     [{modifyVars: true}, 'modifyVars/',
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
     [{urlArgs: '424242'}, 'url-args/'],
+    [{rewriteUrls: 'all'}, 'rewrite-urls-all/'],
+    [{rewriteUrls: 'local'}, 'rewrite-urls-local/'],
+    [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'all'}, 'rootpath-rewrite-urls-all/'],
+    [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'local'}, 'rootpath-rewrite-urls-local/'],
     [{paths: ['test/data/', 'test/less/import/']}, 'include-path/'],
     [{paths: 'test/data/'}, 'include-path-string/'],
     [{plugin: 'test/plugins/postprocess/'}, 'postProcessorPlugin/'],

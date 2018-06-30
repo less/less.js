@@ -475,9 +475,23 @@ function processPluginQueue() {
                     options.rootpath = match[2].replace(/\\/g, '/');
                 }
                 break;
-            case 'ru':
             case 'relative-urls':
-                options.relativeUrls = true;
+                console.warn('The relative-urls option has been replaced by the rewrite-urls option and will be removed.');
+                options.rewriteUrls = 'all';
+                break;
+            case 'ru':
+            case 'rewrite-urls':
+                if (match[2] === 'all' || match[2] === 'local') {
+                    options.rewriteUrls = match[2];
+                } else if (match[2] === 'off') {
+                    options.rewriteUrls = false;
+                } else if (!match[2]) {
+                    options.rewriteUrls = 'all';
+                } else {
+                    console.error('Unknown rewrite-urls argument ' + match[2]);
+                    continueProcessing = false;
+                    process.exitCode = 1;
+                }
                 break;
             case 'sm':
             case 'strict-math':

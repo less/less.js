@@ -52,7 +52,7 @@ task testRhino(type: AllRhinoTests) {
 }
 
 task testRhinoBase(type: RhinoTest) {
-    options = [ '--strict-math=true', '--relative-urls' ]
+    options = [ '--strict-math=true', '--rewrite-urls' ]
 }
 
 task testRhinoDebugAll(type: DebugRhinoTest) {

@@ -30,12 +30,12 @@
 #logo {
   width: 100px;
   height: 100px;
-  background: url('assets/logo.png');
+  background: url('./assets/logo.png');
   background: url("#inline-svg");
 }
 @font-face {
   font-family: xecret;
-  src: url('assets/xecret.ttf');
+  src: url('./assets/xecret.ttf');
 }
 #secret {
   font-family: xecret, sans-serif;

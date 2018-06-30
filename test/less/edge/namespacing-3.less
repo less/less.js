@@ -10,12 +10,6 @@
   .mixin() {
     @height: 200px;
   }
-  .mixin2() {
-    @height: 300px;
-    .rules() {
-      a: b;
-    }
-  }
 }
 
 .toolbar {
@@ -23,10 +17,4 @@
   height: #ns.mixin[@height];
   background: @map[@colors][toolbar-background];
   color: @map[@colors][toolbar-foreground];
-}
-
-.foo {
-  @alias: #ns.mixin2;
-  height: @alias[@height];
-  @alias.rules();
 }

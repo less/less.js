@@ -26,5 +26,6 @@ registerPlugin({
     },
     setOptions: function(opts) {
         options = opts;
-    }
+    },
+    minVersion: [2,0,0]
 });

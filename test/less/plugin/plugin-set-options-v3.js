@@ -10,8 +10,8 @@ var options, error;
 
 registerPlugin({
     install: function(less, pluginManager, functions) {
-        if (!options) {
-            error = 'setOptions() not called before install';
+        if (options) {
+            error = 'setOptions() called before install';
         }
     },
     use: function() {
@@ -27,5 +27,5 @@ registerPlugin({
     setOptions: function(opts) {
         options = opts;
     },
-    minVersion: [2,0,0]
+    minVersion: [3,0,0]
 });

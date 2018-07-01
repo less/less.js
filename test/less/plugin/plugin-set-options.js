@@ -10,6 +10,7 @@ var options, error;
 
 registerPlugin({
     install: function(less, pluginManager, functions) {
+        console.log('Installing plugin...');
         if (!options) {
             error = 'setOptions() not called before install';
         }
@@ -25,6 +26,7 @@ registerPlugin({
         }
     },
     setOptions: function(opts) {
+        console.log('Setting options...', opts);
         options = opts;
     }
 });

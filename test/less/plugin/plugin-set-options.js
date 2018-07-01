@@ -6,12 +6,12 @@ var optionsStack = [
     'option3'
 ];
 
+var optionsWereSet = false;
 var options, error;
 
 registerPlugin({
     install: function(less, pluginManager, functions) {
-        console.log('Installing plugin...');
-        if (!options) {
+        if (!optionsWereSet) {
             error = 'setOptions() not called before install';
         }
     },
@@ -26,7 +26,7 @@ registerPlugin({
         }
     },
     setOptions: function(opts) {
-        console.log('Setting options...', opts);
+        optionsWereSet = true;
         options = opts;
     }
 });

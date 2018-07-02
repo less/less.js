@@ -1,3 +1,20 @@
+# 3.5.0-beta.4
+
+2018-06-30
+  - Fixes #3235, #3187
+  - Feature: Namespaced Values e.g. `color: #color[primary]`
+
+# 3.5.0-beta.3
+
+2018-06-29
+  - Fix: browser cache is always considered stale if .modifyVars wasn't
+
+# 3.5.0-beta.2
+
+2018-06-27
+  - Re-parses selectors after variables in selectors are evaluated - Fixes #1421
+  - Fixes #3191
+
 # 3.5.0-beta
 
 2018-06-24

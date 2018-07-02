@@ -18,12 +18,6 @@ lib_source_map: 'lib/source-map'
 # =================================
 # General
 # =================================
-prepend:
-  rhino:   ['build/require-rhino.js', 'build/rhino-header.js', 'build/rhino-modules.js']
-
-append:
-  amd:     build/amd.js
-  rhino:   <%= build.lib %>/rhino.js
 
 
 # =================================
@@ -45,36 +39,6 @@ less:
   extend_visitor   : <%= build.lib %>/extend-visitor.js
   browser          : <%= build.lib %>/browser.js
   source_map_output: <%= build.lib %>/source-map-output.js
-
-# =================================
-# Rhino build
-# =================================
-
-# <%= build.rhino %>
-rhino:
-  # prepend utils
-  - <%= build.prepend.rhino %>
-
-  # core
-  - <%= build.less.parser %>
-  - <%= build.less.functions %>
-  - <%= build.less.colors %>
-  - <%= build.less.tree %>
-  - <%= build.less.treedir %> # glob all files
-  - <%= build.less.env %>
-  - <%= build.less.visitor %>
-  - <%= build.less.import_visitor %>
-  - <%= build.less.join %>
-  - <%= build.less.to_css_visitor %>
-  - <%= build.less.extend_visitor %>
-  - <%= build.less.source_map_output %>
-  - <%= build.source_map %>
-
-
-# <%= build.rhinolessc %>
-rhinolessc:
-  - <%= build.append.rhino %>
-
 
 # =================================
 # Tree files

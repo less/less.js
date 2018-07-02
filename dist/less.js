@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.4
+ * Less - Leaner CSS v3.5.0-beta.5
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -4087,7 +4087,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
 
                     node = mixin.definition() || this.declaration() || this.ruleset() ||
-                        mixin.call() || this.variableCall() || this.entities.call() || this.atrule();
+                        mixin.call(false, false) || this.variableCall() || this.entities.call() || this.atrule();
                     if (node) {
                         root.push(node);
                     } else {
@@ -4117,6 +4117,9 @@ var Parser = function Parser(context, imports, fileInfo) {
             // Entities are tokens which can be found inside an Expression
             //
             entities: {
+                mixinLookup: function() {
+                    return parsers.mixin.call(true, true);
+                },
                 //
                 // A string, which supports escaping " and '
                 //
@@ -4622,8 +4625,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 // namespaced, but we only support the child and descendant
                 // selector for now.
                 //
-                call: function (inValue) {
-                    var s = parserInput.currentChar(), important = false,
+                call: function (inValue, getLookup) {
+                    var s = parserInput.currentChar(), important = false, lookups,
                         index = parserInput.i, elements, args, hasParens;
 
                     if (s !== '.' && s !== '#') { return; }
@@ -4639,7 +4642,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                             hasParens = true;
                         }
 
-                        var lookups = this.ruleLookups();
+                        if (getLookup !== false) {
+                            lookups = this.ruleLookups();
+                        }
+                        if (getLookup === true && !lookups) {
+                            parserInput.restore();
+                            return;
+                        }
 
                         if (inValue && !lookups && !hasParens) {
                             // This isn't a valid in-value mixin call
@@ -4926,7 +4935,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var entities = this.entities;
 
                 return this.comment() || entities.literal() || entities.variable() || entities.url() ||
-                    entities.property() || entities.call() || entities.keyword() || this.mixin.call(true) || entities.javascript();
+                    entities.property() || entities.call() || entities.keyword() || this.mixin.call(true) ||
+                    entities.javascript();
             },
 
             //
@@ -5171,7 +5181,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
             },
             declaration: function () {
-                var name, value, index = parserInput.i, 
+                var name, value, index = parserInput.i, hasDR,
                     c = parserInput.currentChar(), important, merge, isVariable;
 
                 if (c === '.' || c === '#' || c === '&' || c === ':') { return; }
@@ -5184,6 +5194,9 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                     if (isVariable) {
                         value = this.detachedRuleset();
+                        if (value) {
+                            hasDR = true;
+                        }
                     }
 
                     parserInput.commentStore.length = 0;
@@ -5219,7 +5232,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         important = this.important();
                     }
 
-                    if (value && this.end()) {
+                    if (value && (hasDR || this.end())) {
                         parserInput.forget();
                         return new (tree.Declaration)(name, value, important, merge, index, fileInfo);
                     }
@@ -5836,7 +5849,12 @@ var Parser = function Parser(context, imports, fileInfo) {
             atomicCondition: function () {
                 var entities = this.entities, index = parserInput.i, a, b, c, op;
 
-                a = this.addition() || entities.keyword() || entities.quoted();
+                function cond() {
+                    return this.addition() || entities.keyword() || entities.quoted() || entities.mixinLookup();
+                }
+                cond = cond.bind(this);
+
+                a = cond();
                 if (a) {
                     if (parserInput.$char('>')) {
                         if (parserInput.$char('=')) {
@@ -5862,7 +5880,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         }
                     }
                     if (op) {
-                        b = this.addition() || entities.keyword() || entities.quoted();
+                        b = cond();
                         if (b) {
                             c = new(tree.Condition)(op, a, b, index, false);
                         } else {
@@ -5889,7 +5907,8 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var o = this.sub() || entities.dimension() ||
                         entities.color() || entities.variable() ||
                         entities.property() || entities.call() ||
-                        entities.quoted(true) || entities.colorKeyword();
+                        entities.quoted(true) || entities.colorKeyword() ||
+                        entities.mixinLookup();
 
                 if (negate) {
                     o.parensInOp = true;
@@ -8524,8 +8543,9 @@ module.exports = Definition;
 
 },{"../contexts":12,"../utils":87,"./declaration":58,"./detached-ruleset":59,"./element":61,"./expression":62,"./ruleset":79,"./selector":80}],72:[function(require,module,exports){
 var Node = require('./node'),
-    Variable = require('./variable');
-
+    Variable = require('./variable'),
+    Ruleset = require('./ruleset'),
+    Selector = require('./selector');
 
 var NamespaceValue = function (ruleCall, lookups, important, index, fileInfo) {
     this.value = ruleCall;
@@ -8543,61 +8563,46 @@ NamespaceValue.prototype.eval = function (context) {
     for (i = 0; i < this.lookups.length; i++) {
         name = this.lookups[i];
 
-        // Eval'd mixins return rules
+        /**
+         * Eval'd DRs return rulesets.
+         * Eval'd mixins return rules, so let's make a ruleset if we need it.
+         * We need to do this because of late parsing of properties
+         */
         if (Array.isArray(rules)) {
-            name = name.charAt(0) === '$' ? name.substr(1) : name;
-            // Find the last declaration match
-            for (j = rules.length - 1; j >= 0; j--) {
-                if (rules[j].name === name) {
-                    found = true;
-                    rules = rules[j];
-                    break;
-                }
-            }
-            if (!found) {
-                var message = name.charAt(0) === '@' ?
-                    'variable ' + name + ' not found' :
-                    'property "' + name + ' not found';
+            rules = new Ruleset([new Selector()], rules);
+        }
 
+        if (name.charAt(0) === '@') {
+            if (name.charAt(1) === '@') {
+                name = '@' + new Variable(name.substr(1)).eval(context).value;
+            }
+            if (rules.variables) {
+                rules = rules.variable(name);
+            }
+            
+            if (!rules) {
                 throw { type: 'Name',
-                    message: message,
+                    message: 'variable ' + name + ' not found',
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
         }
-        // Eval'd DRs return rulesets
         else {
-            if (name.charAt(0) === '@') {
-                if (name.charAt(1) === '@') {
-                    name = '@' + new Variable(name.substr(1)).eval(context).value;
-                }
-                if (rules.variables) {
-                    rules = rules.variables()[name];
-                }
-                
-                if (!rules) {
-                    throw { type: 'Name',
-                        message: 'variable ' + name + ' not found',
-                        filename: this.fileInfo().filename,
-                        index: this.getIndex() };
-                }
+            if (rules.properties) {
+                rules = rules.property(name.charAt(0) === '$' ? name : '$' + name);
             }
-            else {
-                if (rules.properties) {
-                    rules = rules.properties()[name.charAt(0) === '$' ? name : '$' + name];
-                }
-            
-                if (!rules) {
-                    throw { type: 'Name',
-                        message: 'property "' + name + '" not found',
-                        filename: this.fileInfo().filename,
-                        index: this.getIndex() };
-                }
-                // Properties are an array of values, since a ruleset can have multiple props.
-                // We pick the last one (the "cascaded" value)
-                rules = rules[rules.length - 1];
+        
+            if (!rules) {
+                throw { type: 'Name',
+                    message: 'property "' + name + '" not found',
+                    filename: this.fileInfo().filename,
+                    index: this.getIndex() };
             }
+            // Properties are an array of values, since a ruleset can have multiple props.
+            // We pick the last one (the "cascaded" value)
+            rules = rules[rules.length - 1];
         }
+
         if (rules.value) {
             rules = rules.eval(context).value;
         }
@@ -8609,7 +8614,7 @@ NamespaceValue.prototype.eval = function (context) {
 };
 module.exports = NamespaceValue;
 
-},{"./node":74,"./variable":86}],73:[function(require,module,exports){
+},{"./node":74,"./ruleset":79,"./selector":80,"./variable":86}],73:[function(require,module,exports){
 var Node = require('./node'),
     Operation = require('./operation'),
     Dimension = require('./dimension');
@@ -9271,7 +9276,7 @@ Ruleset.prototype.variables = function () {
                 var vars = r.root.variables();
                 for (var name in vars) {
                     if (vars.hasOwnProperty(name)) {
-                        hash[name] = vars[name];
+                        hash[name] = r.root.variable(name);
                     }
                 }
             }
@@ -9830,6 +9835,9 @@ Selector.prototype.createDerived = function(elements, extendList, evaldCondition
     return newSelector;
 };
 Selector.prototype.getElements = function(els) {
+    if (!els) {
+        return [new Element('', '&', false, this._index, this._fileInfo)];
+    }
     if (typeof els === 'string') {
         this.parse.parseNode(
             els, 

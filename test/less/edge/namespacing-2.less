@@ -15,3 +15,13 @@
 .foo {
   width: #library.sizes[@width];
 }
+
+.foods() {
+  @dessert: ice cream;
+}
+
+@key-to-lookup: dessert;
+
+.lunch {
+  treat: .foods[@@key-to-lookup];
+}

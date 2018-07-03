@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.5
+ * Less - Leaner CSS v3.5.0-beta.6
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -1498,7 +1498,8 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     try {
         loader = new Function('module', 'require', 'registerPlugin', 'functions', 'tree', 'less', 'fileInfo', contents);
         loader(localModule, this.require(filename), registerPlugin, registry, this.less.tree, this.less, fileInfo);
-    } catch (e) {
+    }
+    catch (e) {
         return new LessError(e, imports, filename);
     }
 
@@ -1512,12 +1513,16 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     }
 
     if (pluginObj) {
-        // For 2.x back-compatibility - setOptions() before install()
         pluginObj.imports = imports;
         pluginObj.filename = filename;
-        result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
-        if (result) {
-            return result;
+
+        // For < 3.x (or unspecified minVersion) - setOptions() before install()
+        if (!pluginObj.minVersion || this.compareVersion('3.0.0', pluginObj.minVersion) < 0) {
+            result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+
+            if (result) {
+                return result;
+            }
         }
 
         // Run on first load
@@ -4721,7 +4726,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                                     .push({ variadic: true });
                                 break;
                             }
-                            arg = entities.variable() || entities.property() || entities.literal() || entities.keyword();
+                            arg = entities.variable() || entities.property() || entities.literal() || entities.keyword() || this.call(true);
                         }
 
                         if (!arg) {
@@ -5232,7 +5237,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         important = this.important();
                     }
 
-                    if (value && (hasDR || this.end())) {
+                    if (value && (this.end() || hasDR)) {
                         parserInput.forget();
                         return new (tree.Declaration)(name, value, important, merge, index, fileInfo);
                     }
@@ -5413,7 +5418,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var entities = this.entities, nodes = [], e, p;
                 parserInput.save();
                 do {
-                    e = entities.keyword() || entities.variable();
+                    e = entities.keyword() || entities.variable() || entities.mixinLookup();
                     if (e) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
@@ -5447,7 +5452,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         features.push(e);
                         if (!parserInput.$char(',')) { break; }
                     } else {
-                        e = entities.variable();
+                        e = entities.variable() || entities.mixinLookup();
                         if (e) {
                             features.push(e);
                             if (!parserInput.$char(',')) { break; }

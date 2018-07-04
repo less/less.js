@@ -222,5 +222,7 @@ html {
   c: 3;
   e: ;
   f: 6;
+  g: 3;
+  h: 5;
   /* results in void */
 }

@@ -1,0 +1,35 @@
+.sel-blue {
+  a: b;
+}
+.sel-green {
+  a: b;
+}
+.sel-red {
+  a: b;
+}
+.each {
+  index: 1, 2, 3, 4;
+  item1: a;
+  item2: b;
+  item3: c;
+  item4: d;
+  nest-a-1: 10px 1;
+  nest-d-2: 15px 2;
+  nest-a-1: 20px 1;
+  nest-d-2: 25px 2;
+  padding: 10px 20px 30px 40px;
+}
+.set {
+  one: blue;
+  two: green;
+  three: red;
+}
+.set-2 {
+  one: blue;
+  two: green;
+  three: red;
+}
+.single {
+  val: true;
+  val2: 2;
+}

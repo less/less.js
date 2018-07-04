@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.6
+ * Less - Leaner CSS v3.5.0-beta.7
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -4897,7 +4897,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         parserInput.save();
                         args = null;
                         rule = this.lookupValue();
-                        if (!rule) {
+                        if (!rule && rule !== '') {
                             parserInput.restore();
                             break;
                         }
@@ -4917,14 +4917,14 @@ var Parser = function Parser(context, imports, fileInfo) {
                         return;
                     }
     
-                    var name = parserInput.$re(/^(?:@{0,2}|\$)[_a-zA-Z0-9-]+/);
+                    var name = parserInput.$re(/^(?:[@$]{0,2})[_a-zA-Z0-9-]*/);
     
                     if (!parserInput.$char(']')) {
                         parserInput.restore();
                         return;
                     } 
 
-                    if (name) {
+                    if (name || name === '') {
                         parserInput.forget();
                         return name;
                     }
@@ -8562,8 +8562,7 @@ var NamespaceValue = function (ruleCall, lookups, important, index, fileInfo) {
 NamespaceValue.prototype = new Node();
 NamespaceValue.prototype.type = 'NamespaceValue';
 NamespaceValue.prototype.eval = function (context) {
-    var i, j, name, found,
-        rules = this.value.eval(context);
+    var i, j, name, rules = this.value.eval(context);
     
     for (i = 0; i < this.lookups.length; i++) {
         name = this.lookups[i];
@@ -8571,13 +8570,16 @@ NamespaceValue.prototype.eval = function (context) {
         /**
          * Eval'd DRs return rulesets.
          * Eval'd mixins return rules, so let's make a ruleset if we need it.
-         * We need to do this because of late parsing of properties
+         * We need to do this because of late parsing of values
          */
         if (Array.isArray(rules)) {
             rules = new Ruleset([new Selector()], rules);
         }
 
-        if (name.charAt(0) === '@') {
+        if (name === '') {
+            rules = rules.lastDeclaration();
+        }
+        else if (name.charAt(0) === '@') {
             if (name.charAt(1) === '@') {
                 name = '@' + new Variable(name.substr(1)).eval(context).value;
             }
@@ -8593,13 +8595,19 @@ NamespaceValue.prototype.eval = function (context) {
             }
         }
         else {
+            if (name.substring(0, 2) === '$@') {
+                name = '$' + new Variable(name.substr(1)).eval(context).value;
+            }
+            else {
+                name = name.charAt(0) === '$' ? name : '$' + name;
+            }
             if (rules.properties) {
-                rules = rules.property(name.charAt(0) === '$' ? name : '$' + name);
+                rules = rules.property(name);
             }
         
             if (!rules) {
                 throw { type: 'Name',
-                    message: 'property "' + name + '" not found',
+                    message: 'property "' + name.substr(1) + '" not found',
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -9319,6 +9327,14 @@ Ruleset.prototype.property = function (name) {
     var decl = this.properties()[name];
     if (decl) {
         return this.parseValue(decl);
+    }
+};
+Ruleset.prototype.lastDeclaration = function () {
+    for (var i = this.rules.length; i > 0; i--) {
+        var decl = this.rules[i - 1];
+        if (decl instanceof Declaration) {
+            return this.parseValue(decl);
+        }
     }
 };
 Ruleset.prototype.parseValue = function(toParse) {

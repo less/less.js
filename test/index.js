@@ -7,7 +7,7 @@ console.log('\n' + stylize('Less', 'underline') + '\n');
 
 lessTester.prepBomTest();
 var testMap = [
-    [{}, 'edge/'],
+    [{}, 'namespacing/'],
     [{
         strictMath: false, 
         relativeUrls: true, 

@@ -51,8 +51,8 @@ each(@selectors, {
   });
 }
 
-.add-one(@val) {
-  @r: @val + 1;
+.pick(@a) when (@a = 4) {
+  val3: @a;
 }
 .single {
   each(true, {
@@ -60,6 +60,9 @@ each(@selectors, {
   });
   @exp: 1 + 1;
   each(@exp, {
-    val2: .add-one(@value)[];
+    val2: @value;
+  });
+  each(1 2 3 4, {
+    .pick(@value);
   });
 }

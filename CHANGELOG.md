@@ -4,6 +4,7 @@
   - Feature: Namespaced Values / Maps e.g. `color: @color[primary]`
   - Fixes to calc()
   - Permissive parsing of custom properties and variables
+  - Inline expressions now not evaluated in at-rules `@media (min-width: @var) {}` works, `@media (min-width: @var + 1) {}` will not
   - Allows unnamed lookups i.e. "functions" e.g. `.mixin(@a, @b)[]`
   - Lots of bug fixes
 

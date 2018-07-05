@@ -1,33 +1,42 @@
-# 3.5.0-beta.4
+## 3.5.0
+
+2018-07-05
+  - Feature: Namespaced Values / Maps e.g. `color: @color[primary]`
+  - Fixes to calc()
+  - Permissive parsing of custom properties and variables
+  - Allows unnamed lookups i.e. "functions" e.g. `.mixin(@a, @b)[]`
+  - Lots of bug fixes
+
+## 3.5.0-beta.4
 
 2018-06-30
   - Fixes #3235, #3187
   - Feature: Namespaced Values e.g. `color: #color[primary]`
 
-# 3.5.0-beta.3
+## 3.5.0-beta.3
 
 2018-06-29
   - Fix: browser cache is always considered stale if .modifyVars wasn't
 
-# 3.5.0-beta.2
+## 3.5.0-beta.2
 
 2018-06-27
   - Re-parses selectors after variables in selectors are evaluated - Fixes #1421
   - Fixes #3191
 
-# 3.5.0-beta
+## 3.5.0-beta
 
 2018-06-24
   - Adds permissive parsing for at-rules and custom properties - fixes #3147 #2715 
   - Updates dependencies
   - Fixes file caching issue (not reloading modified files in "watched" environments)
 
-# 3.0.4
+## 3.0.4
 
 2018-05-06
   - Update source-map to 0.6.x (#3180). Enforces node 6+ though.
 
-# 3.0.0
+## 3.0.0
 
 2018-02-10
   - Fix `calc()` function to not do math operations on compile
@@ -43,13 +52,13 @@
   - Bug fixes
   - Removal of unnecessary nodes from API (like IE's `alpha()`)
 
-# 2.7.3
+## 2.7.3
 
 2017-10-23
 
   - Bump `request` dependency
 
-# 2.7.2
+## 2.7.2
 
 2017-01-04
 
@@ -57,13 +66,13 @@
   - Fix error reporting of lessc executable
   - Changed octals to hex for ES6 strict mode
 
-# 2.7.1 HOTFIX
+## 2.7.1 HOTFIX
 
 2016-05-09
 
  - Revert commit 470af20 (source map performance) which broke source maps
 
-# 2.7.0
+## 2.7.0
 
 2016-05-07
 
@@ -76,7 +85,7 @@
  - Fix AST to include single-line comments
  - Fix reversion for "color-like" words (outputting color values)
 
-# 2.6.1
+## 2.6.1
 
 2016-03-04
 
@@ -85,7 +94,7 @@
  - use instanceof operator instead of class comparison optimization
  - disallow whitespace in variable calls
 
-# 2.6.0
+## 2.6.0
 
 2016-01-29
 
@@ -100,13 +109,13 @@
  - Logical operator ```and``` now has higher precedence than logical operator ```or```.
  - Allow unknown at-rules w/o {} block
 
-# 2.5.3
+## 2.5.3
 
 2015-09-25
 
  - Fix import inline a URL
 
-# 2.5.2
+## 2.5.2
 
 2015-09-24
 
@@ -117,7 +126,7 @@
  - Fixed mixin definition matching problem when mixin definition contains parameters with default values
  - Observe reference for imported comments
 
-# 2.5.1
+## 2.5.1
 
 2015-05-21
 
@@ -125,7 +134,7 @@
  - Minor fix only likely to affect programmatic usage of ruleset find
  - Fix  error when a namespaced mixin is invoked in global scope
 
-# 2.5.0
+## 2.5.0
 
 2015-04-03
 
@@ -146,7 +155,7 @@
  - consistently keep units if strict units is off
  - Better support for comments in function all arguments
 
-# 2.4.0
+## 2.4.0
 
 2015-02-07
 
@@ -160,14 +169,14 @@
  - Files with just `\r` newlines now process ok (regression in 2.0.0)
  - When strict units is off and the unit is 1/x, (e.g. 1 / 12px) the unit output is x, previously nothing (regression in 2.0.0)
 
-# 2.3.1
+## 2.3.1
 
 2015-01-28
 
  - Fix depends option (regression in 2.3.0)
  - Support parent selector (`&`) used in sub element expression (e.g. `:not(.c_&)`)
 
-# 2.3.0
+## 2.3.0
 
 2015-01-27
 
@@ -185,7 +194,7 @@
  - Unicode BOM removed again
  - Misc. bug fixes
 
-# 2.2.0
+## 2.2.0
 
 2015-01-04
 
@@ -205,14 +214,14 @@
  - support safari extension
  - less.parse now exposes a way to get the AST. We do not recommend you use this unless you need to.
 
-# 2.1.2
+## 2.1.2
 
 2014-12-20
 
  - Fix for use with requirejs
  - Fixes for data-uri function
 
-# 2.1.1
+## 2.1.1
 
 2014-11-27
 
@@ -221,7 +230,7 @@
  - Fix problem with plugins when used with the promises version of render
  - If the render callback throws an exception it now propagates instead of calling the callback again with an error
 
-# 2.1.0
+## 2.1.0
 
 2014-11-23
 
@@ -236,7 +245,7 @@
  - livereload cache buster is now treated specially
  - upgrade dependencies
 
-# 2.0.0
+## 2.0.0
 
 2014-11-09
 
@@ -247,7 +256,7 @@
  - fixed some local variable spellings
  - support for `@counter-style` directive
 
-# 2.0.0-b3
+## 2.0.0-b3
 
 2014-11-01
 
@@ -256,7 +265,7 @@
  - browser can now be scoped with just window
  - browser `useFileCache` defaults to `true`, but file cache is now cleared when refreshing or in watch mode
 
-# 2.0.0-b2
+## 2.0.0-b2
 
 2014-10-26
 
@@ -268,7 +277,7 @@
  - Fixed a bug where unquoted urls beginning `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
  - lessc plugins can be a function, used as a constructor as well as an object - this to allow the plugin more flexibility to be used programattically
 
-# 2.0.0-b1
+## 2.0.0-b1
 
 2014-10-19
 
@@ -289,7 +298,7 @@
  - default values for the sourcemap options have been re-done and improved to hopefully mean creating sourcemaps is easier
  - Many smaller bugfixes and API changes. Please let us know if something you relied on has disappeared or an area should be better documented.
 
-# 1.7.5
+## 1.7.5
 
 2014-09-03
 
@@ -302,7 +311,7 @@
  - Fix interpolated import in media query
  - A few other various small corrections
 
-# 1.7.4
+## 1.7.4
 
 2014-07-27
 
@@ -314,7 +323,7 @@
  - Better error message for imports missing semi-colons or malformed
  - Do not use util.print to avoid deprecate warnings in node 0.11
 
-# 1.7.3
+## 1.7.3
 
 2014-06-22
 
@@ -322,14 +331,14 @@
  - Do not round the results of color functions, like lightness, hue, luma etc.
  - Support cover and contain keywords in background definitions
 
- # 1.7.2
+ ## 1.7.2
 
 2014-06-19
 
  - Allow paths option to be a string (in 1.7.1 less started throwing an exception instead of incorrectly processing the string as an array of chars)
  - Do not round numbers when used with javascript (introduced 1.7.0)
 
-# 1.7.1
+## 1.7.1
 
 2014-06-08
 
@@ -347,7 +356,7 @@
  - Fix the e() function when passed empty string
  - Several minor bug fixes
 
-# 1.7.0
+## 1.7.0
 
 2014-02-27
 
@@ -369,13 +378,13 @@
  - Browser - added postProcessor option, a function called to post-process the css before adding to the page
  - Browser - use the right request for file access in IE
 
-# 1.6.3
+## 1.6.3
 
 2014-02-08
 
  - Fix issue with calling toCSS twice not working in some situations (like with bootstrap 2)
 
-# 1.6.2
+## 1.6.2
 
 2014-02-02
 
@@ -390,7 +399,7 @@
  - some improvements to the default() function in more complex scenarios
  - improved missing '{' and '(' detection
 
-# 1.6.1
+## 1.6.1
 
 2014-01-12
 
@@ -403,7 +412,7 @@
  - use innerHTML in tests, not innerText
  - protect for-in in case Array and Object prototypes have custom fields
 
-# 1.6.0
+## 1.6.0
 
 2014-01-01
 
@@ -422,7 +431,7 @@
  - Fixed error messages for undefined variables in javascript evaluation
  - Fixed line/column numbers from math errors
 
-# 1.5.1
+## 1.5.1
 
 2013-11-17
 
@@ -434,7 +443,7 @@
  - correct a bug meaning imports weren't synchronous (syncImport option available for full synchronous behaviour)
  - better mixin matching behaviour with calling multiple classes e.g. .a.b.c;
 
-# 1.5.0
+## 1.5.0
 
 2013-10-21
 
@@ -460,7 +469,7 @@
  - Now uses grunt for building and testing
  - A few bug fixes for media queries, extends, scoping, compression and import once.
 
-# 1.4.2
+## 1.4.2
 
 2013-07-20
 
@@ -469,7 +478,7 @@
  - property names may include capital letters
  - various windows path fixes (capital letters, multiple // in a path)
 
-# 1.4.1
+## 1.4.1
 
 2013-07-05
 
@@ -477,20 +486,20 @@
  - fixed several global variable leaks
  - handle getting null or undefined passed as the options object
 
-# 1.4.0
+## 1.4.0
 
 2013-06-05
 
  - fix passing of strict maths option
 
-# 1.4.0 Beta 4
+## 1.4.0 Beta 4
 
 2013-05-04
 
  - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
  - change lessc option for strict units to --strict-units=off
 
-# 1.4.0 Beta 3
+## 1.4.0 Beta 3
 
 2013-04-30
 
@@ -502,7 +511,7 @@
  - remove es-5-shim as standard from the browser
  - Fix path issues with windows/linux local paths
 
-# 1.4.0 Beta 1 & 2
+## 1.4.0 Beta 1 & 2
 
 2013-03-07
 
@@ -528,14 +537,14 @@
  - support for namespaces in attributes and selector interpolation in attributes
  - other bug fixes
 
-# 1.3.3
+## 1.3.3
 
 2012-12-30
 
  - Fix critical bug with mixin call if using multiple brackets
  - when using the filter contrast function, the function is passed through if the first argument is not a color
 
-# 1.3.2
+## 1.3.2
 
 2012-12-28
 
@@ -572,7 +581,7 @@
  - sass debug statements are now chrome compatible
  - modifyVars function added to re-render with different root variables
 
-# 1.3.1
+## 1.3.1
 
 2012-10-18
 
@@ -597,7 +606,7 @@
 - implement named parameters when calling mixins
 - many numerous bug fixes
 
-# 1.3.0
+## 1.3.0
 
 2012-03-10
 
@@ -615,7 +624,7 @@
 - Fix a bug when using @media with mixins
 
 
-# 1.2.1
+## 1.2.1
 
 2012-01-15
 
@@ -625,7 +634,7 @@
 - Fix `File not found` import error reporting
 
 
-# 1.2.0
+## 1.2.0
 
 2012-01-07
 

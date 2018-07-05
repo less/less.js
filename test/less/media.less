@@ -232,3 +232,11 @@ body {
     var: all-and-tv;
   }
 }
+
+// Change in behavior of media queries in 3.5+ - inline expressions not eval'd
+@some-var: 60px;
+@media screen and (min-width: (@some-var + 1)) {
+  .selector {
+    foo: bar;
+  }
+}

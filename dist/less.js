@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0
+ * Less - Leaner CSS v3.5.1
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2888,7 +2888,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 5, 0],
+        version: [3, 5, 1],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -4357,13 +4357,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.save();
                     if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^@@?[\w-]+/))) {
                         ch = parserInput.currentChar();
-                        if (ch === '(' || ch === '[') {
+                        if (ch === '(' || ch === '[' && !parserInput.prevChar().match(/^\s/)) {
                             // this may be a VariableCall lookup
                             var result = parsers.variableCall(name);
-                            if (!result) {
-                                return parserInput.restore();
-                            }
-                            else {
+                            if (result) {
                                 parserInput.forget();
                                 return result;
                             }
@@ -4530,7 +4527,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                     lookups = this.mixin.ruleLookups();
 
-                    if (!lookups && name[2] !== '()') {
+                    if (!lookups && ((inValue && parserInput.$str('()') !== '()') || (name[2] !== '()'))) {
                         parserInput.restore('Missing \'[...]\' lookup in variable call');
                         return;
                     }

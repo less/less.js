@@ -216,3 +216,8 @@ body {
     var: all-and-tv;
   }
 }
+@media screen and (min-width: (60px + 1)) {
+  .selector {
+    foo: bar;
+  }
+}

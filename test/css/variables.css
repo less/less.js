@@ -1,6 +1,9 @@
 .variables {
   width: 14cm;
 }
+.variable-dash .q {
+  padding: 30px 15px;
+}
 .variables {
   height: 24px;
   color: #888;

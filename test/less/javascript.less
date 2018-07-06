@@ -9,6 +9,7 @@
            return x})()`;
 }
 .scope {
+    empty: `+function(){}`;
     @foo: 42;
     var: `parseInt(this.foo.toJS())`;
     escaped: ~`2 + 5 + 'px'`;

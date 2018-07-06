@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.2
+ * Less - Leaner CSS v3.5.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2888,7 +2888,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 5, 2],
+        version: [3, 5, 3],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -5421,7 +5421,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
                         p = this.property();
-                        e = this.permissiveValue(')');
+                        e = this.value();
                         if (parserInput.$char(')')) {
                             if (p && e) {
                                 nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i, fileInfo, true)));
@@ -7909,10 +7909,11 @@ JavaScript.prototype = new JsEvalNode();
 JavaScript.prototype.type = 'JavaScript';
 JavaScript.prototype.eval = function(context) {
     var result = this.evaluateJavaScript(this.expression, context);
+    var type = typeof result;
 
-    if (typeof result === 'number') {
+    if (type === 'number' && !isNaN(result)) {
         return new Dimension(result);
-    } else if (typeof result === 'string') {
+    } else if (type === 'string') {
         return new Quoted('"' + result + '"', result, this.escaped, this._index);
     } else if (Array.isArray(result)) {
         return new Anonymous(result.join(', '));

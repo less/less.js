@@ -1,3 +1,9 @@
+## 3.5.3
+
+2018-07-06
+  - Reverts @media eval change
+  - Other bug fixes
+
 ## 3.5.0
 
 2018-07-05

@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.1
+ * Less - Leaner CSS v3.5.2
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2888,7 +2888,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 5, 1],
+        version: [3, 5, 2],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -3602,11 +3602,11 @@ module.exports = function() {
                 returnVal = input.substr(lastPos, i - lastPos);
                 if (returnVal) {
                     parseGroups.push(returnVal);
-                    returnVal = parseGroups;
                 }
                 else {
-                    returnVal = [' '];
+                    parseGroups.push(' ');
                 }
+                returnVal = parseGroups;
                 skipWhitespace(i - startPos);
                 loop = false
             } else {
@@ -4157,7 +4157,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //     black border-collapse
                 //
                 keyword: function () {
-                    var k = parserInput.$char('%') || parserInput.$re(/^\[?[_A-Za-z-][_A-Za-z0-9-]*\]?/);
+                    var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
                     if (k) {
                         return tree.Color.fromKeyword(k) || new(tree.Keyword)(k);
                     }
@@ -5226,12 +5226,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!value) {
                             value = this.value();
                         }
-                        // As a last resort, try permissiveValue
-                        if (!value && isVariable) {
+
+                        if (value) {
+                            important = this.important();
+                        } else if (isVariable) {
+                            // As a last resort, try permissiveValue
                             value = this.permissiveValue();
                         }
-
-                        important = this.important();
                     }
 
                     if (value && (this.end() || hasDR)) {

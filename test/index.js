@@ -55,7 +55,8 @@ var testMap = [
     [{plugin: 'test/plugins/preprocess/'}, 'preProcessorPlugin/'],
     [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],
     [{plugin: 'test/plugins/filemanager/'}, 'filemanagerPlugin/'],
-    [{}, 'no-strict-math/']
+    [{}, 'no-strict-math/'],
+    [{}, '3rd-party/']
 ];
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)

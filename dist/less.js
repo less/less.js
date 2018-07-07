@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.7
+ * Less - Leaner CSS v3.5.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2888,7 +2888,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 5, 0],
+        version: [3, 5, 3],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -3602,11 +3602,11 @@ module.exports = function() {
                 returnVal = input.substr(lastPos, i - lastPos);
                 if (returnVal) {
                     parseGroups.push(returnVal);
-                    returnVal = parseGroups;
                 }
                 else {
-                    returnVal = [' '];
+                    parseGroups.push(' ');
                 }
+                returnVal = parseGroups;
                 skipWhitespace(i - startPos);
                 loop = false
             } else {
@@ -4157,7 +4157,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //     black border-collapse
                 //
                 keyword: function () {
-                    var k = parserInput.$char('%') || parserInput.$re(/^\[?[_A-Za-z-][_A-Za-z0-9-]*\]?/);
+                    var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
                     if (k) {
                         return tree.Color.fromKeyword(k) || new(tree.Keyword)(k);
                     }
@@ -4357,13 +4357,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.save();
                     if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^@@?[\w-]+/))) {
                         ch = parserInput.currentChar();
-                        if (ch === '(' || ch === '[') {
+                        if (ch === '(' || ch === '[' && !parserInput.prevChar().match(/^\s/)) {
                             // this may be a VariableCall lookup
                             var result = parsers.variableCall(name);
-                            if (!result) {
-                                return parserInput.restore();
-                            }
-                            else {
+                            if (result) {
                                 parserInput.forget();
                                 return result;
                             }
@@ -4530,7 +4527,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                     lookups = this.mixin.ruleLookups();
 
-                    if (!lookups && name[2] !== '()') {
+                    if (!lookups && ((inValue && parserInput.$str('()') !== '()') || (name[2] !== '()'))) {
                         parserInput.restore('Missing \'[...]\' lookup in variable call');
                         return;
                     }
@@ -5229,12 +5226,13 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!value) {
                             value = this.value();
                         }
-                        // As a last resort, try permissiveValue
-                        if (!value && isVariable) {
+
+                        if (value) {
+                            important = this.important();
+                        } else if (isVariable) {
+                            // As a last resort, try permissiveValue
                             value = this.permissiveValue();
                         }
-
-                        important = this.important();
                     }
 
                     if (value && (this.end() || hasDR)) {
@@ -5423,7 +5421,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
                         p = this.property();
-                        e = this.permissiveValue(')');
+                        e = this.value();
                         if (parserInput.$char(')')) {
                             if (p && e) {
                                 nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i, fileInfo, true)));
@@ -7911,10 +7909,11 @@ JavaScript.prototype = new JsEvalNode();
 JavaScript.prototype.type = 'JavaScript';
 JavaScript.prototype.eval = function(context) {
     var result = this.evaluateJavaScript(this.expression, context);
+    var type = typeof result;
 
-    if (typeof result === 'number') {
+    if (type === 'number' && !isNaN(result)) {
         return new Dimension(result);
-    } else if (typeof result === 'string') {
+    } else if (type === 'string') {
         return new Quoted('"' + result + '"', result, this.escaped, this._index);
     } else if (Array.isArray(result)) {
         return new Anonymous(result.join(', '));

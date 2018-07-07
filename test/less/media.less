@@ -23,7 +23,7 @@
 @ratio_large: 16;
 @ratio_small: 9;
 
-@media all and (device-aspect-ratio: ~"@{ratio_large} / @{ratio_small}") {
+@media all and (device-aspect-ratio: ~'@{ratio_large} / @{ratio_small}') {
    body { max-width: 800px; }
 }
 
@@ -230,5 +230,12 @@ body {
 @media @all and @tv {
   .all-and-tv-variables {
     var: all-and-tv;
+  }
+}
+
+@some-var: 60px;
+@media screen and (min-width: (@some-var + 1)) {
+  .selector {
+    foo: bar;
   }
 }

@@ -18,7 +18,7 @@
   // `test-local`  function should be reachable
   // `test-shadow` function should return local version, shadowing global version
   .local {
-    @plugin "./plugin/plugin-local";
+    @plugin (option) "./plugin/plugin-local";
     global : test-global();
     local  : test-local();
     shadow : test-shadow();
@@ -120,4 +120,23 @@
 test-atrule("@charset"; '"utf-8"');
 test-atrule("@arbitrary"; "value after ()");
 
+// no minVersion specified
+@plugin (option1) "./plugin/plugin-set-options";
+@plugin "./plugin/plugin-set-options";
+@plugin (option2) "./plugin/plugin-set-options";
+@plugin "./plugin/plugin-set-options";
+@plugin (option3) "./plugin/plugin-set-options";
 
+// specifies minVersion: [2,0,0]
+@plugin (option1) "./plugin/plugin-set-options-v2";
+@plugin "./plugin/plugin-set-options-v2";
+@plugin (option2) "./plugin/plugin-set-options-v2";
+@plugin "./plugin/plugin-set-options-v2";
+@plugin (option3) "./plugin/plugin-set-options-v2";
+
+// specifies minVersion: [3,0,0]
+@plugin (option1) "./plugin/plugin-set-options-v3";
+@plugin "./plugin/plugin-set-options-v3";
+@plugin (option2) "./plugin/plugin-set-options-v3";
+@plugin "./plugin/plugin-set-options-v3";
+@plugin (option3) "./plugin/plugin-set-options-v3";

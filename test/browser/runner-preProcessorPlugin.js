@@ -1,3 +1,3 @@
-describe("less.js preProcessor Plugin", function() {
+describe('less.js preProcessor Plugin', function() {
     testLessEqualsInDocument();
 });

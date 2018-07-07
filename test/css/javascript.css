@@ -8,6 +8,7 @@
   multiline: 2;
 }
 .scope {
+  empty: ;
   var: 42;
   escaped: 7px;
 }

@@ -223,4 +223,6 @@ html {
   e: ;
   f: 6;
   /* results in void */
+  color: green;
+  color: purple;
 }

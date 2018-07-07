@@ -69,7 +69,7 @@ p + h1 {
 .misc {
   -moz-border-radius: 2px;
   display: -moz-inline-stack;
-  width: .1em;
+  width: 0.1em;
   background-color: #009998;
   background: -webkit-gradient(linear, left top, left bottom, from(red), to(blue));
   margin: ;

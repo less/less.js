@@ -259,4 +259,16 @@ html {
   f: if(not(@f), 6);
 
   if((false), {g: 7}); /* results in void */
+
+  @conditional: if((true), {
+    color: green;
+  }, {});
+  @conditional();
+
+  @falsey: if((@undefined), {
+    color: orange;
+  }, {
+    color: purple;
+  });
+  @falsey();
 }

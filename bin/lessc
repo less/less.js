@@ -2,7 +2,7 @@
 
 var path = require('path'),
     fs = require('../lib/less-node/fs'),
-    os = require("os"),
+    os = require('os'),
     utils = require('../lib/less/utils'),
     errno,
     mkdirp;
@@ -37,20 +37,20 @@ var continueProcessing = true;
 // Additionally we also need to make sure that uncaughtExceptions are never swallowed.
 // @see https://github.com/less/less.js/issues/2881
 // This code can safely be removed if node 0.10.x is not supported anymore.
-process.on("exit", function() { process.reallyExit(process.exitCode); });
-process.on("uncaughtException", function(err) {
+process.on('exit', function() { process.reallyExit(process.exitCode); });
+process.on('uncaughtException', function(err) {
     console.error(err);
     process.exitCode = 1;
 });
 // This code will still be required because otherwise rejected promises would not be reported to the user
-process.on("unhandledRejection", function(err) {
+process.on('unhandledRejection', function(err) {
     console.error(err);
     process.exitCode = 1;
 });
 
 var checkArgFunc = function(arg, option) {
     if (!option) {
-        console.error(arg + " option requires a parameter");
+        console.error(arg + ' option requires a parameter');
         continueProcessing = false;
         process.exitCode = 1;
         return false;
@@ -61,7 +61,7 @@ var checkArgFunc = function(arg, option) {
 var checkBooleanArg = function(arg) {
     var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
     if (!onOff) {
-        console.error(" unable to parse " + arg + " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no");
+        console.error(' unable to parse ' + arg + ' as a boolean. use one of on/t/true/y/yes/off/f/false/n/no');
         continueProcessing = false;
         process.exitCode = 1;
         return false;
@@ -102,15 +102,15 @@ function render() {
         sourceMapOptions.sourceMapInputFilename = input;
         if (!sourceMapOptions.sourceMapFullFilename) {
             if (!output && !sourceMapFileInline) {
-                console.error("the sourcemap option only has an optional filename if the css filename is given");
-                console.error("consider adding --source-map-map-inline which embeds the sourcemap into the css");
+                console.error('the sourcemap option only has an optional filename if the css filename is given');
+                console.error('consider adding --source-map-map-inline which embeds the sourcemap into the css');
                 process.exitCode = 1;
                 return;
             }
             // its in the same directory, so always just the basename
             if (output) {
                 sourceMapOptions.sourceMapOutputFilename = path.basename(output);
-                sourceMapOptions.sourceMapFullFilename = output + ".map";
+                sourceMapOptions.sourceMapFullFilename = output + '.map';
             }
             // its in the same directory, so always just the basename
             if ('sourceMapFullFilename' in sourceMapOptions) {
@@ -142,8 +142,8 @@ function render() {
 
 
     if (!input) {
-        console.error("lessc: no input files");
-        console.error("");
+        console.error('lessc: no input files');
+        console.error('');
         printUsage();
         process.exitCode = 1;
         return;
@@ -165,25 +165,25 @@ function render() {
 
     if (options.depends) {
         if (!outputbase) {
-            console.error("option --depends requires an output path to be specified");
+            console.error('option --depends requires an output path to be specified');
             process.exitCode = 1;
             return;
         }
-        process.stdout.write(outputbase + ": ");
+        process.stdout.write(outputbase + ': ');
     }
 
     if (!sourceMapFileInline) {
         var writeSourceMap = function(output, onDone) {
-            output = output || "";
+            output = output || '';
             var filename = sourceMapOptions.sourceMapFullFilename;
             ensureDirectory(filename);
             fs.writeFile(filename, output, 'utf8', function (err) {
                 if (err) {
-                    var description = "Error: ";
+                    var description = 'Error: ';
                     if (errno && errno.errno[err.errno]) {
                         description += errno.errno[err.errno].description;
                     } else {
-                        description += err.code + " " + err.message;
+                        description += err.code + ' ' + err.message;
                     }
                     console.error('lessc: failed to create file ' + filename);
                     console.error(description);
@@ -211,11 +211,11 @@ function render() {
             ensureDirectory(output);
             fs.writeFile(output, result.css, {encoding: 'utf8'}, function (err) {
                 if (err) {
-                    var description = "Error: ";
+                    var description = 'Error: ';
                     if (errno && errno.errno[err.errno]) {
                         description += errno.errno[err.errno].description;
                     } else {
-                        description += err.code + " " + err.message;
+                        description += err.code + ' ' + err.message;
                     }
                     console.error('lessc: failed to create file ' + output);
                     console.error(description);
@@ -233,9 +233,9 @@ function render() {
 
     var logDependencies = function(options, result) {
         if (options.depends) {
-            var depends = "";
+            var depends = '';
             for (var i = 0; i < result.imports.length; i++) {
-                depends += result.imports[i] + " ";
+                depends += result.imports[i] + ' ';
             }
             console.log(depends);
         }
@@ -243,7 +243,7 @@ function render() {
 
     var parseLessFile = function (e, data) {
         if (e) {
-            console.error("lessc: " + e.message);
+            console.error('lessc: ' + e.message);
             process.exitCode = 1;
             return;
         }
@@ -320,8 +320,8 @@ function processPluginQueue() {
     var x = 0;
 
     function pluginError(name) {
-        console.error("Unable to load plugin " + name +
-            " please make sure that it is installed under or at the same level as less");
+        console.error('Unable to load plugin ' + name +
+            ' please make sure that it is installed under or at the same level as less');
         process.exitCode = 1;
     }
     function pluginFinished(plugin) {
@@ -368,7 +368,7 @@ function processPluginQueue() {
         switch (arg) {
             case 'v':
             case 'version':
-                console.log("lessc " + less.version.join('.') + " (Less Compiler) [JavaScript]");
+                console.log('lessc ' + less.version.join('.') + ' (Less Compiler) [JavaScript]');
                 continueProcessing = false;
                 break;
             case 'verbose':
@@ -475,23 +475,23 @@ function processPluginQueue() {
                     options.rootpath = match[2].replace(/\\/g, '/');
                 }
                 break;
-            case "ru":
-            case "relative-urls":
+            case 'ru':
+            case 'relative-urls':
                 options.relativeUrls = true;
                 break;
-            case "sm":
-            case "strict-math":
+            case 'sm':
+            case 'strict-math':
                 if (checkArgFunc(arg, match[2])) {
                     options.strictMath = checkBooleanArg(match[2]);
                 }
                 break;
-            case "su":
-            case "strict-units":
+            case 'su':
+            case 'strict-units':
                 if (checkArgFunc(arg, match[2])) {
                     options.strictUnits = checkBooleanArg(match[2]);
                 }
                 break;
-            case "global-var":
+            case 'global-var':
                 if (checkArgFunc(arg, match[2])) {
                     if (!options.globalVars) {
                         options.globalVars = {};
@@ -499,7 +499,7 @@ function processPluginQueue() {
                     parseVariableOption(match[2], options.globalVars);
                 }
                 break;
-            case "modify-var":
+            case 'modify-var':
                 if (checkArgFunc(arg, match[2])) {
                     if (!options.modifyVars) {
                         options.modifyVars = {};

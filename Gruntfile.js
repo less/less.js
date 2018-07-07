@@ -15,12 +15,12 @@ module.exports = function (grunt) {
     var browsers = [
         // Desktop browsers
         {
-            browserName: "chrome",
+            browserName: 'chrome',
             version: 'latest',
             platform: 'Windows 7'
         },
         {
-            browserName: "firefox",
+            browserName: 'firefox',
             version: 'latest',
             platform: 'Linux'
         },
@@ -30,17 +30,17 @@ module.exports = function (grunt) {
             platform: 'OS X 10.11'
         },
         {
-            browserName: "internet explorer",
+            browserName: 'internet explorer',
             version: '8',
             platform: 'Windows XP'
         },
         {
-            browserName: "internet explorer",
+            browserName: 'internet explorer',
             version: '11',
             platform: 'Windows 8.1'
         },
         {
-            browserName: "edge",
+            browserName: 'edge',
             version: '13',
             platform: 'Windows 10'
         },
@@ -70,17 +70,17 @@ module.exports = function (grunt) {
 
     var sauceJobs = {};
 
-    var browserTests = [   "filemanager-plugin",
-        "visitor-plugin",
-        "global-vars",
-        "modify-vars",
-        "production",
-        "rootpath-relative",
-        "rootpath",
-        "relative-urls",
-        "browser",
-        "no-js-errors",
-        "legacy"
+    var browserTests = [   'filemanager-plugin',
+        'visitor-plugin',
+        'global-vars',
+        'modify-vars',
+        'production',
+        'rootpath-relative',
+        'rootpath',
+        'relative-urls',
+        'browser',
+        'no-js-errors',
+        'legacy'
     ];
 
     function makeJob(testName) {
@@ -88,16 +88,16 @@ module.exports = function (grunt) {
             options: {
                 urls: testName === 'all' ?
                     browserTests.map(function(name) {
-                        return "http://localhost:8081/tmp/browser/test-runner-" + name + ".html";
+                        return 'http://localhost:8081/tmp/browser/test-runner-' + name + '.html';
                     }) :
-                    ["http://localhost:8081/tmp/browser/test-runner-" + testName + ".html"],
+                    ['http://localhost:8081/tmp/browser/test-runner-' + testName + '.html'],
                 testname: testName === 'all' ? 'Unit Tests for Less.js' : testName,
                 browsers: browsers,
                 public: 'public',
                 recordVideo: false,
                 videoUploadOnPass: false,
-                recordScreenshots: process.env.TRAVIS_BRANCH !== "master",
-                build: process.env.TRAVIS_BRANCH === "master" ? process.env.TRAVIS_JOB_ID : undefined,
+                recordScreenshots: process.env.TRAVIS_BRANCH !== 'master',
+                build: process.env.TRAVIS_BRANCH === 'master' ? process.env.TRAVIS_JOB_ID : undefined,
                 tags: [process.env.TRAVIS_BUILD_NUMBER, process.env.TRAVIS_PULL_REQUEST, process.env.TRAVIS_BRANCH],
                 statusCheckAttempts: -1,
                 sauceConfig: {
@@ -190,10 +190,13 @@ module.exports = function (grunt) {
                 command: [
                     'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
                     'cd lib',
-                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css'
+                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css',
+                    'cd ..',
+                    // Test multiple plugins
+                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
                 ].join(' && ')
             },
-            "sourcemap-test": {
+            'sourcemap-test': {
                 command: [
                     'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
                     'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
@@ -205,7 +208,7 @@ module.exports = function (grunt) {
             browser: {
                 src: ['./lib/less-browser/bootstrap.js'],
                 options: {
-                    exclude: ["promise"],
+                    exclude: ['promise'],
                     browserifyOptions: {
                         standalone: 'less'
                     }
@@ -265,15 +268,15 @@ module.exports = function (grunt) {
         },
 
         eslint: {
-            target: ["Gruntfile.js",
-                "test/**/*.js",
-                "lib/less*/**/*.js",
-                "bin/lessc",
-                "!test/browser/jasmine-jsreporter.js",
-                "!test/less/errors/plugin/plugin-error.js"
+            target: ['Gruntfile.js',
+                'test/**/*.js',
+                'lib/less*/**/*.js',
+                'bin/lessc',
+                '!test/browser/jasmine-jsreporter.js',
+                '!test/less/errors/plugin/plugin-error.js'
             ],
             options: {
-                configFile: ".eslintrc.json"
+                configFile: '.eslintrc.json'
             }
         },
 
@@ -295,7 +298,7 @@ module.exports = function (grunt) {
             main: {
                 // src is used to build list of less files to compile
                 src: [
-                    'test/less/*.less',
+                    'test/less/plugin.less',
                     // Don't test NPM import, obviously
                     '!test/less/plugin-module.less',
                     '!test/less/import-module.less',
@@ -438,8 +441,8 @@ module.exports = function (grunt) {
         // Clean the version of less built for the tests
         clean: {
             test: ['test/browser/less.js', 'tmp', 'test/less-bom'],
-            "sourcemap-test": ['test/sourcemaps/*.css', 'test/sourcemaps/*.map'],
-            sauce_log: ["sc_*.log"]
+            'sourcemap-test': ['test/sourcemaps/*.css', 'test/sourcemaps/*.map'],
+            sauce_log: ['sc_*.log']
         }
     });
 
@@ -491,17 +494,17 @@ module.exports = function (grunt) {
         'connect::keepalive'
     ]);
 
-    var previous_force_state = grunt.option("force");
+    var previous_force_state = grunt.option('force');
 
-    grunt.registerTask("force",function(set) {
-        if (set === "on") {
-            grunt.option("force",true);
+    grunt.registerTask('force',function(set) {
+        if (set === 'on') {
+            grunt.option('force',true);
         }
-        else if (set === "off") {
-            grunt.option("force",false);
+        else if (set === 'off') {
+            grunt.option('force',false);
         }
-        else if (set === "restore") {
-            grunt.option("force",previous_force_state);
+        else if (set === 'restore') {
+            grunt.option('force',previous_force_state);
         }
     });
 
@@ -527,10 +530,10 @@ module.exports = function (grunt) {
 
     if (isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
         Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
-        (process.env.TRAVIS_BRANCH === "master" || process.env.TRAVIS_BRANCH === "3.x")) {
-        testTasks.push("force:on");
-        testTasks.push("sauce-after-setup");
-        testTasks.push("force:off");
+        (process.env.TRAVIS_BRANCH === 'master' || process.env.TRAVIS_BRANCH === '3.x')) {
+        testTasks.push('force:on');
+        testTasks.push('sauce-after-setup');
+        testTasks.push('force:off');
     }
 
     // Run all tests

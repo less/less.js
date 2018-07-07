@@ -17,18 +17,16 @@ var testMap = [
         ieCompat: true
     }],
     [{
-        strictMath: true,
+        math: 'strict-legacy',
         ieCompat: true
-<<<<<<< HEAD
-    }, "strict-math/"],
+    }, 'math/strict-legacy/'],
     [{
-        strictMath: 'division'
-    }, "strict-math-division/"],
-    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, "errors/",
-=======
-    }, 'strict-math/'],
+        math: 'parens-all'
+    }, 'math/parens-all/'],
+    [{
+        math: 'parens-division'
+    }, 'math/parens-division/'],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, 'errors/',
->>>>>>> master
         lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: false}, 'no-js-errors/',
         lessTester.testErrors, null],
@@ -69,7 +67,7 @@ testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
 lessTester.testSyncronous({syncImport: true}, 'import');
-lessTester.testSyncronous({syncImport: true}, 'strict-math/css');
+lessTester.testSyncronous({syncImport: true}, 'math/strict-legacy/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();
 lessTester.finished();

@@ -22,5 +22,6 @@ module.exports = {
 
         manager.addVisitor(new Visitor());
         // console.log(manager);
-    }
+    },
+    minVersion: [2,0,0]
 };

@@ -7,7 +7,7 @@ console.log('\n' + stylize('Less', 'underline') + '\n');
 
 lessTester.prepBomTest();
 var testMap = [
-    [{}, 'edge/'],
+    [{}, 'namespacing/'],
     [{
         strictMath: false, 
         // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
@@ -61,7 +61,8 @@ var testMap = [
     [{plugin: 'test/plugins/preprocess/'}, 'preProcessorPlugin/'],
     [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],
     [{plugin: 'test/plugins/filemanager/'}, 'filemanagerPlugin/'],
-    [{}, 'no-strict-math/']
+    [{}, 'no-strict-math/'],
+    [{}, '3rd-party/']
 ];
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)

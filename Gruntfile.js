@@ -296,7 +296,12 @@ module.exports = function (grunt) {
             options: {
                 keepRunner: true,
                 host: 'http://localhost:8081/',
-                vendor: ['test/browser/jasmine-jsreporter.js', 'test/browser/common.js', 'test/browser/less.js'],
+                vendor: [
+                    'test/browser/vendor/promise.js',
+                    'test/browser/jasmine-jsreporter.js',
+                    'test/browser/common.js',
+                    'test/browser/less.js'
+                ],
                 template: 'test/browser/test-runner-template.tmpl'
             },
             main: {

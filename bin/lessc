@@ -482,7 +482,7 @@ function processPluginQueue() {
                 break;
             case 'sm':
             case 'strict-math':
-                console.warning('Strict math is deprecated. Use --math');
+                console.warning('--strict-math is deprecated. Use --math=strict');
                 if (checkArgFunc(arg, match[2])) {
                     if (checkBooleanArg(match[2])) {
                         options.math = MATH.STRICT_LEGACY;

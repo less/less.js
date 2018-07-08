@@ -13,10 +13,10 @@
   item2: b;
   item3: c;
   item4: d;
-  nest-a-1: 10px 1;
-  nest-d-2: 15px 2;
-  nest-a-1: 20px 1;
-  nest-d-2: 25px 2;
+  nest-1-1: 10px 1;
+  nest-2-1: 15px 2;
+  nest-1-2: 20px 1;
+  nest-2-2: 25px 2;
   padding: 10px 20px 30px 40px;
 }
 .set {
@@ -25,12 +25,18 @@
   three: red;
 }
 .set-2 {
-  one: blue;
-  two: green;
-  three: red;
+  one-1: blue;
+  two-2: green;
+  three-3: red;
 }
 .single {
   val: true;
   val2: 2;
   val3: 4;
+}
+.box {
+  -less-log: a;
+  -less-log: b;
+  -less-log: c;
+  -less-log: d;
 }

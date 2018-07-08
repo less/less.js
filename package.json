@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "3.5.0-beta.5",
+  "version": "3.5.3",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -51,6 +51,8 @@
     "source-map": "~0.6.0"
   },
   "devDependencies": {
+    "bootstrap": "3.3.7",
+    "bootstrap-less-port": "0.3.0",
     "diff": "^3.2.0",
     "git-rev": "^0.2.1",
     "grunt": "~0.4.5",
@@ -72,7 +74,8 @@
     "phantomjs-prebuilt": "^2.1.16",
     "phin": "^2.2.3",
     "promise": "^7.1.1",
-    "time-grunt": "^1.3.0"
+    "time-grunt": "^1.3.0",
+    "uikit": "2.27.4"
   },
   "keywords": [
     "compile less",

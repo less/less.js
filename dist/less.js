@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.0-beta.5
+ * Less - Leaner CSS v3.5.3
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -1498,7 +1498,8 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     try {
         loader = new Function('module', 'require', 'registerPlugin', 'functions', 'tree', 'less', 'fileInfo', contents);
         loader(localModule, this.require(filename), registerPlugin, registry, this.less.tree, this.less, fileInfo);
-    } catch (e) {
+    }
+    catch (e) {
         return new LessError(e, imports, filename);
     }
 
@@ -1512,12 +1513,16 @@ AbstractPluginLoader.prototype.evalPlugin = function(contents, context, imports,
     }
 
     if (pluginObj) {
-        // For 2.x back-compatibility - setOptions() before install()
         pluginObj.imports = imports;
         pluginObj.filename = filename;
-        result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
-        if (result) {
-            return result;
+
+        // For < 3.x (or unspecified minVersion) - setOptions() before install()
+        if (!pluginObj.minVersion || this.compareVersion('3.0.0', pluginObj.minVersion) < 0) {
+            result = this.trySetOptions(pluginObj, filename, shortname, pluginOptions);
+
+            if (result) {
+                return result;
+            }
         }
 
         // Run on first load
@@ -2883,7 +2888,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 5, 0],
+        version: [3, 5, 3],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -3597,11 +3602,11 @@ module.exports = function() {
                 returnVal = input.substr(lastPos, i - lastPos);
                 if (returnVal) {
                     parseGroups.push(returnVal);
-                    returnVal = parseGroups;
                 }
                 else {
-                    returnVal = [' '];
+                    parseGroups.push(' ');
                 }
+                returnVal = parseGroups;
                 skipWhitespace(i - startPos);
                 loop = false
             } else {
@@ -4152,7 +4157,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //     black border-collapse
                 //
                 keyword: function () {
-                    var k = parserInput.$char('%') || parserInput.$re(/^\[?[_A-Za-z-][_A-Za-z0-9-]*\]?/);
+                    var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
                     if (k) {
                         return tree.Color.fromKeyword(k) || new(tree.Keyword)(k);
                     }
@@ -4352,13 +4357,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                     parserInput.save();
                     if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^@@?[\w-]+/))) {
                         ch = parserInput.currentChar();
-                        if (ch === '(' || ch === '[') {
+                        if (ch === '(' || ch === '[' && !parserInput.prevChar().match(/^\s/)) {
                             // this may be a VariableCall lookup
                             var result = parsers.variableCall(name);
-                            if (!result) {
-                                return parserInput.restore();
-                            }
-                            else {
+                            if (result) {
                                 parserInput.forget();
                                 return result;
                             }
@@ -4525,7 +4527,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                     lookups = this.mixin.ruleLookups();
 
-                    if (!lookups && name[2] !== '()') {
+                    if (!lookups && ((inValue && parserInput.$str('()') !== '()') || (name[2] !== '()'))) {
                         parserInput.restore('Missing \'[...]\' lookup in variable call');
                         return;
                     }
@@ -4721,7 +4723,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                                     .push({ variadic: true });
                                 break;
                             }
-                            arg = entities.variable() || entities.property() || entities.literal() || entities.keyword();
+                            arg = entities.variable() || entities.property() || entities.literal() || entities.keyword() || this.call(true);
                         }
 
                         if (!arg) {
@@ -4892,7 +4894,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         parserInput.save();
                         args = null;
                         rule = this.lookupValue();
-                        if (!rule) {
+                        if (!rule && rule !== '') {
                             parserInput.restore();
                             break;
                         }
@@ -4912,14 +4914,14 @@ var Parser = function Parser(context, imports, fileInfo) {
                         return;
                     }
     
-                    var name = parserInput.$re(/^(?:@{0,2}|\$)[_a-zA-Z0-9-]+/);
+                    var name = parserInput.$re(/^(?:[@$]{0,2})[_a-zA-Z0-9-]*/);
     
                     if (!parserInput.$char(']')) {
                         parserInput.restore();
                         return;
                     } 
 
-                    if (name) {
+                    if (name || name === '') {
                         parserInput.forget();
                         return name;
                     }
@@ -5224,15 +5226,16 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (!value) {
                             value = this.value();
                         }
-                        // As a last resort, try permissiveValue
-                        if (!value && isVariable) {
+
+                        if (value) {
+                            important = this.important();
+                        } else if (isVariable) {
+                            // As a last resort, try permissiveValue
                             value = this.permissiveValue();
                         }
-
-                        important = this.important();
                     }
 
-                    if (value && (hasDR || this.end())) {
+                    if (value && (this.end() || hasDR)) {
                         parserInput.forget();
                         return new (tree.Declaration)(name, value, important, merge, index, fileInfo);
                     }
@@ -5413,12 +5416,12 @@ var Parser = function Parser(context, imports, fileInfo) {
                 var entities = this.entities, nodes = [], e, p;
                 parserInput.save();
                 do {
-                    e = entities.keyword() || entities.variable();
+                    e = entities.keyword() || entities.variable() || entities.mixinLookup();
                     if (e) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
                         p = this.property();
-                        e = this.permissiveValue(')');
+                        e = this.value();
                         if (parserInput.$char(')')) {
                             if (p && e) {
                                 nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i, fileInfo, true)));
@@ -5447,7 +5450,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         features.push(e);
                         if (!parserInput.$char(',')) { break; }
                     } else {
-                        e = entities.variable();
+                        e = entities.variable() || entities.mixinLookup();
                         if (e) {
                             features.push(e);
                             if (!parserInput.$char(',')) { break; }
@@ -7906,10 +7909,11 @@ JavaScript.prototype = new JsEvalNode();
 JavaScript.prototype.type = 'JavaScript';
 JavaScript.prototype.eval = function(context) {
     var result = this.evaluateJavaScript(this.expression, context);
+    var type = typeof result;
 
-    if (typeof result === 'number') {
+    if (type === 'number' && !isNaN(result)) {
         return new Dimension(result);
-    } else if (typeof result === 'string') {
+    } else if (type === 'string') {
         return new Quoted('"' + result + '"', result, this.escaped, this._index);
     } else if (Array.isArray(result)) {
         return new Anonymous(result.join(', '));
@@ -8557,8 +8561,7 @@ var NamespaceValue = function (ruleCall, lookups, important, index, fileInfo) {
 NamespaceValue.prototype = new Node();
 NamespaceValue.prototype.type = 'NamespaceValue';
 NamespaceValue.prototype.eval = function (context) {
-    var i, j, name, found,
-        rules = this.value.eval(context);
+    var i, j, name, rules = this.value.eval(context);
     
     for (i = 0; i < this.lookups.length; i++) {
         name = this.lookups[i];
@@ -8566,13 +8569,16 @@ NamespaceValue.prototype.eval = function (context) {
         /**
          * Eval'd DRs return rulesets.
          * Eval'd mixins return rules, so let's make a ruleset if we need it.
-         * We need to do this because of late parsing of properties
+         * We need to do this because of late parsing of values
          */
         if (Array.isArray(rules)) {
             rules = new Ruleset([new Selector()], rules);
         }
 
-        if (name.charAt(0) === '@') {
+        if (name === '') {
+            rules = rules.lastDeclaration();
+        }
+        else if (name.charAt(0) === '@') {
             if (name.charAt(1) === '@') {
                 name = '@' + new Variable(name.substr(1)).eval(context).value;
             }
@@ -8588,13 +8594,19 @@ NamespaceValue.prototype.eval = function (context) {
             }
         }
         else {
+            if (name.substring(0, 2) === '$@') {
+                name = '$' + new Variable(name.substr(1)).eval(context).value;
+            }
+            else {
+                name = name.charAt(0) === '$' ? name : '$' + name;
+            }
             if (rules.properties) {
-                rules = rules.property(name.charAt(0) === '$' ? name : '$' + name);
+                rules = rules.property(name);
             }
         
             if (!rules) {
                 throw { type: 'Name',
-                    message: 'property "' + name + '" not found',
+                    message: 'property "' + name.substr(1) + '" not found',
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -9314,6 +9326,14 @@ Ruleset.prototype.property = function (name) {
     var decl = this.properties()[name];
     if (decl) {
         return this.parseValue(decl);
+    }
+};
+Ruleset.prototype.lastDeclaration = function () {
+    for (var i = this.rules.length; i > 0; i--) {
+        var decl = this.rules[i - 1];
+        if (decl instanceof Declaration) {
+            return this.parseValue(decl);
+        }
     }
 };
 Ruleset.prototype.parseValue = function(toParse) {

@@ -261,7 +261,7 @@ html {
   h: if(false, 3, 5);
   i: if(true and isnumber(6), 6, 8);
   j: if(not(true) and true, 6, 8);
-  
+  k: if(true or true, 1);
 
   if(false, {g: 7}); /* results in void */
 }

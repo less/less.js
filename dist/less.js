@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.5.3
+ * Less - Leaner CSS v3.6.0
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2590,9 +2590,8 @@ module.exports = function(environment) {
                 throw { type: 'Argument', message: 'svg-gradient direction must be \'to bottom\', \'to right\',' +
                     ' \'to bottom right\', \'to top right\' or \'ellipse at center\'' };
         }
-        returner = '<?xml version="1.0" ?>' +
-            '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" viewBox="0 0 1 1" preserveAspectRatio="none">' +
-            '<' + gradientType + 'Gradient id="gradient" gradientUnits="userSpaceOnUse" ' + gradientDirectionSvg + '>';
+        returner = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">' +
+            '<' + gradientType + 'Gradient id="g" ' + gradientDirectionSvg + '>';
 
         for (i = 0; i < stops.length; i += 1) {
             if (stops[i] instanceof Expression) {
@@ -2611,7 +2610,7 @@ module.exports = function(environment) {
             returner += '<stop offset="' + positionValue + '" stop-color="' + color.toRGB() + '"' + (alpha < 1 ? ' stop-opacity="' + alpha + '"' : '') + '/>';
         }
         returner += '</' + gradientType + 'Gradient>' +
-            '<rect ' + rectangleDimension + ' fill="url(#gradient)" /></svg>';
+            '<rect ' + rectangleDimension + ' fill="url(#g)" /></svg>';
 
         returner = encodeURIComponent(returner);
 
@@ -2888,7 +2887,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 5, 3],
+        version: [3, 6, 0],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -3830,14 +3829,16 @@ var Parser = function Parser(context, imports, fileInfo) {
         );
     }
 
-    function expect(arg, msg, index) {
+    function expect(arg, msg) {
         // some older browsers return typeof 'function' for RegExp
         var result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
         if (result) {
             return result;
         }
-        error(msg || (typeof arg === 'string' ? 'expected \'' + arg + '\' got \'' + parserInput.currentChar() + '\''
-                                               : 'unexpected token'));
+        
+        error(msg || (typeof arg === 'string'
+            ? 'expected \'' + arg + '\' got \'' + parserInput.currentChar() + '\''
+            : 'unexpected token'));
     }
 
     // Specialization of expect()
@@ -5739,13 +5740,13 @@ var Parser = function Parser(context, imports, fileInfo) {
             conditions: function () {
                 var a, b, index = parserInput.i, condition;
 
-                a = this.condition();
+                a = this.condition(true);
                 if (a) {
                     while (true) {
                         if (!parserInput.peek(/^,\s*(not\s*)?\(/) || !parserInput.$char(',')) {
                             break;
                         }
-                        b = this.condition();
+                        b = this.condition(true);
                         if (!b) {
                             break;
                         }
@@ -5754,19 +5755,19 @@ var Parser = function Parser(context, imports, fileInfo) {
                     return condition || a;
                 }
             },
-            condition: function () {
+            condition: function (needsParens) {
                 var result, logical, next;
                 function or() {
                     return parserInput.$str('or');
                 }
 
-                result = this.conditionAnd(this);
+                result = this.conditionAnd(needsParens);
                 if (!result) {
                     return ;
                 }
                 logical = or();
                 if (logical) {
-                    next = this.condition();
+                    next = this.condition(needsParens);
                     if (next) {
                         result = new(tree.Condition)(logical, result, next);
                     } else {
@@ -5775,22 +5776,26 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
                 return result;
             },
-            conditionAnd: function () {
-                var result, logical, next;
-                function insideCondition(me) {
-                    return me.negatedCondition() || me.parenthesisCondition();
+            conditionAnd: function (needsParens) {
+                var result, logical, next, self = this;
+                function insideCondition() {
+                    var cond = self.negatedCondition(needsParens) || self.parenthesisCondition(needsParens);
+                    if (!cond && !needsParens) {
+                        return self.atomicCondition(needsParens);
+                    }
+                    return cond;
                 }
                 function and() {
                     return parserInput.$str('and');
                 }
 
-                result = insideCondition(this);
+                result = insideCondition();
                 if (!result) {
                     return ;
                 }
                 logical = and();
                 if (logical) {
-                    next = this.conditionAnd();
+                    next = this.conditionAnd(needsParens);
                     if (next) {
                         result = new(tree.Condition)(logical, result, next);
                     } else {
@@ -5799,20 +5804,20 @@ var Parser = function Parser(context, imports, fileInfo) {
                 }
                 return result;
             },
-            negatedCondition: function () {
+            negatedCondition: function (needsParens) {
                 if (parserInput.$str('not')) {
-                    var result = this.parenthesisCondition();
+                    var result = this.parenthesisCondition(needsParens);
                     if (result) {
                         result.negate = !result.negate;
                     }
                     return result;
                 }
             },
-            parenthesisCondition: function () {
+            parenthesisCondition: function (needsParens) {
                 function tryConditionFollowedByParenthesis(me) {
                     var body;
                     parserInput.save();
-                    body = me.condition();
+                    body = me.condition(needsParens);
                     if (!body) {
                         parserInput.restore();
                         return ;
@@ -5837,7 +5842,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     return body;
                 }
 
-                body = this.atomicCondition();
+                body = this.atomicCondition(needsParens);
                 if (!body) {
                     parserInput.restore();
                     return ;
@@ -5849,7 +5854,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                 parserInput.forget();
                 return body;
             },
-            atomicCondition: function () {
+            atomicCondition: function (needsParens) {
                 var entities = this.entities, index = parserInput.i, a, b, c, op;
 
                 function cond() {

@@ -43,8 +43,8 @@ each(@selectors, {
   three: red;
 }
 .set-2 {
-  each(.set-2(), {
-    @{key}-@{index}: @value;
+  each(.set-2(), .(@v, @k, @i) {
+    @{k}-@{i}: @v;
   });
 }
 

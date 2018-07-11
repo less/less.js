@@ -4,6 +4,7 @@ var path = require('path'),
     fs = require('../lib/less-node/fs'),
     os = require('os'),
     utils = require('../lib/less/utils'),
+    MATH = require('../lib/less/math-constants'),
     errno,
     mkdirp;
 
@@ -481,8 +482,17 @@ function processPluginQueue() {
                 break;
             case 'sm':
             case 'strict-math':
+                console.warning('--strict-math is deprecated. Use --math=strict');
                 if (checkArgFunc(arg, match[2])) {
-                    options.strictMath = checkBooleanArg(match[2]);
+                    if (checkBooleanArg(match[2])) {
+                        options.math = MATH.STRICT_LEGACY;
+                    }
+                }
+                break;
+            case 'm':
+            case 'math':
+                if (checkArgFunc(arg, match[2])) {
+                    options.math = match[2];
                 }
                 break;
             case 'su':

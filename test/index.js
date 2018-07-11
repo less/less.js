@@ -9,7 +9,6 @@ lessTester.prepBomTest();
 var testMap = [
     [{}, 'namespacing/'],
     [{
-        strictMath: false, 
         relativeUrls: true, 
         silent: true, 
         javascriptEnabled: true,
@@ -17,24 +16,32 @@ var testMap = [
         ieCompat: true
     }],
     [{
-        strictMath: true,
+        math: 'strict-legacy',
         ieCompat: true
-    }, 'strict-math/'],
+    }, 'math/strict-legacy/'],
+    [{
+        math: 'parens'
+    }, 'math/strict/'],
+    [{
+        math: 'parens-division'
+    }, 'math/parens-division/'],
+    // Use legacy strictMath: true here to demonstrate it still works
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, 'errors/',
         lessTester.testErrors, null],
-    [{strictMath: true, strictUnits: true, javascriptEnabled: false}, 'no-js-errors/',
+
+    [{math: 'strict', strictUnits: true, javascriptEnabled: false}, 'no-js-errors/',
         lessTester.testErrors, null],
-    [{strictMath: true, dumpLineNumbers: 'comments'}, 'debug/', null,
+    [{math: 'strict', dumpLineNumbers: 'comments'}, 'debug/', null,
         function(name) { return name + '-comments'; }],
-    [{strictMath: true, dumpLineNumbers: 'mediaquery'}, 'debug/', null,
+    [{math: 'strict', dumpLineNumbers: 'mediaquery'}, 'debug/', null,
         function(name) { return name + '-mediaquery'; }],
-    [{strictMath: true, dumpLineNumbers: 'all'}, 'debug/', null,
+    [{math: 'strict', dumpLineNumbers: 'all'}, 'debug/', null,
         function(name) { return name + '-all'; }],
-    [{strictMath: true, relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
-    [{strictMath: true, compress: true}, 'compression/'],
-    [{strictMath: false, strictUnits: true}, 'strict-units/'],
+    [{math: 'strict', relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
+    [{math: 'strict', compress: true}, 'compression/'],
+    [{math: 0, strictUnits: true}, 'strict-units/'],
     [{}, 'legacy/'],
-    [{strictMath: true, strictUnits: true, sourceMap: true, globalVars: true }, 'sourcemaps/',
+    [{math: 'strict', strictUnits: true, sourceMap: true, globalVars: true }, 'sourcemaps/',
         lessTester.testSourcemap, null, null,
         function(filename, type, baseFolder) {
             if (type === 'vars') {
@@ -42,7 +49,7 @@ var testMap = [
             }
             return path.join('test/sourcemaps', filename) + '.json';
         }],
-    [{strictMath: true, strictUnits: true, sourceMap: {sourceMapFileInline: true}},
+    [{math: 'strict', strictUnits: true, sourceMap: {sourceMapFileInline: true}},
         'sourcemaps-empty/', lessTester.testEmptySourcemap],
     [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, 'globalVars/',
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
@@ -62,7 +69,7 @@ testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
 lessTester.testSyncronous({syncImport: true}, 'import');
-lessTester.testSyncronous({syncImport: true}, 'strict-math/css');
+lessTester.testSyncronous({syncImport: true}, 'math/strict-legacy/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();
 lessTester.finished();

@@ -228,4 +228,6 @@ html {
   j: 8;
   k: 1;
   /* results in void */
+  color: green;
+  color: purple;
 }

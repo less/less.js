@@ -246,7 +246,7 @@ html {
 #boolean {
   a: boolean(not(2 < 1));
   b: boolean(not(2 > 1) and (true));
-  c: boolean(not(boolean((true))));
+  c: boolean(not(boolean(true)));
 }
 
 #if {
@@ -255,8 +255,25 @@ html {
   @1: if(not(false), {c: 3}, {d: 4}); @1();
 
   e: if(not(true), 5);
-  @f: boolean((3 = 4));
+  @f: boolean(3 = 4);
   f: if(not(@f), 6);
+  g: if(true, 3, 5);
+  h: if(false, 3, 5);
+  i: if(true and isnumber(6), 6, 8);
+  j: if(not(true) and true, 6, 8);
+  k: if(true or true, 1);
 
   if((false), {g: 7}); /* results in void */
+
+  @conditional: if((true), {
+    color: green;
+  }, {});
+  @conditional();
+
+  @falsey: if((false), {
+    color: orange;
+  }, {
+    color: purple;
+  });
+  @falsey();
 }

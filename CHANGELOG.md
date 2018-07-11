@@ -1,3 +1,9 @@
+## 3.7.1
+
+2018-07-11
+  - Fixes mistake in `lessc` (using `console.warning` instead of actual `console.warn`)
+  - Adds `lessc` tests
+
 ## 3.7.0
 
 2018-07-11

@@ -21,6 +21,15 @@ each(@selectors, {
     });
   });
 
+  // nested anonymous mixin
+  .nest-anon {
+    each(a b, .(@v;@i) {
+      each(c d, .(@vv;@ii) {
+        anon-nest-@{i}-@{ii}: @v @vv;
+      });
+    });
+  }
+
   // vector math
   each(1 2 3 4, {
     padding+_: (@value * 10px);

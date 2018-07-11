@@ -184,6 +184,21 @@ module.exports = function (grunt) {
             benchmark: {
                 command: 'node benchmark/index.js'
             },
+            opts: { // test running with all current options (using `opts` since `options` means something already)
+                command: [ // @TODO: make this more thorough
+                    // CURRENT OPTIONS
+                    // --math
+                    'node bin/lessc --math=always test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=parens-division test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=parens test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=strict test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=strict-legacy test/less/lazy-eval.less tmp/lazy-eval.css',
+
+                    // DEPRECATED OPTIONS
+                    // --strict-math
+                    'node bin/lessc --strict-math=on test/less/lazy-eval.less tmp/lazy-eval.css',
+                ].join(' && ')
+            },
             plugin: {
                 command: [
                     'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
@@ -194,12 +209,12 @@ module.exports = function (grunt) {
                     'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
                 ].join(' && ')
             },
-            'sourcemap-test': {
+            'sourcemap-test': { // quoted value doesn't seem to get picked up by time-grunt, or isn't output, at least; maybe just "sourcemap" is fine?
                 command: [
                     'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
                     'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
                 ].join(' && ')
-            }
+            },
         },
 
         browserify: {
@@ -503,6 +518,7 @@ module.exports = function (grunt) {
         'clean',
         'eslint',
         'shell:test',
+        'shell:opts',
         'shell:plugin',
         'browsertest'
     ];
@@ -517,6 +533,9 @@ module.exports = function (grunt) {
 
     // Run all tests
     grunt.registerTask('test', testTasks);
+
+    // Run shell option tests (includes deprecated options)
+    grunt.registerTask('shell-options', ['shell:opts']);
 
     // Run shell plugin test
     grunt.registerTask('shell-plugin', ['shell:plugin']);

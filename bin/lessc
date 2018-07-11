@@ -4,7 +4,7 @@ var path = require('path'),
     fs = require('../lib/less-node/fs'),
     os = require('os'),
     utils = require('../lib/less/utils'),
-    MATH = require('../lib/less/math-constants'),
+    Constants = require('../lib/less/constants'),
     errno,
     mkdirp;
 
@@ -482,24 +482,29 @@ function processPluginQueue() {
                 break;
             case 'ru':
             case 'rewrite-urls':
-                if (match[2] === 'all' || match[2] === 'local') {
-                    options.rewriteUrls = match[2];
-                } else if (match[2] === 'off') {
-                    options.rewriteUrls = false;
-                } else if (!match[2]) {
-                    options.rewriteUrls = 'all';
+                var m = match[2];
+                if (m) {
+                    if (m === 'local') {
+                        options.rewriteUrls = Constants.RewriteUrls.LOCAL;
+                    } else if (m === 'off') {
+                        options.rewriteUrls = Constants.RewriteUrls.OFF;
+                    } else if (m === 'all') {
+                        options.rewriteUrls = Constants.RewriteUrls.ALL;
+                    } else {
+                        console.error('Unknown rewrite-urls argument ' + m);
+                        continueProcessing = false;
+                        process.exitCode = 1;
+                    }
                 } else {
-                    console.error('Unknown rewrite-urls argument ' + match[2]);
-                    continueProcessing = false;
-                    process.exitCode = 1;
+                    options.rewriteUrls = Constants.RewriteUrls.ALL;
                 }
                 break;
             case 'sm':
             case 'strict-math':
-                console.warning('--strict-math is deprecated. Use --math=strict');
+                console.warn('--strict-math is deprecated. Use --math=strict');
                 if (checkArgFunc(arg, match[2])) {
                     if (checkBooleanArg(match[2])) {
-                        options.math = MATH.STRICT_LEGACY;
+                        options.math = Constants.Math.STRICT_LEGACY;
                     }
                 }
                 break;

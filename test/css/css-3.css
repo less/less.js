@@ -73,14 +73,6 @@ p::before {
     font-size: 12px;
   }
 }
-.units {
-  font: 1.2rem/2rem;
-  font: 8vw/9vw;
-  font: 10vh/12vh;
-  font: 12vm/15vm;
-  font: 12vmin/15vmin;
-  font: 1.2ch/1.5ch;
-}
 @supports ( box-shadow: 2px 2px 2px black ) or
           ( -moz-box-shadow: 2px 2px 2px black ) {
   .outline {

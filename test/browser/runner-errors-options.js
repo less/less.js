@@ -1,6 +1,6 @@
 var less = {
     strictUnits: true,
-    strictMath: true,
+    math: 'strict-legacy',
     logLevel: 4,
     javascriptEnabled: true
 };

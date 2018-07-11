@@ -6,12 +6,17 @@
   padding: 2px (6 * 6px);
 }
 
+.in-function {
+  value: min((1 + 1)) + 1;
+}
+
 .more-parens {
   @var: (2 * 2);
   padding: (2 * @var) 4 4 (@var * 1px);
   width-all: ((@var * @var) * 6);
   width-first: ((@var * @var)) * 6;
   width-keep: (@var * @var) * 6;
+  height: calc(100% + (25vh - 20px));
   height-keep: (7 * 7) + (8 * 8);
   height-all: ((7 * 7) + (8 * 8));
   height-parts: ((7 * 7)) + ((8 * 8));
@@ -21,7 +26,7 @@
   border-radius-keep: 4px * (1 + 1) / @var + 3px;
   border-radius-parts: ((4px * (1 + 1))) / ((@var + 3px));
   border-radius-all: (4px * (1 + 1) / @var + 3px);
-  //margin: (6 * 6)px;
+  // margin: (6 * 6)px;
 }
 
 .negative {

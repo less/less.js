@@ -158,8 +158,6 @@ module.exports = function (grunt) {
     // Project configuration.
     grunt.initConfig({
 
-        // Metadata required for build.
-        build: grunt.file.readYAML('build/build.yml'),
         pkg: grunt.file.readJSON('package.json'),
         meta: {
             copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
@@ -232,24 +230,6 @@ module.exports = function (grunt) {
             dist: {
                 src: '<%= browserify.browser.dest %>',
                 dest: 'dist/less.js'
-            },
-            // Rhino
-            rhino: {
-                options: {
-                    banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
-                    footer: '' // override task-level footer
-                },
-                src: ['<%= build.rhino %>'],
-                dest: 'dist/less-rhino.js'
-            },
-            // lessc for Rhino
-            rhinolessc: {
-                options: {
-                    banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
-                    footer: '' // override task-level footer
-                },
-                src: ['<%= build.rhinolessc %>'],
-                dest: 'dist/lessc-rhino.js'
             }
         },
 
@@ -307,7 +287,8 @@ module.exports = function (grunt) {
             main: {
                 // src is used to build list of less files to compile
                 src: [
-                    'test/less/plugin.less',
+                    'test/less/*.less',
+                    '!test/less/plugin-preeval.less', // uses ES6 syntax
                     // Don't test NPM import, obviously
                     '!test/less/plugin-module.less',
                     '!test/less/import-module.less',
@@ -489,13 +470,6 @@ module.exports = function (grunt) {
         'browserify:browser',
         'concat:dist',
         'uglify:dist'
-    ]);
-
-    // Release Rhino Version (UNSUPPORTED)
-    grunt.registerTask('rhino', [
-        'browserify:rhino',
-        'concat:rhino',
-        'concat:rhinolessc'
     ]);
 
     // Create the browser version of less.js

@@ -222,5 +222,12 @@ html {
   c: 3;
   e: ;
   f: 6;
+  g: 3;
+  h: 5;
+  i: 6;
+  j: 8;
+  k: 1;
   /* results in void */
+  color: green;
+  color: purple;
 }

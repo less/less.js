@@ -1,7 +1,15 @@
+## 3.6.0
+
+2018-07-10
+  - Allows plain conditions in `if(true, 1, 2)` (vs. `if((true), 1, 2)`)
+  - Fixes svg-gradient() for Firefox
+  - Adds more 3rd-party tests for fewer surprises when upgrading
+  - Removes (broken) `less-rhino` implementation - use other Java ports
+
 ## 3.5.3
 
 2018-07-06
-  - Reverts @media eval change
+  - Reverts `@media` eval change
   - Other bug fixes
 
 ## 3.5.0

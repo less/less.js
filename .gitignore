@@ -21,7 +21,3 @@ test/less-bom
 
 # grunt
 .grunt
-
-# gradle
-.gradle
-out

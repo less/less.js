@@ -19,6 +19,12 @@
   nest-2-2: 25px 2;
   padding: 10px 20px 30px 40px;
 }
+.each .nest-anon {
+  nest-1-1: a c;
+  nest-1-2: a d;
+  nest-2-1: b c;
+  nest-2-2: b d;
+}
 .set {
   one: blue;
   two: green;

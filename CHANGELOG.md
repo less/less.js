@@ -1,6 +1,6 @@
 ## 3.7.0
 
-2018-07-10
+2018-07-11
   - New each() function! [See docs](http://lesscss.org/functions/#list-functions-each)
   - New math modes! Also [see docs](http://lesscss.org/usage/#less-options-math).
   - Bug fixes

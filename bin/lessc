@@ -477,8 +477,8 @@ function processPluginQueue() {
                 }
                 break;
             case 'relative-urls':
-                console.warn('The relative-urls option has been replaced by the rewrite-urls option and will be removed.');
-                options.rewriteUrls = 'all';
+                console.warn('The --relative-urls option has been deprecated. Use --rewrite-urls=all.');
+                options.rewriteUrls = Constants.RewriteUrls.ALL;
                 break;
             case 'ru':
             case 'rewrite-urls':

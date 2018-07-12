@@ -24,8 +24,8 @@ if (window.navigator.userAgent.indexOf('MSIE') >= 0) {
 
 for (var i = 0; i < testFiles.length; i++) {
     var file = testFiles[i],
-        lessPath  = '/test/less/' + file + '.less',
-        cssPath   = '/test/css/' + file + '.css',
+        lessPath  = '/test/less/_default/' + file + '.less',
+        cssPath   = '/test/css/_default/' + file + '.css',
         lessStyle = document.createElement('style'),
         cssLink   = document.createElement('link'),
         lessText  = '@import "' + lessPath + '";';

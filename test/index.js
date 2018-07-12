@@ -7,7 +7,6 @@ console.log('\n' + stylize('Less', 'underline') + '\n');
 
 lessTester.prepBomTest();
 var testMap = [
-    [{}, 'namespacing/'],
     [{
         // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
         relativeUrls: true,
@@ -15,7 +14,8 @@ var testMap = [
         javascriptEnabled: true,
         // Set explicitly for legacy tests for >3.0
         ieCompat: true
-    }],
+    }, '_default/'],
+    [{}, 'namespacing/'],
     [{
         math: 'strict-legacy',
         ieCompat: true
@@ -74,7 +74,7 @@ var testMap = [
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
-lessTester.testSyncronous({syncImport: true}, 'import');
+lessTester.testSyncronous({syncImport: true}, '_default/import');
 lessTester.testSyncronous({syncImport: true}, 'math/strict-legacy/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();

@@ -192,30 +192,30 @@ module.exports = function (grunt) {
                 command: [ // @TODO: make this more thorough
                     // CURRENT OPTIONS
                     // --math
-                    'node bin/lessc --math=always test/less/lazy-eval.less tmp/lazy-eval.css',
-                    'node bin/lessc --math=parens-division test/less/lazy-eval.less tmp/lazy-eval.css',
-                    'node bin/lessc --math=parens test/less/lazy-eval.less tmp/lazy-eval.css',
-                    'node bin/lessc --math=strict test/less/lazy-eval.less tmp/lazy-eval.css',
-                    'node bin/lessc --math=strict-legacy test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=always test/less/_default/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=parens-division test/less/_default/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=parens test/less/_default/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=strict test/less/_default/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=strict-legacy test/less/_default/lazy-eval.less tmp/lazy-eval.css',
 
                     // DEPRECATED OPTIONS
                     // --strict-math
-                    'node bin/lessc --strict-math=on test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --strict-math=on test/less/_default/lazy-eval.less tmp/lazy-eval.css',
                 ].join(' && ')
             },
             plugin: {
                 command: [
-                    'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --clean-css="--s1 --advanced" test/less/_default/lazy-eval.less tmp/lazy-eval.css',
                     'cd lib',
-                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css',
+                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/_default/lazy-eval.less ../tmp/lazy-eval.css',
                     'cd ..',
                     // Test multiple plugins
-                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
+                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/_default/lazy-eval.less tmp/lazy-eval.css'
                 ].join(' && ')
             },
             'sourcemap-test': { // quoted value doesn't seem to get picked up by time-grunt, or isn't output, at least; maybe just "sourcemap" is fine?
                 command: [
-                    'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
+                    'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/_default/import.less test/sourcemaps/import.css',
                     'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
                 ].join(' && ')
             },
@@ -302,14 +302,14 @@ module.exports = function (grunt) {
             main: {
                 // src is used to build list of less files to compile
                 src: [
-                    'test/less/*.less',
-                    '!test/less/plugin-preeval.less', // uses ES6 syntax
+                    'test/less/_default/*.less',
+                    '!test/less/_default/plugin-preeval.less', // uses ES6 syntax
                     // Don't test NPM import, obviously
-                    '!test/less/plugin-module.less',
-                    '!test/less/import-module.less',
-                    '!test/less/javascript.less',
-                    '!test/less/urls.less',
-                    '!test/less/empty.less'
+                    '!test/less/_default/plugin-module.less',
+                    '!test/less/_default/import-module.less',
+                    '!test/less/_default/javascript.less',
+                    '!test/less/_default/urls.less',
+                    '!test/less/_default/empty.less'
                 ],
                 options: {
                     helpers: 'test/browser/runner-main-options.js',

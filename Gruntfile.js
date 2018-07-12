@@ -154,8 +154,6 @@ module.exports = function (grunt) {
     // Project configuration.
     grunt.initConfig({
 
-        // Metadata required for build.
-        build: grunt.file.readYAML('build/build.yml'),
         pkg: grunt.file.readJSON('package.json'),
         meta: {
             copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
@@ -186,19 +184,37 @@ module.exports = function (grunt) {
             benchmark: {
                 command: 'node benchmark/index.js'
             },
+            opts: { // test running with all current options (using `opts` since `options` means something already)
+                command: [ // @TODO: make this more thorough
+                    // CURRENT OPTIONS
+                    // --math
+                    'node bin/lessc --math=always test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=parens-division test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=parens test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=strict test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node bin/lessc --math=strict-legacy test/less/lazy-eval.less tmp/lazy-eval.css',
+
+                    // DEPRECATED OPTIONS
+                    // --strict-math
+                    'node bin/lessc --strict-math=on test/less/lazy-eval.less tmp/lazy-eval.css',
+                ].join(' && ')
+            },
             plugin: {
                 command: [
                     'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
                     'cd lib',
-                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css'
+                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css',
+                    'cd ..',
+                    // Test multiple plugins
+                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
                 ].join(' && ')
             },
-            'sourcemap-test': {
+            'sourcemap-test': { // quoted value doesn't seem to get picked up by time-grunt, or isn't output, at least; maybe just "sourcemap" is fine?
                 command: [
                     'node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css',
                     'node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css'
                 ].join(' && ')
-            }
+            },
         },
 
         browserify: {
@@ -225,24 +241,6 @@ module.exports = function (grunt) {
             dist: {
                 src: '<%= browserify.browser.dest %>',
                 dest: 'dist/less.js'
-            },
-            // Rhino
-            rhino: {
-                options: {
-                    banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
-                    footer: '' // override task-level footer
-                },
-                src: ['<%= build.rhino %>'],
-                dest: 'dist/less-rhino.js'
-            },
-            // lessc for Rhino
-            rhinolessc: {
-                options: {
-                    banner: '/* Less.js v<%= pkg.version %> RHINO | <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>> */\n\n',
-                    footer: '' // override task-level footer
-                },
-                src: ['<%= build.rhinolessc %>'],
-                dest: 'dist/lessc-rhino.js'
             }
         },
 
@@ -289,13 +287,19 @@ module.exports = function (grunt) {
             options: {
                 keepRunner: true,
                 host: 'http://localhost:8081/',
-                vendor: ['test/browser/jasmine-jsreporter.js', 'test/browser/common.js', 'test/browser/less.js'],
+                vendor: [
+                    'test/browser/vendor/promise.js',
+                    'test/browser/jasmine-jsreporter.js',
+                    'test/browser/common.js',
+                    'test/browser/less.js'
+                ],
                 template: 'test/browser/test-runner-template.tmpl'
             },
             main: {
                 // src is used to build list of less files to compile
                 src: [
-                    'test/less/plugin.less',
+                    'test/less/*.less',
+                    '!test/less/plugin-preeval.less', // uses ES6 syntax
                     // Don't test NPM import, obviously
                     '!test/less/plugin-module.less',
                     '!test/less/import-module.less',
@@ -463,13 +467,6 @@ module.exports = function (grunt) {
         'uglify:dist'
     ]);
 
-    // Release Rhino Version (UNSUPPORTED)
-    grunt.registerTask('rhino', [
-        'browserify:rhino',
-        'concat:rhino',
-        'concat:rhinolessc'
-    ]);
-
     // Create the browser version of less.js
     grunt.registerTask('browsertest-lessjs', [
         'browserify:browser',
@@ -521,6 +518,7 @@ module.exports = function (grunt) {
         'clean',
         'eslint',
         'shell:test',
+        'shell:opts',
         'shell:plugin',
         'browsertest'
     ];
@@ -535,6 +533,9 @@ module.exports = function (grunt) {
 
     // Run all tests
     grunt.registerTask('test', testTasks);
+
+    // Run shell option tests (includes deprecated options)
+    grunt.registerTask('shell-options', ['shell:opts']);
 
     // Run shell plugin test
     grunt.registerTask('shell-plugin', ['shell:plugin']);

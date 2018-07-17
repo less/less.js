@@ -85,3 +85,9 @@
   color: 255;
   border-color: rgba(255, 0, 0, 0.5);
 }
+#rrggbbaa {
+  test-1: #55555599;
+  test-2: #5559;
+  test-3: rgba(111, 111, 111, 0.6);
+  test-4: rgba(85, 85, 85, 0.1);
+}

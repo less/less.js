@@ -70,14 +70,18 @@ module.exports = function (grunt) {
 
     var sauceJobs = {};
 
-    var browserTests = [   'filemanager-plugin',
+
+    var browserTests = [
+        'filemanager-plugin',
         'visitor-plugin',
         'global-vars',
         'modify-vars',
         'production',
         'rootpath-relative',
+        'rootpath-rewrite-urls',
         'rootpath',
         'relative-urls',
+        'rewrite-urls',
         'browser',
         'no-js-errors',
         'legacy'
@@ -362,6 +366,14 @@ module.exports = function (grunt) {
                     outfile: 'tmp/browser/test-runner-relative-urls.html'
                 }
             },
+            rewriteUrls: {
+                src: ['test/browser/less/rewrite-urls/*.less'],
+                options: {
+                    helpers: 'test/browser/runner-rewrite-urls-options.js',
+                    specs: 'test/browser/runner-rewrite-urls-spec.js',
+                    outfile: 'tmp/browser/test-runner-rewrite-urls.html'
+                }
+            },
             rootpath: {
                 src: ['test/browser/less/rootpath/*.less'],
                 options: {
@@ -376,6 +388,14 @@ module.exports = function (grunt) {
                     helpers: 'test/browser/runner-rootpath-relative-options.js',
                     specs: 'test/browser/runner-rootpath-relative-spec.js',
                     outfile: 'tmp/browser/test-runner-rootpath-relative.html'
+                }
+            },
+            rootpathRewriteUrls: {
+                src: ['test/browser/less/rootpath-rewrite-urls/*.less'],
+                options: {
+                    helpers: 'test/browser/runner-rootpath-rewrite-urls-options.js',
+                    specs: 'test/browser/runner-rootpath-rewrite-urls-spec.js',
+                    outfile: 'tmp/browser/test-runner-rootpath-rewrite-urls.html'
                 }
             },
             production: {

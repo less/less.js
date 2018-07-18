@@ -4,7 +4,7 @@ var path = require('path'),
     fs = require('../lib/less-node/fs'),
     os = require('os'),
     utils = require('../lib/less/utils'),
-    MATH = require('../lib/less/math-constants'),
+    Constants = require('../lib/less/constants'),
     errno,
     mkdirp;
 
@@ -476,16 +476,35 @@ function processPluginQueue() {
                     options.rootpath = match[2].replace(/\\/g, '/');
                 }
                 break;
-            case 'ru':
             case 'relative-urls':
-                options.relativeUrls = true;
+                console.warn('The --relative-urls option has been deprecated. Use --rewrite-urls=all.');
+                options.rewriteUrls = Constants.RewriteUrls.ALL;
+                break;
+            case 'ru':
+            case 'rewrite-urls':
+                var m = match[2];
+                if (m) {
+                    if (m === 'local') {
+                        options.rewriteUrls = Constants.RewriteUrls.LOCAL;
+                    } else if (m === 'off') {
+                        options.rewriteUrls = Constants.RewriteUrls.OFF;
+                    } else if (m === 'all') {
+                        options.rewriteUrls = Constants.RewriteUrls.ALL;
+                    } else {
+                        console.error('Unknown rewrite-urls argument ' + m);
+                        continueProcessing = false;
+                        process.exitCode = 1;
+                    }
+                } else {
+                    options.rewriteUrls = Constants.RewriteUrls.ALL;
+                }
                 break;
             case 'sm':
             case 'strict-math':
                 console.warn('The --strict-math option has been deprecated. Use --math=strict.');
                 if (checkArgFunc(arg, match[2])) {
                     if (checkBooleanArg(match[2])) {
-                        options.math = MATH.STRICT_LEGACY;
+                        options.math = Constants.Math.STRICT_LEGACY;
                     }
                 }
                 break;

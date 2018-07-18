@@ -90,4 +90,10 @@
   test-2: #5559;
   test-3: rgba(111, 111, 111, 0.6);
   test-4: rgba(85, 85, 85, 0.1);
+  test-5: rgba(85, 85, 85, 0.6);
+  test-6: rgba(85, 85, 85, 0.6);
+  test-7: rgba(85, 85, 85, 0.5);
+  test-8: rgba(var(--color-accent), 0.2);
+  test-9: rgb(var(--color-accent));
+  test-9: hsla(var(--color-accent));
 }

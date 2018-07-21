@@ -17,9 +17,9 @@
   desaturate: #29332f;
   desaturate-relative: #233930;
   greyscale: #2e2e2e;
-  hsl-clamp: #ffffff;
-  spin-p: #bf6a40;
-  spin-n: #bf4055;
+  hsl-clamp: hsl(0, 0%, 100%);
+  spin-p: hsl(20, 50%, 50%);
+  spin-n: hsl(350, 50%, 50%);
   luma-white: 100%;
   luma-black: 0%;
   luma-black-alpha: 0%;
@@ -168,7 +168,7 @@
   case-insensitive-2: true;
 }
 #alpha {
-  alpha: rgba(153, 94, 51, 0.6);
+  alpha: hsla(25, 50%, 40%, 0.6);
   alpha2: 0.5;
   alpha3: 0;
 }

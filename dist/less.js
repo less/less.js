@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.7.1
+ * Less - Leaner CSS v3.8.0
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -54,6 +54,10 @@ module.exports = function(window, options) {
 
     if (options.onReady === undefined) {
         options.onReady = true;
+    }
+
+    if (options.relativeUrls) {
+        options.rewriteUrls = 'all';
     }
 };
 
@@ -126,7 +130,7 @@ if (options.onReady) {
     less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
 }
 
-},{"../less/default-options":16,"./add-default-options":1,"./index":8,"promise/polyfill":103}],3:[function(require,module,exports){
+},{"../less/default-options":17,"./add-default-options":1,"./index":8,"promise/polyfill":103}],3:[function(require,module,exports){
 var utils = require('./utils');
 module.exports = {
     createCSS: function (document, styles, sheet) {
@@ -522,7 +526,7 @@ module.exports = function(options, logger) {
     return FileManager;
 };
 
-},{"../less/environment/abstract-file-manager.js":17}],7:[function(require,module,exports){
+},{"../less/environment/abstract-file-manager.js":18}],7:[function(require,module,exports){
 module.exports = function() {
 
     var functionRegistry = require('./../less/functions/function-registry');
@@ -552,7 +556,7 @@ module.exports = function() {
     functionRegistry.addMultiple(imageFunctions);
 };
 
-},{"./../less/functions/function-registry":26}],8:[function(require,module,exports){
+},{"./../less/functions/function-registry":27}],8:[function(require,module,exports){
 //
 // index.js
 // Should expose the additional browser functions on to the less object
@@ -648,7 +652,8 @@ module.exports = function(window, options) {
                 currentDirectory: fileManager.getPath(path),
                 filename: path,
                 rootFilename: path,
-                relativeUrls: instanceOptions.relativeUrls};
+                rewriteUrls: instanceOptions.rewriteUrls
+            };
 
             newFileInfo.entryPath = newFileInfo.currentDirectory;
             newFileInfo.rootpath = instanceOptions.rootpath || newFileInfo.currentDirectory;
@@ -827,7 +832,7 @@ module.exports = function(window, options) {
     return less;
 };
 
-},{"../less":36,"./browser":3,"./cache":4,"./error-reporting":5,"./file-manager":6,"./image-size":7,"./log-listener":9,"./plugin-loader":10,"./utils":11}],9:[function(require,module,exports){
+},{"../less":37,"./browser":3,"./cache":4,"./error-reporting":5,"./file-manager":6,"./image-size":7,"./log-listener":9,"./plugin-loader":10,"./utils":11}],9:[function(require,module,exports){
 module.exports = function(less, options) {
 
     var logLevel_debug = 4,
@@ -898,7 +903,7 @@ PluginLoader.prototype.loadPlugin = function(filename, basePath, context, enviro
 module.exports = PluginLoader;
 
 
-},{"../less/environment/abstract-plugin-loader.js":18}],11:[function(require,module,exports){
+},{"../less/environment/abstract-plugin-loader.js":19}],11:[function(require,module,exports){
 module.exports = {
     extractId: function(href) {
         return href.replace(/^[a-z-]+:\/+?[^\/]+/, '')  // Remove protocol & domain
@@ -925,9 +930,23 @@ module.exports = {
 };
 
 },{}],12:[function(require,module,exports){
+module.exports = {
+    Math: {
+        ALWAYS: 0,
+        PARENS_DIVISION: 1,
+        PARENS: 2,
+        STRICT_LEGACY: 3
+    },
+    RewriteUrls: {
+        OFF: 0,
+        LOCAL: 1,
+        ALL: 2
+    }
+};
+},{}],13:[function(require,module,exports){
 var contexts = {};
 module.exports = contexts;
-var MATH = require('./math-constants');
+var Constants = require('./constants');
 
 var copyFromOriginal = function copyFromOriginal(original, destination, propertiesToCopy) {
     if (!original) { return; }
@@ -945,7 +964,7 @@ var copyFromOriginal = function copyFromOriginal(original, destination, properti
 var parseCopyProperties = [
     // options
     'paths',            // option - unmodified - paths to search for imports on
-    'relativeUrls',     // option - whether to adjust URL's to be relative
+    'rewriteUrls',      // option - whether to adjust URL's to be relative
     'rootpath',         // option - rootpath to append to URL's
     'strictImports',    // option -
     'insecure',         // option - whether to allow imports from insecure ssl hosts
@@ -978,7 +997,8 @@ var evalCopyProperties = [
     'urlArgs',           // whether to add args into url tokens
     'javascriptEnabled', // option - whether Inline JavaScript is enabled. if undefined, defaults to false
     'pluginManager',     // Used as the plugin manager for the session
-    'importantScope'     // used to bubble up !important statements
+    'importantScope',    // used to bubble up !important statements
+    'rewriteUrls'        // option - whether to adjust URL's to be relative
 ];
 
 contexts.Eval = function(options, frames) {
@@ -1022,26 +1042,45 @@ contexts.Eval.prototype.isMathOn = function (op) {
     if (!this.mathOn) {
         return false;
     }
-    if (op === '/' && this.math !== MATH.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
+    if (op === '/' && this.math !== Constants.Math.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
         return false;
     }
-    if (this.math > MATH.PARENS_DIVISION) {
+    if (this.math > Constants.Math.PARENS_DIVISION) {
         return this.parensStack && this.parensStack.length;
     }
     return true;
 };
 
-contexts.Eval.prototype.isPathRelative = function (path) {
-    return !/^(?:[a-z-]+:|\/|#)/i.test(path);
+contexts.Eval.prototype.pathRequiresRewrite = function (path) {
+    var isRelative = this.rewriteUrls === Constants.RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
+
+    return isRelative(path);
 };
 
-contexts.Eval.prototype.normalizePath = function( path ) {
+contexts.Eval.prototype.rewritePath = function (path, rootpath) {
+    var newPath;
+
+    rootpath = rootpath || '';
+    newPath = this.normalizePath(rootpath + path);
+
+    // If a path was explicit relative and the rootpath was not an absolute path
+    // we must ensure that the new path is also explicit relative.
+    if (isPathLocalRelative(path) &&
+        isPathRelative(rootpath) &&
+        isPathLocalRelative(newPath) === false) {
+        newPath = './' + newPath;
+    }
+
+    return newPath;
+};
+
+contexts.Eval.prototype.normalizePath = function (path) {
     var
         segments = path.split('/').reverse(),
         segment;
 
     path = [];
-    while (segments.length !== 0 ) {
+    while (segments.length !== 0) {
         segment = segments.pop();
         switch ( segment ) {
             case '.':
@@ -1054,7 +1093,7 @@ contexts.Eval.prototype.normalizePath = function( path ) {
                 }
                 break;
             default:
-                path.push( segment );
+                path.push(segment);
                 break;
         }
     }
@@ -1062,9 +1101,17 @@ contexts.Eval.prototype.normalizePath = function( path ) {
     return path.join('/');
 };
 
+function isPathRelative(path) {
+    return !/^(?:[a-z-]+:|\/|#)/i.test(path);
+}
+
+function isPathLocalRelative(path) {
+    return path.charAt(0) === '.';
+}
+
 // todo - do the same for the toCSS ?
 
-},{"./math-constants":39}],13:[function(require,module,exports){
+},{"./constants":12}],14:[function(require,module,exports){
 module.exports = {
     'aliceblue':'#f0f8ff',
     'antiquewhite':'#faebd7',
@@ -1215,13 +1262,13 @@ module.exports = {
     'yellow':'#ffff00',
     'yellowgreen':'#9acd32'
 };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = {
     colors: require('./colors'),
     unitConversions: require('./unit-conversions')
 };
 
-},{"./colors":13,"./unit-conversions":15}],15:[function(require,module,exports){
+},{"./colors":14,"./unit-conversions":16}],16:[function(require,module,exports){
 module.exports = {
     length: {
         'm': 1,
@@ -1243,7 +1290,7 @@ module.exports = {
         'turn': 1
     }
 };
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 // Export a new default each time
 module.exports = function() {
     return {
@@ -1288,7 +1335,7 @@ module.exports = function() {
          * that references an image, exactly the same URL will be output in the css. 
          * This option allows you to re-write URL's in imported files so that the 
          * URL is always relative to the base imported file */
-        relativeUrls: false,
+        rewriteUrls: false,
 
         /* Compatibility with IE8. Used for limiting data-uri length */
         ieCompat: false,  // true until 3.0
@@ -1317,7 +1364,7 @@ module.exports = function() {
         urlArgs: ''
     }
 }
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var abstractFileManager = function() {
 };
 
@@ -1442,7 +1489,7 @@ abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, ba
 
 module.exports = abstractFileManager;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var functionRegistry = require('../functions/function-registry'),
     LessError = require('../less-error');
 
@@ -1633,7 +1680,7 @@ AbstractPluginLoader.prototype.printUsage = function(plugins) {
 module.exports = AbstractPluginLoader;
 
 
-},{"../functions/function-registry":26,"../less-error":37}],19:[function(require,module,exports){
+},{"../functions/function-registry":27,"../less-error":38}],20:[function(require,module,exports){
 /**
  * @todo Document why this abstraction exists, and the relationship between
  *       environment, file managers, and plugin manager
@@ -1691,7 +1738,7 @@ environment.prototype.clearFileManagers = function () {
 
 module.exports = environment;
 
-},{"../logger":38}],20:[function(require,module,exports){
+},{"../logger":39}],21:[function(require,module,exports){
 
 var functionRegistry = require('./function-registry'),
     Anonymous = require('../tree/anonymous'),
@@ -1708,7 +1755,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":50,"../tree/keyword":70,"./function-registry":26}],21:[function(require,module,exports){
+},{"../tree/anonymous":50,"../tree/keyword":70,"./function-registry":27}],22:[function(require,module,exports){
 var Color = require('../tree/color'),
     functionRegistry = require('./function-registry');
 
@@ -1784,7 +1831,7 @@ for (var f in colorBlendModeFunctions) {
 
 functionRegistry.addMultiple(colorBlend);
 
-},{"../tree/color":55,"./function-registry":26}],22:[function(require,module,exports){
+},{"../tree/color":55,"./function-registry":27}],23:[function(require,module,exports){
 var Dimension = require('../tree/dimension'),
     Color = require('../tree/color'),
     Quoted = require('../tree/quoted'),
@@ -2146,7 +2193,7 @@ colorFunctions = {
 };
 functionRegistry.addMultiple(colorFunctions);
 
-},{"../tree/anonymous":50,"../tree/color":55,"../tree/dimension":62,"../tree/quoted":80,"./function-registry":26}],23:[function(require,module,exports){
+},{"../tree/anonymous":50,"../tree/color":55,"../tree/dimension":62,"../tree/quoted":80,"./function-registry":27}],24:[function(require,module,exports){
 module.exports = function(environment) {
     var Quoted = require('../tree/quoted'),
         URL = require('../tree/url'),
@@ -2167,7 +2214,7 @@ module.exports = function(environment) {
         var mimetype = mimetypeNode && mimetypeNode.value;
         var filePath = filePathNode.value;
         var currentFileInfo = this.currentFileInfo;
-        var currentDirectory = currentFileInfo.relativeUrls ?
+        var currentDirectory = currentFileInfo.rewriteUrls ?
             currentFileInfo.currentDirectory : currentFileInfo.entryPath;
 
         var fragmentStart = filePath.indexOf('#');
@@ -2236,7 +2283,7 @@ module.exports = function(environment) {
     });
 };
 
-},{"../logger":38,"../tree/quoted":80,"../tree/url":85,"../utils":89,"./function-registry":26}],24:[function(require,module,exports){
+},{"../logger":39,"../tree/quoted":80,"../tree/url":85,"../utils":89,"./function-registry":27}],25:[function(require,module,exports){
 var Keyword = require('../tree/keyword'),
     functionRegistry = require('./function-registry');
 
@@ -2265,7 +2312,7 @@ functionRegistry.add('default', defaultFunc.eval.bind(defaultFunc));
 
 module.exports = defaultFunc;
 
-},{"../tree/keyword":70,"./function-registry":26}],25:[function(require,module,exports){
+},{"../tree/keyword":70,"./function-registry":27}],26:[function(require,module,exports){
 var Expression = require('../tree/expression');
 
 var functionCaller = function(name, context, index, currentFileInfo) {
@@ -2313,7 +2360,7 @@ functionCaller.prototype.call = function(args) {
 
 module.exports = functionCaller;
 
-},{"../tree/expression":64}],26:[function(require,module,exports){
+},{"../tree/expression":64}],27:[function(require,module,exports){
 function makeRegistry( base ) {
     return {
         _data: {},
@@ -2349,7 +2396,7 @@ function makeRegistry( base ) {
 }
 
 module.exports = makeRegistry( null );
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = function(environment) {
     var functions = {
         functionRegistry: require('./function-registry'),
@@ -2372,7 +2419,7 @@ module.exports = function(environment) {
     return functions;
 };
 
-},{"./boolean":20,"./color":22,"./color-blending":21,"./data-uri":23,"./default":24,"./function-caller":25,"./function-registry":26,"./list":28,"./math":30,"./number":31,"./string":32,"./svg":33,"./types":34}],28:[function(require,module,exports){
+},{"./boolean":21,"./color":23,"./color-blending":22,"./data-uri":24,"./default":25,"./function-caller":26,"./function-registry":27,"./list":29,"./math":31,"./number":32,"./string":33,"./svg":34,"./types":35}],29:[function(require,module,exports){
 var Dimension = require('../tree/dimension'),
     Declaration = require('../tree/declaration'),
     Ruleset = require('../tree/ruleset'),
@@ -2475,7 +2522,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/declaration":60,"../tree/dimension":62,"../tree/element":63,"../tree/ruleset":81,"../tree/selector":82,"./function-registry":26}],29:[function(require,module,exports){
+},{"../tree/declaration":60,"../tree/dimension":62,"../tree/element":63,"../tree/ruleset":81,"../tree/selector":82,"./function-registry":27}],30:[function(require,module,exports){
 var Dimension = require('../tree/dimension');
 
 var MathHelper = function() {
@@ -2492,7 +2539,7 @@ MathHelper._math = function (fn, unit, n) {
     return new Dimension(fn(parseFloat(n.value)), unit);
 };
 module.exports = MathHelper;
-},{"../tree/dimension":62}],30:[function(require,module,exports){
+},{"../tree/dimension":62}],31:[function(require,module,exports){
 var functionRegistry = require('./function-registry'),
     mathHelper = require('./math-helper.js');
 
@@ -2523,7 +2570,7 @@ mathFunctions.round = function (n, f) {
 
 functionRegistry.addMultiple(mathFunctions);
 
-},{"./function-registry":26,"./math-helper.js":29}],31:[function(require,module,exports){
+},{"./function-registry":27,"./math-helper.js":30}],32:[function(require,module,exports){
 var Dimension = require('../tree/dimension'),
     Anonymous = require('../tree/anonymous'),
     functionRegistry = require('./function-registry'),
@@ -2606,7 +2653,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":50,"../tree/dimension":62,"./function-registry":26,"./math-helper.js":29}],32:[function(require,module,exports){
+},{"../tree/anonymous":50,"../tree/dimension":62,"./function-registry":27,"./math-helper.js":30}],33:[function(require,module,exports){
 var Quoted = require('../tree/quoted'),
     Anonymous = require('../tree/anonymous'),
     JavaScript = require('../tree/javascript'),
@@ -2645,7 +2692,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":50,"../tree/javascript":68,"../tree/quoted":80,"./function-registry":26}],33:[function(require,module,exports){
+},{"../tree/anonymous":50,"../tree/javascript":68,"../tree/quoted":80,"./function-registry":27}],34:[function(require,module,exports){
 module.exports = function(environment) {
     var Dimension = require('../tree/dimension'),
         Color = require('../tree/color'),
@@ -2734,7 +2781,7 @@ module.exports = function(environment) {
     });
 };
 
-},{"../tree/color":55,"../tree/dimension":62,"../tree/expression":64,"../tree/quoted":80,"../tree/url":85,"./function-registry":26}],34:[function(require,module,exports){
+},{"../tree/color":55,"../tree/dimension":62,"../tree/expression":64,"../tree/quoted":80,"../tree/url":85,"./function-registry":27}],35:[function(require,module,exports){
 var Keyword = require('../tree/keyword'),
     DetachedRuleset = require('../tree/detached-ruleset'),
     Dimension = require('../tree/dimension'),
@@ -2810,7 +2857,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/anonymous":50,"../tree/color":55,"../tree/detached-ruleset":61,"../tree/dimension":62,"../tree/keyword":70,"../tree/operation":77,"../tree/quoted":80,"../tree/url":85,"./function-registry":26}],35:[function(require,module,exports){
+},{"../tree/anonymous":50,"../tree/color":55,"../tree/detached-ruleset":61,"../tree/dimension":62,"../tree/keyword":70,"../tree/operation":77,"../tree/quoted":80,"../tree/url":85,"./function-registry":27}],36:[function(require,module,exports){
 var contexts = require('./contexts'),
     Parser = require('./parser/parser'),
     LessError = require('./less-error'),
@@ -2821,7 +2868,7 @@ var contexts = require('./contexts'),
 module.exports = function(environment) {
 
     // FileInfo = {
-    //  'relativeUrls' - option - whether to adjust URL's to be relative
+    //  'rewriteUrls' - option - whether to adjust URL's to be relative
     //  'filename' - full resolved filename of current file
     //  'rootpath' - path to append to normal URLs for this node
     //  'currentDirectory' - path to the current file, absolute
@@ -2878,7 +2925,7 @@ module.exports = function(environment) {
         };
 
         var newFileInfo = {
-            relativeUrls: this.context.relativeUrls,
+            rewriteUrls: this.context.rewriteUrls,
             entryPath: currentFileInfo.entryPath,
             rootpath: currentFileInfo.rootpath,
             rootFilename: currentFileInfo.rootFilename
@@ -2905,7 +2952,7 @@ module.exports = function(environment) {
             // - If path of imported file is '../mixins.less' and rootpath is 'less/',
             //   then rootpath should become 'less/../'
             newFileInfo.currentDirectory = fileManager.getPath(resolvedFilename);
-            if (newFileInfo.relativeUrls) {
+            if (newFileInfo.rewriteUrls) {
                 newFileInfo.rootpath = fileManager.join(
                     (importManager.context.rootpath || ''),
                     fileManager.pathDiff(newFileInfo.currentDirectory, newFileInfo.entryPath));
@@ -2979,12 +3026,12 @@ module.exports = function(environment) {
     return ImportManager;
 };
 
-},{"./contexts":12,"./less-error":37,"./logger":38,"./parser/parser":44,"./utils":89,"promise":undefined}],36:[function(require,module,exports){
+},{"./contexts":13,"./less-error":38,"./logger":39,"./parser/parser":44,"./utils":89,"promise":undefined}],37:[function(require,module,exports){
 module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 7, 1],
+        version: [3, 8, 0],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -3036,7 +3083,7 @@ module.exports = function(environment, fileManagers) {
     return api;
 };
 
-},{"./contexts":12,"./data":14,"./environment/abstract-file-manager":17,"./environment/abstract-plugin-loader":18,"./environment/environment":19,"./functions":27,"./import-manager":35,"./less-error":37,"./logger":38,"./parse":41,"./parse-tree":40,"./parser/parser":44,"./plugin-manager":45,"./render":46,"./source-map-builder":47,"./source-map-output":48,"./transform-tree":49,"./tree":67,"./utils":89,"./visitors":93}],37:[function(require,module,exports){
+},{"./contexts":13,"./data":15,"./environment/abstract-file-manager":18,"./environment/abstract-plugin-loader":19,"./environment/environment":20,"./functions":28,"./import-manager":36,"./less-error":38,"./logger":39,"./parse":41,"./parse-tree":40,"./parser/parser":44,"./plugin-manager":45,"./render":46,"./source-map-builder":47,"./source-map-output":48,"./transform-tree":49,"./tree":67,"./utils":89,"./visitors":93}],38:[function(require,module,exports){
 var utils = require('./utils');
 /**
  * This is a centralized class of any error that could be thrown internally (mostly by the parser).
@@ -3179,7 +3226,7 @@ LessError.prototype.toString = function(options) {
     return message;
 };
 
-},{"./utils":89}],38:[function(require,module,exports){
+},{"./utils":89}],39:[function(require,module,exports){
 module.exports = {
     error: function(msg) {
         this._fireEvent('error', msg);
@@ -3215,13 +3262,6 @@ module.exports = {
     _listeners: []
 };
 
-},{}],39:[function(require,module,exports){
-module.exports = {
-    ALWAYS: 0,
-    PARENS_DIVISION: 1,
-    PARENS: 2,
-    STRICT_LEGACY: 3
-};
 },{}],40:[function(require,module,exports){
 var LessError = require('./less-error'),
     transformTree = require('./transform-tree'),
@@ -3284,7 +3324,7 @@ module.exports = function(SourceMapBuilder) {
     return ParseTree;
 };
 
-},{"./less-error":37,"./logger":38,"./transform-tree":49}],41:[function(require,module,exports){
+},{"./less-error":38,"./logger":39,"./transform-tree":49}],41:[function(require,module,exports){
 var PromiseConstructor,
     contexts = require('./contexts'),
     Parser = require('./parser/parser'),
@@ -3333,7 +3373,7 @@ module.exports = function(environment, ParseTree, ImportManager) {
                 var entryPath = filename.replace(/[^\/\\]*$/, '');
                 rootFileInfo = {
                     filename: filename,
-                    relativeUrls: context.relativeUrls,
+                    rewriteUrls: context.rewriteUrls,
                     rootpath: context.rootpath || '',
                     currentDirectory: entryPath,
                     entryPath: entryPath,
@@ -3377,7 +3417,7 @@ module.exports = function(environment, ParseTree, ImportManager) {
     return parse;
 };
 
-},{"./contexts":12,"./less-error":37,"./parser/parser":44,"./plugin-manager":45,"./utils":89,"promise":undefined}],42:[function(require,module,exports){
+},{"./contexts":13,"./less-error":38,"./parser/parser":44,"./plugin-manager":45,"./utils":89,"promise":undefined}],42:[function(require,module,exports){
 // Split the input into chunks.
 module.exports = function (input, fail) {
     var len = input.length, level = 0, parenLevel = 0,
@@ -6161,7 +6201,7 @@ Parser.serializeVars = function(vars) {
 
 module.exports = Parser;
 
-},{"../functions/function-registry":26,"../less-error":37,"../tree":67,"../utils":89,"../visitors":93,"./parser-input":43}],45:[function(require,module,exports){
+},{"../functions/function-registry":27,"../less-error":38,"../tree":67,"../utils":89,"../visitors":93,"./parser-input":43}],45:[function(require,module,exports){
 /**
  * Plugin Manager
  */
@@ -6679,7 +6719,7 @@ module.exports = function(root, options) {
     return evaldRoot;
 };
 
-},{"./contexts":12,"./tree":67,"./visitors":93}],50:[function(require,module,exports){
+},{"./contexts":13,"./tree":67,"./visitors":93}],50:[function(require,module,exports){
 var Node = require('./node');
 
 var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
@@ -7005,7 +7045,7 @@ Call.prototype.genCSS = function (context, output) {
 };
 module.exports = Call;
 
-},{"../functions/function-caller":25,"./anonymous":50,"./node":76}],55:[function(require,module,exports){
+},{"../functions/function-caller":26,"./anonymous":50,"./node":76}],55:[function(require,module,exports){
 var Node = require('./node'),
     colors = require('../data/colors');
 
@@ -7196,7 +7236,7 @@ Color.fromKeyword = function(keyword) {
 };
 module.exports = Color;
 
-},{"../data/colors":13,"./node":76}],56:[function(require,module,exports){
+},{"../data/colors":14,"./node":76}],56:[function(require,module,exports){
 var Node = require('./node');
 
 var Combinator = function (value) {
@@ -7330,7 +7370,7 @@ var Node = require('./node'),
     Value = require('./value'),
     Keyword = require('./keyword'),
     Anonymous = require('./anonymous'),
-    MATH = require('../math-constants');
+    MATH = require('../constants').Math;
 
 var Declaration = function (name, value, important, merge, index, currentFileInfo, inline, variable) {
     this.name = name;
@@ -7428,7 +7468,7 @@ Declaration.prototype.makeImportant = function () {
 };
 
 module.exports = Declaration;
-},{"../math-constants":39,"./anonymous":50,"./keyword":70,"./node":76,"./value":86}],61:[function(require,module,exports){
+},{"../constants":12,"./anonymous":50,"./keyword":70,"./node":76,"./value":86}],61:[function(require,module,exports){
 var Node = require('./node'),
     contexts = require('../contexts'),
     utils = require('../utils');
@@ -7453,7 +7493,7 @@ DetachedRuleset.prototype.callEval = function (context) {
 };
 module.exports = DetachedRuleset;
 
-},{"../contexts":12,"../utils":89,"./node":76}],62:[function(require,module,exports){
+},{"../contexts":13,"../utils":89,"./node":76}],62:[function(require,module,exports){
 var Node = require('./node'),
     unitConversions = require('../data/unit-conversions'),
     Unit = require('./unit'),
@@ -7616,7 +7656,7 @@ Dimension.prototype.convertTo = function (conversions) {
 };
 module.exports = Dimension;
 
-},{"../data/unit-conversions":15,"./color":55,"./node":76,"./unit":84}],63:[function(require,module,exports){
+},{"../data/unit-conversions":16,"./color":55,"./node":76,"./unit":84}],63:[function(require,module,exports){
 var Node = require('./node'),
     Paren = require('./paren'),
     Combinator = require('./combinator');
@@ -7687,7 +7727,7 @@ var Node = require('./node'),
     Paren = require('./paren'),
     Comment = require('./comment'),
     Dimension = require('./dimension'),
-    MATH = require('../math-constants');
+    MATH = require('../constants').Math;
 
 var Expression = function (value, noSpacing) {
     this.value = value;
@@ -7749,7 +7789,7 @@ Expression.prototype.throwAwayComments = function () {
 };
 module.exports = Expression;
 
-},{"../math-constants":39,"./comment":57,"./dimension":62,"./node":76,"./paren":78}],65:[function(require,module,exports){
+},{"../constants":12,"./comment":57,"./dimension":62,"./node":76,"./paren":78}],65:[function(require,module,exports){
 var Node = require('./node'),
     Selector = require('./selector');
 
@@ -7909,17 +7949,18 @@ Import.prototype.evalForImport = function (context) {
 };
 Import.prototype.evalPath = function (context) {
     var path = this.path.eval(context);
-    var rootpath = this._fileInfo && this._fileInfo.rootpath;
+    var fileInfo = this._fileInfo;
 
     if (!(path instanceof URL)) {
-        if (rootpath) {
-            var pathValue = path.value;
-            // Add the base path if the import is relative
-            if (pathValue && context.isPathRelative(pathValue)) {
-                path.value = rootpath + pathValue;
-            }
+        // Add the rootpath if the URL requires a rewrite
+        var pathValue = path.value;
+        if (fileInfo &&
+            pathValue &&
+            context.pathRequiresRewrite(pathValue)) {
+            path.value = context.rewritePath(pathValue, fileInfo.rootpath);
+        } else {
+            path.value = context.normalizePath(path.value);
         }
-        path.value = context.normalizePath(path.value);
     }
 
     return path;
@@ -7991,7 +8032,7 @@ Import.prototype.doEval = function (context) {
 };
 module.exports = Import;
 
-},{"../less-error":37,"../utils":89,"./anonymous":50,"./media":71,"./node":76,"./quoted":80,"./ruleset":81,"./url":85}],67:[function(require,module,exports){
+},{"../less-error":38,"../utils":89,"./anonymous":50,"./media":71,"./node":76,"./quoted":80,"./ruleset":81,"./url":85}],67:[function(require,module,exports){
 var tree = Object.create(null);
 
 tree.Node = require('./node');
@@ -8476,7 +8517,7 @@ MixinCall.prototype.format = function (args) {
 };
 module.exports = MixinCall;
 
-},{"../functions/default":24,"./mixin-definition":73,"./node":76,"./selector":82}],73:[function(require,module,exports){
+},{"../functions/default":25,"./mixin-definition":73,"./node":76,"./selector":82}],73:[function(require,module,exports){
 var Selector = require('./selector'),
     Element = require('./element'),
     Ruleset = require('./ruleset'),
@@ -8687,7 +8728,7 @@ Definition.prototype.matchArgs = function (args, context) {
 };
 module.exports = Definition;
 
-},{"../contexts":12,"../utils":89,"./declaration":60,"./detached-ruleset":61,"./element":63,"./expression":64,"./ruleset":81,"./selector":82}],74:[function(require,module,exports){
+},{"../contexts":13,"../utils":89,"./declaration":60,"./detached-ruleset":61,"./element":63,"./expression":64,"./ruleset":81,"./selector":82}],74:[function(require,module,exports){
 var Node = require('./node'),
     Variable = require('./variable'),
     Ruleset = require('./ruleset'),
@@ -8953,7 +8994,7 @@ module.exports = Node;
 var Node = require('./node'),
     Color = require('./color'),
     Dimension = require('./dimension'),
-    MATH = require('../math-constants');
+    MATH = require('../constants').Math;
 
 var Operation = function (op, operands, isSpaced) {
     this.op = op.trim();
@@ -9005,7 +9046,7 @@ Operation.prototype.genCSS = function (context, output) {
 
 module.exports = Operation;
 
-},{"../math-constants":39,"./color":55,"./dimension":62,"./node":76}],78:[function(require,module,exports){
+},{"../constants":12,"./color":55,"./dimension":62,"./node":76}],78:[function(require,module,exports){
 var Node = require('./node');
 
 var Paren = function (node) {
@@ -9965,7 +10006,7 @@ Ruleset.prototype.joinSelector = function (paths, context, selector) {
 };
 module.exports = Ruleset;
 
-},{"../contexts":12,"../functions/default":24,"../functions/function-registry":26,"../utils":89,"./anonymous":50,"./comment":57,"./debug-info":59,"./declaration":60,"./element":63,"./keyword":70,"./node":76,"./paren":78,"./selector":82}],82:[function(require,module,exports){
+},{"../contexts":13,"../functions/default":25,"../functions/function-registry":27,"../utils":89,"./anonymous":50,"./comment":57,"./debug-info":59,"./declaration":60,"./element":63,"./keyword":70,"./node":76,"./paren":78,"./selector":82}],82:[function(require,module,exports){
 var Node = require('./node'),
     Element = require('./element'),
     LessError = require('../less-error');
@@ -10098,7 +10139,7 @@ Selector.prototype.getIsOutput = function() {
 };
 module.exports = Selector;
 
-},{"../less-error":37,"./element":63,"./node":76}],83:[function(require,module,exports){
+},{"../less-error":38,"./element":63,"./node":76}],83:[function(require,module,exports){
 var Node = require('./node');
 
 var UnicodeDescriptor = function (value) {
@@ -10232,7 +10273,7 @@ Unit.prototype.cancel = function () {
 };
 module.exports = Unit;
 
-},{"../data/unit-conversions":15,"../utils":89,"./node":76}],85:[function(require,module,exports){
+},{"../data/unit-conversions":16,"../utils":89,"./node":76}],85:[function(require,module,exports){
 var Node = require('./node');
 
 var URL = function (val, index, currentFileInfo, isEvald) {
@@ -10256,19 +10297,18 @@ URL.prototype.eval = function (context) {
         rootpath;
 
     if (!this.isEvald) {
-        // Add the base path if the URL is relative
+        // Add the rootpath if the URL requires a rewrite
         rootpath = this.fileInfo() && this.fileInfo().rootpath;
-        if (rootpath &&
+        if (typeof rootpath === 'string' &&
             typeof val.value === 'string' &&
-            context.isPathRelative(val.value)) {
-
+            context.pathRequiresRewrite(val.value)) {
             if (!val.quote) {
-                rootpath = rootpath.replace(/[\(\)'"\s]/g, function(match) { return '\\' + match; });
+                rootpath = escapePath(rootpath);
             }
-            val.value = rootpath + val.value;
+            val.value = context.rewritePath(val.value, rootpath);
+        } else {
+            val.value = context.normalizePath(val.value);
         }
-
-        val.value = context.normalizePath(val.value);
 
         // Add url args if enabled
         if (context.urlArgs) {
@@ -10286,6 +10326,11 @@ URL.prototype.eval = function (context) {
 
     return new URL(val, this.getIndex(), this.fileInfo(), true);
 };
+
+function escapePath(path) {
+    return path.replace(/[\(\)'"\s]/g, function(match) { return '\\' + match; });
+}
+
 module.exports = URL;
 
 },{"./node":76}],86:[function(require,module,exports){
@@ -10367,7 +10412,7 @@ VariableCall.prototype.eval = function (context) {
 };
 module.exports = VariableCall;
 
-},{"../less-error":37,"./detached-ruleset":61,"./node":76,"./ruleset":81,"./variable":88}],88:[function(require,module,exports){
+},{"../less-error":38,"./detached-ruleset":61,"./node":76,"./ruleset":81,"./variable":88}],88:[function(require,module,exports){
 var Node = require('./node'),
     Call = require('./call');
 
@@ -10431,7 +10476,7 @@ module.exports = Variable;
 
 },{"./call":54,"./node":76}],89:[function(require,module,exports){
 /* jshint proto: true */
-var MATH = require('./math-constants');
+var Constants = require('./constants');
 
 var utils = {
     getLocation: function(index, inputStream) {
@@ -10473,22 +10518,39 @@ var utils = {
     copyOptions: function(obj1, obj2) {
         var opts = utils.defaults(obj1, obj2);
         if (opts.strictMath) {
-            opts.math = MATH.STRICT_LEGACY;
+            opts.math = Constants.Math.STRICT_LEGACY;
         }
-        if (opts.hasOwnProperty('math') && typeof opts.math === 'string') {
+        // Back compat with changed relativeUrls option
+        if (opts.relativeUrls) {
+            opts.rewriteUrls = Constants.RewriteUrls.ALL;
+        }
+        if (typeof opts.math === 'string') {
             switch (opts.math.toLowerCase()) {
                 case 'always':
-                    opts.math = MATH.ALWAYS;
+                    opts.math = Constants.Math.ALWAYS;
                     break;
                 case 'parens-division':
-                    opts.math = MATH.PARENS_DIVISION;
+                    opts.math = Constants.Math.PARENS_DIVISION;
                     break;
                 case 'strict':
                 case 'parens':
-                    opts.math = MATH.PARENS;
+                    opts.math = Constants.Math.PARENS;
                     break;
                 case 'strict-legacy':
-                    opts.math = MATH.STRICT_LEGACY;
+                    opts.math = Constants.Math.STRICT_LEGACY;
+            }
+        }
+        if (typeof opts.rewriteUrls === 'string') {
+            switch (opts.rewriteUrls.toLowerCase()) {
+                case 'off':
+                    opts.rewriteUrls = Constants.RewriteUrls.OFF;
+                    break;
+                case 'local':
+                    opts.rewriteUrls = Constants.RewriteUrls.LOCAL;
+                    break;
+                case 'all':
+                    opts.rewriteUrls = Constants.RewriteUrls.ALL;
+                    break;
             }
         }
         return opts;
@@ -10540,7 +10602,7 @@ var utils = {
 };
 
 module.exports = utils;
-},{"./math-constants":39}],90:[function(require,module,exports){
+},{"./constants":12}],90:[function(require,module,exports){
 var tree = require('../tree'),
     Visitor = require('./visitor'),
     logger = require('../logger'),
@@ -11004,7 +11066,7 @@ ProcessExtendsVisitor.prototype = {
 
 module.exports = ProcessExtendsVisitor;
 
-},{"../logger":38,"../tree":67,"../utils":89,"./visitor":97}],91:[function(require,module,exports){
+},{"../logger":39,"../tree":67,"../utils":89,"./visitor":97}],91:[function(require,module,exports){
 function ImportSequencer(onSequencerEmpty) {
     this.imports = [];
     this.variableImports = [];
@@ -11252,7 +11314,7 @@ ImportVisitor.prototype = {
 };
 module.exports = ImportVisitor;
 
-},{"../contexts":12,"../utils":89,"./import-sequencer":91,"./visitor":97}],93:[function(require,module,exports){
+},{"../contexts":13,"../utils":89,"./import-sequencer":91,"./visitor":97}],93:[function(require,module,exports){
 var visitors = {
     Visitor: require('./visitor'),
     ImportVisitor: require('./import-visitor'),

@@ -4,7 +4,8 @@ module.exports = function() {
     var path = require('path'),
         fs = require('fs'),
         copyBom = require('./copy-bom')(),
-        doBomTest = false;
+        doBomTest = false,
+        clone = require('clone');
 
     var less = require('../lib/less-node');
     var stylize = require('../lib/less-node/lessc-helper').stylize;
@@ -82,6 +83,10 @@ module.exports = function() {
     });
 
     function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        if (err) {
+            fail('ERROR: ' + (err && err.message));
+            return;
+        }
         // Check the sourceMappingURL at the bottom of the file
         var expectedSourceMapURL = name + '.css.map',
             sourceMappingPrefix = '/*# sourceMappingURL=',
@@ -226,10 +231,10 @@ module.exports = function() {
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
-        var options2 = options ? JSON.parse(JSON.stringify(options)) : {};
+        options = options ? clone(options) : {};
         runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
         if (doBomTest) {
-            runTestSetInternal(bomFolder, options2, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+            runTestSetInternal(bomFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
         }
     }
 
@@ -237,8 +242,10 @@ module.exports = function() {
         runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
     }
 
-    function runTestSetInternal(baseFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
+    function runTestSetInternal(baseFolder, opts, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || '';
+        
+        var originalOptions = opts || {};
 
         if (!doReplacements) {
             doReplacements = globalReplacements;
@@ -251,6 +258,8 @@ module.exports = function() {
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
             if (!/\.less$/.test(file)) { return; }
 
+            var options = clone(originalOptions);
+
             var name = getBasename(file);
 
             if (oneTestOnly && name !== oneTestOnly) {
@@ -260,20 +269,24 @@ module.exports = function() {
             totalTests++;
 
             if (options.sourceMap && !options.sourceMap.sourceMapFileInline) {
-                options.sourceMapOutputFilename = name + '.css';
-                options.sourceMapBasepath = path.join(process.cwd(), baseFolder);
-                options.sourceMapRootpath = 'testweb/';
-                // TODO separate options?
-                options.sourceMap = options;
-
+                options.sourceMap = {
+                    sourceMapOutputFilename: name + '.css',
+                    sourceMapBasepath: path.join(process.cwd(), baseFolder),
+                    sourceMapRootpath: 'testweb/'
+                };
                 // This options is normally set by the bin/lessc script. Setting it causes the sourceMappingURL comment to be appended to the CSS
                 // output. The value is designed to allow the sourceMapBasepath option to be tested, as it should be removed by less before
                 // setting the sourceMappingURL value, leaving just the sourceMapOutputFilename and .map extension.
-                options.sourceMapFilename = options.sourceMapBasepath + '/' + options.sourceMapOutputFilename + '.map';
+                options.sourceMap.sourceMapFilename = options.sourceMap.sourceMapBasepath + '/' + options.sourceMap.sourceMapOutputFilename + '.map';
             }
 
             options.getVars = function(file) {
-                return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars', baseFolder), 'utf8'));
+                try {
+                    return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars', baseFolder), 'utf8'));
+                }
+                catch (e) {
+                    return {};
+                }
             };
 
             var doubleCallCheck = false;
@@ -294,6 +307,7 @@ module.exports = function() {
                         release();
                         return verificationResult;
                     }
+
                     if (err) {
                         fail('ERROR: ' + (err && err.message));
                         if (isVerbose) {

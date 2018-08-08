@@ -1,3 +1,16 @@
+## 3.8.1
+
+2018-08-07
+  - Fixes for sourcemaps and color functions
+  - Support for #RRGGBBAA color format
+  - Allows conversion of colors to `rgba()` or `hsla()`
+  - Pass-through output of unknown properties in color functions (allows `var(--color)` for example)
+
+## 3.8.0
+
+2018-07-22
+  - New feature: added rewrite urls to replace relative url option. Adds "local" option for modules
+
 ## 3.7.1
 
 2018-07-11

@@ -473,9 +473,6 @@ module.exports = function (grunt) {
 
     require('jit-grunt')(grunt);
 
-    // Actually load this plugin's task(s).
-    grunt.loadTasks('build/tasks');
-
     // by default, run tests
     grunt.registerTask('default', [
         'test'

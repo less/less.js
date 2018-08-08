@@ -292,6 +292,7 @@ module.exports = function (grunt) {
                 keepRunner: true,
                 host: 'http://localhost:8081/',
                 vendor: [
+                    './node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js',
                     'test/browser/vendor/promise.js',
                     'test/browser/jasmine-jsreporter.js',
                     'test/browser/common.js',

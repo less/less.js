@@ -71,6 +71,7 @@
     "less-plugin-autoprefix": "^1.5.1",
     "less-plugin-clean-css": "^1.5.1",
     "performance-now": "^0.2.0",
+    "phantomjs-polyfill-object-assign": "0.0.2",
     "phantomjs-prebuilt": "^2.1.16",
     "phin": "^2.2.3",
     "promise": "^7.1.1",
@@ -104,5 +105,7 @@
   ],
   "rawcurrent": "https://raw.github.com/less/less.js/v",
   "sourcearchive": "https://github.com/less/less.js/archive/v",
-  "dependencies": {}
+  "dependencies": {
+    "clone": "^2.1.2"
+  }
 }

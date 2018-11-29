@@ -46,3 +46,13 @@
   -less-log: c;
   -less-log: d;
 }
+.test {
+  color: blue;
+  color: red;
+}
+.foo {
+  content: red;
+}
+.bar {
+  content: blue;
+}

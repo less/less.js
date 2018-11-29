@@ -38,8 +38,11 @@ each(@selectors, {
 
 @set: {
   one: blue;
+  // skip comments
   two: green;
-  three: red;
+  /** and these
+  */
+  three: red; //and this
 }
 .set {
   each(@set, {
@@ -79,3 +82,33 @@ each(@selectors, {
     -less-log: extract(@list, @index);
   })
 }
+
+// https://github.com/less/less.js/issues/3325
+
+@color-schemes: {
+  @primary: {
+    @color: blue;
+  }
+  @secondary: {
+    @color: red;
+  }
+}
+.test {
+  each(primary secondary, .(@color-name) {
+    @scheme: @color-schemes[@@color-name]; // e.g. @color-name = primary
+    color: @scheme[@color];
+  });
+}
+
+@one: {
+  @two: {
+    foo: red;
+    bar: blue;
+  };
+};
+
+each(@one[@two], {
+  .@{key} {
+    content: @value;
+  }
+});

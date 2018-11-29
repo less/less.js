@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -51,7 +51,6 @@
     "source-map": "~0.6.0"
   },
   "devDependencies": {
-    "bootstrap": "3.3.7",
     "bootstrap-less-port": "0.3.0",
     "diff": "^3.2.0",
     "git-rev": "^0.2.1",

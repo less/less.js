@@ -1,3 +1,9 @@
+## 3.9.0
+
+2018-11-28
+  - Added `range([start=1], end, [step=1])` function to generate lists
+  - Fixes #3325 #3313 #3328
+
 ## 3.8.1
 
 2018-08-07

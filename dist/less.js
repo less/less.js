@@ -1,5 +1,5 @@
 /*!
- * Less - Leaner CSS v3.8.1
+ * Less - Leaner CSS v3.9.0
  * http://lesscss.org
  *
  * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
@@ -2469,8 +2469,10 @@ module.exports = function(environment) {
 };
 
 },{"./boolean":21,"./color":23,"./color-blending":22,"./data-uri":24,"./default":25,"./function-caller":26,"./function-registry":27,"./list":29,"./math":31,"./number":32,"./string":33,"./svg":34,"./types":35}],29:[function(require,module,exports){
-var Dimension = require('../tree/dimension'),
+var Comment = require('../tree/comment'),
+    Dimension = require('../tree/dimension'),
     Declaration = require('../tree/declaration'),
+    Expression = require('../tree/expression'),
     Ruleset = require('../tree/ruleset'),
     Selector = require('../tree/selector'),
     Element = require('../tree/element'),
@@ -2497,8 +2499,36 @@ functionRegistry.addMultiple({
     length: function(values) {
         return new Dimension(getItemsFromNode(values).length);
     },
+    /**
+     * Creates a Less list of incremental values.
+     * Modeled after Lodash's range function, also exists natively in PHP
+     * 
+     * @param {Dimension} [start=1]
+     * @param {Dimension} end  - e.g. 10 or 10px - unit is added to output
+     * @param {Dimension} [step=1] 
+     */
+    range: function(start, end, step) {
+        var from, to, stepValue = 1, list = [];
+        if (end) {
+            to = end;
+            from = start.value;
+            if (step) {
+                stepValue = step.value;
+            }
+        }
+        else {
+            from = 1;
+            to = start;
+        }
+
+        for (var i = from; i <= to.value; i += stepValue) {
+            list.push(new Dimension(i, to.unit));
+        }
+
+        return new Expression(list);
+    },
     each: function(list, rs) {
-        var i = 0, rules = [], newRules, iterator;
+        var rules = [], newRules, iterator;
 
         if (list.value) {
             if (Array.isArray(list.value)) {
@@ -2508,6 +2538,8 @@ functionRegistry.addMultiple({
             }
         } else if (list.ruleset) {
             iterator = list.ruleset.rules;
+        } else if (list.rules) {
+            iterator = list.rules;
         } else if (Array.isArray(list)) {
             iterator = list;
         } else {
@@ -2526,16 +2558,19 @@ functionRegistry.addMultiple({
         } else {
             rs = rs.ruleset;
         }
-        
-        iterator.forEach(function(item) {
-            i = i + 1;
-            var key, value;
+
+        for (var i = 0; i < iterator.length; i++) {
+            var key, value, item = iterator[i];
             if (item instanceof Declaration) {
                 key = typeof item.name === 'string' ? item.name : item.name[0].value;
                 value = item.value;
             } else {
-                key = new Dimension(i);
+                key = new Dimension(i + 1);
                 value = item;
+            }
+            
+            if (item instanceof Comment) {
+                continue;
             }
 
             newRules = rs.rules.slice(0);
@@ -2546,7 +2581,7 @@ functionRegistry.addMultiple({
             }
             if (indexName) {
                 newRules.push(new Declaration(indexName,
-                    new Dimension(i),
+                    new Dimension(i + 1),
                     false, false, this.index, this.currentFileInfo));
             }
             if (keyName) {
@@ -2560,7 +2595,7 @@ functionRegistry.addMultiple({
                 rs.strictImports,
                 rs.visibilityInfo()
             ));
-        });
+        }
 
         return new Ruleset([ new(Selector)([ new Element("", '&') ]) ],
                 rules,
@@ -2571,7 +2606,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/declaration":60,"../tree/dimension":62,"../tree/element":63,"../tree/ruleset":81,"../tree/selector":82,"./function-registry":27}],30:[function(require,module,exports){
+},{"../tree/comment":57,"../tree/declaration":60,"../tree/dimension":62,"../tree/element":63,"../tree/expression":64,"../tree/ruleset":81,"../tree/selector":82,"./function-registry":27}],30:[function(require,module,exports){
 var Dimension = require('../tree/dimension');
 
 var MathHelper = function() {
@@ -3080,7 +3115,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 8, 1],
+        version: [3, 9, 0],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -10476,16 +10511,19 @@ VariableCall.prototype.eval = function (context) {
         error = new LessError({message: 'Could not evaluate variable call ' + this.variable});
 
     if (!detachedRuleset.ruleset) {
-        if (Array.isArray(detachedRuleset)) {
+        if (detachedRuleset.rules) {
             rules = detachedRuleset;
         }
+        else if (Array.isArray(detachedRuleset)) {
+            rules = new Ruleset('', detachedRuleset);
+        }
         else if (Array.isArray(detachedRuleset.value)) {
-            rules = detachedRuleset.value;
+            rules = new Ruleset('', detachedRuleset.value);
         }
         else {
             throw error;
         }
-        detachedRuleset = new DetachedRuleset(new Ruleset('', rules));
+        detachedRuleset = new DetachedRuleset(rules);
     }
     if (detachedRuleset.ruleset) {
         return detachedRuleset.callEval(context);

@@ -76,6 +76,23 @@ each(@selectors, {
   });
 }
 
+@columns: range(4);
+.column-list {
+  list: @columns;
+}
+
+each(@columns, .(@val) {
+  .col-@{val} {
+    width: (100% / length(@columns));
+  }
+});
+
+each(range(10px, 30px, 10px), .(@val, @index) {
+  .row-@{index} {
+    width: @val;
+  }
+});
+
 @list: a b c d;
 .box {
   each(@list, {

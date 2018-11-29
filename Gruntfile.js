@@ -227,7 +227,8 @@ module.exports = function (grunt) {
                 options: {
                     exclude: ['promise'],
                     browserifyOptions: {
-                        standalone: 'less'
+                        standalone: 'less',
+                        noParse: ['clone']
                     }
                 },
                 dest: 'tmp/less.js'

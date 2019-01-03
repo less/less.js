@@ -126,7 +126,7 @@ module.exports = function (grunt) {
                     var pass = process.env.SAUCE_ACCESS_KEY;
 
                     git.short(function(hash) {
-                        require('phin')({
+                        require('phin').unpromisified({
                             method: 'PUT',
                             url: ['https://saucelabs.com/rest/v1', user, 'jobs', result.job_id].join('/'),
                             auth: { user: user, pass: pass },

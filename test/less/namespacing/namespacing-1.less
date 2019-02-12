@@ -40,3 +40,13 @@
     sub: tres;
   }
 }
+
+// https://github.com/less/less.js/issues/3346
+#DEF() {
+  .colors() { primary: grey; }
+}
+
+.button {
+  color: #DEF.colors[primary];
+  border-color: #AAA #CCC;
+}

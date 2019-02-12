@@ -14,3 +14,7 @@
 #ns1 {
   foo: uno;
 }
+.button {
+  color: grey;
+  border-color: #AAA #CCC;
+}

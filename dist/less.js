@@ -9121,7 +9121,7 @@ var Operation = function (op, operands, isSpaced) {
 Operation.prototype = new Node();
 Operation.prototype.type = 'Operation';
 Operation.prototype.accept = function (visitor) {
-    this.operands = visitor.visit(this.operands);
+    this.operands = visitor.visitArray(this.operands);
 };
 Operation.prototype.eval = function (context) {
     var a = this.operands[0].eval(context),

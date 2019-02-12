@@ -87,3 +87,6 @@ span {
 div {
   content: 'foo';
 }
+.a .w-1 {
+  width: 90 100 110;
+}

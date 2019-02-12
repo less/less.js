@@ -146,3 +146,18 @@ span {
 div {
   .log('foo');
 }
+
+// https://github.com/less/less.js/issues/3345
+.mixin-create-width-style() {
+  @list: e("90 100 110");
+
+  each(@list, {
+      .w-@{key} {
+          width: @value;
+      }
+  })
+}
+
+.a {
+  .mixin-create-width-style();
+}

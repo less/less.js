@@ -129,3 +129,20 @@ each(@one[@two], {
     content: @value;
   }
 });
+
+// https://github.com/less/less.js/issues/3354
+.log(@msgs) {
+  each(@msgs; {
+    content: @value;
+  });
+}
+
+@messages: 'foo', 'bar';
+
+span {
+  .log(@messages);
+}
+
+div {
+  .log('foo');
+}

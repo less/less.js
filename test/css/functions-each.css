@@ -80,3 +80,10 @@
 .bar {
   content: blue;
 }
+span {
+  content: 'foo';
+  content: 'bar';
+}
+div {
+  content: 'foo';
+}

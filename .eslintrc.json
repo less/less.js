@@ -84,7 +84,7 @@
       "always"
     ],
     "indent": [
-      2,
+      1,
       4,
       {
         "SwitchCase": 1

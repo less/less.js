@@ -1,2 +1,3 @@
 Gruntfile.js
 test/browser/vendor/*
+lib/source-map/*

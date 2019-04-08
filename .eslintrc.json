@@ -13,9 +13,14 @@
       }
     ],
     "no-undef": 0,
-    "no-unused-vars": 1,
+    "no-unused-vars": [
+      1,
+      {
+        "args": "none"
+      }
+    ],
     "no-caller": 2,
-    "no-eq-null": 1,
+    "no-eq-null": 0,
     "guard-for-in": 2,
     "no-implicit-coercion": [
       2,

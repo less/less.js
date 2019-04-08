@@ -15,7 +15,6 @@ module.exports = function() {
         var stats = fs.lstatSync(src);
         var destFolder = path.dirname(dest);
         var destFolderExists = fs.existsSync(destFolder);
-        var performCopy = false;
 
         if (stats.isFile()) {
             if (!destFolderExists) {

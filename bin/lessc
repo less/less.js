@@ -10949,6 +10949,12 @@ function render() {
             // make the sourcemap filename point to the sourcemap relative to the css file output directory
             sourceMapOptions.sourceMapFilename = path.join(path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
         }
+        if (sourceMapOptions.sourceMapURL && sourceMapOptions.disableSourcemapAnnotation) {
+            console.error('You cannot provide flag --source-map-url with --source-map-no-annotation.')
+            console.error('Please remove one of those flags.')
+            process.exitcode = 1;
+            return;
+        }
     }
     if (sourceMapOptions.sourceMapBasepath === undefined) {
         sourceMapOptions.sourceMapBasepath = input ? path.dirname(input) : process.cwd();
@@ -11271,6 +11277,9 @@ function processPluginQueue() {
                 if (checkArgFunc(arg, match[2])) {
                     sourceMapOptions.sourceMapURL = match[2];
                 }
+                break;
+            case 'source-map-no-annotation':
+                sourceMapOptions.disableSourcemapAnnotation = true;
                 break;
             case 'rp':
             case 'rootpath':

@@ -80,3 +80,13 @@
 .bar {
   content: blue;
 }
+span {
+  content: 'foo';
+  content: 'bar';
+}
+div {
+  content: 'foo';
+}
+.a .w-1 {
+  width: 90 100 110;
+}

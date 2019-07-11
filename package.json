@@ -32,7 +32,6 @@
   "jam": {
     "main": "./dist/less.js"
   },
-  "browser": "./dist/less.js",
   "engines": {
     "node": ">=4"
   },

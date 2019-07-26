@@ -51,7 +51,7 @@
     "source-map": "~0.6.0"
   },
   "devDependencies": {
-    "bootstrap-less-port": "0.3.0",
+    "bootstrap-less-port": "2.2.1",
     "diff": "^3.2.0",
     "git-rev": "^0.2.1",
     "grunt": "~0.4.5",

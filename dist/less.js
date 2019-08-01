@@ -8570,12 +8570,12 @@
       var testChar;
 
       if (typeof tok === 'string') {
-        testChar = function testChar(_char) {
-          return _char === tok;
+        testChar = function testChar(char) {
+          return char === tok;
         };
       } else {
-        testChar = function testChar(_char2) {
-          return tok.test(_char2);
+        testChar = function testChar(char) {
+          return tok.test(char);
         };
       }
 
@@ -9227,7 +9227,7 @@
                and `expect` available only here */
             return {
               alpha: f(parsers.ieAlpha, true),
-              "boolean": f(condition),
+              boolean: f(condition),
               'if': f(condition)
             }[name.toLowerCase()];
 
@@ -10420,12 +10420,12 @@
           var result = [];
 
           function testCurrentChar() {
-            var _char = parserInput.currentChar();
+            var char = parserInput.currentChar();
 
             if (typeof tok === 'string') {
-              return _char === tok;
+              return char === tok;
             } else {
-              return tok.test(_char);
+              return tok.test(char);
             }
           }
 
@@ -11323,7 +11323,7 @@
     return s;
   };
 
-  function _boolean(condition) {
+  function boolean(condition) {
     return condition ? Keyword.True : Keyword.False;
   }
 
@@ -11331,8 +11331,8 @@
     return condition ? trueValue : falseValue || new Anonymous();
   }
 
-  var _boolean$1 = {
-    "boolean": _boolean,
+  var boolean$1 = {
+    boolean: boolean,
     'if': If
   };
 
@@ -12380,7 +12380,7 @@
       functionCaller: functionCaller
     }; // register functions
 
-    functionRegistry.addMultiple(_boolean$1);
+    functionRegistry.addMultiple(boolean$1);
     functionRegistry.addMultiple(defaultFunc$1);
     functionRegistry.addMultiple(color);
     functionRegistry.addMultiple(colorBlend);
@@ -13445,13 +13445,11 @@
 
   /* global window, XMLHttpRequest */
   var FM = (function (options, logger) {
-    var AbstractFileManager = require('../less/environment/abstract-file-manager.js');
-
     var fileCache = {}; // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
 
     var FileManager = function FileManager() {};
 
-    FileManager.prototype = new AbstractFileManager();
+    FileManager.prototype = new abstractFileManager();
 
     FileManager.prototype.alwaysMakePathsAbsolute = function alwaysMakePathsAbsolute() {
       return true;
@@ -13591,7 +13589,7 @@
       key: "loadPlugin",
       value: function loadPlugin(filename, basePath, context, environment, fileManager) {
         return new Promise(function (fulfill, reject) {
-          fileManager.loadFile(filename, basePath, context, environment).then(fulfill)["catch"](reject);
+          fileManager.loadFile(filename, basePath, context, environment).then(fulfill).catch(reject);
         });
       }
     }]);
@@ -13951,7 +13949,7 @@
 
       fileManager.loadFile(sheet.href, null, instanceOptions, environment).then(function (loadedFile) {
         loadInitialFileCallback(loadedFile);
-      })["catch"](function (err) {
+      }).catch(function (err) {
         console.log(err);
         callback(err);
       });
@@ -14166,4 +14164,3 @@
   return less;
 
 }));
-//# sourceMappingURL=less.js.map

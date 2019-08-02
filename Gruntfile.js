@@ -190,8 +190,7 @@ module.exports = function(grunt) {
             },
             build: {
                 command: [
-                    "node build/rollup.js --dist",
-                    "node build/rollup.js --lessc"
+                    "node build/rollup.js --dist"
                 ].join(" && ")
             },
             testbuild: {

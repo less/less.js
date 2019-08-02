@@ -1,12 +1,8 @@
 'use strict';
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var mime = _interopDefault(require('mime'));
-var sourceMap = _interopDefault(require('source-map'));
-var path = _interopDefault(require('path'));
-var url = _interopDefault(require('url'));
-var CloneHelper = _interopDefault(require('clone'));
+var path = require('path');
+var url = require('url');
+var CloneHelper = require('clone');
 
 var environment = {
   encodeBase64: function encodeBase64(str) {
@@ -15,13 +11,13 @@ var environment = {
     return buffer.toString('base64');
   },
   mimeLookup: function mimeLookup(filename) {
-    return mime.lookup(filename);
+    return require('mime').lookup(filename);
   },
   charsetLookup: function charsetLookup(mime) {
-    return mime.charsets.lookup(mime);
+    return require('mime').charsets.lookup(mime);
   },
   getSourceMapGenerator: function getSourceMapGenerator() {
-    return sourceMap.SourceMapGenerator;
+    return require('source-map').SourceMapGenerator;
   }
 };
 
@@ -35,143 +31,153 @@ try {
 
 var fs$1 = fs;
 
-const abstractFileManager = () => {};
+class AbstractFileManager {
+  getPath(filename) {
+    let j = filename.lastIndexOf('?');
 
-abstractFileManager.prototype.getPath = filename => {
-  let j = filename.lastIndexOf('?');
-
-  if (j > 0) {
-    filename = filename.slice(0, j);
-  }
-
-  j = filename.lastIndexOf('/');
-
-  if (j < 0) {
-    j = filename.lastIndexOf('\\');
-  }
-
-  if (j < 0) {
-    return '';
-  }
-
-  return filename.slice(0, j + 1);
-};
-
-abstractFileManager.prototype.tryAppendExtension = (path, ext) => /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
-
-abstractFileManager.prototype.tryAppendLessExtension = function (path) {
-  return this.tryAppendExtension(path, '.less');
-};
-
-abstractFileManager.prototype.supportsSync = () => false;
-
-abstractFileManager.prototype.alwaysMakePathsAbsolute = () => false;
-
-abstractFileManager.prototype.isPathAbsolute = filename => /^(?:[a-z-]+:|\/|\\|#)/i.test(filename); // TODO: pull out / replace?
-
-
-abstractFileManager.prototype.join = (basePath, laterPath) => {
-  if (!basePath) {
-    return laterPath;
-  }
-
-  return basePath + laterPath;
-};
-
-abstractFileManager.prototype.pathDiff = function pathDiff(url, baseUrl) {
-  // diff between two paths to create a relative path
-  const urlParts = this.extractUrlParts(url);
-  const baseUrlParts = this.extractUrlParts(baseUrl);
-  let i;
-  let max;
-  let urlDirectories;
-  let baseUrlDirectories;
-  let diff = '';
-
-  if (urlParts.hostPart !== baseUrlParts.hostPart) {
-    return '';
-  }
-
-  max = Math.max(baseUrlParts.directories.length, urlParts.directories.length);
-
-  for (i = 0; i < max; i++) {
-    if (baseUrlParts.directories[i] !== urlParts.directories[i]) {
-      break;
-    }
-  }
-
-  baseUrlDirectories = baseUrlParts.directories.slice(i);
-  urlDirectories = urlParts.directories.slice(i);
-
-  for (i = 0; i < baseUrlDirectories.length - 1; i++) {
-    diff += '../';
-  }
-
-  for (i = 0; i < urlDirectories.length - 1; i++) {
-    diff += `${urlDirectories[i]}/`;
-  }
-
-  return diff;
-}; // helper function, not part of API
-
-
-abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, baseUrl) {
-  // urlParts[1] = protocol://hostname/ OR /
-  // urlParts[2] = / if path relative to host base
-  // urlParts[3] = directories
-  // urlParts[4] = filename
-  // urlParts[5] = parameters
-  const urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
-  const urlParts = url.match(urlPartsRegex);
-  const returner = {};
-  let rawDirectories = [];
-  const directories = [];
-  let i;
-  let baseUrlParts;
-
-  if (!urlParts) {
-    throw new Error(`Could not parse sheet href - '${url}'`);
-  } // Stylesheets in IE don't always return the full path
-
-
-  if (baseUrl && (!urlParts[1] || urlParts[2])) {
-    baseUrlParts = baseUrl.match(urlPartsRegex);
-
-    if (!baseUrlParts) {
-      throw new Error(`Could not parse page url - '${baseUrl}'`);
+    if (j > 0) {
+      filename = filename.slice(0, j);
     }
 
-    urlParts[1] = urlParts[1] || baseUrlParts[1] || '';
+    j = filename.lastIndexOf('/');
 
-    if (!urlParts[2]) {
-      urlParts[3] = baseUrlParts[3] + urlParts[3];
+    if (j < 0) {
+      j = filename.lastIndexOf('\\');
     }
+
+    if (j < 0) {
+      return '';
+    }
+
+    return filename.slice(0, j + 1);
   }
 
-  if (urlParts[3]) {
-    rawDirectories = urlParts[3].replace(/\\/g, '/').split('/'); // collapse '..' and skip '.'
+  tryAppendExtension(path, ext) {
+    return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
+  }
 
-    for (i = 0; i < rawDirectories.length; i++) {
-      if (rawDirectories[i] === '..') {
-        directories.pop();
-      } else if (rawDirectories[i] !== '.') {
-        directories.push(rawDirectories[i]);
+  tryAppendLessExtension(path) {
+    return this.tryAppendExtension(path, '.less');
+  }
+
+  supportsSync() {
+    return false;
+  }
+
+  alwaysMakePathsAbsolute() {
+    return false;
+  }
+
+  isPathAbsolute(filename) {
+    return /^(?:[a-z-]+:|\/|\\|#)/i.test(filename);
+  } // TODO: pull out / replace?
+
+
+  join(basePath, laterPath) {
+    if (!basePath) {
+      return laterPath;
+    }
+
+    return basePath + laterPath;
+  }
+
+  pathDiff(url, baseUrl) {
+    // diff between two paths to create a relative path
+    const urlParts = this.extractUrlParts(url);
+    const baseUrlParts = this.extractUrlParts(baseUrl);
+    let i;
+    let max;
+    let urlDirectories;
+    let baseUrlDirectories;
+    let diff = '';
+
+    if (urlParts.hostPart !== baseUrlParts.hostPart) {
+      return '';
+    }
+
+    max = Math.max(baseUrlParts.directories.length, urlParts.directories.length);
+
+    for (i = 0; i < max; i++) {
+      if (baseUrlParts.directories[i] !== urlParts.directories[i]) {
+        break;
       }
     }
+
+    baseUrlDirectories = baseUrlParts.directories.slice(i);
+    urlDirectories = urlParts.directories.slice(i);
+
+    for (i = 0; i < baseUrlDirectories.length - 1; i++) {
+      diff += '../';
+    }
+
+    for (i = 0; i < urlDirectories.length - 1; i++) {
+      diff += `${urlDirectories[i]}/`;
+    }
+
+    return diff;
   }
 
-  returner.hostPart = urlParts[1];
-  returner.directories = directories;
-  returner.rawPath = (urlParts[1] || '') + rawDirectories.join('/');
-  returner.path = (urlParts[1] || '') + directories.join('/');
-  returner.filename = urlParts[4];
-  returner.fileUrl = returner.path + (urlParts[4] || '');
-  returner.url = returner.fileUrl + (urlParts[5] || '');
-  return returner;
-};
+  // helper function, not part of API
+  extractUrlParts(url, baseUrl) {
+    // urlParts[1] = protocol://hostname/ OR /
+    // urlParts[2] = / if path relative to host base
+    // urlParts[3] = directories
+    // urlParts[4] = filename
+    // urlParts[5] = parameters
+    const urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
+    const urlParts = url.match(urlPartsRegex);
+    const returner = {};
+    let rawDirectories = [];
+    const directories = [];
+    let i;
+    let baseUrlParts;
 
-class FileManager extends abstractFileManager {
+    if (!urlParts) {
+      throw new Error(`Could not parse sheet href - '${url}'`);
+    } // Stylesheets in IE don't always return the full path
+
+
+    if (baseUrl && (!urlParts[1] || urlParts[2])) {
+      baseUrlParts = baseUrl.match(urlPartsRegex);
+
+      if (!baseUrlParts) {
+        throw new Error(`Could not parse page url - '${baseUrl}'`);
+      }
+
+      urlParts[1] = urlParts[1] || baseUrlParts[1] || '';
+
+      if (!urlParts[2]) {
+        urlParts[3] = baseUrlParts[3] + urlParts[3];
+      }
+    }
+
+    if (urlParts[3]) {
+      rawDirectories = urlParts[3].replace(/\\/g, '/').split('/'); // collapse '..' and skip '.'
+
+      for (i = 0; i < rawDirectories.length; i++) {
+        if (rawDirectories[i] === '..') {
+          directories.pop();
+        } else if (rawDirectories[i] !== '.') {
+          directories.push(rawDirectories[i]);
+        }
+      }
+    }
+
+    returner.hostPart = urlParts[1];
+    returner.directories = directories;
+    returner.rawPath = (urlParts[1] || '') + rawDirectories.join('/');
+    returner.path = (urlParts[1] || '') + directories.join('/');
+    returner.filename = urlParts[4];
+    returner.fileUrl = returner.path + (urlParts[4] || '');
+    returner.url = returner.fileUrl + (urlParts[5] || '');
+    return returner;
+  }
+
+}
+
+class FileManager extends AbstractFileManager {
   constructor() {
+    super();
     this.contents = {};
   }
 
@@ -395,69 +401,70 @@ var logger = {
 const isUrlRe = /^(?:https?:)?\/\//i;
 let request;
 
-const UrlFileManager = () => {};
+class UrlFileManager extends AbstractFileManager {
+  supports(filename, currentDirectory, options, environment) {
+    return isUrlRe.test(filename) || isUrlRe.test(currentDirectory);
+  }
 
-UrlFileManager.prototype = new abstractFileManager();
-
-UrlFileManager.prototype.supports = (filename, currentDirectory, options, environment) => isUrlRe.test(filename) || isUrlRe.test(currentDirectory);
-
-UrlFileManager.prototype.loadFile = (filename, currentDirectory, options, environment) => {
-  return new Promise((fulfill, reject) => {
-    if (request === undefined) {
-      try {
-        request = require('request');
-      } catch (e) {
-        request = null;
+  loadFile(filename, currentDirectory, options, environment) {
+    return new Promise((fulfill, reject) => {
+      if (request === undefined) {
+        try {
+          request = require('request');
+        } catch (e) {
+          request = null;
+        }
       }
-    }
 
-    if (!request) {
-      reject({
-        type: 'File',
-        message: 'optional dependency \'request\' required to import over http(s)\n'
-      });
-      return;
-    }
-
-    let urlStr = isUrlRe.test(filename) ? filename : url.resolve(currentDirectory, filename);
-    const urlObj = url.parse(urlStr);
-
-    if (!urlObj.protocol) {
-      urlObj.protocol = 'http';
-      urlStr = urlObj.format();
-    }
-
-    request.get({
-      uri: urlStr,
-      strictSSL: !options.insecure
-    }, (error, res, body) => {
-      if (error) {
+      if (!request) {
         reject({
           type: 'File',
-          message: `resource '${urlStr}' gave this Error:\n  ${error}\n`
+          message: 'optional dependency \'request\' required to import over http(s)\n'
         });
         return;
       }
 
-      if (res && res.statusCode === 404) {
-        reject({
-          type: 'File',
-          message: `resource '${urlStr}' was not found\n`
+      let urlStr = isUrlRe.test(filename) ? filename : url.resolve(currentDirectory, filename);
+      const urlObj = url.parse(urlStr);
+
+      if (!urlObj.protocol) {
+        urlObj.protocol = 'http';
+        urlStr = urlObj.format();
+      }
+
+      request.get({
+        uri: urlStr,
+        strictSSL: !options.insecure
+      }, (error, res, body) => {
+        if (error) {
+          reject({
+            type: 'File',
+            message: `resource '${urlStr}' gave this Error:\n  ${error}\n`
+          });
+          return;
+        }
+
+        if (res && res.statusCode === 404) {
+          reject({
+            type: 'File',
+            message: `resource '${urlStr}' was not found\n`
+          });
+          return;
+        }
+
+        if (!body) {
+          logger.warn(`Warning: Empty body (HTTP ${res.statusCode}) returned by "${urlStr}"`);
+        }
+
+        fulfill({
+          contents: body,
+          filename: urlStr
         });
-        return;
-      }
-
-      if (!body) {
-        logger.warn(`Warning: Empty body (HTTP ${res.statusCode}) returned by "${urlStr}"`);
-      }
-
-      fulfill({
-        contents: body,
-        filename: urlStr
       });
     });
-  });
-};
+  }
+
+}
 
 var colors = {
   'aliceblue': '#f0f8ff',
@@ -836,6 +843,7 @@ Node.numericCompare = (a, b) => a < b ? -1 : a === b ? 0 : a > b ? 1 : undefined
 
 class Color extends Node {
   constructor(rgb, a, originalForm) {
+    super();
     const self = this; //
     // The end goal here, is to parse the arguments
     // into an integer triplet, such as `128, 255, 0`
@@ -1099,6 +1107,7 @@ Color.fromKeyword = keyword => {
 
 class Paren extends Node {
   constructor(node) {
+    super();
     this.value = node;
   }
 
@@ -1116,8 +1125,16 @@ class Paren extends Node {
 
 Paren.prototype.type = 'Paren';
 
+const _noSpaceCombinators = {
+  '': true,
+  ' ': true,
+  '|': true
+};
+
 class Combinator extends Node {
   constructor(value) {
+    super();
+
     if (value === ' ') {
       this.value = ' ';
       this.emptyOrWhitespace = true;
@@ -1135,14 +1152,10 @@ class Combinator extends Node {
 }
 
 Combinator.prototype.type = 'Combinator';
-const _noSpaceCombinators = {
-  '': true,
-  ' ': true,
-  '|': true
-};
 
 class Element extends Node {
   constructor(combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
+    super();
     this.combinator = combinator instanceof Combinator ? combinator : new Combinator(combinator);
 
     if (typeof value === 'string') {
@@ -1258,12 +1271,25 @@ function clone(obj) {
 
   return cloned;
 }
+function defaults(obj1, obj2) {
+  let newObj = obj2 || {};
+
+  if (!obj2._defaults) {
+    newObj = {};
+    const defaults = CloneHelper(obj1);
+    newObj._defaults = defaults;
+    const cloned = obj2 ? CloneHelper(obj2) : {};
+    Object.assign(newObj, defaults, cloned);
+  }
+
+  return newObj;
+}
 function copyOptions(obj1, obj2) {
   if (obj2 && obj2._defaults) {
     return obj2;
   }
 
-  const opts = utils.defaults(obj1, obj2);
+  const opts = defaults(obj1, obj2);
 
   if (opts.strictMath) {
     opts.math = Math$1.STRICT_LEGACY;
@@ -1312,19 +1338,6 @@ function copyOptions(obj1, obj2) {
 
   return opts;
 }
-function defaults(obj1, obj2) {
-  let newObj = obj2 || {};
-
-  if (!obj2._defaults) {
-    newObj = {};
-    const defaults = CloneHelper(obj1);
-    newObj._defaults = defaults;
-    const cloned = obj2 ? CloneHelper(obj2) : {};
-    Object.assign(newObj, defaults, cloned);
-  }
-
-  return newObj;
-}
 function merge(obj1, obj2) {
   for (const prop in obj2) {
     if (obj2.hasOwnProperty(prop)) {
@@ -1339,7 +1352,7 @@ function flattenArray(arr, result = []) {
     const value = arr[i];
 
     if (Array.isArray(value)) {
-      utils.flattenArray(value, result);
+      flattenArray(value, result);
     } else {
       if (value !== undefined) {
         result.push(value);
@@ -1350,12 +1363,12 @@ function flattenArray(arr, result = []) {
   return result;
 }
 
-var utils$1 = /*#__PURE__*/Object.freeze({
+var utils = /*#__PURE__*/Object.freeze({
     getLocation: getLocation,
     copyArray: copyArray,
     clone: clone,
-    copyOptions: copyOptions,
     defaults: defaults,
+    copyOptions: copyOptions,
     merge: merge,
     flattenArray: flattenArray
 });
@@ -1501,6 +1514,7 @@ LessError.prototype.toString = function (options = {}) {
 
 class Selector extends Node {
   constructor(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
+    super();
     this.extendList = extendList;
     this.condition = condition;
     this.evaldCondition = !condition;
@@ -1638,6 +1652,8 @@ Selector.prototype.type = 'Selector';
 
 class Value extends Node {
   constructor(value) {
+    super();
+
     if (!value) {
       throw new Error('Value requires an array argument');
     }
@@ -1681,6 +1697,7 @@ Value.prototype.type = 'Value';
 
 class Keyword extends Node {
   constructor(value) {
+    super();
     this.value = value;
   }
 
@@ -1703,6 +1720,7 @@ Keyword.False = new Keyword('false');
 
 class Anonymous extends Node {
   constructor(value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
+    super();
     this.value = value;
     this._index = index;
     this._fileInfo = currentFileInfo;
@@ -1740,6 +1758,7 @@ const MATH = Math$1;
 
 class Declaration extends Node {
   constructor(name, value, important, merge, index, currentFileInfo, inline, variable) {
+    super();
     this.name = name;
     this.value = value instanceof Node ? value : new Value([value ? new Anonymous(value) : null]);
     this.important = important ? ` ${important.trim()}` : '';
@@ -1888,6 +1907,7 @@ debugInfo.asMediaQuery = ctx => {
 
 class Comment extends Node {
   constructor(value, isLineComment, index, currentFileInfo) {
+    super();
     this.value = value;
     this.isLineComment = isLineComment;
     this._index = index;
@@ -1958,7 +1978,6 @@ contexts.Parse = function (options) {
 
 const evalCopyProperties = ['paths', // additional include paths
 'compress', // whether to compress
-'ieCompat', // whether to enforce IE compatibility (IE8 data-uri)
 'math', // whether math has to be within parenthesis
 'strictUnits', // whether units need to evaluate correctly
 'sourceMap', // whether to output a source map
@@ -1970,120 +1989,122 @@ const evalCopyProperties = ['paths', // additional include paths
 'rewriteUrls' // option - whether to adjust URL's to be relative
 ];
 
-contexts.Eval = function (options, frames) {
-  copyFromOriginal(options, this, evalCopyProperties);
-
-  if (typeof this.paths === 'string') {
-    this.paths = [this.paths];
-  }
-
-  this.frames = frames || [];
-  this.importantScope = this.importantScope || [];
-};
-
-contexts.Eval.prototype.enterCalc = function () {
-  if (!this.calcStack) {
-    this.calcStack = [];
-  }
-
-  this.calcStack.push(true);
-  this.inCalc = true;
-};
-
-contexts.Eval.prototype.exitCalc = function () {
-  this.calcStack.pop();
-
-  if (!this.calcStack) {
-    this.inCalc = false;
-  }
-};
-
-contexts.Eval.prototype.inParenthesis = function () {
-  if (!this.parensStack) {
-    this.parensStack = [];
-  }
-
-  this.parensStack.push(true);
-};
-
-contexts.Eval.prototype.outOfParenthesis = function () {
-  this.parensStack.pop();
-};
-
-contexts.Eval.prototype.inCalc = false;
-contexts.Eval.prototype.mathOn = true;
-
-contexts.Eval.prototype.isMathOn = function (op) {
-  if (!this.mathOn) {
-    return false;
-  }
-
-  if (op === '/' && this.math !== Math$1.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
-    return false;
-  }
-
-  if (this.math > Math$1.PARENS_DIVISION) {
-    return this.parensStack && this.parensStack.length;
-  }
-
-  return true;
-};
-
-contexts.Eval.prototype.pathRequiresRewrite = function (path) {
-  const isRelative = this.rewriteUrls === RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
-  return isRelative(path);
-};
-
-contexts.Eval.prototype.rewritePath = function (path, rootpath) {
-  let newPath;
-  rootpath = rootpath || '';
-  newPath = this.normalizePath(rootpath + path); // If a path was explicit relative and the rootpath was not an absolute path
-  // we must ensure that the new path is also explicit relative.
-
-  if (isPathLocalRelative(path) && isPathRelative(rootpath) && isPathLocalRelative(newPath) === false) {
-    newPath = `./${newPath}`;
-  }
-
-  return newPath;
-};
-
-contexts.Eval.prototype.normalizePath = path => {
-  const segments = path.split('/').reverse();
-  let segment;
-  path = [];
-
-  while (segments.length !== 0) {
-    segment = segments.pop();
-
-    switch (segment) {
-      case '.':
-        break;
-
-      case '..':
-        if (path.length === 0 || path[path.length - 1] === '..') {
-          path.push(segment);
-        } else {
-          path.pop();
-        }
-
-        break;
-
-      default:
-        path.push(segment);
-        break;
-    }
-  }
-
-  return path.join('/');
-};
-
 function isPathRelative(path) {
   return !/^(?:[a-z-]+:|\/|#)/i.test(path);
 }
 
 function isPathLocalRelative(path) {
   return path.charAt(0) === '.';
-} // todo - do the same for the toCSS ?
+}
+
+contexts.Eval = class {
+  constructor(options, frames) {
+    copyFromOriginal(options, this, evalCopyProperties);
+
+    if (typeof this.paths === 'string') {
+      this.paths = [this.paths];
+    }
+
+    this.frames = frames || [];
+    this.importantScope = this.importantScope || [];
+    this.inCalc = false;
+    this.mathOn = true;
+  }
+
+  enterCalc() {
+    if (!this.calcStack) {
+      this.calcStack = [];
+    }
+
+    this.calcStack.push(true);
+    this.inCalc = true;
+  }
+
+  exitCalc() {
+    this.calcStack.pop();
+
+    if (!this.calcStack) {
+      this.inCalc = false;
+    }
+  }
+
+  inParenthesis() {
+    if (!this.parensStack) {
+      this.parensStack = [];
+    }
+
+    this.parensStack.push(true);
+  }
+
+  outOfParenthesis() {
+    this.parensStack.pop();
+  }
+
+  isMathOn(op) {
+    if (!this.mathOn) {
+      return false;
+    }
+
+    if (op === '/' && this.math !== Math$1.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
+      return false;
+    }
+
+    if (this.math > Math$1.PARENS_DIVISION) {
+      return this.parensStack && this.parensStack.length;
+    }
+
+    return true;
+  }
+
+  pathRequiresRewrite(path) {
+    const isRelative = this.rewriteUrls === RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
+    return isRelative(path);
+  }
+
+  rewritePath(path, rootpath) {
+    let newPath;
+    rootpath = rootpath || '';
+    newPath = this.normalizePath(rootpath + path); // If a path was explicit relative and the rootpath was not an absolute path
+    // we must ensure that the new path is also explicit relative.
+
+    if (isPathLocalRelative(path) && isPathRelative(rootpath) && isPathLocalRelative(newPath) === false) {
+      newPath = `./${newPath}`;
+    }
+
+    return newPath;
+  }
+
+  normalizePath(path) {
+    const segments = path.split('/').reverse();
+    let segment;
+    path = [];
+
+    while (segments.length !== 0) {
+      segment = segments.pop();
+
+      switch (segment) {
+        case '.':
+          break;
+
+        case '..':
+          if (path.length === 0 || path[path.length - 1] === '..') {
+            path.push(segment);
+          } else {
+            path.pop();
+          }
+
+          break;
+
+        default:
+          path.push(segment);
+          break;
+      }
+    }
+
+    return path.join('/');
+  }
+
+};
 
 function makeRegistry(base) {
   return {
@@ -2142,12 +2163,10 @@ const defaultFunc = {
     this.value_ = this.error_ = null;
   }
 };
-var defaultFunc$1 = {
-  'default': defaultFunc.eval.bind(defaultFunc)
-};
 
 class Ruleset extends Node {
   constructor(selectors, rules, strictImports, visibilityInfo) {
+    super();
     this.selectors = selectors;
     this.rules = rules;
     this._lookups = {};
@@ -2186,7 +2205,7 @@ class Ruleset extends Node {
 
     if (this.selectors && (selCnt = this.selectors.length)) {
       selectors = new Array(selCnt);
-      defaultFunc$1.error({
+      defaultFunc.error({
         type: 'Syntax',
         message: 'it is currently only allowed in parametric mixin guards,'
       });
@@ -2223,7 +2242,7 @@ class Ruleset extends Node {
         });
       }
 
-      defaultFunc$1.reset();
+      defaultFunc.reset();
     } else {
       hasOnePassingSelector = true;
     }
@@ -3017,6 +3036,7 @@ Ruleset.prototype.isRuleset = true;
 
 class AtRule extends Node {
   constructor(name, value, rules, index, currentFileInfo, debugInfo, isRooted, visibilityInfo) {
+    super();
     let i;
     this.name = name;
     this.value = value instanceof Node ? value : value ? new Anonymous(value) : value;
@@ -3176,6 +3196,7 @@ AtRule.prototype.type = 'AtRule';
 
 class DetachedRuleset extends Node {
   constructor(ruleset, frames) {
+    super();
     this.ruleset = ruleset;
     this.frames = frames;
     this.setParent(this.ruleset, this);
@@ -3201,6 +3222,7 @@ DetachedRuleset.prototype.evalFirst = true;
 
 class Unit extends Node {
   constructor(numerator, denominator, backupUnit) {
+    super();
     this.numerator = numerator ? copyArray(numerator).sort() : [];
     this.denominator = denominator ? copyArray(denominator).sort() : [];
 
@@ -3343,6 +3365,7 @@ Unit.prototype.type = 'Unit';
 
 class Dimension extends Node {
   constructor(value, unit) {
+    super();
     this.value = parseFloat(value);
 
     if (isNaN(this.value)) {
@@ -3415,7 +3438,7 @@ class Dimension extends Node {
         other = other.convertTo(this.unit.usedUnits());
 
         if (context.strictUnits && other.unit.toString() !== unit.toString()) {
-          throw new Error(`Incompatible units. Change the units or use the unit function. Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
+          throw new Error(`Incompatible units. Change the units or use the unit function. ` + `Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
         }
 
         value = this._operate(context, op, this.value, other.value);
@@ -3520,6 +3543,7 @@ const MATH$1 = Math$1;
 
 class Operation extends Node {
   constructor(op, operands, isSpaced) {
+    super();
     this.op = op.trim();
     this.operands = operands;
     this.isSpaced = isSpaced;
@@ -3586,6 +3610,7 @@ const MATH$2 = Math$1;
 
 class Expression extends Node {
   constructor(value, noSpacing) {
+    super();
     this.value = value;
     this.noSpacing = noSpacing;
 
@@ -3709,6 +3734,7 @@ class functionCaller {
 
 class Call extends Node {
   constructor(name, args, index, currentFileInfo) {
+    super();
     this.name = name;
     this.args = args;
     this.calc = name === 'calc';
@@ -3808,6 +3834,7 @@ Call.prototype.type = 'Call';
 
 class Variable extends Node {
   constructor(name, index, currentFileInfo) {
+    super();
     this.name = name;
     this._index = index;
     this._fileInfo = currentFileInfo;
@@ -3880,6 +3907,7 @@ Variable.prototype.type = 'Variable';
 
 class Property extends Node {
   constructor(name, index, currentFileInfo) {
+    super();
     this.name = name;
     this._index = index;
     this._fileInfo = currentFileInfo;
@@ -3955,6 +3983,7 @@ Property.prototype.type = 'Property';
 
 class Attribute extends Node {
   constructor(key, op, value) {
+    super();
     this.key = key;
     this.op = op;
     this.value = value;
@@ -3985,6 +4014,7 @@ Attribute.prototype.type = 'Attribute';
 
 class Quoted extends Node {
   constructor(str, content, escaped, index, currentFileInfo) {
+    super();
     this.escaped = escaped == null ? true : escaped;
     this.value = content || '';
     this.quote = str.charAt(0);
@@ -4055,6 +4085,7 @@ Quoted.prototype.type = 'Quoted';
 
 class URL extends Node {
   constructor(val, index, currentFileInfo, isEvald) {
+    super();
     this.value = val;
     this._index = index;
     this._fileInfo = currentFileInfo;
@@ -4117,6 +4148,7 @@ function escapePath(path) {
 
 class Media extends AtRule {
   constructor(value, features, index, currentFileInfo, visibilityInfo) {
+    super();
     this._index = index;
     this._fileInfo = currentFileInfo;
     const selectors = new Selector([], null, null, this._index, this._fileInfo).createEmptySelectors();
@@ -4267,6 +4299,7 @@ Media.prototype.type = 'Media';
 
 class Import extends Node {
   constructor(path, features, options, index, currentFileInfo, visibilityInfo) {
+    super();
     this.options = options;
     this._index = index;
     this._fileInfo = currentFileInfo;
@@ -4436,72 +4469,72 @@ class Import extends Node {
 
 Import.prototype.type = 'Import';
 
-const JsEvalNode = () => {};
+class JsEvalNode extends Node {
+  evaluateJavaScript(expression, context) {
+    let result;
+    const that = this;
+    const evalContext = {};
 
-JsEvalNode.prototype = new Node();
-
-JsEvalNode.prototype.evaluateJavaScript = function (expression, context) {
-  let result;
-  const that = this;
-  const evalContext = {};
-
-  if (!context.javascriptEnabled) {
-    throw {
-      message: 'Inline JavaScript is not enabled. Is it set in your options?',
-      filename: this.fileInfo().filename,
-      index: this.getIndex()
-    };
-  }
-
-  expression = expression.replace(/@\{([\w-]+)\}/g, (_, name) => that.jsify(new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context)));
-
-  try {
-    expression = new Function(`return (${expression})`);
-  } catch (e) {
-    throw {
-      message: `JavaScript evaluation error: ${e.message} from \`${expression}\``,
-      filename: this.fileInfo().filename,
-      index: this.getIndex()
-    };
-  }
-
-  const variables = context.frames[0].variables();
-
-  for (const k in variables) {
-    if (variables.hasOwnProperty(k)) {
-      /* jshint loopfunc:true */
-      evalContext[k.slice(1)] = {
-        value: variables[k].value,
-        toJS: function toJS() {
-          return this.value.eval(context).toCSS();
-        }
+    if (!context.javascriptEnabled) {
+      throw {
+        message: 'Inline JavaScript is not enabled. Is it set in your options?',
+        filename: this.fileInfo().filename,
+        index: this.getIndex()
       };
+    }
+
+    expression = expression.replace(/@\{([\w-]+)\}/g, (_, name) => that.jsify(new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context)));
+
+    try {
+      expression = new Function(`return (${expression})`);
+    } catch (e) {
+      throw {
+        message: `JavaScript evaluation error: ${e.message} from \`${expression}\``,
+        filename: this.fileInfo().filename,
+        index: this.getIndex()
+      };
+    }
+
+    const variables = context.frames[0].variables();
+
+    for (const k in variables) {
+      if (variables.hasOwnProperty(k)) {
+        /* jshint loopfunc:true */
+        evalContext[k.slice(1)] = {
+          value: variables[k].value,
+          toJS: function toJS() {
+            return this.value.eval(context).toCSS();
+          }
+        };
+      }
+    }
+
+    try {
+      result = expression.call(evalContext);
+    } catch (e) {
+      throw {
+        message: `JavaScript evaluation error: '${e.name}: ${e.message.replace(/["]/g, '\'')}'`,
+        filename: this.fileInfo().filename,
+        index: this.getIndex()
+      };
+    }
+
+    return result;
+  }
+
+  jsify(obj) {
+    if (Array.isArray(obj.value) && obj.value.length > 1) {
+      return `[${obj.value.map(v => v.toCSS()).join(', ')}]`;
+    } else {
+      return obj.toCSS();
     }
   }
 
-  try {
-    result = expression.call(evalContext);
-  } catch (e) {
-    throw {
-      message: `JavaScript evaluation error: '${e.name}: ${e.message.replace(/["]/g, '\'')}'`,
-      filename: this.fileInfo().filename,
-      index: this.getIndex()
-    };
-  }
-
-  return result;
-};
-
-JsEvalNode.prototype.jsify = obj => {
-  if (Array.isArray(obj.value) && obj.value.length > 1) {
-    return `[${obj.value.map(v => v.toCSS()).join(', ')}]`;
-  } else {
-    return obj.toCSS();
-  }
-};
+}
 
 class JavaScript extends JsEvalNode {
   constructor(string, escaped, index, currentFileInfo) {
+    super();
     this.escaped = escaped;
     this.expression = string;
     this._index = index;
@@ -4529,6 +4562,7 @@ JavaScript.prototype.type = 'JavaScript';
 
 class Assignment extends Node {
   constructor(key, val) {
+    super();
     this.key = key;
     this.value = val;
   }
@@ -4561,6 +4595,7 @@ Assignment.prototype.type = 'Assignment';
 
 class Condition extends Node {
   constructor(op, l, r, i, negate) {
+    super();
     this.op = op.trim();
     this.lvalue = l;
     this.rvalue = r;
@@ -4609,6 +4644,7 @@ Condition.prototype.type = 'Condition';
 
 class UnicodeDescriptor extends Node {
   constructor(value) {
+    super();
     this.value = value;
   }
 
@@ -4618,6 +4654,7 @@ UnicodeDescriptor.prototype.type = 'UnicodeDescriptor';
 
 class Negative extends Node {
   constructor(node) {
+    super();
     this.value = node;
   }
 
@@ -4640,6 +4677,7 @@ Negative.prototype.type = 'Negative';
 
 class Extend extends Node {
   constructor(selector, option, index, currentFileInfo, visibilityInfo) {
+    super();
     this.selector = selector;
     this.option = option;
     this.object_id = Extend.next_id++;
@@ -4704,6 +4742,7 @@ Extend.prototype.type = 'Extend';
 
 class VariableCall extends Node {
   constructor(variable, index, currentFileInfo) {
+    super();
     this.variable = variable;
     this._index = index;
     this._fileInfo = currentFileInfo;
@@ -4744,6 +4783,7 @@ VariableCall.prototype.type = 'VariableCall';
 
 class NamespaceValue extends Node {
   constructor(ruleCall, lookups, important, index, fileInfo) {
+    super();
     this.value = ruleCall;
     this.lookups = lookups;
     this.important = important;
@@ -4830,6 +4870,7 @@ NamespaceValue.prototype.type = 'NamespaceValue';
 
 class Definition extends Ruleset {
   constructor(name, params, rules, condition, variadic, frames, visibilityInfo) {
+    super();
     this.name = name || 'anonymous mixin';
     this.selectors = [new Selector([new Element(null, name, false, this._index, this._fileInfo)])];
     this.params = params;
@@ -5067,6 +5108,7 @@ Definition.prototype.evalFirst = true;
 
 class MixinCall extends Node {
   constructor(elements, args, index, currentFileInfo, important) {
+    super();
     this.selector = new Selector(elements);
     this.arguments = args || [];
     this._index = index;
@@ -5120,7 +5162,7 @@ class MixinCall extends Node {
 
       for (f = 0; f < 2; f++) {
         conditionResult[f] = true;
-        defaultFunc$1.value(f);
+        defaultFunc.value(f);
 
         for (p = 0; p < mixinPath.length && conditionResult[f]; p++) {
           namespace = mixinPath[p];
@@ -5205,7 +5247,7 @@ class MixinCall extends Node {
           }
         }
 
-        defaultFunc$1.reset();
+        defaultFunc.reset();
         count = [0, 0, 0];
 
         for (m = 0; m < candidates.length; m++) {
@@ -11245,7 +11287,7 @@ var Functions = (environment => {
   }; // register functions
 
   functionRegistry.addMultiple(boolean$1);
-  functionRegistry.addMultiple(defaultFunc$1);
+  functionRegistry.add('default', defaultFunc.eval.bind(defaultFunc));
   functionRegistry.addMultiple(color);
   functionRegistry.addMultiple(colorBlend);
   functionRegistry.addMultiple(dataUri(environment));
@@ -11634,7 +11676,7 @@ var parseTree = (SourceMapBuilder => {
         const compress = Boolean(options.compress);
 
         if (compress) {
-          logger.warn('The compress option has been deprecated. We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.');
+          logger.warn('The compress option has been deprecated. ' + 'We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.');
         }
 
         const toCSSOptions = {
@@ -12086,13 +12128,13 @@ class PluginManager {
 
 let pm;
 
-const PluginManagerFactory = (less, newFactory) => {
+function PluginManagerFactory(less, newFactory) {
   if (newFactory || !pm) {
     pm = new PluginManager(less);
   }
 
   return pm;
-}; //
+}
 
 var Parse = ((environment, ParseTree, ImportManager) => {
   const parse = function parse(input, options, callback) {
@@ -12176,22 +12218,34 @@ var Parse = ((environment, ParseTree, ImportManager) => {
 });
 
 var createFromEnvironment = ((environment, fileManagers) => {
+  /**
+   * @todo
+   * This original code could be improved quite a bit.
+   * Many classes / modules currently add side-effects / mutations to passed in objects,
+   * which makes it hard to refactor and reason about. 
+   */
+  environment = new environment$1(environment, fileManagers);
   const SourceMapOutput = sourceMapOutput(environment);
   const SourceMapBuilder = sourceMapBuilder(SourceMapOutput, environment);
   const ParseTree = parseTree(SourceMapBuilder);
   const ImportManager = importManager(environment);
   const render = Render(environment, ParseTree);
   const parse = Parse(environment, ParseTree, ImportManager);
-  const environ = new environment$1(environment, fileManagers);
   const functions = Functions(environment);
+  /**
+   * @todo
+   * This root properties / methods need to be organized.
+   * It's not clear what should / must be public and why.
+   */
+
   const initial = {
-    version: [3, 9, 0],
+    version: [3, 10, 0],
     data,
     tree,
     Environment: environment$1,
-    AbstractFileManager: abstractFileManager,
+    AbstractFileManager,
     AbstractPluginLoader,
-    environment: environ,
+    environment,
     visitors,
     Parser,
     functions,
@@ -12204,15 +12258,13 @@ var createFromEnvironment = ((environment, fileManagers) => {
     parse,
     LessError,
     transformTree,
-    utils: utils$1,
+    utils,
     PluginManager: PluginManagerFactory,
     logger
   }; // Create a public API
 
   const ctor = t => function (...args) {
-    const obj = Object.create(t.prototype);
-    t.apply(obj, Array.prototype.slice.call(args, 0));
-    return obj;
+    return new t(...args);
   };
 
   let t;
@@ -12340,6 +12392,7 @@ var lesscHelper = createCommonjsModule(function (module, exports) {
 
 class PluginLoader extends AbstractPluginLoader {
   constructor(less) {
+    super();
     this.less = less;
 
     this.require = prefix => {
@@ -12389,64 +12442,60 @@ var defaultOptions = (() => ({
   depends: false,
 
   /* (DEPRECATED) Compress using less built-in compression. 
-   * This does an okay job but does not utilise all the tricks of 
-   * dedicated css compression. */
+  * This does an okay job but does not utilise all the tricks of 
+  * dedicated css compression. */
   compress: false,
 
   /* Runs the less parser and just reports errors without any output. */
   lint: false,
 
   /* Sets available include paths.
-   * If the file in an @import rule does not exist at that exact location, 
-   * less will look for it at the location(s) passed to this option. 
-   * You might use this for instance to specify a path to a library which 
-   * you want to be referenced simply and relatively in the less files. */
+  * If the file in an @import rule does not exist at that exact location, 
+  * less will look for it at the location(s) passed to this option. 
+  * You might use this for instance to specify a path to a library which 
+  * you want to be referenced simply and relatively in the less files. */
   paths: [],
 
   /* color output in the terminal */
   color: true,
 
   /* The strictImports controls whether the compiler will allow an @import inside of either 
-   * @media blocks or (a later addition) other selector blocks.
-   * See: https://github.com/less/less.js/issues/656 */
+  * @media blocks or (a later addition) other selector blocks.
+  * See: https://github.com/less/less.js/issues/656 */
   strictImports: false,
 
   /* Allow Imports from Insecure HTTPS Hosts */
   insecure: false,
 
   /* Allows you to add a path to every generated import and url in your css. 
-   * This does not affect less import statements that are processed, just ones 
-   * that are left in the output css. */
+  * This does not affect less import statements that are processed, just ones 
+  * that are left in the output css. */
   rootpath: '',
 
   /* By default URLs are kept as-is, so if you import a file in a sub-directory 
-   * that references an image, exactly the same URL will be output in the css. 
-   * This option allows you to re-write URL's in imported files so that the 
-   * URL is always relative to the base imported file */
+  * that references an image, exactly the same URL will be output in the css. 
+  * This option allows you to re-write URL's in imported files so that the 
+  * URL is always relative to the base imported file */
   rewriteUrls: false,
 
-  /* Compatibility with IE8. Used for limiting data-uri length */
-  // true until 3.0
-  ieCompat: false,
-
   /* How to process math 
-   *   0 always           - eagerly try to solve all operations
-   *   1 parens-division  - require parens for division "/"
-   *   2 parens | strict  - require parens for all operations
-   *   3 strict-legacy    - legacy strict behavior (super-strict)
-   */
+  *   0 always           - eagerly try to solve all operations
+  *   1 parens-division  - require parens for division "/"
+  *   2 parens | strict  - require parens for all operations
+  *   3 strict-legacy    - legacy strict behavior (super-strict)
+  */
   math: 0,
 
   /* Without this option, less attempts to guess at the output unit when it does maths. */
   strictUnits: false,
 
   /* Effectively the declaration is put at the top of your base Less file, 
-   * meaning it can be used but it also can be overridden if this variable 
-   * is defined in the file. */
+  * meaning it can be used but it also can be overridden if this variable 
+  * is defined in the file. */
   globalVars: null,
 
   /* As opposed to the global variable option, this puts the declaration at the
-   * end of your base file, meaning it will override anything defined in your Less file. */
+  * end of your base file, meaning it will override anything defined in your Less file. */
   modifyVars: null,
 
   /* This option allows you to specify a argument to go on to every URL.  */

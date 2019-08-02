@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.9.0
+ * Less - Leaner CSS v3.10.0
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2019, Alexis Sellier <self@cloudhead.net>
@@ -24,64 +24,60 @@
       depends: false,
 
       /* (DEPRECATED) Compress using less built-in compression. 
-       * This does an okay job but does not utilise all the tricks of 
-       * dedicated css compression. */
+      * This does an okay job but does not utilise all the tricks of 
+      * dedicated css compression. */
       compress: false,
 
       /* Runs the less parser and just reports errors without any output. */
       lint: false,
 
       /* Sets available include paths.
-       * If the file in an @import rule does not exist at that exact location, 
-       * less will look for it at the location(s) passed to this option. 
-       * You might use this for instance to specify a path to a library which 
-       * you want to be referenced simply and relatively in the less files. */
+      * If the file in an @import rule does not exist at that exact location, 
+      * less will look for it at the location(s) passed to this option. 
+      * You might use this for instance to specify a path to a library which 
+      * you want to be referenced simply and relatively in the less files. */
       paths: [],
 
       /* color output in the terminal */
       color: true,
 
       /* The strictImports controls whether the compiler will allow an @import inside of either 
-       * @media blocks or (a later addition) other selector blocks.
-       * See: https://github.com/less/less.js/issues/656 */
+      * @media blocks or (a later addition) other selector blocks.
+      * See: https://github.com/less/less.js/issues/656 */
       strictImports: false,
 
       /* Allow Imports from Insecure HTTPS Hosts */
       insecure: false,
 
       /* Allows you to add a path to every generated import and url in your css. 
-       * This does not affect less import statements that are processed, just ones 
-       * that are left in the output css. */
+      * This does not affect less import statements that are processed, just ones 
+      * that are left in the output css. */
       rootpath: '',
 
       /* By default URLs are kept as-is, so if you import a file in a sub-directory 
-       * that references an image, exactly the same URL will be output in the css. 
-       * This option allows you to re-write URL's in imported files so that the 
-       * URL is always relative to the base imported file */
+      * that references an image, exactly the same URL will be output in the css. 
+      * This option allows you to re-write URL's in imported files so that the 
+      * URL is always relative to the base imported file */
       rewriteUrls: false,
 
-      /* Compatibility with IE8. Used for limiting data-uri length */
-      // true until 3.0
-      ieCompat: false,
-
       /* How to process math 
-       *   0 always           - eagerly try to solve all operations
-       *   1 parens-division  - require parens for division "/"
-       *   2 parens | strict  - require parens for all operations
-       *   3 strict-legacy    - legacy strict behavior (super-strict)
-       */
+      *   0 always           - eagerly try to solve all operations
+      *   1 parens-division  - require parens for division "/"
+      *   2 parens | strict  - require parens for all operations
+      *   3 strict-legacy    - legacy strict behavior (super-strict)
+      */
       math: 0,
 
       /* Without this option, less attempts to guess at the output unit when it does maths. */
       strictUnits: false,
 
       /* Effectively the declaration is put at the top of your base Less file, 
-       * meaning it can be used but it also can be overridden if this variable 
-       * is defined in the file. */
+      * meaning it can be used but it also can be overridden if this variable 
+      * is defined in the file. */
       globalVars: null,
 
       /* As opposed to the global variable option, this puts the declaration at the
-       * end of your base file, meaning it will override anything defined in your Less file. */
+      * end of your base file, meaning it will override anything defined in your Less file. */
       modifyVars: null,
 
       /* This option allows you to specify a argument to go on to every URL.  */
@@ -210,6 +206,139 @@
       options.rewriteUrls = 'all';
     }
   });
+
+  function _typeof(obj) {
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf(subClass, superClass);
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function _construct(Parent, args, Class) {
+    if (isNativeReflectConstruct()) {
+      _construct = Reflect.construct;
+    } else {
+      _construct = function _construct(Parent, args, Class) {
+        var a = [null];
+        a.push.apply(a, args);
+        var Constructor = Function.bind.apply(Parent, a);
+        var instance = new Constructor();
+        if (Class) _setPrototypeOf(instance, Class.prototype);
+        return instance;
+      };
+    }
+
+    return _construct.apply(null, arguments);
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    }
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
 
   var colors = {
     'aliceblue': '#f0f8ff',
@@ -388,102 +517,6 @@
     colors: colors,
     unitConversions: unitConversions
   };
-
-  function _typeof(obj) {
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf(subClass, superClass);
-  }
-
-  function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
-  }
-
-  function _assertThisInitialized(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _possibleConstructorReturn(self, call) {
-    if (call && (typeof call === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized(self);
-  }
-
-  function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
-  }
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-      return arr2;
-    }
-  }
-
-  function _iterableToArray(iter) {
-    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-  }
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance");
-  }
 
   var Node =
   /*#__PURE__*/
@@ -719,6 +752,8 @@
 
       _classCallCheck(this, Color);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Color).call(this));
+
       var self = _assertThisInitialized(_this); //
       // The end goal here, is to parse the arguments
       // into an integer triplet, such as `128, 255, 0`
@@ -755,7 +790,7 @@
         _this.value = originalForm;
       }
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Color, [{
@@ -1007,8 +1042,9 @@
 
       _classCallCheck(this, Paren);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Paren).call(this));
       _this.value = node;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Paren, [{
@@ -1030,6 +1066,12 @@
 
   Paren.prototype.type = 'Paren';
 
+  var _noSpaceCombinators = {
+    '': true,
+    ' ': true,
+    '|': true
+  };
+
   var Combinator =
   /*#__PURE__*/
   function (_Node) {
@@ -1040,6 +1082,8 @@
 
       _classCallCheck(this, Combinator);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Combinator).call(this));
+
       if (value === ' ') {
         _this.value = ' ';
         _this.emptyOrWhitespace = true;
@@ -1048,7 +1092,7 @@
         _this.emptyOrWhitespace = _this.value === '';
       }
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Combinator, [{
@@ -1063,11 +1107,6 @@
   }(Node);
 
   Combinator.prototype.type = 'Combinator';
-  var _noSpaceCombinators = {
-    '': true,
-    ' ': true,
-    '|': true
-  };
 
   var Element =
   /*#__PURE__*/
@@ -1079,6 +1118,7 @@
 
       _classCallCheck(this, Element);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Element).call(this));
       _this.combinator = combinator instanceof Combinator ? combinator : new Combinator(combinator);
 
       if (typeof value === 'string') {
@@ -1097,7 +1137,7 @@
 
       _this.setParent(_this.combinator, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Element, [{
@@ -1470,12 +1510,27 @@
 
     return cloned;
   }
+  function defaults(obj1, obj2) {
+    var newObj = obj2 || {};
+
+    if (!obj2._defaults) {
+      newObj = {};
+
+      var _defaults = clone_1(obj1);
+
+      newObj._defaults = _defaults;
+      var cloned = obj2 ? clone_1(obj2) : {};
+      Object.assign(newObj, _defaults, cloned);
+    }
+
+    return newObj;
+  }
   function copyOptions(obj1, obj2) {
     if (obj2 && obj2._defaults) {
       return obj2;
     }
 
-    var opts = utils.defaults(obj1, obj2);
+    var opts = defaults(obj1, obj2);
 
     if (opts.strictMath) {
       opts.math = Math$1.STRICT_LEGACY;
@@ -1524,21 +1579,6 @@
 
     return opts;
   }
-  function defaults(obj1, obj2) {
-    var newObj = obj2 || {};
-
-    if (!obj2._defaults) {
-      newObj = {};
-
-      var _defaults = clone_1(obj1);
-
-      newObj._defaults = _defaults;
-      var cloned = obj2 ? clone_1(obj2) : {};
-      Object.assign(newObj, _defaults, cloned);
-    }
-
-    return newObj;
-  }
   function merge(obj1, obj2) {
     for (var prop in obj2) {
       if (obj2.hasOwnProperty(prop)) {
@@ -1555,7 +1595,7 @@
       var value = arr[i];
 
       if (Array.isArray(value)) {
-        utils.flattenArray(value, result);
+        flattenArray(value, result);
       } else {
         if (value !== undefined) {
           result.push(value);
@@ -1566,12 +1606,12 @@
     return result;
   }
 
-  var utils$1 = /*#__PURE__*/Object.freeze({
+  var utils = /*#__PURE__*/Object.freeze({
     getLocation: getLocation,
     copyArray: copyArray,
     clone: clone,
-    copyOptions: copyOptions,
     defaults: defaults,
+    copyOptions: copyOptions,
     merge: merge,
     flattenArray: flattenArray
   });
@@ -1728,6 +1768,7 @@
 
       _classCallCheck(this, Selector);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Selector).call(this));
       _this.extendList = extendList;
       _this.condition = condition;
       _this.evaldCondition = !condition;
@@ -1740,7 +1781,7 @@
 
       _this.setParent(_this.elements, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Selector, [{
@@ -1896,6 +1937,8 @@
 
       _classCallCheck(this, Value);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Value).call(this));
+
       if (!value) {
         throw new Error('Value requires an array argument');
       }
@@ -1906,7 +1949,7 @@
         _this.value = value;
       }
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Value, [{
@@ -1957,8 +2000,9 @@
 
       _classCallCheck(this, Keyword);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Keyword).call(this));
       _this.value = value;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Keyword, [{
@@ -1992,6 +2036,7 @@
 
       _classCallCheck(this, Anonymous);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Anonymous).call(this));
       _this.value = value;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
@@ -2001,7 +2046,7 @@
 
       _this.copyVisibilityInfo(visibilityInfo);
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Anonymous, [{
@@ -2047,6 +2092,7 @@
 
       _classCallCheck(this, Declaration);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Declaration).call(this));
       _this.name = name;
       _this.value = value instanceof Node ? value : new Value([value ? new Anonymous(value) : null]);
       _this.important = important ? " ".concat(important.trim()) : '';
@@ -2059,7 +2105,7 @@
 
       _this.setParent(_this.value, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Declaration, [{
@@ -2214,12 +2260,13 @@
 
       _classCallCheck(this, Comment);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Comment).call(this));
       _this.value = value;
       _this.isLineComment = isLineComment;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
       _this.allowRoot = true;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Comment, [{
@@ -2290,7 +2337,6 @@
 
   var evalCopyProperties = ['paths', // additional include paths
   'compress', // whether to compress
-  'ieCompat', // whether to enforce IE compatibility (IE8 data-uri)
   'math', // whether math has to be within parenthesis
   'strictUnits', // whether units need to evaluate correctly
   'sourceMap', // whether to output a source map
@@ -2302,120 +2348,137 @@
   'rewriteUrls' // option - whether to adjust URL's to be relative
   ];
 
-  contexts.Eval = function (options, frames) {
-    copyFromOriginal(options, this, evalCopyProperties);
-
-    if (typeof this.paths === 'string') {
-      this.paths = [this.paths];
-    }
-
-    this.frames = frames || [];
-    this.importantScope = this.importantScope || [];
-  };
-
-  contexts.Eval.prototype.enterCalc = function () {
-    if (!this.calcStack) {
-      this.calcStack = [];
-    }
-
-    this.calcStack.push(true);
-    this.inCalc = true;
-  };
-
-  contexts.Eval.prototype.exitCalc = function () {
-    this.calcStack.pop();
-
-    if (!this.calcStack) {
-      this.inCalc = false;
-    }
-  };
-
-  contexts.Eval.prototype.inParenthesis = function () {
-    if (!this.parensStack) {
-      this.parensStack = [];
-    }
-
-    this.parensStack.push(true);
-  };
-
-  contexts.Eval.prototype.outOfParenthesis = function () {
-    this.parensStack.pop();
-  };
-
-  contexts.Eval.prototype.inCalc = false;
-  contexts.Eval.prototype.mathOn = true;
-
-  contexts.Eval.prototype.isMathOn = function (op) {
-    if (!this.mathOn) {
-      return false;
-    }
-
-    if (op === '/' && this.math !== Math$1.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
-      return false;
-    }
-
-    if (this.math > Math$1.PARENS_DIVISION) {
-      return this.parensStack && this.parensStack.length;
-    }
-
-    return true;
-  };
-
-  contexts.Eval.prototype.pathRequiresRewrite = function (path) {
-    var isRelative = this.rewriteUrls === RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
-    return isRelative(path);
-  };
-
-  contexts.Eval.prototype.rewritePath = function (path, rootpath) {
-    var newPath;
-    rootpath = rootpath || '';
-    newPath = this.normalizePath(rootpath + path); // If a path was explicit relative and the rootpath was not an absolute path
-    // we must ensure that the new path is also explicit relative.
-
-    if (isPathLocalRelative(path) && isPathRelative(rootpath) && isPathLocalRelative(newPath) === false) {
-      newPath = "./".concat(newPath);
-    }
-
-    return newPath;
-  };
-
-  contexts.Eval.prototype.normalizePath = function (path) {
-    var segments = path.split('/').reverse();
-    var segment;
-    path = [];
-
-    while (segments.length !== 0) {
-      segment = segments.pop();
-
-      switch (segment) {
-        case '.':
-          break;
-
-        case '..':
-          if (path.length === 0 || path[path.length - 1] === '..') {
-            path.push(segment);
-          } else {
-            path.pop();
-          }
-
-          break;
-
-        default:
-          path.push(segment);
-          break;
-      }
-    }
-
-    return path.join('/');
-  };
-
   function isPathRelative(path) {
     return !/^(?:[a-z-]+:|\/|#)/i.test(path);
   }
 
   function isPathLocalRelative(path) {
     return path.charAt(0) === '.';
-  } // todo - do the same for the toCSS ?
+  }
+
+  contexts.Eval =
+  /*#__PURE__*/
+  function () {
+    function _class(options, frames) {
+      _classCallCheck(this, _class);
+
+      copyFromOriginal(options, this, evalCopyProperties);
+
+      if (typeof this.paths === 'string') {
+        this.paths = [this.paths];
+      }
+
+      this.frames = frames || [];
+      this.importantScope = this.importantScope || [];
+      this.inCalc = false;
+      this.mathOn = true;
+    }
+
+    _createClass(_class, [{
+      key: "enterCalc",
+      value: function enterCalc() {
+        if (!this.calcStack) {
+          this.calcStack = [];
+        }
+
+        this.calcStack.push(true);
+        this.inCalc = true;
+      }
+    }, {
+      key: "exitCalc",
+      value: function exitCalc() {
+        this.calcStack.pop();
+
+        if (!this.calcStack) {
+          this.inCalc = false;
+        }
+      }
+    }, {
+      key: "inParenthesis",
+      value: function inParenthesis() {
+        if (!this.parensStack) {
+          this.parensStack = [];
+        }
+
+        this.parensStack.push(true);
+      }
+    }, {
+      key: "outOfParenthesis",
+      value: function outOfParenthesis() {
+        this.parensStack.pop();
+      }
+    }, {
+      key: "isMathOn",
+      value: function isMathOn(op) {
+        if (!this.mathOn) {
+          return false;
+        }
+
+        if (op === '/' && this.math !== Math$1.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
+          return false;
+        }
+
+        if (this.math > Math$1.PARENS_DIVISION) {
+          return this.parensStack && this.parensStack.length;
+        }
+
+        return true;
+      }
+    }, {
+      key: "pathRequiresRewrite",
+      value: function pathRequiresRewrite(path) {
+        var isRelative = this.rewriteUrls === RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
+        return isRelative(path);
+      }
+    }, {
+      key: "rewritePath",
+      value: function rewritePath(path, rootpath) {
+        var newPath;
+        rootpath = rootpath || '';
+        newPath = this.normalizePath(rootpath + path); // If a path was explicit relative and the rootpath was not an absolute path
+        // we must ensure that the new path is also explicit relative.
+
+        if (isPathLocalRelative(path) && isPathRelative(rootpath) && isPathLocalRelative(newPath) === false) {
+          newPath = "./".concat(newPath);
+        }
+
+        return newPath;
+      }
+    }, {
+      key: "normalizePath",
+      value: function normalizePath(path) {
+        var segments = path.split('/').reverse();
+        var segment;
+        path = [];
+
+        while (segments.length !== 0) {
+          segment = segments.pop();
+
+          switch (segment) {
+            case '.':
+              break;
+
+            case '..':
+              if (path.length === 0 || path[path.length - 1] === '..') {
+                path.push(segment);
+              } else {
+                path.pop();
+              }
+
+              break;
+
+            default:
+              path.push(segment);
+              break;
+          }
+        }
+
+        return path.join('/');
+      }
+    }]);
+
+    return _class;
+  }();
 
   function makeRegistry(base) {
     return {
@@ -2476,9 +2539,6 @@
       this.value_ = this.error_ = null;
     }
   };
-  var defaultFunc$1 = {
-    'default': defaultFunc.eval.bind(defaultFunc)
-  };
 
   var Ruleset =
   /*#__PURE__*/
@@ -2490,6 +2550,7 @@
 
       _classCallCheck(this, Ruleset);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Ruleset).call(this));
       _this.selectors = selectors;
       _this.rules = rules;
       _this._lookups = {};
@@ -2505,7 +2566,7 @@
 
       _this.setParent(_this.rules, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Ruleset, [{
@@ -2538,7 +2599,7 @@
 
         if (this.selectors && (selCnt = this.selectors.length)) {
           selectors = new Array(selCnt);
-          defaultFunc$1.error({
+          defaultFunc.error({
             type: 'Syntax',
             message: 'it is currently only allowed in parametric mixin guards,'
           });
@@ -2575,7 +2636,7 @@
             });
           }
 
-          defaultFunc$1.reset();
+          defaultFunc.reset();
         } else {
           hasOnePassingSelector = true;
         }
@@ -3400,6 +3461,7 @@
 
       _classCallCheck(this, AtRule);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(AtRule).call(this));
       var i;
       _this.name = name;
       _this.value = value instanceof Node ? value : value ? new Anonymous(value) : value;
@@ -3427,7 +3489,7 @@
       _this.copyVisibilityInfo(visibilityInfo);
 
       _this.allowRoot = true;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(AtRule, [{
@@ -3586,12 +3648,13 @@
 
       _classCallCheck(this, DetachedRuleset);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(DetachedRuleset).call(this));
       _this.ruleset = ruleset;
       _this.frames = frames;
 
       _this.setParent(_this.ruleset, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(DetachedRuleset, [{
@@ -3628,6 +3691,7 @@
 
       _classCallCheck(this, Unit);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Unit).call(this));
       _this.numerator = numerator ? copyArray(numerator).sort() : [];
       _this.denominator = denominator ? copyArray(denominator).sort() : [];
 
@@ -3637,7 +3701,7 @@
         _this.backupUnit = numerator[0];
       }
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Unit, [{
@@ -3794,6 +3858,7 @@
 
       _classCallCheck(this, Dimension);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Dimension).call(this));
       _this.value = parseFloat(value);
 
       if (isNaN(_this.value)) {
@@ -3804,7 +3869,7 @@
 
       _this.setParent(_this.unit, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Dimension, [{
@@ -3875,7 +3940,7 @@
             other = other.convertTo(this.unit.usedUnits());
 
             if (context.strictUnits && other.unit.toString() !== unit.toString()) {
-              throw new Error("Incompatible units. Change the units or use the unit function. Bad units: '".concat(unit.toString(), "' and '").concat(other.unit.toString(), "'."));
+              throw new Error("Incompatible units. Change the units or use the unit function. " + "Bad units: '".concat(unit.toString(), "' and '").concat(other.unit.toString(), "'."));
             }
 
             value = this._operate(context, op, this.value, other.value);
@@ -3993,10 +4058,11 @@
 
       _classCallCheck(this, Operation);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Operation).call(this));
       _this.op = op.trim();
       _this.operands = operands;
       _this.isSpaced = isSpaced;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Operation, [{
@@ -4074,6 +4140,7 @@
 
       _classCallCheck(this, Expression);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Expression).call(this));
       _this.value = value;
       _this.noSpacing = noSpacing;
 
@@ -4081,7 +4148,7 @@
         throw new Error('Expression requires an array parameter');
       }
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Expression, [{
@@ -4225,12 +4292,13 @@
 
       _classCallCheck(this, Call);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Call).call(this));
       _this.name = name;
       _this.args = args;
       _this.calc = name === 'calc';
       _this._index = index;
       _this._fileInfo = currentFileInfo;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Call, [{
@@ -4341,10 +4409,11 @@
 
       _classCallCheck(this, Variable);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Variable).call(this));
       _this.name = name;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Variable, [{
@@ -4427,10 +4496,11 @@
 
       _classCallCheck(this, Property);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Property).call(this));
       _this.name = name;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Property, [{
@@ -4516,10 +4586,11 @@
 
       _classCallCheck(this, Attribute);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Attribute).call(this));
       _this.key = key;
       _this.op = op;
       _this.value = value;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Attribute, [{
@@ -4561,6 +4632,7 @@
 
       _classCallCheck(this, Quoted);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Quoted).call(this));
       _this.escaped = escaped == null ? true : escaped;
       _this.value = content || '';
       _this.quote = str.charAt(0);
@@ -4568,7 +4640,7 @@
       _this._fileInfo = currentFileInfo;
       _this.variableRegex = /@\{([\w-]+)\}/g;
       _this.propRegex = /\$\{([\w-]+)\}/g;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Quoted, [{
@@ -4647,11 +4719,12 @@
 
       _classCallCheck(this, URL);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(URL).call(this));
       _this.value = val;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
       _this.isEvald = isEvald;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(URL, [{
@@ -4726,6 +4799,7 @@
 
       _classCallCheck(this, Media);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Media).call(this));
       _this._index = index;
       _this._fileInfo = currentFileInfo;
       var selectors = new Selector([], null, null, _this._index, _this._fileInfo).createEmptySelectors();
@@ -4743,7 +4817,7 @@
 
       _this.setParent(_this.rules, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Media, [{
@@ -4904,6 +4978,7 @@
 
       _classCallCheck(this, Import);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Import).call(this));
       _this.options = options;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
@@ -4911,7 +4986,9 @@
       _this.features = features;
       _this.allowRoot = true;
 
-      if (_this.options.less !== undefined || _this.options.inline) ; else {
+      if (_this.options.less !== undefined || _this.options.inline) {
+        _this.css = !_this.options.less || _this.options.inline;
+      } else {
         var pathValue = _this.getPath();
 
         if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
@@ -4925,7 +5002,7 @@
 
       _this.setParent(_this.path, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Import, [{
@@ -5086,73 +5163,87 @@
 
   Import.prototype.type = 'Import';
 
-  var JsEvalNode = function JsEvalNode() {};
+  var JsEvalNode =
+  /*#__PURE__*/
+  function (_Node) {
+    _inherits(JsEvalNode, _Node);
 
-  JsEvalNode.prototype = new Node();
+    function JsEvalNode() {
+      _classCallCheck(this, JsEvalNode);
 
-  JsEvalNode.prototype.evaluateJavaScript = function (expression, context) {
-    var result;
-    var that = this;
-    var evalContext = {};
-
-    if (!context.javascriptEnabled) {
-      throw {
-        message: 'Inline JavaScript is not enabled. Is it set in your options?',
-        filename: this.fileInfo().filename,
-        index: this.getIndex()
-      };
+      return _possibleConstructorReturn(this, _getPrototypeOf(JsEvalNode).apply(this, arguments));
     }
 
-    expression = expression.replace(/@\{([\w-]+)\}/g, function (_, name) {
-      return that.jsify(new Variable("@".concat(name), that.getIndex(), that.fileInfo()).eval(context));
-    });
+    _createClass(JsEvalNode, [{
+      key: "evaluateJavaScript",
+      value: function evaluateJavaScript(expression, context) {
+        var result;
+        var that = this;
+        var evalContext = {};
 
-    try {
-      expression = new Function("return (".concat(expression, ")"));
-    } catch (e) {
-      throw {
-        message: "JavaScript evaluation error: ".concat(e.message, " from `").concat(expression, "`"),
-        filename: this.fileInfo().filename,
-        index: this.getIndex()
-      };
-    }
+        if (!context.javascriptEnabled) {
+          throw {
+            message: 'Inline JavaScript is not enabled. Is it set in your options?',
+            filename: this.fileInfo().filename,
+            index: this.getIndex()
+          };
+        }
 
-    var variables = context.frames[0].variables();
+        expression = expression.replace(/@\{([\w-]+)\}/g, function (_, name) {
+          return that.jsify(new Variable("@".concat(name), that.getIndex(), that.fileInfo()).eval(context));
+        });
 
-    for (var k in variables) {
-      if (variables.hasOwnProperty(k)) {
-        /* jshint loopfunc:true */
-        evalContext[k.slice(1)] = {
-          value: variables[k].value,
-          toJS: function toJS() {
-            return this.value.eval(context).toCSS();
+        try {
+          expression = new Function("return (".concat(expression, ")"));
+        } catch (e) {
+          throw {
+            message: "JavaScript evaluation error: ".concat(e.message, " from `").concat(expression, "`"),
+            filename: this.fileInfo().filename,
+            index: this.getIndex()
+          };
+        }
+
+        var variables = context.frames[0].variables();
+
+        for (var k in variables) {
+          if (variables.hasOwnProperty(k)) {
+            /* jshint loopfunc:true */
+            evalContext[k.slice(1)] = {
+              value: variables[k].value,
+              toJS: function toJS() {
+                return this.value.eval(context).toCSS();
+              }
+            };
           }
-        };
+        }
+
+        try {
+          result = expression.call(evalContext);
+        } catch (e) {
+          throw {
+            message: "JavaScript evaluation error: '".concat(e.name, ": ").concat(e.message.replace(/["]/g, '\''), "'"),
+            filename: this.fileInfo().filename,
+            index: this.getIndex()
+          };
+        }
+
+        return result;
       }
-    }
+    }, {
+      key: "jsify",
+      value: function jsify(obj) {
+        if (Array.isArray(obj.value) && obj.value.length > 1) {
+          return "[".concat(obj.value.map(function (v) {
+            return v.toCSS();
+          }).join(', '), "]");
+        } else {
+          return obj.toCSS();
+        }
+      }
+    }]);
 
-    try {
-      result = expression.call(evalContext);
-    } catch (e) {
-      throw {
-        message: "JavaScript evaluation error: '".concat(e.name, ": ").concat(e.message.replace(/["]/g, '\''), "'"),
-        filename: this.fileInfo().filename,
-        index: this.getIndex()
-      };
-    }
-
-    return result;
-  };
-
-  JsEvalNode.prototype.jsify = function (obj) {
-    if (Array.isArray(obj.value) && obj.value.length > 1) {
-      return "[".concat(obj.value.map(function (v) {
-        return v.toCSS();
-      }).join(', '), "]");
-    } else {
-      return obj.toCSS();
-    }
-  };
+    return JsEvalNode;
+  }(Node);
 
   var JavaScript =
   /*#__PURE__*/
@@ -5164,11 +5255,12 @@
 
       _classCallCheck(this, JavaScript);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(JavaScript).call(this));
       _this.escaped = escaped;
       _this.expression = string;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(JavaScript, [{
@@ -5205,9 +5297,10 @@
 
       _classCallCheck(this, Assignment);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Assignment).call(this));
       _this.key = key;
       _this.value = val;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Assignment, [{
@@ -5252,12 +5345,13 @@
 
       _classCallCheck(this, Condition);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Condition).call(this));
       _this.op = op.trim();
       _this.lvalue = l;
       _this.rvalue = r;
       _this._index = i;
       _this.negate = negate;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Condition, [{
@@ -5314,8 +5408,9 @@
 
       _classCallCheck(this, UnicodeDescriptor);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(UnicodeDescriptor).call(this));
       _this.value = value;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     return UnicodeDescriptor;
@@ -5333,8 +5428,9 @@
 
       _classCallCheck(this, Negative);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Negative).call(this));
       _this.value = node;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Negative, [{
@@ -5369,6 +5465,7 @@
 
       _classCallCheck(this, Extend);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Extend).call(this));
       _this.selector = selector;
       _this.option = option;
       _this.object_id = Extend.next_id++;
@@ -5394,7 +5491,7 @@
 
       _this.setParent(_this.selector, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Extend, [{
@@ -5452,11 +5549,12 @@
 
       _classCallCheck(this, VariableCall);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(VariableCall).call(this));
       _this.variable = variable;
       _this._index = index;
       _this._fileInfo = currentFileInfo;
       _this.allowRoot = true;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(VariableCall, [{
@@ -5505,12 +5603,13 @@
 
       _classCallCheck(this, NamespaceValue);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(NamespaceValue).call(this));
       _this.value = ruleCall;
       _this.lookups = lookups;
       _this.important = important;
       _this._index = index;
       _this._fileInfo = fileInfo;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(NamespaceValue, [{
@@ -5604,6 +5703,7 @@
 
       _classCallCheck(this, Definition);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Definition).call(this));
       _this.name = name || 'anonymous mixin';
       _this.selectors = [new Selector([new Element(null, name, false, _this._index, _this._fileInfo)])];
       _this.params = params;
@@ -5627,7 +5727,7 @@
       _this.copyVisibilityInfo(visibilityInfo);
 
       _this.allowRoot = true;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(Definition, [{
@@ -5862,6 +5962,7 @@
 
       _classCallCheck(this, MixinCall);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(MixinCall).call(this));
       _this.selector = new Selector(elements);
       _this.arguments = args || [];
       _this._index = index;
@@ -5871,7 +5972,7 @@
 
       _this.setParent(_this.selector, _assertThisInitialized(_this));
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(MixinCall, [{
@@ -5921,7 +6022,7 @@
 
           for (f = 0; f < 2; f++) {
             conditionResult[f] = true;
-            defaultFunc$1.value(f);
+            defaultFunc.value(f);
 
             for (p = 0; p < mixinPath.length && conditionResult[f]; p++) {
               namespace = mixinPath[p];
@@ -6008,7 +6109,7 @@
               }
             }
 
-            defaultFunc$1.reset();
+            defaultFunc.reset();
             count = [0, 0, 0];
 
             for (m = 0; m < candidates.length; m++) {
@@ -6264,148 +6365,167 @@
     return environment;
   }();
 
-  var abstractFileManager = function abstractFileManager() {};
-
-  abstractFileManager.prototype.getPath = function (filename) {
-    var j = filename.lastIndexOf('?');
-
-    if (j > 0) {
-      filename = filename.slice(0, j);
+  var AbstractFileManager =
+  /*#__PURE__*/
+  function () {
+    function AbstractFileManager() {
+      _classCallCheck(this, AbstractFileManager);
     }
 
-    j = filename.lastIndexOf('/');
+    _createClass(AbstractFileManager, [{
+      key: "getPath",
+      value: function getPath(filename) {
+        var j = filename.lastIndexOf('?');
 
-    if (j < 0) {
-      j = filename.lastIndexOf('\\');
-    }
-
-    if (j < 0) {
-      return '';
-    }
-
-    return filename.slice(0, j + 1);
-  };
-
-  abstractFileManager.prototype.tryAppendExtension = function (path, ext) {
-    return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
-  };
-
-  abstractFileManager.prototype.tryAppendLessExtension = function (path) {
-    return this.tryAppendExtension(path, '.less');
-  };
-
-  abstractFileManager.prototype.supportsSync = function () {
-    return false;
-  };
-
-  abstractFileManager.prototype.alwaysMakePathsAbsolute = function () {
-    return false;
-  };
-
-  abstractFileManager.prototype.isPathAbsolute = function (filename) {
-    return /^(?:[a-z-]+:|\/|\\|#)/i.test(filename);
-  }; // TODO: pull out / replace?
-
-
-  abstractFileManager.prototype.join = function (basePath, laterPath) {
-    if (!basePath) {
-      return laterPath;
-    }
-
-    return basePath + laterPath;
-  };
-
-  abstractFileManager.prototype.pathDiff = function pathDiff(url, baseUrl) {
-    // diff between two paths to create a relative path
-    var urlParts = this.extractUrlParts(url);
-    var baseUrlParts = this.extractUrlParts(baseUrl);
-    var i;
-    var max;
-    var urlDirectories;
-    var baseUrlDirectories;
-    var diff = '';
-
-    if (urlParts.hostPart !== baseUrlParts.hostPart) {
-      return '';
-    }
-
-    max = Math.max(baseUrlParts.directories.length, urlParts.directories.length);
-
-    for (i = 0; i < max; i++) {
-      if (baseUrlParts.directories[i] !== urlParts.directories[i]) {
-        break;
-      }
-    }
-
-    baseUrlDirectories = baseUrlParts.directories.slice(i);
-    urlDirectories = urlParts.directories.slice(i);
-
-    for (i = 0; i < baseUrlDirectories.length - 1; i++) {
-      diff += '../';
-    }
-
-    for (i = 0; i < urlDirectories.length - 1; i++) {
-      diff += "".concat(urlDirectories[i], "/");
-    }
-
-    return diff;
-  }; // helper function, not part of API
-
-
-  abstractFileManager.prototype.extractUrlParts = function extractUrlParts(url, baseUrl) {
-    // urlParts[1] = protocol://hostname/ OR /
-    // urlParts[2] = / if path relative to host base
-    // urlParts[3] = directories
-    // urlParts[4] = filename
-    // urlParts[5] = parameters
-    var urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
-    var urlParts = url.match(urlPartsRegex);
-    var returner = {};
-    var rawDirectories = [];
-    var directories = [];
-    var i;
-    var baseUrlParts;
-
-    if (!urlParts) {
-      throw new Error("Could not parse sheet href - '".concat(url, "'"));
-    } // Stylesheets in IE don't always return the full path
-
-
-    if (baseUrl && (!urlParts[1] || urlParts[2])) {
-      baseUrlParts = baseUrl.match(urlPartsRegex);
-
-      if (!baseUrlParts) {
-        throw new Error("Could not parse page url - '".concat(baseUrl, "'"));
-      }
-
-      urlParts[1] = urlParts[1] || baseUrlParts[1] || '';
-
-      if (!urlParts[2]) {
-        urlParts[3] = baseUrlParts[3] + urlParts[3];
-      }
-    }
-
-    if (urlParts[3]) {
-      rawDirectories = urlParts[3].replace(/\\/g, '/').split('/'); // collapse '..' and skip '.'
-
-      for (i = 0; i < rawDirectories.length; i++) {
-        if (rawDirectories[i] === '..') {
-          directories.pop();
-        } else if (rawDirectories[i] !== '.') {
-          directories.push(rawDirectories[i]);
+        if (j > 0) {
+          filename = filename.slice(0, j);
         }
-      }
-    }
 
-    returner.hostPart = urlParts[1];
-    returner.directories = directories;
-    returner.rawPath = (urlParts[1] || '') + rawDirectories.join('/');
-    returner.path = (urlParts[1] || '') + directories.join('/');
-    returner.filename = urlParts[4];
-    returner.fileUrl = returner.path + (urlParts[4] || '');
-    returner.url = returner.fileUrl + (urlParts[5] || '');
-    return returner;
-  };
+        j = filename.lastIndexOf('/');
+
+        if (j < 0) {
+          j = filename.lastIndexOf('\\');
+        }
+
+        if (j < 0) {
+          return '';
+        }
+
+        return filename.slice(0, j + 1);
+      }
+    }, {
+      key: "tryAppendExtension",
+      value: function tryAppendExtension(path, ext) {
+        return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
+      }
+    }, {
+      key: "tryAppendLessExtension",
+      value: function tryAppendLessExtension(path) {
+        return this.tryAppendExtension(path, '.less');
+      }
+    }, {
+      key: "supportsSync",
+      value: function supportsSync() {
+        return false;
+      }
+    }, {
+      key: "alwaysMakePathsAbsolute",
+      value: function alwaysMakePathsAbsolute() {
+        return false;
+      }
+    }, {
+      key: "isPathAbsolute",
+      value: function isPathAbsolute(filename) {
+        return /^(?:[a-z-]+:|\/|\\|#)/i.test(filename);
+      } // TODO: pull out / replace?
+
+    }, {
+      key: "join",
+      value: function join(basePath, laterPath) {
+        if (!basePath) {
+          return laterPath;
+        }
+
+        return basePath + laterPath;
+      }
+    }, {
+      key: "pathDiff",
+      value: function pathDiff(url, baseUrl) {
+        // diff between two paths to create a relative path
+        var urlParts = this.extractUrlParts(url);
+        var baseUrlParts = this.extractUrlParts(baseUrl);
+        var i;
+        var max;
+        var urlDirectories;
+        var baseUrlDirectories;
+        var diff = '';
+
+        if (urlParts.hostPart !== baseUrlParts.hostPart) {
+          return '';
+        }
+
+        max = Math.max(baseUrlParts.directories.length, urlParts.directories.length);
+
+        for (i = 0; i < max; i++) {
+          if (baseUrlParts.directories[i] !== urlParts.directories[i]) {
+            break;
+          }
+        }
+
+        baseUrlDirectories = baseUrlParts.directories.slice(i);
+        urlDirectories = urlParts.directories.slice(i);
+
+        for (i = 0; i < baseUrlDirectories.length - 1; i++) {
+          diff += '../';
+        }
+
+        for (i = 0; i < urlDirectories.length - 1; i++) {
+          diff += "".concat(urlDirectories[i], "/");
+        }
+
+        return diff;
+      }
+    }, {
+      key: "extractUrlParts",
+      // helper function, not part of API
+      value: function extractUrlParts(url, baseUrl) {
+        // urlParts[1] = protocol://hostname/ OR /
+        // urlParts[2] = / if path relative to host base
+        // urlParts[3] = directories
+        // urlParts[4] = filename
+        // urlParts[5] = parameters
+        var urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
+        var urlParts = url.match(urlPartsRegex);
+        var returner = {};
+        var rawDirectories = [];
+        var directories = [];
+        var i;
+        var baseUrlParts;
+
+        if (!urlParts) {
+          throw new Error("Could not parse sheet href - '".concat(url, "'"));
+        } // Stylesheets in IE don't always return the full path
+
+
+        if (baseUrl && (!urlParts[1] || urlParts[2])) {
+          baseUrlParts = baseUrl.match(urlPartsRegex);
+
+          if (!baseUrlParts) {
+            throw new Error("Could not parse page url - '".concat(baseUrl, "'"));
+          }
+
+          urlParts[1] = urlParts[1] || baseUrlParts[1] || '';
+
+          if (!urlParts[2]) {
+            urlParts[3] = baseUrlParts[3] + urlParts[3];
+          }
+        }
+
+        if (urlParts[3]) {
+          rawDirectories = urlParts[3].replace(/\\/g, '/').split('/'); // collapse '..' and skip '.'
+
+          for (i = 0; i < rawDirectories.length; i++) {
+            if (rawDirectories[i] === '..') {
+              directories.pop();
+            } else if (rawDirectories[i] !== '.') {
+              directories.push(rawDirectories[i]);
+            }
+          }
+        }
+
+        returner.hostPart = urlParts[1];
+        returner.directories = directories;
+        returner.rawPath = (urlParts[1] || '') + rawDirectories.join('/');
+        returner.path = (urlParts[1] || '') + directories.join('/');
+        returner.filename = urlParts[4];
+        returner.fileUrl = returner.path + (urlParts[4] || '');
+        returner.url = returner.fileUrl + (urlParts[5] || '');
+        return returner;
+      }
+    }]);
+
+    return AbstractFileManager;
+  }();
 
   var AbstractPluginLoader =
   /*#__PURE__*/
@@ -12391,7 +12511,7 @@
     }; // register functions
 
     functionRegistry.addMultiple(boolean$1);
-    functionRegistry.addMultiple(defaultFunc$1);
+    functionRegistry.add('default', defaultFunc.eval.bind(defaultFunc));
     functionRegistry.addMultiple(color);
     functionRegistry.addMultiple(colorBlend);
     functionRegistry.addMultiple(dataUri(environment));
@@ -12814,7 +12934,7 @@
             var compress = Boolean(options.compress);
 
             if (compress) {
-              logger.warn('The compress option has been deprecated. We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.');
+              logger.warn('The compress option has been deprecated. ' + 'We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.');
             }
 
             var toCSSOptions = {
@@ -13295,13 +13415,13 @@
 
   var pm;
 
-  var PluginManagerFactory = function PluginManagerFactory(less, newFactory) {
+  function PluginManagerFactory(less, newFactory) {
     if (newFactory || !pm) {
       pm = new PluginManager(less);
     }
 
     return pm;
-  }; //
+  }
 
   var Parse = (function (environment, ParseTree, ImportManager) {
     var parse = function parse(input, options, callback) {
@@ -13385,22 +13505,34 @@
   });
 
   var lessRoot = (function (environment$1, fileManagers) {
+    /**
+     * @todo
+     * This original code could be improved quite a bit.
+     * Many classes / modules currently add side-effects / mutations to passed in objects,
+     * which makes it hard to refactor and reason about. 
+     */
+    environment$1 = new environment(environment$1, fileManagers);
     var SourceMapOutput = sourceMapOutput(environment$1);
     var SourceMapBuilder = sourceMapBuilder(SourceMapOutput, environment$1);
     var ParseTree = parseTree(SourceMapBuilder);
     var ImportManager = importManager(environment$1);
     var render = Render(environment$1, ParseTree);
     var parse = Parse(environment$1, ParseTree, ImportManager);
-    var environ = new environment(environment$1, fileManagers);
     var functions = Functions(environment$1);
+    /**
+     * @todo
+     * This root properties / methods need to be organized.
+     * It's not clear what should / must be public and why.
+     */
+
     var initial = {
-      version: [3, 9, 0],
+      version: [3, 10, 0],
       data: data,
       tree: tree,
       Environment: environment,
-      AbstractFileManager: abstractFileManager,
+      AbstractFileManager: AbstractFileManager,
       AbstractPluginLoader: AbstractPluginLoader,
-      environment: environ,
+      environment: environment$1,
       visitors: visitors,
       Parser: Parser,
       functions: functions,
@@ -13413,21 +13545,18 @@
       parse: parse,
       LessError: LessError,
       transformTree: transformTree,
-      utils: utils$1,
+      utils: utils,
       PluginManager: PluginManagerFactory,
       logger: logger
     }; // Create a public API
 
     var ctor = function ctor(t) {
       return function () {
-        var obj = Object.create(t.prototype);
-
         for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
           args[_key] = arguments[_key];
         }
 
-        t.apply(obj, Array.prototype.slice.call(args, 0));
-        return obj;
+        return _construct(t, args);
       };
     };
 
@@ -13453,126 +13582,147 @@
     return api;
   });
 
-  /* global window, XMLHttpRequest */
-  var FM = (function (options, logger) {
-    var fileCache = {}; // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
+  var options;
+  var logger$1;
+  var fileCache = {}; // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
 
-    var FileManager = function FileManager() {};
+  var FileManager =
+  /*#__PURE__*/
+  function (_AbstractFileManager) {
+    _inherits(FileManager, _AbstractFileManager);
 
-    FileManager.prototype = new abstractFileManager();
+    function FileManager() {
+      _classCallCheck(this, FileManager);
 
-    FileManager.prototype.alwaysMakePathsAbsolute = function alwaysMakePathsAbsolute() {
-      return true;
-    };
+      return _possibleConstructorReturn(this, _getPrototypeOf(FileManager).apply(this, arguments));
+    }
 
-    FileManager.prototype.join = function join(basePath, laterPath) {
-      if (!basePath) {
-        return laterPath;
+    _createClass(FileManager, [{
+      key: "alwaysMakePathsAbsolute",
+      value: function alwaysMakePathsAbsolute() {
+        return true;
       }
-
-      return this.extractUrlParts(laterPath, basePath).path;
-    };
-
-    FileManager.prototype.doXHR = function doXHR(url, type, callback, errback) {
-      var xhr = new XMLHttpRequest();
-      var async = options.isFileProtocol ? options.fileAsync : true;
-
-      if (typeof xhr.overrideMimeType === 'function') {
-        xhr.overrideMimeType('text/css');
-      }
-
-      logger.debug("XHR: Getting '".concat(url, "'"));
-      xhr.open('GET', url, async);
-      xhr.setRequestHeader('Accept', type || 'text/x-less, text/css; q=0.9, */*; q=0.5');
-      xhr.send(null);
-
-      function handleResponse(xhr, callback, errback) {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          callback(xhr.responseText, xhr.getResponseHeader('Last-Modified'));
-        } else if (typeof errback === 'function') {
-          errback(xhr.status, url);
+    }, {
+      key: "join",
+      value: function join(basePath, laterPath) {
+        if (!basePath) {
+          return laterPath;
         }
-      }
 
-      if (options.isFileProtocol && !options.fileAsync) {
-        if (xhr.status === 0 || xhr.status >= 200 && xhr.status < 300) {
-          callback(xhr.responseText);
-        } else {
-          errback(xhr.status, url);
+        return this.extractUrlParts(laterPath, basePath).path;
+      }
+    }, {
+      key: "doXHR",
+      value: function doXHR(url, type, callback, errback) {
+        var xhr = new XMLHttpRequest();
+        var async = options.isFileProtocol ? options.fileAsync : true;
+
+        if (typeof xhr.overrideMimeType === 'function') {
+          xhr.overrideMimeType('text/css');
         }
-      } else if (async) {
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4) {
-            handleResponse(xhr, callback, errback);
+
+        logger$1.debug("XHR: Getting '".concat(url, "'"));
+        xhr.open('GET', url, async);
+        xhr.setRequestHeader('Accept', type || 'text/x-less, text/css; q=0.9, */*; q=0.5');
+        xhr.send(null);
+
+        function handleResponse(xhr, callback, errback) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            callback(xhr.responseText, xhr.getResponseHeader('Last-Modified'));
+          } else if (typeof errback === 'function') {
+            errback(xhr.status, url);
           }
-        };
-      } else {
-        handleResponse(xhr, callback, errback);
+        }
+
+        if (options.isFileProtocol && !options.fileAsync) {
+          if (xhr.status === 0 || xhr.status >= 200 && xhr.status < 300) {
+            callback(xhr.responseText);
+          } else {
+            errback(xhr.status, url);
+          }
+        } else if (async) {
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+              handleResponse(xhr, callback, errback);
+            }
+          };
+        } else {
+          handleResponse(xhr, callback, errback);
+        }
       }
-    };
-
-    FileManager.prototype.supports = function (filename, currentDirectory, options, environment) {
-      return true;
-    };
-
-    FileManager.prototype.clearFileCache = function () {
-      fileCache = {};
-    };
-
-    FileManager.prototype.loadFile = function loadFile(filename, currentDirectory, options, environment) {
-      // TODO: Add prefix support like less-node?
-      // What about multiple paths?
-      if (currentDirectory && !this.isPathAbsolute(filename)) {
-        filename = currentDirectory + filename;
+    }, {
+      key: "supports",
+      value: function supports() {
+        return true;
       }
+    }, {
+      key: "clearFileCache",
+      value: function clearFileCache() {
+        fileCache = {};
+      }
+    }, {
+      key: "loadFile",
+      value: function loadFile(filename, currentDirectory, options, environment) {
+        // TODO: Add prefix support like less-node?
+        // What about multiple paths?
+        if (currentDirectory && !this.isPathAbsolute(filename)) {
+          filename = currentDirectory + filename;
+        }
 
-      filename = options.ext ? this.tryAppendExtension(filename, options.ext) : filename;
-      options = options || {}; // sheet may be set to the stylesheet for the initial load or a collection of properties including
-      // some context variables for imports
+        filename = options.ext ? this.tryAppendExtension(filename, options.ext) : filename;
+        options = options || {}; // sheet may be set to the stylesheet for the initial load or a collection of properties including
+        // some context variables for imports
 
-      var hrefParts = this.extractUrlParts(filename, window.location.href);
-      var href = hrefParts.url;
-      var self = this;
-      return new Promise(function (resolve, reject) {
-        if (options.useFileCache && fileCache[href]) {
-          try {
-            var lessText = fileCache[href];
-            return resolve({
-              contents: lessText,
+        var hrefParts = this.extractUrlParts(filename, window.location.href);
+        var href = hrefParts.url;
+        var self = this;
+        return new Promise(function (resolve, reject) {
+          if (options.useFileCache && fileCache[href]) {
+            try {
+              var lessText = fileCache[href];
+              return resolve({
+                contents: lessText,
+                filename: href,
+                webInfo: {
+                  lastModified: new Date()
+                }
+              });
+            } catch (e) {
+              return reject({
+                filename: href,
+                message: "Error loading file ".concat(href, " error was ").concat(e.message)
+              });
+            }
+          }
+
+          self.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
+            // per file cache
+            fileCache[href] = data; // Use remote copy (re-parse)
+
+            resolve({
+              contents: data,
               filename: href,
               webInfo: {
-                lastModified: new Date()
+                lastModified: lastModified
               }
             });
-          } catch (e) {
-            return reject({
-              filename: href,
-              message: "Error loading file ".concat(href, " error was ").concat(e.message)
+          }, function doXHRError(status, url) {
+            reject({
+              type: 'File',
+              message: "'".concat(url, "' wasn't found (").concat(status, ")"),
+              href: href
             });
-          }
-        }
-
-        self.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
-          // per file cache
-          fileCache[href] = data; // Use remote copy (re-parse)
-
-          resolve({
-            contents: data,
-            filename: href,
-            webInfo: {
-              lastModified: lastModified
-            }
-          });
-        }, function doXHRError(status, url) {
-          reject({
-            type: 'File',
-            message: "'".concat(url, "' wasn't found (").concat(status, ")"),
-            href: href
           });
         });
-      });
-    };
+      }
+    }]);
 
+    return FileManager;
+  }(AbstractFileManager);
+
+  var FM = (function (opts, log) {
+    options = opts;
+    logger$1 = log;
     return FileManager;
   });
 
@@ -13590,9 +13740,10 @@
 
       _classCallCheck(this, PluginLoader);
 
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(PluginLoader).call(this));
       _this.less = less; // Should we shim this.require for browser? Probably not?
 
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(PluginLoader, [{
@@ -13662,7 +13813,7 @@
       var filenameNoPath = filename.match(/([^\/]+(\?.*)?)$/)[1];
       elem.id = id;
       elem.className = 'less-error-message';
-      content = "<h3>".concat(e.type || 'Syntax', "Error: ").concat(e.message || 'There is an error in your .less file', "</h3><p>in <a href=\"").concat(filename, "\">").concat(filenameNoPath, "</a> ");
+      content = "<h3>".concat(e.type || 'Syntax', "Error: ").concat(e.message || 'There is an error in your .less file') + "</h3><p>in <a href=\"".concat(filename, "\">").concat(filenameNoPath, "</a> ");
 
       var errorline = function errorline(e, i, classname) {
         if (e.extract[i] !== undefined) {
@@ -14113,24 +14264,24 @@
    * used in the browser distributed version of less
    * to kick-start less using the browser api
    */
-  var options = defaultOptions();
+  var options$1 = defaultOptions();
 
   if (window.less) {
     for (var key in window.less) {
       if (window.less.hasOwnProperty(key)) {
-        options[key] = window.less[key];
+        options$1[key] = window.less[key];
       }
     }
   }
 
-  addDefaultOptions(window, options);
-  options.plugins = options.plugins || [];
+  addDefaultOptions(window, options$1);
+  options$1.plugins = options$1.plugins || [];
 
   if (window.LESS_PLUGINS) {
-    options.plugins = options.plugins.concat(window.LESS_PLUGINS);
+    options$1.plugins = options$1.plugins.concat(window.LESS_PLUGINS);
   }
 
-  var less = root(window, options);
+  var less = root(window, options$1);
   window.less = less;
   var css;
   var head;
@@ -14141,18 +14292,18 @@
       console.warn(data);
     }
 
-    if (!options.async) {
+    if (!options$1.async) {
       head.removeChild(style);
     }
   }
 
-  if (options.onReady) {
+  if (options$1.onReady) {
     if (/!watch/.test(window.location.hash)) {
       less.watch();
     } // Simulate synchronous stylesheet loading by hiding page rendering
 
 
-    if (!options.async) {
+    if (!options$1.async) {
       css = 'body { display: none !important }';
       head = document.head || document.getElementsByTagName('head')[0];
       style = document.createElement('style');

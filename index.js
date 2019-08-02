@@ -1,1 +1,1 @@
-module.exports = require('./lib/less-node');
+module.exports = require('./dist/less.cjs.js');

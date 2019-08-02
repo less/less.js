@@ -119,7 +119,7 @@ async function buildLessC() {
     ]
   });
 
-  const file = args.out || './dist/less.cjs.js'
+  const file = args.out || './bin/lessc'
   console.log(`Writing ${file}...`);
 
   await bundle.write({

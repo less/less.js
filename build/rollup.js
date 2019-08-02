@@ -36,7 +36,15 @@ async function buildBrowser() {
         }]]
       }),
       terser({
-        include: [/^.+\.min\.js$/]
+        include: [/^.+\.min\.js$/],
+        output: {
+          comments: function(node, comment) {
+            if (comment.type == "comment2") {
+              // preserve banner
+              return /@license/i.test(comment.value);
+            }
+          }
+        }
       })
     ]
   });

@@ -197,7 +197,7 @@ module.exports = function(grunt) {
                 command: [
                     "node build/rollup.js --lessc --out='tmp/lessc'",
                     "node build/rollup.js --node --out='tmp/less.cjs.js'",
-                    "node build/rollup.js --browser out='test/browser/less.min.js'"
+                    "node build/rollup.js --browser --out='test/browser/less.min.js'"
                 ].join(" && ")
             },
             test: {
@@ -241,54 +241,6 @@ module.exports = function(grunt) {
                 ].join(" && ")
             }
         },
-
-        // browserify: {
-        //     browser: {
-        //         src: ["./lib/less-browser/bootstrap.js"],
-        //         options: {
-        //             exclude: ["promise"],
-        //             browserifyOptions: {
-        //                 standalone: "less",
-        //                 noParse: ["clone"]
-        //             }
-        //         },
-        //         dest: "tmp/less.js"
-        //     }
-        // },
-        // concat: {
-        //     options: {
-        //         stripBanners: "all",
-        //         banner: "<%= meta.banner %>"
-        //     },
-        //     browsertest: {
-        //         src: COMPRESS_FOR_TESTS
-        //             ? "<%= uglify.test.dest %>"
-        //             : "<%= browserify.browser.dest %>",
-        //         dest: "test/browser/less.js"
-        //     },
-        //     dist: {
-        //         src: "<%= browserify.browser.dest %>",
-        //         dest: "dist/less.js"
-        //     }
-        // },
-
-        // uglify: {
-        //     options: {
-        //         banner: "<%= meta.banner %>",
-        //         mangle: true,
-        //         compress: {
-        //             pure_getters: true
-        //         }
-        //     },
-        //     dist: {
-        //         src: ["<%= concat.dist.dest %>"],
-        //         dest: "dist/less.min.js"
-        //     },
-        //     test: {
-        //         src: "<%= browserify.browser.dest %>",
-        //         dest: "tmp/less.min.js"
-        //     }
-        // },
 
         eslint: {
             target: [

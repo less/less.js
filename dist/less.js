@@ -1,3 +1,13 @@
+/**
+ * Less - Leaner CSS v3.9.0
+ * http://lesscss.org
+ * 
+ * Copyright (c) 2009-2019, Alexis Sellier <self@cloudhead.net>
+ * Licensed under the Apache-2.0 License.
+ *
+ * @license Apache-2.0
+ */
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :

@@ -1,9 +1,11 @@
+/** @todo - REMOVE - original script to convert project to ES6 */
+
 const transform = require("lebab").transform;
 const readGlob = require("read-glob");
 const fs = require("fs");
 const path = require("path");
 
-readGlob("lib/**/*.js").subscribe({
+readGlob("./../bin/lessc").subscribe({
     next(result) {
         if (result.path.indexOf("source-map/") === -1) {
             try {

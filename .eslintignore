@@ -1,2 +1,4 @@
 Gruntfile.js
+dist/*
+tmp/*
 test/browser/vendor/*

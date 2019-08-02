@@ -8,7 +8,6 @@ module.exports = function(grunt) {
 
     var COMPRESS_FOR_TESTS = false;
     var git = require("git-rev");
-    var babel = require('rollup-plugin-babel');
 
     // Sauce Labs browser
     var browsers = [
@@ -91,17 +90,17 @@ module.exports = function(grunt) {
                 urls:
                     testName === "all"
                         ? browserTests.map(function(name) {
-                              return (
-                                  "http://localhost:8081/tmp/browser/test-runner-" +
+                            return (
+                                "http://localhost:8081/tmp/browser/test-runner-" +
                                   name +
                                   ".html"
-                              );
-                          })
+                            );
+                        })
                         : [
-                              "http://localhost:8081/tmp/browser/test-runner-" +
+                            "http://localhost:8081/tmp/browser/test-runner-" +
                                   testName +
                                   ".html"
-                          ],
+                        ],
                 testname:
                     testName === "all" ? "Unit Tests for Less.js" : testName,
                 browsers: browsers,
@@ -181,23 +180,6 @@ module.exports = function(grunt) {
 
     // Project configuration.
     grunt.initConfig({
-        pkg: grunt.file.readJSON("package.json"),
-        meta: {
-            copyright: 'Copyright (c) 2009-<%= grunt.template.today("yyyy") %>',
-            banner:
-                "/*!\n" +
-                " * Less - <%= pkg.description %> v<%= pkg.version %>\n" +
-                " * http://lesscss.org\n" +
-                " *\n" +
-                " * <%= meta.copyright %>, <%= pkg.author.name %> <<%= pkg.author.email %>>\n" +
-                " * Licensed under the <%= pkg.license %> License.\n" +
-                " *\n" +
-                " */\n\n" +
-                " /**" +
-                " * @license <%= pkg.license %>\n" +
-                " */\n\n"
-        },
-
         shell: {
             options: {
                 stdout: true,
@@ -205,6 +187,19 @@ module.exports = function(grunt) {
                 execOptions: {
                     maxBuffer: Infinity
                 }
+            },
+            build: {
+                command: [
+                    "node build/rollup.js --dist",
+                    "node build/rollup.js --lessc"
+                ].join(" && ")
+            },
+            testbuild: {
+                command: [
+                    "node build/rollup.js --lessc --out='tmp/lessc'",
+                    "node build/rollup.js --node --out='tmp/less.cjs.js'",
+                    "node build/rollup.js --browser out='test/browser/less.min.js'"
+                ].join(" && ")
             },
             test: {
                 command: "node test/index.js"
@@ -218,121 +213,94 @@ module.exports = function(grunt) {
                     // @TODO: make this more thorough
                     // CURRENT OPTIONS
                     // --math
-                    "node bin/lessc --math=always test/less/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=parens-division test/less/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=parens test/less/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=strict test/less/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=strict-legacy test/less/lazy-eval.less tmp/lazy-eval.css",
+                    "node tmp/lessc --math=always test/less/lazy-eval.less tmp/lazy-eval.css",
+                    "node tmp/lessc --math=parens-division test/less/lazy-eval.less tmp/lazy-eval.css",
+                    "node tmp/lessc --math=parens test/less/lazy-eval.less tmp/lazy-eval.css",
+                    "node tmp/lessc --math=strict test/less/lazy-eval.less tmp/lazy-eval.css",
+                    "node tmp/lessc --math=strict-legacy test/less/lazy-eval.less tmp/lazy-eval.css",
 
                     // DEPRECATED OPTIONS
                     // --strict-math
-                    "node bin/lessc --strict-math=on test/less/lazy-eval.less tmp/lazy-eval.css"
+                    "node tmp/lessc --strict-math=on test/less/lazy-eval.less tmp/lazy-eval.css"
                 ].join(" && ")
             },
             plugin: {
                 command: [
-                    'node bin/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
+                    'node tmp/lessc --clean-css="--s1 --advanced" test/less/lazy-eval.less tmp/lazy-eval.css',
                     "cd lib",
-                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css',
+                    'node ../tmp/lessc --clean-css="--s1 --advanced" ../test/less/lazy-eval.less ../tmp/lazy-eval.css',
                     "cd ..",
                     // Test multiple plugins
-                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
+                    'node tmp/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/lazy-eval.less tmp/lazy-eval.css'
                 ].join(" && ")
             },
             "sourcemap-test": {
                 // quoted value doesn't seem to get picked up by time-grunt, or isn't output, at least; maybe just "sourcemap" is fine?
                 command: [
-                    "node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css",
-                    "node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css"
+                    "node tmp/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/import.less test/sourcemaps/import.css",
+                    "node tmp/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css"
                 ].join(" && ")
             }
         },
 
-        browserify: {
-            browser: {
-                src: ["./lib/less-browser/bootstrap.js"],
-                options: {
-                    exclude: ["promise"],
-                    browserifyOptions: {
-                        standalone: "less",
-                        noParse: ["clone"]
-                    }
-                },
-                dest: "tmp/less.js"
-            }
-        },
-        concat: {
-            options: {
-                stripBanners: "all",
-                banner: "<%= meta.banner %>"
-            },
-            browsertest: {
-                src: COMPRESS_FOR_TESTS
-                    ? "<%= uglify.test.dest %>"
-                    : "<%= browserify.browser.dest %>",
-                dest: "test/browser/less.js"
-            },
-            dist: {
-                src: "<%= browserify.browser.dest %>",
-                dest: "dist/less.js"
-            }
-        },
+        // browserify: {
+        //     browser: {
+        //         src: ["./lib/less-browser/bootstrap.js"],
+        //         options: {
+        //             exclude: ["promise"],
+        //             browserifyOptions: {
+        //                 standalone: "less",
+        //                 noParse: ["clone"]
+        //             }
+        //         },
+        //         dest: "tmp/less.js"
+        //     }
+        // },
+        // concat: {
+        //     options: {
+        //         stripBanners: "all",
+        //         banner: "<%= meta.banner %>"
+        //     },
+        //     browsertest: {
+        //         src: COMPRESS_FOR_TESTS
+        //             ? "<%= uglify.test.dest %>"
+        //             : "<%= browserify.browser.dest %>",
+        //         dest: "test/browser/less.js"
+        //     },
+        //     dist: {
+        //         src: "<%= browserify.browser.dest %>",
+        //         dest: "dist/less.js"
+        //     }
+        // },
 
-        uglify: {
-            options: {
-                banner: "<%= meta.banner %>",
-                mangle: true,
-                compress: {
-                    pure_getters: true
-                }
-            },
-            dist: {
-                src: ["<%= concat.dist.dest %>"],
-                dest: "dist/less.min.js"
-            },
-            test: {
-                src: "<%= browserify.browser.dest %>",
-                dest: "tmp/less.min.js"
-            }
-        },
+        // uglify: {
+        //     options: {
+        //         banner: "<%= meta.banner %>",
+        //         mangle: true,
+        //         compress: {
+        //             pure_getters: true
+        //         }
+        //     },
+        //     dist: {
+        //         src: ["<%= concat.dist.dest %>"],
+        //         dest: "dist/less.min.js"
+        //     },
+        //     test: {
+        //         src: "<%= browserify.browser.dest %>",
+        //         dest: "tmp/less.min.js"
+        //     }
+        // },
 
         eslint: {
             target: [
-                "Gruntfile.js",
                 "test/**/*.js",
                 "lib/less*/**/*.js",
-                "bin/lessc",
                 "!test/browser/jasmine-jsreporter.js",
                 "!test/less/errors/plugin/plugin-error.js"
             ],
             options: {
-                configFile: ".eslintrc.json"
-            }
-        },
-
-        rollup: {
-            browser: {
-                input: './lib/less-browser/index.js',
-                plugins: [
-                    babel({})
-                ],
-                output: {
-                    file: './dist/less.js',
-                    format: 'umd',
-                    name: 'less'
-                }
-            },
-            node: {
-                input: './lib/less-node/index.js',
-                plugins: [
-                    babel({
-                        exclude: 'node_modules/**'
-                    })
-                ],
-                output: {
-                    file: './dist/less.cjs.js',
-                    format: 'cjs'
-                }
+                configFile: ".eslintrc.json",
+                fix: true
             }
         },
 
@@ -353,7 +321,7 @@ module.exports = function(grunt) {
                     "test/browser/vendor/promise.js",
                     "test/browser/jasmine-jsreporter.js",
                     "test/browser/common.js",
-                    "test/browser/less.js"
+                    "test/browser/less.min.js"
                 ],
                 template: "test/browser/test-runner-template.tmpl"
             },
@@ -559,16 +527,12 @@ module.exports = function(grunt) {
 
     // Release
     grunt.registerTask("dist", [
-        "browserify:browser",
-        "concat:dist",
-        "uglify:dist"
+        "shell:build"
     ]);
 
     // Create the browser version of less.js
     grunt.registerTask("browsertest-lessjs", [
-        "browserify:browser",
-        "uglify:test",
-        "concat:browsertest"
+        "shell:testbuild"
     ]);
 
     // Run all browser tests
@@ -612,10 +576,12 @@ module.exports = function(grunt) {
     var testTasks = [
         "clean",
         "eslint",
+        "shell:testbuild",
         "shell:test",
         "shell:opts",
         "shell:plugin",
-        "browsertest"
+        "connect",
+        "jasmine"
     ];
 
     if (
@@ -638,21 +604,17 @@ module.exports = function(grunt) {
     // Run shell plugin test
     grunt.registerTask("shell-plugin", ["shell:plugin"]);
 
-    // Run all tests
+    // Run all tests except browsertest
     grunt.registerTask("quicktest", testTasks.slice(0, -1));
 
     // generate a good test environment for testing sourcemaps
     grunt.registerTask("sourcemap-test", [
         "clean:sourcemap-test",
+        "shell:build:lessc",
         "shell:sourcemap-test",
         "connect::keepalive"
     ]);
 
     // Run benchmark
     grunt.registerTask("benchmark", ["shell:benchmark"]);
-
-    grunt.registerTask("rollup", [
-        "rollup:browser",
-        "rollup:node"
-    ]);
 };

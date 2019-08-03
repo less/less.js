@@ -10,10 +10,6 @@ const rootPath = path.join(__dirname, '..');
 
 const args = require('minimist')(process.argv.slice(2));
 
-const babelConfig = {
-    exclude: 'node_modules/**' // only transpile our source code
-};
-
 let outDir = args.dist ? './dist' : './tmp';
 
 async function buildBrowser() {
@@ -33,7 +29,7 @@ async function buildBrowser() {
             resolve(),
             commonjs(),
             babel({
-                ...babelConfig,
+                exclude: 'node_modules/**', // only transpile our source code
                 presets: [["@babel/env", {
                     targets: '> 0.25%, not dead'
                 }]]
@@ -86,7 +82,7 @@ async function buildNode() {
             resolve(),
             commonjs(),
             babel({
-                ...babelConfig,
+                exclude: 'node_modules/**', // only transpile our source code
                 presets: [["@babel/env", {
                     targets: {
                         node: '6'
@@ -116,7 +112,7 @@ async function buildLessC() {
             resolve(),
             commonjs(),
             babel({
-                ...babelConfig,
+                exclude: 'node_modules/**', // only transpile our source code
                 presets: [["@babel/env", {
                     targets: {
                         node: '6'

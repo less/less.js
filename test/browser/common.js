@@ -143,6 +143,10 @@ testSheet = function (sheet) {
                         expect(lessOutput).toEqual(text);
                         done();
                     });
+            })
+            .catch(function(err) {
+                console.log(err);
+                done();
             });
     });
 };

@@ -195,9 +195,9 @@ module.exports = function(grunt) {
             },
             testbuild: {
                 command: [
-                    "node build/rollup.js --lessc --out='tmp/lessc'",
-                    "node build/rollup.js --node --out='tmp/less.cjs.js'",
-                    "node build/rollup.js --browser --out='test/browser/less.min.js'"
+                    "node build/rollup.js --lessc --out='./tmp/lessc'",
+                    "node build/rollup.js --node --out='./tmp/less.cjs.js'",
+                    "node build/rollup.js --browser --out='./test/browser/less.min.js'"
                 ].join(" && ")
             },
             test: {

@@ -6,7 +6,7 @@ const terser = require('rollup-plugin-terser').terser;
 const banner = require('./banner');
 const path = require('path');
 
-const rootPath = process.cwd();
+const rootPath = path.join(__dirname, '..');
 
 const args = require('minimist')(process.argv.slice(2));
 
@@ -128,6 +128,7 @@ async function buildLessC() {
 
     const file = args.out || './bin/lessc'
     console.log(`Writing ${file}...`);
+    console.log(path.join(rootPath, file));
 
     await bundle.write({
         file: path.join(rootPath, file),

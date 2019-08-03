@@ -62,7 +62,7 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-contrib-jasmine": "^1.2.0",
-    "grunt-eslint": "^22.0.0",
+    "grunt-eslint": "^21.1.0",
     "grunt-saucelabs": "^9.0.0",
     "grunt-shell": "^1.3.0",
     "import-module": "file:test/import-module",

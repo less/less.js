@@ -126,9 +126,8 @@ async function buildLessC() {
         ]
     });
 
-    const file = args.out || './bin/lessc'
+    const file = args.out || './bin/lessc';
     console.log(`Writing ${file}...`);
-    console.log(path.join(rootPath, file));
 
     await bundle.write({
         file: path.join(rootPath, file),

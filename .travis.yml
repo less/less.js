@@ -3,7 +3,8 @@ cache:
   directories:
     - travis-phantomjs
 node_js:
-  - "9"
+  - "12"
+  - "10"
   - "8"
   - "6"
 before_install:

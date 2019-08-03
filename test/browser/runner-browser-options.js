@@ -15,11 +15,6 @@ var less = {
 var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 'mixins'],
     testSheets = [];
 
-// IE 8-10 does not support less in style tags
-if (window.navigator.userAgent.indexOf('MSIE') >= 0) {
-    testFiles.length = 0;
-}
-
 // setup style tags with less and link tags pointing to expected css output
 
 for (var i = 0; i < testFiles.length; i++) {

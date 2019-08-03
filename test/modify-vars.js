@@ -1,4 +1,4 @@
-var less = require('../lib/less'),
+var less = require('../tmp/less.cjs.js'),
     fs = require('fs');
 
 var input = fs.readFileSync('./test/less/modifyVars/extended.less', 'utf8');

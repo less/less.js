@@ -12,13 +12,10 @@ var testMap = [
         // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
         relativeUrls: true,
         silent: true,
-        javascriptEnabled: true,
-        // Set explicitly for legacy tests for >3.0
-        ieCompat: true
+        javascriptEnabled: true
     }],
     [{
-        math: 'strict-legacy',
-        ieCompat: true
+        math: 'strict-legacy'
     }, 'math/strict-legacy/'],
     [{
         math: 'parens'

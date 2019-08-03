@@ -4,6 +4,9 @@ const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
 const banner = require('./banner');
+const path = require('path');
+
+const rootPath = process.cwd();
 
 const args = require('minimist')(process.argv.slice(2));
 
@@ -53,7 +56,7 @@ async function buildBrowser() {
         const file = args.out || `${outDir}/less.js`;
         console.log(`Writing ${file}...`);
         await bundle.write({
-            file,
+            file: path.join(rootPath, file),
             format: 'umd',
             name: 'less',
             banner
@@ -64,7 +67,7 @@ async function buildBrowser() {
         const file = args.out || `${outDir}/less.min.js`;
         console.log(`Writing ${file}...`);
         await bundle.write({
-            file: args.out || `${outDir}/less.min.js`,
+            file: path.join(rootPath, file),
             format: 'umd',
             name: 'less',
             sourcemap: true,
@@ -97,7 +100,7 @@ async function buildNode() {
     console.log(`Writing ${file}...`);
 
     await bundle.write({
-        file,
+        file: path.join(rootPath, file),
         format: 'cjs',
         interop: false
     });
@@ -127,7 +130,7 @@ async function buildLessC() {
     console.log(`Writing ${file}...`);
 
     await bundle.write({
-        file,
+        file: path.join(rootPath, file),
         banner: '#!/usr/bin/env node\n',
         format: 'cjs',
         interop: false

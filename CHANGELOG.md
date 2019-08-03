@@ -1,3 +1,10 @@
+## 3.10.0-beta
+
+2019-08-03
+  - Switched codebase to ES2015 w/ Rollup/Babel compilation
+  - Added TS linter to ESLint (types yet to be added to functions / vars)
+  - Ignore undefined content in generating source maps (#3360)
+
 ## 3.9.0
 
 2018-11-28

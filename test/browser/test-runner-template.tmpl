@@ -2,45 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <script>
-        // allow sauce to query for the jasmine report
-        // because we have to load the page before starting the test, so the thing
-        // sauce queries for might not be setup yet
-        var JASMINE;
-        if(Object.defineProperty) {
-            Object.defineProperty(window, 'jasmine', {
-              get: function() { return JASMINE; },
-              set: function(jsm) { 
-                JASMINE = jsm || {};
-                if(!JASMINE.getJSReport || typeof JASMINE.getJSReport !== 'function') {
-                    JASMINE.getJSReport = function() { };
-                }
-              }
-            });
-        }
-        else {
-            window.jasmine = { getJSReport: function() { } };
-        }
-    </script>
     
     <title>Jasmine Spec Runner</title>
-
-    <!-- generate script tags for tests -->
-    <% var generateScriptTags = function(allScripts) { allScripts.forEach(function(script){ %>
-        <script src="<%= script %>"></script>
-    <% }); }; %>
-
-    <!-- generate script tags for tests -->
-    <% var toArray = function(scripts) {
-        %>[<%
-        scripts.forEach(function(scriptUrl, index){
-            %>"<%= scriptUrl %>"<%
-            if (index !== scripts.length -1) {
-                %>,<%
-            }
-        });
-        %>]<%
-        }; %>
 
     <!-- for each test, generate CSS/LESS link tags -->
     <% scripts.src.forEach(function(fullLessName) {
@@ -57,6 +20,38 @@
     <% css.forEach(function(style){ %>
       <link rel="stylesheet" type="text/css" href="<%= style %>">
     <% }) %>
+
+    <!-- generate script tags for tests -->
+    <% 
+    
+    var generateScriptTags = function(allScripts) {
+        allScripts.forEach(function(script){
+            if (script.indexOf('boot.js') > -1) {
+                script = '../../test/browser/vendor/boot.js'
+            }
+            %><script src="<%= script %>"></script> <%
+        });
+    }; 
+    
+    generateScriptTags(scripts.polyfills);
+    generateScriptTags(scripts.jasmine);
+    generateScriptTags(scripts.boot);
+    generateScriptTags(scripts.helpers);
+    generateScriptTags(scripts.vendor);
+
+    %>
+
+    <!-- generate script tags for tests -->
+    <% var toArray = function(scripts) {
+        %>[<%
+        scripts.forEach(function(scriptUrl, index){
+            %>"<%= scriptUrl %>"<%
+            if (index !== scripts.length -1) {
+                %>,<%
+            }
+        });
+        %>]<%
+        }; %>
 
     <script>
 
@@ -78,23 +73,13 @@
             document.body.appendChild(script);
         };
 
-        var jasmine = <% toArray([].concat(scripts.polyfills, scripts.jasmine, scripts.boot)) %>,
-                helpers = <% toArray(scripts.helpers) %>,
-                vendor = <% toArray(scripts.vendor) %>,
-                specs = <% toArray(scripts.specs) %>,
+            var specs = <% toArray(scripts.specs) %>,
                 reporters = <% toArray([].concat(scripts.reporters)) %>,
-                setupScripts = jasmine.concat(helpers).concat(vendor),
                 runScripts = specs.concat(reporters);
         </script>
 
-       <% generateScriptTags(scripts.polyfills); %>
-       <% generateScriptTags(scripts.jasmine); %>
-       <% generateScriptTags(scripts.boot); %>
-       <% generateScriptTags(scripts.helpers); %>
-       <% generateScriptTags(scripts.vendor); %>
-
        <script>
-        setTimeout(function() {
+        window.addEventListener('load', function() {
 
             function addNextScript() {
                 // for sauce, see above. Additional step needed between loading jasmine and loading
@@ -102,13 +87,15 @@
                 if (runScripts.length) {
                     var scriptSrc = runScripts.shift();
                     loadScript(scriptSrc, addNextScript);
-                } else {
-                    window.onload();
+                }
+                else {
+                    // deferred boot function
+                    window.DEFER();
                 }
             }
             addNextScript();
 
-        },1000);
+        });
     </script>
   </head>
 

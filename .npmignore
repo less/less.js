@@ -1,4 +1,6 @@
 .gitattributes
+.travis.yml
+appveyor.yml
 build/
 .grunt/
 benchmark/

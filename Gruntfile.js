@@ -246,7 +246,6 @@ module.exports = function(grunt) {
             target: [
                 "test/**/*.js",
                 "lib/less*/**/*.js",
-                "!test/browser/jasmine-jsreporter.js",
                 "!test/less/errors/plugin/plugin-error.js"
             ],
             options: {
@@ -267,10 +266,12 @@ module.exports = function(grunt) {
             options: {
                 keepRunner: true,
                 host: "http://localhost:8081/",
-                vendor: [
+                polyfills: [
                     "./node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js",
-                    "test/browser/vendor/promise.js",
-                    "test/browser/jasmine-jsreporter.js",
+                    "test/browser/vendor/promise.js"
+                ],
+                vendor: [
+                    "test/browser/vendor/jasmine-jsreporter.js",
                     "test/browser/common.js",
                     "test/browser/less.min.js"
                 ],

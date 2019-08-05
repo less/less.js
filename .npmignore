@@ -5,6 +5,8 @@ build/
 .grunt/
 benchmark/
 test/
+test/less-bom/
+lib/
 # re-include test files as they can be useful for plugins that do testing
 !test/*.js
 tmp/

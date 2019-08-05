@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.10.0-beta
+ * Less - Leaner CSS v3.10.0-beta.2
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2019, Alexis Sellier <self@cloudhead.net>

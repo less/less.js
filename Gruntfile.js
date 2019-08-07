@@ -182,6 +182,7 @@ module.exports = function(grunt) {
     var path = require('path');
 
     // Handle async / await in Rollup build for tests
+    // Remove this when Node 6 is no longer supported for the build/test process
     const nodeVersion = semver.major(process.versions.node);
     let scriptRuntime = 'node';
     if (nodeVersion < 8) {

@@ -144,9 +144,5 @@ async function build() {
         await buildNode();
     }
 }
-try {
-    build();
-}
-catch (e) {
-    throw e;
-}
+
+build();

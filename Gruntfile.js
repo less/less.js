@@ -178,6 +178,17 @@ module.exports = function(grunt) {
     // Make the SauceLabs jobs
     ["all"].concat(browserTests).map(makeJob);
 
+    var semver = require('semver');
+    var path = require('path');
+
+    // Handle async / await in Rollup build for tests
+    // Remove this when Node 6 is no longer supported for the build/test process
+    const nodeVersion = semver.major(process.versions.node);
+    let scriptRuntime = 'node';
+    if (nodeVersion < 8) {
+        scriptRuntime = path.resolve(path.join('node_modules', '.bin', 'babel-node')) + ' --presets=@babel/env';
+    }
+
     // Project configuration.
     grunt.initConfig({
         shell: {
@@ -190,14 +201,14 @@ module.exports = function(grunt) {
             },
             build: {
                 command: [
-                    "node build/rollup.js --dist"
+                    scriptRuntime + " build/rollup.js --dist"
                 ].join(" && ")
             },
             testbuild: {
                 command: [
-                    "node build/rollup.js --lessc --out=./tmp/lessc",
-                    "node build/rollup.js --node --out=./tmp/less.cjs.js",
-                    "node build/rollup.js --browser --out=./test/browser/less.min.js"
+                    scriptRuntime + " build/rollup.js --lessc --out=./tmp/lessc",
+                    scriptRuntime + " build/rollup.js --node --out=./tmp/less.cjs.js",
+                    scriptRuntime + " build/rollup.js --browser --out=./test/browser/less.min.js"
                 ].join(" && ")
             },
             test: {

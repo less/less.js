@@ -53,9 +53,11 @@
     "@babel/core": "^7.5.5",
     "@babel/node": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
+    "@types/xregexp": "^3.0.30",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
     "bootstrap-less-port": "0.3.0",
+    "chevrotain": "^5.0.0",
     "diff": "^3.2.0",
     "git-rev": "^0.2.1",
     "grunt": "^1.0.4",
@@ -84,8 +86,10 @@
     "rollup-plugin-terser": "^5.1.1",
     "semver": "^6.3.0",
     "time-grunt": "^1.3.0",
+    "ts-node": "^8.3.0",
     "typescript": "^3.5.3",
-    "uikit": "2.27.4"
+    "uikit": "2.27.4",
+    "xregexp": "^4.2.4"
   },
   "keywords": [
     "compile less",

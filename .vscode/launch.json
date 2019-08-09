@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
       "type": "node",
       "request": "launch",
@@ -11,6 +12,18 @@
       "program": "${workspaceFolder}/test/index.js",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal"
-    }
+    },
+    {
+      "name": "Test spec.ts",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+          "-r",
+          "ts-node/register"
+      ],
+      "args": [
+          "${workspaceFolder}/lib/less/parser/spec.ts"
+      ]
+}
   ]
 }

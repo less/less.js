@@ -67,9 +67,25 @@ const Comment = createToken({
   group: Lexer.SKIPPED
 })
 
+const AtIdent = createToken({
+  name: 'AtIdent',
+  pattern: Lexer.NA
+});
+
+const Num = createToken({
+  name: 'Num',
+  pattern: /\d*\.\d+/
+});
+
+const Percent = createToken({
+  name: 'Percent',
+  pattern: '%'
+});
+
 const AtName = createToken({
   name: 'AtName',
-  pattern: MAKE_PATTERN('@{{ident}}')
+  pattern: MAKE_PATTERN('@{{ident}}'),
+  categories: [AtIdent]
 });
 
 const PropertyVariable = createToken({
@@ -91,19 +107,22 @@ const Ident = createToken({
 const ImportSym = createToken({
   name: "ImportSym",
   pattern: /@import/,
-  longer_alt: AtName
+  longer_alt: AtName,
+  categories: [AtIdent]
 })
 
 const MediaSym = createToken({
   name: "MediaSym",
   pattern: /@media/,
-  longer_alt: AtName
+  longer_alt: AtName,
+  categories: [AtIdent]
 })
 
 const PluginSym = createToken({
   name: "PluginSym",
   pattern: /@plugin/,
-  longer_alt: AtName
+  longer_alt: AtName,
+  categories: [AtIdent]
 })
 
 // This group has to be defined BEFORE Ident as their prefix is a valid Ident
@@ -185,10 +204,6 @@ const PopSemiColon = createToken({
   categories: [SemiColon]
 })
 
-const Percentage = createToken({
-  name: "Percentage",
-  pattern: /(?:\d+\.\d+|\d+)%/
-})
 const LSquare = createToken({ name: "LSquare", pattern: "[" })
 const RSquare = createToken({ name: "RSquare", pattern: "]" })
 
@@ -255,29 +270,24 @@ const commonTokens = [
   LParen,
   RParen,
   StringLiteral,
-  Uri
+  Uri,
+  Num,
+  Percent
 ];
 
 const lessModes = {
   modes: {
     rules_mode: [
       Whitespace,
-      InterpolateStart,
-      AtStart,
+      // InterpolateStart,
+      ImportSym,
+      PluginSym,
+      MediaSym,
+      AtName,
       Extend,
       LCurly,
       SoftColon,
       SoftSemiColon,
-      ...commonTokens
-    ],
-    at_mode: [
-      Whitespace,
-      ImportSym,
-      PluginSym,
-      MediaSym,
-      AtAssign,
-      AtLCurly,
-      PopSemiColon,
       ...commonTokens
     ],
     value_mode: [
@@ -299,12 +309,19 @@ class LessParser extends Parser {
   andExtend: any;
   variableCall: any;
   variableAssign: any;
+  declaration: any;
   atrule: any;
   rulesetOrMixin: any;
   selector: any;
+  expression: any;
+  interpolatedIdent: any;
+  unit: any;
   args: any;
   guard: any;
   block: any;
+  parenBlock: any;
+  bracketBlock: any;
+  curlyBlock: any;
   mixinRuleLookup: any;
   importAtRule: any;
   pluginAtRule: any;
@@ -353,6 +370,7 @@ class LessParser extends Parser {
         $.CONSUME(Colon);
         $.SUBRULE($.extendRule);
       });
+
       $.RULE("extendRule", () => {
           $.CONSUME(Extend)
           $.CONSUME(LParen)
@@ -373,8 +391,16 @@ class LessParser extends Parser {
           $.CONSUME(SemiColon)
       })
 
-      $.RULE("declaration", () => {
-          // TODO: TBD
+      $.RULE('interpolatedIdent', () => {
+        $.AT_LEAST_ONE(() => {
+          $.CONSUME(Ident);
+        });
+      });
+
+      $.RULE('declaration', () => {
+          $.SUBRULE($.interpolatedIdent);
+          $.CONSUME(Colon);
+          $.SUBRULE($.expression);
       })
 
       $.RULE("rulesetOrMixin", () => {
@@ -429,8 +455,30 @@ class LessParser extends Parser {
 
       $.RULE('variableAssign', () => {
         $.CONSUME(Colon);
-        $.CONSUME(Ident);
+        $.SUBRULE($.expression);
         $.CONSUME(SemiColon);
+      });
+
+      $.RULE('expression', () => {
+        $.OR([
+          { ALT: () => $.CONSUME(Ident) },
+          { ALT: () => $.SUBRULE($.unit) },
+          { ALT: () => $.SUBRULE($.parenBlock) }
+        ]);
+      });
+
+      $.RULE('unit', () => {
+        $.CONSUME(Num)
+        $.OPTION(() => {
+          $.CONSUME(Percent);
+          $.CONSUME(Ident);
+        });
+      });
+
+      $.RULE('parenBlock', () => {
+        $.CONSUME(LParen);
+        $.SUBRULE($.expression);
+        $.CONSUME(RParen);
       });
 
       $.RULE("variableCall", () => {
@@ -453,13 +501,12 @@ class LessParser extends Parser {
       })
 
       $.RULE("atrule", () => {
-          $.CONSUME(AtStart);
           $.OR([
               { ALT: () => $.SUBRULE($.importAtRule) },
               { ALT: () => $.SUBRULE($.pluginAtRule) },
               { ALT: () => $.SUBRULE($.mediaAtRule) },
               { ALT: () => {
-                $.CONSUME(Ident)
+                $.CONSUME(AtName)
                 $.OR2([
                   { ALT: () => $.SUBRULE($.variableAssign) }
                 ]);
@@ -661,9 +708,10 @@ class LessParser extends Parser {
           ])
       })
 
-      $.RULE("block", () => {
+      $.RULE('block', () => {
           $.CONSUME(LCurly)
           $.OR([
+            { ALT: () => $.SUBRULE($.declaration) },
             { ALT: () => $.SUBRULE($.andExtend) },
             { ALT: () => $.SUBRULE($.primary) }
           ])

@@ -3,7 +3,7 @@ import { parse } from './parser';
 const result = parse(`
 @import 'foo';
 
-@bird: foo;
+@bird: (media: blah);
 
 .foo #oops {
   &:extend(.b all);

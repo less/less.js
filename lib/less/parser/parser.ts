@@ -55,11 +55,8 @@ const Comment = createToken({
 
 // Single characters
 const Ampersand = createToken({ name: 'Ampersand', pattern: '&' });
-const Star = createToken({ name: 'Star', pattern: '*' })
-const Eq = createToken({ name: 'Eq', pattern: '=' })
 const Gt = createToken({ name: 'Gt', pattern: '>' })
 const Lt = createToken({ name: 'Lt', pattern: '<' })
-const I = createToken({ name: 'I', pattern: 'i' })
 const LCurly = createToken({ name: 'LCurly', pattern: '{' });
 const RCurly = createToken({ name: 'RCurly', pattern: '}' });
 const LParen = createToken({ name: 'LParen', pattern: '(' });
@@ -69,15 +66,18 @@ const RSquare = createToken({ name: 'RSquare', pattern: ']' })
 const SemiColon = createToken({ name: 'SemiColon', pattern: ';' })
 const Plus = createToken({ name: 'Plus', pattern: '+' })
 const Minus = createToken({ name: 'Minus', pattern: '-' })
-const Times = createToken({ name: 'Times', pattern: '*' })
 const Divide = createToken({ name: 'Divide', pattern: /\.?\// })
 const Comma = createToken({ name: 'Comma', pattern: ',' })
 const Colon = createToken({ name: 'Colon', pattern: ':' })
 
-const Attr = createToken({
+const AttrMatch = createToken({
   name: 'AttrMatch',
   pattern: /[*~|^$]?=/
 })
+
+const Star = createToken({ name: 'Star', pattern: '*' })
+const Eq = createToken({ name: 'Eq', pattern: '=' })
+const Tilde = createToken({ name: 'Tilde', pattern: '~' })
 
 const Num = createToken({
   name: 'Num',
@@ -95,10 +95,25 @@ const Ident = createToken({
   pattern: MAKE_PATTERN('{{ident}}')
 })
 
+// AttrFlag
+const AttrFlag = createToken({ name: 'AttrFlag', pattern: /[is]/, longer_alt: Ident })
+
+const PseudoClass = createToken({
+  name: 'PseudoClass',
+  pattern: MAKE_PATTERN(':{{ident}}')
+})
+
+const PseudoFunction = createToken({
+  name: 'PseudoFunction',
+  pattern: MAKE_PATTERN(':{{ident}}\\(')
+})
+
+// @todo, make extend just a function that receives a selector?
+// Basically, an "in-place" selector visitor after tree flattening?
+// Hmm, no that's backwards, because the args to extend are the selectors to visit
 const Extend = createToken({
   name: 'Extend',
-  pattern: 'extend',
-  longer_alt: Ident
+  pattern: ':extend('
 })
 
 const When = createToken({
@@ -115,7 +130,7 @@ const And = createToken({
 
 const Or = createToken({
   name: 'Or',
-  pattern: /and/,
+  pattern: /or/,
   longer_alt: Ident
 })
 
@@ -155,6 +170,16 @@ const AtName = createToken({
   pattern: MAKE_PATTERN('@{{ident}}')
 })
 
+const InterpolatedVar = createToken({
+  name: 'InterpolatedVar',
+  pattern: MAKE_PATTERN('@{{{ident}}}')
+})
+
+const InterpolatedExprStart = createToken({
+  name: 'InterpolatedExprStart',
+  pattern: /#{/
+})
+
 const ImportSym = createToken({
   name: 'ImportSym',
   pattern: /@import/,
@@ -171,11 +196,6 @@ const PluginSym = createToken({
   name: 'PluginSym',
   pattern: /@plugin/,
   longer_alt: AtName
-})
-
-const VariableCall = createToken({
-  name: 'VariableCall',
-  pattern: MAKE_PATTERN('@{{ident}}\\(')
 })
 
 const ClassOrID = createToken({
@@ -199,11 +219,11 @@ const LessLexer = new Lexer(lessTokens)
 class LessParser extends Parser {
   primary: any;
   extendRule: any;
-  andExtend: any;
   variableCall: any;
   variableAssign: any;
   declaration: any;
   atrule: any;
+  generalAtRule: any;
   rulesetOrMixin: any;
   selector: any;
   expression: any;
@@ -232,6 +252,7 @@ class LessParser extends Parser {
 
   constructor() {
       super(lessTokens, {
+          // maxLookahead: 2,
           ignoredIssues: {
               selector: { OR: true }
           }
@@ -244,7 +265,7 @@ class LessParser extends Parser {
               $.OR([
                   // { ALT: () => $.SUBRULE($.variableCall) },
                   { ALT: () => $.SUBRULE($.atrule) },
-                  
+                  { ALT: () => $.SUBRULE($.variableAssign) },
                   // { ALT: () => $.SUBRULE($.declaration) },
                   // { ALT: () => $.SUBRULE($.entitiesCall) },
 
@@ -258,15 +279,8 @@ class LessParser extends Parser {
       // The original extend had two variants "extend" and "extendRule"
       // implemented in the same function, we will have two separate functions
       // for readability and clarity.
-      $.RULE('andExtend', () => {
-        $.CONSUME(Ampersand);
-        $.CONSUME(Colon);
-        $.SUBRULE($.extendRule);
-      });
-
       $.RULE('extendRule', () => {
           $.CONSUME(Extend)
-          $.CONSUME(LParen)
           $.MANY_SEP({
               SEP: Comma,
               DEF: () => {
@@ -281,12 +295,12 @@ class LessParser extends Parser {
               }
           })
           $.CONSUME(RParen)
-          $.CONSUME(SemiColon)
       })
 
       $.RULE('interpolatedIdent', () => {
         $.AT_LEAST_ONE(() => {
           $.CONSUME(Ident);
+          $.CONSUME(InterpolatedVar);
         });
       });
 
@@ -294,20 +308,27 @@ class LessParser extends Parser {
           $.SUBRULE($.interpolatedIdent);
           $.CONSUME(Colon);
           $.SUBRULE($.expression);
+          $.CONSUME(SemiColon);
       })
 
       $.RULE('rulesetOrMixin', () => {
+        let extend = false;
           $.MANY_SEP({
               SEP: Comma,
               DEF: () => {
                   $.SUBRULE($.selector)
                   $.OPTION(() => {
                     $.SUBRULE($.extendRule);
+                    extend = true;
                   })
               }
           })
 
           $.OR([
+              {
+                GATE: () => extend,
+                ALT: () => $.CONSUME(SemiColon)
+              },
               {
                   // args indicate a mixin call or definition
                   ALT: () => {
@@ -331,7 +352,7 @@ class LessParser extends Parser {
                                   $.OPTION3(() => {
                                       $.CONSUME(ImportantSym)
                                   })
-                                  $.CONSUME(SemiColon)
+                                  $.CONSUME2(SemiColon)
                               }
                           }
                       ])
@@ -347,30 +368,36 @@ class LessParser extends Parser {
       })
 
       $.RULE('variableAssign', () => {
+        $.CONSUME(AtName);
         $.CONSUME(Colon);
         $.SUBRULE($.expression);
         $.CONSUME(SemiColon);
       });
 
-      $.RULE('expression', () => {
-        $.OR([
-          { ALT: () => $.CONSUME(Ident) },
-          { ALT: () => $.SUBRULE($.unit) },
-          { ALT: () => $.SUBRULE($.parenBlock) }
-        ]);
+      $.RULE('expression', (inBlock: boolean = false) => {
+        $.MANY(() => {
+          $.OR([
+            { GATE: () => inBlock,
+              ALT: () => {
+                $.OR2([
+                  { ALT: () => $.SUBRULE($.declaration)}
+                ]);
+              }
+            },
+            { ALT: () => $.CONSUME(Ident) },
+            { ALT: () => $.SUBRULE($.unit) },
+            { ALT: () => $.SUBRULE($.parenBlock) }
+          ]);
+        });
       });
 
       $.RULE('unit', () => {
-        $.CONSUME(Num)
-        $.OPTION(() => {
-          $.CONSUME(Percent);
-          $.CONSUME(Ident);
-        });
+        $.CONSUME(Unit)
       });
 
       $.RULE('parenBlock', () => {
         $.CONSUME(LParen);
-        $.SUBRULE($.expression);
+        $.SUBRULE($.expression, { ARGS: [true] });
         $.CONSUME(RParen);
       });
 
@@ -398,11 +425,18 @@ class LessParser extends Parser {
               { ALT: () => $.SUBRULE($.importAtRule) },
               { ALT: () => $.SUBRULE($.pluginAtRule) },
               { ALT: () => $.SUBRULE($.mediaAtRule) },
-              { ALT: () => {
-                $.CONSUME(AtName)
-              }}
+              { ALT: () => $.SUBRULE($.generalAtRule) }
           ]);
       })
+
+      $.RULE('generalAtRule', () => {
+        $.CONSUME(AtName)
+        $.SUBRULE($.expression)
+        $.OR([
+            { ALT: () => $.CONSUME(SemiColon) },
+            { ALT: () => $.SUBRULE($.block) }
+        ]);
+      });
 
       // TODO: this is the original CSS import is the LESS import different?
       $.RULE('importAtRule', () => {
@@ -444,15 +478,7 @@ class LessParser extends Parser {
       $.RULE('mediaAtRule', () => {
           $.CONSUME(MediaSym)
           $.SUBRULE($.media_list)
-          $.CONSUME(LCurly)
-          $.MANY_SEP({
-              SEP: Comma,
-              DEF: () => {
-                  $.SUBRULE($.selector)
-              }
-          })
           $.SUBRULE($.block)
-          $.CONSUME(RCurly)
       })
 
       $.RULE('media_list', () => {
@@ -472,22 +498,18 @@ class LessParser extends Parser {
           $.CONSUME(Ident)
 
           $.OPTION(() => {
-              $.OR([
-                  { ALT: () => $.CONSUME(Equals) },
-                  { ALT: () => $.CONSUME(Includes) },
-                  { ALT: () => $.CONSUME(Dasmatch) },
-                  { ALT: () => $.CONSUME(BeginMatchExactly) },
-                  { ALT: () => $.CONSUME(EndMatchExactly) },
-                  { ALT: () => $.CONSUME(ContainsMatch) }
-              ])
+            $.CONSUME(AttrMatch);
 
               // REVIEW: misaligned with LESS: LESS allowed % number here, but
               // that is not valid CSS
-              $.OR2([
+              $.OR([
                   { ALT: () => $.CONSUME2(Ident) },
                   { ALT: () => $.CONSUME(StringLiteral) }
               ])
           })
+          $.OPTION2(() => {
+            $.CONSUME(AttrFlag);
+          });
           $.CONSUME(RSquare)
       })
 
@@ -547,7 +569,7 @@ class LessParser extends Parser {
       $.RULE('combinator', () => {
           $.OR([
               { ALT: () => $.CONSUME(Plus) },
-              { ALT: () => $.CONSUME(GreaterThan) },
+              { ALT: () => $.CONSUME(Gt) },
               { ALT: () => $.CONSUME(Tilde) }
           ])
       })
@@ -556,20 +578,11 @@ class LessParser extends Parser {
       // [ HASH | class | attrib | pseudo ]+
       $.RULE('simple_selector_suffix', () => {
           $.OR([
-              { ALT: () => $.SUBRULE($.classOrId) },
+              { ALT: () => $.CONSUME(ClassOrID) },
               { ALT: () => $.SUBRULE($.attrib) },
               { ALT: () => $.SUBRULE($.pseudo) },
               { ALT: () => $.CONSUME(Ampersand) }
           ])
-      })
-
-      // '.' IDENT | '#' IDENT
-      $.RULE('classOrId', () => {
-          $.OR([
-            { ALT: () => $.CONSUME(Dot) },
-            { ALT: () => $.CONSUME(Hash) }
-          ]);
-          $.CONSUME(Ident)
       })
 
       // IDENT | '*'
@@ -601,8 +614,9 @@ class LessParser extends Parser {
       $.RULE('block', () => {
           $.CONSUME(LCurly)
           $.OR([
-            { ALT: () => $.SUBRULE($.declaration) },
-            { ALT: () => $.SUBRULE($.andExtend) },
+            { ALT: () => 
+              $.SUBRULE($.declaration)
+            },
             { ALT: () => $.SUBRULE($.primary) }
           ])
           $.CONSUME(RCurly)
@@ -622,8 +636,8 @@ class LessParser extends Parser {
               { ALT: () => $.CONSUME(Ident) },
               // { ALT: () => $.CONSUME(VariableName) },
               // { ALT: () => $.CONSUME(NestedVariableName) },
-              { ALT: () => $.CONSUME(PropertyVariable) },
-              { ALT: () => $.CONSUME(NestedPropertyVariable) },
+            //   { ALT: () => $.CONSUME(PropertyVariable) },
+            //   { ALT: () => $.CONSUME(NestedPropertyVariable) },
               { ALT: () => EMPTY_ALT }
           ])
       })

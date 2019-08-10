@@ -21,285 +21,178 @@ function FRAGMENT(name: string, def: string, flags?: string) {
   fragments[name] = XRegExp.build(def, fragments, flags);
 }
 
-const Token: {
-  [key: string]: TokenType
-} = {};
-
 const lessTokens: TokenType[] = [];
 
 const createToken = ({ name, ...rest }: ITokenConfig): TokenType => {
   const token = orgCreateToken({name, ...rest});
-  Token[name] = token;
-  lessTokens.push(token);
+  lessTokens.unshift(token);
   return token;
 };
 
-FRAGMENT("spaces", "[ \\t\\r\\n\\f]+")
-FRAGMENT("h", "[\\da-f]", 'i')
-FRAGMENT("unicode", "{{h}}{1,6}")
-FRAGMENT("escape", "{{unicode}}|\\\\[^\\r\\n\\f0-9a-fA-F]")
-FRAGMENT("nl", "\\n|\\r|\\f")
-FRAGMENT("string1", '\\"([^\\n\\r\\f\\"]|{{nl}}|{{escape}})*\\"')
-FRAGMENT("string2", "\\'([^\\n\\r\\f\\']|{{nl}}|{{escape}})*\\'")
-FRAGMENT("nonascii", "[\\u0240-\\uffff]")
-FRAGMENT("nmstart", "[_a-zA-Z]|{{nonascii}}|{{escape}}")
-FRAGMENT("nmchar", "[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}")
-FRAGMENT("name", "({{nmchar}})+")
-FRAGMENT("ident", "-?{{nmstart}}{{nmchar}}*")
-FRAGMENT("url", "([!#\\$%&*-~]|{{nonascii}}|{{escape}})*")
+FRAGMENT('spaces', '[ \\t\\r\\n\\f]+')
+FRAGMENT('h', '[\\da-f]', 'i')
+FRAGMENT('unicode', '{{h}}{1,6}')
+FRAGMENT('escape', '{{unicode}}|\\\\[^\\r\\n\\f0-9a-fA-F]')
+FRAGMENT('nl', '\\n|\\r|\\f')
+FRAGMENT('string1', '\\"([^\\n\\r\\f\\"]|{{nl}}|{{escape}})*\\"')
+FRAGMENT('string2', "\\'([^\\n\\r\\f\\']|{{nl}}|{{escape}})*\\'")
+FRAGMENT('nonascii', '[\\u0240-\\uffff]')
+FRAGMENT('nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}')
+FRAGMENT('nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}')
+FRAGMENT('name', '({{nmchar}})+')
+FRAGMENT('ident', '-?{{nmstart}}{{nmchar}}*')
+FRAGMENT('url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*')
 
 function MAKE_PATTERN(def: string, flags?: string) {
   return XRegExp.build(def, fragments, flags)
 }
 
-const Whitespace = createToken({
-  name: "Whitespace",
-  pattern: MAKE_PATTERN("{{spaces}}"),
-  // The W3C specs are are defined in a whitespace sensitive manner.
-  // But there is only **one** place where the grammar is truly whitespace sensitive.
-  // So the whitespace sensitivity was implemented via a GATE in the selector rule.
-  group: Lexer.SKIPPED
-})
-
 const Comment = createToken({
-  name: "Comment",
-  pattern: /\/\*[^*]*\*+([^/*][^*]*\*+})*\//,
+  name: 'Comment',
+  pattern: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//,
   group: Lexer.SKIPPED
 })
 
-const AtIdent = createToken({
-  name: 'AtIdent',
-  pattern: Lexer.NA
-});
+// Single characters
+const Ampersand = createToken({ name: 'Ampersand', pattern: '&' });
+const Star = createToken({ name: 'Star', pattern: '*' })
+const Eq = createToken({ name: 'Eq', pattern: '=' })
+const Gt = createToken({ name: 'Gt', pattern: '>' })
+const Lt = createToken({ name: 'Lt', pattern: '<' })
+const I = createToken({ name: 'I', pattern: 'i' })
+const LCurly = createToken({ name: 'LCurly', pattern: '{' });
+const RCurly = createToken({ name: 'RCurly', pattern: '}' });
+const LParen = createToken({ name: 'LParen', pattern: '(' });
+const RParen = createToken({ name: 'RParen', pattern: ')' });
+const LSquare = createToken({ name: 'LSquare', pattern: '[' })
+const RSquare = createToken({ name: 'RSquare', pattern: ']' })
+const SemiColon = createToken({ name: 'SemiColon', pattern: ';' })
+const Plus = createToken({ name: 'Plus', pattern: '+' })
+const Minus = createToken({ name: 'Minus', pattern: '-' })
+const Times = createToken({ name: 'Times', pattern: '*' })
+const Divide = createToken({ name: 'Divide', pattern: /\.?\// })
+const Comma = createToken({ name: 'Comma', pattern: ',' })
+const Colon = createToken({ name: 'Colon', pattern: ':' })
+
+const Attr = createToken({
+  name: 'AttrMatch',
+  pattern: /[*~|^$]?=/
+})
 
 const Num = createToken({
   name: 'Num',
   pattern: /\d*\.\d+/
 });
 
-const Percent = createToken({
-  name: 'Percent',
-  pattern: '%'
+const Unit = createToken({
+  name: 'Unit',
+  pattern: /\d*\.\d+([\w]+|%)/
 });
 
-const AtName = createToken({
-  name: 'AtName',
-  pattern: MAKE_PATTERN('@{{ident}}'),
-  categories: [AtIdent]
-});
-
-const PropertyVariable = createToken({
-  name: "PropertyVariable",
-  pattern: /\$[\w-]+/
-})
-
-const NestedPropertyVariable = createToken({
-  name: "NestedPropertyVariable",
-  pattern: /\$@[\w-]+/
-})
-
-// Ident must be before Minus
+/** KEYWORDS */
 const Ident = createToken({
   name: 'Ident',
-  pattern: MAKE_PATTERN("{{ident}}")
+  pattern: MAKE_PATTERN('{{ident}}')
 })
 
-const ImportSym = createToken({
-  name: "ImportSym",
-  pattern: /@import/,
-  longer_alt: AtName,
-  categories: [AtIdent]
+const Extend = createToken({
+  name: 'Extend',
+  pattern: 'extend',
+  longer_alt: Ident
 })
 
-const MediaSym = createToken({
-  name: "MediaSym",
-  pattern: /@media/,
-  longer_alt: AtName,
-  categories: [AtIdent]
+const When = createToken({
+  name: 'When',
+  pattern: /when/,
+  longer_alt: Ident
 })
 
-const PluginSym = createToken({
-  name: "PluginSym",
-  pattern: /@plugin/,
-  longer_alt: AtName,
-  categories: [AtIdent]
+const And = createToken({
+  name: 'And',
+  pattern: /and/,
+  longer_alt: Ident
+})
+
+const Or = createToken({
+  name: 'Or',
+  pattern: /and/,
+  longer_alt: Ident
 })
 
 // This group has to be defined BEFORE Ident as their prefix is a valid Ident
-const Uri = createToken({ name: "Uri", pattern: Lexer.NA })
+const Uri = createToken({ name: 'Uri', pattern: Lexer.NA })
 const UriString = createToken({
-  name: "UriString",
+  name: 'UriString',
   pattern: MAKE_PATTERN(
-      "url\\((:?{{spaces}})?({{string1}}|{{string2}})(:?{{spaces}})?\\)"
+      'url\\((:?{{spaces}})?({{string1}}|{{string2}})(:?{{spaces}})?\\)'
   ),
   categories: Uri
 })
 const UriUrl = createToken({
-  name: "UriUrl",
-  pattern: MAKE_PATTERN("url\\((:?{{spaces}})?{{url}}(:?{{spaces}})?\\)"),
+  name: 'UriUrl',
+  pattern: MAKE_PATTERN('url\\((:?{{spaces}})?{{url}}(:?{{spaces}})?\\)'),
   categories: Uri
 })
 
 const StringLiteral = createToken({
-  name: "StringLiteral",
-  pattern: MAKE_PATTERN("{{string1}}|{{string2}}")
+  name: 'StringLiteral',
+  pattern: MAKE_PATTERN('{{string1}}|{{string2}}')
 })
-// TODO: not sure this token is needed
-const Ampersand = createToken({ name: "Ampersand", pattern: "&" })
-const Extend = createToken({
-  name: "Extend",
-  pattern: 'extend',
-  longer_alt: Ident
-})
-const Star = createToken({ name: "Star", pattern: '*' })
-const Equals = createToken({ name: "Equals", pattern: '=' })
-const Includes = createToken({ name: "Includes", pattern: '~=' })
-const Dasmatch = createToken({ name: "Dasmatch", pattern: '|=' })
-const BeginMatchExactly = createToken({
-  name: "BeginMatchExactly",
-  pattern: "^="
-})
-const EndMatchExactly = createToken({ name: "EndMatchExactly", pattern: "$=" })
-const ContainsMatch = createToken({ name: "ContainsMatch", pattern: "*=" })
 
 const ImportantSym = createToken({
-  name: "ImportantSym",
-  pattern: /!important/i
+  name: 'ImportantSym',
+  pattern: /!important/
 })
 
-const When = createToken({
-  name: "When",
-  pattern: /when/
-})
-
-// must must appear before Ident due to common prefix
+/** Ident variants */
 const Func = createToken({
-  name: "Func",
-  pattern: MAKE_PATTERN("{{ident}}\\(")
+  name: 'Func',
+  pattern: MAKE_PATTERN('{{ident}}\\(')
 })
 
-// TODO: keywords vs identifiers
-// TODO: would LParen conflict with other tokens that include LParen?
-const LParen = createToken({
-  name: 'LParen',
-  pattern: '('
-});
-const RParen = createToken({
-  name: 'RParen',
-  pattern: ')'
-});
-
-const SemiColon = createToken({ name: 'SemiColon', pattern: Lexer.NA })
-
-const SoftSemiColon = createToken({
-  name: 'SoftSemiColon',
-  pattern: ';',
-  categories: [SemiColon]
+const AtName = createToken({
+  name: 'AtName',
+  pattern: MAKE_PATTERN('@{{ident}}')
 })
 
-const PopSemiColon = createToken({
-  name: 'PopSemiColon',
-  pattern: ';',
-  pop_mode: true,
-  categories: [SemiColon]
+const ImportSym = createToken({
+  name: 'ImportSym',
+  pattern: /@import/,
+  longer_alt: AtName
 })
 
-const LSquare = createToken({ name: "LSquare", pattern: "[" })
-const RSquare = createToken({ name: "RSquare", pattern: "]" })
-
-const Plus = createToken({ name: "Plus", pattern: "+" })
-const GreaterThan = createToken({ name: "GreaterThan", pattern: ">" })
-const Tilde = createToken({ name: "Tilde", pattern: "~" })
-const Hash = createToken({
-  name: "Hash",
-  pattern: '#'
-})
-const Dot = createToken({ name: "Dot", pattern: "." })
-const Comma = createToken({ name: "Comma", pattern: "," })
-
-const Colon = createToken({
-  name: 'Colon',
-  pattern: Lexer.NA
+const MediaSym = createToken({
+  name: 'MediaSym',
+  pattern: /@media/,
+  longer_alt: AtName
 })
 
-const SoftColon = createToken({
-  name: 'Colon',
-  pattern: ':',
-  categories: [Colon]
-});
-
-const Assign = createToken({
-  name: "Assign",
-  pattern: ":",
-  push_mode: 'value_mode',
-  categories: [Colon]
+const PluginSym = createToken({
+  name: 'PluginSym',
+  pattern: /@plugin/,
+  longer_alt: AtName
 })
 
-/** Will pop out of at-rule mode and into value mode */
-const AtAssign = createToken({
-  name: "AtAssign",
-  pattern: ":",
-  push_mode: 'value_mode',
-  pop_mode: true,
-  categories: [Colon]
+const VariableCall = createToken({
+  name: 'VariableCall',
+  pattern: MAKE_PATTERN('@{{ident}}\\(')
 })
 
-const LCurly = createToken({
-  name: "LCurly",
-  pattern: '{'
-});
+const ClassOrID = createToken({
+  name: 'ClassOrID',
+  pattern: MAKE_PATTERN('[#.]{{ident}}')
+})
 
-const AtLCurly = createToken({
-  name: "AtLCurly",
-  pattern: '{',
-  pop_mode: true
-});
+const Whitespace = createToken({
+  name: 'Whitespace',
+  pattern: MAKE_PATTERN('{{spaces}}'),
+  // The W3C specs are are defined in a whitespace sensitive manner.
+  // But there is only **one** place where the grammar is truly whitespace sensitive.
+  // So the whitespace sensitivity was implemented via a GATE in the selector rule.
+  group: Lexer.SKIPPED
+})
 
-const RCurly = createToken({
-  name: 'RCurly',
-  pattern: '}'
-});
-
-const commonTokens = [
-  Ident,
-  Comma,
-  Dot,
-  Hash,
-  RCurly,
-  Ampersand,
-  LParen,
-  RParen,
-  StringLiteral,
-  Uri,
-  Num,
-  Percent
-];
-
-const lessModes = {
-  modes: {
-    rules_mode: [
-      Whitespace,
-      // InterpolateStart,
-      ImportSym,
-      PluginSym,
-      MediaSym,
-      AtName,
-      Extend,
-      LCurly,
-      SoftColon,
-      SoftSemiColon,
-      ...commonTokens
-    ],
-    value_mode: [
-      Whitespace,
-      PopSemiColon,
-      ...commonTokens
-    ]
-  },
-  defaultMode: 'rules_mode'
-};
-
-const LessLexer = new Lexer(lessModes)
+const LessLexer = new Lexer(lessTokens)
 
 // ----------------- parser -----------------
 
@@ -346,7 +239,7 @@ class LessParser extends Parser {
 
       const $ = this
 
-      $.RULE("primary", () => {
+      $.RULE('primary', () => {
           $.MANY(() => {
               $.OR([
                   // { ALT: () => $.SUBRULE($.variableCall) },
@@ -365,13 +258,13 @@ class LessParser extends Parser {
       // The original extend had two variants "extend" and "extendRule"
       // implemented in the same function, we will have two separate functions
       // for readability and clarity.
-      $.RULE("andExtend", () => {
+      $.RULE('andExtend', () => {
         $.CONSUME(Ampersand);
         $.CONSUME(Colon);
         $.SUBRULE($.extendRule);
       });
 
-      $.RULE("extendRule", () => {
+      $.RULE('extendRule', () => {
           $.CONSUME(Extend)
           $.CONSUME(LParen)
           $.MANY_SEP({
@@ -403,7 +296,7 @@ class LessParser extends Parser {
           $.SUBRULE($.expression);
       })
 
-      $.RULE("rulesetOrMixin", () => {
+      $.RULE('rulesetOrMixin', () => {
           $.MANY_SEP({
               SEP: Comma,
               DEF: () => {
@@ -481,7 +374,7 @@ class LessParser extends Parser {
         $.CONSUME(RParen);
       });
 
-      $.RULE("variableCall", () => {
+      $.RULE('variableCall', () => {
           // $.OR([
           //     { ALT: () => $.CONSUME(VariableCall) },
           //     { ALT: () => $.CONSUME(VariableName) }
@@ -496,26 +389,23 @@ class LessParser extends Parser {
           })
       })
 
-      $.RULE("entitiesCall", () => {
+      $.RULE('entitiesCall', () => {
           // TODO: TBD
       })
 
-      $.RULE("atrule", () => {
+      $.RULE('atrule', () => {
           $.OR([
               { ALT: () => $.SUBRULE($.importAtRule) },
               { ALT: () => $.SUBRULE($.pluginAtRule) },
               { ALT: () => $.SUBRULE($.mediaAtRule) },
               { ALT: () => {
                 $.CONSUME(AtName)
-                $.OR2([
-                  { ALT: () => $.SUBRULE($.variableAssign) }
-                ]);
               }}
           ]);
       })
 
       // TODO: this is the original CSS import is the LESS import different?
-      $.RULE("importAtRule", () => {
+      $.RULE('importAtRule', () => {
           $.CONSUME(ImportSym)
 
           $.OR([
@@ -531,7 +421,7 @@ class LessParser extends Parser {
           $.CONSUME(SemiColon)
       })
 
-      $.RULE("pluginAtRule", () => {
+      $.RULE('pluginAtRule', () => {
           $.CONSUME(PluginSym)
           $.OPTION(() => {
               $.SUBRULE($.pluginArgs)
@@ -544,14 +434,14 @@ class LessParser extends Parser {
           ])
       })
 
-      $.RULE("pluginArgs", () => {
+      $.RULE('pluginArgs', () => {
           $.CONSUME(LParen)
           // TODO: what is this? it seems like a "permissive token".
           $.CONSUME(RParen)
       })
 
       // TODO: this is css 2.1, css 3 has an expression language here
-      $.RULE("mediaAtRule", () => {
+      $.RULE('mediaAtRule', () => {
           $.CONSUME(MediaSym)
           $.SUBRULE($.media_list)
           $.CONSUME(LCurly)
@@ -565,7 +455,7 @@ class LessParser extends Parser {
           $.CONSUME(RCurly)
       })
 
-      $.RULE("media_list", () => {
+      $.RULE('media_list', () => {
           $.CONSUME(Ident)
           $.MANY_SEP({
               SEP: Comma,
@@ -577,7 +467,7 @@ class LessParser extends Parser {
 
       // TODO: misaligned with CSS: Missing case insensitive attribute flag
       // https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
-      $.RULE("attrib", () => {
+      $.RULE('attrib', () => {
           $.CONSUME(LSquare)
           $.CONSUME(Ident)
 
@@ -601,7 +491,7 @@ class LessParser extends Parser {
           $.CONSUME(RSquare)
       })
 
-      $.RULE("variableCurly", () => {
+      $.RULE('variableCurly', () => {
           // TODO: TBD
       })
 
@@ -634,7 +524,7 @@ class LessParser extends Parser {
       })
 
       // TODO: 'variableCurly' can appear here?
-      $.RULE("simple_selector", () => {
+      $.RULE('simple_selector', () => {
           $.OR([
               {
                   ALT: () => {
@@ -654,7 +544,7 @@ class LessParser extends Parser {
           ])
       })
 
-      $.RULE("combinator", () => {
+      $.RULE('combinator', () => {
           $.OR([
               { ALT: () => $.CONSUME(Plus) },
               { ALT: () => $.CONSUME(GreaterThan) },
@@ -664,7 +554,7 @@ class LessParser extends Parser {
 
       // helper grammar rule to avoid repetition
       // [ HASH | class | attrib | pseudo ]+
-      $.RULE("simple_selector_suffix", () => {
+      $.RULE('simple_selector_suffix', () => {
           $.OR([
               { ALT: () => $.SUBRULE($.classOrId) },
               { ALT: () => $.SUBRULE($.attrib) },
@@ -674,7 +564,7 @@ class LessParser extends Parser {
       })
 
       // '.' IDENT | '#' IDENT
-      $.RULE("classOrId", () => {
+      $.RULE('classOrId', () => {
           $.OR([
             { ALT: () => $.CONSUME(Dot) },
             { ALT: () => $.CONSUME(Hash) }
@@ -683,7 +573,7 @@ class LessParser extends Parser {
       })
 
       // IDENT | '*'
-      $.RULE("element_name", () => {
+      $.RULE('element_name', () => {
           $.OR([
               { ALT: () => $.CONSUME(Ident) },
               { ALT: () => $.CONSUME(Star) }
@@ -691,7 +581,7 @@ class LessParser extends Parser {
       })
 
       // ':' [ IDENT | FUNCTION S* [IDENT S*]? ')' ]
-      $.RULE("pseudo", () => {
+      $.RULE('pseudo', () => {
           $.CONSUME(Colon)
 
           $.OR([
@@ -718,7 +608,7 @@ class LessParser extends Parser {
           $.CONSUME(RCurly)
       })
 
-      $.RULE("mixinRuleLookup", () => {
+      $.RULE('mixinRuleLookup', () => {
           $.CONSUME(LSquare)
           $.AT_LEAST_ONE(() => {
               $.SUBRULE($.lookupValue)
@@ -727,7 +617,7 @@ class LessParser extends Parser {
           $.CONSUME(RSquare)
       })
 
-      $.RULE("lookupValue", () => {
+      $.RULE('lookupValue', () => {
           $.OR([
               { ALT: () => $.CONSUME(Ident) },
               // { ALT: () => $.CONSUME(VariableName) },
@@ -738,13 +628,13 @@ class LessParser extends Parser {
           ])
       })
 
-      $.RULE("args", () => {
+      $.RULE('args', () => {
           $.CONSUME(LParen)
           $.CONSUME(RParen)
           // TODO: TBD
       })
 
-      $.RULE("guard", () => {
+      $.RULE('guard', () => {
           $.CONSUME(When)
           // TODO: TBD
       })

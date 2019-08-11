@@ -1,220 +1,6 @@
-/**
- * references:
- * https://github.com/antlr/grammars-v4/blob/master/css3/css3.g4
- * https://www.lifewire.com/css2-vs-css3-3466978
- */
-import {
-  Parser,
-  Lexer,
-  createToken as orgCreateToken,
-  EMPTY_ALT,
-  ITokenConfig,
-  TokenType
-} from 'chevrotain';
-import * as XRegExp from 'xregexp';
 
-const fragments: {
-  [key: string]: RegExp;
-} = {};
-
-function FRAGMENT(name: string, def: string, flags?: string) {
-  fragments[name] = XRegExp.build(def, fragments, flags);
-}
-
-const lessTokens: TokenType[] = [];
-
-const createToken = ({ name, ...rest }: ITokenConfig): TokenType => {
-  const token = orgCreateToken({name, ...rest});
-  lessTokens.unshift(token);
-  return token;
-};
-
-FRAGMENT('spaces', '[ \\t\\r\\n\\f]+')
-FRAGMENT('h', '[\\da-f]', 'i')
-FRAGMENT('unicode', '{{h}}{1,6}')
-FRAGMENT('escape', '{{unicode}}|\\\\[^\\r\\n\\f0-9a-fA-F]')
-FRAGMENT('nl', '\\n|\\r|\\f')
-FRAGMENT('string1', '\\"([^\\n\\r\\f\\"]|{{nl}}|{{escape}})*\\"')
-FRAGMENT('string2', "\\'([^\\n\\r\\f\\']|{{nl}}|{{escape}})*\\'")
-FRAGMENT('nonascii', '[\\u0240-\\uffff]')
-FRAGMENT('nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}')
-FRAGMENT('nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}')
-FRAGMENT('name', '({{nmchar}})+')
-FRAGMENT('ident', '-?{{nmstart}}{{nmchar}}*')
-FRAGMENT('url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*')
-
-function MAKE_PATTERN(def: string, flags?: string) {
-  return XRegExp.build(def, fragments, flags)
-}
-
-const Comment = createToken({
-  name: 'Comment',
-  pattern: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//,
-  group: Lexer.SKIPPED
-})
-
-// Single characters
-const Ampersand = createToken({ name: 'Ampersand', pattern: '&' });
-const Gt = createToken({ name: 'Gt', pattern: '>' })
-const Lt = createToken({ name: 'Lt', pattern: '<' })
-const LCurly = createToken({ name: 'LCurly', pattern: '{' });
-const RCurly = createToken({ name: 'RCurly', pattern: '}' });
-const LParen = createToken({ name: 'LParen', pattern: '(' });
-const RParen = createToken({ name: 'RParen', pattern: ')' });
-const LSquare = createToken({ name: 'LSquare', pattern: '[' })
-const RSquare = createToken({ name: 'RSquare', pattern: ']' })
-const SemiColon = createToken({ name: 'SemiColon', pattern: ';' })
-const Plus = createToken({ name: 'Plus', pattern: '+' })
-const Minus = createToken({ name: 'Minus', pattern: '-' })
-const Divide = createToken({ name: 'Divide', pattern: /\.?\// })
-const Comma = createToken({ name: 'Comma', pattern: ',' })
-const Colon = createToken({ name: 'Colon', pattern: ':' })
-
-const AttrMatch = createToken({
-  name: 'AttrMatch',
-  pattern: /[*~|^$]?=/
-})
-
-const Star = createToken({ name: 'Star', pattern: '*' })
-const Eq = createToken({ name: 'Eq', pattern: '=' })
-const Tilde = createToken({ name: 'Tilde', pattern: '~' })
-
-const Num = createToken({
-  name: 'Num',
-  pattern: /\d*\.\d+/
-});
-
-const Unit = createToken({
-  name: 'Unit',
-  pattern: /\d*\.\d+([\w]+|%)/
-});
-
-/** KEYWORDS */
-const Ident = createToken({
-  name: 'Ident',
-  pattern: MAKE_PATTERN('{{ident}}')
-})
-
-// AttrFlag
-const AttrFlag = createToken({ name: 'AttrFlag', pattern: /[is]/, longer_alt: Ident })
-
-const PseudoClass = createToken({
-  name: 'PseudoClass',
-  pattern: MAKE_PATTERN(':{{ident}}')
-})
-
-const PseudoFunction = createToken({
-  name: 'PseudoFunction',
-  pattern: MAKE_PATTERN(':{{ident}}\\(')
-})
-
-// @todo, make extend just a function that receives a selector?
-// Basically, an "in-place" selector visitor after tree flattening?
-// Hmm, no that's backwards, because the args to extend are the selectors to visit
-const Extend = createToken({
-  name: 'Extend',
-  pattern: ':extend('
-})
-
-const When = createToken({
-  name: 'When',
-  pattern: /when/,
-  longer_alt: Ident
-})
-
-const And = createToken({
-  name: 'And',
-  pattern: /and/,
-  longer_alt: Ident
-})
-
-const Or = createToken({
-  name: 'Or',
-  pattern: /or/,
-  longer_alt: Ident
-})
-
-// This group has to be defined BEFORE Ident as their prefix is a valid Ident
-const Uri = createToken({ name: 'Uri', pattern: Lexer.NA })
-const UriString = createToken({
-  name: 'UriString',
-  pattern: MAKE_PATTERN(
-      'url\\((:?{{spaces}})?({{string1}}|{{string2}})(:?{{spaces}})?\\)'
-  ),
-  categories: Uri
-})
-const UriUrl = createToken({
-  name: 'UriUrl',
-  pattern: MAKE_PATTERN('url\\((:?{{spaces}})?{{url}}(:?{{spaces}})?\\)'),
-  categories: Uri
-})
-
-const StringLiteral = createToken({
-  name: 'StringLiteral',
-  pattern: MAKE_PATTERN('{{string1}}|{{string2}}')
-})
-
-const ImportantSym = createToken({
-  name: 'ImportantSym',
-  pattern: /!important/
-})
-
-/** Ident variants */
-const Func = createToken({
-  name: 'Func',
-  pattern: MAKE_PATTERN('{{ident}}\\(')
-})
-
-const AtName = createToken({
-  name: 'AtName',
-  pattern: MAKE_PATTERN('@{{ident}}')
-})
-
-const InterpolatedVar = createToken({
-  name: 'InterpolatedVar',
-  pattern: MAKE_PATTERN('@{{{ident}}}')
-})
-
-const InterpolatedExprStart = createToken({
-  name: 'InterpolatedExprStart',
-  pattern: /#{/
-})
-
-const ImportSym = createToken({
-  name: 'ImportSym',
-  pattern: /@import/,
-  longer_alt: AtName
-})
-
-const MediaSym = createToken({
-  name: 'MediaSym',
-  pattern: /@media/,
-  longer_alt: AtName
-})
-
-const PluginSym = createToken({
-  name: 'PluginSym',
-  pattern: /@plugin/,
-  longer_alt: AtName
-})
-
-const ClassOrID = createToken({
-  name: 'ClassOrID',
-  pattern: MAKE_PATTERN('[#.]{{ident}}')
-})
-
-const Whitespace = createToken({
-  name: 'Whitespace',
-  pattern: MAKE_PATTERN('{{spaces}}'),
-  // The W3C specs are are defined in a whitespace sensitive manner.
-  // But there is only **one** place where the grammar is truly whitespace sensitive.
-  // So the whitespace sensitivity was implemented via a GATE in the selector rule.
-  group: Lexer.SKIPPED
-})
-
-const LessLexer = new Lexer(lessTokens)
-
-// ----------------- parser -----------------
+import { Parser, EMPTY_ALT } from 'chevrotain'
+import { lessTokens, LessLexer, T } from './tokens'
 
 class LessParser extends Parser {
   primary: any;
@@ -228,13 +14,11 @@ class LessParser extends Parser {
   selector: any;
   expression: any;
   interpolatedIdent: any;
-  unit: any;
   args: any;
   guard: any;
-  block: any;
+  curlyBlock: any;
   parenBlock: any;
   bracketBlock: any;
-  curlyBlock: any;
   mixinRuleLookup: any;
   importAtRule: any;
   pluginAtRule: any;
@@ -249,6 +33,8 @@ class LessParser extends Parser {
   classOrId: any;
   attrib: any;
   pseudo: any;
+  pseudoFunction: any;
+  inSelector: boolean = false;
 
   constructor() {
       super(lessTokens, {
@@ -264,9 +50,9 @@ class LessParser extends Parser {
           $.MANY(() => {
               $.OR([
                   // { ALT: () => $.SUBRULE($.variableCall) },
+                  { GATE: () => $.inSelector, ALT: () => $.SUBRULE($.declaration) },
                   { ALT: () => $.SUBRULE($.atrule) },
                   { ALT: () => $.SUBRULE($.variableAssign) },
-                  // { ALT: () => $.SUBRULE($.declaration) },
                   // { ALT: () => $.SUBRULE($.entitiesCall) },
 
                   // this combines mixincall, mixinDefinition and rule set
@@ -280,9 +66,9 @@ class LessParser extends Parser {
       // implemented in the same function, we will have two separate functions
       // for readability and clarity.
       $.RULE('extendRule', () => {
-          $.CONSUME(Extend)
+          $.CONSUME(T.Extend)
           $.MANY_SEP({
-              SEP: Comma,
+              SEP: T.Comma,
               DEF: () => {
                   // TODO: a GATE is needed here because the following All
                   $.SUBRULE($.selector)
@@ -290,31 +76,31 @@ class LessParser extends Parser {
                   // TODO: this probably has to be post processed
                   // because "ALL" may be a normal ending part of a selector
                   // $.OPTION(() => {
-                  //     $.CONSUME(All)
+                  //     $.CONSUME(T.All)
                   // })
               }
           })
-          $.CONSUME(RParen)
+          $.CONSUME(T.RParen)
       })
 
-      $.RULE('interpolatedIdent', () => {
-        $.AT_LEAST_ONE(() => {
-          $.CONSUME(Ident);
-          $.CONSUME(InterpolatedVar);
-        });
-      });
-
       $.RULE('declaration', () => {
-          $.SUBRULE($.interpolatedIdent);
-          $.CONSUME(Colon);
+          $.OR([
+            { ALT: () => $.CONSUME(T.Ident) },
+            { ALT: () => $.CONSUME(T.InterpolatedIdent) }
+          ])
+          $.OR2([
+            { ALT: () => $.CONSUME(T.Colon) },
+            { ALT: () => $.CONSUME(T.PlusAssign) },
+            { ALT: () => $.CONSUME(T.UnderscoreAssign) }
+          ]);
           $.SUBRULE($.expression);
-          $.CONSUME(SemiColon);
+          $.CONSUME(T.SemiColon);
       })
 
       $.RULE('rulesetOrMixin', () => {
         let extend = false;
-          $.MANY_SEP({
-              SEP: Comma,
+          $.AT_LEAST_ONE_SEP({
+              SEP: T.Comma,
               DEF: () => {
                   $.SUBRULE($.selector)
                   $.OPTION(() => {
@@ -327,7 +113,7 @@ class LessParser extends Parser {
           $.OR([
               {
                 GATE: () => extend,
-                ALT: () => $.CONSUME(SemiColon)
+                ALT: () => $.CONSUME(T.SemiColon)
               },
               {
                   // args indicate a mixin call or definition
@@ -341,7 +127,7 @@ class LessParser extends Parser {
                                   $.OPTION2(() => {
                                       $.SUBRULE($.guard)
                                   })
-                                  $.SUBRULE($.block)
+                                  $.SUBRULE($.curlyBlock)
                               }
                           },
 
@@ -350,9 +136,9 @@ class LessParser extends Parser {
                           {
                               ALT: () => {
                                   $.OPTION3(() => {
-                                      $.CONSUME(ImportantSym)
+                                      $.CONSUME(T.Important)
                                   })
-                                  $.CONSUME2(SemiColon)
+                                  $.CONSUME2(T.SemiColon)
                               }
                           }
                       ])
@@ -361,50 +147,47 @@ class LessParser extends Parser {
               {
                   // Block indicates a ruleset
                   ALT: () => {
-                      $.SUBRULE2($.block)
+                      $.SUBRULE2($.curlyBlock)
                   }
               }
           ])
       })
 
       $.RULE('variableAssign', () => {
-        $.CONSUME(AtName);
-        $.CONSUME(Colon);
+        $.CONSUME(T.AtName);
+        $.CONSUME(T.Colon);
         $.SUBRULE($.expression);
-        $.CONSUME(SemiColon);
+        $.CONSUME(T.SemiColon);
       });
 
-      $.RULE('expression', (inBlock: boolean = false) => {
+      $.RULE('expression', (inParens: boolean = false) => {
         $.MANY(() => {
           $.OR([
-            { GATE: () => inBlock,
+            { GATE: () => inParens,
               ALT: () => {
                 $.OR2([
                   { ALT: () => $.SUBRULE($.declaration)}
                 ]);
               }
             },
-            { ALT: () => $.CONSUME(Ident) },
-            { ALT: () => $.SUBRULE($.unit) },
+            { ALT: () => $.CONSUME(T.Ident) },
+            { ALT: () => $.CONSUME(T.AtName) },
+            { ALT: () => $.CONSUME(T.Unit) },
             { ALT: () => $.SUBRULE($.parenBlock) }
           ]);
         });
       });
 
-      $.RULE('unit', () => {
-        $.CONSUME(Unit)
-      });
-
       $.RULE('parenBlock', () => {
-        $.CONSUME(LParen);
+        $.CONSUME(T.LParen);
         $.SUBRULE($.expression, { ARGS: [true] });
-        $.CONSUME(RParen);
+        $.CONSUME(T.RParen);
       });
 
       $.RULE('variableCall', () => {
           // $.OR([
-          //     { ALT: () => $.CONSUME(VariableCall) },
-          //     { ALT: () => $.CONSUME(VariableName) }
+          //     { ALT: () => $.CONSUME(T.VariableCall) },
+          //     { ALT: () => $.CONSUME(T.VariableName) }
           // ])
 
           $.OPTION(() => {
@@ -412,7 +195,7 @@ class LessParser extends Parser {
           })
 
           $.OPTION2(() => {
-              $.CONSUME(ImportantSym)
+              $.CONSUME(T.Important)
           })
       })
 
@@ -430,63 +213,63 @@ class LessParser extends Parser {
       })
 
       $.RULE('generalAtRule', () => {
-        $.CONSUME(AtName)
+        $.CONSUME(T.AtName)
         $.SUBRULE($.expression)
         $.OR([
-            { ALT: () => $.CONSUME(SemiColon) },
-            { ALT: () => $.SUBRULE($.block) }
+            { ALT: () => $.CONSUME(T.SemiColon) },
+            { ALT: () => $.SUBRULE($.curlyBlock) }
         ]);
       });
 
       // TODO: this is the original CSS import is the LESS import different?
       $.RULE('importAtRule', () => {
-          $.CONSUME(ImportSym)
+          $.CONSUME(T.AtImport)
 
           $.OR([
-              { ALT: () => $.CONSUME(StringLiteral) },
+              { ALT: () => $.CONSUME(T.StringLiteral) },
               // TODO: is the LESS URI different than CSS?
-              { ALT: () => $.CONSUME(Uri) }
+              { ALT: () => $.CONSUME(T.Uri) }
           ])
 
           $.OPTION(() => {
               $.SUBRULE($.media_list)
           })
 
-          $.CONSUME(SemiColon)
+          $.CONSUME(T.SemiColon)
       })
 
       $.RULE('pluginAtRule', () => {
-          $.CONSUME(PluginSym)
+          $.CONSUME(T.AtPlugin)
           $.OPTION(() => {
               $.SUBRULE($.pluginArgs)
           })
 
           $.OR([
-              { ALT: () => $.CONSUME(StringLiteral) },
+              { ALT: () => $.CONSUME(T.StringLiteral) },
               // TODO: is the LESS URI different?
-              { ALT: () => $.CONSUME(Uri) }
+              { ALT: () => $.CONSUME(T.Uri) }
           ])
       })
 
       $.RULE('pluginArgs', () => {
-          $.CONSUME(LParen)
+          $.CONSUME(T.LParen)
           // TODO: what is this? it seems like a "permissive token".
-          $.CONSUME(RParen)
+          $.CONSUME(T.RParen)
       })
 
       // TODO: this is css 2.1, css 3 has an expression language here
       $.RULE('mediaAtRule', () => {
-          $.CONSUME(MediaSym)
+          $.CONSUME(T.AtMedia)
           $.SUBRULE($.media_list)
-          $.SUBRULE($.block)
+          $.SUBRULE($.curlyBlock)
       })
 
       $.RULE('media_list', () => {
-          $.CONSUME(Ident)
+          $.CONSUME(T.Ident)
           $.MANY_SEP({
-              SEP: Comma,
+              SEP: T.Comma,
               DEF: () => {
-                  $.CONSUME2(Ident)
+                  $.CONSUME2(T.Ident)
               }
           })
       })
@@ -494,23 +277,23 @@ class LessParser extends Parser {
       // TODO: misaligned with CSS: Missing case insensitive attribute flag
       // https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
       $.RULE('attrib', () => {
-          $.CONSUME(LSquare)
-          $.CONSUME(Ident)
+          $.CONSUME(T.LSquare)
+          $.CONSUME(T.Ident)
 
           $.OPTION(() => {
-            $.CONSUME(AttrMatch);
+            $.CONSUME(T.AttrMatch);
 
               // REVIEW: misaligned with LESS: LESS allowed % number here, but
               // that is not valid CSS
               $.OR([
-                  { ALT: () => $.CONSUME2(Ident) },
-                  { ALT: () => $.CONSUME(StringLiteral) }
+                  { ALT: () => $.CONSUME2(T.Ident) },
+                  { ALT: () => $.CONSUME(T.StringLiteral) }
               ])
           })
           $.OPTION2(() => {
-            $.CONSUME(AttrFlag);
+            $.CONSUME(T.AttrFlag);
           });
-          $.CONSUME(RSquare)
+          $.CONSUME(T.RSquare)
       })
 
       $.RULE('variableCurly', () => {
@@ -568,9 +351,9 @@ class LessParser extends Parser {
 
       $.RULE('combinator', () => {
           $.OR([
-              { ALT: () => $.CONSUME(Plus) },
-              { ALT: () => $.CONSUME(Gt) },
-              { ALT: () => $.CONSUME(Tilde) }
+              { ALT: () => $.CONSUME(T.Plus) },
+              { ALT: () => $.CONSUME(T.Gt) },
+              { ALT: () => $.CONSUME(T.Tilde) }
           ])
       })
 
@@ -578,78 +361,71 @@ class LessParser extends Parser {
       // [ HASH | class | attrib | pseudo ]+
       $.RULE('simple_selector_suffix', () => {
           $.OR([
-              { ALT: () => $.CONSUME(ClassOrID) },
+              { ALT: () => $.CONSUME(T.ClassOrID) },
               { ALT: () => $.SUBRULE($.attrib) },
               { ALT: () => $.SUBRULE($.pseudo) },
-              { ALT: () => $.CONSUME(Ampersand) }
+              { ALT: () => $.CONSUME(T.Ampersand) }
           ])
       })
 
       // IDENT | '*'
       $.RULE('element_name', () => {
           $.OR([
-              { ALT: () => $.CONSUME(Ident) },
-              { ALT: () => $.CONSUME(Star) }
+              { ALT: () => $.CONSUME(T.Ident) },
+              { ALT: () => $.CONSUME(T.Star) }
           ])
       })
+
+      $.RULE('pseudoFunction', () => {
+        $.CONSUME(T.PseudoFunction);
+        $.SUBRULE($.expression);
+        $.CONSUME(T.RParen);
+      });
 
       // ':' [ IDENT | FUNCTION S* [IDENT S*]? ')' ]
       $.RULE('pseudo', () => {
-          $.CONSUME(Colon)
-
-          $.OR([
-              { ALT: () => $.CONSUME(Ident) },
-              {
-                  ALT: () => {
-                      $.CONSUME(Func)
-                      $.OPTION(() => {
-                          $.CONSUME2(Ident)
-                      })
-                      $.CONSUME(RParen)
-                  }
-              }
-          ])
+        $.OR([
+          { ALT: () => $.SUBRULE($.pseudoFunction) },
+          { ALT: () => $.CONSUME(T.PseudoClass) }
+        ]);
       })
 
-      $.RULE('block', () => {
-          $.CONSUME(LCurly)
-          $.OR([
-            { ALT: () => 
-              $.SUBRULE($.declaration)
-            },
-            { ALT: () => $.SUBRULE($.primary) }
-          ])
-          $.CONSUME(RCurly)
+      $.RULE('curlyBlock', () => {
+          $.CONSUME(T.LCurly)
+          $.inSelector = true;
+          $.SUBRULE($.primary);
+          $.CONSUME(T.RCurly)
+          $.inSelector = false;
       })
 
       $.RULE('mixinRuleLookup', () => {
-          $.CONSUME(LSquare)
+          $.CONSUME(T.LSquare)
           $.AT_LEAST_ONE(() => {
               $.SUBRULE($.lookupValue)
           })
 
-          $.CONSUME(RSquare)
+          $.CONSUME(T.RSquare)
       })
 
       $.RULE('lookupValue', () => {
           $.OR([
-              { ALT: () => $.CONSUME(Ident) },
-              // { ALT: () => $.CONSUME(VariableName) },
-              // { ALT: () => $.CONSUME(NestedVariableName) },
-            //   { ALT: () => $.CONSUME(PropertyVariable) },
-            //   { ALT: () => $.CONSUME(NestedPropertyVariable) },
+              { ALT: () => $.CONSUME(T.Ident) },
+              // { ALT: () => $.CONSUME(T.VariableName) },
+              // { ALT: () => $.CONSUME(T.NestedVariableName) },
+            //   { ALT: () => $.CONSUME(T.PropertyVariable) },
+            //   { ALT: () => $.CONSUME(T.NestedPropertyVariable) },
               { ALT: () => EMPTY_ALT }
           ])
       })
 
       $.RULE('args', () => {
-          $.CONSUME(LParen)
-          $.CONSUME(RParen)
+          $.CONSUME(T.LParen)
+          $.CONSUME(T.RParen)
           // TODO: TBD
       })
 
       $.RULE('guard', () => {
-          $.CONSUME(When)
+          $.CONSUME(T.When)
           // TODO: TBD
       })
 

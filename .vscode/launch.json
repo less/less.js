@@ -5,16 +5,16 @@
   "version": "0.2.0",
   "configurations": [
 
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Less test",
+    //   "program": "${workspaceFolder}/test/index.js",
+    //   "cwd": "${workspaceFolder}",
+    //   "console": "integratedTerminal"
+    // },
     {
-      "type": "node",
-      "request": "launch",
       "name": "Less test",
-      "program": "${workspaceFolder}/test/index.js",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Test spec.ts",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -22,7 +22,7 @@
           "ts-node/register"
       ],
       "args": [
-          "${workspaceFolder}/lib/less/parser/spec.ts"
+          "${workspaceFolder}/test/index.ts"
       ]
 }
   ]

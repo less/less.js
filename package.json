@@ -35,7 +35,7 @@
     "node": ">=6"
   },
   "scripts": {
-    "test": "grunt test",
+    "test": "ts-node test/index.ts",
     "grunt": "grunt"
   },
   "optionalDependencies": {
@@ -53,6 +53,7 @@
     "@babel/core": "^7.5.5",
     "@babel/node": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
+    "@types/jasmine": "^3.4.0",
     "@types/xregexp": "^3.0.30",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
@@ -60,6 +61,7 @@
     "chevrotain": "^5.0.0",
     "diff": "^3.2.0",
     "git-rev": "^0.2.1",
+    "glob": "^7.1.4",
     "grunt": "^1.0.4",
     "grunt-cli": "^1.3.2",
     "grunt-contrib-clean": "^1.0.0",
@@ -69,6 +71,8 @@
     "grunt-saucelabs": "^9.0.0",
     "grunt-shell": "^1.3.0",
     "import-module": "file:test/import-module",
+    "jasmine": "^3.4.0",
+    "jasmine-console-reporter": "^3.1.0",
     "jit-grunt": "^0.10.0",
     "less-plugin-autoprefix": "^1.5.1",
     "less-plugin-clean-css": "^1.5.1",
@@ -78,7 +82,6 @@
     "phantomjs-prebuilt": "^2.1.16",
     "phin": "^2.2.3",
     "promise": "^7.1.1",
-    "read-glob": "^3.0.0",
     "rollup": "^1.17.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.0.1",

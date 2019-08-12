@@ -1,8 +1,8 @@
 
-import { Parser, EMPTY_ALT } from 'chevrotain'
+import { CstParser, EMPTY_ALT } from 'chevrotain'
 import { lessTokens, LessLexer, T } from './tokens'
 
-class LessParser extends Parser {
+class LessParser extends CstParser {
   primary: any;
   extendRule: any;
   variableCall: any;
@@ -13,8 +13,11 @@ class LessParser extends Parser {
   rulesetOrMixin: any;
   selector: any;
   expression: any;
+  expressionList: any;
+  innerExpressionList: any;
   interpolatedIdent: any;
-  args: any;
+  mixinArgs: any;
+  functionCall: any;
   guard: any;
   curlyBlock: any;
   parenBlock: any;
@@ -24,23 +27,31 @@ class LessParser extends Parser {
   pluginAtRule: any;
   pluginArgs: any;
   mediaAtRule: any;
-  media_list: any;
+  mediaList: any;
+  mediaParam: any;
+  mediaQuery: any;
+
   simple_selector: any;
   combinator: any;
   element_name: any;
   simple_selector_suffix: any;
   lookupValue: any;
-  classOrId: any;
   attrib: any;
   pseudo: any;
   pseudoFunction: any;
   inSelector: boolean = false;
+  inCompareBlock: boolean = false;
+
+  additionExpression: any;
+  multiplicationExpression: any;
+  compareExpression: any;
+  atomicExpression: any;
+  compareBlock: any;
 
   constructor() {
       super(lessTokens, {
-          // maxLookahead: 2,
           ignoredIssues: {
-              selector: { OR: true }
+            selector: { OR: true }
           }
       })
 
@@ -93,8 +104,8 @@ class LessParser extends Parser {
             { ALT: () => $.CONSUME(T.PlusAssign) },
             { ALT: () => $.CONSUME(T.UnderscoreAssign) }
           ]);
-          $.SUBRULE($.expression);
-          $.CONSUME(T.SemiColon);
+          $.SUBRULE($.expressionList);
+          $.OPTION(() => $.CONSUME(T.SemiColon));
       })
 
       $.RULE('rulesetOrMixin', () => {
@@ -117,9 +128,16 @@ class LessParser extends Parser {
               },
               {
                   // args indicate a mixin call or definition
+                  GATE: () => {
+                    const prevToken = $.LA(0)
+                    const nextToken = $.LA(1)
+
+                    // A LParen must immediately follow a mixin
+                    return nextToken.startOffset === prevToken.endOffset + 1
+                  },
                   ALT: () => {
                       // TODO: variable argument list syntax inside args indicates a definition
-                      $.SUBRULE($.args)
+                      $.SUBRULE($.mixinArgs)
                       $.OR2([
                           {
                               // a guard or block indicates a mixin definition
@@ -154,35 +172,109 @@ class LessParser extends Parser {
       })
 
       $.RULE('variableAssign', () => {
-        $.CONSUME(T.AtName);
-        $.CONSUME(T.Colon);
-        $.SUBRULE($.expression);
-        $.CONSUME(T.SemiColon);
+        $.CONSUME(T.VariableAssignment);
+        $.SUBRULE($.expressionList);
+        $.OPTION(() => $.CONSUME(T.SemiColon));
       });
 
-      $.RULE('expression', (inParens: boolean = false) => {
-        $.MANY(() => {
-          $.OR([
-            { GATE: () => inParens,
-              ALT: () => {
-                $.OR2([
-                  { ALT: () => $.SUBRULE($.declaration)}
-                ]);
+      // Used for mixin / function args
+      // Can have a semi-colon separator
+      $.RULE('innerExpressionList', (inMixin: true) => {
+        $.MANY_SEP({
+          SEP: T.ArgSeparator,
+          DEF: () => {
+            $.OR([
+              {
+                GATE: () => inMixin,
+                ALT: () => {
+                  $.CONSUME(T.VariableAssignment)
+                  $.SUBRULE($.expression)
+                }
+              },
+              {
+                ALT: () => $.SUBRULE2($.expression)
               }
-            },
-            { ALT: () => $.CONSUME(T.Ident) },
+            ])
+          }
+        })
+      });
+
+      $.RULE('expressionList', () => {
+        $.MANY_SEP({
+          SEP: T.Comma,
+          DEF: () => $.SUBRULE($.expression)
+        })
+      });
+
+      $.RULE('expression', () => {
+        $.MANY(() => {
+          $.SUBRULE($.additionExpression)
+        });
+      }); 
+
+      $.RULE('additionExpression', () => {
+        // using labels can make the CST processing easier
+        $.SUBRULE($.multiplicationExpression, { LABEL: "lhs" })
+        $.MANY(() => {
+          // consuming 'AdditionOperator' will consume either Plus or Minus as they are subclasses of AdditionOperator
+          $.CONSUME(T.AdditionOperator)
+          //  the index "2" in SUBRULE2 is needed to identify the unique position in the grammar during runtime
+          $.SUBRULE2($.multiplicationExpression, { LABEL: "rhs" })
+        })
+      })
+
+      $.RULE("multiplicationExpression", () => {
+        $.SUBRULE($.compareExpression, { LABEL: "lhs" })
+        $.MANY(() => {
+            $.CONSUME(T.MultiplicationOperator)
+            //  the index "2" in SUBRULE2 is needed to identify the unique position in the grammar during runtime
+            $.SUBRULE2($.compareExpression, { LABEL: "rhs" })
+        })
+      })
+
+      $.RULE('compareExpression', () => {
+        // using labels can make the CST processing easier
+        $.SUBRULE($.atomicExpression, { LABEL: "lhs" })
+        $.MANY({
+          GATE: () => $.inCompareBlock,
+          DEF: () => {
+            // consuming 'AdditionOperator' will consume either Plus or Minus as they are subclasses of AdditionOperator
+            $.CONSUME(T.CompareOperator)
+            //  the index "2" in SUBRULE2 is needed to identify the unique position in the grammar during runtime
+            $.SUBRULE2($.atomicExpression, { LABEL: "rhs" })
+          }
+        })
+      })     
+
+      $.RULE('atomicExpression', () => {
+        $.OR([
+            // parenthesisExpression has the highest precedence and thus it appears
+            // in the "lowest" leaf in the expression ParseTree.
+            { ALT: () => $.SUBRULE($.parenBlock) },
+            { ALT: () => $.SUBRULE($.functionCall) },
             { ALT: () => $.CONSUME(T.AtName) },
             { ALT: () => $.CONSUME(T.Unit) },
-            { ALT: () => $.SUBRULE($.parenBlock) }
-          ]);
-        });
-      });
+            { ALT: () => $.CONSUME(T.Ident) },
+            { ALT: () => $.CONSUME(T.StringLiteral) },
+            { ALT: () => $.CONSUME(T.Uri) },
+            { ALT: () => $.CONSUME(T.Color) }
+        ])
+      })
 
       $.RULE('parenBlock', () => {
         $.CONSUME(T.LParen);
-        $.SUBRULE($.expression, { ARGS: [true] });
+        $.OR([
+          { ALT: () => $.SUBRULE($.declaration) },
+          { ALT: () => $.SUBRULE($.additionExpression) }
+        ])
         $.CONSUME(T.RParen);
       });
+
+      $.RULE('functionCall', () => {
+        $.CONSUME(T.Func);
+        $.SUBRULE($.innerExpressionList);
+        $.CONSUME(T.RParen);
+      })
 
       $.RULE('variableCall', () => {
           // $.OR([
@@ -232,7 +324,7 @@ class LessParser extends Parser {
           ])
 
           $.OPTION(() => {
-              $.SUBRULE($.media_list)
+            $.SUBRULE($.mediaList)
           })
 
           $.CONSUME(T.SemiColon)
@@ -259,20 +351,47 @@ class LessParser extends Parser {
 
       // TODO: this is css 2.1, css 3 has an expression language here
       $.RULE('mediaAtRule', () => {
-          $.CONSUME(T.AtMedia)
-          $.SUBRULE($.media_list)
-          $.SUBRULE($.curlyBlock)
+        $.CONSUME(T.AtMedia)
+        $.SUBRULE($.mediaList)
+        $.SUBRULE($.curlyBlock)
       })
 
-      $.RULE('media_list', () => {
-          $.CONSUME(T.Ident)
-          $.MANY_SEP({
-              SEP: T.Comma,
-              DEF: () => {
-                  $.CONSUME2(T.Ident)
-              }
-          })
+      $.RULE('mediaList', () => {
+        $.OPTION(() => $.CONSUME(T.Only))
+        $.MANY_SEP({
+          SEP: T.Comma,
+          DEF: () => {
+            $.SUBRULE($.mediaParam)
+          }
+        })
       })
+
+      $.RULE('mediaParam', () => {
+        $.MANY_SEP({
+          SEP: T.And,
+          DEF: () => {
+            $.OPTION(() => $.CONSUME(T.Not))
+            $.OR([
+              { ALT: () => $.CONSUME(T.Ident) },
+              { ALT: () => {
+                $.CONSUME(T.LParen)
+                $.SUBRULE($.mediaParam)
+                $.CONSUME(T.RParen)
+              }},
+              { ALT: () => $.SUBRULE($.mediaQuery) }
+            ])
+          }
+        })
+        
+      })
+
+      $.RULE('mediaQuery', () => {
+        $.CONSUME(T.LParen)
+        $.CONSUME(T.InterpolatedIdent)
+        $.CONSUME(T.Colon)
+        $.SUBRULE($.additionExpression)
+        $.CONSUME(T.RParen)
+      });
 
       // TODO: misaligned with CSS: Missing case insensitive attribute flag
       // https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
@@ -361,7 +480,7 @@ class LessParser extends Parser {
       // [ HASH | class | attrib | pseudo ]+
       $.RULE('simple_selector_suffix', () => {
           $.OR([
-              { ALT: () => $.CONSUME(T.ClassOrID) },
+              { ALT: () => $.CONSUME(T.ClassOrId) },
               { ALT: () => $.SUBRULE($.attrib) },
               { ALT: () => $.SUBRULE($.pseudo) },
               { ALT: () => $.CONSUME(T.Ampersand) }
@@ -372,7 +491,8 @@ class LessParser extends Parser {
       $.RULE('element_name', () => {
           $.OR([
               { ALT: () => $.CONSUME(T.Ident) },
-              { ALT: () => $.CONSUME(T.Star) }
+              { ALT: () => $.CONSUME(T.Star) },
+              { ALT: () => $.CONSUME(T.Unit) }
           ])
       })
 
@@ -391,7 +511,7 @@ class LessParser extends Parser {
       })
 
       $.RULE('curlyBlock', () => {
-          $.CONSUME(T.LCurly)
+          $.CONSUME(T.LCurly);
           $.inSelector = true;
           $.SUBRULE($.primary);
           $.CONSUME(T.RCurly)
@@ -418,15 +538,23 @@ class LessParser extends Parser {
           ])
       })
 
-      $.RULE('args', () => {
-          $.CONSUME(T.LParen)
-          $.CONSUME(T.RParen)
-          // TODO: TBD
+      $.RULE('mixinArgs', () => {
+        $.CONSUME(T.LParen)
+        $.SUBRULE($.innerExpressionList, { ARGS: [true] });
+        $.CONSUME(T.RParen)
       })
 
       $.RULE('guard', () => {
-          $.CONSUME(T.When)
-          // TODO: TBD
+        $.CONSUME(T.When)
+        $.SUBRULE($.compareBlock)
+      })
+
+      $.RULE('compareBlock', () => {
+        $.CONSUME(T.LParen)
+        $.inCompareBlock = true
+        $.SUBRULE($.expression);
+        $.inCompareBlock = true
+        $.CONSUME(T.RParen)
       })
 
       // very important to call this after all the rules have been defined.

@@ -41,61 +41,77 @@ FRAGMENT('nonascii', '[\\u0240-\\uffff]')
 FRAGMENT('nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}')
 FRAGMENT('nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}')
 FRAGMENT('name', '({{nmchar}})+')
-FRAGMENT('ident', '-?{{nmstart}}{{nmchar}}*')
-FRAGMENT('interpolated', '({{ident}}|@{{{ident}}})+')
+FRAGMENT('ident', '-{0,2}{{nmstart}}{{nmchar}}*')
+FRAGMENT('interpolated', '({{ident}}|@{[\w-]+})+')
 FRAGMENT('url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*')
 
 function MAKE_PATTERN(def: string, flags?: string) {
   return XRegExp.build(def, fragments, flags)
 }
 
-createToken({
-  name: 'Comment',
-  pattern: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//,
-  group: Lexer.SKIPPED
-})
-
 // Single characters
 createToken({ name: 'Ampersand', pattern: '&' });
-createToken({ name: 'Gt', pattern: '>' })
-createToken({ name: 'Lt', pattern: '<' })
+
+createToken({ name: 'CompareOperator', pattern: Lexer.NA });
+createToken({ name: 'Gt', pattern: '>', categories: [T.CompareOperator] })
+createToken({ name: 'Lt', pattern: '<', categories: [T.CompareOperator] })
+createToken({ name: 'GtEq', pattern: '>=', categories: [T.CompareOperator] })
+createToken({ name: 'LtEq', pattern: '<=', categories: [T.CompareOperator] })
+
 createToken({ name: 'LCurly', pattern: '{' });
 createToken({ name: 'RCurly', pattern: '}' });
 createToken({ name: 'LParen', pattern: '(' });
 createToken({ name: 'RParen', pattern: ')' });
 createToken({ name: 'LSquare', pattern: '[' })
 createToken({ name: 'RSquare', pattern: ']' })
-createToken({ name: 'SemiColon', pattern: ';' })
-createToken({ name: 'Plus', pattern: '+' })
-createToken({ name: 'Minus', pattern: '-' })
-createToken({ name: 'Divide', pattern: /\.?\// })
-createToken({ name: 'Comma', pattern: ',' })
+
+createToken({ name: 'ArgSeparator', pattern: Lexer.NA})
+createToken({ name: 'SemiColon', pattern: ';', categories: [T.ArgSeparator] })
+
+createToken({ name: 'AdditionOperator', pattern: Lexer.NA });
+createToken({ name: 'MultiplicationOperator', pattern: Lexer.NA });
+createToken({ name: 'Plus', pattern: '+', categories: [T.AdditionOperator] })
+createToken({ name: 'Minus', pattern: '-', categories: [T.AdditionOperator] })
+
+createToken({ name: 'Divide', pattern: /\.?\//, categories: [T.MultiplicationOperator] })
+createToken({ name: 'Comma', pattern: ',', categories: [T.ArgSeparator] })
 createToken({ name: 'Colon', pattern: ':' })
 createToken({
   name: 'AttrMatch',
   pattern: /[*~|^$]?=/
 })
-createToken({ name: 'Star', pattern: '*' })
-createToken({ name: 'Eq', pattern: '=' })
+// Some tokens have to appear after AttrMatch
+createToken({ name: 'Eq', pattern: '=', categories: [T.CompareOperator] })
+createToken({ name: 'Star', pattern: '*', categories: [T.MultiplicationOperator] })
 createToken({ name: 'Tilde', pattern: '~' })
-createToken({
-  name: 'Unit',
-  pattern: /(\d+|\d*\.\d+)([\w]+|%)?/
-})
 
 createToken({
   name: 'InterpolatedIdent',
+  pattern: Lexer.NA
+})
+createToken({
+  name: 'Interpolated',
   pattern: MAKE_PATTERN('{{interpolated}}')
 })
 createToken({
   name: 'Ident',
+  pattern: Lexer.NA
+})
+createToken({
+  name: 'PlainIdent',
   pattern: MAKE_PATTERN('{{ident}}'),
-  longer_alt: T.InterpolatedIdent
+  longer_alt: T.InterpolatedIdent,
+  categories: [T.Ident, T.InterpolatedIdent]
 })
 
 createToken({ name: 'PlusAssign', pattern: '+:' })
 createToken({ name: 'UnderscoreAssign', pattern: '_:' })
-createToken({ name: 'AttrFlag', pattern: /[is]/, longer_alt: T.Ident })
+createToken({
+  name: 'AttrFlag',
+  pattern: /[is]/,
+  longer_alt: T.PlainIdent,
+  categories: [T.Ident, T.InterpolatedIdent]
+})
 createToken({
   name: 'PseudoClass',
   pattern: MAKE_PATTERN('::?{{interpolated}}')
@@ -115,19 +131,33 @@ createToken({
 createToken({
   name: 'When',
   pattern: /when/,
-  longer_alt: T.Ident
+  longer_alt: T.PlainIdent,
+  categories: [T.Ident, T.InterpolatedIdent]
 })
 createToken({
   name: 'And',
-  pattern: /and/,
-  longer_alt: T.Ident
+  pattern: /and|or/,
+  longer_alt: T.PlainIdent,
+  categories: [T.Ident, T.InterpolatedIdent]
+})
+// createToken({
+//   name: 'Or',
+//   pattern: /or/,
+//   longer_alt: T.PlainIdent,
+//   categories: [T.Ident]
+// })
+createToken({
+  name: 'Not',
+  pattern: /not/,
+  longer_alt: T.PlainIdent,
+  categories: [T.Ident, T.InterpolatedIdent]
 })
 createToken({
-  name: 'Or',
-  pattern: /or/,
-  longer_alt: T.Ident
+  name: 'Only',
+  pattern: /only/,
+  longer_alt: T.PlainIdent,
+  categories: [T.Ident, T.InterpolatedIdent]
 })
-
 
 createToken({ name: 'Uri', pattern: Lexer.NA })
 createToken({
@@ -144,7 +174,7 @@ createToken({
 })
 createToken({
   name: 'StringLiteral',
-  pattern: MAKE_PATTERN('{{string1}}|{{string2}}')
+  pattern: MAKE_PATTERN('~?({{string1}}|{{string2}})')
 })
 createToken({
   name: 'Important',
@@ -159,6 +189,10 @@ createToken({
 createToken({
   name: 'AtName',
   pattern: MAKE_PATTERN('@{{ident}}')
+})
+createToken({
+  name: 'VariableAssignment',
+  pattern: MAKE_PATTERN('@{{ident}}:')
 })
 
 /** @todo - not a thing yet */
@@ -183,8 +217,46 @@ createToken({
 })
 
 createToken({
-  name: 'ClassOrID',
-  pattern: MAKE_PATTERN('[#.]{{interpolated}}')
+  name: 'ClassOrId',
+  pattern: Lexer.NA
+})
+
+createToken({
+  name: 'Class',
+  pattern: MAKE_PATTERN('\\.{{interpolated}}'),
+  categories: [T.ClassOrId]
+})
+
+createToken({
+  name: 'ID',
+  pattern: MAKE_PATTERN('#{{interpolated}}'),
+  categories: [T.ClassOrId]
+})
+
+// This is in the ClassOrId category because a value may get lexed as a color,
+// but will be intended as an ID selector
+createToken({
+  name: 'Color',
+  pattern: /#(?:(?:[\da-f]{8})|(?:[\da-f]{6})|(?:[\da-f]{3,4}))/i,
+  longer_alt: T.ID,
+  categories: [T.ClassOrId]
+})
+
+createToken({
+  name: 'Unit',
+  pattern: /-?(\d+|\d*\.\d+)([\w]+|%)?/
+})
+
+createToken({
+  name: 'LineComment',
+  pattern: /\/\/[^\n\r]*/,
+  group: Lexer.SKIPPED
+})
+
+createToken({
+  name: 'BlockComment',
+  pattern: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//,
+  group: Lexer.SKIPPED
 })
 
 /** Ignore BOM */

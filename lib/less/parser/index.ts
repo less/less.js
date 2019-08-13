@@ -1,12 +1,14 @@
 
-import { CstParser, EMPTY_ALT, EOF } from 'chevrotain'
+import { CstParser, EMPTY_ALT, EOF} from 'chevrotain'
 import { lessTokens, LessLexer, T } from './tokens'
 
 class LessParser extends CstParser {
   constructor() {
     super(lessTokens, {
+      maxLookahead: 3,
       ignoredIssues: {
-        selector: { OR: true }
+        selector: { OR: true },
+        args: { OR: true }
       }
     })
     this.performSelfAnalysis()

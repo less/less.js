@@ -17,6 +17,10 @@ const fragments: {
   [key: string]: RegExp;
 } = {};
 
+/**
+ * @todo Maybe adapt the mini-DSL from:
+ * https://github.com/bd82/toml-tools/blob/master/packages/lexer/lib/tokens.js#L13-L31 
+ */
 function FRAGMENT(name: string, def: string, flags?: string) {
   fragments[name] = XRegExp.build(def, fragments, flags);
 }
@@ -65,8 +69,7 @@ createToken({ name: 'RParen', pattern: ')' });
 createToken({ name: 'LSquare', pattern: '[' })
 createToken({ name: 'RSquare', pattern: ']' })
 
-createToken({ name: 'ArgSeparator', pattern: Lexer.NA})
-createToken({ name: 'SemiColon', pattern: ';', categories: [T.ArgSeparator] })
+createToken({ name: 'SemiColon', pattern: ';' })
 
 createToken({ name: 'AdditionOperator', pattern: Lexer.NA });
 createToken({ name: 'MultiplicationOperator', pattern: Lexer.NA });
@@ -74,7 +77,7 @@ createToken({ name: 'Plus', pattern: '+', categories: [T.AdditionOperator] })
 createToken({ name: 'Minus', pattern: '-', categories: [T.AdditionOperator] })
 
 createToken({ name: 'Divide', pattern: /\.?\//, categories: [T.MultiplicationOperator] })
-createToken({ name: 'Comma', pattern: ',', categories: [T.ArgSeparator] })
+createToken({ name: 'Comma', pattern: ',' })
 createToken({ name: 'Colon', pattern: ':' })
 createToken({
   name: 'AttrMatch',

@@ -8,7 +8,10 @@ class LessParser extends CstParser {
       maxLookahead: 3,
       ignoredIssues: {
         selector: { OR: true },
-        args: { OR: true }
+        args: { OR: true },
+        rulesetOrMixin: { OR: true },
+        primary: { OR: true },
+        semiColonList: { OR: true }
       }
     })
     this.performSelfAnalysis()
@@ -60,11 +63,20 @@ class LessParser extends CstParser {
         { ALT: () => this.CONSUME(T.InterpolatedIdent) }
       ])
       this.OR2([
-        { ALT: () => this.CONSUME(T.Colon) },
-        { ALT: () => this.CONSUME(T.PlusAssign) },
-        { ALT: () => this.CONSUME(T.UnderscoreAssign) }
-      ]);
-      this.SUBRULE(this.expressionList);
+        // Token can look like a pseudoclass
+        { ALT: () => this.CONSUME(T.PseudoClass, { LABEL: 'decl' }) },
+        {
+          ALT: () => {
+            this.OR3([
+              { ALT: () => this.CONSUME(T.Colon) },
+              { ALT: () => this.CONSUME(T.PlusAssign) },
+              { ALT: () => this.CONSUME(T.UnderscoreAssign) }
+            ])
+            this.SUBRULE(this.expressionList);
+          }
+        }
+      ])
+      
       this.OPTION(() => this.CONSUME(T.SemiColon));
   })
 
@@ -84,11 +96,10 @@ class LessParser extends CstParser {
       this.OR([
           {
             GATE: () => extend,
-            ALT: () => this.CONSUME(T.SemiColon)
+            ALT: () => this.OPTION4(() => this.CONSUME(T.SemiColon))
           },
           {
               ALT: () => {
-                  // TODO: variable argument list syntax inside args indicates a definition
                   this.SUBRULE(this.mixinArgs)
                   this.OR2([
                       {
@@ -108,7 +119,7 @@ class LessParser extends CstParser {
                               this.OPTION3(() => {
                                   this.CONSUME(T.Important)
                               })
-                              this.CONSUME2(T.SemiColon)
+                              this.OPTION5(() => this.CONSUME2(T.SemiColon))
                           }
                       }
                   ])
@@ -124,9 +135,10 @@ class LessParser extends CstParser {
   })
 
   variableAssign = this.RULE('variableAssign', () => {
-    this.CONSUME(T.VariableAssignment);
-    this.SUBRULE(this.expressionList);
-    this.OPTION(() => this.CONSUME(T.SemiColon));
+    this.CONSUME(T.AtName)
+    this.CONSUME(T.Colon)
+    this.SUBRULE(this.expressionList)
+    this.OPTION(() => this.CONSUME(T.SemiColon))
   })
 
   // Used for mixin / function args
@@ -134,7 +146,7 @@ class LessParser extends CstParser {
   args = this.RULE('args', (inMixin: true) => {
     let semiColonFound = false;
     let closingParenFound = false
-    let blockStack = []
+    let blockStack = [T.RParen]
     let i = 0
 
     // extract this to a helper method
@@ -187,12 +199,13 @@ class LessParser extends CstParser {
           {
             GATE: () => inMixin,
             ALT: () => {
-              this.CONSUME(T.VariableAssignment)
-              this.SUBRULE(this.expression)
+              this.CONSUME(T.AtName)
+              this.CONSUME(T.Colon)
+              this.SUBRULE(this.expressionList)
             }
           },
           {
-            ALT: () => this.SUBRULE2(this.expression)
+            ALT: () => this.SUBRULE2(this.expressionList)
           }
         ])
       }
@@ -207,7 +220,8 @@ class LessParser extends CstParser {
           {
             GATE: () => inMixin,
             ALT: () => {
-              this.CONSUME(T.VariableAssignment)
+              this.CONSUME(T.AtName)
+              this.CONSUME(T.Colon)
               this.SUBRULE(this.expression)
             }
           },
@@ -326,17 +340,30 @@ class LessParser extends CstParser {
     ]);
   })
 
-  // TODO: this is the original CSS import is the LESS import different?
   importAtRule = this.RULE('importAtRule', () => {
     this.CONSUME(T.AtImport)
 
+    this.OPTION(() => {
+      this.CONSUME(T.LParen)
+      this.MANY_SEP({
+        SEP: T.Comma,
+        DEF: () => {
+          this.OR2([
+            { ALT: () => this.CONSUME(T.Ident) },
+            // TODO: allow importing mixins
+            // { ALT: () => this.CONSUME() }
+          ])
+        }
+      })
+      this.CONSUME(T.RParen)
+    })
+
     this.OR([
       { ALT: () => this.CONSUME(T.StringLiteral) },
-      // TODO: is the LESS URI different than CSS?
       { ALT: () => this.CONSUME(T.Uri) }
     ])
 
-    this.OPTION(() => {
+    this.OPTION2(() => {
       this.SUBRULE(this.mediaList)
     })
 
@@ -386,12 +413,12 @@ class LessParser extends CstParser {
         this.OPTION(() => this.CONSUME(T.Not))
         this.OR([
           { ALT: () => this.CONSUME(T.Ident) },
+          { ALT: () => this.SUBRULE(this.mediaQuery) },
           { ALT: () => {
             this.CONSUME(T.LParen)
             this.SUBRULE(this.mediaParam)
             this.CONSUME(T.RParen)
-          }},
-          { ALT: () => this.SUBRULE(this.mediaQuery) }
+          }}
         ])
       }
     })
@@ -518,7 +545,28 @@ class LessParser extends CstParser {
   pseudo = this.RULE('pseudo', () => {
     this.OR([
       { ALT: () => this.SUBRULE(this.pseudoFunction) },
-      { ALT: () => this.CONSUME(T.PseudoClass) }
+      {
+        GATE: () => {
+          let i = 0
+          let isClass = false
+          let done = false
+          while (!done) {
+            i++;
+            const nextToken = this.LA(i)
+            switch (nextToken.tokenType) {
+              case T.LCurly:
+                isClass = true;
+              case T.SemiColon:
+              case T.RCurly:
+              case EOF:
+                done = true;
+            }
+          }
+
+          return isClass
+        },
+        ALT: () => this.CONSUME(T.PseudoClass)
+      }
     ]);
   })
 

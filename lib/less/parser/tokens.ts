@@ -11,7 +11,70 @@ import {
 } from 'chevrotain';
 import * as XRegExp from 'xregexp';
 
-const T: {[key: string]: TokenType } = {};
+type TokenKeys =
+  'Ampersand' |
+  'CompareOperator' |
+  'Gt' |
+  'Lt' |
+  'GtEq' |
+  'LtEq' |
+  'LCurly' |
+  'RCurly' |
+  'LParen' |
+  'RParen' |
+  'LSquare' |
+  'RSquare' |
+  'SemiColon' |
+  'AdditionOperator' |
+  'MultiplicationOperator' |
+  'Plus' |
+  'Minus' |
+  'Divide' |
+  'Comma' |
+  'Colon' |
+  'AttrMatch' |
+  'Eq' |
+  'Star' |
+  'Tilde' |
+  'InterpolatedIdent' |
+  'Interpolated' |
+  'Ident' |
+  'PlainIdent' |
+  'PlusAssign' |
+  'UnderscoreAssign' |
+  'AttrFlag' |
+  'PseudoClass' |
+  'PseudoFunction' |
+  'Extend' |
+  'When' |
+  'And' |
+  'Not' |
+  'Only' |
+  'Uri' |
+  'UriString' |
+  'UriUrl' |
+  'StringLiteral' |
+  'Important' |
+  'Func' |
+  'AtName' |
+  // 'VariableAssignment' |
+  'AtImport' |
+  'AtMedia' |
+  'AtPlugin' |
+  'ClassOrId' |
+  'Class' |
+  'ID' |
+  'Color' |
+  'Unit' |
+  'LineComment' |
+  'BlockComment' |
+  'UnicodeBOM' |
+  'Whitespace'
+
+type TokenMap = {
+  [key in TokenKeys]?: TokenType
+}
+const T: TokenMap = {};
 
 const fragments: {
   [key: string]: RegExp;
@@ -27,7 +90,7 @@ function FRAGMENT(name: string, def: string, flags?: string) {
 
 const lessTokens: TokenType[] = [];
 
-const createToken = ({ name, ...rest }: ITokenConfig): TokenType => {
+const createToken = ({ name, ...rest }: ITokenConfig & { name: keyof TokenMap }): TokenType => {
   const token = orgCreateToken({name, ...rest});
   T[name] = token;
   lessTokens.unshift(token);
@@ -103,7 +166,7 @@ createToken({
 createToken({
   name: 'PlainIdent',
   pattern: MAKE_PATTERN('{{ident}}'),
-  longer_alt: T.InterpolatedIdent,
+  longer_alt: T.Interpolated,
   categories: [T.Ident, T.InterpolatedIdent]
 })
 
@@ -162,6 +225,16 @@ createToken({
   categories: [T.Ident, T.InterpolatedIdent]
 })
 
+/** Ident variants */
+createToken({
+  name: 'Func',
+  pattern: MAKE_PATTERN('{{ident}}\\(')
+})
+createToken({
+  name: 'AtName',
+  pattern: MAKE_PATTERN('@{{ident}}')
+})
+
 createToken({ name: 'Uri', pattern: Lexer.NA })
 createToken({
   name: 'UriString',
@@ -184,25 +257,11 @@ createToken({
   pattern: /!important/
 })
 
-/** Ident variants */
-createToken({
-  name: 'Func',
-  pattern: MAKE_PATTERN('{{ident}}\\(')
-})
-createToken({
-  name: 'AtName',
-  pattern: MAKE_PATTERN('@{{ident}}')
-})
-createToken({
-  name: 'VariableAssignment',
-  pattern: MAKE_PATTERN('@{{ident}}:')
-})
-
 /** @todo - not a thing yet */
-createToken({
-  name: 'InterpolatedExprStart',
-  pattern: /#{/
-})
+// createToken({
+//   name: 'InterpolatedExprStart',
+//   pattern: /#{/
+// })
 createToken({
   name: 'AtImport',
   pattern: /@import/,
@@ -247,7 +306,7 @@ createToken({
 
 createToken({
   name: 'Unit',
-  pattern: /-?(\d+|\d*\.\d+)([\w]+|%)?/
+  pattern: /-?(\d*\.\d+|\d+)([\w]+|%)?/
 })
 
 createToken({
@@ -259,13 +318,14 @@ createToken({
 createToken({
   name: 'BlockComment',
   pattern: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//,
+  line_breaks: true,
   group: Lexer.SKIPPED
 })
 
 /** Ignore BOM */
 createToken({
-  name: "UnicodeBOM",
-  pattern: "\uFFFE",
+  name: 'UnicodeBOM',
+  pattern: '\uFFFE',
   group: Lexer.SKIPPED
 })
 

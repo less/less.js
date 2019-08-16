@@ -69,7 +69,7 @@ type TokenKeys =
   'LineComment' |
   'BlockComment' |
   'UnicodeBOM' |
-  'Whitespace'
+  'WS'
 
 type TokenMap = {
   [key in TokenKeys]?: TokenType
@@ -178,10 +178,10 @@ createToken({
   longer_alt: T.PlainIdent,
   categories: [T.Ident, T.InterpolatedIdent]
 })
-createToken({
-  name: 'PseudoClass',
-  pattern: MAKE_PATTERN('::?{{interpolated}}')
-})
+// createToken({
+//   name: 'PseudoClass',
+//   pattern: MAKE_PATTERN('::?{{interpolated}}')
+// })
 createToken({
   name: 'PseudoFunction',
   pattern: MAKE_PATTERN(':{{interpolated}}\\(')
@@ -330,12 +330,8 @@ createToken({
 })
 
 createToken({
-  name: 'Whitespace',
-  pattern: MAKE_PATTERN('{{spaces}}'),
-  // The W3C specs are are defined in a whitespace sensitive manner.
-  // But there is only **one** place where the grammar is truly whitespace sensitive.
-  // So the whitespace sensitivity was implemented via a GATE in the selector rule.
-  group: Lexer.SKIPPED
+  name: 'WS',
+  pattern: MAKE_PATTERN('{{spaces}}')
 })
 
 const LessLexer = new Lexer(lessTokens)

@@ -14,6 +14,7 @@ module.exports = function() {
         less = require('../tmp/less.cjs.js');
     }
     catch (e) {
+        console.log(e)
         less = require('../dist/less.cjs.js');
     }
 
@@ -265,7 +266,7 @@ module.exports = function() {
         }
 
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (!/\.less$/.test(file)) { return; }
+            if (!/extend\.less$/.test(file)) { return; }
 
             var options = clone(originalOptions);
 

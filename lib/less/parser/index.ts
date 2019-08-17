@@ -9,7 +9,7 @@ class LessParser extends CstParser {
       ignoredIssues: {
         // selector: { OR: true },
         args: { OR: true },
-        rulesetOrMixin: { OR: true },
+        // rulesetOrMixin: { OR: true },
         // primary: { OR: true },
         semiArg: { OR: true }
       }
@@ -72,63 +72,61 @@ class LessParser extends CstParser {
   })
 
   declaration = this.RULE('declaration', () => {
-      this.OR([
-        { ALT: () => this.CONSUME(T.Ident) },
-        { ALT: () => this.CONSUME(T.InterpolatedIdent) }
-      ])
-      this.SUBRULE(this._)
-      this.OR2([
-        { ALT: () => this.CONSUME(T.Colon) },
-        { ALT: () => this.CONSUME(T.PlusAssign) },
-        { ALT: () => this.CONSUME(T.UnderscoreAssign) }
-      ])
-      this.SUBRULE2(this._)
-      this.SUBRULE(this.expressionList)
-      this.SUBRULE3(this._)
-      this.OPTION(() => this.CONSUME(T.SemiColon));
+    this.OR([
+      { ALT: () => this.CONSUME(T.Ident) },
+      { ALT: () => this.CONSUME(T.InterpolatedIdent) }
+    ])
+    this.SUBRULE(this._)
+    this.OR2([
+      { ALT: () => this.CONSUME(T.Colon) },
+      { ALT: () => this.CONSUME(T.PlusAssign) },
+      { ALT: () => this.CONSUME(T.UnderscoreAssign) }
+    ])
+    this.SUBRULE2(this._)
+    this.SUBRULE(this.expressionList)
+    this.SUBRULE3(this._)
+    this.OPTION(() => this.CONSUME(T.SemiColon));
   })
 
+
+  // Technically this is all selectors after an initial selector match
+  // e.g.  ", div.class, p"
   selectorList = this.RULE('selectorList', (canExtend: boolean = false) => {
-    this.SUBRULE(this.selector)
-    this.OPTION2({
-      GATE: () => canExtend,
-      DEF: () => this.SUBRULE2(this.extendRule)
-    })
-    this.AT_LEAST_ONE_SEP({
-      SEP: T.Comma,
-      DEF: () => {
-        this.SUBRULE2(this._)
-        this.SUBRULE2(this.selector)
-        this.OPTION3({
-          GATE: () => canExtend,
-          DEF: () => this.SUBRULE3(this.extendRule)
-        })
-      }
+    this.AT_LEAST_ONE(() => {
+      this.SUBRULE(this._)
+      this.CONSUME(T.Comma)
+      this.SUBRULE2(this._)
+      this.SUBRULE2(this.selector)
+      this.OPTION({
+        GATE: () => canExtend,
+        DEF: () => this.SUBRULE(this.extendRule)
+      })
     })
   })
 
   rulesetOrMixin = this.RULE('rulesetOrMixin', () => {
+    this.SUBRULE(this.selector)
+    this.OPTION(() => this.SUBRULE(this.extendRule))
     this.OR([
       {
         ALT: () => {
-          this.SUBRULE(this.selector)
-          this.OPTION(() => {
-            this.SUBRULE(this._)
-            this.SUBRULE(this.mixinArgs)
-          })
-          this.OPTION2(() => {
-            this.SUBRULE2(this._)
-            this.SUBRULE(this.guard)
-          })
-          this.OPTION3(() => {
-            this.SUBRULE3(this._)
-            this.CONSUME(T.Important)
-          })
+          this.SUBRULE(this.selectorList, { ARGS: [true] })
         }
       },
       {
         ALT: () => {
-          this.SUBRULE(this.selectorList, { ARGS: [true] })
+          this.OPTION2(() => {
+            this.SUBRULE(this._)
+            this.SUBRULE(this.mixinArgs)
+          })
+          this.OPTION3(() => {
+            this.SUBRULE2(this._)
+            this.SUBRULE(this.guard)
+          })
+          this.OPTION4(() => {
+            this.SUBRULE3(this._)
+            this.CONSUME(T.Important)
+          })
         }
       }
     ])
@@ -142,7 +140,7 @@ class LessParser extends CstParser {
       },
       {
         ALT: () => {
-          this.OPTION4(() => this.CONSUME(T.SemiColon))
+          this.OPTION5(() => this.CONSUME(T.SemiColon))
         }
       }
     ])
@@ -309,14 +307,14 @@ class LessParser extends CstParser {
       GATE: () => this.inCompareBlock,
       DEF: () => {
         // consuming 'AdditionOperator' will consume either Plus or Minus as they are subclasses of AdditionOperator
-        this.CONSUME(T.CompareOperator)
         this.SUBRULE(this._)
+        this.CONSUME(T.CompareOperator)
+        this.SUBRULE2(this._)
         //  the index "2" in SUBRULE2 is needed to identify the unique position in the grammar during runtime
         this.SUBRULE2(this.atomicExpression, { LABEL: "rhs" })
-        // this.SUBRULE2(this._)
       }
     })
-    this.SUBRULE2(this._)
+    this.SUBRULE3(this._)
   })     
 
   atomicExpression = this.RULE('atomicExpression', () => {
@@ -398,34 +396,29 @@ class LessParser extends CstParser {
     this.SUBRULE(this._)
     this.OPTION(() => {
       this.CONSUME(T.LParen)
-      this.MANY_SEP({
-        SEP: T.Comma,
-        DEF: () => {
-          this.OR2([
-            { ALT: () => {
-              this.SUBRULE2(this._)
-              this.CONSUME(T.Ident)
-              this.SUBRULE3(this._)
-            }},
-            // TODO: allow importing mixins
-            // { ALT: () => this.CONSUME() }
-          ])
-        }
+      this.SUBRULE2(this._)
+      this.CONSUME(T.Ident)
+      this.MANY(() => {
+        this.SUBRULE3(this._)
+        this.CONSUME(T.Comma),
+        this.SUBRULE4(this._)
+        this.CONSUME2(T.Ident)
       })
+      this.SUBRULE5(this._)
       this.CONSUME(T.RParen)
     })
 
-    this.SUBRULE4(this._)
+    this.SUBRULE6(this._)
     this.OR([
       { ALT: () => this.CONSUME(T.StringLiteral) },
       { ALT: () => this.CONSUME(T.Uri) }
     ])
-    this.SUBRULE5(this._)
+    this.SUBRULE7(this._)
 
     this.OPTION2(() => {
       this.SUBRULE(this.mediaList)
     })
-    this.SUBRULE6(this._)
+    this.SUBRULE8(this._)
 
     this.CONSUME(T.SemiColon)
   })

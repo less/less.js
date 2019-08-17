@@ -98,6 +98,8 @@ const createToken = ({ name, ...rest }: ITokenConfig & { name: keyof TokenMap })
 };
 
 FRAGMENT('spaces', '[ \\t\\r\\n\\f]+')
+FRAGMENT('blockComment', '\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/')
+FRAGMENT('lineComment', '\\/\\/[^\\n\\r]*') // include?: (\\r\\n|\\r\\n)?  
 FRAGMENT('h', '[\\da-f]', 'i')
 FRAGMENT('unicode', '\\{{h}}{1,6}')
 FRAGMENT('escape', '{{unicode}}|\\\\[^\\r\\n\\f0-9a-fA-F]')
@@ -310,16 +312,23 @@ createToken({
 })
 
 createToken({
+  name: 'WS',
+  pattern: MAKE_PATTERN('({{spaces}}|{{lineComment}}|{{blockComment}})+')
+})
+
+createToken({
   name: 'LineComment',
-  pattern: /\/\/[^\n\r]*/,
-  group: Lexer.SKIPPED
+  pattern: MAKE_PATTERN('{{lineComment}}'),
+  group: Lexer.SKIPPED,
+  longer_alt: T.WS
 })
 
 createToken({
   name: 'BlockComment',
-  pattern: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//,
+  pattern: MAKE_PATTERN('{{blockComment}}'),
   line_breaks: true,
-  group: Lexer.SKIPPED
+  group: Lexer.SKIPPED,
+  longer_alt: T.WS
 })
 
 /** Ignore BOM */
@@ -327,11 +336,6 @@ createToken({
   name: 'UnicodeBOM',
   pattern: '\uFFFE',
   group: Lexer.SKIPPED
-})
-
-createToken({
-  name: 'WS',
-  pattern: MAKE_PATTERN('{{spaces}}')
 })
 
 const LessLexer = new Lexer(lessTokens)

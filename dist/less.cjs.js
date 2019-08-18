@@ -12239,7 +12239,7 @@ var createFromEnvironment = ((environment, fileManagers) => {
    */
 
   const initial = {
-    version: [3, 10, 0],
+    version: [3, 10, 1],
     data,
     tree,
     Environment: environment$1,

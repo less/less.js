@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.10.0
+ * Less - Leaner CSS v3.10.1
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2019, Alexis Sellier <self@cloudhead.net>
@@ -13526,7 +13526,7 @@
      */
 
     var initial = {
-      version: [3, 10, 0],
+      version: [3, 10, 1],
       data: data,
       tree: tree,
       Environment: environment,

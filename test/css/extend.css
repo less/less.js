@@ -18,13 +18,13 @@
 .foo .bar,
 .foo .baz,
 .ext1 .ext2 .bar,
-.ext1 .ext2 .baz,
 .ext3 .bar,
-.ext3 .baz,
-.foo .ext3,
 .ext4 .bar,
-.ext4 .baz,
-.foo .ext4 {
+.foo .ext3,
+.foo .ext4,
+.ext1 .ext2 .baz,
+.ext3 .baz,
+.ext4 .baz {
   display: none;
 }
 div.ext5,
@@ -71,6 +71,8 @@ div.ext7,
   background: red;
 }
 .bb .bb,
+.ff .bb,
+.bb .ff,
 .ff .ff {
   color: black;
 }

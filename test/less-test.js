@@ -266,7 +266,7 @@ module.exports = function() {
         }
 
         fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (!/extend\.less$/.test(file)) { return; }
+            if (!/\.less$/.test(file)) { return; }
 
             var options = clone(originalOptions);
 

@@ -18,10 +18,10 @@
 .foo .bar,
 .foo .baz,
 .ext1 .ext2 .bar,
-.ext1 .ext2 .baz,
 .ext3 .bar,
-.ext3 .baz,
 .ext4 .bar,
+.ext1 .ext2 .baz,
+.ext3 .baz,
 .ext4 .baz {
   display: none;
 }
@@ -54,7 +54,11 @@ div.ext7,
 .c.replace + .replace .c,
 .rep_ace.rep_ace .rep_ace,
 .c.rep_ace + .rep_ace .rep_ace,
+.rep_ace.replace .c,
+.replace.rep_ace .c,
 .rep_ace.rep_ace .c,
+.c.rep_ace + .replace .c,
+.c.replace + .rep_ace .c,
 .c.rep_ace + .rep_ace .c {
   prop: copy-paste-replace;
 }

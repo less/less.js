@@ -85,7 +85,7 @@ async function buildNode() {
                 exclude: 'node_modules/**', // only transpile our source code
                 presets: [["@babel/env", {
                     targets: {
-                        node: '6'
+                        node: '4'
                     }
                 }]]
             })
@@ -115,7 +115,7 @@ async function buildLessC() {
                 exclude: 'node_modules/**', // only transpile our source code
                 presets: [["@babel/env", {
                     targets: {
-                        node: '6'
+                        node: '4'
                     }
                 }]]
             })

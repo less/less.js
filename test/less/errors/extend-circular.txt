@@ -1,4 +1,0 @@
-RuntimeError: Extend circular reference detected. Extend selector chain is [ .x -> .y -> .z -> .x ] in {path}extend-circular.less on line 2, column 1:
-1 // classic circular references
-2 .x:extend(.z) {
-3   color: x;

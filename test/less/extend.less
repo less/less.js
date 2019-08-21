@@ -107,3 +107,16 @@ div.ext5,
 // }
 // exSelector:extend(a:first all) {}
 // longExtendExtend:extend(exSelector b:second all) {} //extend extended selector
+
+// @todo - Issue #1952 - not fixed
+// .title {
+//   .firstpara {
+//       margin-top: 0;
+//   }
+// }
+// .title-main {
+//   &:extend(.title all);
+// }
+// .firstpara-main {
+//   &:extend(.firstpara all);
+// }

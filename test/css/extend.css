@@ -76,3 +76,33 @@ div.ext7,
 .ff .ff {
   color: black;
 }
+/** @todo eliminate repetition */
+.a,
+.a,
+.a,
+.a,
+.a {
+  foo: bar;
+}
+.bucket,
+.some-class {
+  color: blue;
+}
+.class .class .class .class,
+.extension .class .class .class,
+.class .extension .class .class,
+.extension .extension .class .class,
+.class .class .extension .class,
+.extension .class .extension .class,
+.class .extension .extension .class,
+.extension .extension .extension .class,
+.class .class .class .extension,
+.extension .class .class .extension,
+.class .extension .class .extension,
+.extension .extension .class .extension,
+.class .class .extension .extension,
+.extension .class .extension .extension,
+.class .extension .extension .extension,
+.extension .extension .extension .extension {
+  a: b;
+}

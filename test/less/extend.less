@@ -79,3 +79,24 @@ div.ext5,
 .cc:extend(.aa,.bb) {}
 .ee:extend(.dd all,.bb) {}
 .ff:extend(.dd,.bb all) {}
+
+/** @todo eliminate repetition */
+.a:extend(.a all) {
+  foo: bar;
+}
+.a:extend(.a all) {}
+.a:extend(.a all) {}
+.a:extend(.a all) {}
+
+// This used to not be possible
+@variable: .bucket;
+@{variable} { // interpolated selector
+  color: blue;
+}
+.some-class:extend(.bucket) {}
+
+// Issue: #1487
+.class .class .class .class {
+  a:b;
+ }
+.extension:extend(.class all) {}

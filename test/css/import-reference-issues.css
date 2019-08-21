@@ -1,4 +1,7 @@
 .test-c {
+  color: red;
+}
+.test-c {
   background-color: green;
 }
 .theOnlySelector {

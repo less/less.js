@@ -8,6 +8,7 @@ div#id.class[a=1][b=2].class:not(1) {
   .class {
     color: blue;
   }
+  .class .sub,
   .class .sub {
     width: 42;
   }
@@ -15,6 +16,7 @@ div#id.class[a=1][b=2].class:not(1) {
 .visible {
   color: red;
 }
+.z .c,
 .visible .c {
   color: green;
 }
@@ -26,11 +28,19 @@ div#id.class[a=1][b=2].class:not(1) {
 }
 .only-with-visible + .visible,
 .visible + .only-with-visible,
+.visible + .z,
+.z + .visible,
 .visible + .visible {
   color: green;
 }
+.only-with-visible + .only-with-visible .sub,
+.only-with-visible + .z .sub,
+.z + .only-with-visible .sub,
+.z + .z .sub,
 .only-with-visible + .visible .sub,
 .visible + .only-with-visible .sub,
+.visible + .z .sub,
+.z + .visible .sub,
 .visible + .visible .sub {
   color: green;
 }
@@ -38,6 +48,7 @@ div#id.class[a=1][b=2].class:not(1) {
   .class {
     something: else;
   }
+  .nestedToo .class,
   .nestedToo .class {
     something: else;
   }

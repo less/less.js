@@ -8830,8 +8830,11 @@ var Parser = function Parser(context, imports, fileInfo) {
         result = parsers[p]();
 
         if (result) {
-          result._index = i + currentIndex;
-          result._fileInfo = fileInfo;
+          try {
+            result._index = i + currentIndex;
+            result._fileInfo = fileInfo;
+          } catch (e) {}
+
           returnNodes.push(result);
         } else {
           returnNodes.push(null);
@@ -11854,8 +11857,8 @@ var list = {
     return n;
   },
   extract: function extract(values, index) {
-    index = index.value - 1; // (1-based index)
-
+    // (1-based index)
+    index = index.value - 1;
     return getItemsFromNode(values)[index];
   },
   length: function length(values) {
@@ -12128,7 +12131,7 @@ var number$1 = {
 
 var string = {
   e: function e(str) {
-    return new Quoted('"', str instanceof JavaScript ? str.evaluated : str.value, true);
+    return new Anonymous(str instanceof JavaScript ? str.evaluated : str.value);
   },
   escape: function escape(str) {
     return new Anonymous(encodeURI(str.value).replace(/=/g, '%3D').replace(/:/g, '%3A').replace(/#/g, '%23').replace(/;/g, '%3B').replace(/\(/g, '%28').replace(/\)/g, '%29'));
@@ -13358,7 +13361,7 @@ var createFromEnvironment = (function (environment, fileManagers) {
    */
 
   var initial = {
-    version: [3, 10, 2],
+    version: [3, 10, 3],
     data,
     tree,
     Environment: environment$1,

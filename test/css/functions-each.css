@@ -88,5 +88,11 @@ div {
   content: 'foo';
 }
 .a .w-1 {
-  width: 90 100 110;
+  width: 90;
+}
+.a .w-2 {
+  width: 100;
+}
+.a .w-3 {
+  width: 110;
 }

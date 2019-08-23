@@ -4640,6 +4640,7 @@
       _this._fileInfo = currentFileInfo;
       _this.variableRegex = /@\{([\w-]+)\}/g;
       _this.propRegex = /\$\{([\w-]+)\}/g;
+      _this.allowRoot = escaped;
       return _this;
     }
 
@@ -12299,7 +12300,7 @@
 
   var string = {
     e: function e(str) {
-      return new Anonymous(str instanceof JavaScript ? str.evaluated : str.value);
+      return new Quoted('"', str instanceof JavaScript ? str.evaluated : str.value, true);
     },
     escape: function escape(str) {
       return new Anonymous(encodeURI(str.value).replace(/=/g, '%3D').replace(/:/g, '%3A').replace(/#/g, '%23').replace(/;/g, '%3B').replace(/\(/g, '%28').replace(/\)/g, '%29'));

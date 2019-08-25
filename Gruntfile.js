@@ -571,8 +571,11 @@ module.exports = function(grunt) {
     // Run shell plugin test
     grunt.registerTask("shell-plugin", ["shell:plugin"]);
 
-    // Run all tests except browsertest
-    grunt.registerTask("quicktest", testTasks.slice(0, -1));
+    // Quickly build and run Node tests
+    grunt.registerTask("quicktest", [
+        "shell:testcjs",
+        "shell:test"
+    ]);
 
     // generate a good test environment for testing sourcemaps
     grunt.registerTask("sourcemap-test", [

@@ -9,3 +9,16 @@
 @return: {
   single: val;
 }
+
+// Issue #3405
+#lookup {
+  @prop: test;
+}
+
+.mix (@var) {
+  width: @var;
+}
+
+.bar {
+  .mix(#lookup[@prop]);
+}

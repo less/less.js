@@ -5,3 +5,6 @@
 .bar {
   width: test;
 }
+.example {
+  value: lookup;
+}

@@ -4671,6 +4671,7 @@ function (_Node) {
     _this._fileInfo = currentFileInfo;
     _this.variableRegex = /@\{([\w-]+)\}/g;
     _this.propRegex = /\$\{([\w-]+)\}/g;
+    _this.allowRoot = escaped;
     return _this;
   }
 
@@ -8830,8 +8831,11 @@ var Parser = function Parser(context, imports, fileInfo) {
         result = parsers[p]();
 
         if (result) {
-          result._index = i + currentIndex;
-          result._fileInfo = fileInfo;
+          try {
+            result._index = i + currentIndex;
+            result._fileInfo = fileInfo;
+          } catch (e) {}
+
           returnNodes.push(result);
         } else {
           returnNodes.push(null);
@@ -11854,8 +11858,8 @@ var list = {
     return n;
   },
   extract: function extract(values, index) {
-    index = index.value - 1; // (1-based index)
-
+    // (1-based index)
+    index = index.value - 1;
     return getItemsFromNode(values)[index];
   },
   length: function length(values) {
@@ -13358,7 +13362,7 @@ var createFromEnvironment = (function (environment, fileManagers) {
    */
 
   var initial = {
-    version: [3, 10, 2],
+    version: [3, 10, 3],
     data,
     tree,
     Environment: environment$1,

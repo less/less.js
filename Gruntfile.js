@@ -200,9 +200,7 @@ module.exports = function(grunt) {
                 }
             },
             build: {
-                command: [
-                    scriptRuntime + " build/rollup.js --dist"
-                ].join(" && ")
+                command: scriptRuntime + " build/rollup.js --dist"
             },
             testbuild: {
                 command: [
@@ -210,6 +208,12 @@ module.exports = function(grunt) {
                     scriptRuntime + " build/rollup.js --node --out=./tmp/less.cjs.js",
                     scriptRuntime + " build/rollup.js --browser --out=./test/browser/less.min.js"
                 ].join(" && ")
+            },
+            testcjs: {
+                command: scriptRuntime + " build/rollup.js --node --out=./tmp/less.cjs.js"
+            },
+            testbrowser: {
+                command: scriptRuntime + " build/rollup.js --browser --out=./test/browser/less.min.js"
             },
             test: {
                 command: "node test/index.js"
@@ -494,7 +498,7 @@ module.exports = function(grunt) {
 
     // Create the browser version of less.js
     grunt.registerTask("browsertest-lessjs", [
-        "shell:testbuild"
+        "shell:testbrowser"
     ]);
 
     // Run all browser tests
@@ -578,5 +582,8 @@ module.exports = function(grunt) {
     ]);
 
     // Run benchmark
-    grunt.registerTask("benchmark", ["shell:benchmark"]);
+    grunt.registerTask("benchmark", [
+        "shell:testcjs",
+        "shell:benchmark"
+    ]);
 };

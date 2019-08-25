@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.10.2
+ * Less - Leaner CSS v3.10.3
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2019, Alexis Sellier <self@cloudhead.net>
@@ -4640,6 +4640,7 @@
       _this._fileInfo = currentFileInfo;
       _this.variableRegex = /@\{([\w-]+)\}/g;
       _this.propRegex = /\$\{([\w-]+)\}/g;
+      _this.allowRoot = escaped;
       return _this;
     }
 
@@ -8999,8 +9000,11 @@
           result = parsers[p]();
 
           if (result) {
-            result._index = i + currentIndex;
-            result._fileInfo = fileInfo;
+            try {
+              result._index = i + currentIndex;
+              result._fileInfo = fileInfo;
+            } catch (e) {}
+
             returnNodes.push(result);
           } else {
             returnNodes.push(null);
@@ -12022,8 +12026,8 @@
       return n;
     },
     extract: function extract(values, index) {
-      index = index.value - 1; // (1-based index)
-
+      // (1-based index)
+      index = index.value - 1;
       return getItemsFromNode(values)[index];
     },
     length: function length(values) {
@@ -13526,7 +13530,7 @@
      */
 
     var initial = {
-      version: [3, 10, 2],
+      version: [3, 10, 3],
       data: data,
       tree: tree,
       Environment: environment,

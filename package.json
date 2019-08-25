@@ -72,7 +72,6 @@
     "less-plugin-clean-css": "^1.5.1",
     "minimist": "^1.2.0",
     "performance-now": "^0.2.0",
-    "phantomjs-polyfill-object-assign": "0.0.2",
     "phantomjs-prebuilt": "^2.1.16",
     "phin": "^2.2.3",
     "promise": "^7.1.1",

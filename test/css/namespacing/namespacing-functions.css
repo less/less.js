@@ -2,3 +2,9 @@
   width: 20px;
   bar: val;
 }
+.bar {
+  width: test;
+}
+.example {
+  value: lookup;
+}

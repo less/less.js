@@ -17,13 +17,8 @@
       "name": "Less test",
       "type": "node",
       "request": "launch",
-      "runtimeArgs": [
-          "-r",
-          "ts-node/register"
-      ],
-      "args": [
-          "${workspaceFolder}/test/index.ts"
-      ]
-}
+      "args": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/ts-node", "${workspaceFolder}/test/index.ts"],
+      "console": "integratedTerminal"
+    }
   ]
 }

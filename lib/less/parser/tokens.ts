@@ -33,9 +33,11 @@ type TokenKeys =
   'Comma' |
   'Colon' |
   'AttrMatch' |
+  'AttrMatchOperator' |
   'Eq' |
   'Star' |
   'Tilde' |
+  'Pipe' |
   'InterpolatedIdent' |
   'Interpolated' |
   'Ident' |
@@ -61,6 +63,7 @@ type TokenKeys =
   'AtImport' |
   'AtMedia' |
   'AtPlugin' |
+  'UnicodeRange' |
   'ClassOrId' |
   'Class' |
   'ID' |
@@ -69,7 +72,8 @@ type TokenKeys =
   'LineComment' |
   'BlockComment' |
   'UnicodeBOM' |
-  'WS'
+  'WS' |
+  'AnyValue'
 
 type TokenMap = {
   [key in TokenKeys]?: TokenType
@@ -97,19 +101,20 @@ const createToken = ({ name, ...rest }: ITokenConfig & { name: keyof TokenMap })
   return token;
 };
 
-FRAGMENT('spaces', '[ \\t\\r\\n\\f]+')
+FRAGMENT('newline', '\\n|\\r\\n?|\\f');
+FRAGMENT('ws', '[ ]|\\t|{{newline}}');
+FRAGMENT('spaces', '{{ws}}+')
 FRAGMENT('blockComment', '\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/')
 FRAGMENT('lineComment', '\\/\\/[^\\n\\r]*') // include?: (\\r\\n|\\r\\n)?  
-FRAGMENT('h', '[\\da-f]', 'i')
-FRAGMENT('unicode', '\\{{h}}{1,6}')
+FRAGMENT('h', '[\\da-fA-F]')
+FRAGMENT('unicode', '\\\\{{h}}{1,6}{{ws}}?')
 FRAGMENT('escape', '{{unicode}}|\\\\[^\\r\\n\\f0-9a-fA-F]')
-FRAGMENT('nl', '\\n|\\r|\\f')
-FRAGMENT('string1', '\\"([^\\n\\r\\f\\"]|{{nl}}|{{escape}})*\\"')
-FRAGMENT('string2', "\\'([^\\n\\r\\f\\']|{{nl}}|{{escape}})*\\'")
+FRAGMENT('string1', '\\"([^\\n\\r\\f\\"]|{{newline}}|{{escape}})*\\"')
+FRAGMENT('string2', "\\'([^\\n\\r\\f\\']|{{newline}}|{{escape}})*\\'")
 FRAGMENT('nonascii', '[\\u0240-\\uffff]')
 FRAGMENT('nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}')
 FRAGMENT('nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}')
-FRAGMENT('name', '({{nmchar}})+')
+FRAGMENT('name', '{{nmchar}}+')
 FRAGMENT('ident', '-{0,2}{{nmstart}}{{nmchar}}*')
 FRAGMENT('interpolated', '({{ident}}|@{[\w-]+})+')
 FRAGMENT('url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*')
@@ -118,6 +123,10 @@ function MAKE_PATTERN(def: string, flags?: string) {
   return XRegExp.build(def, fragments, flags)
 }
 
+createToken({
+  name: 'AnyValue',
+  pattern: Lexer.NA
+})
 // Single characters
 createToken({ name: 'Ampersand', pattern: '&' });
 
@@ -145,13 +154,21 @@ createToken({ name: 'Divide', pattern: /\.?\//, categories: [T.MultiplicationOpe
 createToken({ name: 'Comma', pattern: ',' })
 createToken({ name: 'Colon', pattern: ':' })
 createToken({
-  name: 'AttrMatch',
-  pattern: /[*~|^$]?=/
+  name: 'AttrMatchOperator',
+  pattern: Lexer.NA
 })
 // Some tokens have to appear after AttrMatch
-createToken({ name: 'Eq', pattern: '=', categories: [T.CompareOperator] })
+createToken({ name: 'Eq', pattern: '=', categories: [T.CompareOperator, T.AttrMatchOperator] })
 createToken({ name: 'Star', pattern: '*', categories: [T.MultiplicationOperator] })
 createToken({ name: 'Tilde', pattern: '~' })
+/** Rare: a namespace combinator */
+createToken({ name: 'Pipe', pattern: '|' })
+
+createToken({
+  name: 'AttrMatch',
+  pattern: /[*~|^$]=/,
+  categories: [T.AttrMatchOperator]
+})
 
 createToken({
   name: 'InterpolatedIdent',
@@ -281,6 +298,11 @@ createToken({
 })
 
 createToken({
+  name: 'UnicodeRange',
+  pattern: /[uU]\+[0-9a-fA-F?]+(\-[0-9a-fA-F?]+)?/
+})
+
+createToken({
   name: 'ClassOrId',
   pattern: Lexer.NA
 })
@@ -308,7 +330,7 @@ createToken({
 
 createToken({
   name: 'Unit',
-  pattern: /-?(\d*\.\d+|\d+)([\w]+|%)?/
+  pattern: /[-+]?(\d*\.\d+|\d+)([\w]+|%)?/
 })
 
 createToken({

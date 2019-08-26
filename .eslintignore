@@ -1,5 +1,6 @@
 Gruntfile.js
 dist/*
 tmp/*
+wip/*
 test/browser/vendor/*
 test/browser/less.min.js

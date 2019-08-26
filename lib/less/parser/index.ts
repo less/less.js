@@ -18,10 +18,19 @@ class LessParser extends CstParser {
     this.performSelfAnalysis()
   }
 
-  inSelector: boolean = false
-  inCompareBlock: boolean = false
-  inPseudo: boolean = false
-  inAtRule: boolean = false
+  inSelector: boolean
+  inCompareBlock: boolean
+  inPseudo: boolean
+  inAtRule: boolean
+
+  // https://sap.github.io/chevrotain/documentation/6_1_0/classes/baseparser.html#reset
+  reset() {
+    super.reset()
+    this.inSelector = false
+    this.inCompareBlock = false
+    this.inPseudo = false
+    this.inAtRule = false
+  }
 
   // Optional whitespace
   _ = this.RULE('_', () => {

@@ -3,6 +3,14 @@ import * as glob from 'glob';
 import * as fs from 'fs';
 
 describe('Less parsing', () => {
+
+  xit(`single file test util`, () => {
+      const result = fs.readFileSync('test/less/calc.less');
+      const parsed = parse(result.toString());
+      expect(parsed.lexErrors.length).toBe(0);
+      expect(parsed.parseErrors.length).toBe(0);
+  });
+
   describe('can parse all Less stylesheets', () => {
     const files = glob.sync('test/less/**/*.less');
     files.sort();

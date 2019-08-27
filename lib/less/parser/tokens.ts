@@ -73,7 +73,10 @@ type TokenKeys =
   'BlockComment' |
   'UnicodeBOM' |
   'WS' |
-  'AnyValue'
+  'AnyValue' |
+  'VarOrProp' |
+  'PropertyReference' |
+  'NestedReference'
 
 type TokenMap = {
   [key in TokenKeys]?: TokenType
@@ -250,8 +253,23 @@ createToken({
   pattern: MAKE_PATTERN('{{ident}}\\(')
 })
 createToken({
+  name: 'VarOrProp',
+  pattern: Lexer.NA
+})
+createToken({
   name: 'AtName',
-  pattern: MAKE_PATTERN('@{{ident}}')
+  pattern: MAKE_PATTERN('@{{ident}}'),
+  categories: [T.VarOrProp]
+})
+createToken({
+  name: 'NestedReference',
+  pattern: MAKE_PATTERN('([@$]+{{ident}}?){2,}'),
+  categories: [T.VarOrProp]
+})
+createToken({
+  name: 'PropertyReference',
+  pattern: MAKE_PATTERN('\\${{ident}}'),
+  categories: [T.VarOrProp]
 })
 
 createToken({ name: 'Uri', pattern: Lexer.NA })

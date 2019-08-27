@@ -22,10 +22,16 @@ class LessParser extends CstParser {
   inCompareBlock: boolean = false
   inPseudo: boolean = false
   inAtRule: boolean = false
+  inGuard: boolean = false
 
   // Optional whitespace
   _ = this.RULE('_', () => {
     this.OPTION(() => this.CONSUME(T.WS))
+  })
+
+  /** Gobble semis if present */
+  semi = this.RULE('semi', () => {
+    this.OPTION(() => this.CONSUME(T.SemiColon))
   })
 
   // Mandatory whitespace
@@ -33,137 +39,8 @@ class LessParser extends CstParser {
   //   this.CONSUME(T.WS)
   // })
 
-  primary = this.RULE('primary', () => {
-    const findToken = this._searchUntil([T.LCurly, T.RCurly, T.SemiColon])
-    const hasCurly = findToken === T.LCurly
-    this.MANY(() => {
-      this.SUBRULE(this._)
-      this.OR([
-        { ALT: () => this.SUBRULE(this.atrule) },
-        { ALT: () => this.SUBRULE(this.variableAssign) },
-        // { ALT: () => this.SUBRULE(this.variableCall) },
-        
-        // this combines mixincall, mixinDefinition and rule set
-        // because of common prefix
-        { GATE: () => !hasCurly && this.inSelector, ALT: () => this.SUBRULE(this.declaration) },
-        { ALT: () => this.SUBRULE(this.rulesetOrMixin, { ARGS: [true] }) },
-        // { ALT: () => this.SUBRULE(this.entitiesCall) },
-      ])
-      this.SUBRULE2(this._)
-    })
-  })
-
-  // The original extend had two variants "extend" and "extendRule"
-  // implemented in the same function, we will have two separate functions
-  // for readability and clarity.
-  extendRule = this.RULE('extendRule', () => {
-    this.CONSUME(T.Extend)
-    this.SUBRULE(this._)
-    this.MANY_SEP({
-      SEP: T.Comma,
-      DEF: () => {
-        // TODO: a GATE is needed here because the following All
-        this.SUBRULE(this.selector)
-
-        // TODO: this probably has to be post processed
-        // because "ALL" may be a normal ending part of a selector
-        // this.OPTION(() => {
-        //     this.CONSUME(T.All)
-        // })
-      }
-    })
-    this.SUBRULE2(this._)
-    this.CONSUME(T.RParen)
-  })
-
-  declaration = this.RULE('declaration', () => {
-    this.OR([
-      { ALT: () => this.CONSUME(T.Ident) },
-      { ALT: () => this.CONSUME(T.InterpolatedIdent) }
-    ])
-    this.SUBRULE(this._)
-    this.OR2([
-      { ALT: () => this.CONSUME(T.Colon) },
-      { ALT: () => this.CONSUME(T.PlusAssign) },
-      { ALT: () => this.CONSUME(T.UnderscoreAssign) }
-    ])
-    this.SUBRULE2(this._)
-    this.SUBRULE(this.expressionList)
-    this.SUBRULE3(this._)
-    this.OPTION(() => this.CONSUME(T.SemiColon));
-  })
-
-
-  // Technically this is all selectors after an initial selector match
-  // e.g.  ", div.class, p"
-  selectorList = this.RULE('selectorList', (canExtend: boolean = false) => {
-    this.AT_LEAST_ONE(() => {
-      this.SUBRULE(this._)
-      this.CONSUME(T.Comma)
-      this.SUBRULE2(this._)
-      this.SUBRULE2(this.selector)
-      this.OPTION({
-        GATE: () => canExtend,
-        DEF: () => this.SUBRULE(this.extendRule)
-      })
-    })
-  })
-
-  rulesetOrMixin = this.RULE('rulesetOrMixin', (hasCurly: boolean = false) => {
-    this.SUBRULE(this.selector)
-    this.OPTION(() => this.SUBRULE(this.extendRule))
-    this.OR([
-      {
-        ALT: () => {
-          this.SUBRULE(this.selectorList, { ARGS: [true] })
-        }
-      },
-      {
-        ALT: () => {
-          this.OPTION2(() => {
-            this.SUBRULE(this._)
-            this.SUBRULE(this.mixinArgs)
-          })
-          this.OPTION3(() => {
-            this.SUBRULE2(this._)
-            this.SUBRULE(this.guard)
-          })
-          this.OPTION4(() => {
-            this.SUBRULE3(this._)
-            this.CONSUME(T.Important)
-          })
-        }
-      }
-    ])
-    
-    this.SUBRULE4(this._)
-    this.OR2([
-      {
-        GATE: () => hasCurly,
-        ALT: () => {
-          this.SUBRULE(this.curlyBlock)
-        }
-      },
-      {
-        ALT: () => {
-          this.OPTION5(() => this.CONSUME(T.SemiColon))
-        }
-      }
-    ])
-  })
-
-  variableAssign = this.RULE('variableAssign', () => {
-    this.CONSUME(T.AtName)
-    this.SUBRULE(this._)
-    this.CONSUME(T.Colon)
-    this.SUBRULE2(this._)
-    this.SUBRULE(this.expressionList)
-    this.SUBRULE3(this._)
-    this.OPTION(() => this.CONSUME(T.SemiColon))
-  })
-
-  /** Searches outer space (not within matching blocks) for tokens */
-  _searchUntil = (tokens: TokenType[]): TokenType => {
+   /** Searches outer space (not within matching blocks) for tokens */
+   _searchUntil = (tokens: TokenType[]): TokenType => {
     let done = false
     let foundToken: TokenType
     const blockStack = []
@@ -202,13 +79,162 @@ class LessParser extends CstParser {
     return foundToken;
   }
 
+  /** simplify later, verbose for debugging */
+  _declarationGuard() {
+    const foundToken = this._searchUntil([T.LCurly, T.RCurly, T.SemiColon]);
+    const pass = this.inSelector && (foundToken !== T.LCurly)
+    return pass;
+  }
+
+  primary = this.RULE('primary', () => {
+    this.MANY(() => {
+      this.SUBRULE(this._)
+      this.OR([
+        { ALT: () => this.SUBRULE(this.atrule) },
+        { ALT: () => this.SUBRULE(this.variableAssign) },
+        { ALT: () => {
+          this.SUBRULE(this.functionCall)
+          this.SUBRULE(this.semi)
+        }},
+        
+        { 
+          GATE: this._declarationGuard.bind(this), 
+          ALT: () => {
+            this.SUBRULE(this.declaration)
+          }
+        },
+        // this combines mixincall, mixinDefinition and rule set
+        // because of common prefix
+        { ALT: () => this.SUBRULE(this.rulesetOrMixin) },
+        // { ALT: () => this.SUBRULE(this.entitiesCall) },
+      ])
+      this.SUBRULE2(this._)
+    })
+  })
+
+  // The original extend had two variants "extend" and "extendRule"
+  // implemented in the same function, we will have two separate functions
+  // for readability and clarity.
+  extendRule = this.RULE('extendRule', () => {
+    this.CONSUME(T.Extend)
+    this.SUBRULE(this._)
+    this.MANY_SEP({
+      SEP: T.Comma,
+      DEF: () => {
+        // TODO: a GATE is needed here because the following All
+        this.SUBRULE(this.selector)
+
+        // TODO: this probably has to be post processed
+        // because "ALL" may be a normal ending part of a selector
+        // this.OPTION(() => {
+        //     this.CONSUME(T.All)
+        // })
+      }
+    })
+    this.SUBRULE2(this._)
+    this.CONSUME(T.RParen)
+  })
+
+  declaration = this.RULE('declaration', (inBlock: boolean = false) => {
+    this.OR([
+      { ALT: () => this.CONSUME(T.Ident) },
+      { ALT: () => this.CONSUME(T.InterpolatedIdent) }
+    ])
+    this.SUBRULE(this._)
+    this.OR2([
+      { ALT: () => this.CONSUME(T.Colon) },
+      { 
+        GATE: () => !inBlock,
+        ALT: () => this.CONSUME(T.PlusAssign)
+      },
+      {
+        GATE: () => !inBlock,
+        ALT: () => this.CONSUME(T.UnderscoreAssign)
+      }
+    ])
+    this.SUBRULE2(this._)
+    this.SUBRULE(this.expressionList)
+    this.SUBRULE3(this._)
+    this.OPTION({
+      GATE: () => !inBlock,
+      DEF: () => this.SUBRULE(this.semi)
+    })
+  })
+
+
+  // Technically this is all selectors after an initial selector match
+  // e.g.  ", div.class, p"
+  selectorList = this.RULE('selectorList', (canExtend: boolean = false) => {
+    this.AT_LEAST_ONE(() => {
+      this.SUBRULE(this._)
+      this.CONSUME(T.Comma)
+      this.SUBRULE2(this._)
+      this.SUBRULE2(this.selector)
+      this.OPTION({
+        GATE: () => canExtend,
+        DEF: () => this.SUBRULE(this.extendRule)
+      })
+    })
+  })
+
+  rulesetOrMixin = this.RULE('rulesetOrMixin', () => {
+    this.SUBRULE(this.selector)
+    this.OPTION(() => this.SUBRULE(this.extendRule))
+    this.OR([
+      {
+        ALT: () => {
+          this.SUBRULE(this.selectorList, { ARGS: [true] })
+        }
+      },
+      {
+        ALT: () => {
+          this.OPTION2(() => {
+            this.SUBRULE(this._)
+            this.SUBRULE(this.mixinArgs)
+          })
+          this.OPTION3(() => {
+            this.SUBRULE2(this._)
+            this.SUBRULE(this.guard)
+          })
+          this.OPTION4(() => {
+            this.SUBRULE3(this._)
+            this.CONSUME(T.Important)
+          })
+        }
+      }
+    ])
+    
+    this.SUBRULE4(this._)
+    this.OR2([
+      {
+        ALT: () => {
+          this.SUBRULE(this.curlyBlock)
+        }
+      },
+      {
+        ALT: () => {
+          this.OPTION5(() => this.CONSUME(T.SemiColon))
+        }
+      }
+    ])
+  })
+
+  variableAssign = this.RULE('variableAssign', () => {
+    this.CONSUME(T.AtName)
+    this.SUBRULE(this._)
+    this.CONSUME(T.Colon)
+    this.SUBRULE2(this._)
+    this.SUBRULE(this.expressionList)
+    this.SUBRULE3(this._)
+    this.SUBRULE(this.semi)
+  })
+
   // Used for mixin / function args
   // Can have a semi-colon separator
   args = this.RULE('args', (inMixin: true) => {
-    const findToken = this._searchUntil([T.RParen, T.SemiColon])
     this.OR([
       {
-        GATE: () => findToken === T.SemiColon,
+        GATE: () => this._searchUntil([T.RParen, T.SemiColon]) === T.SemiColon,
         ALT: () => {
           this.SUBRULE(this.semiColonList, { ARGS: [inMixin] })
           this.OPTION(() => {
@@ -335,14 +361,20 @@ class LessParser extends CstParser {
     this.OR([
         { ALT: () => this.SUBRULE(this.parenBlock) },
         { ALT: () => this.SUBRULE(this.functionCall) },
-        { ALT: () => this.CONSUME(T.AtName) },
+        { ALT: () => this.CONSUME(T.VarOrProp) },
         { ALT: () => this.CONSUME(T.Unit) },
         { ALT: () => this.CONSUME(T.Ident) },
         { ALT: () => this.CONSUME(T.StringLiteral) },
         { ALT: () => this.CONSUME(T.Uri) },
         { ALT: () => this.CONSUME(T.Color) },
         { ALT: () => this.CONSUME(T.UnicodeRange) },
-        // { ALT: () => this.SUBRULE(this.simple_selector_suffix) }
+        {
+          ALT: () => {
+            this.CONSUME(T.LSquare)
+            this.SUBRULE(this.atomicExpression)
+            this.CONSUME(T.RSquare)
+          }
+        }
     ])
   })
 
@@ -476,62 +508,68 @@ class LessParser extends CstParser {
     this.SUBRULE(this.curlyBlock)
   })
 
+  /** @todo - this is not quite right */
   mediaList = this.RULE('mediaList', () => {
     this.OPTION(() => {
       this.CONSUME(T.Only)
       this.SUBRULE(this._)
     })
-    this.SUBRULE(this.mediaParams)
-    this.MANY(() => {
-      this.SUBRULE2(this._)
-      this.SUBRULE2(this.mediaParams)
-      this.CONSUME(T.Comma)
-    })
-    this.SUBRULE4(this._)
-  })
-
-  mediaParams = this.RULE('mediaParams', () => {
-    this.SUBRULE(this.mediaParam)
-    this.MANY(() => {
-      this.SUBRULE(this._)
-      this.CONSUME(T.And)
-      this.SUBRULE2(this._)
-      this.SUBRULE2(this.mediaParam)
-    })
-    this.SUBRULE3(this._)
-  })
-
-  mediaParam = this.RULE('mediaParam', () => {
     this.OPTION(() => {
       this.CONSUME(T.Not)
       this.SUBRULE(this._)
     })
-    this.OR([
-      { ALT: () => this.CONSUME(T.Ident) },
-      { ALT: () => this.SUBRULE(this.mediaQuery) },
-      { ALT: () => {
-        this.CONSUME(T.LParen)
-        this.SUBRULE2(this._)
-        this.SUBRULE(this.mediaParams)
-        this.CONSUME(T.RParen)
-      }}
-    ])
+    this.SUBRULE(this.mediaParams)
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.CONSUME(T.And) },
+        { ALT: () => this.CONSUME(T.Comma) }
+      ])
+      this.SUBRULE(this._)
+      this.SUBRULE2(this.mediaParams)
+    })
   })
 
-  mediaQuery = this.RULE('mediaQuery', () => {
+  mediaParams = this.RULE('mediaParams', () => {
+    this.OR([
+      {
+        GATE: () => !this.inGuard,
+        ALT: () => this.CONSUME(T.Ident)
+      },
+      {
+        ALT: () => this.SUBRULE(this.mediaParam)
+      },
+      {
+        ALT: () => {
+          this.CONSUME(T.LParen)
+          this.SUBRULE(this.mediaList)
+          this.CONSUME(T.RParen)
+        }
+      }
+    ])
+  })
+  
+
+  mediaParam = this.RULE('mediaParam', (inParen: boolean = false) => {
     this.CONSUME(T.LParen)
-    this.SUBRULE(this._)
-    this.CONSUME(T.InterpolatedIdent)
-    this.SUBRULE2(this._)
-    this.CONSUME(T.Colon)
-    this.SUBRULE3(this._)
-    this.SUBRULE(this.additionExpression)
-    this.SUBRULE4(this._)
+    this.OR([
+      {
+        GATE: () => !this.inGuard,
+        ALT: () => this.SUBRULE(this.declaration, { ARGS: [true] })
+      },
+      {
+        ALT: () => {
+          this.inCompareBlock = true
+          this.SUBRULE(this.expression)
+          this.inCompareBlock = false
+        }
+      },
+      { ALT: () => {
+        this.SUBRULE(this.mediaParams)
+      }}
+    ])
     this.CONSUME(T.RParen)
   })
 
-  // TODO: misaligned with CSS: Missing case insensitive attribute flag
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
   attrib = this.RULE('attrib', () => {
       this.CONSUME(T.LSquare)
       this.CONSUME(T.Ident)
@@ -724,18 +762,9 @@ class LessParser extends CstParser {
   guard = this.RULE('guard', () => {
     this.CONSUME(T.When)
     this.SUBRULE(this._)
-    this.SUBRULE(this.compareBlock)
+    this.SUBRULE(this.mediaParams)
   })
 
-  compareBlock = this.RULE('compareBlock', () => {
-    this.CONSUME(T.LParen)
-    this.SUBRULE(this._)
-    this.inCompareBlock = true
-    this.SUBRULE(this.expression);
-    this.inCompareBlock = true
-    this.SUBRULE2(this._)
-    this.CONSUME(T.RParen)
-  })
 }
 
 // ----------------- wrapping it all together -----------------

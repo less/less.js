@@ -8,14 +8,7 @@ const { lexer, tokens, T } = createLexer(Fragments, Tokens)
 class LessParser extends CstParser {
   constructor() {
     super(tokens, {
-      maxLookahead: 3,
-      ignoredIssues: {
-        mediaParam: { OR: true },
-        args: { OR: true },
-        // rulesetOrMixin: { OR: true },
-        primary: { OR: true },
-        semiArg: { OR: true }
-      }
+      maxLookahead: 3
     })
     this.performSelfAnalysis()
   }

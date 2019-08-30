@@ -7,12 +7,15 @@ interface IMerges {
 }
 
 export const Fragments = [...CSSFragments]
-export let Tokens = [{ name: 'Ampersand', pattern: /&/ }, ...CSSTokens]
+export let Tokens = [...CSSTokens]
 
 Fragments.push(['lineComment', '\\/\\/[^\\n\\r]*'])
 Fragments.push(['interpolated', '({{ident}}?@{[\w-]+}{{ident}}?)+'])
 
 const merges: IMerges = {
+  'AnyValue': [
+    { name: 'Ampersand', pattern: /&/ }
+  ],
   'Ident': [
     {
       name: 'Interpolated',
@@ -99,7 +102,8 @@ for (let i = 0; i < tokenLength; i++) {
       break
     case 'PlainIdent':
     case 'AttrFlag':
-    case 'AndOr':
+    case 'And':
+    case 'Or':
     case 'Not':
     case 'Only':
       copyToken()

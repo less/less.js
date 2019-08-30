@@ -486,7 +486,7 @@ class LessParser extends CstParser {
     this.SUBRULE7(this._)
 
     this.OPTION2(() => {
-      this.SUBRULE(this.mediaList)
+      this.SUBRULE(this.mediaQueryList)
     })
     this.SUBRULE8(this._)
 
@@ -516,69 +516,150 @@ class LessParser extends CstParser {
   mediaAtRule = this.RULE('mediaAtRule', () => {
     this.CONSUME(T.AtMedia)
     this.SUBRULE(this._)
-    this.SUBRULE(this.mediaList)
+    this.SUBRULE(this.mediaQueryList)
     this.SUBRULE(this.curlyBlock)
   })
 
-  /** @todo - this is not quite right */
-  mediaList = this.RULE('mediaList', () => {
-    this.OPTION(() => {
-      this.CONSUME(T.Only)
-      this.SUBRULE(this._)
-    })
-    this.OPTION(() => {
-      this.CONSUME(T.Not)
-      this.SUBRULE(this._)
-    })
-    this.SUBRULE(this.mediaParams)
-    this.MANY(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(T.AndOr) },
-        { ALT: () => this.CONSUME(T.Comma) }
-      ])
-      this.SUBRULE(this._)
-      this.SUBRULE2(this.mediaParams)
+  /**
+   * https://www.w3.org/TR/mediaqueries-4/#mq-syntax
+   */
+  mediaQueryList = this.RULE('mediaQueryList', () => {
+    this.MANY_SEP({
+      SEP: T.Comma,
+      DEF: () => this.SUBRULE(this.mediaQuery)
     })
   })
 
-  mediaParams = this.RULE('mediaParams', () => {
+  mediaQuery = this.RULE('mediaQuery', () => {
     this.OR([
-      {
-        GATE: () => !this.inGuard,
-        ALT: () => this.CONSUME(T.Ident)
-      },
-      {
-        ALT: () => this.SUBRULE(this.mediaParam)
-      },
+      { ALT: () => this.SUBRULE(this.mediaCondition) },
       {
         ALT: () => {
-          this.CONSUME(T.LParen)
-          this.SUBRULE(this.mediaList)
-          this.CONSUME(T.RParen)
+          this.OPTION(() => {
+            this.OR([
+              { ALT: () => this.CONSUME(T.Not) },
+              { ALT: () => this.CONSUME(T.Only) }
+            ])
+            this.SUBRULE(this._)
+          })
+          this.CONSUME(T.Ident)
+          this.OPTION(() => {
+            this.SUBRULE2(this._)
+            this.CONSUME(T.And)
+            this.SUBRULE3(this._)
+            this.SUBRULE(this.mediaConditionWithoutOr)
+          })
+        }
+      },
+    ])
+  })
+
+  mediaCondition = this.RULE('mediaCondition', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.mediaNot) },
+      { ALT: () => {
+          this.SUBRULE(this.mediaInParens)
+          this.OR([
+            { ALT: () => this.MANY(() => this.SUBRULE(this.mediaAnd)) },
+            { ALT: () => this.MANY(() => this.SUBRULE(this.mediaOr)) }
+          ])
         }
       }
     ])
   })
-  
 
-  mediaParam = this.RULE('mediaParam', (inParen: boolean = false) => {
-    this.CONSUME(T.LParen)
+  mediaConditionWithoutOr = this.RULE('mediaConditionWithoutOr', () => {
     this.OR([
-      {
-        GATE: () => !this.inGuard,
-        ALT: () => this.SUBRULE(this.declaration, { ARGS: [true] })
-      },
+      { ALT: () => this.SUBRULE(this.mediaNot) },
       {
         ALT: () => {
-          this.inCompareBlock = true
-          this.SUBRULE(this.expression)
-          this.inCompareBlock = false
+          this.SUBRULE(this.mediaInParens)
+          this.SUBRULE(this.mediaAnd)
+        }
+      }
+    ])
+  })
+
+  mediaNot = this.RULE('mediaNot', () => {
+    this.CONSUME(T.Not)
+    this.SUBRULE(this._)
+    this.SUBRULE(this.mediaInParens)
+  })
+
+  mediaAnd = this.RULE('mediaAnd', () => {
+    this.CONSUME(T.And)
+    this.SUBRULE(this._)
+    this.SUBRULE(this.mediaInParens)    
+  })
+
+  mediaOr = this.RULE('mediaAnd', () => {
+    this.CONSUME(T.Or)
+    this.SUBRULE(this._)
+    this.SUBRULE(this.mediaInParens)    
+  })
+
+  mediaInParens = this.RULE('mediaInParens', () => {
+    this.OR([
+      {
+        ALT: () => {
+          this.CONSUME(T.LParen)
+          this.SUBRULE(this.mediaCondition)
+          this.CONSUME(T.RParen)
         }
       },
-      { ALT: () => {
-        this.SUBRULE(this.mediaParams)
-      }}
+      { ALT: () => this.SUBRULE(this.mediaFeature) },
+      { ALT: () => this.SUBRULE(this.generalEnclosed) }
     ])
+  })
+
+  /** Media feature value */
+  mfValue = this.RULE('mfValue', () => {
+    this.CONSUME(T.Ident)
+  })
+
+  /** Media feature plain - declaration-like value */
+  mfPlain = this.RULE('mfPlain', () => {
+    this.CONSUME(T.Ident)
+  })
+
+  mfBoolean = this.RULE('mfBoolean', () => {
+    this.SUBRULE(this.mfName)
+  })
+
+  mfName = this.RULE('mfName', () => {
+    this.CONSUME(T.Ident)
+  })
+
+  mfRange = this.RULE('mfRange', () => {
+    this.SUBRULE(this.mfName)
+    this.SUBRULE(this._)
+    this.OPTION(() => {
+      this.OR([
+        {ALT: () => this.CONSUME(T.Gt) },
+        {ALT: () => this.CONSUME(T.Lt) }
+      ])
+    })
+    this.OPTION(() => this.CONSUME(T.Eq))
+    this.SUBRULE2(this._)
+    this.SUBRULE(this.mfValue)
+  })
+
+  mediaFeature = this.RULE('mediaFeature', () => {
+    this.CONSUME(T.LParen)
+    this.SUBRULE(this._)
+    this.OR([
+      { ALT: () => this.SUBRULE(this.mfPlain) },
+      { ALT: () => this.SUBRULE(this.mfBoolean) },
+      { ALT: () => this.SUBRULE(this.mfRange) }
+    ])
+    this.SUBRULE2(this._)
+    this.CONSUME(T.RParen)
+  })
+
+  generalEnclosed = this.RULE('generalEnclosed', () => {
+    this.CONSUME(T.LParen)
+    /** @todo add sub-blocks */
+    this.MANY(() => this.CONSUME(T.Value))
     this.CONSUME(T.RParen)
   })
 
@@ -775,10 +856,29 @@ class LessParser extends CstParser {
   guard = this.RULE('guard', () => {
     this.CONSUME(T.When)
     this.SUBRULE(this._)
-    this.SUBRULE(this.mediaParams)
+    this.SUBRULE(this.mediaQueryList)
   })
 
 }
+
+/**
+ * @todo pseudo-code, parse loosely first, then more specifically for atrules / values
+ */
+// const mediaRuleParser = new MediaRuleParser();
+
+// fuzzyDirective(ctx) {
+//     const subVector = ctx.NotSemiColon
+//     mediaRuleParser.input = subVector;
+//     const structuredMediaRuleCst = mediaRuleParser.wellDefinedMediaRule();
+//     if (mediaRuleParser.errors === 0) {
+//         delete ctx.NotSemiColon
+//         ctx.children[structuredMediaRuleCst.name] = [structuredMediaRuleCst]
+//     // Are these errors in fact warnings to user?
+//     } else {
+//        ctx.unstructuredMediaRule = ctx.NotSemiColon
+//        delete ctx.NotSemiColon
+//     }
+// }
 
 // ----------------- wrapping it all together -----------------
 

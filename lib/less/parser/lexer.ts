@@ -37,10 +37,18 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
 
     if (
       pattern !== Lexer.NA &&
-      pattern !== Lexer.SKIPPED &&
-      !(pattern instanceof RegExp)
+      pattern !== Lexer.SKIPPED
     ) {
-      pattern = XRegExp.build(pattern as string, fragments)
+      if (!categories || categories[0] !== 'BlockMarker') {
+        if (categories) {
+          categories.push('Value')
+        } else {
+          categories = ['Value']
+        }
+      }
+      if(!(pattern instanceof RegExp)) {
+        pattern = XRegExp.build(pattern as string, fragments)
+      }
     }
     const longerAlt = longer_alt ? { longer_alt: T[longer_alt] } : {}
     const tokenCategories = categories ? { categories: categories.map(category => {

@@ -1,11 +1,13 @@
 
-import { CstParser, EMPTY_ALT, EOF, TokenType} from 'chevrotain'
-import { lessTokens, LessLexer, T } from './tokens'
+import { CstParser, EMPTY_ALT, EOF, TokenType } from 'chevrotain'
+import { Tokens, Fragments } from './lessTokens'
+import { createLexer } from './lexer'
 
+const { lexer, tokens, T } = createLexer(Fragments, Tokens)
 
 class LessParser extends CstParser {
   constructor() {
-    super(lessTokens, {
+    super(tokens, {
       maxLookahead: 3,
       ignoredIssues: {
         mediaParam: { OR: true },
@@ -230,7 +232,7 @@ class LessParser extends CstParser {
   })
 
   variableAssign = this.RULE('variableAssign', () => {
-    this.CONSUME(T.AtName)
+    this.CONSUME(T.AtKeyword)
     this.SUBRULE(this._)
     this.CONSUME(T.Colon)
     this.SUBRULE2(this._)
@@ -264,7 +266,7 @@ class LessParser extends CstParser {
       {
         GATE: () => inMixin,
         ALT: () => {
-          this.CONSUME(T.AtName)
+          this.CONSUME(T.AtKeyword)
           this.SUBRULE(this._)
           this.CONSUME(T.Colon)
           this.SUBRULE2(this._)
@@ -282,7 +284,7 @@ class LessParser extends CstParser {
       {
         GATE: () => inMixin,
         ALT: () => {
-          this.CONSUME(T.AtName)
+          this.CONSUME(T.AtKeyword)
           this.SUBRULE(this._)
           this.CONSUME(T.Colon)
           this.SUBRULE2(this._)
@@ -408,7 +410,7 @@ class LessParser extends CstParser {
   })
 
   functionCall = this.RULE('functionCall', () => {
-    this.CONSUME(T.Func);
+    this.CONSUME(T.Function);
     this.SUBRULE(this._)
     this.SUBRULE(this.args);
     this.SUBRULE2(this._)
@@ -447,7 +449,7 @@ class LessParser extends CstParser {
   })
 
   generalAtRule = this.RULE('generalAtRule', () => {
-    this.CONSUME(T.AtName)
+    this.CONSUME(T.AtKeyword)
     this.SUBRULE(this._)
     this.OPTION(() => {
       this.SUBRULE(this.expression)
@@ -531,7 +533,7 @@ class LessParser extends CstParser {
     this.SUBRULE(this.mediaParams)
     this.MANY(() => {
       this.OR([
-        { ALT: () => this.CONSUME(T.And) },
+        { ALT: () => this.CONSUME(T.AndOr) },
         { ALT: () => this.CONSUME(T.Comma) }
       ])
       this.SUBRULE(this._)
@@ -686,7 +688,8 @@ class LessParser extends CstParser {
   })
 
   pseudoFunction = this.RULE('pseudoFunction', () => {
-    this.CONSUME(T.PseudoFunction);
+    this.CONSUME(T.Colon)
+    this.CONSUME(T.Function)
     this.inPseudo = true
     this.SUBRULE(this._)
     this.SUBRULE(this.selector)
@@ -782,8 +785,8 @@ class LessParser extends CstParser {
 // reuse the same parser instance.
 const parser = new LessParser()
 
-const parse = (text) => {
-  const lexResult = LessLexer.tokenize(text)
+const parse = (text: string) => {
+  const lexResult = lexer.tokenize(text)
   // setting a new input will RESET the parser instance's state.
   parser.input = lexResult.tokens
   // any top level rule may be used as an entry point

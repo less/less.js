@@ -8,14 +8,7 @@ const { lexer, tokens, T } = createLexer(Fragments, Tokens)
 class LessParser extends CstParser {
   constructor() {
     super(tokens, {
-      maxLookahead: 3,
-      ignoredIssues: {
-        mediaParam: { OR: true },
-        args: { OR: true },
-        // rulesetOrMixin: { OR: true },
-        primary: { OR: true },
-        semiArg: { OR: true }
-      }
+      maxLookahead: 3
     })
     this.performSelfAnalysis()
   }
@@ -526,9 +519,9 @@ class LessParser extends CstParser {
       this.CONSUME(T.Only)
       this.SUBRULE(this._)
     })
-    this.OPTION(() => {
+    this.OPTION2(() => {
       this.CONSUME(T.Not)
-      this.SUBRULE(this._)
+      this.SUBRULE2(this._)
     })
     this.SUBRULE(this.mediaParams)
     this.MANY(() => {
@@ -536,7 +529,7 @@ class LessParser extends CstParser {
         { ALT: () => this.CONSUME(T.AndOr) },
         { ALT: () => this.CONSUME(T.Comma) }
       ])
-      this.SUBRULE(this._)
+      this.SUBRULE3(this._)
       this.SUBRULE2(this.mediaParams)
     })
   })
@@ -548,6 +541,11 @@ class LessParser extends CstParser {
         ALT: () => this.CONSUME(T.Ident)
       },
       {
+        // TODO: in Chevrotain 6.2.0 ambiguity ignoring is more granular (per alternative), perhaps this has detected a bug...
+        //       Need to inspect if this `IGNORE_AMBIGUITIES` is really needed or if there is a grammar issue to resolve.
+        // Ambiguous Alternatives Detected: <3 ,2> in <OR> inside <mediaParams> Rule,
+        // <LParen, Ident, AndOr> may appears as a prefix path in all these alternatives.
+        IGNORE_AMBIGUITIES: true,
         ALT: () => this.SUBRULE(this.mediaParam)
       },
       {
@@ -569,6 +567,11 @@ class LessParser extends CstParser {
         ALT: () => this.SUBRULE(this.declaration, { ARGS: [true] })
       },
       {
+        // TODO: in Chevrotain 6.2.0 ambiguity ignoring is more granular, perhaps this has detected a bug...
+        //       Need to inspect if this `IGNORE_AMBIGUITIES` is really needed or if there is a grammar issue to resolve.
+        // Ambiguous Alternatives Detected: <2 ,3> in <OR> inside <mediaParam> Rule,
+        // <LParen, LSquare, LSquare> may appears as a prefix path in all these alternatives.
+        IGNORE_AMBIGUITIES: true,
         ALT: () => {
           this.inCompareBlock = true
           this.SUBRULE(this.expression)

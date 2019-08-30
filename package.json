@@ -58,7 +58,7 @@
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
     "bootstrap-less-port": "0.3.0",
-    "chevrotain": "^6.1.0",
+    "chevrotain": "^6.2.0",
     "diff": "^3.2.0",
     "git-rev": "^0.2.1",
     "glob": "^7.1.4",

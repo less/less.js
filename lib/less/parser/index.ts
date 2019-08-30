@@ -529,14 +529,14 @@ class LessParser extends CstParser {
       {
         ALT: () => {
           this.OPTION(() => {
-            this.OR([
+            this.OR2([
               { ALT: () => this.CONSUME(T.Not) },
               { ALT: () => this.CONSUME(T.Only) }
             ])
             this.SUBRULE(this._)
           })
           this.CONSUME(T.Ident)
-          this.OPTION(() => {
+          this.OPTION2(() => {
             this.SUBRULE2(this._)
             this.CONSUME(T.And)
             this.SUBRULE3(this._)
@@ -552,9 +552,9 @@ class LessParser extends CstParser {
       { ALT: () => this.SUBRULE(this.mediaNot) },
       { ALT: () => {
           this.SUBRULE(this.mediaInParens)
-          this.OR([
+          this.OR2([
             { ALT: () => this.MANY(() => this.SUBRULE(this.mediaAnd)) },
-            { ALT: () => this.MANY(() => this.SUBRULE(this.mediaOr)) }
+            { ALT: () => this.MANY2(() => this.SUBRULE(this.mediaOr)) }
           ])
         }
       }
@@ -585,7 +585,7 @@ class LessParser extends CstParser {
     this.SUBRULE(this.mediaInParens)    
   })
 
-  mediaOr = this.RULE('mediaAnd', () => {
+  mediaOr = this.RULE('mediaOr', () => {
     this.CONSUME(T.Or)
     this.SUBRULE(this._)
     this.SUBRULE(this.mediaInParens)    
@@ -632,7 +632,7 @@ class LessParser extends CstParser {
         {ALT: () => this.CONSUME(T.Lt) }
       ])
     })
-    this.OPTION(() => this.CONSUME(T.Eq))
+    this.OPTION2(() => this.CONSUME(T.Eq))
     this.SUBRULE2(this._)
     this.SUBRULE(this.mfValue)
   })

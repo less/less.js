@@ -4,9 +4,10 @@ import {
   ITokenConfig,
   TokenType
 } from 'chevrotain'
+import { CSSParser } from './cssParser';
 import * as XRegExp from 'xregexp'
 
-interface TokenMap {
+export interface TokenMap {
   [key: string]: TokenType
 }
 
@@ -35,11 +36,8 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
   rawTokens.forEach((rawToken: rawTokenConfig) => {
     let { name, pattern, longer_alt, categories, ...rest } = rawToken
 
-    if (
-      pattern !== Lexer.NA &&
-      pattern !== Lexer.SKIPPED
-    ) {
-      if (!categories || categories[0] !== 'BlockMarker') {
+    if (pattern !== Lexer.NA) {
+      if (!categories || (rest.group !== Lexer.SKIPPED && categories[0] !== 'BlockMarker' && categories[0] !== 'ListMarker')) {
         if (categories) {
           categories.push('Value')
         } else {
@@ -70,4 +68,32 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
     tokens,
     T
   }
+}
+
+export const createParser = (Parser: typeof CSSParser, rawFragments: string[][], rawTokens: rawTokenConfig[]) => {
+  const { lexer, tokens, T } = createLexer(rawFragments, rawTokens)
+
+  const parser = new Parser(tokens, T);
+
+  return {
+    parser,
+    lexer,
+    tokens,
+    parse (text: string) {
+      const lexResult = lexer.tokenize(text)
+      // setting a new input will RESET the parser instance's state.
+      parser.input = lexResult.tokens
+      // any top level rule may be used as an entry point
+      const value = parser.primary()
+      
+      return {
+        // This is a pure grammar, the value will be undefined until we add embedded actions
+        // or enable automatic CST creation.
+        value: value,
+        lexErrors: lexResult.errors,
+        parseErrors: parser.errors
+      }
+    }
+  }
+  
 }

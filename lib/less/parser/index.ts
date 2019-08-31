@@ -1,7 +1,7 @@
 
 import { CstParser, EMPTY_ALT, EOF, TokenType } from 'chevrotain'
 import { Tokens, Fragments } from './lessTokens'
-import { createLexer } from './lexer'
+import { createLexer } from './util'
 
 const { lexer, tokens, T } = createLexer(Fragments, Tokens)
 

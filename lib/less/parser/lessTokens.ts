@@ -1,6 +1,6 @@
 import { Lexer } from 'chevrotain'
 import { Fragments as CSSFragments, Tokens as CSSTokens } from './cssTokens'
-import { rawTokenConfig } from './lexer';
+import { rawTokenConfig } from './util';
 
 interface IMerges {
   [key: string]: rawTokenConfig[]
@@ -32,7 +32,8 @@ const merges: IMerges = {
     { name: 'UnderscoreAssign', pattern: /_:/ },
     {
       name: 'Extend',
-      pattern: /:extend\(/
+      pattern: /:extend\(/,
+      categories: ['PseudoFunction']
     },
     {
       name: 'When',

@@ -1,5 +1,5 @@
 import { Lexer } from 'chevrotain'
-import { rawTokenConfig } from './lexer';
+import { rawTokenConfig } from './util';
 /**
  * references:
  * https://github.com/antlr/grammars-v4/blob/master/css3/css3.g4
@@ -30,6 +30,7 @@ export const Fragments: string[][] = [
 export const Tokens: rawTokenConfig[] = [
   { name: 'Value', pattern: Lexer.NA },
   { name: 'BlockMarker', pattern: Lexer.NA },
+  { name: 'ListMarker', pattern: Lexer.NA },
   { name: 'AnyValue', pattern: /./ },
   { name: 'CompareOperator', pattern: Lexer.NA },
   { name: 'Gt', pattern: />/, categories: ['CompareOperator'] },
@@ -42,14 +43,14 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'RParen', pattern: /\)/, categories: ['BlockMarker'] },
   { name: 'LSquare', pattern: /\[/, categories: ['BlockMarker'] },
   { name: 'RSquare', pattern: /\]/, categories: ['BlockMarker'] },
-  { name: 'SemiColon', pattern: /;/, categories: ['BlockMarker'] },
+  { name: 'SemiColon', pattern: /;/, categories: ['ListMarker'] },
   { name: 'AdditionOperator', pattern: Lexer.NA },
   { name: 'MultiplicationOperator', pattern: Lexer.NA },
   { name: 'Plus', pattern: /\+/, categories: ['AdditionOperator'] },
   { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
   { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
-  { name: 'Comma', pattern: /,/ },
-  { name: 'Colon', pattern: /:/ },
+  { name: 'Comma', pattern: /,/, categories: ['ListMarker'] },
+  { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
   { name: 'AttrMatchOperator', pattern: Lexer.NA },
   // Some tokens have to appear after AttrMatch
   { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },
@@ -59,7 +60,13 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Pipe', pattern: /\|/ },
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
   { name: 'Ident', pattern: Lexer.NA },
+  { name: 'PseudoFunction',  pattern: Lexer.NA },
+  { name: 'PseudoFunc', pattern: ':{{ident}}\\(', categories: ['PseudoFunction'] },
   { name: 'PlainIdent', pattern: '{{ident}}' },
+  { name: 'CDOToken', pattern: /<!--/, group: Lexer.SKIPPED },
+  { name: 'CDCToken', pattern: /-->/, group: Lexer.SKIPPED },
+  /** Ignore BOM */
+  { name: 'UnicodeBOM', pattern: /\uFFFE/, group: Lexer.SKIPPED },
   { name: 'AttrFlag', pattern: /[is]/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'And', pattern: /and/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Or', pattern: /or/, longer_alt: 'PlainIdent', categories: ['Ident'] },
@@ -128,19 +135,12 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Dimension', pattern: '{{number}}{{ident}}', categories: ['Unit'] },
   { name: 'Percentage', pattern: '{{number}}%', categories: ['Unit'] },
   { name: 'Integer', pattern: /[+-]?\d+/, longer_alt: 'Number', categories: ['Unit'] },
-  { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+' },
+  { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+', categories: ['ListMarker'] },
   {
     name: 'Comment',
     pattern: '{{comment}}',
     line_breaks: true,
     group: Lexer.SKIPPED,
     longer_alt: 'WS'
-  },
-
-  /** Ignore BOM */
-  {
-    name: 'UnicodeBOM',
-    pattern: /\uFFFE/,
-    group: Lexer.SKIPPED
   }
 ]

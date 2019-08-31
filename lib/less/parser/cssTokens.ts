@@ -20,18 +20,20 @@ export const Fragments: string[][] = [
   ['string1', '\\"([^\\n\\r\\f\\"]|{{newline}}|{{escape}})*\\"'],
   ['string2', "\\'([^\\n\\r\\f\\']|{{newline}}|{{escape}})*\\'"],
   ['nonascii', '[\\u0240-\\uffff]'],
-  ['nmstart', '--|[_a-zA-Z-]|{{nonascii}}|{{escape}}'],
+  ['nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}'],
   ['nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}'],
-  ['ident', '{{nmstart}}{{nmchar}}+'],
+  ['ident', '(?:--|-?{{nmstart}}){{nmchar}}*'],
   ['url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*'],
-  ['number', '[+-]?(?:\\d*\\.\\d+|\\d+)(?:[eE][+-]\d+)?'],
+  ['integer', '[+-]?\\d+'],
+  /** Any number that's not simply an integer e.g. 1.1 or 1e+1 */
+  ['number', '[+-]?(?:\\d*\\.\\d+(?:[eE][+-]\\d+)?|\\d+(?:[eE][+-]\\d+))'],
 ]
 
 export const Tokens: rawTokenConfig[] = [
   { name: 'Value', pattern: Lexer.NA },
+  { name: 'AnyValue', pattern: /./ },
   { name: 'BlockMarker', pattern: Lexer.NA },
   { name: 'ListMarker', pattern: Lexer.NA },
-  { name: 'AnyValue', pattern: /./ },
   { name: 'CompareOperator', pattern: Lexer.NA },
   { name: 'Gt', pattern: />/, categories: ['CompareOperator'] },
   { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
@@ -131,10 +133,11 @@ export const Tokens: rawTokenConfig[] = [
     categories: ['ClassOrId']
   },
   { name: 'Unit', pattern: Lexer.NA },
-  { name: 'Number', pattern: '{{number}}', categories: ['Unit'] },
-  { name: 'Dimension', pattern: '{{number}}{{ident}}', categories: ['Unit'] },
-  { name: 'Percentage', pattern: '{{number}}%', categories: ['Unit'] },
-  { name: 'Integer', pattern: /[+-]?\d+/, longer_alt: 'Number', categories: ['Unit'] },
+  { name: 'Dimension', pattern: Lexer.NA },
+  { name: 'DimensionNum', pattern: '{{number}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
+  { name: 'DimensionInt', pattern: '{{integer}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
+  { name: 'Integer', pattern: '{{integer}}', longer_alt: 'DimensionInt', categories: ['Unit'] },
+  { name: 'Number', pattern: '{{number}}', longer_alt: 'DimensionNum', categories: ['Unit'] },
   { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+' },
   {
     name: 'Comment',

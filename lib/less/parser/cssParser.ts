@@ -24,14 +24,15 @@ export class CSSParser extends CstParser {
 
   primary = this.RULE('primary', () => {
     this.MANY(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(this.T.WS) },
-        { ALT: () => this.SUBRULE(this.atRule) },
-        {
-          IGNORE_AMBIGUITIES: true,
-          ALT: () => this.SUBRULE(this.valueOrDeclarationList)
-        }
-      ])
+      this.SUBRULE(this.valueOrDeclarationList)
+      // this.OR([
+      //   // { ALT: () => this.CONSUME(this.T.WS) },
+      //   // { ALT: () => this.SUBRULE(this.atRule) },
+      //   {
+      //     IGNORE_AMBIGUITIES: true,
+      //     ALT: () => this.SUBRULE(this.valueOrDeclarationList)
+      //   }
+      // ])
     })
   })
 
@@ -61,7 +62,11 @@ export class CSSParser extends CstParser {
     this.OR([
       {
         ALT: () => {
-          this.CONSUME(this.T.LParen)
+          this.OR2([
+            { ALT: () => this.CONSUME(this.T.LParen) },
+            { ALT: () => this.CONSUME(this.T.Function) },
+            { ALT: () => this.CONSUME(this.T.PseudoFunction) }
+          ])
           this.SUBRULE(this.blockContents)
           this.CONSUME(this.T.RParen)
         }
@@ -107,10 +112,14 @@ export class CSSParser extends CstParser {
         },
         { ALT: () => this.CONSUME(this.T.SemiColon) }
       ])
-      this.SUBRULE2(this.anyValueOrDeclaration)
+      this.OPTION(() => this.SUBRULE2(this.anyValueOrDeclaration))
     })
-    /** This production appears to be selector-like */
-    this.OPTION(() => this.SUBRULE(this.curlyBlock))
+    this.OPTION2(() => {
+      this.OR2([
+        { ALT: () => this.CONSUME2(this.T.SemiColon) },
+        { ALT: () => this.SUBRULE(this.curlyBlock) }
+      ])
+    })
   })
 
   anyValueOrDeclaration = this.RULE('anyValueOrDeclaration', () => {
@@ -120,7 +129,8 @@ export class CSSParser extends CstParser {
           this.CONSUME(this.T.Value)
         })
       },
-      { ALT: () => this.SUBRULE(this.block) }
+      { ALT: () => this.SUBRULE(this.block) },
+      { ALT: () => EMPTY_ALT } 
     ])
 
     this.OR2([

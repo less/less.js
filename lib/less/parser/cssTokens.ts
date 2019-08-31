@@ -61,7 +61,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
   { name: 'Ident', pattern: Lexer.NA },
   { name: 'PseudoFunction',  pattern: Lexer.NA },
-  { name: 'PseudoFunc', pattern: ':{{ident}}\\(', categories: ['PseudoFunction'] },
+  { name: 'PseudoFunc', pattern: ':{{ident}}\\(', categories: ['BlockMarker', 'PseudoFunction'] },
   { name: 'PlainIdent', pattern: '{{ident}}' },
   { name: 'CDOToken', pattern: /<!--/, group: Lexer.SKIPPED },
   { name: 'CDCToken', pattern: /-->/, group: Lexer.SKIPPED },
@@ -72,7 +72,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Or', pattern: /or/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
-  { name: 'Function', pattern: '{{ident}}\\(' },
+  { name: 'Function', pattern: '{{ident}}\\(', categories: ['BlockMarker'] },
   { name: 'AtKeyword', pattern: '@{{ident}}' },
   { name: 'Uri', pattern: Lexer.NA },
   {
@@ -135,7 +135,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Dimension', pattern: '{{number}}{{ident}}', categories: ['Unit'] },
   { name: 'Percentage', pattern: '{{number}}%', categories: ['Unit'] },
   { name: 'Integer', pattern: /[+-]?\d+/, longer_alt: 'Number', categories: ['Unit'] },
-  { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+', categories: ['ListMarker'] },
+  { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+' },
   {
     name: 'Comment',
     pattern: '{{comment}}',

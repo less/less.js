@@ -4,8 +4,9 @@ import {
   ITokenConfig,
   TokenType
 } from 'chevrotain'
-import { CSSParser } from './cssParser';
+// import { CssParser } from './cssBase';
 import * as XRegExp from 'xregexp'
+import { CstParser } from 'chevrotain/lib/src/parse/parser/parser';
 
 export interface TokenMap {
   [key: string]: TokenType
@@ -37,11 +38,15 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
     let { name, pattern, longer_alt, categories, ...rest } = rawToken
 
     if (pattern !== Lexer.NA) {
-      if (!categories || (rest.group !== Lexer.SKIPPED && categories[0] !== 'BlockMarker' && categories[0] !== 'ListMarker')) {
+      const category = !categories || categories[0]
+      if (!category || (rest.group !== Lexer.SKIPPED && category !== 'BlockMarker')) {
         if (categories) {
           categories.push('Value')
         } else {
           categories = ['Value']
+        }
+        if (category !== 'Ident') {
+          categories.push('NonIdent')
         }
       }
       if(!(pattern instanceof RegExp)) {
@@ -70,7 +75,13 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
   }
 }
 
-export const createParser = (Parser: typeof CSSParser, rawFragments: string[][], rawTokens: rawTokenConfig[]) => {
+type CssParser = typeof CstParser & {
+  new(tokens: TokenType[], T: TokenMap)
+  primary: () => {}
+  [key: string]: () => {}
+}
+
+export const createParser = (Parser: CssParser, rawFragments: string[][], rawTokens: rawTokenConfig[]) => {
   const { lexer, tokens, T } = createLexer(rawFragments, rawTokens)
 
   const parser = new Parser(tokens, T);
@@ -79,9 +90,9 @@ export const createParser = (Parser: typeof CSSParser, rawFragments: string[][],
     parser,
     lexer,
     tokens,
+    T,
     parse (text: string) {
       const lexResult = lexer.tokenize(text)
-      // setting a new input will RESET the parser instance's state.
       parser.input = lexResult.tokens
       // any top level rule may be used as an entry point
       const value = parser.primary()

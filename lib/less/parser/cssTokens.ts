@@ -22,15 +22,20 @@ export const Fragments: string[][] = [
   ['nonascii', '[\\u0240-\\uffff]'],
   ['nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}'],
   ['nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}'],
-  ['ident', '(?:--|-?{{nmstart}}){{nmchar}}*'],
+  ['ident', '-?{{nmstart}}{{nmchar}}*'],
   ['url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*'],
   ['integer', '[+-]?\\d+'],
   /** Any number that's not simply an integer e.g. 1.1 or 1e+1 */
   ['number', '[+-]?(?:\\d*\\.\\d+(?:[eE][+-]\\d+)?|\\d+(?:[eE][+-]\\d+))'],
 ]
 
+/**
+ * Anything that is not 'BlockMarker' will be parsed as a generic 'Value'
+ */
 export const Tokens: rawTokenConfig[] = [
   { name: 'Value', pattern: Lexer.NA },
+  { name: 'NonIdent', pattern: Lexer.NA },
+  { name: 'AtName', pattern: Lexer.NA },
   { name: 'AnyValue', pattern: /./ },
   { name: 'BlockMarker', pattern: Lexer.NA },
   { name: 'ListMarker', pattern: Lexer.NA },
@@ -45,13 +50,13 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'RParen', pattern: /\)/, categories: ['BlockMarker'] },
   { name: 'LSquare', pattern: /\[/, categories: ['BlockMarker'] },
   { name: 'RSquare', pattern: /\]/, categories: ['BlockMarker'] },
-  { name: 'SemiColon', pattern: /;/, categories: ['ListMarker'] },
+  { name: 'SemiColon', pattern: /;/, categories: ['BlockMarker'] },
   { name: 'AdditionOperator', pattern: Lexer.NA },
   { name: 'MultiplicationOperator', pattern: Lexer.NA },
   { name: 'Plus', pattern: /\+/, categories: ['AdditionOperator'] },
   { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
   { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
-  { name: 'Comma', pattern: /,/, categories: ['ListMarker'] },
+  { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
   { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
   { name: 'AttrMatchOperator', pattern: Lexer.NA },
   // Some tokens have to appear after AttrMatch
@@ -64,7 +69,8 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Ident', pattern: Lexer.NA },
   { name: 'PseudoFunction',  pattern: Lexer.NA },
   { name: 'PseudoFunc', pattern: ':{{ident}}\\(', categories: ['BlockMarker', 'PseudoFunction'] },
-  { name: 'PlainIdent', pattern: '{{ident}}' },
+  { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
+  { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
   { name: 'CDOToken', pattern: /<!--/, group: Lexer.SKIPPED },
   { name: 'CDCToken', pattern: /-->/, group: Lexer.SKIPPED },
   /** Ignore BOM */
@@ -75,7 +81,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Function', pattern: '{{ident}}\\(', categories: ['BlockMarker'] },
-  { name: 'AtKeyword', pattern: '@{{ident}}' },
+  { name: 'AtKeyword', pattern: '@{{ident}}', categories: ['BlockMarker', 'AtName'] },
   { name: 'Uri', pattern: Lexer.NA },
   {
     name: 'UriString',
@@ -98,12 +104,14 @@ export const Tokens: rawTokenConfig[] = [
   {
     name: 'AtImport',
     pattern: /@import/,
-    longer_alt: 'AtKeyword'
+    longer_alt: 'AtKeyword',
+    categories: ['BlockMarker', 'AtName']
   },
   {
     name: 'AtMedia',
     pattern: /@media/,
-    longer_alt: 'AtKeyword'
+    longer_alt: 'AtKeyword',
+    categories: ['BlockMarker', 'AtName']
   },
   {
     name: 'UnicodeRange',
@@ -138,7 +146,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'DimensionInt', pattern: '{{integer}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
   { name: 'Integer', pattern: '{{integer}}', longer_alt: 'DimensionInt', categories: ['Unit'] },
   { name: 'Number', pattern: '{{number}}', longer_alt: 'DimensionNum', categories: ['Unit'] },
-  { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+' },
+  { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+', categories: ['BlockMarker'] },
   {
     name: 'Comment',
     pattern: '{{comment}}',

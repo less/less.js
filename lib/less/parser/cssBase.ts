@@ -6,34 +6,51 @@ import { TokenMap } from './util'
  *  A Note About CSS Syntax
  *
  *  CSS, as far as syntax is defined in https://www.w3.org/TR/css-syntax-3/,
- *  is somewhat confusing the first 50 times you read it.
+ *  is somewhat confusing the first 50 times you read it, probably because
+ *  it contains some ambiguities and inherent self-contradictions due to
+ *  it's legacy nature. It also has no specific "spec" to draw from.
  *
  *  CSS essentially is not one spec of syntax and grammar, but is, in fact,
- *  a collection of specs of syntax and grammar. In addition, CSS defines different
- *  parsing rules depending on _where_ you are in the grammar.
+ *  a collection of specs of syntax and grammar, some of which can mean that
+ *  parsing rules are potentially contradictory.
  * 
- *  For example, if you were to just parse: `foo:bar {}` without context as to where
- *  you were parsing it, the spec says there's no way to resolve it. This may either be
- *  a property of `foo` with a value of `bar {}` (any CSS value may contain a block)
+ *  For example, if you were to just parse: `foo:bar {}`, if you just went by
+ *  the syntax spec alone, there's no way to resolve this. Property values
+ *  (according to spec), may have `{}` as a value, and pseudo-selectors may start
+ *  with a colon. So this may be a property of `foo` with a value of `bar {}`
  *  or it may be the selector `foo:bar` with a set of rules in `{}`.
  * 
- *  CSS resolves this ambiguity by stating that:
- *    1. Root level rules can only contain at-rules and qualified rules.
- *    2. The curly brace in a qualified rule (a selector list with {}) is interpreted to be
- *       a list of declarations or at-rules but NOT qualified rules.
+ *  Another example: qualified rules are supposed to gulp everything up to `{}`,
+ *  including a semi-colon. Meaning `foo:bar; {}` is valid. It's an invalid
+ *  _selector_, but it's not a parsing error. Or is it a valid declaration
+ *  followed by an empty curly block (which is also valid)? ¯\_(ツ)_/¯
  * 
- *  This means that any pre-processor like Less, Sass, or PostCSS, using nested syntax,
- *  can never be a 100% spec-compliant CSS parser. Nested rules and declarations are
- *  ambiguous.
+ *  This means that any pre-processor like Less, Sass, or PostCSS, using nested
+ *  syntax, can never be a 100% spec-compliant CSS parser. AFAICT, there is no
+ *  such thing.
  * 
- *  However, in this CSS parser and parsers that extend it, we can intelligently resolve
- *  this ambiguity with these principles:
+ *  However, in this CSS parser and parsers that extend it, we can intelligently
+ *  resolve this ambiguity with these principles:
  *    1. There are no element selectors that start with '--'
  *    2. There are no currently-defined CSS properties that have a {} block as a 
  *       possible value. (If this ever happens, every CSS parser is screwed.)
- *  So while the CSS 3 Syntax says `foo:bar {}` is ambiguous if parsed out of context,
- *  we can simplify parsing by always treating it as a selector (in the rare event
- *  it ever happens).
+ *  This is essentially what browsers do: that is, they choose parts of the CSS
+ *  grammar they can "understand". It's _browsers_ (and convention) and not the
+ *  spec that allows declarations in certain places. So, currently, declarations
+ *  at the root don't _mean_ anything, but if they did someday, it would not be
+ *  a violation of current grammar.
+ * 
+ *  CSS grammar is extremely permissive to allow modularity of the syntax and
+ *  future expansion. Basically, anything "unknown", including unknown tokens,
+ *  does not necessarily mean a parsing error of the stylesheet itself. For
+ *  example, the contents of an at-rule body (defined in a "{}") has no explicit
+ *  definition, but is instead left up to the spec for that particular at rule.
+ *  That means you could end up with some future at-rule like:
+ *     `@future {!!:foo > ; > ?bar}`
+ *  A case like that is _unlikely_, but the point is any CSS parser that lives
+ *  outside of the browser, in order to be maintainable, must parse what it
+ *  _can_, but preserve anything it doesn't explicitly define. A non-browser
+ *  stylesheet parser should return warnings, but
  */
 
 /**
@@ -93,10 +110,8 @@ export class CssStructureParser extends CstParser {
         /** This may be a declaration; it depends on having a curly */
         ALT: () => {
           this.CONSUME(this.T.Ident, { LABEL: 'ident' })
-          this.OPTION(() => {
-            this.SUBRULE(this._)
-            this.CONSUME2(this.T.Colon, { LABEL: 'colon' })
-          })
+          this.SUBRULE(this._)
+          this.OPTION(() => this.CONSUME2(this.T.Colon, { LABEL: 'colon' }))
         }
       },
       {
@@ -158,7 +173,7 @@ export class CssStructureParser extends CstParser {
   curlyBlock = this.RULE('curlyBlock', () => {
     this.CONSUME(this.T.LCurly)
     this.SUBRULE(this.primary)
-    this.CONSUME(this.T.RCurly)
+    this.OPTION(() => this.CONSUME(this.T.RCurly))
   })
 
   block = this.RULE('block', () => {
@@ -171,14 +186,14 @@ export class CssStructureParser extends CstParser {
             { ALT: () => this.CONSUME(this.T.PseudoFunction) }
           ])
           this.SUBRULE2(this.primary)
-          this.CONSUME(this.T.RParen)
+          this.OPTION(() => this.CONSUME(this.T.RParen))
         }
       },
       {
         ALT: () => {
           this.CONSUME(this.T.LSquare)
           this.SUBRULE3(this.primary)
-          this.CONSUME(this.T.RSquare)
+          this.OPTION2(() => this.CONSUME(this.T.RSquare))
         }
       }
     ])
@@ -246,8 +261,8 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
       }
     }
 
-    primary(ctx) {
-      const generics = ctx.valueOrDeclarationList
+    genericRule(ctx) {
+      const generics = ctx.genericRule
       generics.forEach(({ children }) => {
         const hasSemi = !!children.SemiColon
         const hasCurly = !!children.curlyBlock
@@ -256,18 +271,12 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
         const isAmbiguousValue = !!(isDeclarationLike && firstValue.pseudoOrValue)
         this.$refineValue(children, hasCurly, hasSemi, isDeclarationLike, isAmbiguousValue)
       })
-      this.visit(ctx.valueOrDeclarationList)
+      this.visit(ctx.genericRule)
       this.visit(ctx.curlyBlock)
       return ctx
     }
 
-    valueOrDeclarationList(ctx) {
-      this.visit(ctx.anyValueOrDeclaration)
-      this.visit(ctx.curlyBlock)
-      return ctx
-    }
-
-    anyValueOrDeclaration(ctx) {
+    expressionList(ctx) {
       return ctx
     }
 

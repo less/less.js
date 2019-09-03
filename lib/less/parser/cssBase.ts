@@ -50,7 +50,7 @@ import { TokenMap } from './util'
  *  A case like that is _unlikely_, but the point is any CSS parser that lives
  *  outside of the browser, in order to be maintainable, must parse what it
  *  _can_, but preserve anything it doesn't explicitly define. A non-browser
- *  stylesheet parser should return warnings, but
+ *  stylesheet parser should return warnings, but should recover all errors.
  */
 
 /**
@@ -104,8 +104,12 @@ export class CssStructureParser extends CstParser {
 
   genericRule = this.RULE('genericRule', () => {
     this.OR([
-      { ALT: () => this.SUBRULE(this.block) },
-      { ALT: () => this.CONSUME(this.T.Colon) },
+      {
+        ALT: () => this.SUBRULE(this.block)
+      },
+      {
+        ALT: () => this.CONSUME(this.T.Colon)
+      },
       {
         /** This may be a declaration; it depends on having a curly */
         ALT: () => {
@@ -120,15 +124,33 @@ export class CssStructureParser extends CstParser {
         }
       }
     ])
-    /** Consume any remaining values */
-    this.SUBRULE(this.expression)
-    this.OPTION2(() => {
-      this.CONSUME(this.T.Comma)
-      this.SUBRULE(this.expressionList)
-    })
+
     this.OR2([
-      { ALT: () => this.SUBRULE(this.curlyBlock) },
-      { ALT: () => this.OPTION3(() => this.CONSUME(this.T.SemiColon)) }
+      {
+        /** Allow an early exit. This is necessary for computing parsing paths */
+        IGNORE_AMBIGUITIES: true,
+        ALT: () => {
+          this.OR3([
+            { ALT: () => this.SUBRULE(this.curlyBlock) },
+            { ALT: () => this.CONSUME(this.T.SemiColon) }
+          ])
+        }
+      },
+      {
+        ALT: () => {
+          /** Consume any remaining values */
+          this.SUBRULE(this.expression)
+          this.OPTION3(() => {
+            this.CONSUME(this.T.Comma)
+            this.SUBRULE(this.expressionList)
+          })
+          this.OR4([
+            { ALT: () => this.SUBRULE2(this.curlyBlock) },
+            { ALT: () => this.CONSUME2(this.T.SemiColon) },
+            { ALT: () => EMPTY_ALT }
+          ])
+        }
+      }
     ])
   })
 
@@ -261,18 +283,45 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
       }
     }
 
+    primary(ctx) {
+      const { atRule, genericRule, customPropertyRule } = ctx
+
+      if (atRule) {
+        this.visit(atRule)
+      }
+      if (genericRule) {
+        this.visit(genericRule)
+      }
+      if (customPropertyRule) {
+        this.visit(customPropertyRule)
+      }
+      return ctx
+    }
+
+    atRule(ctx) {
+      return ctx
+    }
+
     genericRule(ctx) {
-      const generics = ctx.genericRule
-      generics.forEach(({ children }) => {
-        const hasSemi = !!children.SemiColon
-        const hasCurly = !!children.curlyBlock
-        const firstValue = children.firstValue[0].children
-        const isDeclarationLike = !!(firstValue.ident && firstValue.colon)
-        const isAmbiguousValue = !!(isDeclarationLike && firstValue.pseudoOrValue)
-        this.$refineValue(children, hasCurly, hasSemi, isDeclarationLike, isAmbiguousValue)
-      })
+      const { curlyBlock, ident, colon } = ctx
+      const parser = this.cssParser
+      if (curlyBlock) {
+        /** Parse as a qualified rule */
+        parser.input = ctx
+        const rule = parser.qualifiedRule()
+
+      } else if (ident && colon) {
+        /** Parse as a declaration */
+        parser.input = ctx
+        const decl = parser.declaration()
+      }
+      
       this.visit(ctx.genericRule)
       this.visit(ctx.curlyBlock)
+      return ctx
+    }
+
+    customPropertyRule(ctx) {
       return ctx
     }
 

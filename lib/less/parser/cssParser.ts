@@ -13,8 +13,8 @@ export const parse = (text: string) => {
   const cst = parser.primary()
   if (parser.errors.length === 0) {
     const visitor = new cssVisitor(tokens, T)
-    const ast = visitor.visit(cst)
-    return ast
+    visitor.visit(cst)
+    return cst
   } else {
     return parser
   }

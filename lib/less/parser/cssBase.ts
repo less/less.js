@@ -70,7 +70,9 @@ export class CssStructureParser extends CstParser {
       maxLookahead: 1
     })
     this.T = T
-    this.performSelfAnalysis()
+    if (this.constructor === CssStructureParser) {
+      this.performSelfAnalysis()
+    }
   }
 
   // Optional whitespace
@@ -83,7 +85,7 @@ export class CssStructureParser extends CstParser {
       this.OR([
         { ALT: () => this.CONSUME(this.T.WS) },
         { ALT: () => this.SUBRULE(this.atRule) },
-        { ALT: () => this.SUBRULE(this.genericRule) },
+        { ALT: () => this.SUBRULE(this.unknownRule) },
         { ALT: () => this.SUBRULE(this.customPropertyRule) },
         { ALT: () => EMPTY_ALT }
       ])
@@ -102,7 +104,7 @@ export class CssStructureParser extends CstParser {
     ])
   })
 
-  genericRule = this.RULE('genericRule', () => {
+  unknownRule = this.RULE('unknownRule', () => {
     this.OR([
       {
         ALT: () => this.SUBRULE(this.block)
@@ -124,33 +126,17 @@ export class CssStructureParser extends CstParser {
         }
       }
     ])
-
+    
+    /** Consume any remaining values */
+    this.SUBRULE(this.expression)
+    this.OPTION2(() => {
+      this.CONSUME(this.T.Comma)
+      this.SUBRULE(this.expressionList)
+    })
     this.OR2([
-      {
-        /** Allow an early exit. This is necessary for computing parsing paths */
-        IGNORE_AMBIGUITIES: true,
-        ALT: () => {
-          this.OR3([
-            { ALT: () => this.SUBRULE(this.curlyBlock) },
-            { ALT: () => this.CONSUME(this.T.SemiColon) }
-          ])
-        }
-      },
-      {
-        ALT: () => {
-          /** Consume any remaining values */
-          this.SUBRULE(this.expression)
-          this.OPTION3(() => {
-            this.CONSUME(this.T.Comma)
-            this.SUBRULE(this.expressionList)
-          })
-          this.OR4([
-            { ALT: () => this.SUBRULE2(this.curlyBlock) },
-            { ALT: () => this.CONSUME2(this.T.SemiColon) },
-            { ALT: () => EMPTY_ALT }
-          ])
-        }
-      }
+      { ALT: () => this.SUBRULE(this.curlyBlock) },
+      { ALT: () => this.CONSUME(this.T.SemiColon) },
+      { ALT: () => EMPTY_ALT }
     ])
   })
 
@@ -160,29 +146,42 @@ export class CssStructureParser extends CstParser {
   customPropertyRule = this.RULE('customPropertyRule', () => {
     this.CONSUME(this.T.CustomProperty)
     this.SUBRULE(this._)
-    this.CONSUME(this.T.Colon)
-    this.SUBRULE(this.expressionList, { ARGS: [true] })
+    /** This may be a custom prop reference, not a declaration */
+    this.OPTION(() => this.CONSUME(this.T.Colon))
+    this.SUBRULE(this.customExpressionList)
   })
 
   /** A comma-separated list of expressions */
-  expressionList = this.RULE('expressionList', (isCustomPropertyValue: boolean = false) => {
+  expressionList = this.RULE('expressionList', () => {
     this.MANY_SEP({
       SEP: this.T.Comma,
-      DEF: () => this.SUBRULE(this.expression, { ARGS: [isCustomPropertyValue] })
+      DEF: () => this.SUBRULE(this.expression)
+    })
+  })
+
+  customExpressionList = this.RULE('customExpressionList', () => {
+    this.MANY_SEP({
+      SEP: this.T.Comma,
+      DEF: () => this.SUBRULE(this.customExpression)
     })
   })
 
   /** A list of values and white space */
-  expression = this.RULE('expression', (isCustomPropertyValue: boolean = false) => {
-    this.MANY(() => this.SUBRULE(this.value, { ARGS: [isCustomPropertyValue] }))
+  expression = this.RULE('expression', () => {
+    this.MANY(() => this.SUBRULE(this.value))
   })
 
-  value = this.RULE('value', (isCustomPropertyValue: boolean = false) => {
+  customExpression = this.RULE('customExpression', () => {
+    this.MANY(() => {
+      this.OR([
+        { ALT: () => this.SUBRULE(this.value) },
+        { ALT: () => this.SUBRULE(this.curlyBlock) }
+      ])
+    })
+  })
+
+  value = this.RULE('value', () => {
     this.OR([
-      {
-        GATE: () => isCustomPropertyValue,
-        ALT: () => this.SUBRULE(this.curlyBlock)
-      },
       { ALT: () => this.SUBRULE(this.block) },
       { ALT: () => this.CONSUME(this.T.Value) },
       { ALT: () => this.CONSUME(this.T.Colon) },
@@ -222,46 +221,39 @@ export class CssStructureParser extends CstParser {
   })
 }
 
-export class CssParser extends CstParser {
-  T: TokenMap
-  constructor(tokens: TokenType[] = [], T: TokenMap = {}) {
-    super(tokens, {
-      maxLookahead: 1
-    })
-    this.T = T;
+export class CssParser extends CssStructureParser {
+  constructor(tokens: TokenType[], T: TokenMap) {
+    super(tokens, T)
+    if (this.constructor === CssParser) {
+      this.performSelfAnalysis()
+    }
   }
-
-  _ = this.RULE('_', () => {
-    this.OPTION(() => this.CONSUME(this.T.WS))
-  })
-
-  primary = this.RULE('primary', () => {
-    this.CONSUME(this.T.Value)
-  })
 
   declaration = this.RULE('declaration', () => {
     this.CONSUME(this.T.Ident)
     this.SUBRULE(this._)
     this.CONSUME(this.T.Colon)
-    this.SUBRULE(this.expression)
+    this.SUBRULE2(this._)
+    this.SUBRULE(this.expressionList)
+    this.OPTION(() => this.CONSUME(this.T.SemiColon))
   })
 
-  expression = this.RULE('expression', () => {
-    this.MANY(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(this.T.WS) },
-        { ALT: () => this.SUBRULE(this.value) }
-      ])
-    })
+  value = this.OVERRIDE_RULE('value', () => {
+    this.OR([
+      { ALT: () => this.SUBRULE(this.block) },
+      { ALT: () => this.CONSUME(this.T.WS) }
+    ])
   })
 
-  value = this.RULE('value', () => {
+  qualifiedRule = this.RULE('qualifiedRule', () => {
+    this.SUBRULE(this.selectorList)
+    this.SUBRULE(this.curlyBlock)
+  })
+
+  selectorList = this.RULE('selectorList', () => {
     this.CONSUME(this.T.Value)
-    // this.OR([
-    //   { ALT: () => this.CONSUME() },
-
-    // ])
   })
+
 }
 
 export interface CstVisitorInstance {
@@ -284,13 +276,32 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
     }
 
     primary(ctx) {
-      const { atRule, genericRule, customPropertyRule } = ctx
+      const { atRule, unknownRule, customPropertyRule } = ctx
+      const parser = this.cssParser
 
       if (atRule) {
         this.visit(atRule)
       }
-      if (genericRule) {
-        this.visit(genericRule)
+      if (unknownRule) {
+        unknownRule.forEach((rule, i: number) => {
+          const { curlyBlock, ident, colon } = rule.children
+          if (curlyBlock) {
+            const block = this.visit(curlyBlock)
+            /** Parse as a qualified rule */
+            parser.input = rule
+            const node = parser.qualifiedRule()
+            if (node) {
+              console.log(node)
+            }
+          } else if (ident && colon) {
+            /** Parse as a declaration */
+            parser.input = rule
+            const node = parser.declaration()
+            if (node) {
+              console.log(node)
+            }
+          }
+        })
       }
       if (customPropertyRule) {
         this.visit(customPropertyRule)
@@ -302,22 +313,7 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
       return ctx
     }
 
-    genericRule(ctx) {
-      const { curlyBlock, ident, colon } = ctx
-      const parser = this.cssParser
-      if (curlyBlock) {
-        /** Parse as a qualified rule */
-        parser.input = ctx
-        const rule = parser.qualifiedRule()
-
-      } else if (ident && colon) {
-        /** Parse as a declaration */
-        parser.input = ctx
-        const decl = parser.declaration()
-      }
-      
-      this.visit(ctx.genericRule)
-      this.visit(ctx.curlyBlock)
+    unknownRule(ctx) {
       return ctx
     }
 

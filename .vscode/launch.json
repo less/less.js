@@ -4,21 +4,23 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-    // {
-    //   "type": "node",
-    //   "request": "launch",
-    //   "name": "Less test",
-    //   "program": "${workspaceFolder}/test/index.js",
-    //   "cwd": "${workspaceFolder}",
-    //   "console": "integratedTerminal"
-    // },
     {
-      "name": "Less test",
       "type": "node",
       "request": "launch",
-      "args": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/ts-node", "${workspaceFolder}/test/index.ts"],
-      "console": "integratedTerminal"
+      "name": "CSS Tests",
+      "cwd": "${workspaceFolder}/packages/css-parser",
+      "program": "${workspaceFolder}/packages/css-parser/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "-u",
+        "bdd",
+        "--timeout",
+        "999999",
+        "--colors",
+        "${workspaceFolder}/packages/css-parser/test/**/*.ts"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }

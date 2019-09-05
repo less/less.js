@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.build.json",
+
+  "compilerOptions": {
+    "baseUrl": "./packages",
+    "paths": {
+      "@less/css-parser": ["css/src"],
+      "@less/less-parser": ["css/src"],
+      "@less/less": ["less/lib"]
+    }
+  }
+}

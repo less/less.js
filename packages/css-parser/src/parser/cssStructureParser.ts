@@ -1,6 +1,6 @@
 
-import { CstParser, EMPTY_ALT, TokenType, ICstVisitor } from 'chevrotain'
-import { TokenMap } from './util'
+import { CstParser, EMPTY_ALT, TokenType, CstNode, IParserConfig } from 'chevrotain'
+import { TokenMap } from '../util'
 
 /**
  *  A Note About CSS Syntax
@@ -53,6 +53,13 @@ import { TokenMap } from './util'
  *  stylesheet parser should return warnings, but should recover all errors.
  */
 
+export type CstNodeTokenVector = CstNode & {
+  tokenRange: {
+    start: number
+    end: number
+  }
+} 
+
 /**
  *  Parsing is broken into 2 phases, so that we:
  *    1. Don't have to do any backtracking to refine rules (like @media).
@@ -64,11 +71,18 @@ import { TokenMap } from './util'
  */
 export class CssStructureParser extends CstParser {
   T: TokenMap
+  /**
+   * Defines private properties for Chevrotain
+   */
+  currIdx: number
+  CST_STACK: CstNodeTokenVector[]
 
-  constructor(tokens: TokenType[], T: TokenMap) {
-    super(tokens, {
-      maxLookahead: 1
-    })
+  constructor(
+    tokens: TokenType[],
+    T: TokenMap,
+    config: IParserConfig = { maxLookahead: 1 }
+  ) {
+    super(tokens, config)
     this.T = T
     if (this.constructor === CssStructureParser) {
       this.performSelfAnalysis()
@@ -105,6 +119,7 @@ export class CssStructureParser extends CstParser {
   })
 
   unknownRule = this.RULE('unknownRule', () => {
+    const start = this.currIdx + 1
     this.OR([
       {
         ALT: () => this.SUBRULE(this.block)
@@ -133,11 +148,15 @@ export class CssStructureParser extends CstParser {
       this.CONSUME(this.T.Comma)
       this.SUBRULE(this.expressionList)
     })
+    const end = this.currIdx + 1
     this.OR2([
       { ALT: () => this.SUBRULE(this.curlyBlock) },
       { ALT: () => this.CONSUME(this.T.SemiColon) },
       { ALT: () => EMPTY_ALT }
     ])
+    if (!this.RECORDING_PHASE) {
+      this.CST_STACK[this.CST_STACK.length - 1].tokenRange = { start, end }
+    }
   })
 
   /**
@@ -220,135 +239,3 @@ export class CssStructureParser extends CstParser {
     ])
   })
 }
-
-export class CssParser extends CssStructureParser {
-  constructor(tokens: TokenType[], T: TokenMap) {
-    super(tokens, T)
-    if (this.constructor === CssParser) {
-      this.performSelfAnalysis()
-    }
-  }
-
-  declaration = this.RULE('declaration', () => {
-    this.CONSUME(this.T.Ident)
-    this.SUBRULE(this._)
-    this.CONSUME(this.T.Colon)
-    this.SUBRULE2(this._)
-    this.SUBRULE(this.expressionList)
-    this.OPTION(() => this.CONSUME(this.T.SemiColon))
-  })
-
-  value = this.OVERRIDE_RULE('value', () => {
-    this.OR([
-      { ALT: () => this.SUBRULE(this.block) },
-      { ALT: () => this.CONSUME(this.T.WS) }
-    ])
-  })
-
-  qualifiedRule = this.RULE('qualifiedRule', () => {
-    this.SUBRULE(this.selectorList)
-    this.SUBRULE(this.curlyBlock)
-  })
-
-  selectorList = this.RULE('selectorList', () => {
-    this.CONSUME(this.T.Value)
-  })
-
-}
-
-export interface CstVisitorInstance {
-  new (...args: any[]): ICstVisitor<any, any>
-}
-
-export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
-  return class extends baseConstructor {
-    cssParser: CssParser
-    constructor(tokens: TokenType[], T: TokenMap) {
-      super()
-      this.cssParser = new CssParser(tokens, T)
-      this.validateVisitor()
-    }
-
-    $refineValue(ctx, hasCurly: boolean, hasSemi: boolean, isDeclarationLike: boolean, isAmbiguousValue: boolean) {
-      if (isDeclarationLike) {
-
-      }
-    }
-
-    primary(ctx) {
-      const { atRule, unknownRule, customPropertyRule } = ctx
-      const parser = this.cssParser
-
-      if (atRule) {
-        this.visit(atRule)
-      }
-      if (unknownRule) {
-        unknownRule.forEach((rule, i: number) => {
-          const { curlyBlock, ident, colon } = rule.children
-          if (curlyBlock) {
-            const block = this.visit(curlyBlock)
-            /** Parse as a qualified rule */
-            parser.input = rule
-            const node = parser.qualifiedRule()
-            if (node) {
-              console.log(node)
-            }
-          } else if (ident && colon) {
-            /** Parse as a declaration */
-            parser.input = rule
-            const node = parser.declaration()
-            if (node) {
-              console.log(node)
-            }
-          }
-        })
-      }
-      if (customPropertyRule) {
-        this.visit(customPropertyRule)
-      }
-      return ctx
-    }
-
-    atRule(ctx) {
-      return ctx
-    }
-
-    unknownRule(ctx) {
-      return ctx
-    }
-
-    customPropertyRule(ctx) {
-      return ctx
-    }
-
-    expressionList(ctx) {
-      return ctx
-    }
-
-    curlyBlock(ctx) {
-      this.visit(ctx.primary)
-      return ctx
-    }
-  }
-}
-
-/**
- * @todo pseudo-code, parse loosely first, then more specifically for atrules / values
- */
-// const mediaRuleParser = new MediaRuleParser();
-
-// fuzzyDirective(ctx) {
-//     const subVector = ctx.NotSemiColon
-//     mediaRuleParser.input = subVector;
-//     const structuredMediaRuleCst = mediaRuleParser.wellDefinedMediaRule();
-//     if (mediaRuleParser.errors === 0) {
-//         delete ctx.NotSemiColon
-//         ctx.children[structuredMediaRuleCst.name] = [structuredMediaRuleCst]
-//     // Are these errors in fact warnings to user?
-//     } else {
-//        ctx.unstructuredMediaRule = ctx.NotSemiColon
-//        delete ctx.NotSemiColon
-//     }
-// }
-
-

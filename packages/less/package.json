@@ -1,6 +1,6 @@
 {
   "name": "less",
-  "version": "3.10.3",
+  "version": "4.0.0-dev.0",
   "description": "Leaner CSS",
   "homepage": "http://lesscss.org",
   "author": {
@@ -25,7 +25,11 @@
   "bin": {
     "lessc": "./bin/lessc"
   },
-  "main": "index",
+  "main": "dist/index",
+  "types": "dist/index",
+  "files": [
+    "dist"
+  ],
   "module": "./lib/less-node/index",
   "directories": {
     "test": "./test"
@@ -35,6 +39,9 @@
     "node": ">=6"
   },
   "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rm -rf ./dist",
+    "compile": "tsc -p tsconfig.build.json",
     "test": "ts-node test/index.ts",
     "grunt": "grunt"
   },

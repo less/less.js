@@ -2,11 +2,12 @@ import {
   Lexer,
   createToken,
   ITokenConfig,
-  TokenType
+  TokenType,
+  CstNode
 } from 'chevrotain'
-// import { CssParser } from './cssBase';
+
 import * as XRegExp from 'xregexp'
-import { CstParser } from 'chevrotain/lib/src/parse/parser/parser';
+import { CstParser } from 'chevrotain';
 
 export interface TokenMap {
   [key: string]: TokenType
@@ -75,10 +76,12 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
   }
 }
 
-type CssParser = typeof CstParser & {
-  new(tokens: TokenType[], T: TokenMap)
-  primary: () => {}
-  [key: string]: () => {}
+interface ICstParser extends CstParser {
+  primary(): CstNode
+}
+
+type CssParser = {
+  new(tokens: TokenType[], T: TokenMap): ICstParser
 }
 
 export const createParser = (Parser: CssParser, rawFragments: string[][], rawTokens: rawTokenConfig[]) => {

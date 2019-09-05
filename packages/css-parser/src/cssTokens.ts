@@ -1,4 +1,4 @@
-import { Lexer } from 'chevrotain'
+import { Lexer, IMultiModeLexerDefinition } from 'chevrotain'
 import { rawTokenConfig } from './util';
 /**
  * references:
@@ -67,8 +67,14 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Pipe', pattern: /\|/ },
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
   { name: 'Ident', pattern: Lexer.NA },
-  { name: 'PseudoFunction',  pattern: Lexer.NA },
-  { name: 'PseudoFunc', pattern: ':{{ident}}\\(', categories: ['BlockMarker', 'PseudoFunction'] },
+  { name: 'PseudoFunction', pattern: Lexer.NA },
+  { name: 'PseudoNotNthFunc', pattern: Lexer.NA },
+  { name: 'PseudoFunc', pattern: ':{{ident}}\\(', categories: ['BlockMarker', 'PseudoFunction', 'PseudoNotNthFunc'] },
+  {
+    name: 'PseudoNthFunc',
+    pattern: /:nth[a-zA-Z-]+\(/,
+    categories: ['BlockMarker', 'PseudoFunction']
+  },
   { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
   { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
   { name: 'CDOToken', pattern: /<!--/, group: Lexer.SKIPPED },
@@ -77,9 +83,10 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'UnicodeBOM', pattern: /\uFFFE/, group: Lexer.SKIPPED },
   { name: 'AttrFlag', pattern: /[is]/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'And', pattern: /and/, longer_alt: 'PlainIdent', categories: ['Ident'] },
-  { name: 'Or', pattern: /or/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
+  { name: 'Or', pattern: /or/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
+  { name: 'NthIdent', pattern: /odd|even/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Function', pattern: '{{ident}}\\(', categories: ['BlockMarker'] },
   { name: 'AtKeyword', pattern: '@{{ident}}', categories: ['BlockMarker', 'AtName'] },
   { name: 'Uri', pattern: Lexer.NA },
@@ -142,9 +149,15 @@ export const Tokens: rawTokenConfig[] = [
   },
   { name: 'Unit', pattern: Lexer.NA },
   { name: 'Dimension', pattern: Lexer.NA },
+  /**
+   * CSS syntax says we should identify integers as separate from numbers,
+   * probably because there are parts of the syntax where one is allowed but not the other.
+   */
+  { name: 'Integer', pattern: Lexer.NA },
   { name: 'DimensionNum', pattern: '{{number}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
-  { name: 'DimensionInt', pattern: '{{integer}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
-  { name: 'Integer', pattern: '{{integer}}', longer_alt: 'DimensionInt', categories: ['Unit'] },
+  { name: 'DimensionInt', pattern: '{{integer}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension', 'Integer'] },
+  { name: 'SignedInt', pattern: /[+-]\d+/, longer_alt: 'DimensionInt', categories: ['Unit', 'Integer'] },
+  { name: 'UnsignedInt', pattern: /\d+/, longer_alt: 'DimensionInt', categories: ['Unit', 'Integer'] },
   { name: 'Number', pattern: '{{number}}', longer_alt: 'DimensionNum', categories: ['Unit'] },
   { name: 'WS', pattern: '(?:{{ws}}|{{comment}})+', categories: ['BlockMarker'] },
   {

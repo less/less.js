@@ -1,0 +1,26 @@
+{
+  "name": "@less/css-parser",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register test/**/*.ts"
+  },
+  "author": "Matthew Dean",
+  "license": "MIT",
+  "dependencies": {
+    "chevrotain": "^6.2.0",
+    "xregexp": "^4.2.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.1",
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.7.4",
+    "chai": "^4.2.0",
+    "glob": "^7.1.4",
+    "mocha": "^6.2.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.2"
+  }
+}

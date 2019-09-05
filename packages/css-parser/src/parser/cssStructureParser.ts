@@ -56,7 +56,9 @@ import { TokenMap } from '../util'
 export type CstNodeTokenVector = CstNode & {
   tokenRange: {
     start: number
-    end: number
+    propertyEnd: number
+    expressionEnd: number
+    ruleEnd: number
   }
 } 
 
@@ -105,7 +107,7 @@ export class CssStructureParser extends CstParser {
     this.SUBRULE(this._)
     this.OR([
       { ALT: () => this.SUBRULE(this.atRule) },
-      { ALT: () => this.SUBRULE(this.unknownRule) },
+      { ALT: () => this.SUBRULE(this.componentValues) },
       { ALT: () => this.SUBRULE(this.customPropertyRule) },
       { ALT: () => EMPTY_ALT }
     ])
@@ -123,44 +125,41 @@ export class CssStructureParser extends CstParser {
     ])
   })
 
-  unknownRule = this.RULE('unknownRule', () => {
-    const start = this.currIdx + 1
+  property = this.RULE('property', () => {
+    /** A start colon is obviously invalid, but we're just collecting for post-processing */
+    this.OPTION(() => this.CONSUME(this.T.Colon))
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.propertyValue))
+  })
+
+  propertyValue = this.RULE('propertyValue', () => {
     this.OR([
-      {
-        ALT: () => this.SUBRULE(this.block)
-      },
-      {
-        ALT: () => this.CONSUME(this.T.Colon)
-      },
-      {
-        /** This may be a declaration; it depends on having a curly */
-        ALT: () => {
-          this.CONSUME(this.T.Ident, { LABEL: 'ident' })
-          this.SUBRULE(this._)
-          this.OPTION(() => this.CONSUME2(this.T.Colon, { LABEL: 'colon' }))
-        }
-      },
-      {
-        ALT: () => {
-          this.CONSUME(this.T.NonIdent)
-        }
-      }
+      { ALT: () => this.SUBRULE(this.block) },
+      { ALT: () => this.CONSUME(this.T.Ident) },
+      { ALT: () => this.CONSUME(this.T.NonIdent) }
     ])
+  })
+
+  componentValues = this.RULE('componentValues', () => {
+    const start = this.currIdx + 1
+    this.SUBRULE(this.property)
+    const propertyEnd = this.currIdx + 1
+    /** This may be a declaration or declaration-like, we'll see */
+    this.SUBRULE(this._)
+    this.OPTION(() => this.CONSUME(this.T.Colon, { LABEL: 'colon' }))
     
     /** Consume any remaining values */
-    this.SUBRULE(this.expression)
-    this.OPTION2(() => {
-      this.CONSUME(this.T.Comma)
-      this.SUBRULE(this.expressionList)
-    })
-    const end = this.currIdx + 1
+    this.SUBRULE(this.expressionList)
+    const expressionEnd = this.currIdx + 1
     this.OR2([
       { ALT: () => this.SUBRULE(this.curlyBlock) },
       { ALT: () => this.CONSUME(this.T.SemiColon) },
       { ALT: () => EMPTY_ALT }
     ])
+    const ruleEnd = this.currIdx + 1
     if (!this.RECORDING_PHASE) {
-      this.CST_STACK[this.CST_STACK.length - 1].tokenRange = { start, end }
+      this.CST_STACK[this.CST_STACK.length - 1].tokenRange = {
+        start, propertyEnd, expressionEnd, ruleEnd
+      }
     }
   })
 

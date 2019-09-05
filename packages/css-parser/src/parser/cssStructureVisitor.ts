@@ -14,14 +14,12 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
     errors: IRecognitionException[]
 
     constructor(
-      tokens: TokenType[],
-      T: TokenMap,
-      lexedTokens: IToken[],
-      errors: IRecognitionException[]
+      cssParser: CssRuleParser,
+      lexedTokens: IToken[]
     ) {
       super()
-      this.errors = errors
-      this.cssParser = new CssRuleParser(tokens, T)
+      this.errors = []
+      this.cssParser = cssParser
       this.lexedTokens = lexedTokens
       this.validateVisitor()
     }
@@ -34,32 +32,55 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
     }
 
     rule(ctx) {
-      const { atRule, unknownRule, customPropertyRule } = ctx
+      const { atRule, componentValues, customPropertyRule } = ctx
       const parser = this.cssParser
 
       if (atRule) {
         this.visit(atRule)
       }
-      if (unknownRule) {
-        const rule = unknownRule[0]
-        const { curlyBlock, ident, colon } = rule.children
+
+      if (componentValues) {
+        const rule = componentValues[0]
+        const { curlyBlock, colon, expressionList, property } = rule.children
+        const { start, expressionEnd, propertyEnd } = rule.tokenRange
+        parser.input = this.lexedTokens.slice(start, expressionEnd)
+        
+        /** Try parsing values as selectors */
+        const selectors = parser.compoundSelectorList()
+        if (selectors) {
+          ctx[selectors.name] = selectors
+        }
+
         if (curlyBlock) {
-          const { start, end } = rule.tokenRange
-          const block = this.visit(curlyBlock)
-          /** Parse as a qualified rule */
-          parser.input = this.lexedTokens.slice(start, end)
-          const node = parser.compoundSelectorList()
+          this.visit(curlyBlock)
+          const block = curlyBlock[0]
+          if (selectors) {
+            ctx.componentValues = undefined
+            ctx[block.name] = block
+          } else {
+            /**
+             * These errors may be meaningless, as it may be a valid component value.
+             * This is really up to the implementation how they should be treated.
+             */
+            this.errors.concat(parser.errors)
+          }
+        }
+
+        if (colon) {
+          /** There's a root-level colon, so try to parse as a declaration */
+          parser.input = this.lexedTokens.slice(start, propertyEnd)
+          const node = parser.property()
+          this.visit(expressionList)
           if (node) {
-            ctx.unknownRule = undefined
-            ctx[node.name] = node
+            rule.children.property['isValid'] = true
           } else {
             this.errors.concat(parser.errors)
           }
-        } else if (ident && colon) {
-          const { start, end } = rule.tokenRange
-          /** Parse as a declaration */
-          parser.input = this.lexedTokens.slice(start, end)
-          const node = parser.declaration()
+        }
+
+        if (parser.errors.length !== 0) {
+          /** Parse as a generic list of values & curly blocks */
+          const node = parser.customExpressionList()
           if (node) {
             ctx.unknownRule = undefined
             ctx[node.name] = node
@@ -78,7 +99,7 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
       return ctx
     }
 
-    unknownRule(ctx) {
+    componentValues(ctx) {
       return ctx
     }
 
@@ -87,6 +108,11 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
     }
 
     expressionList(ctx) {
+      this.visit(ctx.expression)
+      return ctx
+    }
+
+    expression(ctx) {
       return ctx
     }
 

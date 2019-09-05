@@ -13,13 +13,52 @@ export class CssRuleParser extends CssStructureParser {
     }
   }
 
-  declaration = this.RULE('declaration', () => {
-    this.CONSUME(this.T.Ident, { LABEL: 'name' })
-    this.SUBRULE(this._)
-    this.CONSUME(this.T.Colon)
-    this.SUBRULE2(this._)
-    this.SUBRULE(this.expressionList)
+  property = this.OVERRIDE_RULE('property', () => {
+    this.CONSUME(this.T.Ident)
   })
+
+  expression = this.OVERRIDE_RULE('expression', () => {
+    this.AT_LEAST_ONE(() => this.SUBRULE(this.valueExpression))
+  })
+
+  valueExpression = this.RULE('valueExpression', () => {
+    this.SUBRULE(this._)
+    this.SUBRULE(this.addition)
+  })
+
+  addition = this.RULE('addition', () => {
+    // using labels can make the CST processing easier
+    this.SUBRULE(this.multiplication, { LABEL: "lhs" })
+    this.MANY(() => {
+      // consuming 'AdditionOperator' will consume either Plus or Minus as they are subclasses of AdditionOperator
+      this.CONSUME(this.T.AdditionOperator)
+      this.SUBRULE2(this._)
+      //  the index "2" in SUBRULE2 is needed to identify the unique position in the grammar during runtime
+      this.SUBRULE2(this.multiplication, { LABEL: "rhs" })
+    })
+    this.SUBRULE3(this._)
+  })
+
+  multiplication = this.RULE('multiplication', () => {
+    this.SUBRULE(this.compare, { LABEL: "lhs" })
+    this.MANY(() => {
+      this.CONSUME(this.T.MultiplicationOperator)
+      this.SUBRULE(this._)
+      this.SUBRULE2(this.compare, { LABEL: "rhs" })
+    })
+    this.SUBRULE2(this._)
+  })
+
+  compare = this.RULE('compare', () => {
+    // using labels can make the CST processing easier
+    this.SUBRULE(this.value, { LABEL: "lhs" })
+    this.MANY(() => {
+      this.CONSUME(this.T.CompareOperator)
+      this.SUBRULE(this._)
+      this.SUBRULE2(this.value, { LABEL: "rhs" })
+    })
+    this.SUBRULE2(this._)
+  })     
 
   value = this.OVERRIDE_RULE('value', () => {
     this.OR([
@@ -29,10 +68,22 @@ export class CssRuleParser extends CssStructureParser {
       { ALT: () => this.CONSUME(this.T.StringLiteral) },
       { ALT: () => this.CONSUME(this.T.Uri) },
       { ALT: () => this.CONSUME(this.T.Color) },
-      { ALT: () => this.CONSUME(this.T.UnicodeRange) },
-      { ALT: () => this.CONSUME(this.T.WS) }
+      { ALT: () => this.CONSUME(this.T.UnicodeRange) }
     ])
   })
+
+  // value = this.OVERRIDE_RULE('value', () => {
+  //   this.OR([
+  //     { ALT: () => this.SUBRULE(this.block) },
+  //     { ALT: () => this.CONSUME(this.T.Unit) },
+  //     { ALT: () => this.CONSUME(this.T.Ident) },
+  //     { ALT: () => this.CONSUME(this.T.StringLiteral) },
+  //     { ALT: () => this.CONSUME(this.T.Uri) },
+  //     { ALT: () => this.CONSUME(this.T.Color) },
+  //     { ALT: () => this.CONSUME(this.T.UnicodeRange) },
+  //     { ALT: () => this.CONSUME(this.T.WS) }
+  //   ])
+  // })
 
   compoundSelectorList = this.RULE('compoundSelectorList', () => {
     this.SUBRULE(this.compoundSelector)

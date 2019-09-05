@@ -1,10 +1,11 @@
 import { IToken } from 'chevrotain'
 import { Tokens, Fragments } from '../cssTokens'
 import { CssStructureParser } from './cssStructureParser'
+import { CssRuleParser } from './cssRuleParser'
 import { CssStructureVisitor } from './cssStructureVisitor'
 import { createParser } from '../util'
 
-const { parser, lexer, tokens, T } = createParser(CssStructureParser, Fragments, Tokens)
+let { parser, lexer, tokens, T } = createParser(CssStructureParser, Fragments, Tokens)
 const cssVisitor = CssStructureVisitor(
   parser.getBaseCstVisitorConstructorWithDefaults()
 )
@@ -14,11 +15,12 @@ export const parse = (text: string) => {
   const lexedTokens: IToken[] = lexResult.tokens
   parser.input = lexedTokens
   const cst = parser.primary()
+
   if (parser.errors.length === 0) {
-    const visitor = new cssVisitor(tokens, T, lexedTokens, parser.errors)
+    parser = new CssRuleParser(tokens, T)
+    const visitor = new cssVisitor(parser as CssRuleParser, lexedTokens)
     visitor.visit(cst)
-    return cst
-  } else {
-    return parser
   }
+
+  return { cst, parser }
 }

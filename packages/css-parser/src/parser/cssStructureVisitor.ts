@@ -1,4 +1,4 @@
-import { ICstVisitor, TokenType, IToken } from 'chevrotain'
+import { ICstVisitor, TokenType, IToken, IRecognitionException } from 'chevrotain'
 import { CssRuleParser } from './cssRuleParser'
 import { CstNodeTokenVector } from './cssStructureParser'
 import { TokenMap } from '../util'
@@ -11,15 +11,29 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
   return class extends baseConstructor {
     cssParser: CssRuleParser
     lexedTokens: IToken[]
+    errors: IRecognitionException[]
 
-    constructor(tokens: TokenType[], T: TokenMap, lexedTokens: IToken[]) {
+    constructor(
+      tokens: TokenType[],
+      T: TokenMap,
+      lexedTokens: IToken[],
+      errors: IRecognitionException[]
+    ) {
       super()
+      this.errors = errors
       this.cssParser = new CssRuleParser(tokens, T)
       this.lexedTokens = lexedTokens
       this.validateVisitor()
     }
 
     primary(ctx) {
+      const { rule } = ctx
+      if (rule) {
+        this.visit(rule)
+      }
+    }
+
+    rule(ctx) {
       const { atRule, unknownRule, customPropertyRule } = ctx
       const parser = this.cssParser
 
@@ -27,29 +41,32 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
         this.visit(atRule)
       }
       if (unknownRule) {
-        unknownRule.forEach((rule: CstNodeTokenVector, i: number) => {
-          const { curlyBlock, ident, colon } = rule.children
-          if (curlyBlock) {
-            const { start, end } = rule.tokenRange
-            // const block = this.visit(curlyBlock)
-            /** Parse as a qualified rule */
-            parser.input = this.lexedTokens.slice(start, end)
-            const node = parser.compoundSelectorList()
-            if (parser.errors.length === 0) {
-              // console.log(node)
-            } else {
-              console.log(parser.errors[0].message)
-            }
-          } else if (ident && colon) {
-            const { start, end } = rule.tokenRange
-            /** Parse as a declaration */
-            parser.input = this.lexedTokens.slice(start, end)
-            const node = parser.declaration()
-            if (parser.errors.length === 0) {
-              unknownRule[i] = node
-            }
+        const rule = unknownRule[0]
+        const { curlyBlock, ident, colon } = rule.children
+        if (curlyBlock) {
+          const { start, end } = rule.tokenRange
+          const block = this.visit(curlyBlock)
+          /** Parse as a qualified rule */
+          parser.input = this.lexedTokens.slice(start, end)
+          const node = parser.compoundSelectorList()
+          if (node) {
+            ctx.unknownRule = undefined
+            ctx[node.name] = node
+          } else {
+            this.errors.concat(parser.errors)
           }
-        })
+        } else if (ident && colon) {
+          const { start, end } = rule.tokenRange
+          /** Parse as a declaration */
+          parser.input = this.lexedTokens.slice(start, end)
+          const node = parser.declaration()
+          if (node) {
+            ctx.unknownRule = undefined
+            ctx[node.name] = node
+          } else {
+            this.errors.concat(parser.errors)
+          }
+        }
       }
       if (customPropertyRule) {
         this.visit(customPropertyRule)

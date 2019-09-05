@@ -15,7 +15,7 @@ export const parse = (text: string) => {
   parser.input = lexedTokens
   const cst = parser.primary()
   if (parser.errors.length === 0) {
-    const visitor = new cssVisitor(tokens, T, lexedTokens)
+    const visitor = new cssVisitor(tokens, T, lexedTokens, parser.errors)
     visitor.visit(cst)
     return cst
   } else {

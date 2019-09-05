@@ -190,6 +190,13 @@ export class CssRuleParser extends CssStructureParser {
             }
           ])
           this.SUBRULE5(this._)
+          this.OPTION2(() => {
+            this.CONSUME(this.T.Of)
+            this.SUBRULE6(this._)
+            this.SUBRULE2(this.compoundSelectorList)
+            this.SUBRULE7(this._)
+          })
+          this.CONSUME2(this.T.RParen)
         }
       }
     ])

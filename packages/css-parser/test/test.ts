@@ -5,7 +5,7 @@ import 'mocha'
 import * as cssParser from '../src/parser'
 
 describe('can parse all Less stylesheets', () => {
-  const files = glob.sync('../less/test/less/**/*.less');
+  const files = glob.sync('test/css/**/*.css');
   files.sort();
   files.forEach(file => {
     if (file.indexOf('errors') === -1) {

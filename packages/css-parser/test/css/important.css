@@ -1,0 +1,17 @@
+a {
+    width: 1px!important;
+    color: black  !important ;
+}
+
+p {
+    prop: important;
+    color: red important;
+    margin: 10px      !      important;
+    padding: 20px     !  /* test */   important;
+    width: 100px ! /*! test */ important;
+    height: 100px /*! test */ important;
+    z-index: 1 ""! important;
+    padding: 1px/* sep */!important;
+    left: 10 !IMPORTANT;
+    right: 10 ! IMPORTANT;
+}

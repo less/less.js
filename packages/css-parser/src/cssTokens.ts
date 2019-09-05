@@ -85,6 +85,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'And', pattern: /and/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Or', pattern: /or/, longer_alt: 'PlainIdent', categories: ['Ident'] },
+  { name: 'Of', pattern: /of/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'NthIdent', pattern: /odd|even/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Function', pattern: '{{ident}}\\(', categories: ['BlockMarker'] },

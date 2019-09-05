@@ -96,14 +96,19 @@ export class CssStructureParser extends CstParser {
 
   primary = this.RULE('primary', () => {
     this.MANY(() => {
-      this.OR([
-        { ALT: () => this.CONSUME(this.T.WS) },
-        { ALT: () => this.SUBRULE(this.atRule) },
-        { ALT: () => this.SUBRULE(this.unknownRule) },
-        { ALT: () => this.SUBRULE(this.customPropertyRule) },
-        { ALT: () => EMPTY_ALT }
-      ])
+      this.SUBRULE(this.rule)
     })
+    this.SUBRULE(this._)
+  })
+
+  rule = this.RULE('rule', () => {
+    this.SUBRULE(this._)
+    this.OR([
+      { ALT: () => this.SUBRULE(this.atRule) },
+      { ALT: () => this.SUBRULE(this.unknownRule) },
+      { ALT: () => this.SUBRULE(this.customPropertyRule) },
+      { ALT: () => EMPTY_ALT }
+    ])
   })
 
   /**

@@ -1,5 +1,5 @@
 
-import { CstParser, EMPTY_ALT, TokenType, CstNode, IParserConfig } from 'chevrotain'
+import { EmbeddedActionsParser, EMPTY_ALT, TokenType, CstNode, IParserConfig } from 'chevrotain'
 import { TokenMap } from '../util'
 
 /**
@@ -71,7 +71,7 @@ export type CstNodeTokenVector = CstNode & {
  *  at-rule bodies (in {}) can be almost anything, and the outer grammar should
  *  not care about what at-rules or declaration values contain.
  */
-export class CssStructureParser extends CstParser {
+export class CssStructureParser extends EmbeddedActionsParser {
   T: TokenMap
   /**
    * Defines private properties for Chevrotain
@@ -97,20 +97,22 @@ export class CssStructureParser extends CstParser {
   })
 
   primary = this.RULE('primary', () => {
-    this.MANY(() => {
-      this.SUBRULE(this.rule)
-    })
+    const many = this.MANY(() => this.SUBRULE(this.rule))
     this.SUBRULE(this._)
+    console.log(many)
+    return many
   })
 
   rule = this.RULE('rule', () => {
     this.SUBRULE(this._)
-    this.OR([
+    const tOR = this.OR([
       { ALT: () => this.SUBRULE(this.atRule) },
       { ALT: () => this.SUBRULE(this.componentValues) },
       { ALT: () => this.SUBRULE(this.customPropertyRule) },
       { ALT: () => EMPTY_ALT }
     ])
+    console.log(tOR)
+    return tOR
   })
 
   /**
@@ -156,11 +158,11 @@ export class CssStructureParser extends CstParser {
       { ALT: () => EMPTY_ALT }
     ])
     const ruleEnd = this.currIdx + 1
-    if (!this.RECORDING_PHASE) {
-      this.CST_STACK[this.CST_STACK.length - 1].tokenRange = {
-        start, propertyEnd, expressionEnd, ruleEnd
-      }
-    }
+    // if (!this.RECORDING_PHASE) {
+    //   this.CST_STACK[this.CST_STACK.length - 1].tokenRange = {
+    //     start, propertyEnd, expressionEnd, ruleEnd
+    //   }
+    // }
   })
 
   /**
@@ -227,7 +229,6 @@ export class CssStructureParser extends CstParser {
           this.OR2([
             { ALT: () => this.CONSUME(this.T.LParen) },
             { ALT: () => this.CONSUME(this.T.Function) },
-            { ALT: () => this.CONSUME(this.T.PseudoFunction) }
           ])
           this.SUBRULE2(this.primary)
           this.OPTION(() => this.CONSUME(this.T.RParen))

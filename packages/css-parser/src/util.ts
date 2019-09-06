@@ -7,7 +7,7 @@ import {
 } from 'chevrotain'
 
 import * as XRegExp from 'xregexp'
-import { CstParser } from 'chevrotain';
+import { EmbeddedActionsParser } from 'chevrotain';
 
 export interface TokenMap {
   [key: string]: TokenType
@@ -76,18 +76,18 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
   }
 }
 
-interface ICstParser extends CstParser {
-  primary(): CstNode
+interface IEmbeddedActionsParser extends EmbeddedActionsParser {
+  primary(): void
 }
 
 type CssParser = {
-  new(tokens: TokenType[], T: TokenMap): ICstParser
+  new(tokens: TokenType[], T: TokenMap): IEmbeddedActionsParser
 }
 
 export const createParser = (Parser: CssParser, rawFragments: string[][], rawTokens: rawTokenConfig[]) => {
   const { lexer, tokens, T } = createLexer(rawFragments, rawTokens)
 
-  const parser = new Parser(tokens, T);
+  const parser = new Parser(tokens, T)
 
   return {
     parser,

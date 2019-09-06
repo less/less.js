@@ -6,9 +6,9 @@ import { CssStructureVisitor } from './cssStructureVisitor'
 import { createParser } from '../util'
 
 let { parser, lexer, tokens, T } = createParser(CssStructureParser, Fragments, Tokens)
-const cssVisitor = CssStructureVisitor(
-  parser.getBaseCstVisitorConstructorWithDefaults()
-)
+// const cssVisitor = CssStructureVisitor(
+//   parser.getBaseCstVisitorConstructorWithDefaults()
+// )
 
 export const parse = (text: string) => {
   const lexResult = lexer.tokenize(text)
@@ -17,9 +17,9 @@ export const parse = (text: string) => {
   const cst = parser.primary()
 
   if (parser.errors.length === 0) {
-    parser = new CssRuleParser(tokens, T)
-    const visitor = new cssVisitor(parser as CssRuleParser, lexedTokens)
-    visitor.visit(cst)
+    // parser = new CssRuleParser(tokens, T)
+    // const visitor = new cssVisitor(parser as CssRuleParser, lexedTokens)
+    // visitor.visit(cst)
   }
 
   return { cst, parser }

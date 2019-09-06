@@ -40,7 +40,9 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'BlockMarker', pattern: Lexer.NA },
   { name: 'ListMarker', pattern: Lexer.NA },
   { name: 'CompareOperator', pattern: Lexer.NA },
-  { name: 'Gt', pattern: />/, categories: ['CompareOperator'] },
+  { name: 'SelectorPart', pattern: Lexer.NA },
+  { name: 'Color', pattern: Lexer.NA },
+  { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
   { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
   { name: 'GtEq', pattern: />=/, categories: ['CompareOperator'] },
   { name: 'LtEq', pattern: /<=/, categories: ['CompareOperator'] },
@@ -53,7 +55,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'SemiColon', pattern: /;/, categories: ['BlockMarker'] },
   { name: 'AdditionOperator', pattern: Lexer.NA },
   { name: 'MultiplicationOperator', pattern: Lexer.NA },
-  { name: 'Plus', pattern: /\+/, categories: ['AdditionOperator'] },
+  { name: 'Plus', pattern: /\+/, categories: ['AdditionOperator', 'SelectorPart'] },
   { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
   { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
   { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
@@ -62,9 +64,9 @@ export const Tokens: rawTokenConfig[] = [
   // Some tokens have to appear after AttrMatch
   { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },
   { name: 'Star', pattern: /\*/, categories: ['MultiplicationOperator'] },
-  { name: 'Tilde', pattern: /~/ },
+  { name: 'Tilde', pattern: /~/, categories: ['SelectorPart'] },
   /** Rare: a namespace combinator */
-  { name: 'Pipe', pattern: /\|/ },
+  { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
   { name: 'Ident', pattern: Lexer.NA },
   { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
@@ -120,23 +122,28 @@ export const Tokens: rawTokenConfig[] = [
     pattern: Lexer.NA
   },
   {
-    name: 'Class',
+    name: 'DotName',
     pattern: '\\.{{ident}}',
     categories: ['ClassOrId']
   },
   {
-    name: 'ID',
+    name: 'HashName',
     pattern: '#{{ident}}',
     categories: ['ClassOrId']
   },
 
   // This is in the ClassOrId category because a value may get lexed as a color,
-  // but will be intended as an ID selector
+  // but will be intended as an ID selector. ONLY valid as ID if it doesn't start with a number
   {
-    name: 'Color',
-    pattern: /#(?:(?:[\da-f]{8})|(?:[\da-f]{6})|(?:[\da-f]{3,4}))/i,
-    longer_alt: 'ID',
-    categories: ['ClassOrId']
+    name: 'ColorIntStart',
+    pattern: /#(?:(?:[0-9][0-9a-f]{7})|(?:[0-9][0-9a-f]{5})|(?:[0-9][0-9a-f]{2,3}))/i,
+    categories: ['Color']
+  },
+  {
+    name: 'ColorIdentStart',
+    pattern: /#(?:(?:[a-f][0-9a-f]{7})|(?:[a-f][0-9a-f]{5})|(?:[a-f][0-9a-f]{2,3}))/i,
+    longer_alt: 'HashName',
+    categories: ['Color', 'ClassOrId']
   },
   { name: 'Unit', pattern: Lexer.NA },
   { name: 'Dimension', pattern: Lexer.NA },

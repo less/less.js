@@ -1,5 +1,13 @@
 
-import { EmbeddedActionsParser, EMPTY_ALT, TokenType, CstNode, IParserConfig } from 'chevrotain'
+import {
+  EmbeddedActionsParser,
+  EMPTY_ALT,
+  TokenType,
+  CstNode,
+  CstElement,
+  IParserConfig,
+  IToken
+} from 'chevrotain'
 import { TokenMap } from '../util'
 
 /**
@@ -53,14 +61,10 @@ import { TokenMap } from '../util'
  *  stylesheet parser should return warnings, but should recover all errors.
  */
 
-export type CstNodeTokenVector = CstNode & {
-  tokenRange: {
-    start: number
-    propertyEnd: number
-    expressionEnd: number
-    ruleEnd: number
-  }
-} 
+interface optionalValues {
+  selector?: CstNode[]
+  declaration?: CstNode[]
+}
 
 /**
  *  Parsing is broken into 2 phases, so that we:
@@ -73,11 +77,9 @@ export type CstNodeTokenVector = CstNode & {
  */
 export class CssStructureParser extends EmbeddedActionsParser {
   T: TokenMap
-  /**
-   * Defines private properties for Chevrotain
-   */
-  currIdx: number
-  CST_STACK: CstNodeTokenVector[]
+  currentSelectorStack: IToken[]
+  currentSelectors: CstNode[] | boolean
+  expectedSelectorTokens: TokenType[][]
 
   constructor(
     tokens: TokenType[],
@@ -91,40 +93,116 @@ export class CssStructureParser extends EmbeddedActionsParser {
     }
   }
 
+  _processValues = (values: CstElement[]): optionalValues => {
+    const optionals: optionalValues = {}
+
+    if (values.length > 0) {
+      const selector = this._selectorBuilder(values)
+      if (selector) {
+        optionals.selector = selector
+      }
+    }
+    /**
+     * At minimum, a declaration needs an ident, a colon, and a value (3).
+     * Note: the last value may be whitespace
+     */
+    if (values.length > 3) {
+       const declaration = this._declarationBuilder(values)
+       if (declaration) {
+         optionals.declaration = declaration
+       }
+    }
+
+    return optionals
+  }
+
+  /**
+   * Attempts to build selectors out of Cst elements
+   */
+  _selectorBuilder = (elements: CstElement[]): CstNode[] => {
+    const selectorNodes: CstNode[] = []
+    return selectorNodes
+  }
+
+  /**
+   * Attempts to build declarations out of Cst elements
+   */
+  _declarationBuilder = (elements: CstElement[]): CstNode[] => {
+    const declNodes: CstNode[] = []
+    return declNodes
+  }
+
   // Optional whitespace
-  _ = this.RULE('_', () => {
-    this.OPTION(() => this.CONSUME(this.T.WS))
+  _ = this.RULE<IToken>('_', () => {
+    return this.OPTION<IToken>(() => this.CONSUME(this.T.WS))
   })
 
-  primary = this.RULE('primary', () => {
-    const many = this.MANY(() => this.SUBRULE(this.rule))
-    this.SUBRULE(this._)
-    console.log(many)
-    return many
+  primary = this.RULE<CstNode>('primary', () => {
+    const rules: CstElement[] = []
+    this.MANY(() => {
+      const rule = this.SUBRULE<CstNode>(this.rule)
+      this.ACTION(() => rules.push(rule))
+    })
+    const post = [ this.SUBRULE<IToken>(this._) ]
+    return {
+      name: 'primary',
+      children: {
+        rules,
+        post
+      }
+    }
   })
 
-  rule = this.RULE('rule', () => {
-    this.SUBRULE(this._)
-    const tOR = this.OR([
-      { ALT: () => this.SUBRULE(this.atRule) },
-      { ALT: () => this.SUBRULE(this.componentValues) },
-      { ALT: () => this.SUBRULE(this.customPropertyRule) },
-      { ALT: () => EMPTY_ALT }
-    ])
-    console.log(tOR)
-    return tOR
+  rule = this.RULE<CstNode>('rule', () => {
+    const pre = [ this.SUBRULE<IToken>(this._) ]
+    const rule = [
+      this.OR([
+        { ALT: () => this.SUBRULE<CstNode>(this.atRule) },
+        { ALT: () => this.SUBRULE<CstNode>(this.componentValues) },
+        { ALT: () => this.SUBRULE<CstNode>(this.customPropertyRule) },
+        { ALT: () => EMPTY_ALT }
+      ])
+    ]
+    return {
+      name: 'rule',
+      children: {
+        pre,
+        rule
+      }
+    }
   })
 
   /**
    * Everything up to an (outer) ';' or '{' is the AtRule's prelude
    */
-  atRule = this.RULE('atRule', () => {
-    this.CONSUME(this.T.AtName)
-    this.SUBRULE(this.expressionList)
+  atRule = this.RULE<CstNode>('atRule', () => {
+    const name = [ this.CONSUME(this.T.AtName) ]
+    const prelude = this.SUBRULE<CstNode>(this.expressionList)
+    const optionals: {
+      body?: CstNode[]
+      end?: IToken[]
+    } = {}
     this.OR([
-      { ALT: () => this.SUBRULE(this.curlyBlock) },
-      { ALT: () => this.OPTION(() => this.CONSUME(this.T.SemiColon)) }
+      {
+        ALT: () => {
+          optionals.body = [ this.SUBRULE<CstNode>(this.curlyBlock) ]
+        }
+      },
+      {
+        ALT: () => this.OPTION(() => {
+          optionals.end = [ this.CONSUME(this.T.SemiColon) ]
+        })
+      }
     ])
+
+    return {
+      name: 'atRule',
+      children: {
+        name,
+        prelude,
+        ...optionals
+      }
+    }
   })
 
   property = this.RULE('property', () => {
@@ -141,10 +219,27 @@ export class CssStructureParser extends EmbeddedActionsParser {
     ])
   })
 
-  componentValues = this.RULE('componentValues', () => {
-    const start = this.currIdx + 1
+  /** Values without space separators */
+  valueGroup = this.RULE<CstNode>('valueGroup', () => {
+    let isDeclarationLike: boolean
+    const values: CstElement[] = []
+    this.OPTION(() => {
+      values.push(this.CONSUME(this.T.Colon))
+      isDeclarationLike = false
+    })
+    this.AT_LEAST_ONE(() => {
+      this.OR([
+        { ALT: () => this.SUBRULE(this.block) },
+        { ALT: () => this.CONSUME(this.T.Ident) },
+        { ALT: () => this.CONSUME(this.T.NonIdent) }
+      ])
+    })
+  })
+
+  componentValues = this.RULE<CstNode>('componentValues', () => {
+    const values: CstElement[] = []
+
     this.SUBRULE(this.property)
-    const propertyEnd = this.currIdx + 1
     /** This may be a declaration or declaration-like, we'll see */
     this.SUBRULE(this._)
     this.OPTION(() => this.CONSUME(this.T.Colon, { LABEL: 'colon' }))
@@ -191,22 +286,64 @@ export class CssStructureParser extends EmbeddedActionsParser {
     })
   })
 
-  /** A list of values and white space */
-  expression = this.RULE('expression', () => {
-    this.MANY(() => this.SUBRULE(this.value))
+  /**
+   *  An expression may return values, selectors, and/or a declaration
+   *  
+   *  It's important to note that the selectors and declarations are
+   *  _duplicates_ of the value collection. Those latter collections just indicate
+   *  that the values returned could be interpreted / represented as either selectors
+   *  and / or a declaration
+   */
+  expression = this.RULE<CstNode>('expression', () => {
+    let values: CstElement[]
+    let optionals: optionalValues = {}
+  
+    this.ACTION(() => values = [])
+    this.MANY(() => {
+      const value = this.SUBRULE<CstElement>(this.value)
+      this.ACTION(() => values.push(value))
+    })
+
+    this.ACTION(() => {
+      optionals = this._processValues(values)
+    })
+    
+    return {
+      name: 'expression',
+      children: {
+        values,
+        ...optionals
+      }
+    }
   })
 
-  customExpression = this.RULE('customExpression', () => {
+  customExpression = this.RULE<CstNode>('customExpression', () => {
+    let values: CstElement[]
+    let optionals: optionalValues = {}
+
     this.MANY(() => {
-      this.OR([
+      const val = this.OR([
         { ALT: () => this.SUBRULE(this.value) },
         { ALT: () => this.SUBRULE(this.curlyBlock) }
       ])
+      this.ACTION(() => values.push(val))
     })
+
+    this.ACTION(() => {
+      optionals = this._processValues(values)
+    })
+    
+    return {
+      name: 'expression',
+      children: {
+        values,
+        ...optionals
+      }
+    }
   })
 
-  value = this.RULE('value', () => {
-    this.OR([
+  value = this.RULE<CstElement>('value', () => {
+    return this.OR([
       { ALT: () => this.SUBRULE(this.block) },
       { ALT: () => this.CONSUME(this.T.Value) },
       { ALT: () => this.CONSUME(this.T.Colon) },
@@ -230,14 +367,14 @@ export class CssStructureParser extends EmbeddedActionsParser {
             { ALT: () => this.CONSUME(this.T.LParen) },
             { ALT: () => this.CONSUME(this.T.Function) },
           ])
-          this.SUBRULE2(this.primary)
+          this.SUBRULE2(this.customExpressionList)
           this.OPTION(() => this.CONSUME(this.T.RParen))
         }
       },
       {
         ALT: () => {
           this.CONSUME(this.T.LSquare)
-          this.SUBRULE3(this.primary)
+          this.SUBRULE3(this.customExpressionList)
           this.OPTION2(() => this.CONSUME(this.T.RSquare))
         }
       }

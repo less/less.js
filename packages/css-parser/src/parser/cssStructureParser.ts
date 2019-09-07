@@ -6,7 +6,8 @@ import {
   CstNode,
   CstElement,
   IParserConfig,
-  IToken
+  IToken,
+  tokenMatcher
 } from 'chevrotain'
 import { TokenMap } from '../util'
 
@@ -66,6 +67,11 @@ interface optionalValues {
   declaration?: CstNode[]
 }
 
+interface spaceToken {
+  pre?: IToken[]
+  post?: IToken[]
+}
+
 /**
  *  Parsing is broken into 2 phases, so that we:
  *    1. Don't have to do any backtracking to refine rules (like @media).
@@ -99,7 +105,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
     if (values.length > 0) {
       const selector = this._selectorBuilder(values)
       if (selector) {
-        optionals.selector = selector
+        optionals.selector = [ selector ]
       }
     }
     /**
@@ -109,64 +115,180 @@ export class CssStructureParser extends EmbeddedActionsParser {
     if (values.length > 3) {
        const declaration = this._declarationBuilder(values)
        if (declaration) {
-         optionals.declaration = declaration
+         optionals.declaration = [ declaration ]
        }
     }
 
     return optionals
   }
 
+  _addDeclarationExpressions = (expressions: CstNode[], optionals: optionalValues) => {
+    return () => {
+      if (!expressions) {
+        return
+      }
+      if (expressions.length > 0) {
+        const declaration = expressions[0].children.declaration as CstNode[]
+        if (declaration) {
+          const decl = declaration[0].children
+          const expression = decl.value as CstNode[]
+          expressions.forEach((expr, i) => {
+            if (i > 0) {
+              expression.push(expr)
+            }
+          })
+          const declarationExpression: CstNode = {
+            name: 'expressionList',
+            children: { expression }
+          }
+
+          optionals.declaration = [{
+            name: 'declaration',
+            children: {
+              ...decl,
+              value: [ declarationExpression ]
+            }
+          }]
+        }
+      }
+    }
+  }
+
   /**
    * Attempts to build selectors out of Cst elements
    */
-  _selectorBuilder = (elements: CstElement[]): CstNode[] => {
-    const selectorNodes: CstNode[] = []
-    return selectorNodes
+  _selectorBuilder = (elements: CstElement[]): CstNode | undefined => {
+    let selectorNodes: CstNode[] = []
+    // const elementsLength = elements.length
+
+    // for(let i = 0; i < elementsLength; i++) {
+    //   const el = elements[i]
+    //   if ('image' in el) {
+    //     if (el.tokenType === this.T.Colon) {
+    //       const next = elements[i + 1]
+    //       let validToken = false
+    //       if ('image' in next) {
+    //         if (tokenMatcher(next, this.T.Ident)) {
+    //           /** :ident pseudo-selector */
+    //           validToken = true
+    //         }
+    //       } else {
+    //         if (next.children.Function) {
+    //           /** :ident() pseudo-selector */
+    //           validToken = true
+    //         }
+    //       }
+    //       if (validToken) {
+    //         selectorNodes.push({
+    //           name: 'simpleSelector',
+    //           children: {
+    //             values: [el, next]
+    //           }
+    //         })
+    //         i += 1
+    //         continue
+    //       }
+    //     } else if (el.tokenType === this.T.WS || tokenMatcher(el, this.T.SelectorPart)) {
+    //       selectorNodes.push({
+    //         name: 'selectorPart',
+    //         children: {
+    //           values: [el]
+    //         }
+    //       })
+    //       continue
+    //     } else if (tokenMatcher(el, this.T.Selector)) {
+    //       selectorNodes.push({
+    //         name: 'simpleSelector',
+    //         children: {
+    //           values: [el]
+    //         }
+    //       })
+    //       continue
+    //     }
+    //     selectorNodes = undefined
+    //     break
+    //   } else {
+    //     if (el.children.selector) {
+    //       selectorNodes.push({
+    //         name: 'simpleSelector',
+    //         children: {
+    //           values: el.children.selector
+    //         }
+    //       })
+    //     }
+    //   }
+    // }
+
+    if (selectorNodes) {
+      return {
+        name: 'selector',
+        children: {
+          values: selectorNodes
+        }
+      }
+    }
   }
 
   /**
    * Attempts to build declarations out of Cst elements
    */
-  _declarationBuilder = (elements: CstElement[]): CstNode[] => {
-    const declNodes: CstNode[] = []
-    return declNodes
+  _declarationBuilder = (elements: CstElement[]): CstNode => {
+    let declNode: CstNode
+    return {
+      name: 'declaration',
+      children: {
+        property:
+      }
+    }
   }
 
-  // Optional whitespace
+  /** Optional whitespace */
   _ = this.RULE<IToken>('_', () => {
-    return this.OPTION<IToken>(() => this.CONSUME(this.T.WS))
+    return this.OPTION(() => this.CONSUME(this.T.WS))
   })
 
   primary = this.RULE<CstNode>('primary', () => {
     const rules: CstElement[] = []
     this.MANY(() => {
-      const rule = this.SUBRULE<CstNode>(this.rule)
+      const rule = this.SUBRULE(this.rule)
       this.ACTION(() => rules.push(rule))
     })
-    const post = [ this.SUBRULE<IToken>(this._) ]
+    let post: spaceToken = {}
+    const ws = this.SUBRULE(this._)
+    this.ACTION(() => {
+      if (ws) {
+        post = { post: [ ws ] }
+      }
+    })
     return {
       name: 'primary',
       children: {
         rules,
-        post
+        ...post
       }
     }
   })
 
   rule = this.RULE<CstNode>('rule', () => {
-    const pre = [ this.SUBRULE<IToken>(this._) ]
+    let pre: spaceToken = {}
+    const ws = this.SUBRULE(this._)
+    this.ACTION(() => {
+      if (ws) {
+        pre = { pre: [ ws ] }
+      }
+    })
     const rule = [
       this.OR([
-        { ALT: () => this.SUBRULE<CstNode>(this.atRule) },
-        { ALT: () => this.SUBRULE<CstNode>(this.componentValues) },
-        { ALT: () => this.SUBRULE<CstNode>(this.customPropertyRule) },
+        { ALT: () => this.SUBRULE(this.atRule) },
+        { ALT: () => this.SUBRULE(this.componentValues) },
+        { ALT: () => this.SUBRULE(this.customPropertyRule) },
         { ALT: () => EMPTY_ALT }
       ])
     ]
     return {
       name: 'rule',
       children: {
-        pre,
+        ...pre,
         rule
       }
     }
@@ -177,7 +299,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
    */
   atRule = this.RULE<CstNode>('atRule', () => {
     const name = [ this.CONSUME(this.T.AtName) ]
-    const prelude = this.SUBRULE<CstNode>(this.expressionList)
+    const prelude = [ this.SUBRULE(this.expressionList) ]
     const optionals: {
       body?: CstNode[]
       end?: IToken[]
@@ -185,7 +307,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
     this.OR([
       {
         ALT: () => {
-          optionals.body = [ this.SUBRULE<CstNode>(this.curlyBlock) ]
+          optionals.body = [ this.SUBRULE(this.curlyBlock) ]
         }
       },
       {
@@ -205,44 +327,13 @@ export class CssStructureParser extends EmbeddedActionsParser {
     }
   })
 
-  property = this.RULE('property', () => {
-    /** A start colon is obviously invalid, but we're just collecting for post-processing */
-    this.OPTION(() => this.CONSUME(this.T.Colon))
-    this.AT_LEAST_ONE(() => this.SUBRULE(this.propertyValue))
-  })
-
-  propertyValue = this.RULE('propertyValue', () => {
-    this.OR([
-      { ALT: () => this.SUBRULE(this.block) },
-      { ALT: () => this.CONSUME(this.T.Ident) },
-      { ALT: () => this.CONSUME(this.T.NonIdent) }
-    ])
-  })
-
-  /** Values without space separators */
-  valueGroup = this.RULE<CstNode>('valueGroup', () => {
-    let isDeclarationLike: boolean
-    const values: CstElement[] = []
-    this.OPTION(() => {
-      values.push(this.CONSUME(this.T.Colon))
-      isDeclarationLike = false
-    })
-    this.AT_LEAST_ONE(() => {
-      this.OR([
-        { ALT: () => this.SUBRULE(this.block) },
-        { ALT: () => this.CONSUME(this.T.Ident) },
-        { ALT: () => this.CONSUME(this.T.NonIdent) }
-      ])
-    })
-  })
-
   componentValues = this.RULE<CstNode>('componentValues', () => {
     const values: CstElement[] = []
 
-    this.SUBRULE(this.property)
-    /** This may be a declaration or declaration-like, we'll see */
-    this.SUBRULE(this._)
-    this.OPTION(() => this.CONSUME(this.T.Colon, { LABEL: 'colon' }))
+    this.OR([
+      { ALT: () => this.SUBRULE(this.block) },
+      { ALT: () => this.CONSUME(this.T.Value) }
+    ])
     
     /** Consume any remaining values */
     this.SUBRULE(this.expressionList)
@@ -272,18 +363,117 @@ export class CssStructureParser extends EmbeddedActionsParser {
   })
 
   /** A comma-separated list of expressions */
-  expressionList = this.RULE('expressionList', () => {
+  expressionList = this.RULE<CstNode>('expressionList', () => {
+    const optionals: optionalValues = {}
+    let expressions: CstNode[]
+    let isSelectorList: boolean
+
     this.MANY_SEP({
       SEP: this.T.Comma,
-      DEF: () => this.SUBRULE(this.expression)
+      DEF: () => {
+        const expr = this.SUBRULE(this.expression)
+        this.ACTION(() => {
+          if (isSelectorList !== false && expr.children.selector) {
+            isSelectorList = true
+          } else {
+            isSelectorList = false
+          }
+          if (expressions) {
+            expressions.push(expr)
+          } else {
+            expressions = [ expr ]
+          }
+        })
+      }
     })
+
+    this.ACTION(this._addDeclarationExpressions(expressions, optionals))
+
+    return {
+      name: 'expressionList',
+      ...(isSelectorList ? { isSelectorList } : {}),
+      children: {
+        ...(expressions ? { expression: expressions } : {}),
+        ...optionals
+      }
+    }
   })
 
-  customExpressionList = this.RULE('customExpressionList', () => {
+  /** List of expression lists (or expression list if only 1) */
+  expressionListGroup = this.RULE<CstNode>('expressionListGroup', () => {
+    let isGroup = false
+    let SemiColon: IToken[]
+    let expressionList: CstNode[]
+    let list: CstNode = this.SUBRULE(this.customExpressionList)
+    let semi: IToken
+
+    this.OPTION(() => {
+      semi = this.CONSUME(this.T.SemiColon)
+      isGroup = true
+      this.ACTION(() => {
+        expressionList = [list]
+        SemiColon = [semi]
+      })
+      this.MANY(() => {
+        list = this.SUBRULE(this.customExpressionList)
+        this.ACTION(() => {
+          expressionList.push(list)
+          SemiColon = [semi]
+        })
+        this.OPTION(() => {
+          semi = this.CONSUME(this.T.SemiColon)
+          this.ACTION(() => {
+            SemiColon.push(semi)
+          })
+        })
+      })
+    })
+    if (isGroup) {
+      return {
+        name: 'expressionListGroup',
+        children: {
+          SemiColon,
+          expressionList
+        }
+      }
+    }
+    return list
+  })
+
+  customExpressionList = this.RULE<CstNode>('customExpressionList', () => {
+    const optionals: optionalValues = {}
+    let expressions: CstNode[]
+    let isSelectorList: boolean
+
     this.MANY_SEP({
       SEP: this.T.Comma,
-      DEF: () => this.SUBRULE(this.customExpression)
+      DEF: () => {
+        const expr = this.SUBRULE(this.customExpression)
+        this.ACTION(() => {
+          if (isSelectorList !== false && expr.children.selector) {
+            isSelectorList = true
+          } else {
+            isSelectorList = false
+          }
+          if (expressions) {
+            expressions.push(expr)
+          } else {
+            expressions = [ expr ]
+          }
+        })
+      }
     })
+
+    this.ACTION(this._addDeclarationExpressions(expressions, optionals))
+
+    return {
+      name: 'expressionList',
+      ...(isSelectorList ? { isSelectorList } : {}),
+      children: {
+        ...(expressions ? { expression: expressions } : {}),
+        ...optionals
+      }
+    }
   })
 
   /**
@@ -299,8 +489,17 @@ export class CssStructureParser extends EmbeddedActionsParser {
     let optionals: optionalValues = {}
   
     this.ACTION(() => values = [])
+
+    let pre: spaceToken = {}
+    const ws = this.SUBRULE(this._)
+    this.ACTION(() => {
+      if (ws) {
+        pre = { pre: [ ws ] }
+      }
+    })
+  
     this.MANY(() => {
-      const value = this.SUBRULE<CstElement>(this.value)
+      const value = this.SUBRULE(this.value)
       this.ACTION(() => values.push(value))
     })
 
@@ -312,6 +511,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
       name: 'expression',
       children: {
         values,
+        ...pre,
         ...optionals
       }
     }
@@ -320,13 +520,15 @@ export class CssStructureParser extends EmbeddedActionsParser {
   customExpression = this.RULE<CstNode>('customExpression', () => {
     let values: CstElement[]
     let optionals: optionalValues = {}
-
+  
+    this.ACTION(() => values = [])
+  
     this.MANY(() => {
-      const val = this.OR([
+      const value = this.OR([
         { ALT: () => this.SUBRULE(this.value) },
         { ALT: () => this.SUBRULE(this.curlyBlock) }
       ])
-      this.ACTION(() => values.push(val))
+      this.ACTION(() => values.push(value))
     })
 
     this.ACTION(() => {
@@ -346,38 +548,99 @@ export class CssStructureParser extends EmbeddedActionsParser {
     return this.OR([
       { ALT: () => this.SUBRULE(this.block) },
       { ALT: () => this.CONSUME(this.T.Value) },
-      { ALT: () => this.CONSUME(this.T.Colon) },
       { ALT: () => this.CONSUME(this.T.AtName) },
       { ALT: () => this.CONSUME(this.T.CustomProperty) },
       { ALT: () => this.CONSUME(this.T.WS) }
     ])
   })
 
-  curlyBlock = this.RULE('curlyBlock', () => {
-    this.CONSUME(this.T.LCurly)
-    this.SUBRULE(this.primary)
-    this.OPTION(() => this.CONSUME(this.T.RCurly))
+  curlyBlock = this.RULE<CstNode>('curlyBlock', () => {
+    let children: {[key: string]: CstElement[] }
+
+    const L = this.CONSUME(this.T.LCurly)
+    const blockBody = this.SUBRULE(this.primary)
+
+    this.ACTION(() => {
+      children = { L: [L], blockBody: [blockBody] }
+    })
+
+    this.OPTION(() => {
+      const R = this.CONSUME(this.T.RCurly)
+      this.ACTION(() => children.R = [R])
+    })
+    
+    return {
+      name: 'curlyBlock',
+      children
+    }
   })
 
-  block = this.RULE('block', () => {
+  block = this.RULE<CstNode>('block', () => {
+    let L: IToken
+    let R: IToken
+    let Function: IToken
+    let blockBody: CstNode
+    let block: CstNode
+
     this.OR([
       {
         ALT: () => {
           this.OR2([
-            { ALT: () => this.CONSUME(this.T.LParen) },
-            { ALT: () => this.CONSUME(this.T.Function) },
+            { ALT: () => L = this.CONSUME(this.T.LParen) },
+            { ALT: () => Function = this.CONSUME(this.T.Function) }
           ])
-          this.SUBRULE2(this.customExpressionList)
-          this.OPTION(() => this.CONSUME(this.T.RParen))
+          blockBody = this.SUBRULE(this.expressionListGroup)
+          this.OPTION(() => R = this.CONSUME(this.T.RParen))
         }
       },
       {
         ALT: () => {
-          this.CONSUME(this.T.LSquare)
-          this.SUBRULE3(this.customExpressionList)
-          this.OPTION2(() => this.CONSUME(this.T.RSquare))
+          L = this.CONSUME(this.T.LSquare)
+          blockBody = this.SUBRULE2(this.expressionListGroup)
+          this.OPTION2(() => R = this.CONSUME(this.T.RSquare))
         }
       }
     ])
+    return block || {
+      name: 'block',
+      children: {
+        ...(L ? { L: [L]} : {}),
+        ...(Function ? { Function: [Function]}: {}),
+        ...(blockBody ? { blockBody: [blockBody]}: {}),
+        ...(R ? { R: [R]} : {}),
+      }
+    }
   })
+
+  // attrSelectorValue = this.RULE<IToken[]>('attrSelectorValue', () => {
+  //   let token: IToken
+  //   const tokens: IToken[] = []
+
+  //   token = this.CONSUME(this.T.Ident)
+  //   this.ACTION(() => tokens.push(token))
+  //   this.OPTION(() => {
+  //     token = this.CONSUME(this.T.AttrMatchOperator)
+  //     this.ACTION(() => tokens.push(token))
+
+  //     token = this.OR([
+  //       { ALT: () => this.CONSUME(this.T.StringLiteral) },
+  //       { ALT: () => this.CONSUME2(this.T.Ident) }
+  //     ])
+  //     this.ACTION(() => tokens.push(token))
+
+  //     this.OPTION2(() => {
+  //       token = this.CONSUME(this.T.WS)
+  //       this.ACTION(() => tokens.push(token))
+  //     })
+
+  //     this.OPTION3(() => {
+  //       token = this.CONSUME(this.T.AttrFlag)
+  //       this.ACTION(() => tokens.push(token))
+  //     })
+  //   })
+  //   token = this.CONSUME(this.T.RSquare)
+  //   this.ACTION(() => tokens.push(token))
+
+  //   return tokens
+  // })
 }

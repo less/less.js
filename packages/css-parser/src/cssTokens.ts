@@ -40,6 +40,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'BlockMarker', pattern: Lexer.NA },
   { name: 'ListMarker', pattern: Lexer.NA },
   { name: 'CompareOperator', pattern: Lexer.NA },
+  { name: 'Selector', pattern: Lexer.NA },
   { name: 'SelectorPart', pattern: Lexer.NA },
   { name: 'Color', pattern: Lexer.NA },
   { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
@@ -59,7 +60,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
   { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
   { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
-  { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
+  { name: 'Colon', pattern: /:/ },
   { name: 'AttrMatchOperator', pattern: Lexer.NA },
   // Some tokens have to appear after AttrMatch
   { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },
@@ -68,7 +69,7 @@ export const Tokens: rawTokenConfig[] = [
   /** Rare: a namespace combinator */
   { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
-  { name: 'Ident', pattern: Lexer.NA },
+  { name: 'Ident', pattern: Lexer.NA, categories: ['Selector'] },
   { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
   { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
   { name: 'CDOToken', pattern: /<!--/, group: Lexer.SKIPPED },
@@ -118,18 +119,14 @@ export const Tokens: rawTokenConfig[] = [
     pattern: /[uU]\+[0-9a-fA-F?]+(\-[0-9a-fA-F?]+)?/
   },
   {
-    name: 'ClassOrId',
-    pattern: Lexer.NA
-  },
-  {
     name: 'DotName',
     pattern: '\\.{{ident}}',
-    categories: ['ClassOrId']
+    categories: ['Selector']
   },
   {
     name: 'HashName',
     pattern: '#{{ident}}',
-    categories: ['ClassOrId']
+    categories: ['Selector']
   },
 
   // This is in the ClassOrId category because a value may get lexed as a color,
@@ -143,7 +140,7 @@ export const Tokens: rawTokenConfig[] = [
     name: 'ColorIdentStart',
     pattern: /#(?:(?:[a-f][0-9a-f]{7})|(?:[a-f][0-9a-f]{5})|(?:[a-f][0-9a-f]{2,3}))/i,
     longer_alt: 'HashName',
-    categories: ['Color', 'ClassOrId']
+    categories: ['Color', 'Selector']
   },
   { name: 'Unit', pattern: Lexer.NA },
   { name: 'Dimension', pattern: Lexer.NA },

@@ -36,7 +36,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Value', pattern: Lexer.NA },
   { name: 'NonIdent', pattern: Lexer.NA },
   { name: 'AtName', pattern: Lexer.NA },
-  { name: 'AnyValue', pattern: /./ },
+  { name: 'Unknown', pattern: /./ },
   { name: 'BlockMarker', pattern: Lexer.NA },
   { name: 'ListMarker', pattern: Lexer.NA },
   { name: 'CompareOperator', pattern: Lexer.NA },

@@ -13,7 +13,7 @@ Fragments.push(['lineComment', '\\/\\/[^\\n\\r]*'])
 Fragments.push(['interpolated', '({{ident}}?@{[\w-]+}{{ident}}?)+'])
 
 const merges: IMerges = {
-  'AnyValue': [
+  'Unknown': [
     { name: 'Ampersand', pattern: /&/ }
   ],
   'Ident': [
@@ -32,8 +32,8 @@ const merges: IMerges = {
     { name: 'UnderscoreAssign', pattern: /_:/ },
     {
       name: 'Extend',
-      pattern: /:extend\(/,
-      categories: ['PseudoFunction']
+      pattern: /extend\(/,
+      categories: ['Function']
     },
     {
       name: 'When',
@@ -76,8 +76,11 @@ const merges: IMerges = {
 let tokenLength = Tokens.length;
 for (let i = 0; i < tokenLength; i++) {
   let token = Tokens[i]
-  const copyToken = () => { token = {...token} }
-  const { name } = token
+  let { name, categories } = token
+  const copyToken = () => { 
+    token = {...token}
+    categories = categories ? categories.slice(0) : []
+  }
   let alterations = true
 
   switch (name) {
@@ -87,17 +90,17 @@ for (let i = 0; i < tokenLength; i++) {
       break
     case 'AtKeyword':
       copyToken()
-      token.categories = ['VarOrProp']
+      token.categories = categories.concat(['VarOrProp'])
       break
     case 'WS':
       copyToken()
       token.pattern = '({{ws}}|{{lineComment}}|{{comment}})+'
       break
-    case 'Class':
+    case 'DotName':
       copyToken()
       token.pattern = '\\.{{interpolated}}'
       break
-    case 'ID':
+    case 'HashName':
       copyToken()
       token.pattern = '#{{interpolated}}'
       break
@@ -108,7 +111,7 @@ for (let i = 0; i < tokenLength; i++) {
     case 'Not':
     case 'Only':
       copyToken()
-      token.categories = ['Ident', 'Interpolated']
+      token.categories = categories.concat(['Ident', 'Interpolated'])
       break
     default:
       alterations = false

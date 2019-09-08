@@ -11,8 +11,8 @@ let { parser, lexer, tokens, T } = createParser(CssStructureParser, Fragments, T
 // )
 
 export const parse = (text: string) => {
-  const lexResult = lexer.tokenize(text)
-  const lexedTokens: IToken[] = lexResult.tokens
+  const lexerResult = lexer.tokenize(text)
+  const lexedTokens: IToken[] = lexerResult.tokens
   parser.input = lexedTokens
   const cst = parser.primary()
 
@@ -22,5 +22,5 @@ export const parse = (text: string) => {
     // visitor.visit(cst)
   }
 
-  return { cst, parser }
+  return { cst, lexerResult, parser }
 }

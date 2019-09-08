@@ -60,7 +60,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
   { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
   { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
-  { name: 'Colon', pattern: /:/ },
+  { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
   { name: 'AttrMatchOperator', pattern: Lexer.NA },
   // Some tokens have to appear after AttrMatch
   { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },

@@ -1,13 +1,19 @@
-import { TokenType } from 'chevrotain'
-import { CssStructureParser } from './cssStructureParser'
+import { TokenType, EmbeddedActionsParser, IParserConfig } from 'chevrotain'
 import { TokenMap } from '../util'
 
 /**
  * This class further parses general rules into known rules
  */
-export class CssRuleParser extends CssStructureParser {
-  constructor(tokens: TokenType[], T: TokenMap) {
-    super(tokens, T, { maxLookahead: 2 })
+export class CssRuleParser extends EmbeddedActionsParser {
+  T: TokenMap
+
+  constructor(
+    tokens: TokenType[],
+    T: TokenMap,
+    config: IParserConfig = { maxLookahead: 2 }
+  ) {
+    super(tokens, config)
+    this.T = T
     if (this.constructor === CssRuleParser) {
       this.performSelfAnalysis()
     }

@@ -559,7 +559,16 @@ export class CssStructureParser extends EmbeddedActionsParser {
 
   /**
    * Everything in `[]` or `()` we evaluate as raw expression lists,
-   * or groups of expression lists (divided by semi-colons)
+   * or groups of expression lists (divided by semi-colons).
+   * 
+   * The CSS spec suggests that `[]`, `()`, `{}` should be treated equally,
+   * as generic blocks, so I'm not sure of this, but in the language
+   * _so far_, there's some distinction between these block types.
+   * AFAIK, `[]` is only used formally in CSS grid and with attribute
+   * identifiers, and `()` is used for functions and at-rule expressions.
+   * 
+   * It would be great if CSS formalized this distinction, but for now,
+   * this seems safe.
    */
   block = this.RULE<CstNode>('block', () => {
     let L: IToken

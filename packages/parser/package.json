@@ -1,6 +1,6 @@
 {
   "name": "@less/parser",
-  "version": "4.0.0",
+  "version": "4.0.0-dev.1",
   "description": "",
   "main": "dist/index",
   "types": "dist/index",
@@ -17,7 +17,7 @@
   "author": "Matthew Dean",
   "license": "Apache-2.0",
   "dependencies": {
-    "@less/css-parser": "4.0.0",
+    "@less/css-parser": "^4.0.0-dev.1",
     "chevrotain": "^6.3.0"
   },
   "devDependencies": {

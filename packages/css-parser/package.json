@@ -1,6 +1,6 @@
 {
   "name": "@less/css-parser",
-  "version": "4.0.0",
+  "version": "4.0.0-dev.1",
   "description": "",
   "main": "dist/index",
   "types": "dist/index",

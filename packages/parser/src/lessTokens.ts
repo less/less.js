@@ -1,8 +1,8 @@
-import { Lexer } from 'chevrotain'
 import {
   Fragments as CSSFragments,
   Tokens as CSSTokens,
-  rawTokenConfig
+  rawTokenConfig,
+  LexerType
 } from '@less/css-parser'
 
 interface IMerges {
@@ -21,13 +21,13 @@ const merges: IMerges = {
     { name: 'Ampersand', pattern: /&/ },
     {
       name: 'PropertyAssign',
-      pattern: Lexer.NA
+      pattern: LexerType.NA
     }
   ],
   'Ident': [
     {
       name: 'Interpolated',
-      pattern: Lexer.NA
+      pattern: LexerType.NA
     },
     {
       name: 'InterpolatedIdent',
@@ -51,7 +51,7 @@ const merges: IMerges = {
     },
     {
       name: 'VarOrProp',
-      pattern: Lexer.NA
+      pattern: LexerType.NA
     },
     {
       name: 'NestedReference',
@@ -76,7 +76,7 @@ const merges: IMerges = {
     {
       name: 'LineComment',
       pattern: '{{lineComment}}',
-      group: Lexer.SKIPPED,
+      group: LexerType.SKIPPED,
       longer_alt: 'WS'
     }
   ]
@@ -86,7 +86,7 @@ let tokenLength = Tokens.length;
 for (let i = 0; i < tokenLength; i++) {
   let token = Tokens[i]
   let { name, categories } = token
-  const copyToken = () => { 
+  const copyToken = () => {
     token = {...token}
     categories = categories ? categories.slice(0) : []
   }

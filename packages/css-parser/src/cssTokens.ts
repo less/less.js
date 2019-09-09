@@ -1,5 +1,4 @@
-import { Lexer, IMultiModeLexerDefinition } from 'chevrotain'
-import { rawTokenConfig } from './util';
+import { rawTokenConfig, LexerType } from './util';
 /**
  * references:
  * https://github.com/antlr/grammars-v4/blob/master/css3/css3.g4
@@ -33,17 +32,17 @@ export const Fragments: string[][] = [
  * Anything that is not 'BlockMarker' will be parsed as a generic 'Value'
  */
 export const Tokens: rawTokenConfig[] = [
-  { name: 'Value', pattern: Lexer.NA },
-  { name: 'NonIdent', pattern: Lexer.NA },
-  { name: 'AtName', pattern: Lexer.NA },
+  { name: 'Value', pattern: LexerType.NA },
+  { name: 'NonIdent', pattern: LexerType.NA },
+  { name: 'AtName', pattern: LexerType.NA },
   { name: 'Unknown', pattern: /./ },
-  { name: 'BlockMarker', pattern: Lexer.NA },
-  { name: 'ListMarker', pattern: Lexer.NA },
-  { name: 'CompareOperator', pattern: Lexer.NA },
-  { name: 'Selector', pattern: Lexer.NA },
-  { name: 'SelectorPart', pattern: Lexer.NA },
-  { name: 'Color', pattern: Lexer.NA },
-  { name: 'Function', pattern: Lexer.NA },
+  { name: 'BlockMarker', pattern: LexerType.NA },
+  { name: 'ListMarker', pattern: LexerType.NA },
+  { name: 'CompareOperator', pattern: LexerType.NA },
+  { name: 'Selector', pattern: LexerType.NA },
+  { name: 'SelectorPart', pattern: LexerType.NA },
+  { name: 'Color', pattern: LexerType.NA },
+  { name: 'Function', pattern: LexerType.NA },
   { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
   { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
   { name: 'GtEq', pattern: />=/, categories: ['CompareOperator'] },
@@ -55,14 +54,14 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'LSquare', pattern: /\[/, categories: ['BlockMarker'] },
   { name: 'RSquare', pattern: /\]/, categories: ['BlockMarker'] },
   { name: 'SemiColon', pattern: /;/, categories: ['BlockMarker'] },
-  { name: 'AdditionOperator', pattern: Lexer.NA },
-  { name: 'MultiplicationOperator', pattern: Lexer.NA },
+  { name: 'AdditionOperator', pattern: LexerType.NA },
+  { name: 'MultiplicationOperator', pattern: LexerType.NA },
   { name: 'Plus', pattern: /\+/, categories: ['AdditionOperator', 'SelectorPart'] },
   { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
   { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
   { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
   { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
-  { name: 'AttrMatchOperator', pattern: Lexer.NA },
+  { name: 'AttrMatchOperator', pattern: LexerType.NA },
   // Some tokens have to appear after AttrMatch
   { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },
   { name: 'Star', pattern: /\*/, categories: ['MultiplicationOperator'] },
@@ -70,13 +69,13 @@ export const Tokens: rawTokenConfig[] = [
   /** Rare: a namespace combinator */
   { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
-  { name: 'Ident', pattern: Lexer.NA, categories: ['Selector'] },
+  { name: 'Ident', pattern: LexerType.NA, categories: ['Selector'] },
   { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
   { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
-  { name: 'CDOToken', pattern: /<!--/, group: Lexer.SKIPPED },
-  { name: 'CDCToken', pattern: /-->/, group: Lexer.SKIPPED },
+  { name: 'CDOToken', pattern: /<!--/, group: LexerType.SKIPPED },
+  { name: 'CDCToken', pattern: /-->/, group: LexerType.SKIPPED },
   /** Ignore BOM */
-  { name: 'UnicodeBOM', pattern: /\uFFFE/, group: Lexer.SKIPPED },
+  { name: 'UnicodeBOM', pattern: /\uFFFE/, group: LexerType.SKIPPED },
   { name: 'AttrFlag', pattern: /[is]/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'And', pattern: /and/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
@@ -84,7 +83,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'PlainFunction', pattern: '{{ident}}\\(', categories: ['BlockMarker', 'Function'] },
   { name: 'AtKeyword', pattern: '@{{ident}}', categories: ['BlockMarker', 'AtName'] },
-  { name: 'Uri', pattern: Lexer.NA },
+  { name: 'Uri', pattern: LexerType.NA },
   {
     name: 'UriString',
     pattern: 'url\\((:?{{ws}})?({{string1}}|{{string2}})(:?{{ws}})?\\)',
@@ -143,13 +142,13 @@ export const Tokens: rawTokenConfig[] = [
     longer_alt: 'HashName',
     categories: ['Color', 'Selector']
   },
-  { name: 'Unit', pattern: Lexer.NA },
-  { name: 'Dimension', pattern: Lexer.NA },
+  { name: 'Unit', pattern: LexerType.NA },
+  { name: 'Dimension', pattern: LexerType.NA },
   /**
    * CSS syntax says we should identify integers as separate from numbers,
    * probably because there are parts of the syntax where one is allowed but not the other.
    */
-  { name: 'Integer', pattern: Lexer.NA },
+  { name: 'Integer', pattern: LexerType.NA },
   { name: 'DimensionNum', pattern: '{{number}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
   { name: 'DimensionInt', pattern: '{{integer}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension', 'Integer'] },
   { name: 'SignedInt', pattern: /[+-]\d+/, longer_alt: 'DimensionInt', categories: ['Unit', 'Integer'] },
@@ -160,7 +159,7 @@ export const Tokens: rawTokenConfig[] = [
     name: 'Comment',
     pattern: '{{comment}}',
     line_breaks: true,
-    group: Lexer.SKIPPED,
+    group: LexerType.SKIPPED,
     longer_alt: 'WS'
   }
 ]

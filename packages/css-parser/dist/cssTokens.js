@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var chevrotain_1 = require("chevrotain");
+var util_1 = require("./util");
 /**
  * references:
  * https://github.com/antlr/grammars-v4/blob/master/css3/css3.g4
@@ -33,17 +33,17 @@ exports.Fragments = [
  * Anything that is not 'BlockMarker' will be parsed as a generic 'Value'
  */
 exports.Tokens = [
-    { name: 'Value', pattern: chevrotain_1.Lexer.NA },
-    { name: 'NonIdent', pattern: chevrotain_1.Lexer.NA },
-    { name: 'AtName', pattern: chevrotain_1.Lexer.NA },
+    { name: 'Value', pattern: util_1.LexerType.NA },
+    { name: 'NonIdent', pattern: util_1.LexerType.NA },
+    { name: 'AtName', pattern: util_1.LexerType.NA },
     { name: 'Unknown', pattern: /./ },
-    { name: 'BlockMarker', pattern: chevrotain_1.Lexer.NA },
-    { name: 'ListMarker', pattern: chevrotain_1.Lexer.NA },
-    { name: 'CompareOperator', pattern: chevrotain_1.Lexer.NA },
-    { name: 'Selector', pattern: chevrotain_1.Lexer.NA },
-    { name: 'SelectorPart', pattern: chevrotain_1.Lexer.NA },
-    { name: 'Color', pattern: chevrotain_1.Lexer.NA },
-    { name: 'Function', pattern: chevrotain_1.Lexer.NA },
+    { name: 'BlockMarker', pattern: util_1.LexerType.NA },
+    { name: 'ListMarker', pattern: util_1.LexerType.NA },
+    { name: 'CompareOperator', pattern: util_1.LexerType.NA },
+    { name: 'Selector', pattern: util_1.LexerType.NA },
+    { name: 'SelectorPart', pattern: util_1.LexerType.NA },
+    { name: 'Color', pattern: util_1.LexerType.NA },
+    { name: 'Function', pattern: util_1.LexerType.NA },
     { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
     { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
     { name: 'GtEq', pattern: />=/, categories: ['CompareOperator'] },
@@ -55,14 +55,14 @@ exports.Tokens = [
     { name: 'LSquare', pattern: /\[/, categories: ['BlockMarker'] },
     { name: 'RSquare', pattern: /\]/, categories: ['BlockMarker'] },
     { name: 'SemiColon', pattern: /;/, categories: ['BlockMarker'] },
-    { name: 'AdditionOperator', pattern: chevrotain_1.Lexer.NA },
-    { name: 'MultiplicationOperator', pattern: chevrotain_1.Lexer.NA },
+    { name: 'AdditionOperator', pattern: util_1.LexerType.NA },
+    { name: 'MultiplicationOperator', pattern: util_1.LexerType.NA },
     { name: 'Plus', pattern: /\+/, categories: ['AdditionOperator', 'SelectorPart'] },
     { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
     { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
     { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
     { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
-    { name: 'AttrMatchOperator', pattern: chevrotain_1.Lexer.NA },
+    { name: 'AttrMatchOperator', pattern: util_1.LexerType.NA },
     // Some tokens have to appear after AttrMatch
     { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },
     { name: 'Star', pattern: /\*/, categories: ['MultiplicationOperator'] },
@@ -70,13 +70,13 @@ exports.Tokens = [
     /** Rare: a namespace combinator */
     { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
     { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
-    { name: 'Ident', pattern: chevrotain_1.Lexer.NA, categories: ['Selector'] },
+    { name: 'Ident', pattern: util_1.LexerType.NA, categories: ['Selector'] },
     { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
     { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
-    { name: 'CDOToken', pattern: /<!--/, group: chevrotain_1.Lexer.SKIPPED },
-    { name: 'CDCToken', pattern: /-->/, group: chevrotain_1.Lexer.SKIPPED },
+    { name: 'CDOToken', pattern: /<!--/, group: util_1.LexerType.SKIPPED },
+    { name: 'CDCToken', pattern: /-->/, group: util_1.LexerType.SKIPPED },
     /** Ignore BOM */
-    { name: 'UnicodeBOM', pattern: /\uFFFE/, group: chevrotain_1.Lexer.SKIPPED },
+    { name: 'UnicodeBOM', pattern: /\uFFFE/, group: util_1.LexerType.SKIPPED },
     { name: 'AttrFlag', pattern: /[is]/, longer_alt: 'PlainIdent', categories: ['Ident'] },
     { name: 'And', pattern: /and/, longer_alt: 'PlainIdent', categories: ['Ident'] },
     { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
@@ -84,7 +84,7 @@ exports.Tokens = [
     { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
     { name: 'PlainFunction', pattern: '{{ident}}\\(', categories: ['BlockMarker', 'Function'] },
     { name: 'AtKeyword', pattern: '@{{ident}}', categories: ['BlockMarker', 'AtName'] },
-    { name: 'Uri', pattern: chevrotain_1.Lexer.NA },
+    { name: 'Uri', pattern: util_1.LexerType.NA },
     {
         name: 'UriString',
         pattern: 'url\\((:?{{ws}})?({{string1}}|{{string2}})(:?{{ws}})?\\)',
@@ -142,13 +142,13 @@ exports.Tokens = [
         longer_alt: 'HashName',
         categories: ['Color', 'Selector']
     },
-    { name: 'Unit', pattern: chevrotain_1.Lexer.NA },
-    { name: 'Dimension', pattern: chevrotain_1.Lexer.NA },
+    { name: 'Unit', pattern: util_1.LexerType.NA },
+    { name: 'Dimension', pattern: util_1.LexerType.NA },
     /**
      * CSS syntax says we should identify integers as separate from numbers,
      * probably because there are parts of the syntax where one is allowed but not the other.
      */
-    { name: 'Integer', pattern: chevrotain_1.Lexer.NA },
+    { name: 'Integer', pattern: util_1.LexerType.NA },
     { name: 'DimensionNum', pattern: '{{number}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },
     { name: 'DimensionInt', pattern: '{{integer}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension', 'Integer'] },
     { name: 'SignedInt', pattern: /[+-]\d+/, longer_alt: 'DimensionInt', categories: ['Unit', 'Integer'] },
@@ -159,7 +159,7 @@ exports.Tokens = [
         name: 'Comment',
         pattern: '{{comment}}',
         line_breaks: true,
-        group: chevrotain_1.Lexer.SKIPPED,
+        group: util_1.LexerType.SKIPPED,
         longer_alt: 'WS'
     }
 ];

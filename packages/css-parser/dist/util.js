@@ -24,6 +24,11 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var chevrotain_1 = require("chevrotain");
 var XRegExp = require("xregexp");
+var LexerType;
+(function (LexerType) {
+    LexerType[LexerType["NA"] = 0] = "NA";
+    LexerType[LexerType["SKIPPED"] = 1] = "SKIPPED";
+})(LexerType = exports.LexerType || (exports.LexerType = {}));
 exports.createLexer = function (rawFragments, rawTokens) {
     var fragments = {};
     var T = {};
@@ -33,10 +38,11 @@ exports.createLexer = function (rawFragments, rawTokens) {
         fragments[fragment[0]] = XRegExp.build(fragment[1], fragments);
     });
     rawTokens.forEach(function (rawToken) {
-        var name = rawToken.name, pattern = rawToken.pattern, longer_alt = rawToken.longer_alt, categories = rawToken.categories, rest = __rest(rawToken, ["name", "pattern", "longer_alt", "categories"]);
-        if (pattern !== chevrotain_1.Lexer.NA) {
+        var name = rawToken.name, pattern = rawToken.pattern, longer_alt = rawToken.longer_alt, categories = rawToken.categories, group = rawToken.group, rest = __rest(rawToken, ["name", "pattern", "longer_alt", "categories", "group"]);
+        var regExpPattern;
+        if (pattern !== LexerType.NA) {
             var category = !categories || categories[0];
-            if (!category || (rest.group !== chevrotain_1.Lexer.SKIPPED && category !== 'BlockMarker')) {
+            if (!category || (group !== LexerType.SKIPPED && category !== 'BlockMarker')) {
                 if (categories) {
                     categories.push('Value');
                 }
@@ -48,15 +54,21 @@ exports.createLexer = function (rawFragments, rawTokens) {
                 }
             }
             if (!(pattern instanceof RegExp)) {
-                pattern = XRegExp.build(pattern, fragments);
+                regExpPattern = XRegExp.build(pattern, fragments);
+            }
+            else {
+                regExpPattern = pattern;
             }
         }
+        else {
+            regExpPattern = chevrotain_1.Lexer.NA;
+        }
         var longerAlt = longer_alt ? { longer_alt: T[longer_alt] } : {};
+        var groupValue = group === LexerType.SKIPPED ? { group: chevrotain_1.Lexer.SKIPPED } : (group ? { group: group } : {});
         var tokenCategories = categories ? { categories: categories.map(function (category) {
                 return T[category];
             }) } : {};
-        var token = chevrotain_1.createToken(__assign(__assign(__assign({ name: name,
-            pattern: pattern }, longerAlt), tokenCategories), rest));
+        var token = chevrotain_1.createToken(__assign(__assign(__assign(__assign({ name: name, pattern: regExpPattern }, longerAlt), groupValue), tokenCategories), rest));
         T[name] = token;
         /** Build tokens from bottom to top */
         tokens.unshift(token);
@@ -65,29 +77,6 @@ exports.createLexer = function (rawFragments, rawTokens) {
         lexer: new chevrotain_1.Lexer(tokens),
         tokens: tokens,
         T: T
-    };
-};
-exports.createParser = function (Parser, rawFragments, rawTokens) {
-    var _a = exports.createLexer(rawFragments, rawTokens), lexer = _a.lexer, tokens = _a.tokens, T = _a.T;
-    var parser = new Parser(tokens, T);
-    return {
-        parser: parser,
-        lexer: lexer,
-        tokens: tokens,
-        T: T,
-        parse: function (text) {
-            var lexResult = lexer.tokenize(text);
-            parser.input = lexResult.tokens;
-            // any top level rule may be used as an entry point
-            var value = parser.primary();
-            return {
-                // This is a pure grammar, the value will be undefined until we add embedded actions
-                // or enable automatic CST creation.
-                value: value,
-                lexErrors: lexResult.errors,
-                parseErrors: parser.errors
-            };
-        }
     };
 };
 //# sourceMappingURL=util.js.map

@@ -21,6 +21,7 @@
     "chevrotain": "^6.3.0"
   },
   "devDependencies": {
+    "@less/test-data": "^4.0.0-dev.1",
     "@types/chai": "^4.2.1",
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.7",

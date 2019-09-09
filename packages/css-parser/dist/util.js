@@ -25,7 +25,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var chevrotain_1 = require("chevrotain");
 var XRegExp = require("xregexp");
 exports.createLexer = function (rawFragments, rawTokens) {
-    console.log(JSON.stringify(rawTokens, null, '  '));
     var fragments = {};
     var T = {};
     var tokens = [];

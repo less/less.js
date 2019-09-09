@@ -24,7 +24,6 @@ interface ILexer {
 }
 
 export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[]): ILexer => {
-  console.log(JSON.stringify(rawTokens, null, '  '))
   const fragments: {
     [key: string]: RegExp;
   } = {};

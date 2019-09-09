@@ -3,4 +3,5 @@ a {
     _background: white;
     font-size/**/: big;
     $(var)-size: 100%;
+    ${var}-size: 100%;
 }

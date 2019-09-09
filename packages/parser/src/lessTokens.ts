@@ -13,31 +13,21 @@ export const Fragments = [...CSSFragments]
 export let Tokens = [...CSSTokens]
 
 Fragments.push(['lineComment', '\\/\\/[^\\n\\r]*'])
-Fragments.push(['interpolated', '({{ident}}?@{[\w-]+}{{ident}}?)+'])
+Fragments.push(['interpolated', '({{ident}}?[@$]{[\\w-]+}{{ident}}?)+'])
 
 /** Keyed by what to insert after */
 const merges: IMerges = {
   'Unknown': [
-    { name: 'Ampersand', pattern: /&/ },
-    {
-      name: 'PropertyAssign',
-      pattern: LexerType.NA
-    }
+    { name: 'Ampersand', pattern: /&/ }
   ],
-  'Ident': [
-    {
-      name: 'Interpolated',
-      pattern: LexerType.NA
-    },
+  'PlainIdent': [
     {
       name: 'InterpolatedIdent',
       pattern: '{{interpolated}}',
       categories: ['Interpolated']
-    }
-  ],
-  'PlainIdent': [
-    { name: 'PlusAssign', pattern: /\+:/, categories: ['BlockMarker', 'PropertyAssign'] },
-    { name: 'UnderscoreAssign', pattern: /_:/, categories: ['BlockMarker', 'PropertyAssign'] },
+    },
+    { name: 'PlusAssign', pattern: /\+:/, categories: ['BlockMarker', 'Assign'] },
+    { name: 'UnderscoreAssign', pattern: /_:/, categories: ['BlockMarker', 'Assign'] },
     // {
     //   name: 'Extend',
     //   pattern: /extend\(/,
@@ -101,9 +91,9 @@ for (let i = 0; i < tokenLength; i++) {
       copyToken()
       token.categories = categories.concat(['VarOrProp'])
       break
-    case 'Colon':
+    case 'Interpolated':
       copyToken()
-      token.categories = categories.concat(['PropertyAssign'])
+      token.pattern = LexerType.NA
       break
     case 'WS':
       copyToken()

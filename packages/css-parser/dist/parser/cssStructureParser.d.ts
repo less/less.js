@@ -41,12 +41,13 @@ export declare class CssStructureParser extends EmbeddedActionsParser {
     /** A comma-separated list of expressions */
     expressionList: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /** List of expression lists (or expression list if only 1) */
-    expressionListGroup: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     customExpressionList: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /**
      *  An expression contains values and spaces
      */
     expression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
+    /** Immediately following a comma and optional whitespace */
+    subExpression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     customExpression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /**
      * According to a reading of the spec, whitespace is a valid
@@ -65,10 +66,18 @@ export declare class CssStructureParser extends EmbeddedActionsParser {
      */
     value: (idxInCallingRule?: number, ...args: any[]) => CstElement;
     curlyBlock: (idxInCallingRule?: number, ...args: any[]) => CstNode;
-    customCurlyBlock: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /**
      * Everything in `[]` or `()` we evaluate as raw expression lists,
-     * or groups of expression lists (divided by semi-colons)
+     * or groups of expression lists (divided by semi-colons).
+     *
+     * The CSS spec suggests that `[]`, `()`, `{}` should be treated equally,
+     * as generic blocks, so I'm not sure of this, but in the language
+     * _so far_, there's some distinction between these block types.
+     * AFAIK, `[]` is only used formally in CSS grid and with attribute
+     * identifiers, and `()` is used for functions and at-rule expressions.
+     *
+     * It would be great if CSS formalized this distinction, but for now,
+     * this seems safe.
      */
     block: (idxInCallingRule?: number, ...args: any[]) => CstNode;
 }

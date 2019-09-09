@@ -18,7 +18,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@less/css-parser": "^4.0.0-dev.1",
-    "chevrotain": "^6.3.0"
+    "chevrotain": "^6.3.1"
   },
   "devDependencies": {
     "@less/test-data": "^4.0.0-dev.1",

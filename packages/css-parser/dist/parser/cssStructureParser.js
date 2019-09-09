@@ -102,8 +102,7 @@ var CssStructureParser = /** @class */ (function (_super) {
                 { ALT: function () { return _this.SUBRULE(_this.atRule); } },
                 { ALT: function () { return _this.SUBRULE(_this.componentValues); } },
                 { ALT: function () { return _this.SUBRULE(_this.customPropertyRule); } },
-                /** Capture any isolated / redundant semi-colons and curly blocks */
-                { ALT: function () { return _this.SUBRULE(_this.curlyBlock); } },
+                /** Capture any isolated / redundant semi-colons */
                 { ALT: function () { return _this.SUBRULE(_this.semi); } },
                 { ALT: function () { return chevrotain_1.EMPTY_ALT; } }
             ]);
@@ -160,29 +159,52 @@ var CssStructureParser = /** @class */ (function (_super) {
             var ws;
             var colon;
             var expr;
-            /** Grab initial colon, in case this is a selector list */
-            _this.OPTION(function () {
-                val = _this.CONSUME(_this.T.Colon);
-                _this.ACTION(function () {
-                    values.push(val);
-                });
-            });
-            _this.AT_LEAST_ONE(function () {
-                val = _this.SUBRULE(_this.propertyValue);
-                _this.ACTION(function () {
-                    values.push(val);
-                });
-            });
-            ws = _this.SUBRULE(_this._);
-            _this.OPTION2(function () {
-                colon = _this.CONSUME2(_this.T.Colon);
-            });
+            _this.OR([
+                {
+                    /** Grab initial colon (or 2), in case this is a selector list */
+                    ALT: function () {
+                        val = _this.CONSUME(_this.T.Colon);
+                        _this.ACTION(function () {
+                            values.push(val);
+                        });
+                        _this.OPTION(function () {
+                            val = _this.CONSUME2(_this.T.Colon);
+                            _this.ACTION(function () {
+                                values.push(val);
+                            });
+                        });
+                    }
+                },
+                {
+                    /** Grab curly if it's the first member of an expression */
+                    ALT: function () {
+                        val = _this.SUBRULE(_this.curlyBlock);
+                        _this.ACTION(function () {
+                            values.push(val);
+                        });
+                    }
+                },
+                {
+                    ALT: function () {
+                        _this.AT_LEAST_ONE(function () {
+                            val = _this.SUBRULE(_this.propertyValue);
+                            _this.ACTION(function () {
+                                values.push(val);
+                            });
+                        });
+                        ws = _this.SUBRULE(_this._);
+                        _this.OPTION2(function () {
+                            colon = _this.CONSUME(_this.T.Assign);
+                        });
+                    }
+                }
+            ]);
             /** Consume any remaining values */
             expr = _this.SUBRULE(_this.expressionList);
             var curly, semi;
             var end = _this.currIdx;
             _this.OR2([
-                { ALT: function () { return curly = _this.SUBRULE(_this.curlyBlock); } },
+                { ALT: function () { return curly = _this.SUBRULE2(_this.curlyBlock); } },
                 { ALT: function () { return semi = _this.CONSUME(_this.T.SemiColon); } },
                 { ALT: function () { return chevrotain_1.EMPTY_ALT; } }
             ]);
@@ -234,7 +256,7 @@ var CssStructureParser = /** @class */ (function (_super) {
             var ws = _this.SUBRULE(_this._);
             var colon;
             _this.OPTION(function () {
-                colon = _this.CONSUME(_this.T.Colon);
+                colon = _this.CONSUME(_this.T.Assign);
             });
             var value = _this.SUBRULE(_this.customExpressionList);
             var semi;
@@ -258,85 +280,95 @@ var CssStructureParser = /** @class */ (function (_super) {
         /** A comma-separated list of expressions */
         _this.expressionList = _this.RULE('expressionList', function () {
             var expressions;
-            _this.MANY_SEP({
-                SEP: _this.T.Comma,
-                DEF: function () {
-                    var expr = _this.SUBRULE(_this.expression);
+            var Comma;
+            var expr;
+            _this.OPTION(function () {
+                expr = _this.SUBRULE(_this.expression);
+                _this.ACTION(function () {
+                    expressions = [expr];
+                    Comma = [];
+                });
+                _this.MANY(function () {
+                    var comma = _this.CONSUME(_this.T.Comma);
                     _this.ACTION(function () {
-                        if (expressions) {
-                            expressions.push(expr);
-                        }
-                        else {
-                            expressions = [expr];
-                        }
+                        Comma.push(comma);
                     });
-                }
+                    expr = _this.SUBRULE(_this.subExpression);
+                    _this.ACTION(function () {
+                        expressions.push(expr);
+                    });
+                });
             });
             // this.ACTION(this._addDeclarationExpressions(expressions, optionals))
             return {
                 name: 'expressionList',
-                children: __assign({}, (expressions ? { expression: expressions } : {}))
+                children: __assign(__assign({}, (Comma && Comma.length > 0 ? { Comma: Comma } : {})), (expressions ? { expression: expressions } : {}))
             };
         });
         /** List of expression lists (or expression list if only 1) */
-        _this.expressionListGroup = _this.RULE('expressionListGroup', function () {
-            var isGroup = false;
-            var SemiColon;
-            var expressionList;
-            var list = _this.SUBRULE(_this.customExpressionList);
-            var semi;
-            _this.OPTION(function () {
-                semi = _this.CONSUME(_this.T.SemiColon);
-                isGroup = true;
-                _this.ACTION(function () {
-                    expressionList = [list];
-                    SemiColon = [semi];
-                });
-                _this.MANY(function () {
-                    list = _this.SUBRULE2(_this.customExpressionList);
-                    _this.ACTION(function () {
-                        expressionList.push(list);
-                        SemiColon = [semi];
-                    });
-                    _this.OPTION2(function () {
-                        semi = _this.CONSUME2(_this.T.SemiColon);
-                        _this.ACTION(function () {
-                            SemiColon.push(semi);
-                        });
-                    });
-                });
-            });
-            if (isGroup) {
-                return {
-                    name: 'expressionListGroup',
-                    children: {
-                        SemiColon: SemiColon,
-                        expressionList: expressionList
-                    }
-                };
-            }
-            return list;
-        });
+        // expressionListGroup = this.RULE<CstNode>('expressionListGroup', () => {
+        //   let isGroup = false
+        //   let SemiColon: IToken[]
+        //   let expressionList: CstNode[]
+        //   let list: CstNode = this.SUBRULE(this.customExpressionList)
+        //   let semi: IToken
+        //   this.OPTION(() => {
+        //     semi = this.CONSUME(this.T.SemiColon)
+        //     isGroup = true
+        //     this.ACTION(() => {
+        //       expressionList = [list]
+        //       SemiColon = [semi]
+        //     })
+        //     this.MANY(() => {
+        //       list = this.SUBRULE2(this.customExpressionList)
+        //       this.ACTION(() => {
+        //         expressionList.push(list)
+        //         SemiColon = [semi]
+        //       })
+        //       this.OPTION2(() => {
+        //         semi = this.CONSUME2(this.T.SemiColon)
+        //         this.ACTION(() => {
+        //           SemiColon.push(semi)
+        //         })
+        //       })
+        //     })
+        //   })
+        //   if (isGroup) {
+        //     return {
+        //       name: 'expressionListGroup',
+        //       children: {
+        //         SemiColon,
+        //         expressionList
+        //       }
+        //     }
+        //   }
+        //   return list
+        // })
         _this.customExpressionList = _this.RULE('customExpressionList', function () {
             var expressions;
-            _this.MANY_SEP({
-                SEP: _this.T.Comma,
-                DEF: function () {
-                    var expr = _this.SUBRULE(_this.customExpression);
+            var expr;
+            var Comma;
+            _this.OPTION(function () {
+                expr = _this.SUBRULE(_this.customExpression);
+                _this.ACTION(function () {
+                    expressions = [expr];
+                    Comma = [];
+                });
+                _this.MANY(function () {
+                    var comma = _this.CONSUME(_this.T.Comma);
                     _this.ACTION(function () {
-                        if (expressions) {
-                            expressions.push(expr);
-                        }
-                        else {
-                            expressions = [expr];
-                        }
+                        Comma.push(comma);
                     });
-                }
+                    expr = _this.SUBRULE2(_this.customExpression);
+                    _this.ACTION(function () {
+                        expressions.push(expr);
+                    });
+                });
             });
             // this.ACTION(this._addDeclarationExpressions(expressions, optionals))
             return {
                 name: 'expressionList',
-                children: __assign({}, (expressions ? { expression: expressions } : {}))
+                children: __assign(__assign({}, (Comma && Comma.length > 0 ? { Comma: Comma } : {})), (expressions ? { expression: expressions } : {}))
             };
         });
         /**
@@ -354,13 +386,35 @@ var CssStructureParser = /** @class */ (function (_super) {
                 children: { values: values }
             };
         });
+        /** Immediately following a comma and optional whitespace */
+        _this.subExpression = _this.RULE('subExpression', function () {
+            var values;
+            var val;
+            _this.ACTION(function () { return values = []; });
+            _this.OPTION(function () {
+                val = _this.CONSUME(_this.T.WS);
+                _this.ACTION(function () { return values.push(val); });
+            });
+            _this.OPTION2(function () {
+                val = _this.SUBRULE(_this.curlyBlock);
+                _this.ACTION(function () { return values.push(val); });
+            });
+            _this.MANY(function () {
+                val = _this.SUBRULE(_this.value);
+                _this.ACTION(function () { return values.push(val); });
+            });
+            return {
+                name: 'expression',
+                children: { values: values }
+            };
+        });
         _this.customExpression = _this.RULE('customExpression', function () {
             var values;
             _this.ACTION(function () { return values = []; });
             _this.MANY(function () {
                 var value = _this.OR([
                     { ALT: function () { return _this.SUBRULE(_this.value); } },
-                    { ALT: function () { return _this.SUBRULE(_this.customCurlyBlock); } }
+                    { ALT: function () { return _this.SUBRULE(_this.curlyBlock); } }
                 ]);
                 _this.ACTION(function () { return values.push(value); });
             });
@@ -410,25 +464,18 @@ var CssStructureParser = /** @class */ (function (_super) {
                 children: children
             };
         });
-        _this.customCurlyBlock = _this.RULE('customCurlyBlock', function () {
-            var children;
-            var L = _this.CONSUME(_this.T.LCurly);
-            var blockBody = _this.SUBRULE(_this.expressionListGroup);
-            _this.ACTION(function () {
-                children = { L: [L], blockBody: [blockBody] };
-            });
-            _this.OPTION(function () {
-                var R = _this.CONSUME(_this.T.RCurly);
-                _this.ACTION(function () { return children.R = [R]; });
-            });
-            return {
-                name: 'curlyBlock',
-                children: children
-            };
-        });
         /**
          * Everything in `[]` or `()` we evaluate as raw expression lists,
-         * or groups of expression lists (divided by semi-colons)
+         * or groups of expression lists (divided by semi-colons).
+         *
+         * The CSS spec suggests that `[]`, `()`, `{}` should be treated equally,
+         * as generic blocks, so I'm not sure of this, but in the language
+         * _so far_, there's some distinction between these block types.
+         * AFAIK, `[]` is only used formally in CSS grid and with attribute
+         * identifiers, and `()` is used for functions and at-rule expressions.
+         *
+         * It would be great if CSS formalized this distinction, but for now,
+         * this seems safe.
          */
         _this.block = _this.RULE('block', function () {
             var L;
@@ -442,14 +489,14 @@ var CssStructureParser = /** @class */ (function (_super) {
                             { ALT: function () { return L = _this.CONSUME(_this.T.LParen); } },
                             { ALT: function () { return Function = _this.CONSUME(_this.T.Function); } }
                         ]);
-                        blockBody = _this.SUBRULE(_this.expressionListGroup);
+                        blockBody = _this.SUBRULE(_this.primary);
                         _this.OPTION(function () { return R = _this.CONSUME(_this.T.RParen); });
                     }
                 },
                 {
                     ALT: function () {
                         L = _this.CONSUME(_this.T.LSquare);
-                        blockBody = _this.SUBRULE2(_this.expressionListGroup);
+                        blockBody = _this.SUBRULE2(_this.primary);
                         _this.OPTION2(function () { return R = _this.CONSUME(_this.T.RSquare); });
                     }
                 }

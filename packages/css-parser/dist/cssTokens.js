@@ -27,7 +27,7 @@ exports.Fragments = [
     ['url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*'],
     ['integer', '[+-]?\\d+'],
     /** Any number that's not simply an integer e.g. 1.1 or 1e+1 */
-    ['number', '[+-]?(?:\\d*\\.\\d+(?:[eE][+-]\\d+)?|\\d+(?:[eE][+-]\\d+))'],
+    ['number', '[+-]?(?:\\d*\\.\\d+(?:[eE][+-]\\d+)?|\\d+(?:[eE][+-]\\d+))']
 ];
 /**
  * Anything that is not 'BlockMarker' will be parsed as a generic 'Value'
@@ -44,6 +44,7 @@ exports.Tokens = [
     { name: 'SelectorPart', pattern: util_1.LexerType.NA },
     { name: 'Color', pattern: util_1.LexerType.NA },
     { name: 'Function', pattern: util_1.LexerType.NA },
+    { name: 'Assign', pattern: util_1.LexerType.NA },
     { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
     { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
     { name: 'GtEq', pattern: />=/, categories: ['CompareOperator'] },
@@ -61,7 +62,7 @@ exports.Tokens = [
     { name: 'Minus', pattern: /-/, categories: ['AdditionOperator'] },
     { name: 'Divide', pattern: /\//, categories: ['MultiplicationOperator'] },
     { name: 'Comma', pattern: /,/, categories: ['BlockMarker'] },
-    { name: 'Colon', pattern: /:/, categories: ['BlockMarker'] },
+    { name: 'Colon', pattern: /:/, categories: ['BlockMarker', 'Assign'] },
     { name: 'AttrMatchOperator', pattern: util_1.LexerType.NA },
     // Some tokens have to appear after AttrMatch
     { name: 'Eq', pattern: /=/, categories: ['CompareOperator', 'AttrMatchOperator'] },
@@ -71,6 +72,14 @@ exports.Tokens = [
     { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
     { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
     { name: 'Ident', pattern: util_1.LexerType.NA, categories: ['Selector'] },
+    /**
+     * This is the only token outside of spec.
+     * It's done to avoid parsing errors of common pre-processor stylesheets, since curly
+     * blocks need such special handling.
+     *
+     * Pre-processors will / can easily override this.
+     */
+    { name: 'Interpolated', pattern: /[#$@]{[^}]+}/ },
     { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
     { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
     { name: 'CDOToken', pattern: /<!--/, group: util_1.LexerType.SKIPPED },

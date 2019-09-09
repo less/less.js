@@ -43,6 +43,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Selector', pattern: Lexer.NA },
   { name: 'SelectorPart', pattern: Lexer.NA },
   { name: 'Color', pattern: Lexer.NA },
+  { name: 'Function', pattern: Lexer.NA },
   { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
   { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
   { name: 'GtEq', pattern: />=/, categories: ['CompareOperator'] },
@@ -81,7 +82,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Not', pattern: /not/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Or', pattern: /or/, longer_alt: 'PlainIdent', categories: ['Ident'] },
   { name: 'Only', pattern: /only/, longer_alt: 'PlainIdent', categories: ['Ident'] },
-  { name: 'Function', pattern: '{{ident}}\\(', categories: ['BlockMarker'] },
+  { name: 'PlainFunction', pattern: '{{ident}}\\(', categories: ['BlockMarker', 'Function'] },
   { name: 'AtKeyword', pattern: '@{{ident}}', categories: ['BlockMarker', 'AtName'] },
   { name: 'Uri', pattern: Lexer.NA },
   {

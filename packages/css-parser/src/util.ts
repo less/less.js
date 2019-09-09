@@ -2,8 +2,7 @@ import {
   Lexer,
   createToken,
   ITokenConfig,
-  TokenType,
-  CstNode
+  TokenType
 } from 'chevrotain'
 
 import * as XRegExp from 'xregexp'
@@ -25,6 +24,7 @@ interface ILexer {
 }
 
 export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[]): ILexer => {
+  console.log(JSON.stringify(rawTokens, null, '  '))
   const fragments: {
     [key: string]: RegExp;
   } = {};

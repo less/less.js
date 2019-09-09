@@ -10,7 +10,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
   constructor(
     tokens: TokenType[],
     T: TokenMap,
-    config: IParserConfig = { maxLookahead: 2 }
+    config: IParserConfig = { maxLookahead: 1 }
   ) {
     super(tokens, config)
     this.T = T

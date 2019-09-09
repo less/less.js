@@ -1,5 +1,5 @@
 {
-  "name": "@less/css-parser",
+  "name": "@less/parser",
   "version": "4.0.0",
   "description": "",
   "main": "dist/index",
@@ -17,8 +17,8 @@
   "author": "Matthew Dean",
   "license": "Apache-2.0",
   "dependencies": {
-    "chevrotain": "^6.3.0",
-    "xregexp": "^4.2.4"
+    "@less/css-parser": "4.0.0",
+    "chevrotain": "^6.3.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.1",

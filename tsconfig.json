@@ -4,9 +4,9 @@
   "compilerOptions": {
     "baseUrl": "./packages",
     "paths": {
-      "@less/css-parser": ["css/src"],
-      "@less/less-parser": ["css/src"],
-      "@less/less": ["less/lib"]
+      "less": ["less/lib"],
+      "@less/test-data": ["test-data"],
+      "@less/*": ["*/src"]
     }
   }
 }

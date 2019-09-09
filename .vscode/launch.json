@@ -7,7 +7,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "CSS Tests",
+      "name": "CSS Parsing Tests",
       "cwd": "${workspaceFolder}/packages/css-parser",
       "program": "${workspaceFolder}/packages/css-parser/node_modules/mocha/bin/_mocha",
       "args": [
@@ -19,6 +19,24 @@
         "999999",
         "--colors",
         "${workspaceFolder}/packages/css-parser/test/**/*.ts"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Less Parsing Tests",
+      "cwd": "${workspaceFolder}/packages/parser",
+      "program": "${workspaceFolder}/packages/parser/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "-u",
+        "bdd",
+        "--timeout",
+        "999999",
+        "--colors",
+        "${workspaceFolder}/packages/parser/test/**/*.ts"
       ],
       "internalConsoleOptions": "openOnSessionStart"
     }

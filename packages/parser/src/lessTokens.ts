@@ -1,6 +1,9 @@
 import { Lexer } from 'chevrotain'
-import { Fragments as CSSFragments, Tokens as CSSTokens } from './cssTokens'
-import { rawTokenConfig } from './util';
+import {
+  Fragments as CSSFragments,
+  Tokens as CSSTokens,
+  rawTokenConfig
+} from '@less/css-parser'
 
 interface IMerges {
   [key: string]: rawTokenConfig[]
@@ -12,9 +15,14 @@ export let Tokens = [...CSSTokens]
 Fragments.push(['lineComment', '\\/\\/[^\\n\\r]*'])
 Fragments.push(['interpolated', '({{ident}}?@{[\w-]+}{{ident}}?)+'])
 
+/** Keyed by what to insert after */
 const merges: IMerges = {
   'Unknown': [
-    { name: 'Ampersand', pattern: /&/ }
+    { name: 'Ampersand', pattern: /&/ },
+    {
+      name: 'PropertyAssign',
+      pattern: Lexer.NA
+    }
   ],
   'Ident': [
     {
@@ -28,13 +36,13 @@ const merges: IMerges = {
     }
   ],
   'PlainIdent': [
-    { name: 'PlusAssign', pattern: /\+:/ },
-    { name: 'UnderscoreAssign', pattern: /_:/ },
-    {
-      name: 'Extend',
-      pattern: /extend\(/,
-      categories: ['Function']
-    },
+    { name: 'PlusAssign', pattern: /\+:/, categories: ['BlockMarker', 'PropertyAssign'] },
+    { name: 'UnderscoreAssign', pattern: /_:/, categories: ['BlockMarker', 'PropertyAssign'] },
+    // {
+    //   name: 'Extend',
+    //   pattern: /extend\(/,
+    //   categories: ['BlockMarker', 'Function']
+    // },
     {
       name: 'When',
       pattern: /when/,
@@ -60,7 +68,8 @@ const merges: IMerges = {
     {
       name: 'AtPlugin',
       pattern: /@plugin/,
-      longer_alt: 'AtKeyword'
+      longer_alt: 'AtKeyword',
+      categories: ['BlockMarker', 'AtName']
     }
   ],
   'Comment': [
@@ -91,6 +100,10 @@ for (let i = 0; i < tokenLength; i++) {
     case 'AtKeyword':
       copyToken()
       token.categories = categories.concat(['VarOrProp'])
+      break
+    case 'Colon':
+      copyToken()
+      token.categories = categories.concat(['PropertyAssign'])
       break
     case 'WS':
       copyToken()

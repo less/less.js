@@ -1,14 +1,6 @@
 import { IToken, Lexer } from 'chevrotain'
-import { Tokens, Fragments } from '../cssTokens'
-import { CssStructureParser } from './cssStructureParser'
-import { CssRuleParser } from './cssRuleParser'
-import { CssStructureVisitor } from './cssStructureVisitor'
-import { createLexer } from '../util'
-
-// let { parser, lexer, tokens, T } = createParser(CssStructureParser, Fragments, Tokens)
-// const cssVisitor = CssStructureVisitor(
-//   parser.getBaseCstVisitorConstructorWithDefaults()
-// )
+import { Tokens, Fragments } from './lessTokens'
+import { CssStructureParser, createLexer } from '@less/css-parser'
 
 export class Parser {
   lexer: Lexer
@@ -29,3 +21,4 @@ export class Parser {
     return { cst, lexerResult, parser: this.parser }
   }
 }
+

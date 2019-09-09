@@ -1,0 +1,27 @@
+{
+  "name": "@less/root",
+  "version": "1000.0.0",
+  "description": "Less monorepo",
+  "homepage": "http://lesscss.org",
+  "devDependencies": {
+    "lerna": "^3.16.4",
+    "mocha": "^6.2.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.2"
+  },
+  "scripts": {
+    "bootstrap": "lerna bootstrap"
+  },
+  "bugs": {
+    "url": "https://github.com/less/less.js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/less/less.js.git"
+  },
+  "master": {
+    "url": "https://github.com/less/less.js/blob/master/",
+    "raw": "https://raw.githubusercontent.com/less/less.js/master/"
+  },
+  "license": "Apache-2.0"
+}

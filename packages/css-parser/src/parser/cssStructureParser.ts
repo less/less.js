@@ -58,8 +58,10 @@ import { CssRuleParser } from './cssRuleParser'
  *     `@future {!!:foo > ; > ?bar}`
  *  A case like that is _unlikely_, but the point is any CSS parser that lives
  *  outside of the browser, in order to be maintainable, must parse what it
- *  _can_, but preserve anything it doesn't explicitly define. A non-browser
- *  stylesheet parser should return warnings, but should recover all errors.
+ *  _can_, but preserve almost anything it doesn't explicitly define. (There are
+ *  a few exceptions, such as a closing block symbol e.g. ']' without a corresponding
+ *  opening block, and other such cases where the CSS spec explicitly expresses
+ *  should be a parse error.)
  */
 
 interface optionalValues {
@@ -83,14 +85,16 @@ interface spaceToken {
  */
 export class CssStructureParser extends EmbeddedActionsParser {
   T: TokenMap
-  ruleParser: typeof CssRuleParser
+  ruleParser: CssRuleParser
+  /** private Chevrotain property */
+  currIdx: number
 
   constructor(
     tokens: TokenType[],
     T: TokenMap,
     config: IParserConfig = { maxLookahead: 1 },
     /** An optional instance to further refine rules */
-    ruleParser?: typeof CssRuleParser
+    ruleParser?: CssRuleParser
   ) {
     super(tokens, config)
     this.T = T
@@ -113,6 +117,17 @@ export class CssStructureParser extends EmbeddedActionsParser {
     } else {
       listChildren.expression = values
     }
+  }
+
+  /** Wrapper for secondary parsing by rule parser */
+  _parseNode = (node: CstNode): CstNode => {
+    return node
+    // if (!this.ruleParser || this.RECORDING_PHASE) {
+    //   return node
+    // }
+    // this.ACTION(() => {
+    //   this.ruleParser.input
+    // })
   }
 
   /** Optional whitespace */
@@ -224,6 +239,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
 
   componentValues = this.RULE<CstNode>('componentValues', () => {
     const values: CstElement[] = []
+    const start = this.currIdx
     let val: CstElement
     let ws: IToken
     let colon: IToken
@@ -251,6 +267,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
     /** Consume any remaining values */
     expr = this.SUBRULE(this.expressionList)
     let curly: CstNode, semi: IToken
+    const end = this.currIdx
     this.OR2([
       { ALT: () => curly = this.SUBRULE(this.curlyBlock) },
       { ALT: () => semi = this.CONSUME(this.T.SemiColon) },
@@ -267,13 +284,13 @@ export class CssStructureParser extends EmbeddedActionsParser {
         }
         this._mergeValues(values, expr)
       })
-      return {
+      return this._parseNode({
         name: 'qualifiedRule',
         children: {
           expressionList: [expr],
           ruleBody: [curly]
         }
-      }
+      })
     } else if (colon) {
       /** Treat as declaration */
       return {
@@ -484,7 +501,8 @@ export class CssStructureParser extends EmbeddedActionsParser {
    * in grammar even though it's expected to be present.
    *
    * Strictly speaking, though, a property's value begins _immediately_
-   * following a ':' and ends at ';' (or until automatically closed by '}')
+   * following a ':' and ends at ';' (or until automatically closed by
+   * '}', ']', ')' or the end of a file).
    */
   value = this.RULE<CstElement>('value', () => {
     return this.OR([
@@ -548,7 +566,6 @@ export class CssStructureParser extends EmbeddedActionsParser {
     let R: IToken
     let Function: IToken
     let blockBody: CstNode
-    let block: CstNode
 
     this.OR([
       {
@@ -569,7 +586,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
         }
       }
     ])
-    return block || {
+    return {
       name: 'block',
       children: {
         ...(L ? { L: [L]} : {}),

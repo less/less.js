@@ -14,10 +14,15 @@ export class Parser {
   lexer: Lexer
   parser: CssStructureParser
 
-  constructor() {
+  constructor(structureOnly: boolean = false) {
     const { lexer, tokens, T } = createLexer(Fragments, Tokens)
     this.lexer = lexer
-    this.parser = new CssStructureParser(tokens, T)
+    if (structureOnly) {
+      this.parser = new CssStructureParser(tokens, T)
+    } else {
+      const ruleParser = new CssRuleParser(tokens, T)
+      this.parser = new CssStructureParser(tokens, T, undefined, ruleParser)
+    }
   }
 
   parse (text: string) {

@@ -74,6 +74,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
   { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
   { name: 'Ident', pattern: LexerType.NA, categories: ['Selector'] },
+  { name: 'PropertyName', pattern: LexerType.NA },
 
   /**
    * This is the only token outside of spec.
@@ -85,8 +86,8 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Interpolated', pattern: /[#$@]{[^}]+}/ },
 
 
-  { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
-  { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
+  { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident', 'PropertyName'] },
+  { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker', 'PropertyName'] },
   { name: 'CDOToken', pattern: /<!--/, group: LexerType.SKIPPED },
   { name: 'CDCToken', pattern: /-->/, group: LexerType.SKIPPED },
   /** Ignore BOM */

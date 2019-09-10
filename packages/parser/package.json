@@ -15,7 +15,7 @@
     "test": "mocha -r ts-node/register test/**/*.ts"
   },
   "author": "Matthew Dean",
-  "license": "Apache-2.0",
+  "license": "(Apache-2.0 or MIT)",
   "dependencies": {
     "@less/css-parser": "^4.0.0-dev.1",
     "chevrotain": "^6.3.1"

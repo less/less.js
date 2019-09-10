@@ -23,5 +23,5 @@
     "url": "https://github.com/less/less.js/blob/master/",
     "raw": "https://raw.githubusercontent.com/less/less.js/master/"
   },
-  "license": "Apache-2.0"
+  "license": "(Apache-2.0 or MIT)"
 }

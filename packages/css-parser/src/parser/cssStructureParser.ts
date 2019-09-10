@@ -342,12 +342,12 @@ export class CssStructureParser extends BaseParserClass {
         name: 'qualifiedRule',
         children: {
           expressionList: [expr],
-          ruleBody: [curly]
+          body: [curly]
         }
       }
     } else if (colon) {
       /** Treat as declaration */
-      let property: IToken[]
+      let property: CstElement[]
       let value: CstNode[]
       this.ACTION(() => {
         if (this.ruleParser) {
@@ -355,10 +355,10 @@ export class CssStructureParser extends BaseParserClass {
           property = parser.property()
           parser.input = valueTokens
           expr = parser.expression()
-          if (expr) {
-            value = [expr]
-          }
+        } else {
+          property = values
         }
+        value = [expr]
       })
       return {
         name: 'declaration',
@@ -371,7 +371,10 @@ export class CssStructureParser extends BaseParserClass {
         }
       }
     }
-    /** Treat as a plain expression list */
+    /**
+     * Treat as a plain expression list
+     * @todo - Any error flagging to do here?
+     */
     if (ws) {
       values.push(ws)
     }
@@ -589,7 +592,7 @@ export class CssStructureParser extends BaseParserClass {
   customExpression = this.RULE<CstNode | undefined>('customExpression', () => {
     let exprValues: CstElement[]
     let propertyValues: CstElement[]
-    let allValues: CstElement[]
+    let values: CstElement[]
 
     let val: CstElement
     let ws: IToken
@@ -599,30 +602,27 @@ export class CssStructureParser extends BaseParserClass {
     this.ACTION(() => {
       exprValues = []
       propertyValues = []
-      allValues = []
+      values = []
     })
 
     /** Similar to componentValues, except a propertyvalue is not required */
     pre = this.SUBRULE(this._)
-    this.ACTION(() => {
-      allValues.push(pre)
-    })
+    this.ACTION(() => pre && values.push(pre))
 
     this.MANY(() => {
       val = this.SUBRULE(this.propertyValue)
       this.ACTION(() => {
         propertyValues.push(val)
-        allValues.push(val)
+        values.push(val)
       })
     })
     ws = this.SUBRULE2(this._)
-    this.ACTION(() => {
-      allValues.push(ws)
-    })
+    this.ACTION(() => ws && values.push(ws))
+
     this.OPTION2(() => {
       colon = this.CONSUME(this.T.Assign)
       this.ACTION(() => {
-        allValues.push(colon)
+        values.push(colon)
       })
     })
   
@@ -631,7 +631,10 @@ export class CssStructureParser extends BaseParserClass {
         { ALT: () => this.SUBRULE(this.value) },
         { ALT: () => this.SUBRULE(this.curlyBlock) }
       ])
-      this.ACTION(() => exprValues.push(value))
+      this.ACTION(() => {
+        exprValues.push(value)
+        values.push(value)
+      })
     })
 
     let decl: CstNode
@@ -653,12 +656,12 @@ export class CssStructureParser extends BaseParserClass {
       }
     }
 
-    if (allValues && allValues.length > 0) {
+    if (values && values.length > 0) {
       return {
         name: 'expression',
         children: {
-          values: allValues,
-          declaration: [decl]
+          values,
+          ...(decl ? { declaration: [decl] } : {})
         }
       }
     }
@@ -700,7 +703,7 @@ export class CssStructureParser extends BaseParserClass {
       children = { L: [L], blockBody: [blockBody] }
     })
 
-    /** @todo - How do we easily throw errors when this is missing? */
+    /** @todo - Add a parsing error if this is missing */
     this.OPTION(() => {
       const R = this.CONSUME(this.T.RCurly)
       this.ACTION(() => children.R = [R])
@@ -739,6 +742,7 @@ export class CssStructureParser extends BaseParserClass {
             { ALT: () => Function = this.CONSUME(this.T.Function) }
           ])
           blockBody = this.SUBRULE(this.expressionListGroup)
+          /** @todo - Add a parsing error if this is missing */
           this.OPTION(() => R = this.CONSUME(this.T.RParen))
         }
       },
@@ -746,6 +750,7 @@ export class CssStructureParser extends BaseParserClass {
         ALT: () => {
           L = this.CONSUME(this.T.LSquare)
           blockBody = this.SUBRULE2(this.expressionListGroup)
+          /** @todo - Add a parsing error if this is missing */
           this.OPTION2(() => R = this.CONSUME(this.T.RSquare))
         }
       }

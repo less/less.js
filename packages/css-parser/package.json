@@ -15,7 +15,7 @@
     "test": "mocha -r ts-node/register test/**/*.ts"
   },
   "author": "Matthew Dean",
-  "license": "Apache-2.0",
+  "license": "(Apache-2.0 or MIT)",
   "dependencies": {
     "chevrotain": "^6.3.1",
     "xregexp": "^4.2.4"

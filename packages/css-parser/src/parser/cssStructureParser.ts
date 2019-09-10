@@ -413,45 +413,45 @@ export class CssStructureParser extends EmbeddedActionsParser {
   })
 
     /** List of expression lists (or expression list if only 1) */
-    // expressionListGroup = this.RULE<CstNode>('expressionListGroup', () => {
-    //   let isGroup = false
-    //   let SemiColon: IToken[]
-    //   let expressionList: CstNode[]
-    //   let list: CstNode = this.SUBRULE(this.customExpressionList)
-    //   let semi: IToken
+    expressionListGroup = this.RULE<CstNode>('expressionListGroup', () => {
+      let isGroup = false
+      let SemiColon: IToken[]
+      let expressionList: CstNode[]
+      let list: CstNode = this.SUBRULE(this.customExpressionList)
+      let semi: IToken
   
-    //   this.OPTION(() => {
-    //     semi = this.CONSUME(this.T.SemiColon)
-    //     isGroup = true
-    //     this.ACTION(() => {
-    //       expressionList = [list]
-    //       SemiColon = [semi]
-    //     })
-    //     this.MANY(() => {
-    //       list = this.SUBRULE2(this.customExpressionList)
-    //       this.ACTION(() => {
-    //         expressionList.push(list)
-    //         SemiColon = [semi]
-    //       })
-    //       this.OPTION2(() => {
-    //         semi = this.CONSUME2(this.T.SemiColon)
-    //         this.ACTION(() => {
-    //           SemiColon.push(semi)
-    //         })
-    //       })
-    //     })
-    //   })
-    //   if (isGroup) {
-    //     return {
-    //       name: 'expressionListGroup',
-    //       children: {
-    //         SemiColon,
-    //         expressionList
-    //       }
-    //     }
-    //   }
-    //   return list
-    // })
+      this.OPTION(() => {
+        semi = this.CONSUME(this.T.SemiColon)
+        isGroup = true
+        this.ACTION(() => {
+          expressionList = [list]
+          SemiColon = [semi]
+        })
+        this.MANY(() => {
+          list = this.SUBRULE2(this.customExpressionList)
+          this.ACTION(() => {
+            expressionList.push(list)
+            SemiColon = [semi]
+          })
+          this.OPTION2(() => {
+            semi = this.CONSUME2(this.T.SemiColon)
+            this.ACTION(() => {
+              SemiColon.push(semi)
+            })
+          })
+        })
+      })
+      if (isGroup) {
+        return {
+          name: 'expressionListGroup',
+          children: {
+            SemiColon,
+            expressionList
+          }
+        }
+      }
+      return list
+    })
 
   customExpressionList = this.RULE<CstNode>('customExpressionList', () => {
     let expressions: CstNode[]
@@ -625,14 +625,14 @@ export class CssStructureParser extends EmbeddedActionsParser {
             { ALT: () => L = this.CONSUME(this.T.LParen) },
             { ALT: () => Function = this.CONSUME(this.T.Function) }
           ])
-          blockBody = this.SUBRULE(this.primary)
+          blockBody = this.SUBRULE(this.expressionListGroup)
           this.OPTION(() => R = this.CONSUME(this.T.RParen))
         }
       },
       {
         ALT: () => {
           L = this.CONSUME(this.T.LSquare)
-          blockBody = this.SUBRULE2(this.primary)
+          blockBody = this.SUBRULE2(this.expressionListGroup)
           this.OPTION2(() => R = this.CONSUME(this.T.RSquare))
         }
       }

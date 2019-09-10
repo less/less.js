@@ -13,7 +13,7 @@ describe('can parse all Less stylesheets', () => {
   const files = glob.sync(path.join(testData, 'less/**/*.less'))
   files.sort()
   files.forEach(file => {
-    if (file.indexOf('errors') === -1) {
+    if (file.indexOf('static-urls') > -1) {
       it(`${file}`, () => {
         const result = fs.readFileSync(file)
         const { cst, lexerResult, parser } = lessParser.parse(result.toString())

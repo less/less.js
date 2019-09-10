@@ -62,7 +62,7 @@ const merges: IMerges = {
       categories: ['BlockMarker', 'AtName']
     }
   ],
-  'Comment': [
+  'Uri': [
     {
       name: 'LineComment',
       pattern: '{{lineComment}}',

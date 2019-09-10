@@ -44,6 +44,20 @@ var CssStructureParser = /** @class */ (function (_super) {
         var _this = _super.call(this, tokens, config) || this;
         /** If an expression ends up not being a declaration, merge initial values into expression */
         _this._mergeValues = function (values, expr) {
+            if (!expr) {
+                /** Create new expression list */
+                expr = {
+                    name: 'expressionList',
+                    children: {
+                        expression: [{
+                                name: 'expression',
+                                children: {
+                                    values: []
+                                }
+                            }]
+                    }
+                };
+            }
             var listChildren = expr.children;
             var expressions = listChildren.expression;
             if (expressions) {
@@ -54,6 +68,7 @@ var CssStructureParser = /** @class */ (function (_super) {
             else {
                 listChildren.expression = values;
             }
+            return expr;
         };
         /** Wrapper for secondary parsing by rule parser */
         _this._parseNode = function (node) {
@@ -127,7 +142,7 @@ var CssStructureParser = /** @class */ (function (_super) {
          */
         _this.atRule = _this.RULE('atRule', function () {
             var name = [_this.CONSUME(_this.T.AtName)];
-            var prelude = [_this.SUBRULE(_this.expressionList)];
+            var expr = _this.SUBRULE(_this.expressionList);
             var optionals = {};
             _this.OR([
                 {
@@ -143,8 +158,7 @@ var CssStructureParser = /** @class */ (function (_super) {
             ]);
             return {
                 name: 'atRule',
-                children: __assign({ name: name,
-                    prelude: prelude }, optionals)
+                children: __assign(__assign({ name: name }, (expr ? { prelude: [expr] } : {})), optionals)
             };
         });
         _this.propertyValue = _this.RULE('propertyValue', function () {
@@ -159,6 +173,11 @@ var CssStructureParser = /** @class */ (function (_super) {
             var ws;
             var colon;
             var expr;
+            var expressionTokens;
+            var propertyTokens;
+            var valueTokens;
+            var parser = _this.ruleParser;
+            _this.ACTION(function () { return _this.CAPTURE(); });
             _this.OR([
                 {
                     /** Grab initial colon (or 2), in case this is a selector list */
@@ -186,12 +205,14 @@ var CssStructureParser = /** @class */ (function (_super) {
                 },
                 {
                     ALT: function () {
+                        _this.ACTION(function () { return _this.CAPTURE(); });
                         _this.AT_LEAST_ONE(function () {
                             val = _this.SUBRULE(_this.propertyValue);
                             _this.ACTION(function () {
                                 values.push(val);
                             });
                         });
+                        _this.ACTION(function () { return propertyTokens = _this.END_CAPTURE(); });
                         ws = _this.SUBRULE(_this._);
                         _this.OPTION2(function () {
                             colon = _this.CONSUME(_this.T.Assign);
@@ -200,8 +221,13 @@ var CssStructureParser = /** @class */ (function (_super) {
                 }
             ]);
             /** Consume any remaining values */
+            _this.ACTION(function () { return _this.CAPTURE(); });
             expr = _this.SUBRULE(_this.expressionList);
             var curly, semi;
+            _this.ACTION(function () {
+                valueTokens = _this.END_CAPTURE();
+                expressionTokens = _this.END_CAPTURE();
+            });
             _this.OR2([
                 { ALT: function () { return curly = _this.SUBRULE2(_this.curlyBlock); } },
                 { ALT: function () { return semi = _this.CONSUME(_this.T.SemiColon); } },
@@ -216,61 +242,66 @@ var CssStructureParser = /** @class */ (function (_super) {
                     if (colon) {
                         values.push(colon);
                     }
-                    _this._mergeValues(values, expr);
+                    if (values.length > 0) {
+                        expr = _this._mergeValues(values, expr);
+                    }
                 });
-                return _this._parseNode({
+                return {
                     name: 'qualifiedRule',
                     children: {
                         expressionList: [expr],
-                        ruleBody: [curly]
+                        body: [curly]
                     }
-                });
+                };
             }
             else if (colon) {
                 /** Treat as declaration */
+                var property_1;
+                var value_1;
+                _this.ACTION(function () {
+                    if (_this.ruleParser) {
+                        parser.input = propertyTokens;
+                        property_1 = parser.property();
+                        parser.input = valueTokens;
+                        expr = parser.expression();
+                    }
+                    else {
+                        property_1 = values;
+                    }
+                    value_1 = [expr];
+                });
                 return {
                     name: 'declaration',
-                    children: __assign(__assign(__assign({ property: values }, (ws ? { ws: [ws] } : {})), { Colon: [colon], value: [expr] }), (semi ? { SemiColon: [semi] } : {}))
+                    children: __assign(__assign(__assign({ property: property_1 }, (ws ? { ws: [ws] } : {})), { Colon: [colon], value: value_1 }), (semi ? { SemiColon: [semi] } : {}))
                 };
             }
-            else {
-                /** Treat as a plain expression list */
-                if (ws) {
-                    values.push(ws);
-                }
-                if (colon) {
-                    values.push(colon);
-                }
-                _this._mergeValues(values, expr);
-                return expr;
+            /**
+             * Treat as a plain expression list
+             * @todo - Any error flagging to do here?
+             */
+            if (ws) {
+                values.push(ws);
             }
+            if (colon) {
+                values.push(colon);
+            }
+            if (values.length > 0) {
+                expr = _this._mergeValues(values, expr);
+            }
+            return expr;
         });
         /**
          * Custom property values can consume everything, including curly blocks
          */
         _this.customPropertyRule = _this.RULE('customPropertyRule', function () {
-            var values;
-            _this.ACTION(function () { return values = []; });
             var name = _this.CONSUME(_this.T.CustomProperty);
             var ws = _this.SUBRULE(_this._);
-            var colon;
-            _this.OPTION(function () {
-                colon = _this.CONSUME(_this.T.Assign);
-            });
+            var colon = _this.CONSUME(_this.T.Assign);
             var value = _this.SUBRULE(_this.customExpressionList);
             var semi;
-            _this.OPTION2(function () {
+            _this.OPTION(function () {
                 semi = _this.CONSUME(_this.T.SemiColon);
             });
-            if (!colon) {
-                _this.ACTION(function () {
-                    if (ws) {
-                        values.push(ws);
-                        _this._mergeValues(values, value);
-                    }
-                });
-                return value;
-            }
             return {
                 name: 'declaration',
                 children: __assign(__assign(__assign({ property: [name] }, (ws ? { ws: [ws] } : {})), { Colon: [colon], value: [value] }), (semi ? { SemiColon: [semi] } : {}))
@@ -284,7 +315,12 @@ var CssStructureParser = /** @class */ (function (_super) {
             _this.OPTION(function () {
                 expr = _this.SUBRULE(_this.expression);
                 _this.ACTION(function () {
-                    expressions = [expr];
+                    if (expr) {
+                        expressions = [expr];
+                    }
+                    else {
+                        expressions = [];
+                    }
                     Comma = [];
                 });
                 _this.MANY(function () {
@@ -298,11 +334,12 @@ var CssStructureParser = /** @class */ (function (_super) {
                     });
                 });
             });
-            // this.ACTION(this._addDeclarationExpressions(expressions, optionals))
-            return {
-                name: 'expressionList',
-                children: __assign(__assign({}, (Comma && Comma.length > 0 ? { Comma: Comma } : {})), (expressions ? { expression: expressions } : {}))
-            };
+            if (expr) {
+                return {
+                    name: 'expressionList',
+                    children: __assign(__assign({}, (Comma && Comma.length > 0 ? { Comma: Comma } : {})), (expressions ? { expression: expressions } : {}))
+                };
+            }
         });
         /** List of expression lists (or expression list if only 1) */
         _this.expressionListGroup = _this.RULE('expressionListGroup', function () {
@@ -341,7 +378,9 @@ var CssStructureParser = /** @class */ (function (_super) {
                     }
                 };
             }
-            return list;
+            else if (list) {
+                return list;
+            }
         });
         _this.customExpressionList = _this.RULE('customExpressionList', function () {
             var expressions;
@@ -350,7 +389,12 @@ var CssStructureParser = /** @class */ (function (_super) {
             _this.OPTION(function () {
                 expr = _this.SUBRULE(_this.customExpression);
                 _this.ACTION(function () {
-                    expressions = [expr];
+                    if (expr) {
+                        expressions = [expr];
+                    }
+                    else {
+                        expressions = [];
+                    }
                     Comma = [];
                 });
                 _this.MANY(function () {
@@ -364,28 +408,35 @@ var CssStructureParser = /** @class */ (function (_super) {
                     });
                 });
             });
-            // this.ACTION(this._addDeclarationExpressions(expressions, optionals))
-            return {
-                name: 'expressionList',
-                children: __assign(__assign({}, (Comma && Comma.length > 0 ? { Comma: Comma } : {})), (expressions ? { expression: expressions } : {}))
-            };
+            if (expr) {
+                return {
+                    name: 'expressionList',
+                    children: __assign(__assign({}, (Comma && Comma.length > 0 ? { Comma: Comma } : {})), (expressions ? { expression: expressions } : {}))
+                };
+            }
         });
         /**
          *  An expression contains values and spaces
          */
         _this.expression = _this.RULE('expression', function () {
             var values;
+            var val;
             _this.ACTION(function () { return values = []; });
             _this.MANY(function () {
-                var value = _this.SUBRULE(_this.value);
-                _this.ACTION(function () { return values.push(value); });
+                val = _this.SUBRULE(_this.value);
+                _this.ACTION(function () { return values.push(val); });
             });
-            return {
-                name: 'expression',
-                children: { values: values }
-            };
+            if (val) {
+                return {
+                    name: 'expression',
+                    children: { values: values }
+                };
+            }
         });
-        /** Immediately following a comma and optional whitespace */
+        /**
+         * Immediately following a comma and optional whitespace
+         * This allows a curly block of rules to be a single value in an expression
+         */
         _this.subExpression = _this.RULE('subExpression', function () {
             var values;
             var val;
@@ -402,10 +453,12 @@ var CssStructureParser = /** @class */ (function (_super) {
                 val = _this.SUBRULE(_this.value);
                 _this.ACTION(function () { return values.push(val); });
             });
-            return {
-                name: 'expression',
-                children: { values: values }
-            };
+            if (val) {
+                return {
+                    name: 'expression',
+                    children: { values: values }
+                };
+            }
         });
         /**
          * This will detect a declaration-like expression within an expression,
@@ -414,7 +467,7 @@ var CssStructureParser = /** @class */ (function (_super) {
         _this.customExpression = _this.RULE('customExpression', function () {
             var exprValues;
             var propertyValues;
-            var allValues;
+            var values;
             var val;
             var ws;
             var pre;
@@ -422,28 +475,24 @@ var CssStructureParser = /** @class */ (function (_super) {
             _this.ACTION(function () {
                 exprValues = [];
                 propertyValues = [];
-                allValues = [];
+                values = [];
             });
             /** Similar to componentValues, except a propertyvalue is not required */
             pre = _this.SUBRULE(_this._);
-            _this.ACTION(function () {
-                allValues.push(pre);
-            });
+            _this.ACTION(function () { return pre && values.push(pre); });
             _this.MANY(function () {
                 val = _this.SUBRULE(_this.propertyValue);
                 _this.ACTION(function () {
                     propertyValues.push(val);
-                    allValues.push(val);
+                    values.push(val);
                 });
             });
             ws = _this.SUBRULE2(_this._);
-            _this.ACTION(function () {
-                allValues.push(ws);
-            });
+            _this.ACTION(function () { return ws && values.push(ws); });
             _this.OPTION2(function () {
                 colon = _this.CONSUME(_this.T.Assign);
                 _this.ACTION(function () {
-                    allValues.push(colon);
+                    values.push(colon);
                 });
             });
             _this.MANY2(function () {
@@ -451,7 +500,10 @@ var CssStructureParser = /** @class */ (function (_super) {
                     { ALT: function () { return _this.SUBRULE(_this.value); } },
                     { ALT: function () { return _this.SUBRULE(_this.curlyBlock); } }
                 ]);
-                _this.ACTION(function () { return exprValues.push(value); });
+                _this.ACTION(function () {
+                    exprValues.push(value);
+                    values.push(value);
+                });
             });
             var decl;
             if (colon && propertyValues && propertyValues.length > 0) {
@@ -465,13 +517,12 @@ var CssStructureParser = /** @class */ (function (_super) {
                             }] })
                 };
             }
-            return {
-                name: 'expression',
-                children: {
-                    values: allValues,
-                    declaration: [decl]
-                }
-            };
+            if (values && values.length > 0) {
+                return {
+                    name: 'expression',
+                    children: __assign({ values: values }, (decl ? { declaration: [decl] } : {}))
+                };
+            }
         });
         /**
          * According to a reading of the spec, whitespace is a valid
@@ -505,7 +556,7 @@ var CssStructureParser = /** @class */ (function (_super) {
             _this.ACTION(function () {
                 children = { L: [L], blockBody: [blockBody] };
             });
-            /** @todo - How do we easily throw errors when this is missing? */
+            /** @todo - Add a parsing error if this is missing */
             _this.OPTION(function () {
                 var R = _this.CONSUME(_this.T.RCurly);
                 _this.ACTION(function () { return children.R = [R]; });
@@ -541,6 +592,7 @@ var CssStructureParser = /** @class */ (function (_super) {
                             { ALT: function () { return Function = _this.CONSUME(_this.T.Function); } }
                         ]);
                         blockBody = _this.SUBRULE(_this.expressionListGroup);
+                        /** @todo - Add a parsing error if this is missing */
                         _this.OPTION(function () { return R = _this.CONSUME(_this.T.RParen); });
                     }
                 },
@@ -548,6 +600,7 @@ var CssStructureParser = /** @class */ (function (_super) {
                     ALT: function () {
                         L = _this.CONSUME(_this.T.LSquare);
                         blockBody = _this.SUBRULE2(_this.expressionListGroup);
+                        /** @todo - Add a parsing error if this is missing */
                         _this.OPTION2(function () { return R = _this.CONSUME(_this.T.RSquare); });
                     }
                 }

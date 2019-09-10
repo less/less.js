@@ -18,7 +18,7 @@ export declare class CssStructureParser extends BaseParserClass {
     /** An optional instance to further refine rules */
     ruleParser?: CssRuleParser);
     /** If an expression ends up not being a declaration, merge initial values into expression */
-    _mergeValues: (values: CstElement[], expr: CstNode) => void;
+    _mergeValues: (values: CstElement[], expr?: CstNode) => CstNode;
     /** Wrapper for secondary parsing by rule parser */
     _parseNode: (node: CstNode) => CstNode;
     /** Optional whitespace */
@@ -46,7 +46,10 @@ export declare class CssStructureParser extends BaseParserClass {
      *  An expression contains values and spaces
      */
     expression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
-    /** Immediately following a comma and optional whitespace */
+    /**
+     * Immediately following a comma and optional whitespace
+     * This allows a curly block of rules to be a single value in an expression
+     */
     subExpression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /**
      * This will detect a declaration-like expression within an expression,

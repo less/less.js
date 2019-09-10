@@ -1,4 +1,4 @@
-import { TokenType, EmbeddedActionsParser, IParserConfig, IToken } from 'chevrotain';
+import { TokenType, IParserConfig, IToken, EmbeddedActionsParser, CstNode, CstElement } from 'chevrotain';
 import { TokenMap } from '../util';
 /**
  * This class further parses general rules into known rules
@@ -7,24 +7,17 @@ export declare class CssRuleParser extends EmbeddedActionsParser {
     T: TokenMap;
     constructor(tokens: TokenType[], T: TokenMap, config?: IParserConfig);
     _: (idxInCallingRule?: number, ...args: any[]) => IToken;
-    preExpression: (idxInCallingRule?: number, ...args: any[]) => any;
-    property: (idxInCallingRule?: number, ...args: any[]) => void;
-    expression: (idxInCallingRule?: number, ...args: any[]) => void;
-    valueExpression: (idxInCallingRule?: number, ...args: any[]) => void;
-    addition: (idxInCallingRule?: number, ...args: any[]) => void;
-    multiplication: (idxInCallingRule?: number, ...args: any[]) => void;
-    compare: (idxInCallingRule?: number, ...args: any[]) => void;
-    value: (idxInCallingRule?: number, ...args: any[]) => void;
-    compoundSelectorList: (idxInCallingRule?: number, ...args: any[]) => void;
-    /**
-     * e.g. div.foo[bar] + p
-     */
-    compoundSelector: (idxInCallingRule?: number, ...args: any[]) => void;
-    selector: (idxInCallingRule?: number, ...args: any[]) => void;
-    selectorElement: (idxInCallingRule?: number, ...args: any[]) => void;
-    selectorSuffix: (idxInCallingRule?: number, ...args: any[]) => void;
-    selectorCombinator: (idxInCallingRule?: number, ...args: any[]) => void;
-    selectorAttribute: (idxInCallingRule?: number, ...args: any[]) => void;
-    pseudoSelector: (idxInCallingRule?: number, ...args: any[]) => void;
-    pseudoFunction: (idxInCallingRule?: number, ...args: any[]) => void;
+    /** A property is a collection of tokens in case we need to process segments */
+    property: (idxInCallingRule?: number, ...args: any[]) => IToken[];
+    expression: (idxInCallingRule?: number, ...args: any[]) => {
+        name: string;
+        children: {
+            values: CstElement[];
+        };
+    };
+    valueExpression: (idxInCallingRule?: number, ...args: any[]) => CstElement[];
+    addition: (idxInCallingRule?: number, ...args: any[]) => CstNode;
+    multiplication: (idxInCallingRule?: number, ...args: any[]) => CstNode;
+    compare: (idxInCallingRule?: number, ...args: any[]) => any;
+    value: (idxInCallingRule?: number, ...args: any[]) => any;
 }

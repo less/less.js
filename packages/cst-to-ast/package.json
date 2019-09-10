@@ -1,5 +1,5 @@
 {
-  "name": "@less/parser",
+  "name": "@less/cst-to-ast",
   "version": "4.0.0-dev.1",
   "description": "",
   "main": "dist/index",
@@ -17,10 +17,8 @@
   "author": "Matthew Dean",
   "license": "(Apache-2.0 or MIT)",
   "dependencies": {
-    "@less/css-parser": "^4.0.0-dev.1"
   },
   "devDependencies": {
-    "@less/test-data": "^4.0.0-dev.1",
     "@types/chai": "^4.2.1",
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.7",

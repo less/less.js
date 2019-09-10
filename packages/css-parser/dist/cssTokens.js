@@ -73,6 +73,7 @@ exports.Tokens = [
     { name: 'Pipe', pattern: /\|/, categories: ['SelectorPart'] },
     { name: 'AttrMatch', pattern: /[*~|^$]=/, categories: ['AttrMatchOperator'] },
     { name: 'Ident', pattern: util_1.LexerType.NA, categories: ['Selector'] },
+    { name: 'PropertyName', pattern: util_1.LexerType.NA },
     /**
      * This is the only token outside of spec.
      * It's done to avoid parsing errors of common pre-processor stylesheets, since curly
@@ -81,8 +82,8 @@ exports.Tokens = [
      * Pre-processors will / can easily override this.
      */
     { name: 'Interpolated', pattern: /[#$@]{[^}]+}/ },
-    { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident'] },
-    { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker'] },
+    { name: 'PlainIdent', pattern: '{{ident}}', categories: ['Ident', 'PropertyName'] },
+    { name: 'CustomProperty', pattern: '--{{ident}}', categories: ['BlockMarker', 'PropertyName'] },
     { name: 'CDOToken', pattern: /<!--/, group: util_1.LexerType.SKIPPED },
     { name: 'CDCToken', pattern: /-->/, group: util_1.LexerType.SKIPPED },
     /** Ignore BOM */

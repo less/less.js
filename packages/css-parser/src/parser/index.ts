@@ -1,4 +1,4 @@
-import { IToken, Lexer } from 'chevrotain'
+import { IToken, Lexer, CstNode, ILexingResult } from 'chevrotain'
 import { Tokens, Fragments } from '../cssTokens'
 import { CssStructureParser } from './cssStructureParser'
 import { CssRuleParser } from './cssRuleParser'
@@ -9,6 +9,11 @@ import { createLexer } from '../util'
 // const cssVisitor = CssStructureVisitor(
 //   parser.getBaseCstVisitorConstructorWithDefaults()
 // )
+export interface IParseResult {
+  cst: CstNode
+  lexerResult: ILexingResult
+  parser: CssStructureParser
+}
 
 export class Parser {
   lexer: Lexer
@@ -25,7 +30,7 @@ export class Parser {
     }
   }
 
-  parse (text: string) {
+  parse (text: string): IParseResult {
     const lexerResult = this.lexer.tokenize(text)
     const lexedTokens: IToken[] = lexerResult.tokens
     this.parser.input = lexedTokens

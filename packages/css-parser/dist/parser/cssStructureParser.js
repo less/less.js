@@ -25,6 +25,7 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var chevrotain_1 = require("chevrotain");
+var baseParserClass_1 = require("./baseParserClass");
 /**
  *  Parsing is broken into 2 phases, so that we:
  *    1. Don't have to do any backtracking to refine rules (like @media).
@@ -154,7 +155,6 @@ var CssStructureParser = /** @class */ (function (_super) {
         });
         _this.componentValues = _this.RULE('componentValues', function () {
             var values = [];
-            var start = _this.currIdx;
             var val;
             var ws;
             var colon;
@@ -202,7 +202,6 @@ var CssStructureParser = /** @class */ (function (_super) {
             /** Consume any remaining values */
             expr = _this.SUBRULE(_this.expressionList);
             var curly, semi;
-            var end = _this.currIdx;
             _this.OR2([
                 { ALT: function () { return curly = _this.SUBRULE2(_this.curlyBlock); } },
                 { ALT: function () { return semi = _this.CONSUME(_this.T.SemiColon); } },
@@ -306,44 +305,44 @@ var CssStructureParser = /** @class */ (function (_super) {
             };
         });
         /** List of expression lists (or expression list if only 1) */
-        // expressionListGroup = this.RULE<CstNode>('expressionListGroup', () => {
-        //   let isGroup = false
-        //   let SemiColon: IToken[]
-        //   let expressionList: CstNode[]
-        //   let list: CstNode = this.SUBRULE(this.customExpressionList)
-        //   let semi: IToken
-        //   this.OPTION(() => {
-        //     semi = this.CONSUME(this.T.SemiColon)
-        //     isGroup = true
-        //     this.ACTION(() => {
-        //       expressionList = [list]
-        //       SemiColon = [semi]
-        //     })
-        //     this.MANY(() => {
-        //       list = this.SUBRULE2(this.customExpressionList)
-        //       this.ACTION(() => {
-        //         expressionList.push(list)
-        //         SemiColon = [semi]
-        //       })
-        //       this.OPTION2(() => {
-        //         semi = this.CONSUME2(this.T.SemiColon)
-        //         this.ACTION(() => {
-        //           SemiColon.push(semi)
-        //         })
-        //       })
-        //     })
-        //   })
-        //   if (isGroup) {
-        //     return {
-        //       name: 'expressionListGroup',
-        //       children: {
-        //         SemiColon,
-        //         expressionList
-        //       }
-        //     }
-        //   }
-        //   return list
-        // })
+        _this.expressionListGroup = _this.RULE('expressionListGroup', function () {
+            var isGroup = false;
+            var SemiColon;
+            var expressionList;
+            var list = _this.SUBRULE(_this.customExpressionList);
+            var semi;
+            _this.OPTION(function () {
+                semi = _this.CONSUME(_this.T.SemiColon);
+                isGroup = true;
+                _this.ACTION(function () {
+                    expressionList = [list];
+                    SemiColon = [semi];
+                });
+                _this.MANY(function () {
+                    list = _this.SUBRULE2(_this.customExpressionList);
+                    _this.ACTION(function () {
+                        expressionList.push(list);
+                        SemiColon = [semi];
+                    });
+                    _this.OPTION2(function () {
+                        semi = _this.CONSUME2(_this.T.SemiColon);
+                        _this.ACTION(function () {
+                            SemiColon.push(semi);
+                        });
+                    });
+                });
+            });
+            if (isGroup) {
+                return {
+                    name: 'expressionListGroup',
+                    children: {
+                        SemiColon: SemiColon,
+                        expressionList: expressionList
+                    }
+                };
+            }
+            return list;
+        });
         _this.customExpressionList = _this.RULE('customExpressionList', function () {
             var expressions;
             var expr;
@@ -408,19 +407,70 @@ var CssStructureParser = /** @class */ (function (_super) {
                 children: { values: values }
             };
         });
+        /**
+         * This will detect a declaration-like expression within an expression,
+         * but note that the declaration is essentially a duplicate of the entire expression.
+         */
         _this.customExpression = _this.RULE('customExpression', function () {
-            var values;
-            _this.ACTION(function () { return values = []; });
+            var exprValues;
+            var propertyValues;
+            var allValues;
+            var val;
+            var ws;
+            var pre;
+            var colon;
+            _this.ACTION(function () {
+                exprValues = [];
+                propertyValues = [];
+                allValues = [];
+            });
+            /** Similar to componentValues, except a propertyvalue is not required */
+            pre = _this.SUBRULE(_this._);
+            _this.ACTION(function () {
+                allValues.push(pre);
+            });
             _this.MANY(function () {
+                val = _this.SUBRULE(_this.propertyValue);
+                _this.ACTION(function () {
+                    propertyValues.push(val);
+                    allValues.push(val);
+                });
+            });
+            ws = _this.SUBRULE2(_this._);
+            _this.ACTION(function () {
+                allValues.push(ws);
+            });
+            _this.OPTION2(function () {
+                colon = _this.CONSUME(_this.T.Assign);
+                _this.ACTION(function () {
+                    allValues.push(colon);
+                });
+            });
+            _this.MANY2(function () {
                 var value = _this.OR([
                     { ALT: function () { return _this.SUBRULE(_this.value); } },
                     { ALT: function () { return _this.SUBRULE(_this.curlyBlock); } }
                 ]);
-                _this.ACTION(function () { return values.push(value); });
+                _this.ACTION(function () { return exprValues.push(value); });
             });
+            var decl;
+            if (colon && propertyValues && propertyValues.length > 0) {
+                decl = {
+                    name: 'declaration',
+                    children: __assign(__assign(__assign(__assign({}, (pre ? { pre: [pre] } : {})), { property: propertyValues }), (ws ? { ws: [ws] } : {})), { Colon: [colon], value: [{
+                                name: 'expression',
+                                children: {
+                                    values: exprValues
+                                }
+                            }] })
+                };
+            }
             return {
                 name: 'expression',
-                children: { values: values }
+                children: {
+                    values: allValues,
+                    declaration: [decl]
+                }
             };
         });
         /**
@@ -455,6 +505,7 @@ var CssStructureParser = /** @class */ (function (_super) {
             _this.ACTION(function () {
                 children = { L: [L], blockBody: [blockBody] };
             });
+            /** @todo - How do we easily throw errors when this is missing? */
             _this.OPTION(function () {
                 var R = _this.CONSUME(_this.T.RCurly);
                 _this.ACTION(function () { return children.R = [R]; });
@@ -489,14 +540,14 @@ var CssStructureParser = /** @class */ (function (_super) {
                             { ALT: function () { return L = _this.CONSUME(_this.T.LParen); } },
                             { ALT: function () { return Function = _this.CONSUME(_this.T.Function); } }
                         ]);
-                        blockBody = _this.SUBRULE(_this.primary);
+                        blockBody = _this.SUBRULE(_this.expressionListGroup);
                         _this.OPTION(function () { return R = _this.CONSUME(_this.T.RParen); });
                     }
                 },
                 {
                     ALT: function () {
                         L = _this.CONSUME(_this.T.LSquare);
-                        blockBody = _this.SUBRULE2(_this.primary);
+                        blockBody = _this.SUBRULE2(_this.expressionListGroup);
                         _this.OPTION2(function () { return R = _this.CONSUME(_this.T.RSquare); });
                     }
                 }
@@ -516,6 +567,6 @@ var CssStructureParser = /** @class */ (function (_super) {
         return _this;
     }
     return CssStructureParser;
-}(chevrotain_1.EmbeddedActionsParser));
+}(baseParserClass_1.BaseParserClass));
 exports.CssStructureParser = CssStructureParser;
 //# sourceMappingURL=cssStructureParser.js.map

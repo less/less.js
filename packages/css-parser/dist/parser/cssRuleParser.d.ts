@@ -1,4 +1,4 @@
-import { TokenType, EmbeddedActionsParser, IParserConfig } from 'chevrotain';
+import { TokenType, EmbeddedActionsParser, IParserConfig, IToken } from 'chevrotain';
 import { TokenMap } from '../util';
 /**
  * This class further parses general rules into known rules
@@ -6,6 +6,8 @@ import { TokenMap } from '../util';
 export declare class CssRuleParser extends EmbeddedActionsParser {
     T: TokenMap;
     constructor(tokens: TokenType[], T: TokenMap, config?: IParserConfig);
+    _: (idxInCallingRule?: number, ...args: any[]) => IToken;
+    preExpression: (idxInCallingRule?: number, ...args: any[]) => any;
     property: (idxInCallingRule?: number, ...args: any[]) => void;
     expression: (idxInCallingRule?: number, ...args: any[]) => void;
     valueExpression: (idxInCallingRule?: number, ...args: any[]) => void;

@@ -24,7 +24,8 @@ exports.Fragments = [
     ['nmstart', '[_a-zA-Z]|{{nonascii}}|{{escape}}'],
     ['nmchar', '[_a-zA-Z0-9-]|{{nonascii}}|{{escape}}'],
     ['ident', '-?{{nmstart}}{{nmchar}}*'],
-    ['url', '([!#\\$%&*-~]|{{nonascii}}|{{escape}})*'],
+    /** Reference: https://www.w3.org/TR/css-syntax-3/#consume-url-token */
+    ['url', '(?:[^(\'"]|{{escape}})*'],
     ['integer', '[+-]?\\d+'],
     /** Any number that's not simply an integer e.g. 1.1 or 1e+1 */
     ['number', '[+-]?(?:\\d*\\.\\d+(?:[eE][+-]\\d+)?|\\d+(?:[eE][+-]\\d+))']
@@ -97,11 +98,13 @@ exports.Tokens = [
     {
         name: 'UriString',
         pattern: 'url\\((:?{{ws}})?({{string1}}|{{string2}})(:?{{ws}})?\\)',
+        line_breaks: true,
         categories: ['Uri']
     },
     {
         name: 'UriUrl',
         pattern: 'url\\((:?{{ws}})?{{url}}(:?{{ws}})?\\)',
+        line_breaks: true,
         categories: ['Uri']
     },
     {
@@ -155,7 +158,7 @@ exports.Tokens = [
     { name: 'Dimension', pattern: util_1.LexerType.NA },
     /**
      * CSS syntax says we should identify integers as separate from numbers,
-     * probably because there are parts of the syntax where one is allowed but not the other.
+     * probably because there are parts of the syntax where one is allowed but not the other?
      */
     { name: 'Integer', pattern: util_1.LexerType.NA },
     { name: 'DimensionNum', pattern: '{{number}}(?:{{ident}}|%)', categories: ['Unit', 'Dimension'] },

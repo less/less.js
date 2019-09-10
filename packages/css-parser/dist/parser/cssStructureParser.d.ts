@@ -1,6 +1,7 @@
-import { EmbeddedActionsParser, TokenType, CstNode, CstElement, IParserConfig, IToken } from 'chevrotain';
+import { TokenType, CstNode, CstElement, IParserConfig, IToken } from 'chevrotain';
 import { TokenMap } from '../util';
 import { CssRuleParser } from './cssRuleParser';
+import { BaseParserClass } from './baseParserClass';
 /**
  *  Parsing is broken into 2 phases, so that we:
  *    1. Don't have to do any backtracking to refine rules (like @media).
@@ -10,11 +11,9 @@ import { CssRuleParser } from './cssRuleParser';
  *  at-rule bodies (in {}) can be almost anything, and the outer grammar should
  *  not care about what at-rules or declaration values contain.
  */
-export declare class CssStructureParser extends EmbeddedActionsParser {
+export declare class CssStructureParser extends BaseParserClass {
     T: TokenMap;
     ruleParser: CssRuleParser;
-    /** private Chevrotain property */
-    currIdx: number;
     constructor(tokens: TokenType[], T: TokenMap, config?: IParserConfig, 
     /** An optional instance to further refine rules */
     ruleParser?: CssRuleParser);
@@ -41,6 +40,7 @@ export declare class CssStructureParser extends EmbeddedActionsParser {
     /** A comma-separated list of expressions */
     expressionList: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /** List of expression lists (or expression list if only 1) */
+    expressionListGroup: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     customExpressionList: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /**
      *  An expression contains values and spaces
@@ -48,6 +48,10 @@ export declare class CssStructureParser extends EmbeddedActionsParser {
     expression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /** Immediately following a comma and optional whitespace */
     subExpression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
+    /**
+     * This will detect a declaration-like expression within an expression,
+     * but note that the declaration is essentially a duplicate of the entire expression.
+     */
     customExpression: (idxInCallingRule?: number, ...args: any[]) => CstNode;
     /**
      * According to a reading of the spec, whitespace is a valid

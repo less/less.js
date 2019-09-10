@@ -12,6 +12,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var chevrotain_1 = require("chevrotain");
 /**
@@ -22,6 +33,55 @@ var CssRuleParser = /** @class */ (function (_super) {
     function CssRuleParser(tokens, T, config) {
         if (config === void 0) { config = { maxLookahead: 1 }; }
         var _this = _super.call(this, tokens, config) || this;
+        _this._ = _this.RULE('_', function () {
+            var token;
+            _this.OPTION(function () { return token = _this.CONSUME(_this.T.WS); });
+            return token;
+        });
+        _this.preExpression = _this.RULE('preExpression', function () {
+            var val;
+            var pre;
+            var ws;
+            var colon;
+            var propertyValues;
+            var allValues;
+            _this.ACTION(function () {
+                propertyValues = [];
+                allValues = [];
+            });
+            /** Grab initial colon, in case this is a selector list */
+            _this.OPTION(function () {
+                pre = _this.CONSUME(_this.T.Colon);
+                _this.ACTION(function () {
+                    propertyValues.push(pre);
+                    allValues.push(pre);
+                });
+            });
+            _this.MANY(function () {
+                val = _this.SUBRULE(_this.propertyValue);
+                _this.ACTION(function () {
+                    propertyValues.push(val);
+                    allValues.push(val);
+                });
+            });
+            ws = _this.SUBRULE(_this._);
+            _this.ACTION(function () {
+                allValues.push(ws);
+            });
+            _this.OPTION2(function () {
+                colon = _this.CONSUME2(_this.T.Colon);
+                _this.ACTION(function () {
+                    allValues.push(colon);
+                });
+            });
+            if (pre && colon) {
+                return {
+                    name: 'declaration',
+                    children: __assign(__assign({ property: propertyValues }, (ws ? { ws: [ws] } : {})), { Colon: [colon], allValues: allValues })
+                };
+            }
+            return allValues;
+        });
         _this.property = _this.OVERRIDE_RULE('property', function () {
             _this.CONSUME(_this.T.Ident);
         });

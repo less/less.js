@@ -10,16 +10,27 @@ const testData = path.dirname(require.resolve('@less/test-data'))
 const lessParser = new Parser()
 
 describe('can parse all Less stylesheets', () => {
-  const files = glob.sync(path.join(testData, 'less/**/*.less'))
+  const files = glob.sync(path.relative(process.cwd(), path.join(testData, 'less/**/*.less')))
   files.sort()
   files.forEach(file => {
-    if (file.indexOf('static-urls') > -1) {
-      it(`${file}`, () => {
-        const result = fs.readFileSync(file)
-        const { cst, lexerResult, parser } = lessParser.parse(result.toString())
-        expect(lexerResult.errors.length).to.equal(0)
-        expect(parser.errors.length).to.equal(0)
-      });
-    }
+    it(`${file}`, () => {
+      const result = fs.readFileSync(file)
+      const { cst, lexerResult, parser } = lessParser.parse(result.toString())
+      expect(lexerResult.errors.length).to.equal(0)
+      expect(parser.errors.length).to.equal(0)
+    });
+  });
+});
+
+describe('should throw parsing errors', () => {
+  const files = glob.sync(path.relative(process.cwd(), path.join(testData, 'errors/parse/**/*.less')))
+  files.sort()
+  files.forEach(file => {
+    it(`${file}`, () => {
+      const result = fs.readFileSync(file)
+      const { cst, lexerResult, parser } = lessParser.parse(result.toString())
+      expect(lexerResult.errors.length).to.equal(0)
+      expect(parser.errors.length).to.equal(1)
+    });
   });
 });

@@ -1,6 +1,5 @@
 
 import {
-  EmbeddedActionsParser,
   EMPTY_ALT,
   TokenType,
   CstNode,
@@ -10,6 +9,7 @@ import {
 } from 'chevrotain'
 import { TokenMap } from '../util'
 import { CssRuleParser } from './cssRuleParser'
+import { BaseParserClass } from './baseParserClass'
 
 /**
  *  A Note About CSS Syntax
@@ -29,25 +29,29 @@ import { CssRuleParser } from './cssRuleParser'
  *  with a colon. So this may be a property of `foo` with a value of `bar {}`
  *  or it may be the selector `foo:bar` with a set of rules in `{}`.
  * 
- *  Another example: qualified rules are supposed to gulp everything up to `{}`,
- *  including a semi-colon. Meaning `foo:bar; {}` is valid. It's an invalid
- *  _selector_, but it's not a parsing error. Or is it a valid declaration
- *  followed by an empty curly block (which is also valid)? ¯\_(ツ)_/¯
+ *  CSS resolves syntactic ambiguity by specifying that blocks should have different
+ *  parsing strategies based on context. Blocks can either parse a list of rules,
+ *  or can parse a list of declarations (at-rules are considered declarations),
+ *  but not both.
  * 
- *  This means that any pre-processor like Less, Sass, or PostCSS, using nested
- *  syntax, can never be a 100% spec-compliant CSS parser. AFAICT, there is no
- *  such thing.
+ *  Here's the rub: blocks are generic, can be wrapped in `()`, `[]`, or `{}`, 
+ *  and which type they consume is not defined globally; it's defined by that
+ *  particular declaration's own grammar. In addition, if one assumes that `{}`
+ *  is always a list of declarations, that's not the case. Custom properties
+ *  can contain curly blocks that contain anything.
+ * 
+ *  Making a context-switching CSS parser is possible, but not useful, both for
+ *  custom properties that define a rule-like block, and for generalizing
+ *  parsing for pre-processors like Less. Unfortunately, any pre-processor with
+ *  nested syntax is inherently ambiguous for the above reasons, meaning any
+ *  pre-processor like Less, Sass, or PostCSS, using nested syntax, can never be
+ *  a 100% spec-compliant CSS parser.
  * 
  *  However, in this CSS parser and parsers that extend it, we can intelligently
- *  resolve this ambiguity with these principles:
+ *  resolve ambiguities with these principles:
  *    1. There are no element selectors that start with '--'
  *    2. There are no currently-defined CSS properties that have a {} block as a 
- *       possible value. (If this ever happens, every CSS parser is screwed.)
- *  This is essentially what browsers do: that is, they choose parts of the CSS
- *  grammar they can "understand". It's _browsers_ (and convention) and not the
- *  spec that allows declarations in certain places. So, currently, declarations
- *  at the root don't _mean_ anything, but if they did someday, it would not be
- *  a violation of current grammar.
+ *       possible value. (If this ever happens, CSS parsing libraries are screwed.)
  * 
  *  CSS grammar is extremely permissive to allow modularity of the syntax and
  *  future expansion. Basically, anything "unknown", including unknown tokens,
@@ -83,11 +87,9 @@ interface spaceToken {
  *  at-rule bodies (in {}) can be almost anything, and the outer grammar should
  *  not care about what at-rules or declaration values contain.
  */
-export class CssStructureParser extends EmbeddedActionsParser {
+export class CssStructureParser extends BaseParserClass {
   T: TokenMap
   ruleParser: CssRuleParser
-  /** private Chevrotain property */
-  currIdx: number
 
   constructor(
     tokens: TokenType[],
@@ -238,7 +240,6 @@ export class CssStructureParser extends EmbeddedActionsParser {
 
   componentValues = this.RULE<CstNode>('componentValues', () => {
     const values: CstElement[] = []
-    const start = this.currIdx
     let val: CstElement
     let ws: IToken
     let colon: IToken
@@ -288,7 +289,6 @@ export class CssStructureParser extends EmbeddedActionsParser {
     /** Consume any remaining values */
     expr = this.SUBRULE(this.expressionList)
     let curly: CstNode, semi: IToken
-    const end = this.currIdx
     this.OR2([
       { ALT: () => curly = this.SUBRULE2(this.curlyBlock) },
       { ALT: () => semi = this.CONSUME(this.T.SemiColon) },
@@ -533,22 +533,83 @@ export class CssStructureParser extends EmbeddedActionsParser {
     }
   })
 
+  /**
+   * This will detect a declaration-like expression within an expression,
+   * but note that the declaration is essentially a duplicate of the entire expression. 
+   */
   customExpression = this.RULE<CstNode>('customExpression', () => {
-    let values: CstElement[]
+    let exprValues: CstElement[]
+    let propertyValues: CstElement[]
+    let allValues: CstElement[]
+
+    let val: CstElement
+    let ws: IToken
+    let pre: IToken
+    let colon: IToken
   
-    this.ACTION(() => values = [])
-  
+    this.ACTION(() => {
+      exprValues = []
+      propertyValues = []
+      allValues = []
+    })
+
+    /** Similar to componentValues, except a propertyvalue is not required */
+    pre = this.SUBRULE(this._)
+    this.ACTION(() => {
+      allValues.push(pre)
+    })
+
     this.MANY(() => {
+      val = this.SUBRULE(this.propertyValue)
+      this.ACTION(() => {
+        propertyValues.push(val)
+        allValues.push(val)
+      })
+    })
+    ws = this.SUBRULE2(this._)
+    this.ACTION(() => {
+      allValues.push(ws)
+    })
+    this.OPTION2(() => {
+      colon = this.CONSUME(this.T.Assign)
+      this.ACTION(() => {
+        allValues.push(colon)
+      })
+    })
+  
+    this.MANY2(() => {
       const value = this.OR([
         { ALT: () => this.SUBRULE(this.value) },
         { ALT: () => this.SUBRULE(this.curlyBlock) }
       ])
-      this.ACTION(() => values.push(value))
+      this.ACTION(() => exprValues.push(value))
     })
+
+    let decl: CstNode
+    if (colon && propertyValues && propertyValues.length > 0) {
+      decl = {
+        name: 'declaration',
+        children: {
+          ...(pre ? { pre: [pre] } : {}),
+          property: propertyValues,
+          ...(ws ? { ws: [ws] } : {}),
+          Colon: [colon],
+          value: [{
+            name: 'expression',
+            children: {
+              values: exprValues
+            }
+          }]
+        }
+      }
+    }
     
     return {
       name: 'expression',
-      children: { values }
+      children: {
+        values: allValues,
+        declaration: [decl]
+      }
     }
   })
 
@@ -588,6 +649,7 @@ export class CssStructureParser extends EmbeddedActionsParser {
       children = { L: [L], blockBody: [blockBody] }
     })
 
+    /** @todo - How do we easily throw errors when this is missing? */
     this.OPTION(() => {
       const R = this.CONSUME(this.T.RCurly)
       this.ACTION(() => children.R = [R])

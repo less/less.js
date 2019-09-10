@@ -97,7 +97,7 @@ for (let i = 0; i < tokenLength; i++) {
       break
     case 'WS':
       copyToken()
-      token.pattern = '({{ws}}|{{lineComment}}|{{comment}})+'
+      token.pattern = '(?:{{ws}}|{{lineComment}}|{{comment}})+'
       break
     case 'DotName':
       copyToken()

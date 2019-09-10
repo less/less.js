@@ -1,4 +1,9 @@
-import { TokenType, EmbeddedActionsParser, IParserConfig } from 'chevrotain'
+import {
+  TokenType,
+  EmbeddedActionsParser,
+  IParserConfig,
+  IToken
+} from 'chevrotain'
 import { TokenMap } from '../util'
 
 /**
@@ -18,6 +23,65 @@ export class CssRuleParser extends EmbeddedActionsParser {
       this.performSelfAnalysis()
     }
   }
+
+  _ = this.RULE<IToken | undefined>('_', () => {
+    let token
+    this.OPTION(() => token = this.CONSUME(this.T.WS))
+    return token
+  })
+
+  preExpression = this.RULE<CstElement[] | CstNode>('preExpression', () => {
+    let val: CstElement
+    let pre: CstElement
+    let ws: IToken
+    let colon: IToken
+    let propertyValues: CstElement[]
+    let allValues: CstElement[]
+
+    this.ACTION(() => {
+      propertyValues = []
+      allValues = []
+    })
+
+    /** Grab initial colon, in case this is a selector list */
+    this.OPTION(() => {
+      pre = this.CONSUME(this.T.Colon)
+      this.ACTION(() => {
+        propertyValues.push(pre)
+        allValues.push(pre)
+      })
+    })
+
+    this.MANY(() => {
+      val = this.SUBRULE(this.propertyValue)
+      this.ACTION(() => {
+        propertyValues.push(val)
+        allValues.push(val)
+      })
+    })
+    ws = this.SUBRULE(this._)
+    this.ACTION(() => {
+      allValues.push(ws)
+    })
+    this.OPTION2(() => {
+      colon = this.CONSUME2(this.T.Colon)
+      this.ACTION(() => {
+        allValues.push(colon)
+      })
+    })
+    if (pre && colon) {
+      return {
+        name: 'declaration',
+        children: {
+          property: propertyValues,
+          ...(ws ? { ws: [ws] } : {}),
+          Colon: [colon],
+          allValues
+        }
+      }
+    }
+    return allValues
+  })
 
   property = this.OVERRIDE_RULE('property', () => {
     this.CONSUME(this.T.Ident)

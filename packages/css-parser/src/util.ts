@@ -6,6 +6,7 @@ import {
   TokenPattern
 } from 'chevrotain'
 
+// TODO: get rid of xRegExp dep
 import * as XRegExp from 'xregexp'
 
 export enum LexerType {
@@ -83,8 +84,20 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
     /** Build tokens from bottom to top */
     tokens.unshift(token);
   })
+
+  const start = new Date().getTime();
+  // TODO: Lexer Optimizations cannot be enabled due to using /./ pattern
+  //   https://sap.github.io/chevrotain/docs/guide/resolving_lexer_errors.html#COMPLEMENT
+  //   Due to Recent optimizations in Chevrotain this limitation may become irrelevant.
+  //   https://github.com/SAP/chevrotain/issues/1044
+  const lexer = new Lexer(tokens, { ensureOptimizations: false })
+  const end  = new Date().getTime();
+  // TODO: Lexer initialization takes 41ms on my machine, that is a little slow...
+  //  -  https://github.com/SAP/chevrotain/issues/1045
+  console.log(`Lexer init: ${end - start}ms`)
+
   return {
-    lexer: new Lexer(tokens),
+    lexer,
     tokens,
     T
   }

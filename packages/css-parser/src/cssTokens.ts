@@ -38,6 +38,8 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Value', pattern: LexerType.NA },
   { name: 'NonIdent', pattern: LexerType.NA },
   { name: 'AtName', pattern: LexerType.NA },
+    // /./ does not actually match everything (e.g newlines) but it does not matter
+    //     because newlines are matched in the WS token.
   { name: 'Unknown', pattern: /./ },
   { name: 'BlockMarker', pattern: LexerType.NA },
   { name: 'ListMarker', pattern: LexerType.NA },

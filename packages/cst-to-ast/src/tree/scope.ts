@@ -29,6 +29,9 @@ const scopeRegistry = (entry: Object) => {
       switch (key[0]) {
         // property or variable lookup
         case '$':
+          if (key in obj) {
+            
+          }
         case '@':
           if (key in obj) {
             const val: any[] = obj[key]
@@ -59,9 +62,11 @@ const scopeRegistry = (entry: Object) => {
       }
       const key: string = getKey(prop)
 
-      entries.push([key, value])
-      /** Store a reference to the lookup array holding this value */
-      obj[key] = entries
+      /**
+       * In the case of vars, props, and mixins, the value will be 
+       * a reference to the rules holding this value
+       */
+      obj[key] = value
     }
   })
 }

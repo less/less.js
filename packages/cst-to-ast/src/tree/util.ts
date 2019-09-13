@@ -3,14 +3,57 @@
  */
 import { Node } from './node'
 
-export const operate = (op: string, a: number, b: number) => {
-  switch (op) {
-    case '+': return a + b
-    case '-': return a - b
-    case '*': return a * b
-    case '/': return a / b
-  }
+/** 
+ * Generalized list-merging utility, used for selectors and values
+ *   e.g.
+ *     .a, .b, .c {
+ *        .d&.e {}
+ *     }
+ *   [.d, [.a, .b, .c], .e]
+ */
+
+export const mergeList = (arr: Array<any | any[]>): any[][] => {
+  const result: any[][] = [arr]
+
+  arr.forEach((item, o) => {
+    if (Array.isArray(item)) {
+      item.forEach((val, i) => {
+        result.forEach(res => {
+          if (i !== 0) {
+            res = [...res]
+          }
+          res[o] = val
+          if (i !== 0) {
+            result.push(res)
+          }
+        })
+      })
+    } else {
+      result.forEach(res => {
+        res[o] = item
+      })
+    }
+  })
+
+  return result
 }
+
+/**
+ * Math for node expressions
+ */
+export const add = (a: number, b: number) => a + b
+export const subtract = (a: number, b: number) => a - b
+export const multiply = (a: number, b: number) => a * b
+export const divide = (a: number, b: number) => a / b
+
+// export const operate = (op: string, a: number, b: number) => {
+//   switch (op) {
+//     case '+': return a + b
+//     case '-': return a - b
+//     case '*': return a * b
+//     case '/': return a / b
+//   }
+// }
 
 export const fround = (context, value: number) => {
   const precision = context && context.numPrecision;

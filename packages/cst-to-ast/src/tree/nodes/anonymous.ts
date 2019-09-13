@@ -1,10 +1,5 @@
 import Node from '../node';
 
-class Anonymous extends Node {
-  toString() {
-    return this.value
-  }
-}
-
+class Anonymous extends Node {}
 Anonymous.prototype.type = 'Anonymous'
 export default Anonymous

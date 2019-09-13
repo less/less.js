@@ -1,21 +1,21 @@
 import { CstNodeLocation } from 'chevrotain'
 
-export interface IChildren {
-  [key: string]: Node[]
-}
-export type IProps = {
+export type ISimpleProps = {
   /** Primitive value */
   value?: (string | number) | (string | number)[]
   text?: string
-} & IChildren
+}
 
 export interface INodeOptions {
   [key: string]: boolean
 }
 
+/** @todo add filename details */
 export interface ILocationInfo extends CstNodeLocation {
 
 }
+
+type simpleValue = (string | number | Node)
 
 export abstract class Node {
   /**
@@ -25,13 +25,14 @@ export abstract class Node {
    * e.g. Color may be
    *   { value: [255, 255, 255, 1], text: '#FFFFFF' } or
    *   { value: [255, 255, 255, 1], text: 'white' }
+   * 
+   * In short, the value should never contain Nodes because it is not visited
    */
-  value: (string | number) | (string | number)[]
+  value: simpleValue | simpleValue[]
 
   /** Used if string does not equal normalized primitive */
   text: string
   options: INodeOptions
-  children: IChildren
 
   /**
    * This will be the start values from the first token and the end
@@ -52,57 +53,31 @@ export abstract class Node {
   root: Node
   type: string
 
-  constructor(props: IProps, location: ILocationInfo, options: INodeOptions = {}) {
-    const { value, text, ...children } = props
+  constructor(props: ISimpleProps, location: ILocationInfo, options: INodeOptions = {}) {
+    const { value, text } = props
     this.value = value
     this.text = text
-    this.children = children || {}
     this.location = location
     this.options = options
 
     this.isRoot = false
     this.visibilityBlocks = 0
-    this.setParent()
-  }
-
-  setParent() {
-    const entries = Object.entries(this.children)
-    entries.forEach(entry => {
-      const nodes = entry[1]
-      if (nodes) {
-        nodes.forEach(node => {
-          node.parent = this
-        })
-      }
-    })
   }
 
   valueOf() {
     return this.value
   }
 
-  /** Must be implemented by node */
   toString() {
     return this.text || this.value
   }
 
-  clone(): Node {
+  clone(): this {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
       value: Array.isArray(this.value) ? [...this.value] : this.value,
       text: this.text
     }, {...this.location}, {...this.options})
-    const childrenKeys = Object.keys(this.children)
-    childrenKeys.forEach(key => {
-      const nodes = this.children[key]
-      if (nodes) {
-        const newCollection: Node[] = []
-        nodes.forEach(node => {
-          newCollection.push(node.clone())
-        })
-        newNode.children[key] = newCollection
-      }
-    })
 
     /** Copy basic node props */
     newNode.parent = this.parent
@@ -115,18 +90,7 @@ export abstract class Node {
     return newNode
   }
 
-  /** Generalized visitor accept method */
-  accept(visitor) {
-    const children = Object.entries(this.children)
-    children.forEach(entry => {
-      const nodes = entry[1]
-      if (nodes) {
-        this.children[entry[0]] = visitor.visit(nodes)
-      }
-    })
-  }
-
-  eval() { return this.clone() }
+  eval(context: any): Node { return this.clone() }
 
   // Returns true if this node represents root of ast imported by reference
   // blocksVisibility() {

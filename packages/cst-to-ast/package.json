@@ -12,7 +12,7 @@
     "build": "npm run clean && npm run compile",
     "clean": "rm -rf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "test": "mocha -r ts-node/register test/**/*.ts"
+    "test": "mocha -r ts-node/register **/__tests__/*.ts"
   },
   "author": "Matthew Dean",
   "license": "(Apache-2.0 or MIT)",

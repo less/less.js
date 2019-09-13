@@ -2,5 +2,6 @@
   "packages": [
     "packages/*"
   ],
+  "npmClient": "npm",
   "version": "4.0.0-dev.1"
 }

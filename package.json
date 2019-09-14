@@ -10,7 +10,8 @@
     "typescript": "^3.6.2"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap"
+    "bootstrap": "lerna bootstrap",
+    "ci": "lerna run ci"
   },
   "bugs": {
     "url": "https://github.com/less/less.js/issues"

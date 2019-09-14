@@ -94,7 +94,10 @@ export class CssStructureParser extends BaseParserClass {
   constructor(
     tokens: TokenType[],
     T: TokenMap,
-    config: IParserConfig = { maxLookahead: 1 },
+    config: IParserConfig = {
+      maxLookahead: 1
+      /*, traceInitPerf:2 */
+    },
     /** An optional instance to further refine rules */
     ruleParser?: CssRuleParser
   ) {
@@ -158,15 +161,13 @@ export class CssStructureParser extends BaseParserClass {
     const rules: CstElement[] = []
     this.MANY(() => {
       const rule = this.SUBRULE(this.rule)
-      this.ACTION(() => rule && rules.push(rule))
+      rule && rules.push(rule)
     })
     let post: spaceToken = {}
     const ws = this.SUBRULE(this._)
-    this.ACTION(() => {
       if (ws) {
         post = { post: [ ws ] }
       }
-    })
     return {
       name: 'primary',
       children: {
@@ -264,21 +265,17 @@ export class CssStructureParser extends BaseParserClass {
     let valueTokens: IToken[]
     const parser = this.ruleParser
 
-    this.ACTION(() => this.CAPTURE())
+    this.CAPTURE()
 
     this.OR([
       {
         /** Grab initial colon (or 2), in case this is a selector list */
         ALT: () => {
           val = this.CONSUME(this.T.Colon)
-          this.ACTION(() => {
-            values.push(val)
-          })
+          values.push(val)
           this.OPTION(() => {
             val = this.CONSUME2(this.T.Colon)
-            this.ACTION(() => {
-              values.push(val)
-            })
+            values.push(val)
           })
         }
       },
@@ -286,21 +283,17 @@ export class CssStructureParser extends BaseParserClass {
         /** Grab curly if it's the first member of an expression */
         ALT: () => {
           val = this.SUBRULE(this.curlyBlock)
-          this.ACTION(() => {
-            values.push(val)
-          })
+          values.push(val)
         }
       },
       {
         ALT: () => {
-          this.ACTION(() => this.CAPTURE())
+          this.CAPTURE()
           this.AT_LEAST_ONE(() => {
             val = this.SUBRULE(this.propertyValue)
-            this.ACTION(() => {
-              values.push(val)
-            })
+            values.push(val)
           })
-          this.ACTION(() => propertyTokens = this.END_CAPTURE())
+          propertyTokens = this.END_CAPTURE()
           ws = this.SUBRULE(this._)
           this.OPTION2(() => {
             colon = this.CONSUME(this.T.Assign)
@@ -310,14 +303,12 @@ export class CssStructureParser extends BaseParserClass {
     ])
     
     /** Consume any remaining values */
-    this.ACTION(() => this.CAPTURE())
+    this.CAPTURE()
     expr = this.SUBRULE(this.expressionList)
     let curly: CstNode, semi: IToken
 
-    this.ACTION(() => {
-      valueTokens = this.END_CAPTURE()
-      expressionTokens = this.END_CAPTURE()
-    })
+    valueTokens = this.END_CAPTURE()
+    expressionTokens = this.END_CAPTURE()
 
     this.OR2([
       { ALT: () => curly = this.SUBRULE2(this.curlyBlock) },
@@ -326,7 +317,6 @@ export class CssStructureParser extends BaseParserClass {
     ])
     if (curly) {
       /** Treat as qualified rule */
-      this.ACTION(() => {
         if (ws) {
           values.push(ws)
         }
@@ -334,9 +324,10 @@ export class CssStructureParser extends BaseParserClass {
           values.push(colon)
         }
         if (values.length > 0) {
-          expr = this._mergeValues(values, expr)
+          this.ACTION(() => {
+            expr = this._mergeValues(values, expr)
+          })
         }
-      })
 
       return {
         name: 'qualifiedRule',
@@ -421,23 +412,17 @@ export class CssStructureParser extends BaseParserClass {
     
     this.OPTION(() => {
       expr = this.SUBRULE(this.expression)
-      this.ACTION(() => {
-        if (expr) {
-          expressions = [ expr ]
-        } else {
-          expressions = []
-        }
-        Comma = []
-      })
+      if (expr) {
+        expressions = [ expr ]
+      } else {
+        expressions = []
+      }
+      Comma = []
       this.MANY(() => {
         const comma = this.CONSUME(this.T.Comma)
-        this.ACTION(() => {
-          Comma.push(comma)
-        })
+        Comma.push(comma)
         expr = this.SUBRULE(this.subExpression)
-        this.ACTION(() => {
-          expressions.push(expr)
-        })
+        expressions.push(expr)
       })
     })
 
@@ -463,21 +448,15 @@ export class CssStructureParser extends BaseParserClass {
     this.OPTION(() => {
       semi = this.CONSUME(this.T.SemiColon)
       isGroup = true
-      this.ACTION(() => {
-        expressionList = [list]
-        SemiColon = [semi]
-      })
+      expressionList = [list]
+      SemiColon = [semi]
       this.MANY(() => {
         list = this.SUBRULE2(this.customExpressionList)
-        this.ACTION(() => {
-          expressionList.push(list)
-          SemiColon = [semi]
-        })
+        expressionList.push(list)
+        SemiColon = [semi]
         this.OPTION2(() => {
           semi = this.CONSUME2(this.T.SemiColon)
-          this.ACTION(() => {
-            SemiColon.push(semi)
-          })
+          SemiColon.push(semi)
         })
       })
     })
@@ -501,23 +480,17 @@ export class CssStructureParser extends BaseParserClass {
 
     this.OPTION(() => {
       expr = this.SUBRULE(this.customExpression)
-      this.ACTION(() => {
-        if (expr) {
-          expressions = [ expr ]
-        } else {
-          expressions = []
-        }
-        Comma = []
-      })
+      if (expr) {
+        expressions = [ expr ]
+      } else {
+        expressions = []
+      }
+      Comma = []
       this.MANY(()=> {
         let comma = this.CONSUME(this.T.Comma)
-        this.ACTION(() => {
-          Comma.push(comma)
-        })
+        Comma.push(comma)
         expr = this.SUBRULE2(this.customExpression)
-        this.ACTION(() => {
-          expressions.push(expr)
-        })
+        expressions.push(expr)
       })
     })
 
@@ -536,13 +509,12 @@ export class CssStructureParser extends BaseParserClass {
    *  An expression contains values and spaces
    */
   expression = this.RULE<CstNode | undefined>('expression', () => {
-    let values: CstElement[]
+    let values: CstElement[] = []
     let val: CstElement
-    this.ACTION(() => values = [])
-  
+
     this.MANY(() => {
       val = this.SUBRULE(this.value)
-      this.ACTION(() => values.push(val))
+      values.push(val)
     })
 
     if (val) {
@@ -558,24 +530,22 @@ export class CssStructureParser extends BaseParserClass {
    * This allows a curly block of rules to be a single value in an expression
    */
   subExpression = this.RULE<CstNode | undefined>('subExpression', () => {
-    let values: CstElement[]
+    let values: CstElement[] = []
     let val: CstElement
-
-    this.ACTION(() => values = [])
 
     this.OPTION(() => {
       val = this.CONSUME(this.T.WS)
-      this.ACTION(() => values.push(val))
+      values.push(val)
     })
 
     this.OPTION2(() => {
       val = this.SUBRULE(this.curlyBlock)
-      this.ACTION(() => values.push(val))
+      values.push(val)
     })
   
     this.MANY(() => {
       val = this.SUBRULE(this.value)
-      this.ACTION(() => values.push(val))
+      values.push(val)
     })
     if (val) {
       return {
@@ -590,40 +560,30 @@ export class CssStructureParser extends BaseParserClass {
    * but note that the declaration is essentially a duplicate of the entire expression. 
    */
   customExpression = this.RULE<CstNode | undefined>('customExpression', () => {
-    let exprValues: CstElement[]
-    let propertyValues: CstElement[]
-    let values: CstElement[]
+    let exprValues: CstElement[] = []
+    let propertyValues: CstElement[] = []
+    let values: CstElement[] = []
 
     let val: CstElement
     let ws: IToken
     let pre: IToken
     let colon: IToken
-  
-    this.ACTION(() => {
-      exprValues = []
-      propertyValues = []
-      values = []
-    })
 
     /** Similar to componentValues, except a propertyvalue is not required */
     pre = this.SUBRULE(this._)
-    this.ACTION(() => pre && values.push(pre))
+    pre && values.push(pre)
 
     this.MANY(() => {
       val = this.SUBRULE(this.propertyValue)
-      this.ACTION(() => {
-        propertyValues.push(val)
-        values.push(val)
-      })
+      propertyValues.push(val)
+      values.push(val)
     })
     ws = this.SUBRULE2(this._)
-    this.ACTION(() => ws && values.push(ws))
+    ws && values.push(ws)
 
     this.OPTION2(() => {
       colon = this.CONSUME(this.T.Assign)
-      this.ACTION(() => {
-        values.push(colon)
-      })
+      values.push(colon)
     })
   
     this.MANY2(() => {
@@ -631,10 +591,8 @@ export class CssStructureParser extends BaseParserClass {
         { ALT: () => this.SUBRULE(this.value) },
         { ALT: () => this.SUBRULE(this.curlyBlock) }
       ])
-      this.ACTION(() => {
-        exprValues.push(value)
-        values.push(value)
-      })
+      exprValues.push(value)
+      values.push(value)
     })
 
     let decl: CstNode
@@ -699,14 +657,12 @@ export class CssStructureParser extends BaseParserClass {
     const L = this.CONSUME(this.T.LCurly)
     const blockBody = this.SUBRULE(this.primary)
 
-    this.ACTION(() => {
-      children = { L: [L], blockBody: [blockBody] }
-    })
+    children = { L: [L], blockBody: [blockBody] }
 
     /** @todo - Add a parsing error if this is missing */
     this.OPTION(() => {
       const R = this.CONSUME(this.T.RCurly)
-      this.ACTION(() => children.R = [R])
+      children.R = [R]
     })
     
     return {

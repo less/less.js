@@ -1,6 +1,6 @@
 import { MathMode, RewriteUrlMode, StrictUnitMode } from './constants'
 
-interface IOptions {
+export interface IOptions {
   // javascriptEnabled: boolean
   
   /* Outputs a makefile import dependency list to stdout. */

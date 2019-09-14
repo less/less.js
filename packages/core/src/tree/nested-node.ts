@@ -1,9 +1,5 @@
 import Node, { ISimpleProps, ILocationInfo, INodeOptions } from './node'
-
-export interface IChildren {
-  [key: string]: Node[]
-}
-export type IProps = ISimpleProps & IChildren
+import { EvalContext } from '../contexts'
 
 /**
  * These nodes have 2 traits: 
@@ -42,7 +38,7 @@ export class NestedNode extends Node {
     })
   }
 
-  clone(): this {
+  clone(context?: EvalContext): this {
     const newNode = super.clone()
     const childrenKeys = Object.keys(this.children)
     childrenKeys.forEach(key => {
@@ -50,7 +46,7 @@ export class NestedNode extends Node {
       if (nodes) {
         const newCollection: Node[] = []
         nodes.forEach(node => {
-          newCollection.push(node.clone())
+          newCollection.push(node.clone(context))
         })
         newNode.children[key] = newCollection
       }

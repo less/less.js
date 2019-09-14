@@ -5,6 +5,7 @@ const _noSpaceCombinators = {
     '|': true
 };
 
+/** @todo remove - elements can just have string combinators */
 class Combinator extends Node {
     constructor(value) {
         super();

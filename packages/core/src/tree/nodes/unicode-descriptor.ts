@@ -1,5 +1,6 @@
 import Node from '../node';
 
+/** @todo - remove */
 class UnicodeDescriptor extends Node {
     constructor(value) {
         super();

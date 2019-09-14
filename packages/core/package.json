@@ -1,5 +1,5 @@
 {
-  "name": "@less/cst-to-ast",
+  "name": "@less/core",
   "version": "4.0.0-dev.1",
   "description": "",
   "main": "dist/index",
@@ -15,7 +15,7 @@
     "test": "mocha -r ts-node/register **/__tests__/*.ts"
   },
   "author": "Matthew Dean",
-  "license": "(Apache-2.0 or MIT)",
+  "license": "Apache-2.0",
   "dependencies": {
   },
   "devDependencies": {

@@ -18,7 +18,7 @@
   "author": "Matthew Dean",
   "license": "(Apache-2.0 or MIT)",
   "dependencies": {
-    "chevrotain": "^6.3.1",
+    "chevrotain": "^6.4.0",
     "xregexp": "^4.2.4"
   },
   "devDependencies": {

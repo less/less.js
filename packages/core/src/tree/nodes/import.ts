@@ -3,7 +3,7 @@ import Media from './media';
 import URL from './url';
 import Quoted from './quoted';
 import Ruleset from './ruleset';
-import Anonymous from './any';
+import Anonymous from './generic';
 import * as utils from '../utils';
 import LessError from '../less-error';
 

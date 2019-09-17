@@ -1,5 +1,5 @@
 import Node from '../node';
-import Call from './call';
+import FunctionCall from './function-call';
 
 /**
  * this.value might contain another variable ref (nested vars)

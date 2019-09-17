@@ -1,11 +1,5 @@
-import Node, { ISimpleProps, ILocationInfo, NodeArray } from '../node'
+import Node, { NodeArray } from '../node'
 import { EvalContext } from '../../contexts'
-
-type IDeclarationProps = ISimpleProps & {
-  name: NodeArray,
-  value: NodeArray,
-  important: NodeArray
-}
 
 /**
  * Will merge props using space or comma separators
@@ -15,15 +9,18 @@ export enum MergeType {
   COMMA
 }
 
-type IDeclarationOptions = {
-  isVariable?: boolean
-  mergeType?: MergeType
-}
-
 class Declaration extends Node {
-  constructor(props: IDeclarationProps, location: ILocationInfo, options: IDeclarationOptions) {
-    super(props, location, options)
+  children: {
+    name: NodeArray
+    value: NodeArray
+    important: NodeArray
   }
+
+  options: {
+    isVariable?: boolean
+    mergeType?: MergeType
+  }
+
 
   eval(context: EvalContext) {
     context.importantScope.push({})

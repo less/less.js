@@ -25,7 +25,7 @@ export class NodeArray<T = Node> extends Array<T> {
           continue
         }
         else {
-          this.splice(i, 0, ...node)
+          this.splice(i, 1, ...node)
           thisLength += nodeLength
           i += nodeLength
           continue
@@ -58,10 +58,15 @@ export type ISimpleProps = {
   text?: string
 }
 
+export interface IChildrenProps {
+  [key: string]: Node[] | NodeArray
+}
+
 export interface IChildren {
   [key: string]: NodeArray
 }
-export type IProps = ISimpleProps & IChildren
+
+export type IProps = ISimpleProps & IChildrenProps
 export interface ILocationInfo extends CstNodeLocation {}
 /**
  * In practice, this will probably be inherited through the prototype chain
@@ -134,11 +139,12 @@ export abstract class Node {
   constructor(props: IProps, location: ILocationInfo, opts: INodeOptions = {}) {
     const { primitive, value, text, ...children } = props
     this.value = this.normalizeValues(value)
-
+    this.children = this.normalizeChildren(children)
+  
     if (this.value.length > 0) {
       children.value = this.value
     }
-    this.children = children
+    
     this.childKeys = Object.keys(children)
     this.setParent()
   
@@ -176,16 +182,32 @@ export abstract class Node {
     })
   }
 
-  protected normalizeValues(values: Node | Node[]) {
+  protected normalizeValues(values: Node | Node[]): NodeArray {
+    let returnValue: NodeArray
     if (!Array.isArray(values)) {
       if (values === undefined) {
         return new NodeArray()
       }
-      values = new NodeArray(values)
+      returnValue = new NodeArray(values)
     } else {
-      values = new NodeArray().concat(values)
+      returnValue = new NodeArray(...values)
     }
-    return <NodeArray>values
+    return returnValue
+  }
+
+  /**
+   * Convert children arrays to NodeArrays
+   */
+  protected normalizeChildren(children: IChildrenProps) {
+    Object.entries(children).forEach(entry => {
+      const nodes = entry[1]
+      if (nodes) {
+        if (!(nodes instanceof NodeArray)) {
+          children[entry[0]] = new NodeArray(...nodes)
+        }
+      }
+    })
+    return <IChildren>children
   }
 
   accept(visitor) {

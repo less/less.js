@@ -1,30 +1,25 @@
-import Node from '../node';
-const _noSpaceCombinators = {
-    '': true,
-    ' ': true,
-    '|': true
-};
+import Node, { IProps, ILocationInfo, INodeOptions } from '../node'
+import WS from './ws'
+import Generic from './generic'
 
-/** @todo remove - elements can just have string combinators */
+/**
+ * A combinator may include comments and/or variant whitespace preceding a selector.
+ * We normalize this in the combinator instance property for equality / indexing
+ */
 class Combinator extends Node {
-    constructor(value) {
-        super();
-
-        if (value === ' ') {
-            this.value = ' ';
-            this.emptyOrWhitespace = true;
-        } else {
-            this.value = value ? value.trim() : '';
-            this.emptyOrWhitespace = this.value === '';
-        }
-    }
-
-    genCSS(context, output) {
-        const spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
-        output.add(spaceOrEmpty + this.value + spaceOrEmpty);
-    }
+  combinator: string = ''
+  constructor(props: IProps, location: ILocationInfo, options: INodeOptions) {
+    super(props, location, options)
+    this.value.forEach(node => {
+      if (node instanceof WS && this.combinator === '') {
+        this.combinator = ' '
+      }
+      if (node instanceof Generic) {
+        this.combinator = node.text
+      }
+    })
+  }
 }
 
-Combinator.prototype.type = 'Combinator';
-
-export default Combinator;
+Combinator.prototype.type = 'Combinator'
+export default Combinator

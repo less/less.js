@@ -1,11 +1,11 @@
 import Node from '../node';
-import Anonymous from './any';
+import Generic from './generic';
 import FunctionCaller from '../functions/function-caller';
 
 //
 // A function call node.
 //
-class Call extends Node {
+class FunctionCall extends Node {
     constructor(name, args, index, currentFileInfo) {
         super();
 
@@ -101,5 +101,5 @@ class Call extends Node {
     }
 }
 
-Call.prototype.type = 'Call';
-export default Call;
+FunctionCall.prototype.type = 'FunctionCall'
+export default FunctionCall

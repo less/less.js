@@ -1,11 +1,13 @@
-import Node, { ILocationInfo, INodeOptions, IProps } from '../node'
+import Node, { NodeArray } from '../node'
 import Declaration from './declaration'
 import Keyword from './keyword'
 import Comment from './comment'
 import Paren from './block'
 import Selector from './selector'
 import Element from './element'
-import Anonymous from './any'
+import Anonymous from './generic'
+import List from './list'
+import { mergeList } from '../util'
 // import contexts from '../contexts';
 // import globalFunctionRegistry from '../functions/function-registry';
 // import defaultFunc from '../functions/default';
@@ -25,7 +27,24 @@ import Anonymous from './any'
  *  Rules also define a new scope object for variables and functions
  */
 class Ruleset extends Node {
+  children: {
+    selectors: NodeArray<List<Selector>>
+    rules: NodeArray
+  }
+
   eval(context) {
+    /**
+     * Selector eval is not like other evals that flatten arrays into the container array
+     * Instead, we use the mergeList utility
+     */
+    const selectors = this.children.selectors
+    if (selectors && selectors.length > 0) {
+      selectors.forEach((sel, i) => {
+        selectors[i] = sel.eval(context)
+      })
+      this.children.selectors = new NodeArray(...(mergeList()))
+    }
+
     let selectors: Node[]
     let selCnt: number
     let selector: Node
@@ -60,16 +79,6 @@ class Ruleset extends Node {
               selector = selectors[i];
               toParseSelectors[i] = selector.toCSS(context);
           }
-          this.parse.parseNode(
-              toParseSelectors.join(','),
-              ["selectors"], 
-              selectors[0].getIndex(), 
-              selectors[0].fileInfo(), 
-              (err, result) => {
-                  if (result) {
-                      selectors = utils.flattenArray(result);
-                  }
-              });
       }
 
       defaultFunc.reset();

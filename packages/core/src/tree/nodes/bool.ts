@@ -1,10 +1,10 @@
-import Node, { IChildren, ILocationInfo } from '../node'
+import Node, { IChildrenProps, ILocationInfo } from '../node'
 
 type IBooleanProps = {
   /** How this keyword is represented in text e.g. 'True' */
   text: string
   primitive: boolean
-} & IChildren
+} & IChildrenProps
 
 /**
  * This is a boolean keyword, which can be evaluated as true/false

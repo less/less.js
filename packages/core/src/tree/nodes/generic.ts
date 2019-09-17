@@ -1,4 +1,4 @@
-import Node, { ILocationInfo, IProps } from '../node'
+import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
 
 type IGenericProps = string | IProps
 /**
@@ -8,11 +8,11 @@ type IGenericProps = string | IProps
  * Renamed from 'Anonymous'
  */
 class Generic extends Node {
-  constructor(props: IGenericProps, location: ILocationInfo) {
+  constructor(props: IGenericProps, options?: INodeOptions, location?: ILocationInfo) {
     if (props.constructor === String) {
       props = <IProps>{ text: <string>props }
     }
-    super(<IProps>props, location)
+    super(<IProps>props, options, location)
   }
 }
 Generic.prototype.type = 'Generic'

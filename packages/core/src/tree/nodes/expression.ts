@@ -1,4 +1,4 @@
-import Node, { ISimpleProps, ILocationInfo, IRootOptions } from '../node'
+import Node from '../node'
 import Block from './block'
 import Comment from './comment'
 import Dimension from './dimension'
@@ -49,7 +49,7 @@ class Expression extends Node {
     }
     if (inBlock && blockInOp && !mathOn && !doubleParen 
       && (!(returnValue instanceof Dimension))) {
-      returnValue = new Block(returnValue, this.location)
+      returnValue = new Block(returnValue, {}, this.location)
     }
     return returnValue
   }

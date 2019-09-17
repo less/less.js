@@ -8,8 +8,8 @@ import Generic from './generic'
  */
 class Combinator extends Node {
   combinator: string = ''
-  constructor(props: IProps, location: ILocationInfo, options: INodeOptions) {
-    super(props, location, options)
+  constructor(props: IProps, options: INodeOptions = {}, location?: ILocationInfo) {
+    super(props, options, location)
     this.value.forEach(node => {
       if (node instanceof WS && this.combinator === '') {
         this.combinator = ' '

@@ -1,4 +1,5 @@
 import Node, { NodeArray } from '../node'
+import Generic from './generic'
 import { EvalContext } from '../../contexts'
 
 /**
@@ -37,7 +38,7 @@ class Declaration extends Node {
 
   makeImportant() {
     const decl = this.clone()
-    decl.children.important[0].text = '!important'
+    decl.children.important = new NodeArray(new Generic('!important', this.location))
     return decl
   }
 }

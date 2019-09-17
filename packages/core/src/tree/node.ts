@@ -5,6 +5,9 @@ import { EvalContext } from '../contexts'
 
 /**
  * Extends a regular array with two convenience methods
+ * 
+ * @todo - this looks like it'll be a headache and should just be plain arrays,
+ * mostly because a number of array methods return new arrays, not new NodeArrays
  */
 export class NodeArray<T = Node> extends Array<T> {
   /**
@@ -136,7 +139,7 @@ export abstract class Node {
   type: string
   evaluated: boolean
 
-  constructor(props: IProps, location: ILocationInfo, opts: INodeOptions = {}) {
+  constructor(props: IProps, opts: INodeOptions = {}, location?: ILocationInfo) {
     const { primitive, value, text, ...children } = props
     this.value = this.normalizeValues(value)
     this.children = this.normalizeChildren(children)
@@ -244,7 +247,7 @@ export abstract class Node {
       primitive: this.primitive,
       text: this.text
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
-    }, this.location, {...this.options})
+    }, {...this.options}, this.location)
 
     newNode.childKeys = [...this.childKeys]
     this.processChildren(newNode, (node: Node) => node.clone(context))

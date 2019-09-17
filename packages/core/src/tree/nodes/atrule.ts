@@ -1,10 +1,10 @@
-import Node, { ISimpleProps, ILocationInfo, NodeArray, INodeOptions } from '../node'
+import Node, { IProps, ILocationInfo, NodeArray, INodeOptions } from '../node'
 import Selector from './selector'
 import Ruleset from './ruleset'
 import Generic from './generic'
 
-type IAtRuleProps = ISimpleProps & {
-  name: NodeArray | Node[],
+type IAtRuleProps = {
+  name: string,
   /** Prelude */
   value?: NodeArray | Node[],
   /** Optional at-rule */
@@ -12,14 +12,17 @@ type IAtRuleProps = ISimpleProps & {
 }
 
 class AtRule extends Node {
-  constructor(props: IAtRuleProps, location: ILocationInfo, options: INodeOptions) {
+  name: string
+  constructor(props: IAtRuleProps, options: INodeOptions, location: ILocationInfo) {
+    const { name, ...rest } = props
     let { rules } = props
     if (rules && rules.length !== 1) {
       rules = [
         new Ruleset()
       ]
     }
-    super(props, location, options)
+    super(<IProps>rest, options, location)
+    this.name = name
 
       let i;
 

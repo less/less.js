@@ -1,6 +1,6 @@
 import Node from '../node';
-import Variable from './variable';
-import Property from './property';
+import Variable from './variable-ref';
+import Property from './property-ref';
 
 
 class Quoted extends Node {

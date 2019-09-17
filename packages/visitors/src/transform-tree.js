@@ -1,45 +1,16 @@
-import contexts from './contexts';
-import visitor from './visitors';
-import tree from './tree';
+import contexts from './contexts'
+import visitor from './visitors'
+import tree from './tree'
 
 export default (root, options = {}) => {
-    let evaldRoot;
-    let variables = options.variables;
+    let evaldRoot
     const evalEnv = new contexts.Eval(options);
-
-    //
-    // Allows setting variables with a hash, so:
-    //
-    //   `{ color: new tree.Color('#f01') }` will become:
-    //
-    //   new tree.Declaration('@color',
-    //     new tree.Value([
-    //       new tree.Expression([
-    //         new tree.Color('#f01')
-    //       ])
-    //     ])
-    //   )
-    //
-    if (typeof variables === 'object' && !Array.isArray(variables)) {
-        variables = Object.keys(variables).map(k => {
-            let value = variables[k];
-
-            if (!(value instanceof tree.Value)) {
-                if (!(value instanceof tree.Expression)) {
-                    value = new tree.Expression([value]);
-                }
-                value = new tree.Value([value]);
-            }
-            return new tree.Declaration(`@${k}`, value, false, null, 0);
-        });
-        evalEnv.frames = [new tree.Ruleset(null, variables)];
-    }
 
     const visitors = [
         new visitor.JoinSelectorVisitor(),
         new visitor.MarkVisibleSelectorsVisitor(true),
         new visitor.ExtendVisitor(),
-        new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
+        new visitor.ToCSSVisitor()
     ];
 
     const preEvalVisitors = [];

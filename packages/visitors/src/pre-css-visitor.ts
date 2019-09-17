@@ -1,7 +1,7 @@
-import tree from '../tree';
-import Visitor from './visitor';
+import tree from '../tree'
+import Visitor from '../../../packages/core/src/visitor'
 
-class CSSVisitorUtils {
+class CSSVisitorUtils extends Visitor {
     constructor(context) {
         this._visitor = new Visitor(this);
         this._context = context;
@@ -78,13 +78,13 @@ class CSSVisitorUtils {
     }
 }
 
-const ToCSSVisitor = function(context) {
-    this._visitor = new Visitor(this);
+const PreCSSVisitor = function(context) {
+    this._visitor = new Visitor(this)
     this._context = context;
     this.utils = new CSSVisitorUtils(context);
 };
 
-ToCSSVisitor.prototype = {
+PreCSSVisitor.prototype = {
     isReplacing: true,
     run: function (root) {
         return this._visitor.visit(root);
@@ -175,21 +175,6 @@ ToCSSVisitor.prototype = {
     visitAtRuleWithoutBody: function(atRuleNode, visitArgs) {
         if (atRuleNode.blocksVisibility()) {
             return;
-        }
-
-        if (atRuleNode.name === '@charset') {
-            // Only output the debug info together with subsequent @charset definitions
-            // a comment (or @media statement) before the actual @charset atrule would
-            // be considered illegal css as it has to be on the first line
-            if (this.charset) {
-                if (atRuleNode.debugInfo) {
-                    const comment = new tree.Comment(`/* ${atRuleNode.toCSS(this._context).replace(/\n/g, '')} */\n`);
-                    comment.debugInfo = atRuleNode.debugInfo;
-                    return this._visitor.visit(comment);
-                }
-                return;
-            }
-            this.charset = true;
         }
 
         return atRuleNode;

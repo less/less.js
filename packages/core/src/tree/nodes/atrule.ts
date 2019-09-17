@@ -1,7 +1,7 @@
 import Node from '../node';
 import Selector from './selector';
 import Ruleset from './ruleset';
-import Anonymous from './anonymous';
+import Anonymous from './any';
 
 class AtRule extends Node {
     constructor(

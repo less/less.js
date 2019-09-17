@@ -1,5 +1,5 @@
 import Node from '../node';
-import Paren from './paren';
+import Paren from './block';
 import Combinator from './combinator';
 
 class Element extends Node {

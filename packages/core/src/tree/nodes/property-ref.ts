@@ -1,7 +1,11 @@
 import Node from '../node';
 import Declaration from './declaration';
 
-class Property extends Node {
+/**
+ * @todo - This is actually a `$foo` property reference
+ *         It can be improved a lot in how it's merged with other props
+*/
+class PropertyRef extends Node {
     constructor(name, index, currentFileInfo) {
         super();
 
@@ -13,7 +17,8 @@ class Property extends Node {
     eval(context) {
         let property;
         const name = this.name;
-        // TODO: shorten this reference
+
+        /** @todo - property merging should be moved to the rules */
         const mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
 
         if (this.evaluating) {

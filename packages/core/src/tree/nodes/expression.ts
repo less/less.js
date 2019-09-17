@@ -1,5 +1,5 @@
 import Node, { ISimpleProps, ILocationInfo, IRootOptions } from '../node'
-import Paren from './paren'
+import Block from './block'
 import Comment from './comment'
 import Dimension from './dimension'
 import { EvalContext } from '../../contexts'
@@ -15,9 +15,7 @@ type IExpressionOptions = {
  */
 class Expression extends Node {
   options: IExpressionOptions
-  constructor(props: ISimpleProps, location: ILocationInfo, opts: IExpressionOptions) {
-    super(props, location, opts)
-  }
+
   eval(context: EvalContext) {
     const { inBlock, blockInOp } = this.options
     let returnValue: any
@@ -51,7 +49,7 @@ class Expression extends Node {
     }
     if (inBlock && blockInOp && !mathOn && !doubleParen 
       && (!(returnValue instanceof Dimension))) {
-      returnValue = new Paren(returnValue)
+      returnValue = new Block(returnValue, this.location)
     }
     return returnValue
   }

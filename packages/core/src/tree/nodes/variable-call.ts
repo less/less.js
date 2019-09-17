@@ -1,5 +1,5 @@
 import Node from '../node';
-import Variable from './variable';
+import Variable from './variable-ref';
 import Ruleset from './ruleset';
 import DetachedRuleset from './detached-ruleset';
 import LessError from '../less-error';

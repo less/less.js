@@ -1,4 +1,4 @@
-import Node from '../node';
+import Node, { NodeArray } from '../node';
 import unitConversions from '../data/unit-conversions';
 import Color from './color'
 import { fround } from '../util'
@@ -6,12 +6,10 @@ import { fround } from '../util'
 /**
  * A number with a unit
  * 
- * Dimension value is a duple
+ * e.g. props = { primitive: 1, value: [<Number>], unit: [<Any>] }
  */
 class Dimension extends Node {
-  value: [number, string]
-
-  eval() { return this }
+  primitive: number
 
   genCSS(context, output) {
     if ((context && context.strictUnits) && !this.unit.isSingular()) {

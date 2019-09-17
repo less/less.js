@@ -1,5 +1,5 @@
 import Node from '../node';
-import Anonymous from './anonymous';
+import Anonymous from './any';
 import FunctionCaller from '../functions/function-caller';
 
 //

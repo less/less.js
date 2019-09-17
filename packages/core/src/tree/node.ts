@@ -3,35 +3,66 @@ import { RewriteUrlMode } from '../constants'
 import { IOptions } from '../options'
 import { EvalContext } from '../contexts'
 
+/**
+ * Extends a regular array with two convenience methods
+ */
+export class NodeArray<T = Node> extends Array<T> {
+  /**
+   * Modify the Node array in place
+   * 
+   * @param processFunc e.g. (node: Node) => node.eval(context)
+   */
+  _processValues(processFunc: Function): this {
+    let thisLength = this.length
+    for (let i = 0; i < thisLength; i++) {
+      const item = this[i]
+      const node = processFunc(item)
+      if (Array.isArray(node)) {
+        const nodeLength = node.length
+        if (node.length === 0) {
+          this.splice(i, 1)
+          i--
+          continue
+        }
+        else {
+          this.splice(i, 0, ...node)
+          thisLength += nodeLength
+          i += nodeLength
+          continue
+        }
+      }
+      if (node === undefined || node === null || node === false) {
+        this.splice(i, 1)
+        i--
+        continue
+      }
+      this[i] = node
+    }
+    return this
+  }
 
-/** @todo type context */
-type valueItem = Node | ((string | number | boolean) & {
-  eval(context: EvalContext): Node
-})
+  eval(context: EvalContext) {
+    this._processValues((node: Node) => node.eval(context))
+    return this
+  }
 
-type simpleValue = string | number | boolean | Node
+  toString() {
+    return this.join('')
+  }
+}
 
 export type ISimpleProps = {
   /** Primitive value */
-  value?: simpleValue | simpleValue[]
+  value?: Node | Node[]
+  primitive?: number | boolean | number[]
   text?: string
 }
 
 export interface IChildren {
-  [key: string]: valueItem[]
+  [key: string]: NodeArray
 }
 export type IProps = ISimpleProps & IChildren
-
-export type IRootOptions = {
-  isFileRoot?: boolean
-  /** Only one node, the root node, should pass this in */
-  options?: IOptions
-}
-
-export type INodeOptions = IRootOptions & {
-  [key: string]: boolean
-}
-
+export interface ILocationInfo extends CstNodeLocation {}
 /**
  * In practice, this will probably be inherited through the prototype chain
  * during creation.
@@ -39,18 +70,21 @@ export type INodeOptions = IRootOptions & {
  * So the "own properties" should be CstNodeLocation info, but should do an
  * Object.create() from the location info of the stylesheet root location info
  */
-export interface ILocationInfo extends CstNodeLocation {
-  /** @todo - this should be on this.root */
+export interface IFileInfo {
   filename: string
-  /**
-   * @todo - why is this copied here?
-   * Should we just copy options into the AST?
-   */
-  rewriteUrls: RewriteUrlMode  // context.rewriteUrls
-  rootpath: string  // context.rootpath
   currentDirectory: string
   entryPath: string
-  rootFilename: string
+}
+
+export type IRootOptions = {
+  /** Passed in for every file root node */
+  fileInfo?: IFileInfo
+  /** Only one node, the root node, should pass this in */
+  options?: IOptions
+}
+
+export type INodeOptions = IRootOptions & {
+  [key: string]: boolean | number
 }
 
 export abstract class Node {
@@ -64,13 +98,17 @@ export abstract class Node {
    * 
    * In short, the value should never contain Nodes because it is not visited
    */
-  value: valueItem[]
+  value: NodeArray
   children: IChildren
   childKeys: string[]
 
   /** Used if string does not equal normalized primitive */
+  primitive: number | boolean | number[]
   text: string
+
   options: INodeOptions
+  evalOptions: IOptions
+  fileInfo: IFileInfo
 
   /**
    * This will be the start values from the first token and the end
@@ -79,6 +117,9 @@ export abstract class Node {
   location: ILocationInfo
 
   parent: Node
+  root: Node
+  fileRoot: Node
+
   visibilityBlocks: number
   
   // false - the node must not be visible
@@ -87,13 +128,11 @@ export abstract class Node {
   // renamed from nodeVisible
   isVisible: boolean
 
-  isRoot: boolean
-  root: Node
   type: string
   evaluated: boolean
 
   constructor(props: IProps, location: ILocationInfo, opts: INodeOptions = {}) {
-    const { text, value, ...children } = props
+    const { primitive, value, text, ...children } = props
     this.value = this.normalizeValues(value)
 
     if (this.value.length > 0) {
@@ -103,14 +142,22 @@ export abstract class Node {
     this.childKeys = Object.keys(children)
     this.setParent()
   
+    this.primitive = primitive
     this.text = text
     this.location = location
   
-    const { isFileRoot, options, ...rest } = opts
+    const { fileInfo, options, ...rest } = opts
     this.options = rest
+    if (options) {
+      this.root = this
+      this.evalOptions = options
+    }
+    if (fileInfo) {
+      this.fileRoot = this
+      this.fileInfo = fileInfo
+    }
 
     this.evaluated = false
-    this.isRoot = false
     this.visibilityBlocks = 0
   }
 
@@ -118,42 +165,51 @@ export abstract class Node {
     this.childKeys.forEach(key => {
       const nodes = this.children[key]
       nodes.forEach(node => {
-        if (node instanceof Node) {
-          node.parent = this
+        node.parent = this
+        if (!node.fileRoot) {
+          node.fileRoot = this.fileRoot
+        }
+        if (!node.root) {
+          node.root = this.root
         }
       })
     })
   }
 
-  protected primitive(value: any): valueItem {
-    return Object.assign(value, {
-      eval(context?: EvalContext) {
-        return value.valueOf()
-      }
-    })
-  }
-
-  protected normalizeValues(values: simpleValue | simpleValue[]) {
+  protected normalizeValues(values: Node | Node[]) {
     if (!Array.isArray(values)) {
       if (values === undefined) {
-        return []
+        return new NodeArray()
       }
-      values = [values]
+      values = new NodeArray(values)
+    } else {
+      values = new NodeArray().concat(values)
     }
-    values.forEach((value, i) => {
-      if (!(value instanceof Node)) {
-        values[i] = this.primitive(value)
-      }
-    })
-    return <valueItem[]>values
+    return <NodeArray>values
   }
 
   accept(visitor) {
     this.processChildren(this, (node: Node) => visitor.visit(node))
   }
 
+  valueOf() {
+    if (this.primitive !== undefined) {
+      return this.primitive
+    }
+    if (this.text !== undefined) {
+      return this.text
+    }
+    return this.value.toString()
+  }
+
   toString() {
-    return this.text || this.value.join('')
+    if (this.text !== undefined) {
+      return this.text
+    }
+    if (this.primitive !== undefined) {
+      return this.primitive.toString()
+    }
+    return this.value.toString()
   }
 
   /**
@@ -163,11 +219,13 @@ export abstract class Node {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
       value: [...this.value],
+      primitive: this.primitive,
       text: this.text
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
     }, this.location, {...this.options})
 
-    this.processChildren(newNode, (node: Node) => node.clone(context), context)
+    newNode.childKeys = [...this.childKeys]
+    this.processChildren(newNode, (node: Node) => node.clone(context))
     if (context) {
       newNode.evaluated = true
     } else {
@@ -175,37 +233,25 @@ export abstract class Node {
     }
     /** Copy basic node props */
     newNode.parent = this.parent
+    newNode.root = this.root
+    newNode.fileRoot = this.fileRoot
+    newNode.fileInfo = this.fileInfo
+    newNode.evalOptions = this.evalOptions
     newNode.visibilityBlocks = this.visibilityBlocks
     newNode.isVisible = this.isVisible
-    newNode.isRoot = this.isRoot
-    newNode.root = this.root
     newNode.type = this.type
 
     return newNode
   }
 
-  private processChildren(node: Node, processFunc: Function, context?: EvalContext) {
+  private processChildren(node: Node, processFunc: Function) {
     this.childKeys.forEach(key => {
-      const nodes = this.children[key]
+      let nodes = this.children[key]
       if (nodes) {
-        let newCollection: valueItem[] = []
-        nodes.forEach(node => {
-          let returnNode = node
-          if (node instanceof Node) {
-            returnNode = processFunc(node)
-            if (Array.isArray(returnNode)) {
-              newCollection = newCollection.concat(returnNode)
-            }
-            if (returnNode === undefined || returnNode === null || returnNode === false) {
-              return
-            }
-          }
-          newCollection.push(returnNode)
-        })
-        node.children[key] = newCollection
-        if (key === 'value') {
-          node.value = newCollection
+        if (node !== this) {
+          nodes = new NodeArray(...nodes)
         }
+        node.children[key] = nodes._processValues(processFunc)
       }
     })
   }
@@ -216,14 +262,14 @@ export abstract class Node {
    */
   eval(context?: EvalContext): any {
     if (!this.evaluated) {
-      this.processChildren(this, (node: Node) => node.eval(context), context)
+      this.processChildren(this, (node: Node) => node.eval(context))
     }
     this.evaluated = true
     return this
   }
 
   /** Output is a kind of string builder? */
-  genCSS(context: EvalContext, output: any) {
+  genCSS(output: any, context?: EvalContext) {
     output.add(this.toString())
   }
 

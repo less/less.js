@@ -1,9 +1,9 @@
 import Node from '../node';
 import colors from '../data/colors';
 
-//
-// RGB Colors - #ff0014, #eee
-//
+/**
+ * Can be a string?
+ */
 class Color extends Node {
     constructor(rgb, a, originalForm) {
         super();

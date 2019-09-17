@@ -26,11 +26,13 @@ export class CssRuleParser extends EmbeddedActionsParser {
     }
   }
 
-  _ = this.RULE<IToken | undefined>('_', () => {
-    let token: IToken
-    this.OPTION(() => token = this.CONSUME(this.T.WS))
-    return token
-  })
+  WS(idx:number = 0) {
+    // +10 to avoid conflicts with other OPTION in the calling rule.
+    return this.option(idx+10, () => {
+      const  wsToken = this.consume(idx, this.T.WS)
+      return wsToken
+    })
+  }
 
   /** A property is a collection of tokens in case we need to process segments */
   property = this.RULE<IToken[]>('property', () => {
@@ -54,7 +56,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
   valueExpression = this.RULE<CstElement[]>('valueExpression', () => {
     let values: CstElement[] = []
     let val: CstElement
-    val = this.SUBRULE(this._)
+    val = this.WS()
     this.ACTION(() => val && values.push(val))
 
     this.OPTION(() => {
@@ -74,7 +76,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
     const lhs = this.SUBRULE(this.multiplication)
     this.MANY(() => {
       op = this.CONSUME(this.T.AdditionOperator)
-      ws = this.SUBRULE2(this._)
+      ws = this.WS()
       val = this.SUBRULE2(this.multiplication)
       this.ACTION(() => {
         rhs.push({
@@ -87,7 +89,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
         })
       })
     })
-    const post = this.SUBRULE3(this._)
+    const post = this.WS(1)
     if (rhs && rhs.length > 0) {
       return {
         name: 'addition',
@@ -111,7 +113,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
     const lhs = this.SUBRULE(this.compare)
     this.MANY(() => {
       op = this.CONSUME(this.T.MultiplicationOperator)
-      ws = this.SUBRULE2(this._)
+      ws = this.WS()
       val = this.SUBRULE2(this.compare)
       this.ACTION(() => {
         rhs.push({
@@ -124,7 +126,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
         })
       })
     })
-    const post = this.SUBRULE3(this._)
+    const post = this.WS(1)
     if (rhs && rhs.length > 0) {
       return {
         name: 'multiplication',
@@ -148,7 +150,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
     const lhs = this.SUBRULE(this.value)
     this.MANY(() => {
       op = this.CONSUME(this.T.CompareOperator)
-      ws = this.SUBRULE2(this._)
+      ws = this.WS()
       val = this.SUBRULE2(this.value)
       this.ACTION(() => {
         rhs.push({
@@ -161,7 +163,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
         })
       })
     })
-    const post = this.SUBRULE3(this._)
+    const post = this.WS(2)
     if (rhs && rhs.length > 0) {
       return {
         name: 'compare',
@@ -204,7 +206,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
   // compoundSelectorList = this.RULE('compoundSelectorList', () => {
   //   this.SUBRULE(this.compoundSelector)
   //   this.MANY(() => {
-  //     this.SUBRULE(this._)
+  //     this.WS()
   //     this.CONSUME(this.T.Comma)
   //     this.SUBRULE2(this._)
   //     this.SUBRULE2(this.compoundSelector)
@@ -220,7 +222,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
   //     this.OPTION(() => this.CONSUME(this.T.WS, { LABEL: 'ws' }))
   //     this.OPTION2(() => {
   //       this.SUBRULE(this.selectorCombinator)
-  //       this.SUBRULE(this._)
+  //       this.WS()
   //     })
   //     this.SUBRULE(this.compoundSelector)
   //   })
@@ -309,7 +311,7 @@ export class CssRuleParser extends EmbeddedActionsParser {
   //     {
   //       ALT: () => {
   //         this.CONSUME(this.T.PseudoNotNthFunc)
-  //         this.SUBRULE(this._)
+  //         this.WS()
   //         this.SUBRULE(this.compoundSelectorList)
   //         this.SUBRULE2(this._)
   //         this.CONSUME(this.T.RParen)

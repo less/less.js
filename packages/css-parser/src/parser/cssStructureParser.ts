@@ -150,12 +150,20 @@ export class CssStructureParser extends BaseParserClass {
     // })
   }
 
-  /** Optional whitespace */
-  _ = this.RULE<IToken | undefined>('_', () => {
-    let token: IToken
-    this.OPTION(() => token = this.CONSUME(this.T.WS))
-    return token
-  })
+
+  WS(idx:number = 0) {
+    // +10 to avoid conflicts with other OPTION in the calling rule.
+    return this.option(idx+10, () => {
+      const  wsToken = this.consume(idx, this.T.WS)
+      return wsToken
+    })
+  }
+  // /** Optional whitespace */
+  // _ = this.RULE<IToken | undefined>('_', () => {
+  //   let token: IToken
+  //   this.OPTION(() => token = this.CONSUME(this.T.WS))
+  //   return token
+  // })
 
   primary = this.RULE<CstNode>('primary', () => {
     const rules: CstElement[] = []
@@ -164,7 +172,7 @@ export class CssStructureParser extends BaseParserClass {
       rule && rules.push(rule)
     })
     let post: spaceToken = {}
-    const ws = this.SUBRULE(this._)
+    const ws = this.WS()
       if (ws) {
         post = { post: [ ws ] }
       }
@@ -187,7 +195,7 @@ export class CssStructureParser extends BaseParserClass {
   })
 
   rule = this.RULE<CstNode | undefined>('rule', () => {
-    const ws = this.SUBRULE(this._)
+    const ws = this.WS()
     const rule: CstNode = this.OR([
       { ALT: () => this.SUBRULE(this.atRule) },
       { ALT: () => this.SUBRULE(this.componentValues) },
@@ -294,7 +302,7 @@ export class CssStructureParser extends BaseParserClass {
             values.push(val)
           })
           propertyTokens = this.END_CAPTURE()
-          ws = this.SUBRULE(this._)
+          ws = this.WS()
           this.OPTION2(() => {
             colon = this.CONSUME(this.T.Assign)
           })
@@ -383,7 +391,7 @@ export class CssStructureParser extends BaseParserClass {
    */
   customPropertyRule = this.RULE<CstNode>('customPropertyRule', () => {
     const name = this.CONSUME(this.T.CustomProperty)
-    const ws = this.SUBRULE(this._)
+    const ws = this.WS()
     let colon: IToken = this.CONSUME(this.T.Assign)
     
     const value = this.SUBRULE(this.customExpressionList)
@@ -570,7 +578,7 @@ export class CssStructureParser extends BaseParserClass {
     let colon: IToken
 
     /** Similar to componentValues, except a propertyvalue is not required */
-    pre = this.SUBRULE(this._)
+    pre = this.WS()
     pre && values.push(pre)
 
     this.MANY(() => {
@@ -578,7 +586,7 @@ export class CssStructureParser extends BaseParserClass {
       propertyValues.push(val)
       values.push(val)
     })
-    ws = this.SUBRULE2(this._)
+    ws = this.WS(1)
     ws && values.push(ws)
 
     this.OPTION2(() => {

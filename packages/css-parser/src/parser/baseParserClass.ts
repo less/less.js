@@ -36,6 +36,7 @@ export class BaseParserClass extends EmbeddedActionsParser {
     if (!this.CAPTURING) {
       return token
     }
+    // TODO: use start/end indices from token vector instead
     this.CAPTURED_TOKENS.forEach(groupArr => {
       groupArr.push(token)
     })

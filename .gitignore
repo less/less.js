@@ -7,6 +7,10 @@
 *.iml
 *.sublime-*
 
+dist/
+# the browser dist is pulled from git?
+!packages/less/dist
+
 # npm
 node_modules/
 npm-debug.log

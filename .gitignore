@@ -29,3 +29,7 @@ test/less-bom
 
 # lerna
 lerna-debug.log
+
+# dev artifacts
+dist
+coverage

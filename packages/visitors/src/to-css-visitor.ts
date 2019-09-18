@@ -19,4 +19,3 @@ class ToCssVisitor {
       this.unit.genCSS(context, output);
     }
   }
-}

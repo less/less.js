@@ -1,7 +1,5 @@
-import { ICstVisitor, TokenType, IToken, IRecognitionException } from 'chevrotain'
+import { ICstVisitor, IToken, IRecognitionException } from 'chevrotain'
 import { CssRuleParser } from './cssRuleParser'
-import { CstNodeTokenVector } from './cssStructureParser'
-import { TokenMap } from '../util'
 
 export interface CstVisitorInstance {
   new (...args: any[]): ICstVisitor<any, any>
@@ -46,6 +44,7 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
         parser.input = this.lexedTokens.slice(start, expressionEnd)
         
         /** Try parsing values as selectors */
+        // @ts-ignore
         const selectors = parser.compoundSelectorList()
         if (selectors) {
           ctx[selectors.name] = selectors
@@ -80,6 +79,7 @@ export const CssStructureVisitor = (baseConstructor: CstVisitorInstance) => {
 
         if (parser.errors.length !== 0) {
           /** Parse as a generic list of values & curly blocks */
+          // @ts-ignore
           const node = parser.customExpressionList()
           if (node) {
             ctx.unknownRule = undefined

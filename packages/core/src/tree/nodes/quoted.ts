@@ -2,20 +2,23 @@ import Node from '../node';
 import Variable from './variable-ref';
 import Property from './property-ref';
 
-
+/**
+ * There's nothing special about a quoted node, other than
+ * the first and last member are quote marks
+ */
 class Quoted extends Node {
-    constructor(str, content, escaped, index, currentFileInfo) {
-        super();
+  constructor(str, content, escaped, index, currentFileInfo) {
+    super();
 
-        this.escaped = (escaped == null) ? true : escaped;
-        this.value = content || '';
-        this.quote = str.charAt(0);
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.variableRegex = /@\{([\w-]+)\}/g;
-        this.propRegex = /\$\{([\w-]+)\}/g;
-        this.allowRoot = escaped;
-    }
+    this.escaped = (escaped == null) ? true : escaped;
+    this.value = content || '';
+    this.quote = str.charAt(0);
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.variableRegex = /@\{([\w-]+)\}/g;
+    this.propRegex = /\$\{([\w-]+)\}/g;
+    this.allowRoot = escaped;
+  }
 
     genCSS(context, output) {
         if (!this.escaped) {

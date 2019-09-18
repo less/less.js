@@ -1,4 +1,4 @@
-import Node, { NodeArray } from '../node'
+import Node from '../node'
 import Declaration from './declaration'
 import Keyword from './keyword'
 import Comment from './comment'
@@ -28,8 +28,8 @@ import { mergeList } from '../util'
  */
 class Ruleset extends Node {
   children: {
-    selectors: NodeArray<List<Selector>>
-    rules: NodeArray
+    selectors: [List<Selector>]
+    rules: Node[]
   }
 
   eval(context) {
@@ -45,7 +45,6 @@ class Ruleset extends Node {
       this.children.selectors = new NodeArray(...(mergeList()))
     }
 
-    let selectors: Node[]
     let selCnt: number
     let selector: Node
     let i: number

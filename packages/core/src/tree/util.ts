@@ -46,14 +46,14 @@ export const subtract = (a: number, b: number) => a - b
 export const multiply = (a: number, b: number) => a * b
 export const divide = (a: number, b: number) => a / b
 
-// export const operate = (op: string, a: number, b: number) => {
-//   switch (op) {
-//     case '+': return a + b
-//     case '-': return a - b
-//     case '*': return a * b
-//     case '/': return a / b
-//   }
-// }
+export const operate = (op: string, a: number, b: number) => {
+  switch (op) {
+    case '+': return a + b
+    case '-': return a - b
+    case '*': return a * b
+    case '/': return a / b
+  }
+}
 
 export const fround = (context, value: number) => {
   const precision = context && context.numPrecision;

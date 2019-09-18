@@ -1,70 +1,57 @@
-import Node, { NodeArray } from '../node';
+import Node from '../node';
 import unitConversions from '../data/unit-conversions';
 import Color from './color'
-import { fround } from '../util'
+import Numeric from './numeric'
+import Value from './value'
+import { fround, operate } from '../util'
 
 /**
  * A number with a unit
  * 
- * e.g. props = { primitive: 1, value: [<Number>], unit: [<Any>] }
+ * e.g. props = { value: 1, values: [<Number>, <Value>] }
  */
 class Dimension extends Node {
-  primitive: number
-
-  genCSS(context, output) {
-    if ((context && context.strictUnits) && !this.unit.isSingular()) {
-      throw new Error(`Multiple units in dimension. Correct the units or use the unit function. Bad unit: ${this.unit.toString()}`);
-    }
-
-    const value = fround(context, this.value[0])
-    let strValue = String(value);
-
-    if (value !== 0 && value < 0.000001 && value > -0.000001) {
-        // would be output 1e-6 etc.
-        strValue = value.toFixed(20).replace(/0+$/, '');
-    }
-
-    output.add(strValue);
-    this.unit.genCSS(context, output);
-  }
+  value: number
+  /** Second value is the unit */
+  values: [Numeric, Value]
 
   // In an operation between two Dimensions,
   // we default to the first Dimension's unit,
   // so `1px + 2` will yield `3px`.
-  operate(context, op, other) {
-      /* jshint noempty:false */
-      let value = this._operate(context, op, this.value, other.value);
+  operate(context, op: string, other: Node) {
+    const unit = this.values[1].clone()
+    if ()
+    const result = operate(op, this.values[0].value, other.value)
+    // let value = this._operate(context, op, this.value, other.value);
 
-      let unit = this.unit.clone();
+    if (op === '+' || op === '-') {
+        if (unit.numerator.length === 0 && unit.denominator.length === 0) {
+            unit = other.unit.clone();
+            if (this.unit.backupUnit) {
+                unit.backupUnit = this.unit.backupUnit;
+            }
+        } else if (other.unit.numerator.length === 0 && unit.denominator.length === 0) {
+            // do nothing
+        } else {
+            other = other.convertTo(this.unit.usedUnits());
 
-      if (op === '+' || op === '-') {
-          if (unit.numerator.length === 0 && unit.denominator.length === 0) {
-              unit = other.unit.clone();
-              if (this.unit.backupUnit) {
-                  unit.backupUnit = this.unit.backupUnit;
-              }
-          } else if (other.unit.numerator.length === 0 && unit.denominator.length === 0) {
-              // do nothing
-          } else {
-              other = other.convertTo(this.unit.usedUnits());
+            if (context.strictUnits && other.unit.toString() !== unit.toString()) {
+                throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
+                    `Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
+            }
 
-              if (context.strictUnits && other.unit.toString() !== unit.toString()) {
-                  throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
-                      `Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
-              }
-
-              value = this._operate(context, op, this.value, other.value);
-          }
-      } else if (op === '*') {
-          unit.numerator = unit.numerator.concat(other.unit.numerator).sort();
-          unit.denominator = unit.denominator.concat(other.unit.denominator).sort();
-          unit.cancel();
-      } else if (op === '/') {
-          unit.numerator = unit.numerator.concat(other.unit.denominator).sort();
-          unit.denominator = unit.denominator.concat(other.unit.numerator).sort();
-          unit.cancel();
-      }
-      return new Dimension(value, unit);
+            value = this._operate(context, op, this.value, other.value);
+        }
+    } else if (op === '*') {
+        unit.numerator = unit.numerator.concat(other.unit.numerator).sort();
+        unit.denominator = unit.denominator.concat(other.unit.denominator).sort();
+        unit.cancel();
+    } else if (op === '/') {
+        unit.numerator = unit.numerator.concat(other.unit.denominator).sort();
+        unit.denominator = unit.denominator.concat(other.unit.numerator).sort();
+        unit.cancel();
+    }
+    return new Dimension(value, unit);
   }
 
   compare(other) {

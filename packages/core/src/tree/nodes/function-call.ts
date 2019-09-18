@@ -1,6 +1,6 @@
-import Node from '../node';
-import Generic from './generic';
-import FunctionCaller from '../functions/function-caller';
+import Node from '../node'
+import Value from './value'
+import FunctionCaller from '../functions/function-caller'
 
 //
 // A function call node.

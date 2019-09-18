@@ -1,5 +1,5 @@
-import Node, { NodeArray } from '../node'
-import Generic from './generic'
+import Node from '../node'
+import Value from './value'
 import { EvalContext } from '../../contexts'
 
 /**
@@ -12,9 +12,9 @@ export enum MergeType {
 
 class Declaration extends Node {
   children: {
-    name: NodeArray
-    value: NodeArray
-    important: NodeArray
+    name: Node[]
+    value: Node[]
+    important: Node[]
   }
 
   options: {
@@ -22,10 +22,9 @@ class Declaration extends Node {
     mergeType?: MergeType
   }
 
-
   eval(context: EvalContext) {
     context.importantScope.push({})
-    this.value.eval(context)
+    this.processNodeArray(this.values, (node: Node) => node.eval(context))
 
     let important = this.children.important[0]
     const importantResult = context.importantScope.pop()
@@ -38,7 +37,7 @@ class Declaration extends Node {
 
   makeImportant() {
     const decl = this.clone()
-    decl.children.important = new NodeArray(new Generic('!important', this.location))
+    decl.children.important = [new Value('!important')]
     return decl
   }
 }

@@ -1,14 +1,14 @@
-import Node, { IProps, ILocationInfo, NodeArray, INodeOptions } from '../node'
+import Node, { IProps, ILocationInfo, INodeOptions } from '../node'
 import Selector from './selector'
 import Ruleset from './ruleset'
-import Generic from './generic'
+import Value from './value'
 
 type IAtRuleProps = {
   name: string,
   /** Prelude */
-  value?: NodeArray | Node[],
+  value?: Node[],
   /** Optional at-rule */
-  rules?: NodeArray | Node[]
+  rules?: Node[]
 }
 
 class AtRule extends Node {

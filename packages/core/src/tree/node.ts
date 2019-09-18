@@ -3,73 +3,40 @@ import { RewriteUrlMode } from '../constants'
 import { IOptions } from '../options'
 import { EvalContext } from '../contexts'
 
-/**
- * Extends a regular array with two convenience methods
- * 
- * @todo - this looks like it'll be a headache and should just be plain arrays,
- * mostly because a number of array methods return new arrays, not new NodeArrays
- */
-export class NodeArray<T = Node> extends Array<T> {
-  /**
-   * Modify the Node array in place
-   * 
-   * @param processFunc e.g. (node: Node) => node.eval(context)
-   */
-  _processValues(processFunc: Function): this {
-    let thisLength = this.length
-    for (let i = 0; i < thisLength; i++) {
-      const item = this[i]
-      const node = processFunc(item)
-      if (Array.isArray(node)) {
-        const nodeLength = node.length
-        if (node.length === 0) {
-          this.splice(i, 1)
-          i--
-          continue
-        }
-        else {
-          this.splice(i, 1, ...node)
-          thisLength += nodeLength
-          i += nodeLength
-          continue
-        }
-      }
-      if (node === undefined || node === null || node === false) {
-        this.splice(i, 1)
-        i--
-        continue
-      }
-      this[i] = node
-    }
-    return this
-  }
-
-  eval(context: EvalContext) {
-    this._processValues((node: Node) => node.eval(context))
-    return this
-  }
-
-  toString() {
-    return this.join('')
-  }
-}
-
+export type SimpleValue = string | number | boolean | number[] | string[]
 export type ISimpleProps = {
-  /** Primitive value */
-  value?: Node | Node[]
-  primitive?: number | boolean | number[]
+  /**
+   * Primitive or simple representation of value.
+   * This is used in valueOf() for math operations,
+   * and also in indexing and lookups for some nodes
+   */
+  value?: SimpleValue
+  /**
+   * The reason this exists in addition to value is that this is the
+   * ACTUAL text representation of value
+   *   e.g. 1) a color may have a value of [0, 0, 0, 1], but a text value of 'black'
+   *        2) an element's simple selector may have a value of '[foo="bar"]',
+   *           but a text value of '[foo=bar]' (for normalization)
+   */
   text?: string
 }
 
-export interface IChildrenProps {
-  [key: string]: Node[] | NodeArray
-}
+/**
+ * The result of an eval can be one of these types
+ */
+export type EvalReturn = Node[] | Node | false
 
 export interface IChildren {
-  [key: string]: NodeArray
+  /**
+   * Used when the value of a node can be represented by a single list of Nodes
+   */
+  values?: Node[]
+  [key: string]: Node[]
 }
 
-export type IProps = ISimpleProps & IChildrenProps
+export type ProcessFunction = (node: Node) => EvalReturn
+
+export type IProps = Node[] | (ISimpleProps & IChildren)
 export interface ILocationInfo extends CstNodeLocation {}
 /**
  * In practice, this will probably be inherited through the prototype chain
@@ -96,22 +63,14 @@ export type INodeOptions = IRootOptions & {
 }
 
 export abstract class Node {
-  /**
-   * This is the normalized primitive value,
-   * used for lookups, operations, and comparisons
-   * 
-   * e.g. Color may be
-   *   { value: [255, 255, 255, 1], text: '#FFFFFF' } or
-   *   { value: [255, 255, 255, 1], text: 'white' }
-   * 
-   * In short, the value should never contain Nodes because it is not visited
-   */
-  value: NodeArray
+
+  /** This will always be present as an array, even if it is empty */
+  values: Node[]
   children: IChildren
   childKeys: string[]
 
   /** Used if string does not equal normalized primitive */
-  primitive: number | boolean | number[]
+  value: SimpleValue
   text: string
 
   options: INodeOptions
@@ -140,19 +99,25 @@ export abstract class Node {
   evaluated: boolean
 
   constructor(props: IProps, opts: INodeOptions = {}, location?: ILocationInfo) {
-    const { primitive, value, text, ...children } = props
-    this.value = this.normalizeValues(value)
-    this.children = this.normalizeChildren(children)
-  
-    if (this.value.length > 0) {
-      children.value = this.value
+    if (Array.isArray(props)) {
+      const values = props
+      this.children = { values }
+      this.values = values
+      this.childKeys = ['values']
+    } else {
+      const { value, text, ...children } = props
+
+      this.children = children
+      if (!children.values) {
+        this.children.values = []
+      }
+      this.values = this.children.values
+      this.childKeys = Object.keys(children)
+      this.value = value
+      this.text = text
     }
     
-    this.childKeys = Object.keys(children)
     this.setParent()
-  
-    this.primitive = primitive
-    this.text = text
     this.location = location
   
     const { fileInfo, options, ...rest } = opts
@@ -185,32 +150,14 @@ export abstract class Node {
     })
   }
 
-  protected normalizeValues(values: Node | Node[]): NodeArray {
-    let returnValue: NodeArray
+  protected normalizeValues(values: Node | Node[]): Node[] {
     if (!Array.isArray(values)) {
       if (values === undefined) {
-        return new NodeArray()
+        return []
       }
-      returnValue = new NodeArray(values)
-    } else {
-      returnValue = new NodeArray(...values)
+      return [values]
     }
-    return returnValue
-  }
-
-  /**
-   * Convert children arrays to NodeArrays
-   */
-  protected normalizeChildren(children: IChildrenProps) {
-    Object.entries(children).forEach(entry => {
-      const nodes = entry[1]
-      if (nodes) {
-        if (!(nodes instanceof NodeArray)) {
-          children[entry[0]] = new NodeArray(...nodes)
-        }
-      }
-    })
-    return <IChildren>children
+    return values
   }
 
   accept(visitor) {
@@ -218,23 +165,23 @@ export abstract class Node {
   }
 
   valueOf() {
-    if (this.primitive !== undefined) {
-      return this.primitive
+    if (this.value !== undefined) {
+      return this.value
     }
     if (this.text !== undefined) {
       return this.text
     }
-    return this.value.toString()
+    return this.values.join('')
   }
 
   toString() {
     if (this.text !== undefined) {
       return this.text
     }
-    if (this.primitive !== undefined) {
-      return this.primitive.toString()
+    if (this.value !== undefined) {
+      return this.value.toString()
     }
-    return this.value.toString()
+    return this.values.join('')
   }
 
   /**
@@ -243,14 +190,15 @@ export abstract class Node {
   clone(context?: EvalContext): any {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
-      value: [...this.value],
-      primitive: this.primitive,
+      value: this.value,
       text: this.text
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
     }, {...this.options}, this.location)
 
     newNode.childKeys = [...this.childKeys]
     this.processChildren(newNode, (node: Node) => node.clone(context))
+    newNode.values = newNode.children.values
+  
     if (context) {
       newNode.evaluated = true
     } else {
@@ -269,17 +217,62 @@ export abstract class Node {
     return newNode
   }
 
-  private processChildren(node: Node, processFunc: Function) {
+  protected getFileInfo(): IFileInfo {
+    return this.fileRoot.fileInfo
+  }
+
+  /**
+   * This is an in-place mutation of a node array
+   * 
+   * Unresolved Q: would a new array be more performant than array mutation?
+   * The reason we do this is because the array may not mutate at all depending
+   * on the result of processing
+   * 
+   * This also allows `this.value` to retain a pointer to `this.children.value`
+   */
+  protected processNodeArray(nodeArray: Node[], processFunc: ProcessFunction) {
+    let thisLength = nodeArray.length
+    for (let i = 0; i < thisLength; i++) {
+      const item = nodeArray[i]
+      const node = processFunc(item)
+      if (Array.isArray(node)) {
+        const nodeLength = node.length
+        if (node.length === 0) {
+          nodeArray.splice(i, 1)
+          i--
+          continue
+        }
+        else {
+          nodeArray.splice(i, 1, ...node)
+          thisLength += nodeLength
+          i += nodeLength
+          continue
+        }
+      }
+      if (node === undefined || node === null || node === false) {
+        nodeArray.splice(i, 1)
+        i--
+        continue
+      }
+      nodeArray[i] = node
+    }
+    return nodeArray
+  }
+
+  protected processChildren(node: Node, processFunc: ProcessFunction) {
     this.childKeys.forEach(key => {
       let nodes = this.children[key]
       if (nodes) {
         if (node !== this) {
-          nodes = new NodeArray(...nodes)
+          nodes = [...nodes]
+          node.children[key] = this.processNodeArray(nodes, processFunc)
+        } else {
+          this.processNodeArray(nodes, processFunc)
         }
-        node.children[key] = nodes._processValues(processFunc)
       }
     })
   }
+
   /**
    * By default, nodes will just evaluate nested values
    * However, some nodes after evaluating will of course override
@@ -293,7 +286,11 @@ export abstract class Node {
     return this
   }
 
-  /** Output is a kind of string builder? */
+  /**
+   * Output is a kind of string builder?
+   * @todo - All genCSS and toCSS will get moved out of the AST and
+   *         into visitor processing.
+  */
   genCSS(output: any, context?: EvalContext) {
     output.add(this.toString())
   }

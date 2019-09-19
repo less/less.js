@@ -6,9 +6,8 @@ jobs:
         working_directory: ~/repo
         steps:
             - checkout
-            - run: npm install
-            - run: npm run bootstrap
-            - run: npm run ci
+            - run: yarn
+            - run: yarn run ci
 
     build-node10:
         docker:
@@ -16,9 +15,8 @@ jobs:
         working_directory: ~/repo
         steps:
             - checkout
-            - run: npm install
-            - run: npm run bootstrap
-            - run: npm run ci
+            - run: yarn
+            - run: yarn run ci
 
     build-node8:
         docker:
@@ -26,9 +24,8 @@ jobs:
         working_directory: ~/repo
         steps:
             - checkout
-            - run: npm install
-            - run: npm run bootstrap
-            - run: npm run ci
+            - run: yarn
+            - run: yarn run ci
 
 workflows:
     version: 2

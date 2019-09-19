@@ -5,7 +5,7 @@ import Comment from './comment'
 import Paren from './block'
 import Selector from './selector'
 import Element from './element'
-import Anonymous from './generic'
+import Anonymous from './value'
 import List from './list'
 import { mergeList } from '../util'
 // import contexts from '../contexts';
@@ -37,12 +37,22 @@ class Ruleset extends Node {
      * Selector eval is not like other evals that flatten arrays into the container array
      * Instead, we use the mergeList utility
      */
-    const selectors = this.children.selectors
+    const selectorList = this.children.selectors[0].clone()
+    const selectors = selectorList.nodes
+    const createdSelectors: Selector[] = []
+
     if (selectors && selectors.length > 0) {
-      selectors.forEach((sel, i) => {
-        selectors[i] = sel.eval(context)
+      selectors.forEach((sel: Selector) => {
+        sel.eval(context)
+        const elements = sel.nodes
+        const selectorList: Element[][] = mergeList(elements)
+        selectorList.forEach(elementList => {
+          const newSelector = sel.clone()
+          newSelector.nodes = elementList
+          createdSelectors.push(newSelector)
+        })
       })
-      this.children.selectors = new NodeArray(...(mergeList()))
+      this.children.selectors[0].nodes = createdSelectors
     }
 
     let selCnt: number

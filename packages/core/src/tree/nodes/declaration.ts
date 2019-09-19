@@ -13,7 +13,8 @@ export enum MergeType {
 class Declaration extends Node {
   children: {
     name: Node[]
-    value: Node[]
+    /** Declaration's value */
+    nodes: Node[]
     important: Node[]
   }
 
@@ -24,7 +25,7 @@ class Declaration extends Node {
 
   eval(context: EvalContext) {
     context.importantScope.push({})
-    this.processNodeArray(this.values, (node: Node) => node.eval(context))
+    this.processNodeArray(this.nodes, (node: Node) => node.eval(context))
 
     let important = this.children.important[0]
     const importantResult = context.importantScope.pop()

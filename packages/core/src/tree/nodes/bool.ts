@@ -5,7 +5,7 @@ import Node from '../node'
  */
 class Bool extends Node {
   text: string
-  primitive: boolean
+  value: boolean
 }
 
 Bool.prototype.type = 'Bool'

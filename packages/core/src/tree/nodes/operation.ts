@@ -4,7 +4,6 @@ import Dimension from './dimension'
 import Numeric from './numeric'
 import Value from './value'
 import { operate } from '../util'
-import { StrictUnitMode } from '../../constants'
 
 /**
  * Values can only be 3 Nodes
@@ -30,33 +29,10 @@ class Operation extends Node {
       op = op === './' ? '/' : op
 
       if (a instanceof Dimension && b instanceof Dimension) {
-        const aUnit = a.values[1]
-        const bUnit = b.values[1]
-
-        if (aUnit.value !== bUnit.value) {
-          if (context.strictUnits === StrictUnitMode.ERROR) {
-            throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
-                `Bad units: '${aUnit.value}' and '${bUnit.value}'.`)
-          } else if (context.strictUnits === StrictUnitMode.LOOSE) {
-            result = operate(op, a.value, b.value)
-            return new Dimension({ value: result, values: [new Numeric(result), aUnit.clone()] })
-          } else {
-            /** @todo warning */
-            /** Return the operation as-is */
-            return this
-          }
-        } else {
-          result = operate(op, a.value, b.value)
-          if (op === '/') {
-            return new Numeric(result)
-          } else if (op === '*') {
-            throw new Error(`Can't multiply a unit by a unit.`)
-          }
-          return new Dimension({ value: result, values: [new Numeric(result), aUnit.clone()] })
-        }
+        
       } else if (a instanceof Dimension && b instanceof Numeric) {
         result = operate(op, a.value, b.value)
-        return new Dimension({ value: result, values: [new Numeric(result), a.values[1].clone()] })
+        return new Dimension({ value: result, nodes: [new Numeric(result), a.values[1].clone()] })
       } else if (a instanceof Color) {
         
       }

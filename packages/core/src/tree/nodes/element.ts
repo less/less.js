@@ -1,4 +1,4 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
+import Node, { IProps, IBaseProps, INodeOptions, ILocationInfo } from '../node'
 import Value from './value'
 import Paren from './block'
 
@@ -9,7 +9,7 @@ type IElementProps = [string, string] | IProps
  */
 class Element extends Node {
   children: {
-    values: [Value, Value]
+    nodes: [Value, Value]
   }
 
   constructor(props: IElementProps, options?: INodeOptions, location?: ILocationInfo) {
@@ -17,20 +17,20 @@ class Element extends Node {
     if (props[0].constructor === String) {
       valueNodes = [new Value(<string>props[0]), new Value(<string>props[1])]
     } else {
-      valueNodes = <Node[]>(props.values || props)
+      valueNodes = <Node[]>((<IBaseProps>props).nodes || props)
     }
     super(valueNodes, options, location)
   }
 
   /** Indexable value */
   valueOf() {
-    let combinator = (this.values[0].value || '').toString()
-    let simpleSelector = (this.values[1].value || '').toString()
+    let combinator = (this.nodes[0].value || '').toString()
+    let simpleSelector = (this.nodes[1].value || '').toString()
     return combinator + simpleSelector
   }
 
   toString() {
-    return this.values[0].text + this.values[1].text
+    return this.nodes[0].text + this.nodes[1].text
   }
 
   toCSS(context = {}) {

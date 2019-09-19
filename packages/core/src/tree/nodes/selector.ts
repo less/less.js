@@ -10,7 +10,7 @@ import LessError from '../less-error';
 //     text = 'div.foo[bar] +/* */ p'
 //  
 class Selector extends Node {
-  values: Element[]
+  nodes: Element[]
   options: {
     mediaEmpty: boolean
   }

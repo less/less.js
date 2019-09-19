@@ -4,23 +4,50 @@ import Color from './color'
 import Numeric from './numeric'
 import Value from './value'
 import { fround, operate } from '../util'
+import { StrictUnitMode } from '../../constants'
 
 /**
  * A number with a unit
  * 
- * e.g. props = { value: 1, values: [<Number>, <Value>] }
+ * e.g. props = { value: 1, nodes: [<Number>, <Value>] }
  */
 class Dimension extends Node {
   value: number
   /** Second value is the unit */
-  values: [Numeric, Value]
+  nodes: [Numeric, Value]
 
   // In an operation between two Dimensions,
   // we default to the first Dimension's unit,
   // so `1px + 2` will yield `3px`.
   operate(context, op: string, other: Node) {
+    if (other instanceof Dimension) {
+      const aUnit = this.nodes[1]
+      const bUnit = other.nodes[1]
+
+      if (aUnit.value !== bUnit.value) {
+        if (context.strictUnits === StrictUnitMode.ERROR) {
+          throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
+              `Bad units: '${aUnit.value}' and '${bUnit.value}'.`)
+        } else if (context.strictUnits === StrictUnitMode.LOOSE) {
+          const result = operate(op, this.value, other.value)
+          return new Dimension({ value: result, nodes: [new Numeric(result), aUnit.clone()] })
+        } else {
+          /** @todo warning */
+          /** Return the operation as-is */
+          return this
+        }
+      } else {
+        result = operate(op, a.value, b.value)
+        if (op === '/') {
+          return new Numeric(result)
+        } else if (op === '*') {
+          throw new Error(`Can't multiply a unit by a unit.`)
+        }
+        return new Dimension({ value: result, nodes: [new Numeric(result), aUnit.clone()] })
+      }
+    }
+
     const unit = this.values[1].clone()
-    if ()
     const result = operate(op, this.values[0].value, other.value)
     // let value = this._operate(context, op, this.value, other.value);
 

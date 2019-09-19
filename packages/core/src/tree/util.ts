@@ -21,6 +21,14 @@ export const mergeList = (arr: Array<any | any[]>): any[][] => {
         result.forEach(res => {
           if (i !== 0) {
             res = [...res]
+            if (res[0].clone) {
+              res.forEach((node: Node, x) => {
+                res[x] = node.clone()
+              })
+            }
+            if (val.clone) {
+              val = val.clone()
+            }
           }
           res[o] = val
           if (i !== 0) {
@@ -30,7 +38,11 @@ export const mergeList = (arr: Array<any | any[]>): any[][] => {
       })
     } else {
       result.forEach(res => {
-        res[o] = item
+        if (o === 0 || !item.clone) {
+          res[o] = item
+        } else {
+          res[o] = item.clone()
+        }
       })
     }
   })

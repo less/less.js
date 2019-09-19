@@ -3,8 +3,13 @@ import { RewriteUrlMode } from '../constants'
 import { IOptions } from '../options'
 import { EvalContext } from '../contexts'
 
-export type SimpleValue = string | number | boolean | number[] | string[]
-export type ISimpleProps = {
+export type SimpleValue = string | number | boolean | number[]
+
+export type IChildren = {
+  [key: string]: Node[]
+}
+
+export type IBaseProps = {
   /**
    * Primitive or simple representation of value.
    * This is used in valueOf() for math operations,
@@ -19,24 +24,26 @@ export type ISimpleProps = {
    *           but a text value of '[foo=bar]' (for normalization)
    */
   text?: string
+  
+  /**
+   * When nodes only have a single list of sub-nodes, they'll use the nodes prop,
+   * which reduces boilerplate when used. 
+   */
+  nodes?: IChildren[0]
 }
+
+export type IProps = Node[] | ({
+  [P in keyof IBaseProps]: IBaseProps[P]
+} & IChildren)
 
 /**
  * The result of an eval can be one of these types
  */
 export type EvalReturn = Node[] | Node | false
 
-export interface IChildren {
-  /**
-   * Used when the value of a node can be represented by a single list of Nodes
-   */
-  values?: Node[]
-  [key: string]: Node[]
-}
-
 export type ProcessFunction = (node: Node) => EvalReturn
 
-export type IProps = Node[] | (ISimpleProps & IChildren)
+// export type IProps = Node[] | (IChildren & ISimpleProps)
 export interface ILocationInfo extends CstNodeLocation {}
 /**
  * In practice, this will probably be inherited through the prototype chain
@@ -58,14 +65,20 @@ export type IRootOptions = {
   options?: IOptions
 }
 
-export type INodeOptions = IRootOptions & {
+export type INodeOptions = {
+  [P in keyof IRootOptions]: IRootOptions[P]
+} & {
   [key: string]: boolean | number
 }
 
 export abstract class Node {
 
-  /** This will always be present as an array, even if it is empty */
-  values: Node[]
+  /** 
+   * This will always be present as an array, even if it is empty
+   * Use the generic "nodes" child tree when it's the only list of sub-nodes 
+   */
+  nodes: Node[]
+
   children: IChildren
   childKeys: string[]
 
@@ -100,18 +113,18 @@ export abstract class Node {
 
   constructor(props: IProps, opts: INodeOptions = {}, location?: ILocationInfo) {
     if (Array.isArray(props)) {
-      const values = props
-      this.children = { values }
-      this.values = values
-      this.childKeys = ['values']
+      const nodes = props
+      this.children = { nodes }
+      this.nodes = nodes
+      this.childKeys = ['nodes']
     } else {
       const { value, text, ...children } = props
 
       this.children = children
-      if (!children.values) {
-        this.children.values = []
+      if (!children.nodes) {
+        this.children.nodes = []
       }
-      this.values = this.children.values
+      this.nodes = this.children.nodes
       this.childKeys = Object.keys(children)
       this.value = value
       this.text = text
@@ -150,16 +163,6 @@ export abstract class Node {
     })
   }
 
-  protected normalizeValues(values: Node | Node[]): Node[] {
-    if (!Array.isArray(values)) {
-      if (values === undefined) {
-        return []
-      }
-      return [values]
-    }
-    return values
-  }
-
   accept(visitor) {
     this.processChildren(this, (node: Node) => visitor.visit(node))
   }
@@ -171,7 +174,7 @@ export abstract class Node {
     if (this.text !== undefined) {
       return this.text
     }
-    return this.values.join('')
+    return this.nodes.join('')
   }
 
   toString() {
@@ -181,13 +184,13 @@ export abstract class Node {
     if (this.value !== undefined) {
       return this.value.toString()
     }
-    return this.values.join('')
+    return this.nodes.join('')
   }
 
   /**
    * Derived nodes can pass in context to eval and clone at the same time
    */
-  clone(context?: EvalContext): any {
+  clone(context?: EvalContext): this {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
       value: this.value,

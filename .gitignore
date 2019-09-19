@@ -33,3 +33,6 @@ lerna-debug.log
 # dev artifacts
 dist
 coverage
+
+# Using yarn
+package-lock.json

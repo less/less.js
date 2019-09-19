@@ -3,8 +3,17 @@ import Visitor from './visitor';
 import logger from '../logger';
 import * as utils from '../utils';
 
-/* jshint loopfunc:true */
-
+/**
+ * @todo - pull work from - https://github.com/less/less.js/pull/3422
+ * 
+ * My intention is also to re-write this to run after tree flattening.
+ * It's much easier to process / extend selectors after that vs. having to
+ * pre-calculate them.
+ * 
+ * -- Related @todo - change isPreEvalVisitor to a priority number. Visitors
+ * can essentially be added to various "stages", and this extend visitor
+ * should come at "post-flatten" but "pre-remove-invisible"
+ */
 class ExtendFinderVisitor {
     constructor() {
         this._visitor = new Visitor(this);

@@ -1,6 +1,6 @@
 import { MathMode, RewriteUrlMode } from './constants'
 import { IOptions } from './options'
-import { NodeArray } from './tree/node'
+import Node from './tree/node'
 
 function isPathRelative(path: string) {
     return !/^(?:[a-z-]+:|\/|#)/i.test(path);
@@ -22,11 +22,11 @@ export class EvalContext {
    * AFAICT, frames are essentially rulesets, used for scope lookups
    * @todo - refactor with a proper block scope object (w/ scope.ts)
    */
-  frames: NodeArray
+  frames: Node[]
 
   constructor(options: IOptions) {
     this.options = options
-    this.frames = new NodeArray()
+    this.frames = []
     this.importantScope = []
     this.inCalc = false
     this.mathOn = true

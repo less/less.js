@@ -18,7 +18,7 @@ class VariableRef extends Node {
         location: this.location
       }
     }
-    this.name = this.values.join('')
+    this.name = this.nodes.join('')
 
     this.evaluating = true
 

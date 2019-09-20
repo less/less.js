@@ -2,6 +2,7 @@ import { CstNodeLocation } from 'chevrotain'
 import { RewriteUrlMode } from '../constants'
 import { IOptions } from '../options'
 import { EvalContext } from '../contexts'
+import { compare } from './util'
 
 export type SimpleValue = string | number | boolean | number[]
 
@@ -62,7 +63,7 @@ export type IRootOptions = {
   /** Passed in for every file root node */
   fileInfo?: IFileInfo
   /** Only one node, the root node, should pass this in */
-  options?: IOptions
+  lessOptions?: IOptions
 }
 
 export type INodeOptions = {
@@ -87,8 +88,10 @@ export abstract class Node {
   text: string
 
   options: INodeOptions
-  evalOptions: IOptions
+  lessOptions: IOptions
   fileInfo: IFileInfo
+
+  allowRoot: boolean
 
   /**
    * This will be the start values from the first token and the end
@@ -111,7 +114,7 @@ export abstract class Node {
   type: string
   evaluated: boolean
 
-  constructor(props: IProps, opts: INodeOptions = {}, location?: ILocationInfo) {
+  constructor(props: IProps, options: INodeOptions = {}, location?: ILocationInfo) {
     if (Array.isArray(props)) {
       const nodes = props
       this.children = { nodes }
@@ -133,11 +136,11 @@ export abstract class Node {
     this.setParent()
     this.location = location
   
-    const { fileInfo, options, ...rest } = opts
+    const { fileInfo, lessOptions, ...rest } = options
     this.options = rest
     if (options) {
       this.root = this
-      this.evalOptions = options
+      this.lessOptions = lessOptions
     }
     if (fileInfo) {
       this.fileRoot = this
@@ -185,6 +188,11 @@ export abstract class Node {
       return this.value.toString()
     }
     return this.nodes.join('')
+  }
+
+  /** Nodes may have individual compare strategies */
+  compare(node: Node) {
+    return compare(this, node)
   }
 
   /**

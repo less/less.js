@@ -1,54 +1,59 @@
-import Node from '../node';
+import Node, { IProps } from '../node';
+import NumericNode from '../numeric-node'
 import unitConversions from '../data/unit-conversions';
 import Color from './color'
-import Numeric from './numeric'
+import NumberValue from './number-value'
 import Value from './value'
+import { EvalContext } from '../../contexts'
 import { fround, operate } from '../util'
 import { StrictUnitMode } from '../../constants'
 
 /**
  * A number with a unit
  * 
- * e.g. props = { value: 1, nodes: [<Number>, <Value>] }
+ * e.g. props = { value: 1, nodes: [<NumberValue>, <Value>] }
  */
-class Dimension extends Node {
+class Dimension extends NumericNode {
   value: number
   /** Second value is the unit */
-  nodes: [Numeric, Value]
+  nodes: [NumberValue, Value]
 
   // In an operation between two Dimensions,
   // we default to the first Dimension's unit,
   // so `1px + 2` will yield `3px`.
-  operate(context, op: string, other: Node) {
+  operate(op: string, other: Node, context: EvalContext) {
+    const strictUnits = context.options.strictUnits
     if (other instanceof Dimension) {
       const aUnit = this.nodes[1]
       const bUnit = other.nodes[1]
 
       if (aUnit.value !== bUnit.value) {
-        if (context.strictUnits === StrictUnitMode.ERROR) {
+        if (strictUnits === StrictUnitMode.ERROR) {
           throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
               `Bad units: '${aUnit.value}' and '${bUnit.value}'.`)
-        } else if (context.strictUnits === StrictUnitMode.LOOSE) {
+        } else if (strictUnits === StrictUnitMode.LOOSE) {
           const result = operate(op, this.value, other.value)
-          return new Dimension({ value: result, nodes: [new Numeric(result), aUnit.clone()] })
+          return new Dimension(<IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] })
         } else {
           /** @todo warning */
           /** Return the operation as-is */
           return this
         }
       } else {
-        result = operate(op, a.value, b.value)
+        const result = operate(op, this.value, other.value)
+        /** Dividing 8px / 1px will yield 8 */
         if (op === '/') {
-          return new Numeric(result)
+          return new NumberValue(result)
         } else if (op === '*') {
           throw new Error(`Can't multiply a unit by a unit.`)
         }
-        return new Dimension({ value: result, nodes: [new Numeric(result), aUnit.clone()] })
+        return new Dimension(<IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] })
       }
+    } else if (other instanceof NumberValue) {
+      const unit = this.nodes[1].clone()
+      const result = operate(op, this.nodes[0].value, other.value)
     }
-
-    const unit = this.values[1].clone()
-    const result = operate(op, this.values[0].value, other.value)
+    
     // let value = this._operate(context, op, this.value, other.value);
 
     if (op === '+' || op === '-') {

@@ -1,7 +1,10 @@
 /**
  * Node utilities
  */
-import { Node } from './node'
+import Node, { IProps } from './node'
+import Color from './nodes/color'
+import Value from './nodes/value'
+import Colors from './data/colors'
 
 /** 
  * Generalized list-merging utility, used for selectors and values
@@ -67,10 +70,9 @@ export const operate = (op: string, a: number, b: number) => {
   }
 }
 
-export const fround = (context, value: number) => {
-  const precision = context && context.numPrecision;
+export const fround = (value: number, precision: number = 8) => {
   // add "epsilon" to ensure numbers like 1.000000005 (represented as 1.000000004999...) are properly rounded:
-  return (precision) ? Number((value + 2e-16).toFixed(precision)) : value;
+  return Number((value + 2e-16).toFixed(precision))
 }
 
 export const compare = (a: Node, b: Node) => {
@@ -86,8 +88,15 @@ export const compare = (a: Node, b: Node) => {
     return 0
   }
 
-  const aVal = a.value
-  const bVal = b.value
+  let aVal = a.valueOf()
+  let bVal = b.valueOf()
+
+  if (aVal === undefined) {
+    aVal = a + ''
+  }
+  if (bVal === undefined) {
+    bVal = b + ''
+  }
 
   if (Array.isArray(bVal) && !Array.isArray(aVal)) {
     return undefined
@@ -127,10 +136,10 @@ export const compare = (a: Node, b: Node) => {
     }
   }
 
-  return numericCompare(aVal, <string | number>bVal)
+  return primitiveCompare(aVal, <string | number>bVal)
 }
 
-export const numericCompare = (a: (number | string), b: (number | string)) => {
+export const primitiveCompare = (a: (number | string | boolean), b: (number | string | boolean)) => {
   if (a < b) {
     return -1
   }
@@ -138,7 +147,29 @@ export const numericCompare = (a: (number | string), b: (number | string)) => {
     return 1
   }
   /** Type coercion comparison */
-  if (a == b) {
+  if ((a + '') === (b + '')) {
     return 0
   }
+}
+
+export const valueFromKeyword = (keyword: string): Node => {
+  const key = keyword.toLowerCase()
+  let c: Node
+  if (Colors.hasOwnProperty(key)) {
+    const int = Colors[key]
+    const value = []
+    int.toString(16).match(/.{2}/g).map((c: string) => {
+      value.push(parseInt(c, 16))
+    })
+    value.push(1)
+
+    c = new Color(<IProps>{ value, text: keyword })
+  }
+  else if (key === 'transparent') {
+    c = new Color(<IProps>{ value: [0, 0, 0, 0], text: keyword })
+  } else {
+    c = new Value(keyword)
+  }
+
+  return c
 }

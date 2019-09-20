@@ -85,16 +85,15 @@ export const createLexer = (rawFragments: string[][], rawTokens: rawTokenConfig[
     tokens.unshift(token);
   })
 
-  const start = new Date().getTime();
-  // TODO: Lexer Optimizations cannot be enabled due to using /./ pattern
-  //   https://sap.github.io/chevrotain/docs/guide/resolving_lexer_errors.html#COMPLEMENT
-  //   Due to Recent optimizations in Chevrotain this limitation may become irrelevant.
-  //   https://github.com/SAP/chevrotain/issues/1044
-  const lexer = new Lexer(tokens, { ensureOptimizations: false })
-  const end  = new Date().getTime();
-  // TODO: Lexer initialization takes 41ms on my machine, that is a little slow...
-  //  -  https://github.com/SAP/chevrotain/issues/1045
-  console.log(`Lexer init: ${end - start}ms`)
+  // Lexer initialization time can be reduced (~30%) by explicitly providing the link_break option for all Tokens
+  // https://sap.github.io/chevrotain/documentation/6_5_0/interfaces/itokenconfig.html#line_breaks
+  const lexer = new Lexer(tokens, {
+    ensureOptimizations: true,
+    // traceInitPerf: true,
+    // Always run the validations during testing (dev flows).
+    // And avoid validation during productive flows to reduce the Lexer's startup time.
+    skipValidations: process.env["LESS_TESTING_MODE"] !== "true"
+  })
 
   return {
     lexer,

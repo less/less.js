@@ -29,7 +29,7 @@ class AtRule extends Node {
     super(<IProps>rest, options, location)
     this.name = name
 
-    this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
+    this.value = (value instanceof Node) ? value : (value ? new Value(value) : value);
     if (rules) {
         if (Array.isArray(rules)) {
             this.rules = rules;

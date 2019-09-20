@@ -2,13 +2,13 @@ const tree = Object.create(null);
 
 import Node from '../node'
 import Color from './color'
-import AtRule from './atrule'
-import DetachedRuleset from './detached-ruleset'
+import AtRule from './at-rule'
+import DetachedRules from './detached-rules'
 import Operation from './operation'
 import Dimension from './dimension'
 import VariableRef from './variable-ref'
 import PropertyRef from './property-ref'
-import Ruleset from './ruleset';
+import Rules from './rules';
 import Element from './element';
 import Attribute from './attribute';
 import Selector from './selector';
@@ -36,9 +36,9 @@ import MixinCall from './mixin-call';
 import MixinDefinition from './mixin-definition';
 
 export default {
-    Node, Color, AtRule, DetachedRuleset, Operation,
+    Node, Color, AtRule, DetachedRules, Operation,
     Dimension, Unit, Keyword, Variable, Property,
-    Ruleset, Element, Attribute, Combinator, Selector,
+    Rules, Element, Attribute, Combinator, Selector,
     Quoted, Expression, Declaration, Call, URL, Import,
     Comment, Anonymous, Value, JavaScript, Assignment,
     Condition, Paren, Media, UnicodeDescriptor, Negative,

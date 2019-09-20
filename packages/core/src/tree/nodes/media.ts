@@ -1,9 +1,9 @@
-import Ruleset from './ruleset';
+import Rules from './rules';
 import Value from './list';
 import Selector from './selector';
 import Anonymous from './generic';
 import Expression from './expression';
-import AtRule from './atrule';
+import AtRule from './at-rule';
 import * as utils from '../utils';
 
 class Media extends AtRule {
@@ -16,7 +16,7 @@ class Media extends AtRule {
         const selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
 
         this.features = new Value(features);
-        this.rules = [new Ruleset(selectors, value)];
+        this.rules = [new Rules(selectors, value)];
         this.rules[0].allowImports = true;
         this.copyVisibilityInfo(visibilityInfo);
         this.allowRoot = true;
@@ -25,7 +25,7 @@ class Media extends AtRule {
         this.setParent(this.rules, this);
     }
 
-    isRulesetLike() {
+    isRulesLike() {
         return true;
     }
 
@@ -41,7 +41,7 @@ class Media extends AtRule {
     genCSS(context, output) {
         output.add('@media ', this._fileInfo, this._index);
         this.features.genCSS(context, output);
-        this.outputRuleset(context, output, this.rules);
+        this.outputRules(context, output, this.rules);
     }
 
     eval(context) {
@@ -78,7 +78,7 @@ class Media extends AtRule {
         // Render all dependent Media blocks.
         if (context.mediaBlocks.length > 1) {
             const selectors = (new Selector([], null, null, this.getIndex(), this.fileInfo())).createEmptySelectors();
-            result = new Ruleset(selectors, context.mediaBlocks);
+            result = new Rules(selectors, context.mediaBlocks);
             result.multiMedia = true;
             result.copyVisibilityInfo(this.visibilityInfo());
             this.setParent(result, this);
@@ -121,7 +121,7 @@ class Media extends AtRule {
         this.setParent(this.features, this);
 
         // Fake a tree-node that doesn't output anything.
-        return new Ruleset([], []);
+        return new Rules([], []);
     }
 
     permute(arr) {
@@ -145,7 +145,7 @@ class Media extends AtRule {
         if (!selectors) {
             return;
         }
-        this.rules = [new Ruleset(utils.copyArray(selectors), [this.rules[0]])];
+        this.rules = [new Rules(utils.copyArray(selectors), [this.rules[0]])];
         this.setParent(this.rules, this);
     }
 }

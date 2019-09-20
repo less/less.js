@@ -1,6 +1,7 @@
 import Node from '../node'
 import Block from './block'
 import Comment from './comment'
+import WS from './ws'
 import Dimension from './dimension'
 import { EvalContext } from '../../contexts'
 import { MathMode } from '../../constants'
@@ -11,10 +12,20 @@ type IExpressionOptions = {
 }
 
 /**
- * An expression is a value that collapses blocks after evaluation
+ * An expression is an arbitrary list of nodes,
+ * but has two unique properties:
+ *   1) It switches the way math is evaluated based on blocks
+ *   2) When converted to an array, it discards whitespace and 
+ *      comments as members of the array.
  */
 class Expression extends Node {
   options: IExpressionOptions
+
+  toArray() {
+    return this.nodes.filter(node =>
+      (!(node instanceof WS) && !(node instanceof Comment))
+    )
+  }
 
   eval(context: EvalContext) {
     const { inBlock, blockInOp } = this.options
@@ -28,10 +39,10 @@ class Expression extends Node {
     if (inParenthesis) {
       context.enterBlock()
     }
-    if (this.value.length > 1) {
+    if (this.nodes.length > 1) {
       returnValue = super.eval(context)
-    } else if (this.value.length === 1) {
-      const value = this.value[0]
+    } else if (this.nodes.length === 1) {
+      const value = this.nodes[0]
       if (
         value instanceof Expression && 
         value.options.inBlock &&
@@ -55,7 +66,7 @@ class Expression extends Node {
   }
 
   throwAwayComments() {
-    this.value = this.value.filter(v => !(v instanceof Comment));
+    this.nodes = this.nodes.filter(v => !(v instanceof Comment));
   }
 }
 

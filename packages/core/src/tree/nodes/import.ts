@@ -2,7 +2,7 @@ import Node from '../node'
 import Media from './media'
 import URL from './url'
 import Quoted from './quoted'
-import Ruleset from './ruleset'
+import Rules from './rules'
 import Anonymous from './value'
 import * as utils from '../utils'
 import LessError from '../less-error'
@@ -19,6 +19,10 @@ import LessError from '../less-error'
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
+
+/**
+ * @todo - rewrite the above to make browser importing not a factor
+ */
 class Import extends Node {
     constructor(path, features, options, index, currentFileInfo, visibilityInfo) {
         super();
@@ -127,7 +131,7 @@ class Import extends Node {
     }
 
     doEval(context) {
-        let ruleset;
+        let rules;
         let registry;
         const features = this.features && this.features.eval(context);
 
@@ -172,10 +176,10 @@ class Import extends Node {
             }
             return newImport;
         } else {
-            ruleset = new Ruleset(null, utils.copyArray(this.root.rules));
-            ruleset.evalImports(context);
+            rules = new Rules(null, utils.copyArray(this.root.rules));
+            rules.evalImports(context);
 
-            return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
+            return this.features ? new Media(rules.rules, this.features.value) : rules.rules;
         }
     }
 }

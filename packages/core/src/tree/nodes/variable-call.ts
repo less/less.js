@@ -1,7 +1,7 @@
 import Node from '../node';
 import Variable from './variable-ref';
-import Ruleset from './ruleset';
-import DetachedRuleset from './detached-ruleset';
+import Rules from './rules';
+import DetachedRules from './detached-rules';
 import LessError from '../less-error';
 
 class VariableCall extends Node {
@@ -16,27 +16,27 @@ class VariableCall extends Node {
 
     eval(context) {
         let rules;
-        let detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
+        let detachedRules = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
         const error = new LessError({message: `Could not evaluate variable call ${this.variable}`});
 
-        if (!detachedRuleset.ruleset) {
-            if (detachedRuleset.rules) {
-                rules = detachedRuleset;
+        if (!detachedRules.rules) {
+            if (detachedRules.rules) {
+                rules = detachedRules;
             }
-            else if (Array.isArray(detachedRuleset)) {
-                rules = new Ruleset('', detachedRuleset);
+            else if (Array.isArray(detachedRules)) {
+                rules = new Rules('', detachedRules);
             }
-            else if (Array.isArray(detachedRuleset.value)) {
-                rules = new Ruleset('', detachedRuleset.value);
+            else if (Array.isArray(detachedRules.value)) {
+                rules = new Rules('', detachedRules.value);
             }
             else {
                 throw error;
             }
-            detachedRuleset = new DetachedRuleset(rules);
+            detachedRules = new DetachedRules(rules);
         }
 
-        if (detachedRuleset.ruleset) {
-            return detachedRuleset.callEval(context);
+        if (detachedRules.rules) {
+            return detachedRules.callEval(context);
         }
         throw error;
     }

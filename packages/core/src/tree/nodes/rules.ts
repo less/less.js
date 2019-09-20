@@ -1,4 +1,4 @@
-import Node from '../node'
+import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
 import Declaration from './declaration'
 import Keyword from './keyword'
 import Comment from './comment'
@@ -15,23 +15,22 @@ import { mergeList } from '../util'
 // import * as utils from '../utils';
 
 /**
- * A Ruleset is a generic object in Less
+ * @todo - rewrite
+ * A Rules is a generic object in Less
  * 
  * It can have selectors, arguments, a set of rule nodes (as rules), and a guard
  * 
  * e.g.
  *      1. a plain qualified CSS rule [a {b: c}] will have selectors and rules
  *      2. a mixin will have selectors, args, rules, and possibly a guard
- *      3. A variable can be attached to a ruleset, which will then have no selectors, but can have args
+ *      3. A variable can be attached to a rules, which will then have no selectors, but can have args
  * 
  *  Rules also define a new scope object for variables and functions
+ * 
+ * @todo This should be broken up so that a rules is _just_ the parts between { ... }
+ * @todo move selector logic to qualified rule
  */
-class Ruleset extends Node {
-  children: {
-    selectors: [List<Selector>]
-    rules: Node[]
-  }
-
+class Rules extends Node {
   eval(context) {
     /**
      * Selector eval is not like other evals that flatten arrays into the container array
@@ -96,17 +95,17 @@ class Ruleset extends Node {
     }
 
     let rules = this.rules ? utils.copyArray(this.rules) : null;
-    const ruleset = new Ruleset(selectors, rules, this.strictImports, this.visibilityInfo());
+    const rules = new Rules(selectors, rules, this.strictImports, this.visibilityInfo());
     let rule;
     let subRule;
 
-    ruleset.originalRuleset = this;
-    ruleset.root = this.root;
-    ruleset.firstRoot = this.firstRoot;
-    ruleset.allowImports = this.allowImports;
+    rules.originalRules = this;
+    rules.root = this.root;
+    rules.firstRoot = this.firstRoot;
+    rules.allowImports = this.allowImports;
 
     if (this.debugInfo) {
-        ruleset.debugInfo = this.debugInfo;
+        rules.debugInfo = this.debugInfo;
     }
 
     if (!hasOnePassingSelector) {
@@ -115,7 +114,7 @@ class Ruleset extends Node {
 
     // inherit a function registry from the frames stack when possible;
     // otherwise from the global registry
-    ruleset.functionRegistry = (frames => {
+    rules.functionRegistry = (frames => {
         let i = 0;
         const n = frames.length;
         let found;
@@ -126,9 +125,9 @@ class Ruleset extends Node {
         return globalFunctionRegistry;
     })(context.frames).inherit();
 
-    // push the current ruleset to the frames stack
+    // push the current rules to the frames stack
     const ctxFrames = context.frames;
-    ctxFrames.unshift(ruleset);
+    ctxFrames.unshift(rules);
 
     // currrent selectors
     let ctxSelectors = context.selectors;
@@ -138,13 +137,13 @@ class Ruleset extends Node {
     ctxSelectors.unshift(this.selectors);
 
     // Evaluate imports
-    if (ruleset.root || ruleset.allowImports || !ruleset.strictImports) {
-        ruleset.evalImports(context);
+    if (rules.root || rules.allowImports || !rules.strictImports) {
+        rules.evalImports(context);
     }
 
     // Store the frames around mixin definitions,
     // so they can be evaluated like closures when the time comes.
-    const rsRules = ruleset.rules;
+    const rsRules = rules.rules;
     for (i = 0; (rule = rsRules[i]); i++) {
         if (rule.evalFirst) {
             rsRules[i] = rule.eval(context);
@@ -154,6 +153,10 @@ class Ruleset extends Node {
     const mediaBlockCount = (context.mediaBlocks && context.mediaBlocks.length) || 0;
 
     // Evaluate mixin calls.
+    /** 
+     * @todo - Don't do any splicing, just evaluate into what should be a single Rules node
+     *         This will make this logic much simpler 
+     */
     for (i = 0; (rule = rsRules[i]); i++) {
         if (rule.type === 'MixinCall') {
             /* jshint loopfunc:true */
@@ -162,13 +165,13 @@ class Ruleset extends Node {
                     // do not pollute the scope if the variable is
                     // already there. consider returning false here
                     // but we need a way to "return" variable from mixins
-                    return !(ruleset.variable(r.name));
+                    return !(rules.variable(r.name));
                 }
                 return true;
             });
             rsRules.splice(...[i, 1].concat(rules));
             i += rules.length - 1;
-            ruleset.resetCache();
+            rules.resetCache();
         } else if (rule.type ===  'VariableCall') {
             /* jshint loopfunc:true */
             rules = rule.eval(context).rules.filter(r => {
@@ -180,7 +183,7 @@ class Ruleset extends Node {
             });
             rsRules.splice(...[i, 1].concat(rules));
             i += rules.length - 1;
-            ruleset.resetCache();
+            rules.resetCache();
         }
     }
 
@@ -193,8 +196,8 @@ class Ruleset extends Node {
 
     // Evaluate everything else
     for (i = 0; (rule = rsRules[i]); i++) {
-        // for rulesets, check if it is a css guard and can be removed
-        if (rule instanceof Ruleset && rule.selectors && rule.selectors.length === 1) {
+        // for rules, check if it is a css guard and can be removed
+        if (rule instanceof Rules && rule.selectors && rule.selectors.length === 1) {
             // check if it can be folded in (e.g. & where)
             if (rule.selectors[0] && rule.selectors[0].isJustParentSelector()) {
                 rsRules.splice(i--, 1);
@@ -221,7 +224,7 @@ class Ruleset extends Node {
         }
     }
 
-    return ruleset;
+    return rules;
   }
 
   evalImports(context) {
@@ -245,7 +248,7 @@ class Ruleset extends Node {
   }
 
   makeImportant() {
-      const result = new Ruleset(this.selectors, this.rules.map(r => {
+      const result = new Rules(this.selectors, this.rules.map(r => {
           if (r.makeImportant) {
               return r.makeImportant();
           } else {
@@ -276,7 +279,7 @@ class Ruleset extends Node {
   }
 
   resetCache() {
-      this._rulesets = null;
+      this._rules = null;
       this._variables = null;
       this._properties = null;
       this._lookups = {};
@@ -390,7 +393,7 @@ class Ruleset extends Node {
       }
   }
 
-  rulesets() {
+  getRules() {
       if (!this.rules) { return []; }
 
       const filtRules = [];
@@ -399,7 +402,7 @@ class Ruleset extends Node {
       let rule;
 
       for (i = 0; (rule = rules[i]); i++) {
-          if (rule.isRuleset) {
+          if (rule.isRules) {
               filtRules.push(rule);
           }
       }
@@ -425,7 +428,7 @@ class Ruleset extends Node {
 
       if (key in this._lookups) { return this._lookups[key]; }
 
-      this.rulesets().forEach(rule => {
+      this.getRules().forEach(rule => {
           if (rule !== self) {
               for (let j = 0; j < rule.selectors.length; j++) {
                   match = selector.match(rule.selectors[j]);
@@ -526,7 +529,7 @@ class Ruleset extends Node {
           output.add((context.compress ? '{' : ' {\n') + tabRuleStr);
       }
 
-      // Compile rules and rulesets
+      // Compile rules
       for (i = 0; (rule = ruleNodes[i]); i++) {
 
           if (i + 1 === ruleNodes.length) {
@@ -534,7 +537,7 @@ class Ruleset extends Node {
           }
 
           const currentLastRule = context.lastRule;
-          if (rule.isRulesetLike(rule)) {
+          if (rule.isRulesLike(rule)) {
               context.lastRule = false;
           }
 
@@ -859,6 +862,5 @@ class Ruleset extends Node {
   }
 }
 
-Ruleset.prototype.type = 'Ruleset';
-Ruleset.prototype.isRuleset = true;
-export default Ruleset;
+Rules.prototype.type = 'Rules'
+export default Rules

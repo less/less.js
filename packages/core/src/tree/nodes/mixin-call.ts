@@ -1,20 +1,29 @@
-import Node from '../node';
-import Selector from './selector';
-import MixinDefinition from './mixin-definition';
-import defaultFunc from '../functions/default';
+import Node, { INodeOptions, ILocationInfo } from '../node'
+import Selector from './selector'
+import List from './list'
+import MixinDefinition from './mixin-definition'
+import defaultFunc from '../functions/default'
 
+interface IMixinCallProps {
+  args: Node[]
+}
+/**
+ * @todo - A mixin call should not return an array, it should replace itself with the eval'd rules
+ *         This will allow vars / mixins to not "leak" on evaluation
+ */
 class MixinCall extends Node {
-    constructor(elements, args, index, currentFileInfo, important) {
-        super();
+  args: [List<Node>]
+  constructor(props: IMixinCallProps, options: INodeOptions, location: ILocationInfo) {
+      super();
 
-        this.selector = new Selector(elements);
-        this.arguments = args || [];
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.important = important;
-        this.allowRoot = true;
-        this.setParent(this.selector, this);
-    }
+      this.selector = new Selector(elements);
+      this.arguments = args || [];
+      this._index = index;
+      this._fileInfo = currentFileInfo;
+      this.important = important;
+      this.allowRoot = true;
+      this.setParent(this.selector, this);
+  }
 
     accept(visitor) {
         if (this.selector) {
@@ -48,7 +57,7 @@ class MixinCall extends Node {
         const defTrue = 1;
         const defFalse = 2;
         let count;
-        let originalRuleset;
+        let originalRules;
         let noArgumentsFilter;
 
         this.selector = this.selector.eval(context);
@@ -111,7 +120,7 @@ class MixinCall extends Node {
                     mixinPath = mixins[m].path;
                     isRecursive = false;
                     for (f = 0; f < context.frames.length; f++) {
-                        if ((!(mixin instanceof MixinDefinition)) && mixin === (context.frames[f].originalRuleset || context.frames[f])) {
+                        if ((!(mixin instanceof MixinDefinition)) && mixin === (context.frames[f].originalRules || context.frames[f])) {
                             isRecursive = true;
                             break;
                         }
@@ -155,9 +164,9 @@ class MixinCall extends Node {
                         try {
                             mixin = candidates[m].mixin;
                             if (!(mixin instanceof MixinDefinition)) {
-                                originalRuleset = mixin.originalRuleset || mixin;
-                                mixin = new MixinDefinition('', [], mixin.rules, null, false, null, originalRuleset.visibilityInfo());
-                                mixin.originalRuleset = originalRuleset;
+                                originalRules = mixin.originalRules || mixin;
+                                mixin = new MixinDefinition('', [], mixin.rules, null, false, null, originalRules.visibilityInfo());
+                                mixin.originalRules = originalRules;
                             }
                             const newRules = mixin.evalCall(context, args, this.important).rules;
                             this._setVisibilityToReplacement(newRules);

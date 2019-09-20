@@ -11,6 +11,9 @@ export type IChildren = {
 }
 
 export type IBaseProps = {
+  /** Each node may have pre or post Nodes for comments or whitespace */
+  pre?: Node
+  post?: Node
   /**
    * Primitive or simple representation of value.
    * This is used in valueOf() for math operations,
@@ -25,17 +28,13 @@ export type IBaseProps = {
    *           but a text value of '[foo=bar]' (for normalization)
    */
   text?: string
-  
-  /**
-   * When nodes only have a single list of sub-nodes, they'll use the nodes prop,
-   * which reduces boilerplate when used. 
-   */
-  nodes?: IChildren[0]
 }
 
-export type IProps = Node[] | ({
-  [P in keyof IBaseProps]: IBaseProps[P]
-} & IChildren)
+export type IObjectProps = {
+    [P in keyof IBaseProps]: IBaseProps[P]
+} & IChildren
+
+export type IProps = Node[] | IObjectProps
 
 /**
  * The result of an eval can be one of these types
@@ -74,11 +73,15 @@ export type INodeOptions = {
 
 export abstract class Node {
 
-  /** 
+  /**
+   * When nodes only have a single list of sub-nodes, they'll use the nodes prop,
+   * which reduces boilerplate when used. 
+   *
    * This will always be present as an array, even if it is empty
-   * Use the generic "nodes" child tree when it's the only list of sub-nodes 
    */
   nodes: Node[]
+  pre: Node
+  post: Node
 
   children: IChildren
   childKeys: string[]
@@ -118,20 +121,34 @@ export abstract class Node {
     if (Array.isArray(props)) {
       const nodes = props
       this.children = { nodes }
-      this.nodes = nodes
       this.childKeys = ['nodes']
     } else {
-      const { value, text, ...children } = props
+      const { pre, post, value, text, ...children } = props
 
       this.children = children
-      if (!children.nodes) {
-        this.children.nodes = []
-      }
-      this.nodes = this.children.nodes
       this.childKeys = Object.keys(children)
       this.value = value
       this.text = text
+      this.pre = pre
+      this.post = post
     }
+    /** Puts each children nodes list at root for convenience */
+    this.childKeys.forEach(key => {
+      Object.defineProperty(this, key, {
+        get() {
+          /** this.nodes always returns an array, even if empty */
+          if (key === 'nodes') {
+            return this.children[key] || []
+          }
+          return this.children[key]
+        },
+        set(newValue: Node[]) {
+          this.children[key] = newValue
+        },
+        enumerable: false,
+        configurable: false
+      })
+    })
     
     this.setParent()
     this.location = location
@@ -149,6 +166,11 @@ export abstract class Node {
 
     this.evaluated = false
     this.visibilityBlocks = 0
+
+    /**
+     * No node should be adding properties to this.children after the constructor
+     */
+    Object.seal(this.children)
   }
 
   protected setParent() {
@@ -181,13 +203,17 @@ export abstract class Node {
   }
 
   toString() {
+    const pre = this.pre ? this.pre.toString() : ''
+    const post = this.post ? this.post.toString() : ''
+    let text: string
     if (this.text !== undefined) {
-      return this.text
+      text = this.text
+    } else if (this.value !== undefined) {
+      text = this.value.toString()
+    } else {
+      text = this.nodes.join('')
     }
-    if (this.value !== undefined) {
-      return this.value.toString()
-    }
-    return this.nodes.join('')
+    return pre + text + post
   }
 
   /** Nodes may have individual compare strategies */
@@ -201,6 +227,8 @@ export abstract class Node {
   clone(context?: EvalContext): this {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
+      pre: this.pre,
+      post: this.post,
       value: this.value,
       text: this.text
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
@@ -220,7 +248,7 @@ export abstract class Node {
     newNode.root = this.root
     newNode.fileRoot = this.fileRoot
     newNode.fileInfo = this.fileInfo
-    newNode.evalOptions = this.evalOptions
+    newNode.lessOptions = this.lessOptions
     newNode.visibilityBlocks = this.visibilityBlocks
     newNode.isVisible = this.isVisible
     newNode.type = this.type

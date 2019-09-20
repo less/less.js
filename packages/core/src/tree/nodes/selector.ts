@@ -9,6 +9,9 @@ import LessError from '../less-error';
 //     elements = ['div',' ','.foo',new Variable('@blah'),'+','p']
 //     text = 'div.foo[bar] +/* */ p'
 //  
+/**
+ * @todo do we need this distinct class?
+ */
 class Selector extends Node {
   nodes: Element[]
   options: {

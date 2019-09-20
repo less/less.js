@@ -38,9 +38,8 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Value', pattern: LexerType.NA },
   { name: 'NonIdent', pattern: LexerType.NA },
   { name: 'AtName', pattern: LexerType.NA },
-    // /./ does not actually match everything (e.g newlines) but it does not matter
-    //     because newlines are matched in the WS token.
-  { name: 'Unknown', pattern: /./ },
+  // This can match anything, so it must be given the lowest priority
+  { name: 'Unknown', pattern: /[\u0000-\uffff]/ },
   { name: 'BlockMarker', pattern: LexerType.NA },
   { name: 'ListMarker', pattern: LexerType.NA },
   { name: 'CompareOperator', pattern: LexerType.NA },
@@ -49,6 +48,7 @@ export const Tokens: rawTokenConfig[] = [
   { name: 'Color', pattern: LexerType.NA },
   { name: 'Function', pattern: LexerType.NA },
   { name: 'Assign', pattern: LexerType.NA },
+  // TODO: can use string literals for simple patterns (e.g: /\)/ vs ')')
   { name: 'Gt', pattern: />/, categories: ['CompareOperator', 'SelectorPart'] },
   { name: 'Lt', pattern: /</, categories: ['CompareOperator'] },
   { name: 'GtEq', pattern: />=/, categories: ['CompareOperator'] },

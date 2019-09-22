@@ -1,38 +1,45 @@
-import Node, { IProps, ILocationInfo, INodeOptions, IBaseProps, IChildren } from '../node'
+import Node, { IBaseProps, IObjectProps, ILocationInfo, INodeOptions } from '../node'
 import Rules from './rules'
 
 /**
  * @todo - an atrule should not have rules, it should have an optional rules,
  *  so that it doesn't have to repeat methods like find() and variable()
  */
-interface IAtRuleProps {
+type IAtRuleProps = {
   name: string
   /** Prelude (everything after name and before ; or {) */
-  prelude: Node,
+  prelude: Node
   /** Optional set of rules */
-  rules: Rules
-}
+  rules?: Rules
+} & IBaseProps
 
 class AtRule extends Node {
   name: string
   rules: Node[]
-  children: {
-    prelude: Node[]
-    rules: Node[]
-  }
+  prelude: Node[]
 
   constructor(props: IAtRuleProps, options: INodeOptions, location: ILocationInfo) {
-    const { name, prelude, rules } = props
-    const children: IChildren = {
-      prelude: [prelude]
-    }
+    const { name, prelude, rules, pre, post } = props
+    const newProps = <IObjectProps>{ pre, post }
+    newProps.prelude = [prelude]
+
     if (rules) {
-      children.rules = [rules]
+      newProps.rules = [rules]
     }
+    
     /** Wrap at rule body in an empty rules for proper scoping and collapsing */
-    super(children, options, location)
+    super(newProps, options, location)
     this.name = name
     this.allowRoot = true
+  }
+
+  toString() {
+    let text = this.pre + this.name + this.prelude.join('')
+    if (this.rules) {
+      text += this.rules.join('')
+    }
+    text += this.post
+    return text
   }
 
   isCharset() {
@@ -42,9 +49,8 @@ class AtRule extends Node {
   eval(context) {
     let mediaPathBackup
     let mediaBlocksBackup
-    let prelude = this.nodes
-    let rules = this.rules
 
+    /** @todo - What is mediaPath and mediaBlocks? */
     // media stored inside other atrule should not bubble over it
     // backpup media bubbling information
     mediaPathBackup = context.mediaPath

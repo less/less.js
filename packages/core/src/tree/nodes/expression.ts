@@ -21,11 +21,11 @@ type IExpressionOptions = {
 class Expression extends Node {
   options: IExpressionOptions
 
-  toArray() {
-    return this.nodes.filter(node =>
-      (!(node instanceof WS) && !(node instanceof Comment))
-    )
-  }
+  // toArray() {
+  //   return this.nodes.filter(node =>
+  //     (!(node instanceof WS) && !(node instanceof Comment))
+  //   )
+  // }
 
   eval(context: EvalContext) {
     const { inBlock, blockInOp } = this.options

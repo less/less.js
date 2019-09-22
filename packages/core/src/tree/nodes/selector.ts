@@ -1,6 +1,5 @@
-import Node from '../node';
-import Element from './element';
-import LessError from '../less-error';
+import Node from '../node'
+import Element from './element'
 
 
 // A selector like div .foo@{blah} +/* */ p
@@ -8,13 +7,14 @@ import LessError from '../less-error';
 //  e.g.
 //     elements = ['div',' ','.foo',new Variable('@blah'),'+','p']
 //     text = 'div.foo[bar] +/* */ p'
-//  
+//
 /**
- * @todo do we need this distinct class?
+ * A selector contains Elements in the nodes collection
  */
 class Selector extends Node {
   nodes: Element[]
   options: {
+    /** @todo ? what is media empty? */
     mediaEmpty: boolean
   }
   getElements(els: Element[]) {

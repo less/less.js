@@ -1,6 +1,7 @@
 import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
 import NumericNode from '../numeric-node'
 import { EvalContext } from 'core/src/contexts'
+import { operate } from '../util'
 
 type INumberProps = number | IProps
 /**
@@ -18,8 +19,23 @@ class NumberValue extends NumericNode {
     }
     super(<IProps>props, options, location)
   }
+
+  valueOf(): number {
+    return <number>super.valueOf()
+  }
+
   /** @todo */
   operate(op: string, other: Node) {
+    if (other instanceof NumericNode) {
+      if (!(other instanceof NumberValue)) {
+        if (op === '/') {
+          throw new Error(`Can't divide a number by a non-number.`)
+        }
+        return other.operate(op, this)
+      } else {
+        return new NumberValue(operate(op, this.valueOf(), other.valueOf()), this.options, this.location)
+      }
+    }
     return this
   }
 }

@@ -1,4 +1,4 @@
-import Node, { IObjectProps, INodeOptions, ILocationInfo, IChildren } from '../node'
+import Node, { INodeOptions, ILocationInfo, IProps } from '../node'
 import Rules from './rules'
 import List from './list'
 
@@ -18,7 +18,7 @@ class QualifiedRule extends Node {
 
   constructor(props: IQualifiedRuleProps, options: INodeOptions, location: ILocationInfo) {
     const { selectors, rules, condition } = props
-    const newProps: IObjectProps = {
+    const newProps: IProps = {
       rules: [rules]
     }
     if (selectors.length !== 1) {

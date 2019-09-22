@@ -58,18 +58,9 @@ export interface IFileInfo {
   entryPath: string
 }
 
-export type IRootOptions = {
-  /** Passed in for every file root node */
-  fileInfo?: IFileInfo
-  /** Only one node, the root node, should pass this in */
-  lessOptions?: IOptions
-}
-
 export type INodeOptions = {
-  [P in keyof IRootOptions]: IRootOptions[P]
-} & {
-  [key: string]: boolean | number
-}
+  [key: string]: boolean | number | string
+} & Partial<IFileInfo>
 
 export abstract class Node {
 
@@ -124,7 +115,6 @@ export abstract class Node {
       this.childKeys = ['nodes']
     } else {
       const { pre, post, value, text, ...children } = props
-
       this.children = children
       this.childKeys = Object.keys(children)
       this.value = value
@@ -153,15 +143,14 @@ export abstract class Node {
     this.setParent()
     this.location = location
   
-    const { fileInfo, lessOptions, ...rest } = options
-    this.options = rest
-    if (options) {
+    if (options.isRoot) {
       this.root = this
-      this.lessOptions = lessOptions
     }
-    if (fileInfo) {
+    if (options.filename) {
       this.fileRoot = this
-      this.fileInfo = fileInfo
+      this.fileInfo = <IFileInfo>options
+    } else {
+      this.options = options
     }
 
     this.evaluated = false
@@ -199,7 +188,7 @@ export abstract class Node {
     if (this.text !== undefined) {
       return this.text
     }
-    return this.nodes.join('')
+    return this.nodes.map(node => node.valueOf()).join('')
   }
 
   toString() {
@@ -222,13 +211,28 @@ export abstract class Node {
   }
 
   /**
+   * Attach properties from inherited node.
+   * This is used when cloning, but also when
+   * doing any kind of node replacement (during eval).
+   */
+  inherit(inheritFrom: Node) {
+    this.pre = inheritFrom.pre
+    this.post = inheritFrom.post
+    this.location = inheritFrom.location
+    this.parent = inheritFrom.parent
+    this.root = inheritFrom.root
+    this.fileRoot = inheritFrom.fileRoot
+    this.fileInfo = inheritFrom.fileInfo
+    this.visibilityBlocks = inheritFrom.visibilityBlocks
+    this.isVisible = inheritFrom.isVisible
+  }
+
+  /**
    * Derived nodes can pass in context to eval and clone at the same time
    */
   clone(context?: EvalContext): this {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
-      pre: this.pre,
-      post: this.post,
       value: this.value,
       text: this.text
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
@@ -236,7 +240,6 @@ export abstract class Node {
 
     newNode.childKeys = [...this.childKeys]
     this.processChildren(newNode, (node: Node) => node.clone(context))
-    newNode.values = newNode.children.values
   
     if (context) {
       newNode.evaluated = true
@@ -244,14 +247,7 @@ export abstract class Node {
       newNode.evaluated = this.evaluated
     }
     /** Copy basic node props */
-    newNode.parent = this.parent
-    newNode.root = this.root
-    newNode.fileRoot = this.fileRoot
-    newNode.fileInfo = this.fileInfo
-    newNode.lessOptions = this.lessOptions
-    newNode.visibilityBlocks = this.visibilityBlocks
-    newNode.isVisible = this.isVisible
-    newNode.type = this.type
+    newNode.inherit(this)
 
     return newNode
   }

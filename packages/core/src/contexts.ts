@@ -96,30 +96,30 @@ export class EvalContext {
     return newPath
   }
 
-  /** @todo - break into environment */
+  /** @todo - should be on environment fileManager */
   normalizePath(path) {
-    const segments = path.split('/').reverse();
+    const segments = path.split('/').reverse()
     let segment;
 
     path = [];
     while (segments.length !== 0) {
-        segment = segments.pop();
-        switch ( segment ) {
-            case '.':
-                break;
-            case '..':
-                if ((path.length === 0) || (path[path.length - 1] === '..')) {
-                    path.push( segment );
-                } else {
-                    path.pop();
-                }
-                break;
-            default:
-                path.push(segment);
-                break;
-        }
+      segment = segments.pop();
+      switch ( segment ) {
+        case '.':
+          break;
+        case '..':
+          if ((path.length === 0) || (path[path.length - 1] === '..')) {
+              path.push( segment );
+          } else {
+              path.pop();
+          }
+          break;
+        default:
+          path.push(segment);
+          break;
+      }
     }
 
-    return path.join('/');
+    return path.join('/')
   }
 }

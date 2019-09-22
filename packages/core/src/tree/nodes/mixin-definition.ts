@@ -9,12 +9,8 @@ import * as utils from '../utils'
 import QualifiedRule, { IQualifiedRuleProps } from './qualified-rule'
 import { INodeOptions, ILocationInfo } from '../node'
 
-/**Rules
- * @todo - A mixin definition should have
- *   1. name (selectors)
- *   2. args
- *   3. condition
- *   4. rules
+/**
+ * @todo - Is .rule {} a mixin or qualified rule?
  */
 interface IMixinDefinitionProps extends IQualifiedRuleProps {
   args: Node[]

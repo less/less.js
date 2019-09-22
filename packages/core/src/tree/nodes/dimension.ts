@@ -21,7 +21,7 @@ class Dimension extends NumericNode {
   // In an operation between two Dimensions,
   // we default to the first Dimension's unit,
   // so `1px + 2` will yield `3px`.
-  operate(op: string, other: Node, context: EvalContext) {
+  operate(op: string, other: Node, context: EvalContext): Node {
     const strictUnits = context.options.strictUnits
     if (other instanceof Dimension) {
       const aUnit = this.nodes[1]
@@ -33,7 +33,9 @@ class Dimension extends NumericNode {
               `Bad units: '${aUnit.value}' and '${bUnit.value}'.`)
         } else if (strictUnits === StrictUnitMode.LOOSE) {
           const result = operate(op, this.value, other.value)
-          return new Dimension(<IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] })
+          return new Dimension(
+            <IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] }
+          ).inherit(this)
         } else {
           /** @todo warning */
           /** Return the operation as-is */
@@ -43,73 +45,26 @@ class Dimension extends NumericNode {
         const result = operate(op, this.value, other.value)
         /** Dividing 8px / 1px will yield 8 */
         if (op === '/') {
-          return new NumberValue(result)
+          return new NumberValue(result).inherit(this)
         } else if (op === '*') {
           throw new Error(`Can't multiply a unit by a unit.`)
         }
-        return new Dimension(<IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] })
+        return new Dimension(
+          <IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] }
+        ).inherit(this)
       }
     } else if (other instanceof NumberValue) {
       const unit = this.nodes[1].clone()
       const result = operate(op, this.nodes[0].value, other.value)
+      return new Dimension(
+        <IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] }
+      ).inherit(this)
     }
-    
-    // let value = this._operate(context, op, this.value, other.value);
-
-    if (op === '+' || op === '-') {
-        if (unit.numerator.length === 0 && unit.denominator.length === 0) {
-            unit = other.unit.clone();
-            if (this.unit.backupUnit) {
-                unit.backupUnit = this.unit.backupUnit;
-            }
-        } else if (other.unit.numerator.length === 0 && unit.denominator.length === 0) {
-            // do nothing
-        } else {
-            other = other.convertTo(this.unit.usedUnits());
-
-            if (context.strictUnits && other.unit.toString() !== unit.toString()) {
-                throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
-                    `Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
-            }
-
-            value = this._operate(context, op, this.value, other.value);
-        }
-    } else if (op === '*') {
-        unit.numerator = unit.numerator.concat(other.unit.numerator).sort();
-        unit.denominator = unit.denominator.concat(other.unit.denominator).sort();
-        unit.cancel();
-    } else if (op === '/') {
-        unit.numerator = unit.numerator.concat(other.unit.denominator).sort();
-        unit.denominator = unit.denominator.concat(other.unit.numerator).sort();
-        unit.cancel();
-    }
-    return new Dimension(value, unit);
-  }
-
-  compare(other) {
-      let a;
-      let b;
-
-      if (!(other instanceof Dimension)) {
-          return undefined;
-      }
-
-      if (this.unit.isEmpty() || other.unit.isEmpty()) {
-          a = this;
-          b = other;
-      } else {
-          a = this.unify();
-          b = other.unify();
-          if (a.unit.compare(b.unit) !== 0) {
-              return undefined;
-          }
-      }
-
-      return Node.numericCompare(a.value, b.value);
+    return this
   }
 
   unify() {
-      return this.convertTo({ length: 'px', duration: 's', angle: 'rad' });
+    return this.convertTo({ length: 'px', duration: 's', angle: 'rad' });
   }
 
   convertTo(conversions) {

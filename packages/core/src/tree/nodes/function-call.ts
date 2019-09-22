@@ -38,7 +38,7 @@ class FunctionCall extends Node {
      */
     const currentMathContext = context.mathOn;
     context.mathOn = !this.calc;
-    if (this.calc || context.inCalc) {
+    if (this.isCalc || context.inCalc) {
         context.enterCalc();
     }
     const args = this.args.map(a => a.eval(context));

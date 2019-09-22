@@ -1,9 +1,7 @@
 
 export enum MathMode {
-  ALWAYS,
-  PARENS_DIVISION,
-  PARENS,
-  STRICT_LEGACY
+  NO_DIVISION = 1,
+  STRICT = 2
 }
 
 export enum RewriteUrlMode {
@@ -16,4 +14,10 @@ export enum StrictUnitMode {
   LOOSE,
   WARN,
   ERROR
+}
+
+export enum EvalErrorMode {
+  THROW,
+  REPORT,
+  IGNORE
 }

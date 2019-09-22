@@ -3,6 +3,7 @@ import { RewriteUrlMode } from '../constants'
 import { IOptions } from '../options'
 import { EvalContext } from '../contexts'
 import { compare } from './util'
+import Rules from './nodes/rules'
 
 export type SimpleValue = string | number | boolean | number[]
 
@@ -12,8 +13,8 @@ export type IChildren = {
 
 export type IBaseProps = {
   /** Each node may have pre or post Nodes for comments or whitespace */
-  pre?: Node
-  post?: Node
+  pre?: Node | string
+  post?: Node | string
   /**
    * Primitive or simple representation of value.
    * This is used in valueOf() for math operations,
@@ -28,10 +29,15 @@ export type IBaseProps = {
    *           but a text value of '[foo=bar]' (for normalization)
    */
   text?: string
+
+  /**
+   * Most nodes will have a single sub-node collection under this property
+   */
+  nodes?: Node[]
 }
 
 export type IObjectProps = {
-    [P in keyof IBaseProps]: IBaseProps[P]
+  [P in keyof IBaseProps]: IBaseProps[P]
 } & IChildren
 
 export type IProps = Node[] | IObjectProps
@@ -71,8 +77,8 @@ export abstract class Node {
    * This will always be present as an array, even if it is empty
    */
   nodes: Node[]
-  pre: Node
-  post: Node
+  pre: Node | string
+  post: Node | string
 
   children: IChildren
   childKeys: string[]
@@ -94,8 +100,8 @@ export abstract class Node {
   location: ILocationInfo
 
   parent: Node
-  root: Node
-  fileRoot: Node
+  root: Rules
+  fileRoot: Rules
 
   visibilityBlocks: number
   
@@ -106,6 +112,8 @@ export abstract class Node {
   isVisible: boolean
 
   type: string
+
+  /** eval() was called */
   evaluated: boolean
 
   constructor(props: IProps, options: INodeOptions = {}, location?: ILocationInfo) {
@@ -119,8 +127,8 @@ export abstract class Node {
       this.childKeys = Object.keys(children)
       this.value = value
       this.text = text
-      this.pre = pre
-      this.post = post
+      this.pre = pre || ''
+      this.post = post || ''
     }
     /** Puts each children nodes list at root for convenience */
     this.childKeys.forEach(key => {
@@ -143,10 +151,10 @@ export abstract class Node {
     this.setParent()
     this.location = location
   
-    if (options.isRoot) {
+    if (options.isRoot && this instanceof Rules) {
       this.root = this
     }
-    if (options.filename) {
+    if (options.filename && this instanceof Rules) {
       this.fileRoot = this
       this.fileInfo = <IFileInfo>options
     } else {
@@ -192,8 +200,6 @@ export abstract class Node {
   }
 
   toString() {
-    const pre = this.pre ? this.pre.toString() : ''
-    const post = this.post ? this.post.toString() : ''
     let text: string
     if (this.text !== undefined) {
       text = this.text
@@ -202,7 +208,7 @@ export abstract class Node {
     } else {
       text = this.nodes.join('')
     }
-    return pre + text + post
+    return this.pre + text + this.post
   }
 
   /** Nodes may have individual compare strategies */
@@ -215,7 +221,7 @@ export abstract class Node {
    * This is used when cloning, but also when
    * doing any kind of node replacement (during eval).
    */
-  inherit(inheritFrom: Node) {
+  inherit(inheritFrom: Node): this {
     this.pre = inheritFrom.pre
     this.post = inheritFrom.post
     this.location = inheritFrom.location
@@ -225,35 +231,82 @@ export abstract class Node {
     this.fileInfo = inheritFrom.fileInfo
     this.visibilityBlocks = inheritFrom.visibilityBlocks
     this.isVisible = inheritFrom.isVisible
+    return this
   }
 
   /**
-   * Derived nodes can pass in context to eval and clone at the same time
+   * Derived nodes can pass in context to eval and clone at the same time.
+   * 
+   * Typically a clone of the entire tree happens at the beginning of the eval cycle,
+   * but it is sometimes re-used by sub-nodes during eval.
+   * 
+   * @param shallow - doesn't deeply clone nodes (retains references)
    */
-  clone(context?: EvalContext): this {
+  clone(shallow: boolean = false): this {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
       value: this.value,
       text: this.text
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
     }, {...this.options}, this.location)
+    
+    /**
+     * First copy over Node-specific props
+     * 
+     * @todo - @addtest - make sure methods are not copied
+     */
+    for (let prop in this) {
+      if (this.hasOwnProperty(prop)) {
+        newNode[prop] = this[prop]
+      }
+    }
 
     newNode.childKeys = [...this.childKeys]
-    this.processChildren(newNode, (node: Node) => node.clone(context))
+
+    /** Copy over props defined in this file */
+    newNode.inherit(this)
+
+    /**
+     * We update the root reference but not fileRoot.
+     * (fileRoot is the original tree)
+     */
+    if (this instanceof Rules && this === this.root) {
+      newNode.root = newNode
+    }
+
+    if (!shallow) {
+      /**
+       * Perform a deep clone
+       * This will overwrite the parent / root props of children nodes.
+       */
+      this.processChildren(newNode, (node: Node) => node.clone(true))
+    }
   
     if (context) {
       newNode.evaluated = true
     } else {
       newNode.evaluated = this.evaluated
     }
-    /** Copy basic node props */
-    newNode.inherit(this)
 
     return newNode
   }
 
   protected getFileInfo(): IFileInfo {
     return this.fileRoot.fileInfo
+  }
+
+  /**
+   * Convenience method if location isn't copied to new nodes
+   * for any reason (such as a custom function)
+   */
+  protected getLocation(): ILocationInfo {
+    let node: Node = this
+    while (node) {
+      if (node.location) {
+        return node.location
+      }
+      node = node.parent
+    }
   }
 
   /**
@@ -269,27 +322,27 @@ export abstract class Node {
     let thisLength = nodeArray.length
     for (let i = 0; i < thisLength; i++) {
       const item = nodeArray[i]
-      const node = processFunc(item)
-      if (Array.isArray(node)) {
-        const nodeLength = node.length
-        if (node.length === 0) {
+      const returnValue = processFunc(item)
+      if (Array.isArray(returnValue)) {
+        const nodeLength = returnValue.length
+        if (returnValue.length === 0) {
           nodeArray.splice(i, 1)
           i--
           continue
         }
         else {
-          nodeArray.splice(i, 1, ...node)
+          nodeArray.splice(i, 1, ...returnValue)
           thisLength += nodeLength
           i += nodeLength
           continue
         }
       }
-      if (node === undefined || node === null || node === false) {
+      if (returnValue === undefined || returnValue === null || returnValue === false) {
         nodeArray.splice(i, 1)
         i--
         continue
       }
-      nodeArray[i] = node
+      nodeArray[i] = returnValue
     }
     return nodeArray
   }
@@ -299,8 +352,13 @@ export abstract class Node {
       let nodes = this.children[key]
       if (nodes) {
         if (node !== this) {
+          /** This is during cloning */
           nodes = [...nodes]
           node.children[key] = this.processNodeArray(nodes, processFunc)
+          nodes.forEach((n: Node) => {
+            n.parent = node
+            n.root = node.root
+          })
         } else {
           this.processNodeArray(nodes, processFunc)
         }
@@ -319,6 +377,14 @@ export abstract class Node {
     }
     this.evaluated = true
     return this
+  }
+
+  error(context: EvalContext, message: string) {
+    if (context) {
+      context.error({ message }, this.fileRoot)
+      return this
+    }
+    throw new Error(message)
   }
 
   /**

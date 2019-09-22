@@ -1,7 +1,9 @@
-import Node, { IProps, INodeOptions, ILocationInfo} from '../node'
+import Node, { IProps, ILocationInfo, IObjectProps} from '../node'
 import NumericNode from '../numeric-node'
 import { fround } from '../util'
-import { type } from 'os'
+import { EvalContext } from '../../contexts'
+import NumberValue from './number-value'
+import { operate } from '../util'
 
 /**
  * @todo move keywords to CST-to-AST stage
@@ -18,6 +20,8 @@ type IColorOptions = {
   colorFormat?: ColorFormat
 }
 
+export type IColorProps = string | number[] | IObjectProps
+
 /**
  * Can be a string?
  */
@@ -26,43 +30,53 @@ class Color extends NumericNode {
   value: [number, number, number, number]
   options: IColorOptions
 
-  constructor(props: IProps, options: IColorOptions = {}, location?: ILocationInfo) {
+  constructor(props: IColorProps, options: IColorOptions = {}, location?: ILocationInfo) {
     if (options.colorFormat === undefined) {
       options.colorFormat = ColorFormat.HEX
     }
-    super(props, options, location)
-    let text = this.text
+    let newProps: IProps
+    if (Array.isArray(props)) {
+      newProps = <IObjectProps>{ value: props }
+    } else if (props.constructor === String) {
+      newProps = <IObjectProps>{ text: props }
+    } else {
+      newProps = <IObjectProps>props
+    }
 
-    if (this.value === undefined && text !== undefined) {
-      const value = []
+    const { value, text } = newProps
+
+    if (value === undefined && text !== undefined) {
+      const newValue: number[] = []
 
       if (text.charAt(0) !== '#') {
         throw new Error(`Only hex string values can be converted to colors.`)
       }
-      text = text.slice(1)
+      const hex = text.slice(1)
 
-      if (text.length >= 6) {
-        text.match(/.{2}/g).map((c, i) => {
+      if (hex.length >= 6) {
+        hex.match(/.{2}/g).map((c, i) => {
           if (i < 3) {
-            value.push(parseInt(c, 16))
+            newValue.push(parseInt(c, 16))
           } else {
-            value.push(parseInt(c, 16) / 255)
+            newValue.push(parseInt(c, 16) / 255)
           }
         })
       } else {
-        text.split('').map((c, i) => {
+        hex.split('').map((c, i) => {
           if (i < 3) {
-            value.push(parseInt(c + c, 16))
+            newValue.push(parseInt(c + c, 16))
           } else {
-            value.push(parseInt(c + c, 16) / 255)
+            newValue.push(parseInt(c + c, 16) / 255)
           }
         })
       }
       /** Make sure an alpha value is present */
-      if (value.length === 3) {
-        value.push(1)
+      if (newValue.length === 3) {
+        newValue.push(1)
       }
+      newProps.value = newValue
     }
+    super(newProps, options, location)
   }
 
   luma() {
@@ -134,76 +148,100 @@ class Color extends NumericNode {
     // our result, in the form of an integer triplet,
     // we create a new Color node to hold the result.
     //
-    operate(context, op, other) {
-      const rgb = new Array(3);
-      const alpha = this.alpha * (1 - other.alpha) + other.alpha;
-      for (let c = 0; c < 3; c++) {
-          rgb[c] = this._operate(context, op, this.rgb[c], other.rgb[c]);
+    operate(op: string, other: Node, context?: EvalContext) {
+      let otherVal: [number, number, number, number]
+      if (other instanceof NumberValue) {
+        const val = other.value
+        otherVal = [val, val, val, 1]
       }
-      return new Color(rgb, alpha);
+      if (!otherVal && !(other instanceof Color)) {
+        return this.error(context,
+          `Incompatible units. An operation can't be between a color and a non-number`
+        )
+      }
+      
+      if (other instanceof Color) {
+        otherVal = other.value
+      }
+      
+      const rgba = new Array(4)
+      /**
+       * @todo - Someone should document why this alpha result is logical for any math op
+       *         It seems arbitrary at first glance, but maybe it's the best result?
+      */
+      const alpha = this.value[3] * (1 - other.value[3]) + other.value[3]
+      for (let c = 0; c < 3; c++) {
+        rgba[c] = operate(op, this.value[c], other.value[c])
+      }
+      rgba[3] = alpha
+      return new Color({ value: rgba }, {...this.options}).inherit(this)
+    }
+
+    private hslObject() {
+      const value = this.value
+      const r = value[0] / 255
+      const g = value[1] / 255
+      const b = value[2] / 255
+      const a = value[3]
+      const max = Math.max(r, g, b)
+      const min = Math.min(r, g, b)
+
+      return { r, g, b, a, max, min }
     }
 
     toHSL() {
-      const r = this.rgb[0] / 255;
-      const g = this.rgb[1] / 255;
-      const b = this.rgb[2] / 255;
-      const a = this.alpha;
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let h;
-      let s;
+      const { r, g, b, a, max, min } = this.hslObject()
+      let h: number
+      let s: number
       const l = (max + min) / 2;
       const d = max - min;
 
       if (max === min) {
-          h = s = 0;
+        h = s = 0
       } else {
-          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
 
-          switch (max) {
-              case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-              case g: h = (b - r) / d + 2;               break;
-              case b: h = (r - g) / d + 4;               break;
-          }
-          h /= 6;
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2;               break;
+          case b: h = (r - g) / d + 4;               break;
+        }
+        h /= 6
       }
-      return { h: h * 360, s, l, a };
+      return { h: h * 360, s, l, a }
     }
 
     // Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
     toHSV() {
-        const r = this.rgb[0] / 255;
-        const g = this.rgb[1] / 255;
-        const b = this.rgb[2] / 255;
-        const a = this.alpha;
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
-        let h;
-        let s;
-        const v = max;
+      const { r, g, b, a, max, min } = this.hslObject()
+      let h: number
+      let s: number
+      const v = max
 
-        const d = max - min;
-        if (max === 0) {
-            s = 0;
-        } else {
-            s = d / max;
-        }
+      const d = max - min;
+      if (max === 0) {
+          s = 0;
+      } else {
+          s = d / max;
+      }
 
-        if (max === min) {
-            h = 0;
-        } else {
-            switch (max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
-            }
-            h /= 6;
-        }
-        return { h: h * 360, s, v, a };
+      if (max === min) {
+          h = 0;
+      } else {
+          switch (max) {
+              case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+              case g: h = (b - r) / d + 2; break;
+              case b: h = (r - g) / d + 4; break;
+          }
+          h /= 6;
+      }
+      return { h: h * 360, s, v, a }
     }
 
     toARGB() {
-        return toHex([this.alpha * 255].concat(this.rgb));
+      const rgb = [...this.value]
+      const alpha = rgb.pop()
+      return toHex([alpha * 255].concat(rgb))
     }
 
     // compare(x) {

@@ -1,6 +1,8 @@
-import { MathMode, RewriteUrlMode } from './constants'
+import { MathMode, RewriteUrlMode, EvalErrorMode } from './constants'
 import { IOptions } from './options'
 import Node from './tree/node'
+import Rules from './tree/nodes/rules'
+import LessError, { ILessError } from './less-error'
 
 function isPathRelative(path: string) {
     return !/^(?:[a-z-]+:|\/|#)/i.test(path);
@@ -10,7 +12,15 @@ function isPathLocalRelative(path: string) {
   return path.charAt(0) === '.';
 }
 
-/** Rethink this class, was called contexts.Eval */
+/** 
+ * @note Renamed from contexts.Eval 
+ * 
+ * This is a class instance that gets passed in during evaluation.
+ * It keeps a reference to global Less options, as well
+ * as environment settings. It also tracks state as it enters
+ * and exits blocks, in order to determine what math settings
+ * should be applied.
+*/
 export class EvalContext {
   inCalc: boolean
   mathOn: boolean
@@ -20,16 +30,33 @@ export class EvalContext {
   options: IOptions
   /**
    * AFAICT, frames are essentially rulesets, used for scope lookups
-   * @todo - refactor with a proper block scope object (w/ scope.ts)
+   * @todo - this doesn't seem to be needed, as we can traverse up through
+   *         the parent tree, although parents aren't always rulesets.
    */
   frames: Node[]
+  environment
+  private errors: ILessError[]
+  private warnings: ILessError[]
 
-  constructor(options: IOptions) {
+  constructor(environment, options: IOptions) {
     this.options = options
+    this.environment = environment
     this.frames = []
     this.importantScope = []
     this.inCalc = false
     this.mathOn = true
+  }
+
+  error(err: ILessError, fileRoot: Rules) {
+    if (this.options.evalErrors === EvalErrorMode.THROW) {
+      throw err
+    }
+    this.errors.push(new LessError(err, fileRoot))
+  }
+
+  warning(warn: ILessError, fileRoot: Rules) {
+    warn.type = 'Warning'
+    this.warnings.push(new LessError(warn, fileRoot))
   }
 
   enterCalc() {
@@ -42,9 +69,7 @@ export class EvalContext {
 
   exitCalc() {
     this.calcStack.pop()
-    if (this.calcStack.length === 0) {
-      this.inCalc = false
-    }
+    this.inCalc = this.calcStack.length !== 0
   }
 
   enterBlock() {
@@ -63,63 +88,63 @@ export class EvalContext {
       return false
     }
     const mathMode = this.options.math
-    if (op === '/' && mathMode !== MathMode.ALWAYS && (!this.blockStack || !this.blockStack.length)) {
+    if (op === '/' && (!this.blockStack || !this.blockStack.length)) {
       return false
     }
-    if (mathMode > MathMode.PARENS_DIVISION) {
+    if (mathMode > MathMode.NO_DIVISION) {
       return this.blockStack && this.blockStack.length
     }
-    return true;
+    return true
   }
 
-  pathRequiresRewrite(path: string) {
-    const isRelative = this.options.rewriteUrls === RewriteUrlMode.LOCAL ? isPathLocalRelative : isPathRelative
+  // pathRequiresRewrite(path: string) {
+  //   const isRelative = this.options.rewriteUrls === RewriteUrlMode.LOCAL ? isPathLocalRelative : isPathRelative
 
-    return isRelative(path)
-  }
+  //   return isRelative(path)
+  // }
 
   /** @todo - break into environment */
-  rewritePath(path: string, rootpath) {
-    let newPath;
+  // rewritePath(path: string, rootpath) {
+  //   let newPath;
 
-    rootpath = rootpath || ''
-    newPath = this.normalizePath(rootpath + path)
+  //   rootpath = rootpath || ''
+  //   newPath = this.normalizePath(rootpath + path)
 
-    // If a path was explicit relative and the rootpath was not an absolute path
-    // we must ensure that the new path is also explicit relative.
-    if (isPathLocalRelative(path) &&
-      isPathRelative(rootpath) &&
-      isPathLocalRelative(newPath) === false) {
-      newPath = `./${newPath}`
-    }
+  //   // If a path was explicit relative and the rootpath was not an absolute path
+  //   // we must ensure that the new path is also explicit relative.
+  //   if (isPathLocalRelative(path) &&
+  //     isPathRelative(rootpath) &&
+  //     isPathLocalRelative(newPath) === false) {
+  //     newPath = `./${newPath}`
+  //   }
 
-    return newPath
-  }
+  //   return newPath
+  // }
 
   /** @todo - should be on environment fileManager */
-  normalizePath(path) {
-    const segments = path.split('/').reverse()
-    let segment;
+  // normalizePath(path) {
+  //   const segments = path.split('/').reverse()
+  //   let segment;
 
-    path = [];
-    while (segments.length !== 0) {
-      segment = segments.pop();
-      switch ( segment ) {
-        case '.':
-          break;
-        case '..':
-          if ((path.length === 0) || (path[path.length - 1] === '..')) {
-              path.push( segment );
-          } else {
-              path.pop();
-          }
-          break;
-        default:
-          path.push(segment);
-          break;
-      }
-    }
+  //   path = [];
+  //   while (segments.length !== 0) {
+  //     segment = segments.pop();
+  //     switch ( segment ) {
+  //       case '.':
+  //         break;
+  //       case '..':
+  //         if ((path.length === 0) || (path[path.length - 1] === '..')) {
+  //             path.push( segment );
+  //         } else {
+  //             path.pop();
+  //         }
+  //         break;
+  //       default:
+  //         path.push(segment);
+  //         break;
+  //     }
+  //   }
 
-    return path.join('/')
-  }
+  //   return path.join('/')
+  // }
 }

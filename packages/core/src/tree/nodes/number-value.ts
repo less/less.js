@@ -2,6 +2,8 @@ import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
 import NumericNode from '../numeric-node'
 import { EvalContext } from 'core/src/contexts'
 import { operate } from '../util'
+import Dimension from './dimension'
+import Color from 'core/dist/tree/nodes/color'
 
 type INumberProps = number | IProps
 /**
@@ -25,13 +27,30 @@ class NumberValue extends NumericNode {
   }
 
   /** @todo */
-  operate(op: string, other: Node) {
+  operate(op: string, other: Node, context?: EvalContext) {
     if (other instanceof NumericNode) {
       if (!(other instanceof NumberValue)) {
         if (op === '/') {
-          throw new Error(`Can't divide a number by a non-number.`)
+          return this.error(context, `Can't divide a number by a non-number.`)
         }
-        return other.operate(op, this)
+        /** 8 - 2px */
+        if (op === '-') {
+          const node = other.operate(op, this)
+          if (node instanceof Dimension) {
+            const newValue = node.value * -1
+            node.value = newValue
+            node.nodes[0].value = newValue
+          } else if (node instanceof Color) {
+            (<number[]>node.value).forEach((val, i) => {
+              if (i < 3) {
+                node.value[i] = node.value[i] * -1
+              }
+            })
+          }
+          return node
+        } else {
+          return other.operate(op, this)
+        }
       } else {
         return new NumberValue(operate(op, this.valueOf(), other.valueOf()), this.options, this.location)
       }

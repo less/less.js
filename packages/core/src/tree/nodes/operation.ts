@@ -33,10 +33,10 @@ class Operation extends Node {
       if (a instanceof NumericNode) {
         return a.operate(op, b, context)
       } else {
-        if (a instanceof Operation && a.nodes[1].value === '/' && context.options.math === MathMode.PARENS_DIVISION) {
+        if (a instanceof Operation && op === '/' && context.options.math === MathMode.NO_DIVISION) {
           return new Operation([a, nodes[1], b], this.options, this.location)
         }
-        throw { type: 'Operation', message: 'Operation on an invalid type' }
+        return this.error(context, 'Operation on an invalid type')
       }
     } else {
       return this

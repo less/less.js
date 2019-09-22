@@ -10,7 +10,7 @@ const mockLocation: ILocationInfo = {
 }
 
 describe('AtRule', () => {
-  it('toString()', () => {
+  it('toString() - at-rule w/o rules', () => {
     const rule = new AtRule({
       name: '@test',
       prelude: new Value(' this is a prelude'),

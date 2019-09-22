@@ -1,11 +1,10 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
+import Node, { IProps, IObjectProps, INodeOptions, ILocationInfo } from '../node'
 import Value from './value'
 import FunctionCaller from '../functions/function-caller'
 
 type IFunctionCallProps = {
-  name: string,
-  nodes: Node[]
-}
+  name: string
+} & IObjectProps
 //
 // A function call node.
 //

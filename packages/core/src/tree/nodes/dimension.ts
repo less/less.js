@@ -1,4 +1,4 @@
-import Node, { IProps } from '../node';
+import Node, { IProps, IObjectProps } from '../node';
 import NumericNode from '../numeric-node'
 import unitConversions from '../data/unit-conversions';
 import Color from './color'
@@ -29,8 +29,11 @@ class Dimension extends NumericNode {
 
       if (aUnit.value !== bUnit.value) {
         if (strictUnits === StrictUnitMode.ERROR) {
-          throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
-              `Bad units: '${aUnit.value}' and '${bUnit.value}'.`)
+          return this.error(
+            context,
+            `Incompatible units. Change the units or use the unit function. ` + 
+              `Bad units: '${aUnit.value}' and '${bUnit.value}'.`
+          )
         } else if (strictUnits === StrictUnitMode.LOOSE) {
           const result = operate(op, this.value, other.value)
           return new Dimension(
@@ -47,7 +50,7 @@ class Dimension extends NumericNode {
         if (op === '/') {
           return new NumberValue(result).inherit(this)
         } else if (op === '*') {
-          throw new Error(`Can't multiply a unit by a unit.`)
+          return this.error(context, `Can't multiply a unit by a unit.`)
         }
         return new Dimension(
           <IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] }
@@ -57,7 +60,7 @@ class Dimension extends NumericNode {
       const unit = this.nodes[1].clone()
       const result = operate(op, this.nodes[0].value, other.value)
       return new Dimension(
-        <IProps>{ value: result, nodes: [new NumberValue(result), aUnit.clone()] }
+        <IProps>{ value: result, nodes: [new NumberValue(result), unit.clone()] }
       ).inherit(this)
     }
     return this

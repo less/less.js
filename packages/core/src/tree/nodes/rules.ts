@@ -1,13 +1,11 @@
 import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
 import Declaration from './declaration'
-import Keyword from './keyword'
 import Comment from './comment'
 import Paren from './block'
 import Selector from './selector'
 import Element from './element'
 import Anonymous from './value'
 import List from './list'
-import { mergeList } from '../util'
 // import contexts from '../contexts';
 // import globalFunctionRegistry from '../functions/function-registry';
 // import defaultFunc from '../functions/default';
@@ -32,85 +30,15 @@ import { mergeList } from '../util'
  */
 class Rules extends Node {
   eval(context) {
-    /**
-     * Selector eval is not like other evals that flatten arrays into the container array
-     * Instead, we use the mergeList utility
-     */
-    const selectorList = this.children.selectors[0].clone()
-    const selectors = selectorList.nodes
-    const createdSelectors: Selector[] = []
-
-    if (selectors && selectors.length > 0) {
-      selectors.forEach((sel: Selector) => {
-        sel.eval(context)
-        const elements = sel.nodes
-        const selectorList: Element[][] = mergeList(elements)
-        selectorList.forEach(elementList => {
-          const newSelector = sel.clone()
-          newSelector.nodes = elementList
-          createdSelectors.push(newSelector)
-        })
-      })
-      this.children.selectors[0].nodes = createdSelectors
-    }
-
-    let selCnt: number
-    let selector: Node
-    let i: number
-    let hasVariable: boolean
-    let hasOnePassingSelector: boolean = false;
-
-    if (this.children.selectors && (selCnt = this.children.selectors.length)) {
-      selectors = new Array(selCnt)
-      defaultFunc.error({
-        type: 'Syntax',
-        message: 'it is currently only allowed in parametric mixin guards,'
-      })
-
-      for (i = 0; i < selCnt; i++) {
-        selector = this.selectors[i].eval(context)
-        for (var j = 0; j < selector.elements.length; j++) {
-            if (selector.elements[j].isVariable) {
-                hasVariable = true
-                break;
-            }
-        }
-        selectors[i] = selector;
-        if (selector.evaldCondition) {
-            hasOnePassingSelector = true;
-        }
-      }
-
-      if (hasVariable) {
-          const toParseSelectors = new Array(selCnt);
-          for (i = 0; i < selCnt; i++) {
-              selector = selectors[i];
-              toParseSelectors[i] = selector.toCSS(context);
-          }
-      }
-
-      defaultFunc.reset();
-    } else {
-        hasOnePassingSelector = true;
-    }
-
-    let rules = this.rules ? utils.copyArray(this.rules) : null;
-    const rules = new Rules(selectors, rules, this.strictImports, this.visibilityInfo());
+    /** Shallow clone */
+    const rules = this.clone(true)
     let rule;
     let subRule;
 
-    rules.originalRules = this;
-    rules.root = this.root;
-    rules.firstRoot = this.firstRoot;
-    rules.allowImports = this.allowImports;
-
-    if (this.debugInfo) {
-        rules.debugInfo = this.debugInfo;
-    }
-
-    if (!hasOnePassingSelector) {
-        rules.length = 0;
-    }
+    // rules.originalRules = this;
+    // rules.root = this.root;
+    // rules.firstRoot = this.firstRoot;
+    // rules.allowImports = this.allowImports
 
     // inherit a function registry from the frames stack when possible;
     // otherwise from the global registry

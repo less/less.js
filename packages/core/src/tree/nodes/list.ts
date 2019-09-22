@@ -8,6 +8,10 @@ import Node from '../node';
 type NodeType<T> = T extends Node ? T : never
 class List<T = Node> extends Node {
   nodes: NodeType<T>[]
+
+  toString() {
+    return this.nodes.join(',')
+  }
 }
 List.prototype.type = 'List'
 export default List

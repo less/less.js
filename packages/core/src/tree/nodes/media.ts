@@ -1,7 +1,7 @@
 import Rules from './rules';
-import Value from './list';
+import List from './list';
 import Selector from './selector';
-import Anonymous from './generic';
+import Value from './value';
 import Expression from './expression';
 import AtRule from './at-rule';
 import * as utils from '../utils';
@@ -15,7 +15,7 @@ class Media extends AtRule {
 
         const selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
 
-        this.features = new Value(features);
+        this.features = new List(features);
         this.rules = [new Rules(selectors, value)];
         this.rules[0].allowImports = true;
         this.copyVisibilityInfo(visibilityInfo);
@@ -109,11 +109,11 @@ class Media extends AtRule {
         //    a and e
         //    b and c and d
         //    b and c and e
-        this.features = new Value(this.permute(path).map(path => {
-            path = path.map(fragment => fragment.toCSS ? fragment : new Anonymous(fragment));
+        this.features = new List(this.permute(path).map(path => {
+            path = path.map(fragment => fragment.toCSS ? fragment : new Value(fragment));
 
             for (i = path.length - 1; i > 0; i--) {
-                path.splice(i, 0, new Anonymous('and'));
+                path.splice(i, 0, new Value('and'));
             }
 
             return new Expression(path);
@@ -121,7 +121,7 @@ class Media extends AtRule {
         this.setParent(this.features, this);
 
         // Fake a tree-node that doesn't output anything.
-        return new Rules([], []);
+        return new Rules([]);
     }
 
     permute(arr) {

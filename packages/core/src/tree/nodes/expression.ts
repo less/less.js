@@ -27,13 +27,15 @@ class Expression extends Node {
   //   )
   // }
 
+  /**
+   * @todo - why not just do enter / exit block in the block node?
+   */
   eval(context: EvalContext) {
     const { inBlock, blockInOp } = this.options
     let returnValue: any
     const mathOn = context.isMathOn()
 
-    const inParenthesis = inBlock && 
-      (context.options.math !== MathMode.STRICT_LEGACY || !blockInOp)
+    const inParenthesis = inBlock && !blockInOp
 
     let doubleParen = false
     if (inParenthesis) {
@@ -51,7 +53,7 @@ class Expression extends Node {
       ) {
         doubleParen = true
       }
-      returnValue = value.eval(context)
+      returnValue = value.eval(context).inherit(this)
     } else {
       returnValue = this
     }
@@ -60,7 +62,7 @@ class Expression extends Node {
     }
     if (inBlock && blockInOp && !mathOn && !doubleParen 
       && (!(returnValue instanceof Dimension))) {
-      returnValue = new Block(returnValue, {}, this.location)
+      returnValue = new Block(returnValue, {}, this.location).inherit(this)
     }
     return returnValue
   }

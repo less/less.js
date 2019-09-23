@@ -6,6 +6,9 @@ import Expression from './expression';
 import AtRule from './at-rule';
 import * as utils from '../utils';
 
+/**
+ * Removed, move "bubbling" to tree-flattening visitor
+ */
 class Media extends AtRule {
     constructor(value, features, index, currentFileInfo, visibilityInfo) {
         super();
@@ -23,25 +26,6 @@ class Media extends AtRule {
         this.setParent(selectors, this);
         this.setParent(this.features, this);
         this.setParent(this.rules, this);
-    }
-
-    isRulesLike() {
-        return true;
-    }
-
-    accept(visitor) {
-        if (this.features) {
-            this.features = visitor.visit(this.features);
-        }
-        if (this.rules) {
-            this.rules = visitor.visitArray(this.rules);
-        }
-    }
-
-    genCSS(context, output) {
-        output.add('@media ', this._fileInfo, this._index);
-        this.features.genCSS(context, output);
-        this.outputRules(context, output, this.rules);
     }
 
     eval(context) {

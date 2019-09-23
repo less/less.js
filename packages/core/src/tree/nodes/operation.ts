@@ -4,9 +4,9 @@ import Color from './color'
 import Dimension from './dimension'
 import NumberValue from './number-value'
 import Value from './value'
-import { operate } from '../util'
+import { operate } from '../util/math'
 import { MathMode } from '../../constants'
-import { EvalContext } from '../../contexts'
+import { EvalContext } from '../contexts'
 
 /**
  * Values can only be 3 Nodes

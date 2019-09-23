@@ -1,7 +1,7 @@
 import Node, { IProps, ILocationInfo } from '../node'
-import Variable from './variable-ref'
+import Variable from './variable'
 import Property from './property-ref'
-import { primitiveCompare } from '../util'
+import { primitiveCompare } from '../util/math'
 
 type IQuotedOptions = {
   escaped?: boolean

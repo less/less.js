@@ -1,5 +1,5 @@
 import Node from './node'
-import { EvalContext } from '../contexts'
+import { EvalContext } from './contexts'
 
 /**
  * Numeric nodes can be used in math expressions

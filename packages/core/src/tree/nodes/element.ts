@@ -30,7 +30,7 @@ class Element extends Node {
   }
 
   toString() {
-    return this.nodes[0].text + this.nodes[1].text
+    return this.nodes[0].toString() + this.nodes[1].toString()
   }
 
   toCSS(context = {}) {

@@ -1,6 +1,7 @@
 // import * as utils from './utils';
 import Rules from './tree/nodes/rules'
 import { ILocationInfo } from './tree/node'
+import { TextFormat, TextStyleFunction } from './types'
 
 export interface ILessError {
   message: string
@@ -111,7 +112,7 @@ class LessError extends Error {
    * An overridden version of the default Object.prototype.toString
    * which uses additional information to create a helpful message.
    */
-  toString(options: { stylize?: (str: string, color: string) => string } = {}): string {
+  toString(stylize?: TextStyleFunction): string {
     const file = this.file
     let lines: Map<number, string>
 
@@ -141,46 +142,43 @@ class LessError extends Error {
       extract = ['', '', '']
     }
 
-    let stylize = (str: string, color: string) => str
-
-    if (options.stylize) {
-      if (options.stylize.constructor !== Function) {
-          throw Error(`The 'stylize' option for LessError should be a function.`);
-      }
-      stylize = options.stylize
+    if (!stylize) {
+      stylize = (str: string) => str
+    } else if (stylize.constructor !== Function) {
+      throw Error(`The 'stylize' option for LessError should be a function.`);
     }
 
     if (this.line !== null) {
       if (extract[0]) {
-        errorLines.push(stylize(`${this.line - 1} ${extract[0]}`, 'grey'))
+        errorLines.push(stylize(`${this.line - 1} ${extract[0]}`, TextFormat.GREY))
       }
 
       if (extract[1]) {
         let errorTxt = `${this.line} `
         if (extract[1]) {
           errorTxt += extract[1].slice(0, this.column) +
-            stylize(stylize(stylize(extract[1].substr(this.column, 1), 'bold') +
-              extract[1].slice(this.column + 1), 'red'), 'inverse')
+            stylize(stylize(stylize(extract[1].substr(this.column, 1), TextFormat.BOLD) +
+              extract[1].slice(this.column + 1), TextFormat.RED), TextFormat.INVERSE)
         }
         errorLines.push(errorTxt)
       }
 
       if (extract[2]) {
-        errorLines.push(stylize(`${this.line + 1} ${extract[2]}`, 'grey'))
+        errorLines.push(stylize(`${this.line + 1} ${extract[2]}`, TextFormat.GREY))
       }
-      error = `${errorLines.join('\n') + stylize('', 'reset')}\n`
+      error = `${errorLines.join('\n') + stylize('', TextFormat.RESET)}\n`
     }
 
     if (this.type === 'Warning') {
-      message = stylize(`${this.message}`, 'grey')
+      message = stylize(`${this.message}`, TextFormat.GREY)
     } else {
-      message = stylize(`${this.type}Error: ${this.message}`, 'red')
+      message = stylize(`${this.type}Error: ${this.message}`, TextFormat.RED)
     }
     if (this.filename) {
-      message += stylize(' in ', 'red') + this.filename
+      message += stylize(' in ', TextFormat.RED) + this.filename
     }
     if (this.line) {
-      message += stylize(` on line ${this.line}, column ${this.column + 1}:`, 'grey')
+      message += stylize(` on line ${this.line}, column ${this.column + 1}:`, TextFormat.GREY)
     }
 
     message += `\n${error}`

@@ -35,10 +35,10 @@ class FunctionCall extends Node {
     /**
      * Turn off math for calc(), and switch back on for evaluating nested functions
      */
-    const currentMathContext = context.mathOn;
-    context.mathOn = !this.calc;
+    const currentMathContext = context.mathOn
+    context.mathOn = !this.isCalc
     if (this.isCalc || context.inCalc) {
-        context.enterCalc();
+        context.enterCalc()
     }
     const args = this.args.map(a => a.eval(context));
     if (this.calc || context.inCalc) {

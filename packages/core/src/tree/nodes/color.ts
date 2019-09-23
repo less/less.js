@@ -1,9 +1,9 @@
 import Node, { IProps, ILocationInfo, IObjectProps} from '../node'
 import NumericNode from '../numeric-node'
-import { fround } from '../util'
-import { EvalContext } from '../../contexts'
+import { fround } from '../util/math'
+import { EvalContext } from '../contexts'
 import NumberValue from './number-value'
-import { operate } from '../util'
+import { operate } from '../util/math'
 
 /**
  * @todo move keywords to CST-to-AST stage

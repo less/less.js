@@ -6,7 +6,7 @@ import AtRule from './at-rule'
 import DetachedRules from './detached-rules'
 import Operation from './operation'
 import Dimension from './dimension'
-import VariableRef from './variable-ref'
+import VariableRef from './variable'
 import PropertyRef from './property-ref'
 import Rules from './rules';
 import Element from './element';

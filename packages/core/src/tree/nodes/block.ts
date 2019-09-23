@@ -1,4 +1,5 @@
 import Node from '../node'
+import { EvalContext } from '../contexts'
 
 /**
  * A () [] or {} block that holds an expression
@@ -6,6 +7,17 @@ import Node from '../node'
  * 
  * nodes will typically be [Value<'('>, Node, Value<')'>]
  */
-class Block extends Node {}
+class Block extends Node {
+  /** 
+   * @todo - if block value was an operation, then
+   *         we should return the result, not this block
+   */
+  eval(context: EvalContext) {
+    context.enterBlock()
+    const block = super.eval(context)
+    context.exitBlock()
+    return block
+  }
+}
 Block.prototype.type = 'Block'
 export default Block

@@ -1,5 +1,6 @@
-import Node, { IBaseProps, IObjectProps, ILocationInfo, INodeOptions } from '../node'
+import Node, { IBaseProps, IObjectProps, ILocationInfo } from '../node'
 import Rules from './rules'
+import { EvalContext } from '../contexts'
 
 /**
  * @todo - an atrule should not have rules, it should have an optional rules,
@@ -13,13 +14,28 @@ type IAtRuleProps = {
   rules?: Rules
 } & IBaseProps
 
+type IAtRuleOptions = {
+  /**
+   * For cases like @media and @supports,
+   * this option will bubble the rule to the root.
+   * 
+   * If two media of the same type are nested, their expression
+   * lists (prelude) will be merged with 'and'
+   */
+  bubbleRule?: boolean
+}
+
 class AtRule extends Node {
   name: string
   rules: Node[]
   prelude: Node[]
+  options: IAtRuleOptions
 
-  constructor(props: IAtRuleProps, options: INodeOptions, location: ILocationInfo) {
+  constructor(props: IAtRuleProps, options: IAtRuleOptions, location: ILocationInfo) {
     const { name, prelude, rules, pre, post } = props
+    if (options.bubbleRule === undefined && (/@media|@supports/i.test(name))) {
+      options.bubbleRule = true
+    }
     const newProps = <IObjectProps>{ pre, post }
     newProps.prelude = [prelude]
 
@@ -42,11 +58,7 @@ class AtRule extends Node {
     return text
   }
 
-  isCharset() {
-    return '@charset' === this.name
-  }
-
-  eval(context) {
+  eval(context: EvalContext) {
     let mediaPathBackup
     let mediaBlocksBackup
 
@@ -69,5 +81,5 @@ class AtRule extends Node {
   }
 }
 
-AtRule.prototype.type = 'AtRule';
-export default AtRule;
+AtRule.prototype.type = 'AtRule'
+export default AtRule

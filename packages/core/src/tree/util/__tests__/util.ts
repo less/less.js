@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import 'mocha'
 
-import { mergeList } from '../tree/util'
+import { mergeList } from '../math'
 
 describe('listMerge()', () => {
   it('should return the same list', () => {

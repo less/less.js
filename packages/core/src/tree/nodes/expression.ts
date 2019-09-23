@@ -3,7 +3,7 @@ import Block from './block'
 import Comment from './comment'
 import WS from './ws'
 import Dimension from './dimension'
-import { EvalContext } from '../../contexts'
+import { EvalContext } from '../contexts'
 import { MathMode } from '../../constants'
 
 type IExpressionOptions = {

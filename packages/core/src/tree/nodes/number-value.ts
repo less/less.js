@@ -1,7 +1,7 @@
 import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
 import NumericNode from '../numeric-node'
-import { EvalContext } from 'core/src/contexts'
-import { operate } from '../util'
+import { EvalContext } from 'core/src/tree/contexts'
+import { operate } from '../util/math'
 import Dimension from './dimension'
 import Color from 'core/dist/tree/nodes/color'
 

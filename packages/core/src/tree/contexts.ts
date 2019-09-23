@@ -1,8 +1,7 @@
-import { MathMode, RewriteUrlMode, EvalErrorMode } from './constants'
-import { IOptions } from './options'
-import Node from './tree/node'
-import Rules from './tree/nodes/rules'
-import LessError, { ILessError } from './less-error'
+import { MathMode, RewriteUrlMode, EvalErrorMode } from '../constants'
+import { IOptions } from '../options'
+import Rules from './nodes/rules'
+import LessError, { ILessError } from '../less-error'
 
 function isPathRelative(path: string) {
     return !/^(?:[a-z-]+:|\/|#)/i.test(path);
@@ -33,10 +32,13 @@ export class EvalContext {
    * @todo - this doesn't seem to be needed, as we can traverse up through
    *         the parent tree, although parents aren't always rulesets.
    */
-  frames: Node[]
+  frames: Rules[]
   environment
   private errors: ILessError[]
   private warnings: ILessError[]
+  scope: {
+    [key: string]: any
+  }
 
   constructor(environment, options: IOptions) {
     this.options = options
@@ -45,6 +47,8 @@ export class EvalContext {
     this.importantScope = []
     this.inCalc = false
     this.mathOn = true
+    /** Replacement for function registry */
+    this.scope = Object.create(environment.scope)
   }
 
   error(err: ILessError, fileRoot: Rules) {
@@ -95,6 +99,11 @@ export class EvalContext {
       return this.blockStack && this.blockStack.length
     }
     return true
+  }
+
+  resolveModule(fileContent: string) {
+    /** This will return a JS object from a string */
+    const obj = this.environment
   }
 
   // pathRequiresRewrite(path: string) {

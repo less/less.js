@@ -1,7 +1,11 @@
+import Color from '../nodes/color'
+import Value from '../nodes/value'
+import Node, { IObjectProps } from '../node'
+
 /**
  * Integer values for CSS color keywords
  */
-export default {
+const Colors = {
   aliceblue: 15792383,
   antiquewhite: 16444375,
   aqua: 65535,
@@ -150,4 +154,26 @@ export default {
   whitesmoke: 16119285,
   yellow: 16776960,
   yellowgreen: 10145074
+}
+
+export const valueFromKeyword = (keyword: string): Node => {
+  const key = keyword.toLowerCase()
+  let c: Node
+  if (Colors.hasOwnProperty(key)) {
+    const int = Colors[key]
+    const value = []
+    int.toString(16).match(/.{2}/g).map((c: string) => {
+      value.push(parseInt(c, 16))
+    })
+    value.push(1)
+
+    c = new Color(<IObjectProps>{ value, text: keyword })
+  }
+  else if (key === 'transparent') {
+    c = new Color(<IObjectProps>{ value: [0, 0, 0, 0], text: keyword })
+  } else {
+    c = new Value(keyword)
+  }
+
+  return c
 }

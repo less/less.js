@@ -1,9 +1,10 @@
 import { CstNodeLocation } from 'chevrotain'
-import { RewriteUrlMode } from '../constants'
 import { IOptions } from '../options'
-import { EvalContext } from '../contexts'
-import { compare } from './util'
+import { EvalContext } from './contexts'
+import { compare } from './util/compare'
 import Rules from './nodes/rules'
+import Import from './nodes/import'
+import Declaration from './nodes/declaration'
 
 export type SimpleValue = string | number | boolean | number[]
 
@@ -68,6 +69,15 @@ export type INodeOptions = {
   [key: string]: boolean | number | string
 } & Partial<IFileInfo>
 
+export enum MatchOption {
+  /** Return first result */
+  FIRST,
+  /** Return all matches in the ruleset where the first match is found */
+  IN_RULES,
+  /** Return all matches found while searching up the tree */
+  IN_SCOPE
+}
+
 export abstract class Node {
 
   /**
@@ -104,6 +114,7 @@ export abstract class Node {
   fileRoot: Rules
 
   visibilityBlocks: number
+  evalFirst: boolean
   
   // false - the node must not be visible
   // true - the node must be visible
@@ -123,6 +134,10 @@ export abstract class Node {
       this.childKeys = ['nodes']
     } else {
       const { pre, post, value, text, ...children } = props
+       /** nodes is always present as an array, even if empty */  
+      if (!children.nodes) {
+        children.nodes = []
+      }
       this.children = children
       this.childKeys = Object.keys(children)
       this.value = value
@@ -130,14 +145,11 @@ export abstract class Node {
       this.pre = pre || ''
       this.post = post || ''
     }
+    
     /** Puts each children nodes list at root for convenience */
     this.childKeys.forEach(key => {
       Object.defineProperty(this, key, {
         get() {
-          /** this.nodes always returns an array, even if empty */
-          if (key === 'nodes') {
-            return this.children[key] || []
-          }
           return this.children[key]
         },
         set(newValue: Node[]) {
@@ -309,6 +321,65 @@ export abstract class Node {
     }
   }
 
+  find(matchFunction: Function, option: MatchOption = MatchOption.FIRST): Node | Node[] {
+    let node: Node = this
+    const matches: Node[] = []
+    const crawlRules = (rulesNode: Rules) => {
+      const nodes = rulesNode.nodes
+      const nodeLength = this.nodes.length
+
+      for (let i = nodeLength; i > 0; i--) {
+        const node = nodes[i - 1]
+        const match = matchFunction(node)
+        if (match) {
+          matches.push(match)
+          if (option === MatchOption.FIRST) {
+            break
+          }
+        }
+        if (node instanceof Import) {
+          const content = node.content[0]
+          if (content instanceof Rules) {
+            crawlRules(content)
+          }
+        }
+      }
+    }
+    while (node) {
+      if (node instanceof Rules) {
+        crawlRules(node)
+        if (matches.length && option !== MatchOption.IN_SCOPE) {
+          if (MatchOption.FIRST) {
+            return matches[0]
+          }
+          return matches
+        }
+      }
+
+      node = this.parent
+    }
+
+    return matches.length ? matches : undefined
+  }
+
+  /** Moved from Rules property() method */
+  findProperty(name: string): Declaration[] {
+    return <Declaration[]>this.find((node: Node) => (
+      node instanceof Declaration &&
+      !node.options.isVariable &&
+      node.value === name
+    ), MatchOption.IN_RULES)
+  }
+
+  /** Moved from Rules variable() method */
+  findVariable(name: string): Declaration {
+    return <Declaration>this.find((node: Node) => (
+      node instanceof Declaration &&
+      node.options.isVariable &&
+      node.value === name
+    ), MatchOption.FIRST)
+  }
+
   /**
    * This is an in-place mutation of a node array
    * 
@@ -371,7 +442,8 @@ export abstract class Node {
    * However, some nodes after evaluating will of course override
    * this to produce different node types or primitive values
    */
-  eval(context?: EvalContext): any {
+  eval(context?: EvalContext): EvalReturn {
+    /** All nodes that override eval() should (usually) exit if they're evaluated */
     if (!this.evaluated) {
       this.processChildren(this, (node: Node) => node.eval(context))
     }
@@ -385,6 +457,13 @@ export abstract class Node {
       return this
     }
     throw new Error(message)
+  }
+
+  warn(context: EvalContext, message: string) {
+    if (context) {
+      context.warning({ message }, this.fileRoot)
+    }
+    return this
   }
 
   /**

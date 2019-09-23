@@ -1,4 +1,4 @@
-import Node from '../node';
+import Node, { IProps, INodeOptions, ILocationInfo } from '../node';
 
 export type NodeType<T> = T extends Node ? T : never
 /**
@@ -8,6 +8,16 @@ export type NodeType<T> = T extends Node ? T : never
  */
 class List<T = Node> extends Node {
   nodes: NodeType<T>[]
+
+  constructor(props: Node[] | IProps, options?: INodeOptions, location?: ILocationInfo) {
+    let newProps: IProps
+    if (Array.isArray) {
+      newProps = <IProps>{ nodes: props }
+    } else {
+      newProps = <IProps>props
+    }
+    super(newProps, options, location)
+  }
 
   toString() {
     return this.nodes.join(',')

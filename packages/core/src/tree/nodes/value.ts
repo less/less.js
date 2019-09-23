@@ -1,11 +1,6 @@
-import Node, { ILocationInfo, ISimpleProps, IProps, INodeOptions } from '../node'
+import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
 
-type IValueProps = string | {
-  /** Normalized value */
-  value: string
-  /** Actual text value */
-  text: string
-}
+type IValueProps = string | IProps
 /**
  * This is any generic (unquoted string fragment) value
  *   e.g. new Value('this is an unquoted value')
@@ -19,11 +14,11 @@ class Value extends Node {
   value: string
 
   constructor(props: IValueProps, options?: INodeOptions, location?: ILocationInfo) {
-    let returnProps: ISimpleProps
+    let returnProps: IProps
     if (props.constructor === String) {
-      returnProps = <ISimpleProps>{ text: <string>props, value: <string>props }
+      returnProps = <IProps>{ text: <string>props, value: <string>props }
     } else {
-      returnProps = <ISimpleProps>props
+      returnProps = <IProps>props
       if (returnProps.value === undefined) {
         returnProps.value = returnProps.text
       }

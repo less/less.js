@@ -8,8 +8,9 @@ import Element from './element'
 //     elements = ['div',' ','.foo',new Variable('@blah'),'+','p']
 //     text = 'div.foo[bar] +/* */ p'
 //
-/**
- * A selector contains Elements in the nodes collection
+/** 
+ * A Selector node is really just an expression wrapper for elements,
+ * so that it can hold pre and post nodes for a selector list.
  */
 class Selector extends Node {
   nodes: Element[]

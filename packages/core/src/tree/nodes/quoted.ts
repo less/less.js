@@ -1,12 +1,11 @@
 import Node, { IProps, ILocationInfo } from '../node'
-import Variable from './variable'
-import Property from './property-ref'
-import { primitiveCompare } from '../util/math'
+import Value from './value'
 
 type IQuotedOptions = {
   escaped?: boolean
 }
 
+type IQuotedNodes = [Value, Node, Value]
 /**
  * There's nothing special about a quoted node, other than
  * the first and last member will contain quote marks
@@ -19,12 +18,16 @@ type IQuotedOptions = {
  *   2) we can do normalized equality checks with the "inner" nodes
  */
 class Quoted extends Node {
-  nodes: [Node, Node, Node]
+  nodes: IQuotedNodes
 
   constructor(props: IProps, options: IQuotedOptions = {}, location?: ILocationInfo) {
     if (options.escaped === undefined) {
       options.escaped = false
     }
+    if (Array.isArray(props)) {
+      props = { nodes: props }
+    }
+
     super(props, options, location)
     this.allowRoot = options.escaped
   }
@@ -34,5 +37,5 @@ class Quoted extends Node {
   }
 }
 
-Quoted.prototype.type = 'Quoted';
+Quoted.prototype.type = 'Quoted'
 export default Quoted;

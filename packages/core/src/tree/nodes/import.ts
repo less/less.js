@@ -1,4 +1,4 @@
-import Node, { IObjectProps, ILocationInfo } from '../node'
+import Node, { IProps, ILocationInfo } from '../node'
 import Media from './media'
 import URL from './url'
 import Quoted from './quoted'
@@ -37,7 +37,7 @@ class Import extends Node {
   path: Node[]
   options: IImportOptions
 
-  constructor(props: IObjectProps, options: IImportOptions, location: ILocationInfo) {
+  constructor(props: IProps, options: IImportOptions, location: ILocationInfo) {
     if (options.less !== undefined || options.inline) {
       options.css = !options.less || options.inline
     }
@@ -98,8 +98,8 @@ class Import extends Node {
             registry.addMultiple( this.root.functions );
         }
 
-        return [];
-  }
+        // return [];
+  
 
         if (this.skip) {
             if (typeof this.skip === 'function') {

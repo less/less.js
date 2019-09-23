@@ -1,11 +1,8 @@
-import Node, { IBaseProps, IObjectProps, ILocationInfo } from '../node'
+import Node, { IBaseProps, IProps, ILocationInfo } from '../node'
 import Rules from './rules'
 import { EvalContext } from '../contexts'
 
-/**
- * @todo - an atrule should not have rules, it should have an optional rules,
- *  so that it doesn't have to repeat methods like find() and variable()
- */
+
 type IAtRuleProps = {
   name: string
   /** Prelude (everything after name and before ; or {) */
@@ -31,12 +28,13 @@ class AtRule extends Node {
   prelude: Node[]
   options: IAtRuleOptions
 
+  /** @todo - when cloning, will prelude get wrapped twice? - should refactor */
   constructor(props: IAtRuleProps, options: IAtRuleOptions, location: ILocationInfo) {
     const { name, prelude, rules, pre, post } = props
     if (options.bubbleRule === undefined && (/@media|@supports/i.test(name))) {
       options.bubbleRule = true
     }
-    const newProps = <IObjectProps>{ pre, post }
+    const newProps = <IProps>{ pre, post }
     newProps.prelude = [prelude]
 
     if (rules) {

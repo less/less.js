@@ -1,4 +1,4 @@
-import Node, { IProps, ILocationInfo, IObjectProps} from '../node'
+import Node, { IProps, ILocationInfo } from '../node'
 import NumericNode from '../numeric-node'
 import { fround } from '../util/math'
 import { EvalContext } from '../contexts'
@@ -20,7 +20,7 @@ type IColorOptions = {
   colorFormat?: ColorFormat
 }
 
-export type IColorProps = string | number[] | IObjectProps
+export type IColorProps = string | number[] | IProps
 
 /**
  * Can be a string?
@@ -36,11 +36,11 @@ class Color extends NumericNode {
     }
     let newProps: IProps
     if (Array.isArray(props)) {
-      newProps = <IObjectProps>{ value: props }
+      newProps = <IProps>{ value: props }
     } else if (props.constructor === String) {
-      newProps = <IObjectProps>{ text: props }
+      newProps = <IProps>{ text: props }
     } else {
-      newProps = <IObjectProps>props
+      newProps = <IProps>props
     }
 
     const { value, text } = newProps

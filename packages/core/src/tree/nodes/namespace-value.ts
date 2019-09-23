@@ -3,6 +3,10 @@ import Variable from './variable';
 import Rules from './rules';
 import Selector from './selector';
 
+/**
+ * @todo - This should be a lot simpler now that rulesets and qualified rules
+ *         have their rules collections normalized
+ */
 class NamespaceValue extends Node {
     constructor(ruleCall, lookups, important, index, fileInfo) {
         super();

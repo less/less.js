@@ -13,13 +13,14 @@ class Element extends Node {
   }
 
   constructor(props: IElementProps, options?: INodeOptions, location?: ILocationInfo) {
-    let valueNodes: Node[]
+    let nodes: Node[]
     if (props[0].constructor === String) {
-      valueNodes = [new Value(<string>props[0]), new Value(<string>props[1])]
+      nodes = [new Value(<string>props[0]), new Value(<string>props[1])]
     } else {
-      valueNodes = <Node[]>((<IBaseProps>props).nodes || props)
+      nodes = <Node[]>((<IBaseProps>props).nodes || props)
     }
-    super(valueNodes, options, location)
+ 
+    super({ nodes }, options, location)
   }
 
   /** Indexable value */

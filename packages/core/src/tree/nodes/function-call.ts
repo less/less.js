@@ -1,16 +1,18 @@
-import Node, { IProps, IObjectProps, INodeOptions, ILocationInfo } from '../node'
+import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
 import Value from './value'
 import FunctionCaller from '../functions/function-caller'
 
 type IFunctionCallProps = {
   name: string
-} & IObjectProps
+  args: Node[]
+} & IProps
 //
 // A function call node.
 //
 class FunctionCall extends Node {
   name: string
   isCalc: boolean
+  args: Node[]
 
   constructor(props: IFunctionCallProps, options: INodeOptions, location: ILocationInfo) {
     const { name, ...rest } = props

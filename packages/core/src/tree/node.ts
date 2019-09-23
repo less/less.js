@@ -37,11 +37,9 @@ export type IBaseProps = {
   nodes?: Node[]
 }
 
-export type IObjectProps = {
+export type IProps = {
   [P in keyof IBaseProps]: IBaseProps[P]
 } & IChildren
-
-export type IProps = Node[] | IObjectProps
 
 /**
  * The result of an eval can be one of these types
@@ -128,23 +126,17 @@ export abstract class Node {
   evaluated: boolean
 
   constructor(props: IProps, options: INodeOptions = {}, location?: ILocationInfo) {
-    if (Array.isArray(props)) {
-      const nodes = props
-      this.children = { nodes }
-      this.childKeys = ['nodes']
-    } else {
-      const { pre, post, value, text, ...children } = props
-       /** nodes is always present as an array, even if empty */  
-      if (!children.nodes) {
-        children.nodes = []
-      }
-      this.children = children
-      this.childKeys = Object.keys(children)
-      this.value = value
-      this.text = text
-      this.pre = pre || ''
-      this.post = post || ''
+    const { pre, post, value, text, ...children } = props
+      /** nodes is always present as an array, even if empty */  
+    if (!children.nodes) {
+      children.nodes = []
     }
+    this.children = children
+    this.childKeys = Object.keys(children)
+    this.value = value
+    this.text = text
+    this.pre = pre || ''
+    this.post = post || ''
     
     /** Puts each children nodes list at root for convenience */
     this.childKeys.forEach(key => {
@@ -257,8 +249,11 @@ export abstract class Node {
   clone(shallow: boolean = false): this {
     const Clazz = Object.getPrototypeOf(this)
     const newNode = new Clazz({
+      pre: this.pre,
+      post: this.post,
       value: this.value,
-      text: this.text
+      text: this.text,
+      ...this.children
     /** For now, there's no reason to mutate this.location, so its reference is just copied */
     }, {...this.options}, this.location)
     

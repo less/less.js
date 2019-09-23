@@ -1,4 +1,4 @@
-import Node, { IObjectProps, INodeOptions, ILocationInfo } from '../node'
+import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
 import Value from './value'
 import { EvalContext } from '../contexts'
 
@@ -24,7 +24,7 @@ class Declaration extends Node {
 
   options: IDeclarationOptions
 
-  constructor(props: IObjectProps, options: IDeclarationOptions, location: ILocationInfo) {
+  constructor(props: IProps, options: IDeclarationOptions, location: ILocationInfo) {
     const { important } = props
     if (!important) {
       props.important = []

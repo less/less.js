@@ -3,7 +3,7 @@ import NumericNode from '../numeric-node'
 import { EvalContext } from 'core/src/tree/contexts'
 import { operate } from '../util/math'
 import Dimension from './dimension'
-import Color from 'core/dist/tree/nodes/color'
+import Color from './color'
 
 type INumberProps = number | IProps
 /**

@@ -1,4 +1,4 @@
-import Node, { IObjectProps, INodeOptions, ILocationInfo } from '../node';
+import Node, { IProps, INodeOptions, ILocationInfo } from '../node';
 import NumericNode from '../numeric-node'
 import { convertDimension } from '../util/convert'
 import NumberValue from './number-value'
@@ -7,7 +7,7 @@ import { EvalContext } from '../contexts'
 import { operate } from '../util/math'
 import { StrictUnitMode } from '../../constants'
 
-export type IDimensionProps = [number | NumberValue, string | Value] | IObjectProps
+export type IDimensionProps = [number | NumberValue, string | Value] | IProps
 
 /**
  * A number with a unit
@@ -21,19 +21,16 @@ class Dimension extends NumericNode {
   nodes: [NumberValue, Value]
 
   constructor(props: IDimensionProps, options?: INodeOptions, location?: ILocationInfo) {
-    let valueNodes = Array(2)
+    let nodes = Array(2)
 
-    let newProps: Node[] | IObjectProps
     if (Array.isArray(props)) {
       const val1 = props[0]
       const val2 = props[1]
-      valueNodes[0] = val1.constructor === Number ? new NumberValue(<number>val1) : <NumberValue>val1
-      valueNodes[1] = val2.constructor === String ? new Value(<string>val2) : <Value>val2
-      newProps = valueNodes
-    } else {
-      newProps = <IObjectProps>props
+      nodes[0] = val1.constructor === Number ? new NumberValue(<number>val1) : <NumberValue>val1
+      nodes[1] = val2.constructor === String ? new Value(<string>val2) : <Value>val2
+      props = { nodes }
     }
-    super(newProps, options, location)
+    super(props, options, location)
     /** Sets the value to the value of the NumberValue */
     this.value = this.nodes[0].value
   }

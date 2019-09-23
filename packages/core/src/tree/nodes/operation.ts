@@ -1,10 +1,6 @@
-import Node from '../node'
+import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
 import NumericNode from '../numeric-node'
-import Color from './color'
-import Dimension from './dimension'
-import NumberValue from './number-value'
 import Value from './value'
-import { operate } from '../util/math'
 import { MathMode } from '../../constants'
 import { EvalContext } from '../contexts'
 
@@ -18,6 +14,13 @@ class Operation extends Node {
    * Represents lhs, op, rhs
    */
   nodes: [Node, Value, Node]
+
+  constructor(props: [Node, Value, Node] | IProps, options?: INodeOptions, location?: ILocationInfo) {
+    if (Array.isArray(props)) {
+      props = { nodes: props }
+    }
+    super(props, options, location)
+  }
 
   eval(context: EvalContext) {
     super.eval(context)

@@ -1,4 +1,4 @@
-import Node, { IProps, ILocationInfo, IObjectProps } from '../node'
+import Node, { IProps, ILocationInfo } from '../node'
 import Value from './value'
 import { EvalContext } from '../contexts'
 import { compare } from '../util/compare'
@@ -41,7 +41,7 @@ class Condition extends Node {
     })(this.nodes[1].value, this.nodes[0].eval(context), this.nodes[2].eval(context))
 
     const value = this.options.negate ? !result : result
-    return new Bool(<IObjectProps>{ value })
+    return new Bool(<IProps>{ value })
   }
 }
 

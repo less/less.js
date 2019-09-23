@@ -1,10 +1,13 @@
-import Node from '../node';
-import Variable from './variable';
-import Rules from './rules';
-import DetachedRules from './detached-rules';
+import {
+  Node,
+  Variable,
+  Rules,
+  DetachedRules
+} from '.'
+
 import LessError from '../less-error';
 
-class VariableCall extends Node {
+export class VariableCall extends Node {
     constructor(variable, index, currentFileInfo) {
         super();
 
@@ -42,5 +45,4 @@ class VariableCall extends Node {
     }
 }
 
-VariableCall.prototype.type = 'VariableCall';
-export default VariableCall;
+VariableCall.prototype.type = 'VariableCall'

@@ -1,4 +1,4 @@
-import Dimension from '../nodes/dimension'
+import { Dimension } from '../nodes'
 
 const unitConversions = {
   length: {

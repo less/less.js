@@ -1,6 +1,6 @@
-import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
+import { Node, ILocationInfo, IProps, INodeOptions } from '.'
 
-type IValueProps = string | IProps
+export type IValueProps = string | IProps
 /**
  * This is any generic (unquoted string fragment) value
  *   e.g. new Value('this is an unquoted value')
@@ -9,7 +9,7 @@ type IValueProps = string | IProps
  /* 
  * Renamed from 'Anonymous'
  */
-class Value extends Node {
+export class Value extends Node {
   text: string
   value: string
 
@@ -27,4 +27,3 @@ class Value extends Node {
   }
 }
 Value.prototype.type = 'Value'
-export default Value

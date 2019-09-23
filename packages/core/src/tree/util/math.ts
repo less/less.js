@@ -1,7 +1,7 @@
 /**
  * Math utilities
  */
-import Node from '../node'
+import { Node } from '../nodes'
 
 /** 
  * Generalized list-merging utility, used for selectors and values

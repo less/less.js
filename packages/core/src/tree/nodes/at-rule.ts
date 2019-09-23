@@ -1,9 +1,14 @@
-import Node, { IBaseProps, IProps, ILocationInfo } from '../node'
-import Rules from './rules'
+import {
+  Node,
+  Rules,
+  IBaseProps,
+  IProps,
+  ILocationInfo
+} from '.'
+
 import { EvalContext } from '../contexts'
 
-
-type IAtRuleProps = {
+export type IAtRuleProps = {
   name: string
   /** Prelude (everything after name and before ; or {) */
   prelude: Node
@@ -11,7 +16,7 @@ type IAtRuleProps = {
   rules?: Rules
 } & IBaseProps
 
-type IAtRuleOptions = {
+export type IAtRuleOptions = {
   /**
    * For cases like @media and @supports,
    * this option will bubble the rule to the root.
@@ -22,7 +27,7 @@ type IAtRuleOptions = {
   bubbleRule?: boolean
 }
 
-class AtRule extends Node {
+export class AtRule extends Node {
   name: string
   rules: Node[]
   prelude: Node[]
@@ -48,6 +53,7 @@ class AtRule extends Node {
   }
 
   toString() {
+    console.log('to stringifying')
     let text = this.pre + this.name + this.prelude.join('')
     if (this.rules) {
       text += this.rules.join('')
@@ -80,4 +86,3 @@ class AtRule extends Node {
 }
 
 AtRule.prototype.type = 'AtRule'
-export default AtRule

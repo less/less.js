@@ -1,6 +1,4 @@
-import Color from '../nodes/color'
-import Value from '../nodes/value'
-import Node, { IObjectProps } from '../node'
+import { Node, Color, Value, IProps } from '../nodes'
 
 /**
  * Integer values for CSS color keywords
@@ -167,10 +165,10 @@ export const valueFromKeyword = (keyword: string): Node => {
     })
     value.push(1)
 
-    c = new Color(<IObjectProps>{ value, text: keyword })
+    c = new Color(<IProps>{ value, text: keyword })
   }
   else if (key === 'transparent') {
-    c = new Color(<IObjectProps>{ value: [0, 0, 0, 0], text: keyword })
+    c = new Color(<IProps>{ value: [0, 0, 0, 0], text: keyword })
   } else {
     c = new Value(keyword)
   }

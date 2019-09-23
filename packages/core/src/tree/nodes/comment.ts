@@ -1,10 +1,9 @@
-import Node from '../node'
+import { Node } from '.'
 
-class Comment extends Node {
+export class Comment extends Node {
   text: string
   options: {
     isLineComment: boolean
   }
 }
 Comment.prototype.type = 'Comment'
-export default Comment

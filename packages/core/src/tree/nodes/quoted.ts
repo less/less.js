@@ -1,11 +1,15 @@
-import Node, { IProps, ILocationInfo } from '../node'
-import Value from './value'
+import {
+  Node,
+  IProps,
+  ILocationInfo,
+  Value
+} from '.'
 
-type IQuotedOptions = {
+export type IQuotedOptions = {
   escaped?: boolean
 }
 
-type IQuotedNodes = [Value, Node, Value]
+export type IQuotedNodes = [Value, Node, Value]
 /**
  * There's nothing special about a quoted node, other than
  * the first and last member will contain quote marks
@@ -17,7 +21,7 @@ type IQuotedNodes = [Value, Node, Value]
  *   1) it may contain interpolated vars
  *   2) we can do normalized equality checks with the "inner" nodes
  */
-class Quoted extends Node {
+export class Quoted extends Node {
   nodes: IQuotedNodes
 
   constructor(props: IProps, options: IQuotedOptions = {}, location?: ILocationInfo) {
@@ -38,4 +42,3 @@ class Quoted extends Node {
 }
 
 Quoted.prototype.type = 'Quoted'
-export default Quoted;

@@ -1,7 +1,7 @@
-import Node from '../node'
+import { Node } from '.'
 import { EvalContext } from '../contexts'
 
-class URL extends Node {
+export class URL extends Node {
   eval(context: EvalContext) {
     super.eval(context)
 
@@ -44,5 +44,3 @@ URL.prototype.type = 'Url';
 function escapePath(path) {
     return path.replace(/[\(\)'"\s]/g, match => `\\${match}`);
 }
-
-export default URL;

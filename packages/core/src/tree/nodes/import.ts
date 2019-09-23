@@ -1,10 +1,10 @@
-import Node, { IProps, ILocationInfo } from '../node'
-import Media from './media'
-import URL from './url'
-import Quoted from './quoted'
-import Rules from './rules'
-import Anonymous from './value'
-import * as utils from '../utils'
+import {
+  Node,
+  IProps,
+  ILocationInfo,
+  Rules
+} from '.'
+
 import { EvalContext } from '../contexts'
 
 //
@@ -19,7 +19,7 @@ import { EvalContext } from '../contexts'
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
-type IImportOptions = {
+export type IImportOptions = {
   reference?: boolean
   css?: boolean
   less?: boolean
@@ -31,7 +31,7 @@ type IImportOptions = {
  * @todo - rewrite the above to make browser importing not a factor
  * Also, the import queue should be loaded during evalImports, not parsing
  */
-class Import extends Node {
+export class Import extends Node {
   content: Node[]
   features: Node[]
   path: Node[]
@@ -64,73 +64,72 @@ class Import extends Node {
     }
   }
 
-  eval(context: EvalContext) {
-    const hasContent = this.content.length === 1
-    if (hasContent) {
-      if (this.options.reference || !this.isVisible) {
-        const rules = this.content[0].nodes
-        rules.forEach((rule: Node) => {
-          rule.isVisible = false
-        })
-      }
-    }
+  // eval(context: EvalContext) {
+  //   const hasContent = this.content.length === 1
+  //   if (hasContent) {
+  //     if (this.options.reference || !this.isVisible) {
+  //       const rules = this.content[0].nodes
+  //       rules.forEach((rule: Node) => {
+  //         rule.isVisible = false
+  //       })
+  //     }
+  //   }
 
-    super.eval(context)
+  //   super.eval(context)
 
-    if (!hasContent) {
-      return this
-    }
+  //   if (!hasContent) {
+  //     return this
+  //   }
 
-    if (this.options.isModule) {
-      // context.
-    }
-        if (this.root && this.root.eval) {
-            try {
-                this.root.eval(context);
-            }
-            catch (e) {
-                e.message = 'Plugin error during evaluation';
-                throw new LessError(e, this.root.imports, this.root.filename);
-            }
-        }
-        registry = context.frames[0] && context.frames[0].functionRegistry;
-        if ( registry && this.root && this.root.functions ) {
-            registry.addMultiple( this.root.functions );
-        }
+  //   if (this.options.isModule) {
+  //     // context.
+  //   }
+  //       if (this.root && this.root.eval) {
+  //           try {
+  //               this.root.eval(context);
+  //           }
+  //           catch (e) {
+  //               e.message = 'Plugin error during evaluation';
+  //               throw new LessError(e, this.root.imports, this.root.filename);
+  //           }
+  //       }
+  //       registry = context.frames[0] && context.frames[0].functionRegistry;
+  //       if ( registry && this.root && this.root.functions ) {
+  //           registry.addMultiple( this.root.functions );
+  //       }
 
-        // return [];
+  //       // return [];
   
 
-        if (this.skip) {
-            if (typeof this.skip === 'function') {
-                this.skip = this.skip();
-            }
-            if (this.skip) {
-                return [];
-            }
-        }
-        if (this.options.inline) {
-            const contents = new Anonymous(this.root, 0,
-                {
-                    filename: this.importedFilename,
-                    reference: this.path._fileInfo && this.path._fileInfo.reference
-                }, true, true);
+  //       if (this.skip) {
+  //           if (typeof this.skip === 'function') {
+  //               this.skip = this.skip();
+  //           }
+  //           if (this.skip) {
+  //               return [];
+  //           }
+  //       }
+  //       if (this.options.inline) {
+  //           const contents = new Anonymous(this.root, 0,
+  //               {
+  //                   filename: this.importedFilename,
+  //                   reference: this.path._fileInfo && this.path._fileInfo.reference
+  //               }, true, true);
 
-            return this.features ? new Media([contents], this.features.value) : [contents];
-        } else if (this.css) {
-            const newImport = new Import(this.evalPath(context), features, this.options, this._index);
-            if (!newImport.css && this.error) {
-                throw this.error;
-            }
-            return newImport;
-        } else {
-            rules = new Rules(null, utils.copyArray(this.root.rules));
-            rules.evalImports(context);
+  //           return this.features ? new Media([contents], this.features.value) : [contents];
+  //       } else if (this.css) {
+  //           const newImport = new Import(this.evalPath(context), features, this.options, this._index);
+  //           if (!newImport.css && this.error) {
+  //               throw this.error;
+  //           }
+  //           return newImport;
+  //       } else {
+  //           rules = new Rules(null, utils.copyArray(this.root.rules));
+  //           rules.evalImports(context);
 
-            return this.features ? new Media(rules.rules, this.features.value) : rules.rules;
-        }
-    }
+  //           return this.features ? new Media(rules.rules, this.features.value) : rules.rules;
+  //       }
+  //   }
 }
 
 Import.prototype.type = 'Import'
-export default Import

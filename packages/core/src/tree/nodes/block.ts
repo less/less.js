@@ -1,4 +1,4 @@
-import Node from '../node'
+import { Node } from '.'
 import { EvalContext } from '../contexts'
 
 /**
@@ -7,7 +7,7 @@ import { EvalContext } from '../contexts'
  * 
  * nodes will typically be [Value<'('>, Node, Value<')'>]
  */
-class Block extends Node {
+export class Block extends Node {
   /** 
    * @todo - if block value was an operation, then
    *         we should return the result, not this block
@@ -20,4 +20,3 @@ class Block extends Node {
   }
 }
 Block.prototype.type = 'Block'
-export default Block

@@ -1,4 +1,4 @@
-import Node from '../node'
+import { Node } from '../nodes'
 
 export const compare = (a: Node, b: Node) => {
   /* returns:

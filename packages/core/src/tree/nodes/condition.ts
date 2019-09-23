@@ -1,14 +1,19 @@
-import Node, { IProps, ILocationInfo } from '../node'
-import Value from './value'
+import {
+  Node,
+  IProps,
+  ILocationInfo,
+  Value,
+  Bool
+} from '.'
+
 import { EvalContext } from '../contexts'
 import { compare } from '../util/compare'
-import Bool from './bool'
 
 export type IConditionOptions = {
   negate: boolean
 }
 
-class Condition extends Node {
+export class Condition extends Node {
   /** [left, op, right] */
   nodes: [Node, Value, Node]
   options: IConditionOptions
@@ -45,5 +50,4 @@ class Condition extends Node {
   }
 }
 
-Condition.prototype.type = 'Condition';
-export default Condition;
+Condition.prototype.type = 'Condition'

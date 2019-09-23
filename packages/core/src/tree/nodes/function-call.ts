@@ -1,15 +1,20 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
-import Value from './value'
-import FunctionCaller from '../functions/function-caller'
+import {
+  Node,
+  IProps,
+  INodeOptions,
+  ILocationInfo,
+  Value,
+  FunctionCaller
+} from '.'
 
-type IFunctionCallProps = {
+export type IFunctionCallProps = {
   name: string
   args: Node[]
 } & IProps
 //
 // A function call node.
 //
-class FunctionCall extends Node {
+export class FunctionCall extends Node {
   name: string
   isCalc: boolean
   args: Node[]
@@ -102,4 +107,3 @@ class FunctionCall extends Node {
 }
 
 FunctionCall.prototype.type = 'FunctionCall'
-export default FunctionCall

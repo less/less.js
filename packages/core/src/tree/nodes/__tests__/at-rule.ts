@@ -1,8 +1,6 @@
 import { expect } from 'chai'
 import 'mocha'
-import AtRule from '../at-rule'
-import Value from '../value'
-import { ILocationInfo } from '../../node'
+import { AtRule, Value, ILocationInfo } from '..'
 
 const mockLocation: ILocationInfo = {
   startOffset: 0,
@@ -16,6 +14,6 @@ describe('AtRule', () => {
       prelude: new Value(' this is a prelude'),
       post: new Value(';')
     }, {}, mockLocation)
-    expect(rule + '').to.eq('@test this is a prelude;')
+    expect(rule.toString()).to.eq('@test this is a prelude;')
   })
 })

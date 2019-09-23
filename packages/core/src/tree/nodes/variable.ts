@@ -1,8 +1,13 @@
-import Node, { IProps, ILocationInfo } from '../node'
-import FunctionCall from './function-call'
+import {
+  Node,
+  IProps,
+  ILocationInfo,
+  FunctionCall
+} from '.'
+
 import { EvalContext } from '../contexts'
 
-type IVariableOptions = {
+export type IVariableOptions = {
   /** will look up properties instead of variables */
   propertyRef: boolean
 }
@@ -13,7 +18,7 @@ type IVariableOptions = {
  *   nodes: @foo = <Value '@foo'>
  *   nodes: @@bar = <Value '@'> <Variable '@bar'>
  */
-class Variable extends Node {
+export class Variable extends Node {
   evaluating: boolean
   name: string
   type: string
@@ -78,4 +83,3 @@ class Variable extends Node {
 }
 
 Variable.prototype.type = 'Variable'
-export default Variable

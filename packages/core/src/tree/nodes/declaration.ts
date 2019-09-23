@@ -1,5 +1,11 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
-import Value from './value'
+import {
+  Node,
+  IProps,
+  ILocationInfo,
+  ImportantNode,
+  Value
+} from '.'
+
 import { EvalContext } from '../contexts'
 
 /**
@@ -15,7 +21,7 @@ export type IDeclarationOptions = {
   mergeType?: MergeType
 }
 
-class Declaration extends Node {
+export class Declaration extends Node implements ImportantNode {
   value: string
   name: Node[]
   /** Declaration's value */
@@ -64,4 +70,3 @@ class Declaration extends Node {
 }
 
 Declaration.prototype.type = 'Declaration'
-export default Declaration

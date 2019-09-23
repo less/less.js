@@ -1,21 +1,25 @@
-import Selector from './selector'
-import Element from './element'
-import Rules from './rules'
-import Declaration from './declaration'
-import DetachedRules from './detached-rules'
-import Expression from './expression'
-import contexts from '../contexts'
+import {
+  Node,
+  INodeOptions,
+  ILocationInfo,
+  Rules,
+  Declaration,
+  Expression,
+  QualifiedRule,
+  IQualifiedRuleProps
+} from '.'
+
+import { EvalContext } from '../contexts'
 import * as utils from '../utils'
-import QualifiedRule, { IQualifiedRuleProps } from './qualified-rule'
-import { INodeOptions, ILocationInfo } from '../node'
+
 
 /**
  * @todo - Is .rule {} a mixin or qualified rule?
  */
-interface IMixinDefinitionProps extends IQualifiedRuleProps {
+export interface IMixinDefinitionProps extends IQualifiedRuleProps {
   args: Node[]
 }
-class MixinDefinition extends QualifiedRule {
+export class MixinDefinition extends QualifiedRule {
   args: Node[]
   constructor(props: IMixinDefinitionProps, options: INodeOptions, location: ILocationInfo) {
     super(props, options, location)
@@ -200,4 +204,3 @@ class MixinDefinition extends QualifiedRule {
 
 MixinDefinition.prototype.type = 'MixinDefinition'
 MixinDefinition.prototype.evalFirst = true
-export default MixinDefinition

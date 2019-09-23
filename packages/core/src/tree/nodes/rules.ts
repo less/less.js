@@ -1,15 +1,12 @@
-import Node, { IProps, INodeOptions, ILocationInfo, EvalReturn, SimpleValue } from '../node'
-import Declaration from './declaration'
-import Comment from './comment'
-import Paren from './block'
-import Selector from './selector'
-import Element from './element'
-import Anonymous from './value'
-import List from './list'
+import {
+  Node,
+  Declaration,
+  Import,
+  EvalReturn,
+  ImportantNode
+} from '.'
 import { EvalContext } from '../contexts'
-import Import from './import'
-import MixinDefinition from './mixin-definition'
-import { replace } from 'xregexp'
+
 // import contexts from '../contexts';
 // import globalFunctionRegistry from '../functions/function-registry';
 // import defaultFunc from '../functions/default';
@@ -32,7 +29,7 @@ import { replace } from 'xregexp'
  * @todo This should be broken up so that a rules is _just_ the parts between { ... }
  * @todo move selector logic to qualified rule
  */
-class Rules extends Node {
+export class Rules extends Node implements ImportantNode {
   scope: {
     [key: string]: any
   }
@@ -59,26 +56,26 @@ class Rules extends Node {
    * ...wait, no, that's not what this does
    */
   evalImports(context: EvalContext) {
-    const rules = this.nodes
-    const numRules = rules.length
-    let importRules: EvalReturn
+    // const rules = this.nodes
+    // const numRules = rules.length
+    // let importRules: EvalReturn
     
-    if (!numRules) {
-      return
-    }
+    // if (!numRules) {
+    //   return
+    // }
 
-    for (let i = 0; i < numRules; i++) {
-      const rule = rules[i]
-      if (rule instanceof Import) {
-        importRules = rule.eval(context)
-        if (Array.isArray(importRules)) {
-          rules.splice(i, 1, ...importRules)
-          i += importRules.length - 1
-        } else {
-          rules.splice(i, 1, importRules)
-        }
-      }
-    }
+    // for (let i = 0; i < numRules; i++) {
+    //   const rule = rules[i]
+    //   if (rule instanceof Import) {
+    //     importRules = rule.eval(context)
+    //     if (Array.isArray(importRules)) {
+    //       rules.splice(i, 1, ...importRules)
+    //       i += importRules.length - 1
+    //     } else {
+    //       rules.splice(i, 1, importRules)
+    //     }
+    //   }
+    // }
   }
 
   eval(context: EvalContext) {
@@ -159,9 +156,6 @@ class Rules extends Node {
     // Store the frames around mixin definitions,
     // so they can be evaluated like closures when the time comes.
 
-
-    const mediaBlockCount = (context.mediaBlocks && context.mediaBlocks.length) || 0;
-
     /** @removed - special mixin call / variable call evals */
 
     // Evaluate everything else
@@ -171,47 +165,24 @@ class Rules extends Node {
     ctxFrames.shift()
     // ctxSelectors.shift()
 
-    if (context.mediaBlocks) {
-        for (i = mediaBlockCount; i < context.mediaBlocks.length; i++) {
-            context.mediaBlocks[i].bubbleSelectors(selectors);
-        }
-    }
-
     /** Restore original scope */
     context.scope = currentScope
 
     return rules;
   }
 
-  makeImportant() {
-    const result = new Rules(this.selectors, this.rules.map(r => {
-        if (r.makeImportant) {
-            return r.makeImportant();
-        } else {
-            return r;
-        }
-    }), this.strictImports, this.visibilityInfo());
+  makeImportant(): this {
+    this.nodes.forEach(node => {
+      if (node.hasOwnProperty('makeImportant')) {
+        (<ImportantNode>node).makeImportant()
+      }
+    })
 
-    return result
+    return this
   }
 
   matchArgs(args) {
     return !args || args.length === 0
-  }
-
-  // lets you call a css selector with a guard
-  matchCondition(args, context) {
-      const lastSelector = this.selectors[this.selectors.length - 1];
-      if (!lastSelector.evaldCondition) {
-          return false;
-      }
-      if (lastSelector.condition &&
-          !lastSelector.condition.eval(
-              new contexts.Eval(context,
-                  context.frames))) {
-          return false;
-      }
-      return true;
   }
 
   lastDeclaration() {
@@ -226,27 +197,13 @@ class Rules extends Node {
   }
 
   getRules() {
-    const filtRules = []
-    const rules = this.nodes
-    let rule: Node
-
-    for (let i = 0; (rule = rules[i]); i++) {
-      if (rule.isRules) {
-        filtRules.push(rule)
-      }
-    }
-
-    return filtRules
+    return this.nodes.filter((node: Node) => {
+      return node instanceof Rules
+    })
   }
 
   prependRule(rule: Node) {
-    const rules = this.nodes
-    if (rules) {
-      rules.unshift(rule)
-    } else {
-      this.nodes = [ rule ]
-    }
-    this.setParent(rule, this)
+    this.prependNode(this.nodes, rule)
   }
 
   // find(selector, self = this, filter) {
@@ -282,118 +239,118 @@ class Rules extends Node {
   //     return rules;
   // }
 
-  genCSS(context, output) {
-      let i;
-      let j;
-      const charsetRuleNodes = [];
-      let ruleNodes = [];
+  // genCSS(context, output) {
+  //     let i;
+  //     let j;
+  //     const charsetRuleNodes = [];
+  //     let ruleNodes = [];
 
-      let // Line number debugging
-          debugInfo;
+  //     let // Line number debugging
+  //         debugInfo;
 
-      let rule;
-      let path;
+  //     let rule;
+  //     let path;
 
-      context.tabLevel = (context.tabLevel || 0);
+  //     context.tabLevel = (context.tabLevel || 0);
 
-      if (!this.root) {
-          context.tabLevel++;
-      }
+  //     if (!this.root) {
+  //         context.tabLevel++;
+  //     }
 
-      const tabRuleStr = context.compress ? '' : Array(context.tabLevel + 1).join('  ');
-      const tabSetStr = context.compress ? '' : Array(context.tabLevel).join('  ');
-      let sep;
+  //     const tabRuleStr = context.compress ? '' : Array(context.tabLevel + 1).join('  ');
+  //     const tabSetStr = context.compress ? '' : Array(context.tabLevel).join('  ');
+  //     let sep;
 
-      let charsetNodeIndex = 0;
-      let importNodeIndex = 0;
-      for (i = 0; (rule = this.rules[i]); i++) {
-          if (rule instanceof Comment) {
-              if (importNodeIndex === i) {
-                  importNodeIndex++;
-              }
-              ruleNodes.push(rule);
-          } else if (rule.isCharset && rule.isCharset()) {
-              ruleNodes.splice(charsetNodeIndex, 0, rule);
-              charsetNodeIndex++;
-              importNodeIndex++;
-          } else if (rule.type === 'Import') {
-              ruleNodes.splice(importNodeIndex, 0, rule);
-              importNodeIndex++;
-          } else {
-              ruleNodes.push(rule);
-          }
-      }
-      ruleNodes = charsetRuleNodes.concat(ruleNodes);
+  //     let charsetNodeIndex = 0;
+  //     let importNodeIndex = 0;
+  //     for (i = 0; (rule = this.rules[i]); i++) {
+  //         if (rule instanceof Comment) {
+  //             if (importNodeIndex === i) {
+  //                 importNodeIndex++;
+  //             }
+  //             ruleNodes.push(rule);
+  //         } else if (rule.isCharset && rule.isCharset()) {
+  //             ruleNodes.splice(charsetNodeIndex, 0, rule);
+  //             charsetNodeIndex++;
+  //             importNodeIndex++;
+  //         } else if (rule.type === 'Import') {
+  //             ruleNodes.splice(importNodeIndex, 0, rule);
+  //             importNodeIndex++;
+  //         } else {
+  //             ruleNodes.push(rule);
+  //         }
+  //     }
+  //     ruleNodes = charsetRuleNodes.concat(ruleNodes);
 
-      // If this is the root node, we don't render
-      // a selector, or {}.
-      if (!this.root) {
-          debugInfo = getDebugInfo(context, this, tabSetStr);
+  //     // If this is the root node, we don't render
+  //     // a selector, or {}.
+  //     if (!this.root) {
+  //         debugInfo = getDebugInfo(context, this, tabSetStr);
 
-          if (debugInfo) {
-              output.add(debugInfo);
-              output.add(tabSetStr);
-          }
+  //         if (debugInfo) {
+  //             output.add(debugInfo);
+  //             output.add(tabSetStr);
+  //         }
 
-          const paths = this.paths;
-          const pathCnt = paths.length;
-          let pathSubCnt;
+  //         const paths = this.paths;
+  //         const pathCnt = paths.length;
+  //         let pathSubCnt;
 
-          sep = context.compress ? ',' : (`,\n${tabSetStr}`);
+  //         sep = context.compress ? ',' : (`,\n${tabSetStr}`);
 
-          for (i = 0; i < pathCnt; i++) {
-              path = paths[i];
-              if (!(pathSubCnt = path.length)) { continue; }
-              if (i > 0) { output.add(sep); }
+  //         for (i = 0; i < pathCnt; i++) {
+  //             path = paths[i];
+  //             if (!(pathSubCnt = path.length)) { continue; }
+  //             if (i > 0) { output.add(sep); }
 
-              context.firstSelector = true;
-              path[0].genCSS(context, output);
+  //             context.firstSelector = true;
+  //             path[0].genCSS(context, output);
 
-              context.firstSelector = false;
-              for (j = 1; j < pathSubCnt; j++) {
-                  path[j].genCSS(context, output);
-              }
-          }
+  //             context.firstSelector = false;
+  //             for (j = 1; j < pathSubCnt; j++) {
+  //                 path[j].genCSS(context, output);
+  //             }
+  //         }
 
-          output.add((context.compress ? '{' : ' {\n') + tabRuleStr);
-      }
+  //         output.add((context.compress ? '{' : ' {\n') + tabRuleStr);
+  //     }
 
-      // Compile rules
-      for (i = 0; (rule = ruleNodes[i]); i++) {
+  //     // Compile rules
+  //     for (i = 0; (rule = ruleNodes[i]); i++) {
 
-          if (i + 1 === ruleNodes.length) {
-              context.lastRule = true;
-          }
+  //         if (i + 1 === ruleNodes.length) {
+  //             context.lastRule = true;
+  //         }
 
-          const currentLastRule = context.lastRule;
-          if (rule.isRulesLike(rule)) {
-              context.lastRule = false;
-          }
+  //         const currentLastRule = context.lastRule;
+  //         if (rule.isRulesLike(rule)) {
+  //             context.lastRule = false;
+  //         }
 
-          if (rule.genCSS) {
-              rule.genCSS(context, output);
-          } else if (rule.value) {
-              output.add(rule.value.toString());
-          }
+  //         if (rule.genCSS) {
+  //             rule.genCSS(context, output);
+  //         } else if (rule.value) {
+  //             output.add(rule.value.toString());
+  //         }
 
-          context.lastRule = currentLastRule;
+  //         context.lastRule = currentLastRule;
 
-          if (!context.lastRule && rule.isVisible()) {
-              output.add(context.compress ? '' : (`\n${tabRuleStr}`));
-          } else {
-              context.lastRule = false;
-          }
-      }
+  //         if (!context.lastRule && rule.isVisible()) {
+  //             output.add(context.compress ? '' : (`\n${tabRuleStr}`));
+  //         } else {
+  //             context.lastRule = false;
+  //         }
+  //     }
 
-      if (!this.root) {
-          output.add((context.compress ? '}' : `\n${tabSetStr}}`));
-          context.tabLevel--;
-      }
+  //     if (!this.root) {
+  //         output.add((context.compress ? '}' : `\n${tabSetStr}}`));
+  //         context.tabLevel--;
+  //     }
 
-      if (!output.isEmpty() && !context.compress && this.firstRoot) {
-          output.add('\n');
-      }
-  }
+  //     if (!output.isEmpty() && !context.compress && this.firstRoot) {
+  //         output.add('\n');
+  //     }
+  // }
 }
 
 Rules.prototype.type = 'Rules'

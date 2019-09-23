@@ -1,13 +1,19 @@
-import Node, { IProps, IBaseProps, INodeOptions, ILocationInfo } from '../node'
-import Value from './value'
-import Paren from './block'
+import {
+  Node,
+  IProps,
+  IBaseProps,
+  INodeOptions,
+  ILocationInfo,
+  Value,
+  Block
+} from '.'
 
-type IElementProps = [string, string] | IProps
+export type IElementProps = [string, string] | IProps
 /**
  * An element's values list will be exactly two Values,
  * so that they can have normalized values for indexing / lookups
  */
-class Element extends Node {
+export class Element extends Node {
   children: {
     nodes: [Value, Value]
   }
@@ -52,5 +58,4 @@ class Element extends Node {
   }
 }
 
-Element.prototype.type = 'Element';
-export default Element;
+Element.prototype.type = 'Element'

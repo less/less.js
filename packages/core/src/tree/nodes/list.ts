@@ -1,4 +1,9 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node';
+import {
+  Node,
+  IProps,
+  INodeOptions,
+  ILocationInfo
+} from '.'
 
 export type NodeType<T> = T extends Node ? T : never
 /**
@@ -6,7 +11,7 @@ export type NodeType<T> = T extends Node ? T : never
  * 
  * This is a any comma-separated list
  */
-class List<T = Node> extends Node {
+export class List<T = Node> extends Node {
   nodes: NodeType<T>[]
 
   constructor(props: Node[] | IProps, options?: INodeOptions, location?: ILocationInfo) {
@@ -24,4 +29,3 @@ class List<T = Node> extends Node {
   }
 }
 List.prototype.type = 'List'
-export default List

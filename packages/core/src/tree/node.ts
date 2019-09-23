@@ -2,9 +2,7 @@ import { CstNodeLocation } from 'chevrotain'
 import { IOptions } from '../options'
 import { EvalContext } from './contexts'
 import { compare } from './util/compare'
-import Rules from './nodes/rules'
-import Import from './nodes/import'
-import Declaration from './nodes/declaration'
+import { Rules, Import, Declaration } from './nodes'
 
 export type SimpleValue = string | number | boolean | number[]
 
@@ -432,6 +430,22 @@ export abstract class Node {
     })
   }
 
+  private inheritChild(node: Node) {
+    node.parent = this
+    node.root = this.root
+    node.fileRoot = this.fileRoot
+  }
+
+  appendNode(nodes: Node[], insertedNode: Node) {
+    this.inheritChild(insertedNode)
+    nodes.push(insertedNode)
+  }
+
+  prependNode(nodes: Node[], insertedNode: Node) {
+    this.inheritChild(insertedNode)
+    nodes.unshift(insertedNode)
+  }
+
   /**
    * By default, nodes will just evaluate nested values
    * However, some nodes after evaluating will of course override
@@ -525,4 +539,3 @@ export abstract class Node {
   }
 }
 
-export default Node

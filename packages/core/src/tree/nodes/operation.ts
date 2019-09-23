@@ -1,6 +1,12 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
-import NumericNode from '../numeric-node'
-import Value from './value'
+import {
+  Node,
+  IProps,
+  INodeOptions,
+  ILocationInfo,
+  NumericNode,
+  Value
+} from '.'
+
 import { MathMode } from '../../constants'
 import { EvalContext } from '../contexts'
 
@@ -9,7 +15,7 @@ import { EvalContext } from '../contexts'
  *   e.g. [Value, Value, Value]
  *        [Operation, Value, Value]
  */
-class Operation extends Node {
+export class Operation extends Node {
   /**
    * Represents lhs, op, rhs
    */
@@ -47,5 +53,4 @@ class Operation extends Node {
   }
 }
 
-Operation.prototype.type = 'Operation';
-export default Operation;
+Operation.prototype.type = 'Operation'

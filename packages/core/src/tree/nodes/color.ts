@@ -1,8 +1,13 @@
-import Node, { IProps, ILocationInfo } from '../node'
-import NumericNode from '../numeric-node'
+import {
+  Node,
+  IProps,
+  ILocationInfo,
+  NumericNode,
+  NumberValue
+} from '.'
+
 import { fround } from '../util/math'
 import { EvalContext } from '../contexts'
-import NumberValue from './number-value'
 import { operate } from '../util/math'
 
 /**
@@ -10,13 +15,13 @@ import { operate } from '../util/math'
  */
 // import colors from '../data/colors'
 
-enum ColorFormat {
+export enum ColorFormat {
   HEX,
   RGB,
   HSL
 }
 
-type IColorOptions = {
+export type IColorOptions = {
   colorFormat?: ColorFormat
 }
 
@@ -25,7 +30,7 @@ export type IColorProps = string | number[] | IProps
 /**
  * Can be a string?
  */
-class Color extends NumericNode {
+export class Color extends NumericNode {
   /** RGBA values */
   value: [number, number, number, number]
   options: IColorOptions
@@ -265,5 +270,3 @@ function toHex(v: number[]) {
     return (c < 16 ? '0' : '') + c.toString(16)
   }).join('')}`
 }
-
-export default Color;

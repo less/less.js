@@ -1,6 +1,4 @@
-import Node from '../node'
-import Element from './element'
-
+import { Node, Element } from '.'
 
 // A selector like div .foo@{blah} +/* */ p
 //   
@@ -12,7 +10,7 @@ import Element from './element'
  * A Selector node is really just an expression wrapper for elements,
  * so that it can hold pre and post nodes for a selector list.
  */
-class Selector extends Node {
+export class Selector extends Node {
   nodes: Element[]
   options: {
     /** @todo ? what is media empty? */
@@ -108,5 +106,4 @@ class Selector extends Node {
   }
 }
 
-Selector.prototype.type = 'Selector';
-export default Selector;
+Selector.prototype.type = 'Selector'

@@ -1,6 +1,11 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node'
-import Selector from './selector'
-import List from './list'
+import {
+  Node,
+  IProps,
+  INodeOptions,
+  ILocationInfo,
+  Selector,
+  List
+} from '.'
 
 export enum ExtendOption {
   ALL
@@ -14,7 +19,7 @@ export type IExtendProps = {
 /**
  * @todo - the extend visitor should run after tree flattening
  */
-class Extend extends Node {
+export class Extend extends Node {
   option: ExtendOption
   constructor(props: IExtendProps, options: INodeOptions, location: ILocationInfo) {
     const newProps: IProps = {}
@@ -28,4 +33,3 @@ class Extend extends Node {
 }
 
 Extend.prototype.type = 'Extend'
-export default Extend

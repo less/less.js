@@ -1,10 +1,9 @@
-import Node from '../node';
+import { Node } from '.'
 
 /**
  * A white-space node
  * Used to normalize expressions and values for equality testing
  * and list indexing
  */
-class WS extends Node {}
+export class WS extends Node {}
 WS.prototype.type = 'WS'
-export default WS

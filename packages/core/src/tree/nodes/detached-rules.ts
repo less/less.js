@@ -1,5 +1,5 @@
-import Node from '../node';
-import contexts from '../contexts';
+import { Node } from '.';
+import { EvalContext } from '../contexts';
 import * as utils from '../utils';
 
 /**
@@ -28,6 +28,5 @@ class DetachedRules extends Node {
     }
 }
 
-DetachedRules.prototype.type = 'DetachedRules';
-DetachedRules.prototype.evalFirst = true;
-export default DetachedRules;
+DetachedRules.prototype.type = 'DetachedRules'
+DetachedRules.prototype.evalFirst = true

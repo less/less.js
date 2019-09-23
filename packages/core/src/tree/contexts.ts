@@ -27,10 +27,14 @@ export class EvalContext {
   calcStack: true[]
   blockStack: true[]
   options: IOptions
+
+  /** @todo - remove or explain */
+  mediaPath: any[]
+  mediaBlocks: any[]
+
   /**
-   * AFAICT, frames are essentially rulesets, used for scope lookups
-   * @todo - this doesn't seem to be needed, as we can traverse up through
-   *         the parent tree, although parents aren't always rulesets.
+   * AFAICT, frames are a stack of Rules nodes, used for scoping (and lookups?)
+   * @todo - is this neded?
    */
   frames: Rules[]
   environment

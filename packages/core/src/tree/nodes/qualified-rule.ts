@@ -1,7 +1,13 @@
-import Node, { INodeOptions, ILocationInfo, IProps } from '../node'
-import Rules from './rules'
-import List from './list'
-import Selector from './selector'
+import {
+  Node,
+  INodeOptions,
+  ILocationInfo,
+  IProps,
+  Rules,
+  List,
+  Selector
+} from '.'
+
 import { mergeList } from '../util/math'
 import { EvalContext } from '../contexts'
 
@@ -14,7 +20,7 @@ export type IQualifiedRuleProps = {
  * A Qualified Rule is a rules preceded by selectors.
  * In Less, it may also have a condition node.
  */
-class QualifiedRule extends Node {
+export class QualifiedRule extends Node {
   rules: Node[]
   selectors: Node[]
   condition: Node[]
@@ -105,7 +111,31 @@ class QualifiedRule extends Node {
     // if (!hasOnePassingSelector) {
     //   rules.length = 0;
     // }
+    const { mediaBlocks } = context
+    const mediaBlockCount = (mediaBlocks && mediaBlocks.length) || 0
+    /** Bubble selectors up through rules... move to qualified rules probably */
+    
+    if (mediaBlocks) {
+        for (let i = mediaBlockCount; i < mediaBlocks.length; i++) {
+        mediaBlocks[i].bubbleSelectors(selectors)
+        }
+    }
   }
+
+    // lets you call a css selector with a guard
+    matchCondition(args, context) {
+        const lastSelector = this.selectors[this.selectors.length - 1];
+        if (!lastSelector.evaldCondition) {
+            return false;
+        }
+        if (lastSelector.condition &&
+            !lastSelector.condition.eval(
+                new contexts.Eval(context,
+                    context.frames))) {
+            return false;
+        }
+        return true;
+    }
 
   joinSelectors(paths, context, selectors) {
     for (let s = 0; s < selectors.length; s++) {
@@ -404,4 +434,3 @@ class QualifiedRule extends Node {
 }
 
 QualifiedRule.prototype.type = 'QualifiedRule'
-export default QualifiedRule

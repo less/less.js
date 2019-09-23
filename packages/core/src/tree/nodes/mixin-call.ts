@@ -1,7 +1,12 @@
-import Node, { INodeOptions, ILocationInfo } from '../node'
-import Selector from './selector'
-import List from './list'
-import MixinDefinition from './mixin-definition'
+import {
+  Node,
+  INodeOptions,
+  ILocationInfo,
+  Selector,
+  List,
+  MixinDefinition
+} from '.'
+
 import defaultFunc from '../functions/default'
 
 interface IMixinCallProps {

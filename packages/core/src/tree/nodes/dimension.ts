@@ -1,8 +1,14 @@
-import Node, { IProps, INodeOptions, ILocationInfo } from '../node';
-import NumericNode from '../numeric-node'
+import {
+  Node,
+  IProps,
+  INodeOptions,
+  ILocationInfo,
+  NumericNode,
+  NumberValue,
+  Value
+} from '.'
+
 import { convertDimension } from '../util/convert'
-import NumberValue from './number-value'
-import Value from './value'
 import { EvalContext } from '../contexts'
 import { operate } from '../util/math'
 import { StrictUnitMode } from '../../constants'
@@ -15,7 +21,7 @@ export type IDimensionProps = [number | NumberValue, string | Value] | IProps
  * e.g. props = [<NumberValue>, <Value>], or
  *      props = [1, 'px']
  */
-class Dimension extends NumericNode {
+export class Dimension extends NumericNode {
   value: number
   /** Second value is the unit */
   nodes: [NumberValue, Value]
@@ -93,5 +99,4 @@ class Dimension extends NumericNode {
   }
 }
 
-Dimension.prototype.type = 'Dimension';
-export default Dimension;
+Dimension.prototype.type = 'Dimension'

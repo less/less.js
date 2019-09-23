@@ -1,11 +1,17 @@
-import Node, { ILocationInfo, IProps, INodeOptions } from '../node'
-import NumericNode from '../numeric-node'
+import {
+  Node,
+  ILocationInfo,
+  IProps,
+  INodeOptions,
+  NumericNode,
+  Dimension,
+  Color
+} from '.'
+
 import { EvalContext } from 'core/src/tree/contexts'
 import { operate } from '../util/math'
-import Dimension from './dimension'
-import Color from './color'
 
-type INumberProps = number | IProps
+export type INumberProps = number | IProps
 /**
  * A NumberValue is any number (dimension without a unit)
  *   e.g. new NumberValue(2, ...)
@@ -13,7 +19,7 @@ type INumberProps = number | IProps
  * @todo - does this need to store the text representation?
  *   e.g. a CSS number can be '+1', the plus would be lost in conversion
  */
-class NumberValue extends NumericNode {
+export class NumberValue extends NumericNode {
   value: number
   constructor(props: INumberProps, options?: INodeOptions, location?: ILocationInfo) {
     if (props.constructor === Number) {
@@ -59,4 +65,3 @@ class NumberValue extends NumericNode {
   }
 }
 NumberValue.prototype.type = 'NumberValue'
-export default NumberValue

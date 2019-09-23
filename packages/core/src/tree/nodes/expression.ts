@@ -1,12 +1,13 @@
-import Node from '../node'
-import Block from './block'
-import Comment from './comment'
-import WS from './ws'
-import Dimension from './dimension'
-import { EvalContext } from '../contexts'
-import { MathMode } from '../../constants'
+import {
+  Node,
+  Block,
+  Comment,
+  Dimension
+} from '.'
 
-type IExpressionOptions = {
+import { EvalContext } from '../contexts'
+
+export type IExpressionOptions = {
   inBlock: boolean
   blockInOp: boolean
 }
@@ -18,7 +19,7 @@ type IExpressionOptions = {
  *   2) When converted to an array, it discards whitespace and 
  *      comments as members of the array.
  */
-class Expression extends Node {
+export class Expression extends Node {
   options: IExpressionOptions
 
   // toArray() {
@@ -72,5 +73,4 @@ class Expression extends Node {
   }
 }
 
-Expression.prototype.type = 'Expression';
-export default Expression;
+Expression.prototype.type = 'Expression'

@@ -1,5 +1,5 @@
 const rollup = require('rollup');
-const babel = require('rollup-plugin-babel');
+const typescript = require('rollup-plugin-typescript2');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const terser = require('rollup-plugin-terser').terser;
@@ -26,15 +26,22 @@ async function buildBrowser() {
             }
         ],
         plugins: [
-            resolve(),
+            // resolve(),
             commonjs(),
-            babel({
-                exclude: 'node_modules/**', // only transpile our source code
-                presets: [["@babel/env", {
-                    targets: '> 0.25%, not dead'
-                }]]
+            typescript({
+                verbosity: 2,
+                tsconfigDefaults: {
+                    compilerOptions: {
+                        allowJs: true,
+                        sourceMap: true,
+                        target: 'ES5'
+                    }
+                },
+                include: [ '*.ts', '**/*.ts', '*.js', '**/*.js' ],
+                exclude: ['node_modules'] // only transpile our source code
             }),
             terser({
+                compress: true,
                 include: [/^.+\.min\.js$/],
                 output: {
                     comments: function(node, comment) {
@@ -81,13 +88,18 @@ async function buildNode() {
         plugins: [
             resolve(),
             commonjs(),
-            babel({
-                exclude: 'node_modules/**', // only transpile our source code
-                presets: [["@babel/env", {
-                    targets: {
-                        node: '4'
-                    }
-                }]]
+            typescript({
+                verbosity: 1,
+                tsconfigDefaults: {
+                    compilerOptions: {
+                        allowJs: true,
+                        // checkJs: true,
+                        sourceMap: true,
+                        target: 'ES5'
+                    },
+                },
+                include: [ '*.ts', '**/*.ts', '*.js', '**/*.js' ],
+                exclude: ['node_modules'] // only transpile our source code
             })
         ]
     });
@@ -111,13 +123,18 @@ async function buildLessC() {
         plugins: [
             resolve(),
             commonjs(),
-            babel({
-                exclude: 'node_modules/**', // only transpile our source code
-                presets: [["@babel/env", {
-                    targets: {
-                        node: '4'
-                    }
-                }]]
+            typescript({
+                verbosity: 1,
+                tsconfigDefaults: {
+                    compilerOptions: {
+                        allowJs: true,
+                        // checkJs: true,
+                        sourceMap: true,
+                        target: 'ES5'
+                    },
+                },
+                include: [ '*.ts', '**/*.ts', '*.js', '**/*.js' ],
+                exclude: ['node_modules'] // only transpile our source code
             })
         ]
     });

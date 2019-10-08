@@ -186,7 +186,7 @@ module.exports = function(grunt) {
     const nodeVersion = semver.major(process.versions.node);
     let scriptRuntime = 'node';
     if (nodeVersion < 8) {
-        scriptRuntime = path.resolve(path.join('node_modules', '.bin', 'babel-node')) + ' --presets=@babel/env';
+        scriptRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
     }
 
     // Project configuration.

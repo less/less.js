@@ -58,14 +58,14 @@
         function loadScript(url,callback){
             var script = document.createElement('script');
 
-            if(document.documentMode === 8){
-                script.onreadystatechange = function(){
-                    if (script.readyState === 'loaded'){
+            if (document.documentMode === 8) {
+                script.onreadystatechange = function() {
+                    if (script.readyState === 'loaded') {
                         if (callback){callback()};
                     };
                 };
             } else {
-                script.onload = function(){
+                script.onload = function() {
                     if (callback){callback()};
                 };
             };
@@ -80,7 +80,6 @@
 
        <script>
         window.addEventListener('load', function() {
-
             function addNextScript() {
                 // for sauce, see above. Additional step needed between loading jasmine and loading
                 // the js reporter

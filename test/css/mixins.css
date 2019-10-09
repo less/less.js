@@ -29,7 +29,7 @@
   background-color: grey;
 }
 #header .milk {
-  color: white;
+  color: inherit;
   border: 1px solid black;
   background-color: grey;
 }
@@ -133,7 +133,7 @@ h3 + * {
   background-image: "/a.png";
   background-position: center center;
 }
-.test-rec .recursion {
+.test-rule-rec .recursion {
   color: black;
 }
 .button {

@@ -3,7 +3,7 @@
     width: 400px;
     height: 200px;
     background: red;
-    color: white;
+    color: inherit;
   }
 }
 .cell {

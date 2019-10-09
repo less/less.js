@@ -28,7 +28,7 @@
 }
 .button:hover,
 .submit:hover {
-  color: white;
+  color: inherit;
 }
 .button2 :hover {
   nested: white;

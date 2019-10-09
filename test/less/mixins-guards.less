@@ -2,7 +2,7 @@
 // Stacking, functions..
 
 .light (@a) when (lightness(@a) > 50%) {
-  color: white;
+  color: inherit;
 }
 .light (@a) when (lightness(@a) < 50%) {
   color: black;
@@ -63,18 +63,18 @@
 .default1 { .default }
 
 // true & false keywords
-.test (@a) when (@a) {
+.test-rule (@a) when (@a) {
     content: "true.";
 }
-.test (@a) when not (@a) {
+.test-rule (@a) when not (@a) {
     content: "false.";
 }
 
-.test1 { .test(true) }
-.test2 { .test(false) }
-.test3 { .test(1) }
-.test4 { .test(boo) }
-.test5 { .test("true") }
+.test-rule1 { .test-rule(true) }
+.test-rule2 { .test-rule(false) }
+.test-rule3 { .test-rule(1) }
+.test-rule4 { .test-rule(boo) }
+.test-rule5 { .test-rule("true") }
 
 // Boolean expressions
 

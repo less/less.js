@@ -110,7 +110,7 @@ each(range(10px, 30px, 10px), .(@val, @index) {
     @color: red;
   }
 }
-.test {
+.test-rule {
   each(primary secondary, .(@color-name) {
     @scheme: @color-schemes[@@color-name]; // e.g. @color-name = primary
     color: @scheme[@color];

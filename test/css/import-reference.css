@@ -1,8 +1,8 @@
 input[type="text"].class#id[attr=32]:not(1) {
-  color: white;
+  color: inherit;
 }
 div#id.class[a=1][b=2].class:not(1) {
-  color: white;
+  color: inherit;
 }
 @media print {
   .class {
@@ -65,19 +65,19 @@ div#id.class[a=1][b=2].class:not(1) {
 .visible {
   extend: test;
 }
-.test-mediaq-import {
+.test-rule-mediaq-import {
   color: green;
   test: 340px;
 }
 @media (max-size: 450px) {
-  .test-mediaq-import {
+  .test-rule-mediaq-import {
     color: red;
   }
 }
-.test {
+.test-rule {
   color: red;
 }
-.test:first-child {
+.test-rule:first-child {
   color: blue;
 }
 @keyframes some-name {

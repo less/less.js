@@ -17,14 +17,14 @@
 
 @media screen {
     @base: 8;
-    body { max-width: (@base * 60); }
+    .body { max-width: (@base * 60); }
 }
 
 @ratio_large: 16;
 @ratio_small: 9;
 
 @media all and (device-aspect-ratio: ~'@{ratio_large} / @{ratio_small}') {
-   body { max-width: 800px; }
+   .body { max-width: 800px; }
 }
 
 @media all and (orientation:portrait) {
@@ -32,12 +32,12 @@
 }
 
 @media handheld and (min-width: @var), screen and (min-width: 20em) {
-    body {
+    .body {
         max-width: 480px;
     }
 }
 
-body {
+.body {
     @media print {
         padding: 20px;
 
@@ -78,7 +78,7 @@ body {
   }
 }
 
-body {
+.body {
     @media a, b and c {
         width: 95%;
 
@@ -109,7 +109,7 @@ body {
 }
 @smartphone: ~"only screen and (max-width: 200px)";
 @media @smartphone {
-  body {
+  .body {
     width: 480px;
   }
 }
@@ -191,13 +191,13 @@ body {
     }
 }
 
-body {
+.body {
     .bg();
 }
 
 @bpMedium: 1000px;
 @media (max-width: @bpMedium) {
-    body {
+    .body {
         .bg();
         background: blue;
     }
@@ -207,7 +207,7 @@ body {
   /* a comment */
 
   @media (max-width: 900px) {
-    body { font-size: 11px; }
+    .body { font-size: 11px; }
   }
 }
 

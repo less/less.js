@@ -37,7 +37,7 @@
 .alpha {
   filter: alpha(opacity=42);
 }
-.testPollution {
+.test-rulePollution {
   a: 'no-pollution';
 }
 .units {

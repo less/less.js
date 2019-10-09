@@ -1332,8 +1332,11 @@
               /**
                * We have to figure out how this environment stringifies anonymous functions
                * so we can correctly map plugin errors.
+               *
+               * Note, in Node 8, the output of anonymous funcs varied based on parameters
+               * being present or not, so we inject dummy params.
                */
-              var func = new Function('throw new Error()');
+              var func = new Function('a', 'throw new Error()');
               var lineAdjust = 0;
               try {
                   func();

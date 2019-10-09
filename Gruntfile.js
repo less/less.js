@@ -283,7 +283,7 @@ module.exports = function(grunt) {
             }
         },
 
-        "saucelabs-jasmine": sauceJobs,
+        "saucelabs-mocha": sauceJobs,
 
         // Clean the version of less built for the tests
         clean: {
@@ -342,13 +342,13 @@ module.exports = function(grunt) {
 
     grunt.registerTask("sauce", [
         "browsertest-lessjs",
-        "jasmine::build",
+        "shell:generatebrowser",
         "connect",
         "sauce-after-setup"
     ]);
 
     grunt.registerTask("sauce-after-setup", [
-        "saucelabs-jasmine:all",
+        "saucelabs-mocha:all",
         "clean:sauce_log"
     ]);
 
@@ -365,9 +365,7 @@ module.exports = function(grunt) {
 
     if (
         isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
-        Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
-        (process.env.TRAVIS_BRANCH === "master" ||
-            process.env.TRAVIS_BRANCH === "3.x")
+        (process.env.TRAVIS_BRANCH === "master")
     ) {
         testTasks.push("force:on");
         testTasks.push("sauce-after-setup");

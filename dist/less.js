@@ -1287,6 +1287,7 @@
     flattenArray: flattenArray
   });
 
+  var anonymousFunc = /(<anonymous>|Function):(\d+):(\d+)/;
   /**
    * This is a centralized class of any error that could be thrown internally (mostly by the parser).
    * Besides standard .message it keeps some additional data like a path to the file where the error
@@ -1327,10 +1328,24 @@
           this.line = typeof line === 'number' ? line + 1 : null;
           this.column = col;
           if (!this.line && this.stack) {
-              var found = this.stack.match(/(<anonymous>|Function):(\d+):(\d+)/);
+              var found = this.stack.match(anonymousFunc);
+              /**
+               * We have to figure out how this environment stringifies anonymous functions
+               * so we can correctly map plugin errors.
+               */
+              var func = new Function('throw new Error()');
+              var lineAdjust = 0;
+              try {
+                  func();
+              }
+              catch (e) {
+                  var match = e.stack.match(anonymousFunc);
+                  var line_1 = parseInt(match[2]);
+                  lineAdjust = 1 - line_1;
+              }
               if (found) {
                   if (found[2]) {
-                      this.line = parseInt(found[2]) - 2;
+                      this.line = parseInt(found[2]) + lineAdjust;
                   }
                   if (found[3]) {
                       this.column = parseInt(found[3]);

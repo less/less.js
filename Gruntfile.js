@@ -359,6 +359,7 @@ module.exports = function(grunt) {
         "shell:test",
         "shell:opts",
         "shell:plugin",
+        "connect",
         "shell:runbrowser"
     ];
 

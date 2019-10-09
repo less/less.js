@@ -54,4 +54,4 @@ module.exports = (stylesheets, helpers, spec) => {
 </body>
 </html>
 `
-    }
+}

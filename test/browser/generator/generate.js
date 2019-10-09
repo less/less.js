@@ -16,30 +16,30 @@ fs.copySync(path.join(cwd, 'test', 'browser', 'common.js'), path.join(tmpDir, 'c
 
 /** Will run the runners in a series */
 function runSerial(tasks) {
-  var result = Promise.resolve()
-  tasks.forEach(task => {
-    result = result.then(result => task(), err => {
-      console.error(err.message)
+    var result = Promise.resolve()
+    tasks.forEach(task => {
+        result = result.then(result => task(), err => {
+            console.error(err.message)
+        })
     })
-  })
-  return result
+    return result
 }
 
 Object.entries(config).forEach(entry => {
-  const test = entry[1]
-  const paths = globby.sync(test.src)
-  const templateString = template(paths, test.options.helpers, test.options.specs)
-  fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
-  tests.push(() => runner({
-    file: 'http://localhost:8081/' + test.options.outfile,
-    timeout: 2000,
-    args: ['disable-web-security']
-  }))
+    const test = entry[1]
+    const paths = globby.sync(test.src)
+    const templateString = template(paths, test.options.helpers, test.options.specs)
+    fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
+    tests.push(() => runner({
+        file: 'http://localhost:8081/' + test.options.outfile,
+        timeout: 2000,
+        args: ['disable-web-security']
+    }))
 })
 
 module.exports = () => runSerial(tests).then(() => {
-  process.exit()
+    process.exit()
 }, err => {
-  console.error(err.message)
-  process.exit()
+    console.error(err.message)
+    process.exit()
 })

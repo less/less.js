@@ -179,6 +179,9 @@ testErrorSheet = function (sheet) {
                         actualErrorElement.style.display = 'none';
                     }
                     done();
+                })
+                .catch(function (err) {
+                    done(err);
                 });
         });
     });

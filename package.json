@@ -74,8 +74,6 @@
     "mocha-headless-chrome": "^2.0.3",
     "mocha-teamcity-reporter": "^3.0.0",
     "performance-now": "^0.2.0",
-    "phantomjs-polyfill-object-assign": "0.0.2",
-    "phantomjs-prebuilt": "^2.1.16",
     "phin": "^2.2.3",
     "promise": "^7.1.1",
     "read-glob": "^3.0.0",

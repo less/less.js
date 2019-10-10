@@ -13,7 +13,7 @@ module.exports = (stylesheets, helpers, spec) => {
 <head>
     <meta charset="utf-8">
     
-    <title>Jasmine Spec Runner</title>
+    <title>Less.js Spec Runner</title>
 
     <!-- for each test, generate CSS/LESS link tags -->
     $${stylesheets.map(function(fullLessName) {

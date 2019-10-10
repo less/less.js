@@ -149,14 +149,12 @@ var AbstractFileManager = /** @class */ (function () {
 var FileManager = /** @class */ (function (_super) {
     tslib.__extends(FileManager, _super);
     function FileManager() {
-        var _this = _super.call(this) || this;
-        _this.contents = {};
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    FileManager.prototype.supports = function (filename, currentDirectory, options, environment) {
+    FileManager.prototype.supports = function () {
         return true;
     };
-    FileManager.prototype.supportsSync = function (filename, currentDirectory, options, environment) {
+    FileManager.prototype.supportsSync = function () {
         return true;
     };
     FileManager.prototype.loadFile = function (filename, currentDirectory, options, environment, callback) {
@@ -241,50 +239,29 @@ var FileManager = /** @class */ (function (_super) {
                                     fullFilename = extFilename;
                                 }
                             }
-                            var modified = false;
-                            if (self.contents[fullFilename]) {
+                            var readFileArgs = [fullFilename];
+                            if (!options.rawBuffer) {
+                                readFileArgs.push('utf-8');
+                            }
+                            if (options.syncImport) {
                                 try {
-                                    var stat = fs$1.statSync.apply(this, [fullFilename]);
-                                    if (stat.mtime.getTime() === self.contents[fullFilename].mtime.getTime()) {
-                                        fulfill({ contents: self.contents[fullFilename].data, filename: fullFilename });
-                                    }
-                                    else {
-                                        modified = true;
-                                    }
+                                    var data = fs$1.readFileSync.apply(this, readFileArgs);
+                                    fulfill({ contents: data, filename: fullFilename });
                                 }
                                 catch (e) {
-                                    modified = true;
+                                    filenamesTried.push(isNodeModule ? npmPrefix + fullFilename : fullFilename);
+                                    return tryPrefix(j + 1);
                                 }
                             }
-                            if (modified || !self.contents[fullFilename]) {
-                                var readFileArgs = [fullFilename];
-                                if (!options.rawBuffer) {
-                                    readFileArgs.push('utf-8');
-                                }
-                                if (options.syncImport) {
-                                    try {
-                                        var data = fs$1.readFileSync.apply(this, readFileArgs);
-                                        var stat = fs$1.statSync.apply(this, [fullFilename]);
-                                        self.contents[fullFilename] = { data: data, mtime: stat.mtime };
-                                        fulfill({ contents: data, filename: fullFilename });
-                                    }
-                                    catch (e) {
+                            else {
+                                readFileArgs.push(function (e, data) {
+                                    if (e) {
                                         filenamesTried.push(isNodeModule ? npmPrefix + fullFilename : fullFilename);
                                         return tryPrefix(j + 1);
                                     }
-                                }
-                                else {
-                                    readFileArgs.push(function (e, data) {
-                                        if (e) {
-                                            filenamesTried.push(isNodeModule ? npmPrefix + fullFilename : fullFilename);
-                                            return tryPrefix(j + 1);
-                                        }
-                                        var stat = fs$1.statSync.apply(this, [fullFilename]);
-                                        self.contents[fullFilename] = { data: data, mtime: stat.mtime };
-                                        fulfill({ contents: data, filename: fullFilename });
-                                    });
-                                    fs$1.readFile.apply(this, readFileArgs);
-                                }
+                                    fulfill({ contents: data, filename: fullFilename });
+                                });
+                                fs$1.readFile.apply(this, readFileArgs);
                             }
                         }
                         else {

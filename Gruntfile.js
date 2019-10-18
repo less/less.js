@@ -227,6 +227,9 @@ module.exports = function(grunt) {
             benchmark: {
                 command: "node benchmark/index.js"
             },
+            benchmarkbrowser: {
+                command: "node test/browser/generator/runner.js benchmark"
+            },
             opts: {
                 // test running with all current options (using `opts` since `options` means something already)
                 command: [
@@ -396,8 +399,15 @@ module.exports = function(grunt) {
     ]);
 
     // Run benchmark
-    grunt.registerTask("benchmark", [
+    grunt.registerTask("benchmark-node", [
         "shell:testcjs",
         "shell:benchmark"
+    ]);
+
+    // Run all browser tests
+    grunt.registerTask("benchmark", [
+        "browsertest-lessjs",
+        "connect",
+        "shell:benchmarkbrowser"
     ]);
 };

@@ -3,7 +3,7 @@ const html = require('html-template-tag')
 /**
  * Generates HTML templates from list of test sheets
  */
-module.exports = (stylesheets, helpers, spec) => {
+module.exports = (stylesheets, helpers, spec, less) => {
     if (!Array.isArray(helpers)) {
         helpers = [helpers]
     }
@@ -49,7 +49,7 @@ module.exports = (stylesheets, helpers, spec) => {
     </script>
     <script src="common.js"></script>
     <script src="../../${spec}"></script>
-    <script src="less.min.js"></script>
+    <script src="${less || 'less.min.js'}"></script>
     <script>
         /** Saucelabs config */
         onload = function() {

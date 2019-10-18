@@ -1,9 +1,16 @@
 const template = require('./template')
-const config = require('./runner.config')
+let config
 const fs = require('fs-extra')
 const path = require('path')
 const globby = require('globby')
 const { runner } = require('mocha-headless-chrome')
+
+
+if (process.argv[2]) {
+    config = require(`./${process.argv[2]}.config`)
+} else {
+    config = require('./runner.config')
+}
 
 /**
  * Generate templates and run tests
@@ -17,8 +24,11 @@ fs.copySync(path.join(cwd, 'test', 'browser', 'common.js'), path.join(tmpDir, 'c
 /** Will run the runners in a series */
 function runSerial(tasks) {
     var result = Promise.resolve()
+    start = Date.now()
     tasks.forEach(task => {
-        result = result.then(result => task(), err => {
+        result = result.then(result => {
+            return task()
+        }, err => {
             console.error(err.message)
         })
     })

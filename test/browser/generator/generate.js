@@ -40,11 +40,15 @@ Object.entries(config).forEach(entry => {
     const paths = globby.sync(test.src)
     const templateString = template(paths, test.options.helpers, test.options.specs)
     fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
-    tests.push(() => runner({
-        file: 'http://localhost:8081/' + test.options.outfile,
-        timeout: 2000,
-        args: ['disable-web-security']
-    }))
+    tests.push(() => {
+        const file = 'http://localhost:8081/' + test.options.outfile
+        console.log(file)
+        return runner({
+            file,
+            timeout: 2000,
+            args: ['disable-web-security']
+        })
+    })
 })
 
 module.exports = () => runSerial(tests).then(() => {

@@ -1,6 +1,9 @@
 #import {
   color: red;
 }
+.test-d > h1 {
+  height: 20px;
+}
 body {
   width: 100%;
 }

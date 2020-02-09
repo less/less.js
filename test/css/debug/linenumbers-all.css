@@ -9,12 +9,12 @@
 }
 /* line 15, {path}linenumbers.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000315}}
-.test1 {
+.test-rule1 {
   color: black;
 }
 /* line 6, {path}linenumbers.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\000036}}
-.test2 {
+.test-rule2 {
   color: red;
 }
 @media all {
@@ -33,17 +33,17 @@
   /* line 9, {pathimport}test.less */
   @media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\000039}}
   .tst .tst3 {
-    color: white;
+    color: inherit;
   }
 }
 /* line 18, {pathimport}test.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathimportesc}test\.less}line{font-family:\0000318}}
 .tst2 {
-  color: white;
+  color: inherit;
 }
 /* line 27, {path}linenumbers.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000327}}
-.test {
+.test-rule {
   color: red;
   width: 2;
 }

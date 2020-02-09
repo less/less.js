@@ -104,7 +104,7 @@ body {
   four: a, 11, 12, 13;
   four: a, 21, 22, 23;
 }
-.test-mixin-default-arg {
+.test-rule-mixin-default-arg {
   defaults: 1px 1px 1px;
   defaults: 2px 2px 2px;
 }

@@ -11,12 +11,12 @@
   }
 }
 @media screen {
-  body {
+  .body {
     max-width: 480;
   }
 }
 @media all and (device-aspect-ratio: 16 / 9) {
-  body {
+  .body {
     max-width: 800px;
   }
 }
@@ -26,20 +26,20 @@
   }
 }
 @media handheld and (min-width: 42), screen and (min-width: 20em) {
-  body {
+  .body {
     max-width: 480px;
   }
 }
 @media print {
-  body {
+  .body {
     padding: 20px;
   }
-  body header {
+  .body header {
     background-color: red;
   }
 }
 @media print and (orientation: landscape) {
-  body {
+  .body {
     margin-left: 20px;
   }
 }
@@ -67,12 +67,12 @@
   }
 }
 @media a, b and c {
-  body {
+  .body {
     width: 95%;
   }
 }
 @media a and x, b and c and x, a and y, b and c and y {
-  body {
+  .body {
     width: 100%;
   }
 }
@@ -103,7 +103,7 @@
   }
 }
 @media only screen and (max-width: 200px) {
-  body {
+  .body {
     width: 480px;
   }
 }
@@ -174,22 +174,22 @@
     background: red;
   }
 }
-body {
+.body {
   background: red;
 }
 @media (max-width: 500px) {
-  body {
+  .body {
     background: green;
   }
 }
 @media (max-width: 1000px) {
-  body {
+  .body {
     background: red;
     background: blue;
   }
 }
 @media (max-width: 1000px) and (max-width: 500px) {
-  body {
+  .body {
     background: green;
   }
 }
@@ -197,7 +197,7 @@ body {
   /* a comment */
 }
 @media (max-width: 1200px) and (max-width: 900px) {
-  body {
+  .body {
     font-size: 11px;
   }
 }

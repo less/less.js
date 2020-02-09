@@ -181,7 +181,7 @@ body {
   defaults: 2px 2px 2px;
 }
 
-.test-mixin-default-arg {
+.test-rule-mixin-default-arg {
   .mixin-default-arg();
   .mixin-default-arg(2px);
 }
@@ -205,14 +205,14 @@ body {
   .mixin-comma-default3(4,2,2,2);
 }
 
-.test-calling-one-arg-mixin(@a) {
+.test-rule-calling-one-arg-mixin(@a) {
 }
 
-.test-calling-one-arg-mixin(@a, @b, @rest...) {
+.test-rule-calling-one-arg-mixin(@a, @b, @rest...) {
 }
 
 div {
-  .test-calling-one-arg-mixin(1);
+  .test-rule-calling-one-arg-mixin(1);
 }
 
 mixins-args-expand-op- {

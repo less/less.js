@@ -186,7 +186,7 @@ module.exports = function(grunt) {
     const nodeVersion = semver.major(process.versions.node);
     let scriptRuntime = 'node';
     if (nodeVersion < 8) {
-        scriptRuntime = path.resolve(path.join('node_modules', '.bin', 'babel-node')) + ' --presets=@babel/env';
+        scriptRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
     }
 
     // Project configuration.
@@ -206,20 +206,29 @@ module.exports = function(grunt) {
                 command: [
                     scriptRuntime + " build/rollup.js --lessc --out=./tmp/lessc",
                     scriptRuntime + " build/rollup.js --node --out=./tmp/less.cjs.js",
-                    scriptRuntime + " build/rollup.js --browser --out=./test/browser/less.min.js"
+                    scriptRuntime + " build/rollup.js --browser --out=./tmp/browser/less.min.js"
                 ].join(" && ")
             },
             testcjs: {
                 command: scriptRuntime + " build/rollup.js --node --out=./tmp/less.cjs.js"
             },
             testbrowser: {
-                command: scriptRuntime + " build/rollup.js --browser --out=./test/browser/less.min.js"
+                command: scriptRuntime + " build/rollup.js --browser --out=./tmp/browser/less.min.js"
             },
             test: {
                 command: "node test/index.js"
             },
+            generatebrowser: {
+                command: 'node test/browser/generator/generate.js'
+            },
+            runbrowser: {
+                command: 'node test/browser/generator/runner.js'
+            },
             benchmark: {
                 command: "node benchmark/index.js"
+            },
+            benchmarkbrowser: {
+                command: "node test/browser/generator/runner.js benchmark"
             },
             opts: {
                 // test running with all current options (using `opts` since `options` means something already)
@@ -277,201 +286,7 @@ module.exports = function(grunt) {
             }
         },
 
-        jasmine: {
-            options: {
-                keepRunner: true,
-                host: "http://localhost:8081/",
-                polyfills: [
-                    "./node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js",
-                    "test/browser/vendor/promise.js"
-                ],
-                vendor: [
-                    "test/browser/vendor/jasmine-jsreporter.js",
-                    "test/browser/common.js",
-                    "test/browser/less.min.js"
-                ],
-                template: "test/browser/test-runner-template.tmpl"
-            },
-            main: {
-                // src is used to build list of less files to compile
-                src: [
-                    "test/less/*.less",
-                    "!test/less/plugin-preeval.less", // uses ES6 syntax
-                    // Don't test NPM import, obviously
-                    "!test/less/plugin-module.less",
-                    "!test/less/import-module.less",
-                    "!test/less/javascript.less",
-                    "!test/less/urls.less",
-                    "!test/less/empty.less"
-                ],
-                options: {
-                    helpers: "test/browser/runner-main-options.js",
-                    specs: "test/browser/runner-main-spec.js",
-                    outfile: "tmp/browser/test-runner-main.html"
-                }
-            },
-            legacy: {
-                src: ["test/less/legacy/*.less"],
-                options: {
-                    helpers: "test/browser/runner-legacy-options.js",
-                    specs: "test/browser/runner-legacy-spec.js",
-                    outfile: "tmp/browser/test-runner-legacy.html"
-                }
-            },
-            strictUnits: {
-                src: ["test/less/strict-units/*.less"],
-                options: {
-                    helpers: "test/browser/runner-strict-units-options.js",
-                    specs: "test/browser/runner-strict-units-spec.js",
-                    outfile: "tmp/browser/test-runner-strict-units.html"
-                }
-            },
-            errors: {
-                src: [
-                    "test/less/errors/*.less",
-                    "!test/less/errors/javascript-error.less",
-                    "test/browser/less/errors/*.less"
-                ],
-                options: {
-                    timeout: 20000,
-                    helpers: "test/browser/runner-errors-options.js",
-                    specs: "test/browser/runner-errors-spec.js",
-                    outfile: "tmp/browser/test-runner-errors.html"
-                }
-            },
-            noJsErrors: {
-                src: ["test/less/no-js-errors/*.less"],
-                options: {
-                    helpers: "test/browser/runner-no-js-errors-options.js",
-                    specs: "test/browser/runner-no-js-errors-spec.js",
-                    outfile: "tmp/browser/test-runner-no-js-errors.html"
-                }
-            },
-            browser: {
-                src: [
-                    "test/browser/less/*.less",
-                    "test/browser/less/plugin/*.less"
-                ],
-                options: {
-                    helpers: "test/browser/runner-browser-options.js",
-                    specs: "test/browser/runner-browser-spec.js",
-                    outfile: "tmp/browser/test-runner-browser.html"
-                }
-            },
-            relativeUrls: {
-                src: ["test/browser/less/relative-urls/*.less"],
-                options: {
-                    helpers: "test/browser/runner-relative-urls-options.js",
-                    specs: "test/browser/runner-relative-urls-spec.js",
-                    outfile: "tmp/browser/test-runner-relative-urls.html"
-                }
-            },
-            rewriteUrls: {
-                src: ["test/browser/less/rewrite-urls/*.less"],
-                options: {
-                    helpers: "test/browser/runner-rewrite-urls-options.js",
-                    specs: "test/browser/runner-rewrite-urls-spec.js",
-                    outfile: "tmp/browser/test-runner-rewrite-urls.html"
-                }
-            },
-            rootpath: {
-                src: ["test/browser/less/rootpath/*.less"],
-                options: {
-                    helpers: "test/browser/runner-rootpath-options.js",
-                    specs: "test/browser/runner-rootpath-spec.js",
-                    outfile: "tmp/browser/test-runner-rootpath.html"
-                }
-            },
-            rootpathRelative: {
-                src: ["test/browser/less/rootpath-relative/*.less"],
-                options: {
-                    helpers: "test/browser/runner-rootpath-relative-options.js",
-                    specs: "test/browser/runner-rootpath-relative-spec.js",
-                    outfile: "tmp/browser/test-runner-rootpath-relative.html"
-                }
-            },
-            rootpathRewriteUrls: {
-                src: ["test/browser/less/rootpath-rewrite-urls/*.less"],
-                options: {
-                    helpers:
-                        "test/browser/runner-rootpath-rewrite-urls-options.js",
-                    specs: "test/browser/runner-rootpath-rewrite-urls-spec.js",
-                    outfile:
-                        "tmp/browser/test-runner-rootpath-rewrite-urls.html"
-                }
-            },
-            production: {
-                src: ["test/browser/less/production/*.less"],
-                options: {
-                    helpers: "test/browser/runner-production-options.js",
-                    specs: "test/browser/runner-production-spec.js",
-                    outfile: "tmp/browser/test-runner-production.html"
-                }
-            },
-            modifyVars: {
-                src: ["test/browser/less/modify-vars/*.less"],
-                options: {
-                    helpers: "test/browser/runner-modify-vars-options.js",
-                    specs: "test/browser/runner-modify-vars-spec.js",
-                    outfile: "tmp/browser/test-runner-modify-vars.html"
-                }
-            },
-            globalVars: {
-                src: ["test/browser/less/global-vars/*.less"],
-                options: {
-                    helpers: "test/browser/runner-global-vars-options.js",
-                    specs: "test/browser/runner-global-vars-spec.js",
-                    outfile: "tmp/browser/test-runner-global-vars.html"
-                }
-            },
-            postProcessorPlugin: {
-                src: ["test/less/postProcessorPlugin/*.less"],
-                options: {
-                    helpers: [
-                        "test/plugins/postprocess/index.js",
-                        "test/browser/runner-postProcessorPlugin-options.js"
-                    ],
-                    specs: "test/browser/runner-postProcessorPlugin.js",
-                    outfile:
-                        "tmp/browser/test-runner-post-processor-plugin.html"
-                }
-            },
-            preProcessorPlugin: {
-                src: ["test/less/preProcessorPlugin/*.less"],
-                options: {
-                    helpers: [
-                        "test/plugins/preprocess/index.js",
-                        "test/browser/runner-preProcessorPlugin-options.js"
-                    ],
-                    specs: "test/browser/runner-preProcessorPlugin.js",
-                    outfile: "tmp/browser/test-runner-pre-processor-plugin.html"
-                }
-            },
-            visitorPlugin: {
-                src: ["test/less/visitorPlugin/*.less"],
-                options: {
-                    helpers: [
-                        "test/plugins/visitor/index.js",
-                        "test/browser/runner-VisitorPlugin-options.js"
-                    ],
-                    specs: "test/browser/runner-VisitorPlugin.js",
-                    outfile: "tmp/browser/test-runner-visitor-plugin.html"
-                }
-            },
-            filemanagerPlugin: {
-                src: ["test/less/filemanagerPlugin/*.less"],
-                options: {
-                    helpers: [
-                        "test/plugins/filemanager/index.js",
-                        "test/browser/runner-filemanagerPlugin-options.js"
-                    ],
-                    specs: "test/browser/runner-filemanagerPlugin.js",
-                    outfile: "tmp/browser/test-runner-filemanager-plugin.html"
-                }
-            }
-        },
-
-        "saucelabs-jasmine": sauceJobs,
+        "saucelabs-mocha": sauceJobs,
 
         // Clean the version of less built for the tests
         clean: {
@@ -506,13 +321,13 @@ module.exports = function(grunt) {
     grunt.registerTask("browsertest", [
         "browsertest-lessjs",
         "connect",
-        "jasmine"
+        "shell:runbrowser"
     ]);
 
     // setup a web server to run the browser tests in a browser rather than phantom
     grunt.registerTask("browsertest-server", [
         "browsertest-lessjs",
-        "jasmine::build",
+        "shell:generatebrowser",
         "connect::keepalive"
     ]);
 
@@ -530,13 +345,13 @@ module.exports = function(grunt) {
 
     grunt.registerTask("sauce", [
         "browsertest-lessjs",
-        "jasmine::build",
+        "shell:generatebrowser",
         "connect",
         "sauce-after-setup"
     ]);
 
     grunt.registerTask("sauce-after-setup", [
-        "saucelabs-jasmine:all",
+        "saucelabs-mocha:all",
         "clean:sauce_log"
     ]);
 
@@ -548,14 +363,12 @@ module.exports = function(grunt) {
         "shell:opts",
         "shell:plugin",
         "connect",
-        "jasmine"
+        "shell:runbrowser"
     ];
 
     if (
         isNaN(Number(process.env.TRAVIS_PULL_REQUEST, 10)) &&
-        Number(process.env.TRAVIS_NODE_VERSION) === 4 &&
-        (process.env.TRAVIS_BRANCH === "master" ||
-            process.env.TRAVIS_BRANCH === "3.x")
+        (process.env.TRAVIS_BRANCH === "master")
     ) {
         testTasks.push("force:on");
         testTasks.push("sauce-after-setup");
@@ -586,8 +399,15 @@ module.exports = function(grunt) {
     ]);
 
     // Run benchmark
-    grunt.registerTask("benchmark", [
+    grunt.registerTask("benchmark-node", [
         "shell:testcjs",
         "shell:benchmark"
+    ]);
+
+    // Run all browser tests
+    grunt.registerTask("benchmark", [
+        "browsertest-lessjs",
+        "connect",
+        "shell:benchmarkbrowser"
     ]);
 };

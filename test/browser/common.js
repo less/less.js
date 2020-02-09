@@ -1,44 +1,3 @@
-/* Add js reporter for sauce */
-jasmine.getEnv().addReporter(new jasmine.JSReporter2());
-jasmine.getEnv().defaultTimeoutInterval = 3000;
-
-// From https://github.com/axemclion/grunt-saucelabs/issues/109#issuecomment-166767282
-// (function () {
-//     var oldJSReport = window.jasmine.getJSReport;
-//     window.jasmine.getJSReport = function () {
-//         var results = oldJSReport();
-//         if (results) {
-//             return {
-//                 durationSec: results.durationSec,
-//                 suites: removePassingTests(results.suites),
-//                 passed: results.passed
-//             };
-//         } else {
-//             return null;
-//         }
-//     };
-
-//     function removePassingTests (suites) {
-//         return suites.filter(specFailed)
-//             .map(mapSuite);
-//     }
-
-//     function mapSuite (suite) {
-//         var result = {};
-//         for (var s in suite) {
-//             result[s] = suite[s];
-//         }
-//         result.specs = suite.specs.filter(specFailed);
-//         result.suites = removePassingTests(suite.suites);
-//         return result;
-//     }
-
-//     function specFailed (item) {
-//         return !item.passed;
-//     }
-// })();
-/* record log messages for testing */
-
 var logMessages = [];
 window.less = window.less || {};
 
@@ -140,13 +99,15 @@ testSheet = function (sheet) {
                             window.navigator.userAgent.indexOf('Trident/') >= 0) {
                             text = ieFormat(text);
                         }
-                        expect(lessOutput).toEqual(text);
+                        expect(lessOutput).to.equal(text);
                         done();
+                    })
+                    .catch(function(err) {
+                        done(err);
                     });
             })
             .catch(function(err) {
-                console.log(err);
-                done();
+                done(err);
             });
     });
 };
@@ -213,11 +174,14 @@ testErrorSheet = function (sheet) {
                         .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
                         .replace(/\n$/, '')
                         .trim();
-                    expect(actualErrorMsg).toEqual(errorTxt);
+                    expect(actualErrorMsg).to.equal(errorTxt);
                     if (errorTxt == actualErrorMsg) {
                         actualErrorElement.style.display = 'none';
                     }
                     done();
+                })
+                .catch(function (err) {
+                    done(err);
                 });
         });
     });
@@ -234,7 +198,7 @@ testErrorSheetConsole = function (sheet) {
                 .replace(/\nStack Trace\n[\s\S]*/, '');
 
         describe('the error', function () {
-            expect(actualErrorElement).toBe(null);
+            expect(actualErrorElement).to.be.null;
         });
 
         errorFile
@@ -246,7 +210,7 @@ testErrorSheetConsole = function (sheet) {
                     .replace(/\{404status\}/g, ' (404)')
                     .replace(/\{node\}.*\{\/node\}/g, '')
                     .trim();
-                expect(actualErrorMsg).toEqual(errorTxt);
+                expect(actualErrorMsg).to.equal(errorTxt);
                 done();
             });
     });
@@ -264,5 +228,3 @@ loadFile = function (href) {
         request.send(null);
     });
 };
-
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 90000;

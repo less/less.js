@@ -35,6 +35,6 @@
   margin: 2px 4em 1 5pc;
   padding: 6px 1em 2px 2;
 }
-.test-false-negatives {
+.test-rule-false-negatives {
   a: (;
 }

@@ -1,5 +1,4 @@
-SyntaxError: An error was here. in {path}plugin-error-2.js{node} on line 3, column 16:
+SyntaxError: An error was here. in {path}plugin-error-2.js on line 3, column 16:
 2     use: function() {
 3         throw new Error('An error was here.')
 4     }
-{/node}

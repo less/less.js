@@ -27,7 +27,7 @@ describe('less.js modify vars', function () {
         var xhrLogMessages = logMessages.filter(function (item) {
             return (/XHR: Getting '/).test(item);
         });
-        expect(xhrLogMessages.length).toEqual(2);
+        expect(xhrLogMessages.length).to.equal(2);
         done();
     });
 });

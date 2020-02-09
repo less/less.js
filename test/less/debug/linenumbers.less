@@ -3,7 +3,7 @@
 @import "import/test.less";
 
 .start() {
-  .test2 {
+  .test-rule2 {
       color: red;
   }
 }
@@ -12,7 +12,7 @@
     color: black;
 }
 
-.test1 {
+.test-rule1 {
   .mix();
 }
 
@@ -24,7 +24,7 @@
 
 @debug: 1;
 & when (@debug = 1) {
-  .test {
+  .test-rule {
     color: red;
     & when (@debug = 1) {
       width: 2;

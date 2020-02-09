@@ -31,7 +31,7 @@ foo[attr="blah"] {
     this: works;
   }
 }
-.test-comment {
+.test-rule-comment {
   --value: a /* { ; } */;
   --comment-within: ( /* okay?; comment; */ );
 }

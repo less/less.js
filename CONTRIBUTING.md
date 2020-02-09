@@ -35,13 +35,13 @@ _Pull requests are encouraged!_
 * Start by adding a feature request to get feedback and see how your idea is received.
 * If your pull request solves an existing issue, but it's different in some way, _please create a new issue_ and make sure to discuss it with the core contributors. Otherwise you risk your hard work being rejected.
 * Do not change the **./dist/** folder, we do this when releasing
-* _Please add tests_ for your work. Tests are invoked using `npm test` command. It will run both node.js tests and browser ([PhantomJS](http://phantomjs.org/)) tests.
+* _Please add tests_ for your work. Tests are invoked using `npm test` command. It will run both node.js tests and browser (Headless Chrome) tests.
 
 ### Coding Standards
 
 * Always use spaces, never tabs
 * End lines in semi-colons.
-* Loosely aim towards jsHint standards
+* Loosely aim towards eslint standards
 
 
 ## Developing

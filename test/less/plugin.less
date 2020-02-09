@@ -57,7 +57,7 @@
 
 // `test-global` function should propagate into directive scope
 @media screen {
-  .test {
+  .test-rule {
     result : test-global();
   }
 }
@@ -68,13 +68,13 @@
 // `test-global` function should propagate into nested directive scopes
 @media screen and (min-width:100px) {
   @media (max-width:400px) {
-		.test {
+		.test-rule {
 			result : test-global();
 		}
 	}
 }
 
-.test {
+.test-rule {
   @media screen {
     @plugin "./plugin/plugin-local";
     result : test-local();
@@ -86,29 +86,29 @@
 .root {
   @ruleset2();
 }
-.test-empty {
+.test-rule-empty {
   val1: foo;
   test-collapse();
   val2: foo;
 }
-.test-simple {
+.test-rule-simple {
   @plugin "./plugin/plugin-simple";
   value: pi-anon();
   value: (pi() * 2);
 }
-.test-conflicts {
+.test-rule-conflicts {
   @plugin "./plugin/plugin-scope1";
   value: foo();
 }
-.test-conflicts {
+.test-rule-conflicts {
   @plugin "./plugin/plugin-scope2";
   value: foo();
 }
-.test-conflicts {
+.test-rule-conflicts {
   @plugin "./plugin/plugin-scope1";
   value: foo();
 }
-.test-collection {
+.test-rule-collection {
   @plugin "./plugin/plugin-collection";
   @var: 32;
   store(@var);

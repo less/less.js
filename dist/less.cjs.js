@@ -6385,7 +6385,6 @@ var getParserInput = (function () {
                         return str;
                     }
                     return [startChar, str];
-                default:
             }
         }
         return null;

@@ -2,7 +2,7 @@
  * Less - Leaner CSS v3.11.0
  * http://lesscss.org
  * 
- * Copyright (c) 2009-2019, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  * @license Apache-2.0
@@ -12,7 +12,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.less = factory());
-}(this, function () { 'use strict';
+}(this, (function () { 'use strict';
 
   // Export a new default each time
   var defaultOptions = (function () { return ({
@@ -6643,7 +6643,6 @@
                           return str;
                       }
                       return [startChar, str];
-                  default:
               }
           }
           return null;
@@ -11537,4 +11536,4 @@
 
   return less;
 
-}));
+})));

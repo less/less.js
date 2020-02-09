@@ -21,15 +21,26 @@ const tmpDir = path.join(cwd, 'tmp', 'browser')
 fs.ensureDirSync(tmpDir)
 fs.copySync(path.join(cwd, 'test', 'browser', 'common.js'), path.join(tmpDir, 'common.js'))
 
+let numTests = 0
+let passedTests = 0
+let failedTests = 0
+
 /** Will run the runners in a series */
 function runSerial(tasks) {
     var result = Promise.resolve()
     start = Date.now()
     tasks.forEach(task => {
         result = result.then(result => {
+            if (result && result.result && result.result.stats) {
+                const stats = result.result.stats
+                numTests += stats.tests
+                passedTests += stats.passes
+                failedTests += stats.failures
+            }
             return task()
         }, err => {
-            console.error(err.message)
+            console.log(err)
+            failedTests += 1
         })
     })
     return result
@@ -52,8 +63,16 @@ Object.entries(config).forEach(entry => {
 })
 
 module.exports = () => runSerial(tests).then(() => {
+    if (failedTests > 0) {
+        process.stderr.write(failedTests + ' Failed, ' + passedTests + ' passed\n');
+    } else {
+        process.stdout.write('All Passed ' + passedTests + ' run\n');
+    }
+    if (failedTests) {
+        process.on('exit', function() { process.reallyExit(1); });
+    }
     process.exit()
 }, err => {
-    console.error(err.message)
+    process.stderr.write(err.message);
     process.exit()
 })

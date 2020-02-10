@@ -4858,15 +4858,8 @@
           }
           return filename.slice(0, j + 1);
       };
-      AbstractFileManager.prototype.isPathWithExtension = function (path, ext) {
-          var extPos = path.lastIndexOf(ext);
-          return extPos !== -1 && extPos === path.length - ext.length;
-      };
       AbstractFileManager.prototype.tryAppendExtension = function (path, ext) {
-          if (this.isPathWithExtension(path, ext)) {
-              return path;
-          }
-          return path + ext;
+          return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
       };
       AbstractFileManager.prototype.tryAppendLessExtension = function (path) {
           return this.tryAppendExtension(path, '.less');
@@ -10886,17 +10879,6 @@
       FileManager.prototype.alwaysMakePathsAbsolute = function () {
           return true;
       };
-      FileManager.prototype.getPossibleFileExtensions = function (path, ext) {
-          if (this.isPathWithExtension(path, ext)) {
-              return [''];
-          }
-          // if file doesn't have dot in name it require extention
-          if (path.indexOf(".") === -1) {
-              return [ext];
-          }
-          // path has dots in name it might be with or without extention (like .css)
-          return [ext, ''];
-      };
       FileManager.prototype.join = function (basePath, laterPath) {
           if (!basePath) {
               return laterPath;
@@ -10940,8 +10922,25 @@
               handleResponse(xhr, callback, errback);
           }
       };
-      FileManager.prototype.tryToLoad = function (href) {
-          var _this = this;
+      FileManager.prototype.supports = function () {
+          return true;
+      };
+      FileManager.prototype.clearFileCache = function () {
+          fileCache = {};
+      };
+      FileManager.prototype.loadFile = function (filename, currentDirectory, options, environment) {
+          // TODO: Add prefix support like less-node?
+          // What about multiple paths?
+          if (currentDirectory && !this.isPathAbsolute(filename)) {
+              filename = currentDirectory + filename;
+          }
+          filename = options.ext ? this.tryAppendExtension(filename, options.ext) : filename;
+          options = options || {};
+          // sheet may be set to the stylesheet for the initial load or a collection of properties including
+          // some context variables for imports
+          var hrefParts = this.extractUrlParts(filename, window.location.href);
+          var href = hrefParts.url;
+          var self = this;
           return new Promise(function (resolve, reject) {
               if (options.useFileCache && fileCache[href]) {
                   try {
@@ -10952,7 +10951,7 @@
                       return reject({ filename: href, message: "Error loading file " + href + " error was " + e.message });
                   }
               }
-              _this.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
+              self.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
                   // per file cache
                   fileCache[href] = data;
                   // Use remote copy (re-parse)
@@ -10961,28 +10960,6 @@
                   reject({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
               });
           });
-      };
-      FileManager.prototype.supports = function () {
-          return true;
-      };
-      FileManager.prototype.clearFileCache = function () {
-          fileCache = {};
-      };
-      FileManager.prototype.loadFile = function (filename, currentDirectory, options, environment) {
-          // TODO: Add prefix support like less-node?
-          // What about multiple paths?
-          var _this = this;
-          if (currentDirectory && !this.isPathAbsolute(filename)) {
-              filename = currentDirectory + filename;
-          }
-          var extensions = this.getPossibleFileExtensions(filename, options.ext || '');
-          options = options || {};
-          // sheet may be set to the stylesheet for the initial load or a collection of properties including
-          // some context variables for imports
-          var hrefParts = this.extractUrlParts(filename, window.location.href);
-          var href = hrefParts.url;
-          var hrefs = extensions.map(function (ext) { return _this.tryAppendExtension(href, ext); });
-          return hrefs.reduce(function (prev, href) { return prev.catch(function () { return _this.tryToLoad(href); }); }, this.tryToLoad(hrefs.shift()));
       };
       return FileManager;
   }(AbstractFileManager));

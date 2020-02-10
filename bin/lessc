@@ -10564,7 +10564,7 @@ var createFromEnvironment = (function (environment, fileManagers) {
      * It's not clear what should / must be public and why.
      */
     var initial = {
-        version: [3, 11, 0],
+        version: [3, 11, 1],
         data: data,
         tree: tree,
         Environment: environment$1,

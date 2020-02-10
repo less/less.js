@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.11.0
+ * Less - Leaner CSS v3.11.1
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -10823,7 +10823,7 @@
        * It's not clear what should / must be public and why.
        */
       var initial = {
-          version: [3, 11, 0],
+          version: [3, 11, 1],
           data: data,
           tree: tree,
           Environment: environment,

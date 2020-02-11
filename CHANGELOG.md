@@ -1,711 +1,501 @@
-## 3.10.0-beta
-
-2019-08-03
-  - Switched codebase to ES2015 w/ Rollup/Babel compilation
-  - Added TS linter to ESLint (types yet to be added to functions / vars)
-  - Ignore undefined content in generating source maps (#3360)
-
-## 3.9.0
-
-2018-11-28
-  - Added `range([start=1], end, [step=1])` function to generate lists
-  - Fixes #3325 #3313 #3328
-
-## 3.8.1
-
-2018-08-07
-  - Fixes for sourcemaps and color functions
-  - Support for #RRGGBBAA color format
-  - Allows conversion of colors to `rgba()` or `hsla()`
-  - Pass-through output of unknown properties in color functions (allows `var(--color)` for example)
-
-## 3.8.0
-
-2018-07-22
-  - New feature: added rewrite urls to replace relative url option. Adds "local" option for modules
-
-## 3.7.1
-
-2018-07-11
-  - Fixes mistake in `lessc` (using `console.warning` instead of actual `console.warn`)
-  - Adds `lessc` tests
-
-## 3.7.0
-
-2018-07-11
-  - New each() function! [See docs](http://lesscss.org/functions/#list-functions-each)
-  - New math modes! Also [see docs](http://lesscss.org/usage/#less-options-math).
-  - Bug fixes
-
-## 3.6.0
-
-2018-07-10
-  - Allows plain conditions in `if(true, 1, 2)` (vs. `if((true), 1, 2)`)
-  - Fixes svg-gradient() for Firefox
-  - Adds more 3rd-party tests for fewer surprises when upgrading
-  - Removes (broken) `less-rhino` implementation - use other Java ports
-
-## 3.5.3
-
-2018-07-06
-  - Reverts `@media` eval change
-  - Other bug fixes
-
-## 3.5.0
-
-2018-07-05
-  - Feature: Namespaced Values / Maps e.g. `color: @color[primary]`
-  - Fixes to calc()
-  - Permissive parsing of custom properties and variables
-  - Inline expressions now not evaluated in at-rules `@media (min-width: @var) {}` works, `@media (min-width: @var + 1) {}` will not
-  - Allows unnamed lookups i.e. "functions" e.g. `.mixin(@a, @b)[]`
-  - Lots of bug fixes
-
-## 3.5.0-beta.4
-
-2018-06-30
-  - Fixes #3235, #3187
-  - Feature: Namespaced Values e.g. `color: #color[primary]`
-
-## 3.5.0-beta.3
-
-2018-06-29
-  - Fix: browser cache is always considered stale if .modifyVars wasn't
-
-## 3.5.0-beta.2
-
-2018-06-27
-  - Re-parses selectors after variables in selectors are evaluated - Fixes #1421
-  - Fixes #3191
-
-## 3.5.0-beta
-
-2018-06-24
-  - Adds permissive parsing for at-rules and custom properties - fixes #3147 #2715 
-  - Updates dependencies
-  - Fixes file caching issue (not reloading modified files in "watched" environments)
-
-## 3.0.4
-
-2018-05-06
-  - Update source-map to 0.6.x (#3180). Enforces node 6+ though.
-
-## 3.0.0
-
-2018-02-10
-  - Fix `calc()` function to not do math operations on compile
-  - Rename Directive -> AtRule & Rule -> Declaration
-  - Cross-platform `@plugin` loading! (Node & Browser)
-  - Numerous changes / improvements to plugin architecture
-  - Simplified API calls in plugins (`less.atrule()` vs `new less.tree.AtRule()`)
-  - Property accessors (`$width` to refer to `width: 300px` value)
-  - Inline JavaScript disabled by default for security reasons (use `@plugin`)
-  - Improvements in Less error reporting
-  - Added feature: returning `null` / `false` from Less functions will remove that line
-  - Simple `boolean()` and `if()` functions added
-  - Bug fixes
-  - Removal of unnecessary nodes from API (like IE's `alpha()`)
-
-## 2.7.3
-
-2017-10-23
-
-  - Bump `request` dependency
-
-## 2.7.2
-
-2017-01-04
-
-  - Revert breaking changes to contrast() function
-  - Fix error reporting of lessc executable
-  - Changed octals to hex for ES6 strict mode
-
-## 2.7.1 HOTFIX
-
-2016-05-09
-
- - Revert commit 470af20 (source map performance) which broke source maps
-
-## 2.7.0
-
-2016-05-07
-
- - Fixes for contrast() function
- - Allow root functions for plugins
- - Allow semi-colon separators in functions
- - Performance improvements for source maps
- - Fix "blank page" issue in browser
- - Compatibility fixes for Node 6.x
- - Fix AST to include single-line comments
- - Fix reversion for "color-like" words (outputting color values)
-
-## 2.6.1
-
-2016-03-04
-
- - Update Less.js dependencies
- - Fix comments after named color regression
- - use instanceof operator instead of class comparison optimization
- - disallow whitespace in variable calls
-
-## 2.6.0
-
-2016-01-29
-
- - Underscore now allowed in dimension unit
- - Fixes for import by reference
- - Fix for #2384 Changes HTTPRequest "sync" setting to simply hide the page until less has rendered, browser version is now orders of magnitude faster.
- - Added ability to cache stylesheets while using modifyVars
- - Error when when image-size functions are used in browser-less
- - Fixed extend leaking through nested parent selector. #2586
- - Added "or" keyword and allowed arbitrary logical expression in guards
- - Fixing #2124 - Parsing Error "Unrecognised input" for color operations
- - Logical operator ```and``` now has higher precedence than logical operator ```or```.
- - Allow unknown at-rules w/o {} block
-
-## 2.5.3
-
-2015-09-25
-
- - Fix import inline a URL
-
-## 2.5.2
-
-2015-09-24
-
- - No output should result in an empty sourcemap
- - Import inline located inside file imported by reference should not be present in output
- - Shorthand colors will stay shorthand
- - Make percentage work like other math functions and throw an error on NaN
- - Fixed mixin definition matching problem when mixin definition contains parameters with default values
- - Observe reference for imported comments
-
-## 2.5.1
-
-2015-05-21
-
- - Fix problems with less being async in some browsers
- - Minor fix only likely to affect programmatic usage of ruleset find
- - Fix  error when a namespaced mixin is invoked in global scope
-
-## 2.5.0
-
-2015-04-03
-
- - supports the scoped `@plugin` directive to load function plugins
- - All directives are bubbled (e.g. supports), not just media
- - Performance improvements to the parser - should help non-chrome browsers with very large less files to be a lot quicker.
- - the image size function respects include paths like other file functions
- - colour functions take a relative argument that applies percentages relatively instead of absolutely
- - include paths now allows : as a separator on windows (recognising and not splitting drive names by the backslash)
- - `@import (css)` does not pull the directive above comments
- - Fix for import statements without quotes sometimes causing issues
- - replace supports dimensions and colours
- - the browser field is set in the package.json for use with browserify
- - another fix to support paths being passed as a string instead of an array
- - detached rulesets can be used as default arguments
- - Fix a lot of false warnings about extends
- - errors written to stderr more consistently
- - consistently keep units if strict units is off
- - Better support for comments in function all arguments
-
-## 2.4.0
-
-2015-02-07
-
- - Support for plugins that pre-process (to add libraries silently etc.)
- - Empty sourcemaps now work
- - Extract and Length functions now ignore comments in a list (more work to come to fix the general problem)
- - fragment urls are treated absolute since they refer to the html document
- - Extends on a selector joined with `&` now work better
- - Nested mixins work better with !important (regression in 2.3.0)
- - The promise dependency is now actually optional (introduced in 2.0.0)
- - Files with just `\r` newlines now process ok (regression in 2.0.0)
- - When strict units is off and the unit is 1/x, (e.g. 1 / 12px) the unit output is x, previously nothing (regression in 2.0.0)
-
-## 2.3.1
-
-2015-01-28
-
- - Fix depends option (regression in 2.3.0)
- - Support parent selector (`&`) used in sub element expression (e.g. `:not(.c_&)`)
-
-## 2.3.0
-
-2015-01-27
-
- - add `isruleset` function
- - add optional import option, causing less to not fail if file not found
- - Fix browsers-side cache.
- - Many fixes to import reference - support `@support` and keyframe
- - Selectors now interpolate pseudo selectors (e.g. `:@{hover}`)
- - Fix comments missed off if they were at the end of the file
- - Fix !important used with parametric mixins
- - Emits warnings for extends when the target is not found
- - include-path now works on data-uri
- - variables and function calls work for path in data-uri
- - Fix absolute paths not working on imports sometimes.
- - Unicode BOM removed again
- - Misc. bug fixes
-
-## 2.2.0
-
-2015-01-04
-
- - do not apply relative paths to svg-gradient and data-uri functions data-uri output
- - using import filename interpolation and import inline together now works
- - deprecate the compression option (still works, but outputs a warning unless silent)
- - The node version of less now has image-size, image-width, image-height which return the image dimensions of a file
- - Fixed an issue that could cause the parse to occur more than once and the callback be called multiple times
- - if you are outputting to the console, lessc defaults to silent so warnings do not end up in output
- - `isunit` function supports `''` to test if a dimension has no unit
- - data-uri function now counts characters after base64 encoding instead of bytes before encoding to determine ie8 support
- - fix bug effecting guards on pseudo class selectors
- - do not cache on the browser when used with modifyVars
- - detection if less does not parse last character in file
- - detection of whether a file is css now requires `/css`, `.css`, `?css`, `&css` instead of just `css`. You can still tell less the type of file using import options.
- - remove extra new line added to sourcemap entry inline file
- - support safari extension
- - less.parse now exposes a way to get the AST. We do not recommend you use this unless you need to.
-
-## 2.1.2
-
-2014-12-20
-
- - Fix for use with requirejs
- - Fixes for data-uri function
-
-## 2.1.1
-
-2014-11-27
-
- - Improved keyword and anonymous usage with the replace function
- - Added `getCSSAppendage` to sourcemap builder to avoid duplication in plugins
- - Fix problem with plugins when used with the promises version of render
- - If the render callback throws an exception it now propagates instead of calling the callback again with an error
-
-## 2.1.0
-
-2014-11-23
-
- - Fixed `isSync` option, it was using sync file operations but promises are guaranteed to call back async. We now support promises as a feature rather than the 1st class way of doing things.
- - Browser code is now synchronous again, like in v1, meaning it blocks the site until less is compiled
- - Some fixes for variable imports which affected filemanagers when synchronous
- - Fixed lessc makefile dependencies option
- - output now reports back a imports field with an array of imported files
- - relative path test for drive names (so windows only) is now case insensitive
- - Fix for IE7 - use getChar instead of indexing array
- - variables using !important now output !important, which bubbles up to affect the rule
- - livereload cache buster is now treated specially
- - upgrade dependencies
-
-## 2.0.0
-
-2014-11-09
-
- - Fixed multiplication in non strict units mode to take the left operand unit, in the case that the unit cannot be resolved
- - Some fixes for browser cross-compatibility
- - browser tests now pass in IE 8-11 and FF
- - added index.js and browser.js in root as shortcuts
- - fixed some local variable spellings
- - support for `@counter-style` directive
-
-## 2.0.0-b3
-
-2014-11-01
-
- - some refactoring of browser structure to allow use of api vs normal browser bundle
- - browser bundle no longer leaks require
- - browser can now be scoped with just window
- - browser `useFileCache` defaults to `true`, but file cache is now cleared when refreshing or in watch mode
-
-## 2.0.0-b2
-
-2014-10-26
-
- - Imports are now sequenced and so are consistent (previously some complex projects might end up with occasional different orderings)
- - Imports with variables are better supported - variables can be specified in sub imports
- - Support for rebeccapurple
- - Browser can now accept options as attributes on the script tag and the link tags e.g. `<script data-verbose="false" src="less.js"...`
- - adding a .less file extension is done in the abstract file manager so it the behaviour can be overridden by certain file managers
- - Fixed a bug where unquoted urls beginning `//` e.g. `url(//file/file.less)` would be incorrectly interpreted (bug introduced in b-1)
- - lessc plugins can be a function, used as a constructor as well as an object - this to allow the plugin more flexibility to be used programattically
-
-## 2.0.0-b1
-
-2014-10-19
-
- - Public Beta / Release Candidate - Feedback welcome
-   For a guide to breaking changes see [the v2 upgrade guide](http://lesscss.org/usage/#v2-upgrade-guide)
- - no longer including old versions of less in the repo or npm
- - not including test less and gradle files in npm
- - colours now output in the format they are added, so yellow will output yellow, not its hex counterpart
- - better parsing - better comment support and comments in brackets can now contain comments including quotes.
- - Removal of dependency on clean-css - install less-plugin-clean-css and use --clean-css to reference plugin
- - Environment Support - less is now separate from its node and browser environment implementations and adding support for another javascript environment should be straight forward.
- - Plugin Support - it is now straight forward to add AST manipulations (see less-plugin-inline-images), file managers (see less-plugin-npm-import) and post processors (see less-plugin-clean-css and less-plugin-autoprefix).
- - We now recommend using less.render and using the parser directly is not in the same way as in v2. It is possible but it would require changes and we do not guarantee it will not be broken in minor version releases.
- - In the browser, less.pageLoadFinished will be a promise, resolved when less has finished its initial processing. less.refresh and less.modifyVars also return promises.
- - In the browser, as before less is used as options, however this is now copied to less.options if you need to access after less has run
- - In the browser, the cache can be overwritten by setting less.cache before less loads. After load less.cache will be the default implementation.
- - less.js now uses browserify to generate its browser side component
- - default values for the sourcemap options have been re-done and improved to hopefully mean creating sourcemaps is easier
- - Many smaller bugfixes and API changes. Please let us know if something you relied on has disappeared or an area should be better documented.
-
-## 1.7.5
-
-2014-09-03
-
- - Allow comments in keyframe (complete comment support coming in 2.0)
- - pass options to parser from less.render
- - Support /deep/ combinator
- - handle fragments in data-uri's
- - float @charsets to the top correctly
- - updates to some dependencies
- - Fix interpolated import in media query
- - A few other various small corrections
-
-## 1.7.4
-
-2014-07-27
-
- - Handle uppercase paths in browser
- - Show error if an empty selector is used in extend
- - Fix property merging in directives
- - Fix ordering of charset and import directives
- - Fix race condition that caused a rules is undefined error sometimes if you had a complex import strategy
- - Better error message for imports missing semi-colons or malformed
- - Do not use util.print to avoid deprecate warnings in node 0.11
-
-## 1.7.3
-
-2014-06-22
-
- - Include dist files, missing from 1.7.2
- - Do not round the results of color functions, like lightness, hue, luma etc.
- - Support cover and contain keywords in background definitions
-
- ## 1.7.2
-
-2014-06-19
-
- - Allow paths option to be a string (in 1.7.1 less started throwing an exception instead of incorrectly processing the string as an array of chars)
- - Do not round numbers when used with javascript (introduced 1.7.0)
-
-## 1.7.1
-
-2014-06-08
-
- - Fix detection of recursive mixins
- - Fix the paths option for later versions of node (0.10+)
- - Fix paths joining bug
- - Fix a number precision issue on some versions of node
- - Fix an IE8 issue with importing css files
- - Fix IE11 detection for xhr requests
- - Modify var works if the last line of a less file is a comment.
- - Better detection of valid hex colour codes
- - Some stability fixes to support a low number of available file handles
- - Support comparing values with different quote types e.g. "test" now === 'test'
- - Give better error messages if accessing a url that returns a non 200 status code
- - Fix the e() function when passed empty string
- - Several minor bug fixes
-
-## 1.7.0
-
-2014-02-27
-
- - Add support for rulesets in variables and passed to mixins to allow wrapping
- - Change luma to follow the w3c spec, luma is available as luminance. Contrast still uses luma so you may see differences if your threshold % is close to the existing calculated luma.
- - Upgraded clean css which means the --selectors-merge-mode is now renamed --compatibility
- - Add support for using variables with @keyframes, @namespace, @charset
- - Support property merging with +_ when spaces are needed and keep + for comma separated
- - Imports now always import once consistently - a race condition meant previously certain configurations would lead to a different ordering of files
- - Fix support for `.mixin(@args...)` when called with no args (e.g. `.mixin();`)
- - Do unit conversions with min and max functions. Don't pass through if not understood, throw an error
- - Allow % to be passed on its own to the unit function e.g. `unit(10, %)`
- - Fix a bug when comparing a unit value to a non-unit value if the unit-value was the multiple of another unit (e.g. cm, mm, deg etc.)
- - Fix mixins with media queries in import reference files not being put into the output (they now output, they used to incorrectly not)
- - Fix lint mode - now reports all errors
- - Fixed a small scope issue with & {} selector rulesets incorrectly making mixins visible - regression from 1.6.2
- - Browser - added log level "debug" at 3 to get less logging, The default has changed so unless you set the value to the default you won't see a difference
- - Browser - logLevel takes effect regardless of the environment (production/dev)
- - Browser - added postProcessor option, a function called to post-process the css before adding to the page
- - Browser - use the right request for file access in IE
-
-## 1.6.3
-
-2014-02-08
-
- - Fix issue with calling toCSS twice not working in some situations (like with bootstrap 2)
-
-## 1.6.2
-
-2014-02-02
-
- - The Rhino release is fixed!
- - ability to use uppercase colours
- - Fix a nasty bug causing syntax errors when selector interpolation is preceded by a long comment (and some other cases)
- - Fix a major bug with the variable scope in guards on selectors (e.g. not mixins)
- - Fold in `& when () {` to the current selector rather than duplicating it
- - fix another issue with array prototypes
- - add a url-args option which adds a value to all urls (for cache busting)
- - Round numbers to 8 decimal places - thereby stopping javascript precision errors
- - some improvements to the default() function in more complex scenarios
- - improved missing '{' and '(' detection
-
-## 1.6.1
-
-2014-01-12
-
- - support ^ and ^^ shadow dom selectors
- - fix sourcemap selector (used to report end of the element or selector) and directive position (previously not supported)
- - fix parsing empty less files
- - error on (currently) ambiguous guards on multiple css selectors
- - older environments - protect against typeof regex returning function
- - Do not use default keyword
- - use innerHTML in tests, not innerText
- - protect for-in in case Array and Object prototypes have custom fields
-
-## 1.6.0
-
-2014-01-01
-
- - Properties can be interpolated, e.g. @{prefix}-property: value;
- - a default function has been added only valid in mixin definitions to determine if no other mixins have been matched
- - Added a plugins option that allows specifying an array of visitors run on the less AST
- - Performance improvements that may result in approx 20-40% speed up
- - Javascript evaluations returning numbers can now be used in calculations/functions
- - fixed issue when adding colours, taking the alpha over 1 and breaking when used in colour functions
- - when adding together 2 colours with non zero alpha, the alpha will now be combined rather than added
- - the advanced colour functions no longer ignore transparency, they blend that too
- - Added --clean-option and cleancssOptions to allow passing in clean css options
- - rgba declarations are now always clamped e.g. rgba(-1,258,258, -1) becomes rgba(0, 255, 255, 0)
- - Fix possible issue with import reference not bringing in styles (may not be a bugfix, just a code tidy)
- - Fix some issues with urls() being prefixed twice and unquoted urls in mixins being processed each time they are called
- - Fixed error messages for undefined variables in javascript evaluation
- - Fixed line/column numbers from math errors
-
-## 1.5.1
-
-2013-11-17
-
- - Added source-map-URL option
- - Fixed a bug which meant the minimised 1.5.0 browser version was not wrapped, meaning it interfered with require js
- - Fixed a bug where the browser version assume port was specified
- - Added the ability to specify variables on the command line
- - Upgraded clean-css and fixed it from trying to import
- - correct a bug meaning imports weren't synchronous (syncImport option available for full synchronous behaviour)
- - better mixin matching behaviour with calling multiple classes e.g. .a.b.c;
-
-## 1.5.0
-
-2013-10-21
-
- - sourcemap support
- - support for import inline option to include css that you do NOT want less to parse e.g. `@import (inline) "file.css";`
- - better support for modifyVars (refresh styles with new variables, using a file cache), is now more resiliant
- - support for import reference option to reference external css, but not output it. Any mixin calls or extend's will be output.
- - support for guards on selectors (currently only if you have a single selector)
- - allow property merging through the +: syntax
- - Added min/max functions
- - Added length function and improved extract to work with comma separated values
- - when using import multiple, sub imports are imported multiple times into final output
- - fix bad spaces between namespace operators
- - do not compress comment if it begins with an exclamation mark
- - Fix the saturate function to pass through when using the CSS syntax
- - Added svg-gradient function
- - Added no-js option to lessc (in browser, use javascriptEnabled: false) which disallows JavaScript in less files
- - switched from the little supported and buggy cssmin (previously ycssmin) to clean-css
- - support transparent as a color, but not convert between rgba(0, 0, 0, 0) and transparent
- - remove sys.puts calls to stop deprecation warnings in future node.js releases
- - Browser: added logLevel option to control logging (2 = everything, 1 = errors only, 0 = no logging)
- - Browser: added errorReporting option which can be "html" (default) or "console" or a function
- - Now uses grunt for building and testing
- - A few bug fixes for media queries, extends, scoping, compression and import once.
-
-## 1.4.2
-
-2013-07-20
-
- - if you don't pass a strict maths option, font size/line height options are output correctly again
- - npmignore now include .gitattributes
- - property names may include capital letters
- - various windows path fixes (capital letters, multiple // in a path)
-
-## 1.4.1
-
-2013-07-05
-
- - fix syncImports and yui-compress option, as they were being ignored
- - fixed several global variable leaks
- - handle getting null or undefined passed as the options object
-
-## 1.4.0
-
-2013-06-05
-
- - fix passing of strict maths option
-
-## 1.4.0 Beta 4
-
-2013-05-04
-
- - change strictMaths to strictMath. Enable this with --strict-math=on in lessc and strictMath:true in JavaScript.
- - change lessc option for strict units to --strict-units=off
-
-## 1.4.0 Beta 3
-
-2013-04-30
-
- - strictUnits now defaults to false and the true case now gives more useful but less correct results, e.g. 2px/1px = 2px
- - Process ./ when having relative paths
- - add isunit function for mixin guards and non basic units
- - extends recognise attributes
- - exception errors extend the JavaScript Error
- - remove es-5-shim as standard from the browser
- - Fix path issues with windows/linux local paths
-
-## 1.4.0 Beta 1 & 2
-
-2013-03-07
-
- - support for `:extend()` in selectors (e.g. `input:extend(.button) {}`) and `&:extend();` in ruleset (e.g. `input { &:extend(.button all); }`)
- - maths is now only done inside brackets. This means font: statements, media queries and the calc function can use a simpler format without being escaped. Disable this with --strict-maths-off in lessc and strictMaths:false in JavaScript.
- - units are calculated, e.g. 200cm+1m = 3m, 3px/1px = 3. If you use units inconsistently you will get an error. Suppress this error with --strict-units-off in lessc or strictUnits:false in JavaScript
- - `(~"@var")` selector interpolation is removed. Use @{var} in selectors to have variable selectors
- - default behaviour of import is to import each file once. `@import-once` has been removed.
- - You can specify options on imports to force it to behave as css or less `@import (less) "file.css"` will process the file as less
- - variables in mixins no longer 'leak' into their calling scope
- - added data-uri function which will inline an image into the output css. If ieCompat option is true and file is too large, it will fallback to a url()
- - significant bug fixes to our debug options
- - other parameters can be used as defaults in mixins e.g. .a(@a, @b:@a)
- - an error is shown if properties are used outside of a ruleset
- - added extract function which picks a value out of a list, e.g. extract(12 13 14, 3) => 14
- - added luma, hsvhue, hsvsaturation, hsvvalue functions
- - added pow, pi, mod, tan, sin, cos, atan, asin, acos and sqrt math functions
- - added convert function, e.g. convert(1rad, deg) => value in degrees
- - lessc makes output directories if they don't exist
- - lessc `@import` supports https and 301's
- - lessc "-depends" option for lessc writes out the list of import files used in makefile format
- - lessc "-lint" option just reports errors
- - support for namespaces in attributes and selector interpolation in attributes
- - other bug fixes
-
-## 1.3.3
-
-2012-12-30
-
- - Fix critical bug with mixin call if using multiple brackets
- - when using the filter contrast function, the function is passed through if the first argument is not a color
-
-## 1.3.2
-
-2012-12-28
-
- - browser and server url re-writing is now aligned to not re-write (previous lessc behaviour)
- - url-rewriting can be made to re-write to be relative to the entry file using the relative-urls option (less.relativeUrls option)
- - rootpath option can be used to add a base path to every url
- - Support mixin argument separator of ';' so you can pass comma separated values. e.g. `.mixin(23px, 12px;);`
- - Fix lots of problems with named arguments in corner cases, not behaving as expected
- - hsv, hsva, unit functions
- - fixed lots more bad error messages
- - fix `@import-once` to use the full path, not the relative one for determining if an import has been imported already
- - support `:not(:nth-child(3))`
- - mixin guards take units into account
- - support unicode descriptors (`U+00A1-00A9`)
- - support calling mixins with a stack when using `&` (broken in 1.3.1)
- - support `@namespace` and namespace combinators
- - when using % with colour functions, take into account a colour is out of 256
- - when doing maths with a % do not divide by 100 and keep the unit
- - allow url to contain % (e.g. %20 for a space)
- - if a mixin guard stops execution a default mixin is not required
- - units are output in strings (use the unit function if you need to get the value without unit)
- - do not infinite recurse when mixins call mixins of the same name
- - fix issue on important on mixin calls
- - fix issue with multiple comments being confused
- - tolerate multiple semi-colons on rules
- - ignore subsequant `@charset`
- - syncImport option for node.js to read files syncronously
- - write the output directory if it is missing
- - change dependency on cssmin to ycssmin
- - lessc can load files over http
- - allow calling less.watch() in non dev mode
- - don't cache in dev mode
- - less files cope with query parameters better
- - sass debug statements are now chrome compatible
- - modifyVars function added to re-render with different root variables
-
-## 1.3.1
-
-2012-10-18
-
-- Support for comment and @media debugging statements
-- bug fix for async access in chrome extensions
-- new functions tint, shade, multiply, screen, overlay, hardlight, difference, exclusion, average, negation, softlight, red, green, blue, contrast
-- allow escaped characters in attributes
-- in selectors support @{a} directly, e.g. .a.@{a} { color: black; }
-- add fraction parameter to round function
-- much better support for & selector
-- preserve order of link statements client side
-- lessc has better help
-- rhino version fixed
-- fix bugs in clientside error handling
-- support dpi, vmin, vm, dppx, dpcm units
-- Fix ratios in media statements
-- in mixin guards allow comparing colors and strings
-- support for -*-keyframes (for -khtml but now supports any)
-- in mix function, default weight to 50%
-- support @import-once
-- remove duplicate rules in output
-- implement named parameters when calling mixins
-- many numerous bug fixes
-
-## 1.3.0
-
-2012-03-10
-
-- @media bubbling
-- Support arbitrary entities as selectors
-- [Variadic argument support](https://gist.github.com/1933613)
-- Behaviour of zero-arity mixins has [changed](https://gist.github.com/1933613)
-- Allow `@import` directives in any selector
-- Media-query features can now be a variable
-- Automatic merging of media-query conditions
-- Fix global variable leaks
-- Fix error message on wrong-arity call
-- Fix an `@arguments` behaviour bug
-- Fix `::` selector output
-- Fix a bug when using @media with mixins
-
-
-## 1.2.1
-
-2012-01-15
-
-- Fix imports in browser
-- Improve error reporting in browser
-- Fix Runtime error reports from imported files
-- Fix `File not found` import error reporting
-
-
-## 1.2.0
-
-2012-01-07
-
-- Mixin guards
-- New function `percentage`
-- New `color` function to parse hex color strings
-- New type-checking stylesheet functions
-- Fix Rhino support
-- Fix bug in string arguments to mixin call
-- Fix error reporting when index is 0
-- Fix browser support in WebKit and IE
-- Fix string interpolation bug when var is empty
-- Support `!important` after mixin calls
-- Support vanilla @keyframes directive
-- Support variables in certain css selectors, like `nth-child`
-- Support @media and @import features properly
-- Improve @import support with media features
-- Improve error reports from imported files
-- Improve function call error reporting
-- Improve error-reporting
+## Change Log
+
+### v3.11.1 (2020-02-11)
+- [#3475](https://github.com/less/less.js/pull/3475) Fixes #3469  - Include tslib dependency (#3475) (@matthew-dean)
+
+### v3.11.0 (2020-02-09)
+- [#3468](https://github.com/less/less.js/pull/3468) 3.11.0 (#3468) (@matthew-dean)
+- [#3453](https://github.com/less/less.js/pull/3453) Import file with dots in file name (#3453) (@life777)
+- [#3460](https://github.com/less/less.js/pull/3460) - Fixed replacer when visitor returns array of nodes (#3460) (@lmartorella)
+- [#3454](https://github.com/less/less.js/pull/3454) Added financial contributors to the README (#3454) (@monkeywithacupcake)
+- [#3431](https://github.com/less/less.js/pull/3431) Fixes #3430: Removed unnecessary 'important' from NamespaceValue. (#3431) (@batchunag)
+- [#3426](https://github.com/less/less.js/pull/3426) Fixes #3405 (#3426) (@matthew-dean)
+
+### v3.10.3 (2019-08-23)
+- [#3424](https://github.com/less/less.js/pull/3424) Fixes #3423 #3420 (#3424) (@matthew-dean)
+- [#3421](https://github.com/less/less.js/pull/3421) Rollup changed for Node 4 compatibility (#3421) (@matthew-dean)
+
+### v3.10.0 (2019-08-17)
+- [#3413](https://github.com/less/less.js/pull/3413) Release v3.10.0 (#3413) (@matthew-dean)
+
+### v3.10.0-beta.2 (2019-08-07)
+- [#3412](https://github.com/less/less.js/pull/3412) v3.10.0-beta.2 -- Cleanup NPM and git included files (#3412) (@matthew-dean)
+
+### v3.10.0-beta (2019-08-03)
+- [#3411](https://github.com/less/less.js/pull/3411) Conversion of Less to ES6 w/ TypeScript type linting support (#3411) (@matthew-dean)
+- [#3363](https://github.com/less/less.js/pull/3363) Fixes #3346 #3338 #3345 (#3363) (@matthew-dean)
+- [#3364](https://github.com/less/less.js/pull/3364) Operation.prototype.accept Issues#3327 (#3364) (@legu2009)
+- [#3360](https://github.com/less/less.js/pull/3360) Ignore undefined content in generating source maps (#3360) (@cthrax)
+- [#3305](https://github.com/less/less.js/pull/3305) Avoid Buffer constructor on newer Node.js (#3305) (#3307) (@gabrielschulhof)
+- [#3352](https://github.com/less/less.js/pull/3352) Do not pollute window object in less-browser bootstrap (#3352) (@gaiazov)
+- [#3337](https://github.com/less/less.js/pull/3337) Use the correct mime type when loading a plugin (#3337) (@g3rv4)
+
+### v3.9.0 (2018-11-29)
+- [#3334](https://github.com/less/less.js/pull/3334) Adds range() function for lists (#3334) (@matthew-dean)
+- [#3333](https://github.com/less/less.js/pull/3333) Fixes #3325 #3313 #3328 - each() function fixes (#3333) (@matthew-dean)
+- [#3335](https://github.com/less/less.js/pull/3335) Prevent Browserify from bundling Buffer (#3335) (@matthew-dean)
+
+### v3.8.1 (2018-08-08)
+- [#3302](https://github.com/less/less.js/pull/3302) v3.8.1 (#3302) (@matthew-dean)
+- [#3301](https://github.com/less/less.js/pull/3301) Fixes: #3300 (#3301) (@matthew-dean)
+- [#3292](https://github.com/less/less.js/pull/3292) Demonstrate 3.7 fixes #3160 (#3292) (@matthew-dean)
+- [#3291](https://github.com/less/less.js/pull/3291) Color function updates - #RRGGBBAA and CSS Variables (#3291) (@matthew-dean)
+
+### v3.8.0 (2018-07-23)
+- [#3293](https://github.com/less/less.js/pull/3293) v3.8.0 (#3293) (@matthew-dean)
+- [#3248](https://github.com/less/less.js/pull/3248) Feature/rewrite urls (#3248) (@matthew-dean)
+
+### v3.7.1 (2018-07-11)
+- [#3284](https://github.com/less/less.js/pull/3284) Release v3.7.1 (#3284) (@matthew-dean)
+- [#3283](https://github.com/less/less.js/pull/3283) Fix #3281: console.warning → console.warn (#3283) (@calvinjuarez)
+
+### v3.7.0 (2018-07-11)
+- [#3279](https://github.com/less/less.js/pull/3279) v3.7.0 (#3279) (@matthew-dean)
+- [#3274](https://github.com/less/less.js/pull/3274) Fixes #1880 - Adds two new math modes and deprecates strictMath (@matthew-dean)
+- [#3258](https://github.com/less/less.js/pull/3258) Fixes #2824 - Expressions require a delimiter of some kind in mixin args (@matthew-dean)
+- [#3263](https://github.com/less/less.js/pull/3263) Fixes #2270 - Adds each() function to Less functions (@calvinjuarez, @matthew-dean)
+
+### v3.6.0 (2018-07-10)
+- [#3278](https://github.com/less/less.js/pull/3278) v3.6.0 (@matthew-dean)
+- [#3252](https://github.com/less/less.js/pull/3252) Removes `less-rhino` (broken for a long time) - Fixes #3241 (@matthew-dean)
+- [#3259](https://github.com/less/less.js/pull/3259) Removes "double paren" issue for boolean / if function (@matthew-dean)
+- [#3276](https://github.com/less/less.js/pull/3276) Bump Jasmine version (@matthew-dean)
+- [#3275](https://github.com/less/less.js/pull/3275) Adds Promise polyfill for PhantomJS under Node 9 (@matthew-dean)
+- [#3261](https://github.com/less/less.js/pull/3261) Fixes #2791 - svg-gradient() not working in Firefox (@matthew-dean)
+- [#3270](https://github.com/less/less.js/pull/3270) Fixes #3231 - Adds UIKit, Bootstrap 3, and Bootstrap 4 to verified tests (@matthew-dean)
+
+### v3.5.3 (2018-07-06)
+- [#3272](https://github.com/less/less.js/pull/3272) Reverts operations not being performed in media queries (@matthew-dean)
+- [#3257](https://github.com/less/less.js/pull/3257) Fixes #3182 (@matthew-dean)
+
+### v3.5.1 (2018-07-05)
+- [#3267](https://github.com/less/less.js/pull/3267) Fixes issue with parentheses following variable in expressions (@matthew-dean)
+
+### v3.5.0 (2018-07-05)
+- [#3264](https://github.com/less/less.js/pull/3264) Release v3.5.0 (@matthew-dean)
+
+### v3.5.0-beta.7 (2018-07-04)
+- [#3260](https://github.com/less/less.js/pull/3260) Release v3.5.0-beta.7 (#3260) (@matthew-dean)
+- [#3256](https://github.com/less/less.js/pull/3256) Allow [] to resolve to last declaration's value (#3256) (@matthew-dean)
+
+### v3.5.0-beta.6 (2018-07-03)
+- [#3255](https://github.com/less/less.js/pull/3255) v3.5.0-beta.6 (#3255) (@matthew-dean)
+- [#3247](https://github.com/less/less.js/pull/3247) Plugins: If minVersion >= 3.0.0, don't "pre-run" .setOptions() (#3247) (@calvinjuarez)
+- [#3254](https://github.com/less/less.js/pull/3254) Tests and parser fixes for namespace values in MQ and mixin args (#3254) (@matthew-dean)
+
+### v3.5.0-beta.5 (2018-07-02)
+- [#3251](https://github.com/less/less.js/pull/3251) Bugfix -  namespace values (#3251) (@matthew-dean)
+- [#3250](https://github.com/less/less.js/pull/3250) Added small breakpoints example with namespaced values (#3250) (@matthew-dean)
+
+### v3.5.0-beta.4 (2018-06-30)
+- [#3242](https://github.com/less/less.js/pull/3242) [Feature] Namespaced values (#3242) (@matthew-dean)
+- [#3246](https://github.com/less/less.js/pull/3246) Release/v3.5.0 beta.3 (#3246) (@matthew-dean)
+- [#3229](https://github.com/less/less.js/pull/3229) Fixes #3187 (couldn't repo, but found bugs) (#3229) (@matthew-dean)
+- [#3237](https://github.com/less/less.js/pull/3237) Fixes #3235 (#3237) (@matthew-dean)
+
+### v3.5.0-beta.3 (2018-06-29)
+- [#3239](https://github.com/less/less.js/pull/3239) fix: browser cache is always considered stale if .modifyVars wasn't set (#3239) (@balpha)
+
+### v3.5.0-beta.2 (2018-06-27)
+- [#3236](https://github.com/less/less.js/pull/3236) v3.5.0-beta.2 (#3236) (@matthew-dean)
+- [#3228](https://github.com/less/less.js/pull/3228) Fixes #3205, partial 3.0 math regression #1880 (#3228) (@matthew-dean)
+- [#3227](https://github.com/less/less.js/pull/3227) Fixes #1421 - re-parses variable-interpolated elements to selectors (no.2) (#3227) (@matthew-dean)
+- [#3223](https://github.com/less/less.js/pull/3223) Fixes #3191 (#3223) (@matthew-dean)
+
+### v3.5.0-beta (2018-06-25)
+- [#3230](https://github.com/less/less.js/pull/3230) Release v3.5.0 beta (#3230) (@matthew-dean)
+- [#3219](https://github.com/less/less.js/pull/3219) Invalidate less-node file cache if modified (#3219) (@matthew-dean)
+- [#3213](https://github.com/less/less.js/pull/3213) Fixes #3147 #2715 (#3213) (@matthew-dean)
+- [#3220](https://github.com/less/less.js/pull/3220) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors" (@matthew-dean)
+- [#3217](https://github.com/less/less.js/pull/3217) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217)" (@matthew-dean)
+- [#3212](https://github.com/less/less.js/pull/3212) Revert "Pull missed code merged into 3.x branch (#3212)" (@matthew-dean)
+- [#3215](https://github.com/less/less.js/pull/3215) Revert "Fixes #3195 (#3215)" (@matthew-dean)
+- [#3215](https://github.com/less/less.js/pull/3215) Fixes #3195 (#3215) (@matthew-dean)
+- [#3212](https://github.com/less/less.js/pull/3212) Pull missed code merged into 3.x branch (#3212) (@matthew-dean)
+- [#3217](https://github.com/less/less.js/pull/3217) Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217) (@matthew-dean)
+- [#3207](https://github.com/less/less.js/pull/3207) update changelog for 3.0.4 (@akkumar)
+- [#3206](https://github.com/less/less.js/pull/3206) Release v3.0.4 (@matthew-dean)
+
+### v3.0.4 (2018-05-07)
+- [#3180](https://github.com/less/less.js/pull/3180) update source_map to 0.6.x (@akkumar)
+- [#3172](https://github.com/less/less.js/pull/3172) Type checking length units (@jacobwarduk)
+- [#3200](https://github.com/less/less.js/pull/3200) Fixes #3181 (@matthew-dean)
+
+### v3.0.3 (2018-04-18)
+- [#1](https://github.com/less/less.js/pull/1) Type checking length units (@jacobwarduk)
+- [#3177](https://github.com/less/less.js/pull/3177) chore(package): update request to 2.83.0 (@Kartoffelsalat)
+- [#3170](https://github.com/less/less.js/pull/3170) `inline` and `less` imports of the same name = race condition (@thorn0)
+- [#3168](https://github.com/less/less.js/pull/3168) Fixes #3116 - lessc not loading plugins in 3.0 (@matthew-dean)
+
+### v3.0.1 (2018-02-15)
+- [#3163](https://github.com/less/less.js/pull/3163) Merge 3.x into master (@matthew-dean, @barnabycolby, @kirillrogovoy, @maxbrunsfeld, @seven-phases-max, @ryysud, @bdsomer, @wiinci, @robhuzzey, @nikeee, @anthony-redFox)
+
+### v3.0.0-RC.2 (2018-02-11)
+- [#3161](https://github.com/less/less.js/pull/3161) Remove legacy upgrade (@matthew-dean)
+- [#3159](https://github.com/less/less.js/pull/3159) Bump to 3.0.0-RC.1 (@matthew-dean)
+
+### v3.0.0-RC.1 (2018-02-04)
+- [#3150](https://github.com/less/less.js/pull/3150) Drop node 0.10 and 0.12 and added node 9 matrix testing (@anthony-redFox)
+
+### v2.7.3 (2017-10-24)
+- [#3122](https://github.com/less/less.js/pull/3122) Mime update (@nikeee)
+- [#3120](https://github.com/less/less.js/pull/3120) Issue3115 ext in node path (@robhuzzey)
+- [#3119](https://github.com/less/less.js/pull/3119) Update © year (@wiinci)
+- [#3107](https://github.com/less/less.js/pull/3107) pinned request dep to v2.81.0 (@MarkSG93)
+
+### v3.0.0-alpha.3 (2017-10-09)
+- [#3096](https://github.com/less/less.js/pull/3096) Switch from request to phin! (@bdsomer)
+- [#3082](https://github.com/less/less.js/pull/3082) Add Node.js v8 to Travis CI and AppVeyor (@ryysud)
+- [#3079](https://github.com/less/less.js/pull/3079) Initial support for custom parsed functions (`boolean`, `if` etc.) (@seven-phases-max)
+- [#3076](https://github.com/less/less.js/pull/3076) Update mergeRules (@seven-phases-max)
+
+### v2.7.2 (2017-01-05)
+- [#2908](https://github.com/less/less.js/pull/2908) Added 'request' as optional dependency. (@maxrd2)
+- [#2955](https://github.com/less/less.js/pull/2955) Allow less imports of paths like 'dir/css' (@maxbrunsfeld)
+- [#2975](https://github.com/less/less.js/pull/2975) Refactor LessError and lesscHelper.formatError (@kirillrogovoy)
+- [#2988](https://github.com/less/less.js/pull/2988) Fixes #2987, --source-map-map-inline works as expected (@nicoschoenmaker)
+- [#2946](https://github.com/less/less.js/pull/2946) Fixed sourceMapBasepath bug as the option had no affect on the sourceMapURL value. (@barnabycolby)
+- [#2941](https://github.com/less/less.js/pull/2941) CI Build Fixes. (@bd82)
+- [#2905](https://github.com/less/less.js/pull/2905) Download PhantomJS from CDN (@abrobston)
+- [#2866](https://github.com/less/less.js/pull/2866) Changed octals to hex for ES6 strict mode (@mlowijs)
+- [#2891](https://github.com/less/less.js/pull/2891) Fix error reporting of lessc executable II (@jhnns)
+
+### v2.7.0 (2016-05-08)
+- [#2894](https://github.com/less/less.js/pull/2894) Update my name. (@nex3)
+- [#2892](https://github.com/less/less.js/pull/2892) Fix invalid extraction of the host part from URL (@Taritsyn)
+- [#2874](https://github.com/less/less.js/pull/2874) removed dependency to unused package "request" (@jeremyVignelles)
+- [#2830](https://github.com/less/less.js/pull/2830) make --depends generate no CSS output (@gtalusan)
+- [#2860](https://github.com/less/less.js/pull/2860) Remove unreachable code (@shkdee)
+- [#2859](https://github.com/less/less.js/pull/2859) Fix typos found by codespell (@stweil)
+- [#2858](https://github.com/less/less.js/pull/2858) Fix AST to include text for single line comments (@zzzzBov)
+- [#2853](https://github.com/less/less.js/pull/2853) bin/lessc: Make sure path.dirname gets passed strings (@addaleax)
+- [#2754](https://github.com/less/less.js/pull/2754) Update contrast function and tests, fixes #2743 (@Synchro)
+- [#2785](https://github.com/less/less.js/pull/2785) Allows root (non-value) functions in Less (@seven-phases-max)
+- [#2834](https://github.com/less/less.js/pull/2834) Make sourcemap generation a bit faster (@Medium)
+
+### v2.6.1 (2016-03-04)
+- [#2827](https://github.com/less/less.js/pull/2827) Revert "Update jit-grunt to version 0.10.0" (@seven-phases-max)
+- [#2821](https://github.com/less/less.js/pull/2821) Update jit-grunt to version 0.10.0 (@greenkeeperio-bot)
+- [#2797](https://github.com/less/less.js/pull/2797) Disallow whitespace in variable calls (i.e "DR"-calls) (@seven-phases-max)
+- [#2820](https://github.com/less/less.js/pull/2820) update grunt-contrib-concat to version 1.0.0 (@greenkeeperio-bot)
+- [#2819](https://github.com/less/less.js/pull/2819) Guard expressions regression in 2.6.0 (#2798) (@SomMeri)
+- [#2804](https://github.com/less/less.js/pull/2804) use instanceof operator instead of class comparison optimization (@marijaselakovic)
+- [#2817](https://github.com/less/less.js/pull/2817) Update grunt-contrib-jshint to version 1.0.0 🚀 (@greenkeeperio-bot)
+- [#2815](https://github.com/less/less.js/pull/2815) Update grunt-contrib-clean to version 1.0.0 🚀 (@greenkeeperio-bot)
+- [#2813](https://github.com/less/less.js/pull/2813) Fix typo on and/or change (@mbrodala)
+- [#2811](https://github.com/less/less.js/pull/2811) Update CHANGELOG.md (@Justineo)
+- [#2806](https://github.com/less/less.js/pull/2806) Fix comments after named color regression (@seven-phases-max)
+- [#2794](https://github.com/less/less.js/pull/2794) Update grunt-jscs to version 2.7.0 🚀 (@greenkeeperio-bot)
+- [#2784](https://github.com/less/less.js/pull/2784) Update grunt-contrib-jasmine to version 1.0.0 🚀 (@greenkeeperio-bot)
+- [#2773](https://github.com/less/less.js/pull/2773) Update all dependencies 🌴 (@lukeapage, @greenkeeperio-bot)
+
+### v2.6.0 (2016-01-29)
+- [#2788](https://github.com/less/less.js/pull/2788) Update license year in README.md (@pra85)
+- [#2735](https://github.com/less/less.js/pull/2735) Fix for #2384 and caching enabled with modifyVars set (@less)
+- [#2783](https://github.com/less/less.js/pull/2783) Allow unknown non-{}-block at-rules (@seven-phases-max)
+- [#2779](https://github.com/less/less.js/pull/2779) Logical operator and now has higher precedence then logical operator or. (@SomMeri)
+- [#2775](https://github.com/less/less.js/pull/2775) Parsing Error "Unrecognised input" for color operations with color names #2124 (@SomMeri)
+- [#2763](https://github.com/less/less.js/pull/2763) Added "or" keyword and allowed arbitrary logical expression in guards. (@SomMeri)
+- [#2731](https://github.com/less/less.js/pull/2731) Faster builds and update npm versions to test against (@paladox)
+- [#2759](https://github.com/less/less.js/pull/2759) Fixed extend leaking through nested parent selector. (@SomMeri)
+- [#2738](https://github.com/less/less.js/pull/2738) Fail when image-size functions are used in browser-less. (@niom)
+- [#2485](https://github.com/less/less.js/pull/2485) Allow underscore in a dimension unit (@seven-phases-max)
+- [#2729](https://github.com/less/less.js/pull/2729) Fixing import by reference (@SomMeri)
+
+### v2.5.2 (2015-09-24)
+- [#2609](https://github.com/less/less.js/pull/2609) Skip missing optional imports (@mmelvin0)
+- [#2644](https://github.com/less/less.js/pull/2644) `percentage` function should throw error if result would be `NaN` (@SomMeri)
+- [#2646](https://github.com/less/less.js/pull/2646) Parametric mixins: parameters don't match error (@SomMeri)
+- [#2688](https://github.com/less/less.js/pull/2688) Converted CLRFs in error tests (@mishal)
+- [#2687](https://github.com/less/less.js/pull/2687) Updated test data files (@mishal)
+- [#2642](https://github.com/less/less.js/pull/2642) Fixes import by reference inlines source's inline imports - 2620 (@SomMeri)
+- [#2643](https://github.com/less/less.js/pull/2643) Keep shorthand color form the same way as named colors are kept. (@SomMeri)
+- [#2677](https://github.com/less/less.js/pull/2677) Reference inline comments. (@betaorbust)
+- [#2685](https://github.com/less/less.js/pull/2685) Update travis Node.js version & remove io.js (@demohi)
+- [#2637](https://github.com/less/less.js/pull/2637) Undefined source map should result in an empty map file. (@SomMeri)
+- [#2607](https://github.com/less/less.js/pull/2607) Remove moot `version` property from bower.json (@kkirsche)
+
+### v2.5.1 (2015-05-21)
+- [#2591](https://github.com/less/less.js/pull/2591) Update license attribute (@pdehaan)
+- [#2575](https://github.com/less/less.js/pull/2575) Fix synchronously loading/applying stylesheets on page load. (@chipx86)
+- [#2568](https://github.com/less/less.js/pull/2568) Add a Gitter chat badge to README.md (@gitter-badger)
+- [#2559](https://github.com/less/less.js/pull/2559) Fix for #2558 (@seven-phases-max)
+- [#2574](https://github.com/less/less.js/pull/2574) Fix `Ruleset.prototype.find` failing for certain frames (@seven-phases-max)
+- [#2550](https://github.com/less/less.js/pull/2550) Update CHANGELOG.md (@chharvey)
+
+### v2.5.0 (2015-04-03)
+- [#2530](https://github.com/less/less.js/pull/2530) Proper non-primitive value replacement for `%` and `replace` (@seven-phases-max)
+- [#2526](https://github.com/less/less.js/pull/2526) Image size (@bassjobsen)
+- [#2533](https://github.com/less/less.js/pull/2533) Fix formatting to meet jscs settings (@seven-phases-max)
+- [#2525](https://github.com/less/less.js/pull/2525) Add browser field (@whitecolor)
+- [#2522](https://github.com/less/less.js/pull/2522) Fix `@plugin` scoping rules (@rjgotten)
+- [#2527](https://github.com/less/less.js/pull/2527) Fix grunt shell:benchmark command (@seven-phases-max)
+- [#2520](https://github.com/less/less.js/pull/2520) Fix 2440 (@lukeapage)
+- [#2517](https://github.com/less/less.js/pull/2517) Quick fix for naked `url` imports (@seven-phases-max, @wahuneke, @bassjobsen)
+- [#2515](https://github.com/less/less.js/pull/2515) re: #2508 - revert #2510 - undo all fixes. issue == WONTFIX (@wahuneke)
+- [#2504](https://github.com/less/less.js/pull/2504) optional relative amounts for color functions, see#975 (@bassjobsen)
+- [#2512](https://github.com/less/less.js/pull/2512) Fix selectors folding into directives (@rjgotten)
+- [#2510](https://github.com/less/less.js/pull/2510) Fix issue 2508 (@wahuneke)
+- [#2505](https://github.com/less/less.js/pull/2505) fix for issue #2500 (@bassjobsen)
+- [#2479](https://github.com/less/less.js/pull/2479) Import plugin (@rjgotten, @bassjobsen)
+- [#2497](https://github.com/less/less.js/pull/2497) Allow detached rulesets as mixin argument defaults (@calvinjuarez)
+- [#2488](https://github.com/less/less.js/pull/2488) add jit-grunt to the build chain (@bassjobsen)
+- [#2489](https://github.com/less/less.js/pull/2489) add browser postProcessor Plugin test (@bassjobsen)
+- [#2473](https://github.com/less/less.js/pull/2473) Bubbling of nested directives (@SomMeri)
+- [#2445](https://github.com/less/less.js/pull/2445) allow a list of colors as argument for the svg-gradient function (@bassjobsen)
+
+### v2.4.0 (2015-02-08)
+- [#2439](https://github.com/less/less.js/pull/2439) Fix empty sourcemaps (@OhJeez)
+- [#2429](https://github.com/less/less.js/pull/2429) Implementing preprocessing plugins (@Justineo, @lukeapage)
+- [#2427](https://github.com/less/less.js/pull/2427) Nested mixin changing important 2421 (@SomMeri)
+- [#2423](https://github.com/less/less.js/pull/2423) Bug: extend doesn't work when appended on nested selector with & (@SomMeri)
+- [#2420](https://github.com/less/less.js/pull/2420) endlines and comments (@bassjobsen)
+
+### v2.3.1 (2015-01-28)
+- [#2400](https://github.com/less/less.js/pull/2400) Nested parent selectors &:not(&)  - 2026 (@SomMeri)
+
+### v2.3.0 (2015-01-27)
+- [#2401](https://github.com/less/less.js/pull/2401) Allow selector interpolation inside pseudoselectors. #1294 (@SomMeri)
+- [#2404](https://github.com/less/less.js/pull/2404) Important on parametrized mixin (@SomMeri)
+- [#2414](https://github.com/less/less.js/pull/2414) explain inline maps (@bassjobsen)
+- [#2392](https://github.com/less/less.js/pull/2392) add support for `isruleset` (@Justineo)
+- [#2390](https://github.com/less/less.js/pull/2390) message when sourcemap has been written (@bassjobsen)
+- [#2391](https://github.com/less/less.js/pull/2391) Remove BOM in imports. (@DotNetSparky)
+- [#2387](https://github.com/less/less.js/pull/2387) Data uri support for include-path (@lukeapage)
+- [#2385](https://github.com/less/less.js/pull/2385) checking for doubles when warning for empty extends (@ddprrt)
+- [#2380](https://github.com/less/less.js/pull/2380) Colour keyword as variable name reference (@seven-phases-max)
+- [#2369](https://github.com/less/less.js/pull/2369) making sure :extend warning does not bubble up, fixes #1618 (@ddprrt)
+
+### v2.2.0 (2015-01-04)
+- [#2363](https://github.com/less/less.js/pull/2363) Change error message when caching fails (@bassjobsen)
+- [#2337](https://github.com/less/less.js/pull/2337) Better output for the warning when file size exceeds (@bassjobsen)
+- [#2319](https://github.com/less/less.js/pull/2319) Expose Less parsing as a top level feature of the less package (@jackwanders)
+
+### v2.1.2 (2014-12-20)
+- [#2315](https://github.com/less/less.js/pull/2315) Support non-JSON script attributes (@guybedford)
+- [#2313](https://github.com/less/less.js/pull/2313) Remove second 'env:' in .travis.yml. (@vsn4ik)
+
+### v2.1.1 (2014-11-27)
+- [#2312](https://github.com/less/less.js/pull/2312) Fix double handling of exceptions (@ForbesLindesay)
+- [#2311](https://github.com/less/less.js/pull/2311) Pass this from promise based calling (@ForbesLindesay)
+- [#2309](https://github.com/less/less.js/pull/2309) Improve keyword and anonymous input for replace function (fixes #2308). (@seven-phases-max)
+
+### v2.1.0 (2014-11-23)
+- [#2298](https://github.com/less/less.js/pull/2298) Small improve in README.md and bower.json. (@vsn4ik)
+- [#2297](https://github.com/less/less.js/pull/2297) Package: Updates request to 2.48.0 (@am11)
+- [#2296](https://github.com/less/less.js/pull/2296) Fix getting of character at index (@Taritsyn)
+- [#2279](https://github.com/less/less.js/pull/2279) Remove livereload cache buster param in extractId (@cgross)
+
+### v2.0.0 (2014-11-09)
+- [#2277](https://github.com/less/less.js/pull/2277) create index and browser scripts in root as require targets (@jackwanders, @lukeapage, @seven-phases-max, @Justineo, @lejenome)
+- [#2269](https://github.com/less/less.js/pull/2269) Fix for wrong check in abstractFileManager.getPath (@dexif, @lukeapage, @seven-phases-max, @Justineo, @lejenome)
+- [#2267](https://github.com/less/less.js/pull/2267) CLI: Fixes source-map-url description (#2264) (@am11)
+- [#2268](https://github.com/less/less.js/pull/2268) typo fixes (@vlajos)
+- [#2264](https://github.com/less/less.js/pull/2264) CLI: Fixes source-map-url description. (#2264) (@am11)
+
+### v2.0.0-b3 (2014-11-01)
+- [#2254](https://github.com/less/less.js/pull/2254) Fix for import relative path for url with parameters (@dexif)
+
+### v2.0.0-b2 (2014-10-26)
+- [#2246](https://github.com/less/less.js/pull/2246) Attempt to fix import sequencing (@lukeapage)
+- [#2247](https://github.com/less/less.js/pull/2247) Add support for rebeccapurple (#663399) (@le717)
+- [#663399](https://github.com/less/less.js/pull/663399) Add rebeccapurple (#663399) (Triangle717)
+- [#2243](https://github.com/less/less.js/pull/2243) Support reading less options from its script tag data attributes (@lejenome)
+- [#2241](https://github.com/less/less.js/pull/2241) Update CHANGELOG.md (@Justineo)
+
+### v2.0.0-b1 (2014-10-19)
+- [#1902](https://github.com/less/less.js/pull/1902) 2.0.0 Pull Request (@lukeapage, @seven-phases-max, @XhmikosR, @levithomason)
+- [#2233](https://github.com/less/less.js/pull/2233) Method to scan for and register stylesheets (@levithomason)
+- [#2226](https://github.com/less/less.js/pull/2226) Notify when less.js is done processing (@levithomason)
+- [#2209](https://github.com/less/less.js/pull/2209) Remove unnecessary semicolon (@joscha)
+- [#2217](https://github.com/less/less.js/pull/2217) Fix interpolated selector match regression (@seven-phases-max)
+- [#2185](https://github.com/less/less.js/pull/2185) Use SVGs for all readme badges (@theodorejb)
+- [#2182](https://github.com/less/less.js/pull/2182) Fixes #1973 (@seven-phases-max)
+- [#2181](https://github.com/less/less.js/pull/2181) Case insensitive units parsing and comparison (@lukeapage)
+
+### v1.7.5 (2014-09-03)
+- [#2173](https://github.com/less/less.js/pull/2173) Property interpolation fix for `@*` values (@seven-phases-max)
+- [#2169](https://github.com/less/less.js/pull/2169) Accept comments in @keyframe and after rule name - merging for next patch release. (@SomMeri)
+- [#1921](https://github.com/less/less.js/pull/1921) Pass options object to parser.parse in less.render (@rback)
+- [#2136](https://github.com/less/less.js/pull/2136) Fragment handling in data-uri function 1959 (@SomMeri)
+- [#2135](https://github.com/less/less.js/pull/2135) Charsets should float on top #2126 (@SomMeri)
+- [#2128](https://github.com/less/less.js/pull/2128) Mixin wrongly called (@SomMeri, @obecker, @dhaber)
+- [#2144](https://github.com/less/less.js/pull/2144) Updating request dependency (@pdehaan)
+- [#2123](https://github.com/less/less.js/pull/2123) Import into media 1645 (@SomMeri, @obecker, @dhaber)
+
+### v1.7.4 (2014-07-27)
+- [#2100](https://github.com/less/less.js/pull/2100) Update bower for 1.7.3 (@joscha)
+- [#2121](https://github.com/less/less.js/pull/2121) Properties merging should work also inside directives #2035 (@SomMeri)
+- [#2120](https://github.com/less/less.js/pull/2120) Misleading error message 2069 (@SomMeri, @obecker, @dhaber)
+- [#2117](https://github.com/less/less.js/pull/2117) Fix ordering of @import and @charset rules #1954 #2013 (@SomMeri)
+
+### v1.7.3 (2014-06-22)
+- [#2062](https://github.com/less/less.js/pull/2062) Don't round values returned by colour query functions. (@seven-phases-max)
+
+### v1.7.2 (2014-06-22)
+- [#2045](https://github.com/less/less.js/pull/2045) Base64 encode source maps (@tim-smart)
+
+### v1.7.1 (2014-06-08)
+- [#2022](https://github.com/less/less.js/pull/2022) 2.0.0 refactor chunker and less error (@ForbesLindesay)
+- [#2021](https://github.com/less/less.js/pull/2021) 2.0.0 promises (@ForbesLindesay)
+- [#1976](https://github.com/less/less.js/pull/1976) Added condition to check if HEX code contain only valid characters (issue #1015) (@peruginni)
+- [#2019](https://github.com/less/less.js/pull/2019) Remove the "done" message displayed at the end of the compilation with Rhino. (@gdelhumeau)
+- [#2031](https://github.com/less/less.js/pull/2031) Fix a bug: if the less file end line is comments, the lessc command option "modify-var" will have no effect. (@chenboxiang)
+- [#2046](https://github.com/less/less.js/pull/2046) window.ActiveXObject in IE11: fix boolean casting (@dkrnl)
+- [#2016](https://github.com/less/less.js/pull/2016) e("") fix (@seven-phases-max)
+- [#2000](https://github.com/less/less.js/pull/2000) Set CSS text after style element is added to DOM, to fix crash on IE < 9... (@David-Hari)
+- [#2002](https://github.com/less/less.js/pull/2002) Fixes #2001 (@seven-phases-max)
+- [#1981](https://github.com/less/less.js/pull/1981) fix bug with ../.. paths joining (@kolipka)
+- [#1974](https://github.com/less/less.js/pull/1974) Change paths determination for CLI (@dominicbarnes)
+- [#1929](https://github.com/less/less.js/pull/1929) Recursive mixin calls regression fix. (@seven-phases-max)
+- [#1936](https://github.com/less/less.js/pull/1936) Fix error message when using cleancss with sourcemap (@danielchatfield)
+- [#1919](https://github.com/less/less.js/pull/1919) Usage info for url-args option (@bcluca)
+- [#1907](https://github.com/less/less.js/pull/1907) Remove trailing spaces from the license header. (@XhmikosR)
+- [#1906](https://github.com/less/less.js/pull/1906) Remove twitter-bootstrap tag from SO link (@zdroid)
+
+### v1.7.0 (2014-02-27)
+- [#1890](https://github.com/less/less.js/pull/1890) Let `luma` follow spec (@roelvanduijnhoven, @seven-phases-max, @lukeapage)
+- [#1859](https://github.com/less/less.js/pull/1859) detached rulesets (@lukeapage)
+- [#1884](https://github.com/less/less.js/pull/1884) Minor `replace` and `%` funcs improvement. (@seven-phases-max)
+- [#1855](https://github.com/less/less.js/pull/1855) Adding replace function (@jakebellacera, @mouyang)
+- [#1866](https://github.com/less/less.js/pull/1866) Fixed empty args matching for named variadics. (@seven-phases-max)
+- [#1860](https://github.com/less/less.js/pull/1860) Support for variables in certain at-rules. (@seven-phases-max)
+- [#1847](https://github.com/less/less.js/pull/1847) Property merge with `+_` (replaces #1788) (@seven-phases-max, @mouyang)
+
+### v1.6.3 (2014-02-08)
+- [#1844](https://github.com/less/less.js/pull/1844) fix broken test case (@mouyang)
+
+### v1.6.2 (2014-02-02)
+- [#1841](https://github.com/less/less.js/pull/1841) Improved missing `(` and `{` error detection. (@seven-phases-max)
+- [#1828](https://github.com/less/less.js/pull/1828) Updates bower.json for current version (@ruyadorno)
+- [#1823](https://github.com/less/less.js/pull/1823) Improved multiple `default()` guards conflict detection. (@seven-phases-max)
+- [#1822](https://github.com/less/less.js/pull/1822) Normalize require-calls for Browserify (@pateketrueke)
+- [#1814](https://github.com/less/less.js/pull/1814) Rounding of output numbers. (@seven-phases-max)
+- [#1806](https://github.com/less/less.js/pull/1806) rhino version not up to date (#1405) (@obecker, @dhaber)
+- [#1815](https://github.com/less/less.js/pull/1815) Correct arguments for tree.Element (@oyejorge)
+- [#16](https://github.com/less/less.js/pull/16) Don't lint source-map since its owned by another project (@dhaber)
+- [#17](https://github.com/less/less.js/pull/17) Fix empty test (@dhaber)
+- [#1803](https://github.com/less/less.js/pull/1803) ability to insert uppercase color names (@wareczek)
+- [#1804](https://github.com/less/less.js/pull/1804) small compatibility fix for prototype.js (@cettox)
+- [#13](https://github.com/less/less.js/pull/13) Add Support-Map Tests for Rhino (@dhaber)
+- [#12](https://github.com/less/less.js/pull/12) Fix for some tests that were failing on my Mac (@dhaber)
+- [#11](https://github.com/less/less.js/pull/11) Fix for issue #3: Tests should automatically take latest rhino file (@dhaber)
+
+### v1.6.1 (2014-01-12)
+- [#1780](https://github.com/less/less.js/pull/1780) #1778 standardised using starting index, to fix incorrectly mapped sourcemaps (@brenmar)
+- [#1797](https://github.com/less/less.js/pull/1797) Updated .jshintrc to highlight for ... in without isOwnProperty (@DHainzl)
+- [#1795](https://github.com/less/less.js/pull/1795) Fix for running test cases in a regular browser like Firefox or Chrome (@dhaber)
+- [#1773](https://github.com/less/less.js/pull/1773) Fixes "function" test against regular expressions (@matthew-dean)
+
+### v1.6.0 (2014-01-01)
+- [#1737](https://github.com/less/less.js/pull/1737) Clamped rgba format color output (@seven-phases-max)
+- [#1769](https://github.com/less/less.js/pull/1769) If result of evaluated javascript is a number return it as Dimension. (@lesswtf)
+- [#1766](https://github.com/less/less.js/pull/1766) Improved error message for undefined variable in js eval statement. (@seven-phases-max)
+- [#1758](https://github.com/less/less.js/pull/1758) Removed redundant code from tree.Selector.match() (@seven-phases-max)
+- [#1757](https://github.com/less/less.js/pull/1757) Tree functions cleanup + CSS Guards `default` error. (@seven-phases-max)
+- [#1624](https://github.com/less/less.js/pull/1624) Experimental support for mixins with interpolated selectors (@seven-phases-max)
+- [#1743](https://github.com/less/less.js/pull/1743) Interleaved property merge fix (@seven-phases-max)
+- [#1744](https://github.com/less/less.js/pull/1744) Fix CHANGELOG broken link in README. (@jeffslofish)
+- [#1733](https://github.com/less/less.js/pull/1733) Remove alpha from contrast calc (@Synchro)
+- [#1704](https://github.com/less/less.js/pull/1704) Color blending functions with transparency. (@seven-phases-max)
+- [#1708](https://github.com/less/less.js/pull/1708) Updated Readme for full examples (@SomMeri, @Synchro)
+- [#1717](https://github.com/less/less.js/pull/1717) Minifier complains about annotation in non-JSDoc tag (@joscha)
+- [#1714](https://github.com/less/less.js/pull/1714) Fix for math expr/ops error messages line/column numbers. (@seven-phases-max)
+
+### v1.5.1 (2013-11-17)
+- [#1658](https://github.com/less/less.js/pull/1658) Fixes #1619 (@joshuaspence)
+- [#1643](https://github.com/less/less.js/pull/1643) Check location.port for truthiness (@matthewp)
+- [#1655](https://github.com/less/less.js/pull/1655) Support specifying custom variables when calling lessc and less.js. (@chipx86)
+- [#1628](https://github.com/less/less.js/pull/1628) update bower.json main script (@tomfuertes)
+
+### v1.5.0 (2013-10-21)
+- [#1570](https://github.com/less/less.js/pull/1570) proposed solution to #1568: percentage as attribute (@MSamman, @danielfttorres)
+- [#1572](https://github.com/less/less.js/pull/1572) util.error is deprecated (@robocoder)
+- [#1542](https://github.com/less/less.js/pull/1542) Added `length` function (#1542). Added scalar value handling for `extract` and `length` (#1576). (@seven-phases-max)
+- [#1558](https://github.com/less/less.js/pull/1558) Bower package: purge unnecessary files (@danielfttorres)
+
+### v1.5.0-b3 (2013-09-17)
+- [#1552](https://github.com/less/less.js/pull/1552) Replace deprecated sys.puts with console.log, resolve #1529 (@picomancer)
+- [#1543](https://github.com/less/less.js/pull/1543) Sourcemap basepath option (@andjo)
+- [#1412](https://github.com/less/less.js/pull/1412) Allow imports from self-signed SSL hosts (@christopherobin)
+
+### v1.5.0-b2 (2013-09-09)
+- [#1537](https://github.com/less/less.js/pull/1537) Fix Changelog link (@radium-v)
+
+### v1.5.0-b1 (2013-09-03)
+- [#1519](https://github.com/less/less.js/pull/1519) Update main property value of bower.json (@JacopKane)
+- [#1](https://github.com/less/less.js/pull/1) Refactoring browser unit tests into grunt-contrib-jasmine (@SomMeri)
+- [#1449](https://github.com/less/less.js/pull/1449) resolves #964 (@jonschlinkert)
+
+### v1.4.2 (2013-07-20)
+- [#1425](https://github.com/less/less.js/pull/1425) Windows path fixes (@SLaks)
+- [#1388](https://github.com/less/less.js/pull/1388) Add .gitattributes to .npmignore (@dpatti)
+
+### v1.4.0-b3 (2013-04-30)
+- [#1278](https://github.com/less/less.js/pull/1278) Better fix for local path (cross-platform) (@losnir)
+- [#1277](https://github.com/less/less.js/pull/1277) contributing.md updates. Fellow nerds! please wrap words with `@` signs in backticks! (@jonschlinkert)
+- [#1273](https://github.com/less/less.js/pull/1273) Fix for local paths (@losnir)
+- [#1244](https://github.com/less/less.js/pull/1244) Add Less license to package.json (@theoreticaLee)
+- [#1236](https://github.com/less/less.js/pull/1236) Fixes small typo in command prompt usage text (@buley)
+
+### v1.4.0-b2 (2013-03-18)
+- [#1230](https://github.com/less/less.js/pull/1230) package.json edited (@jonschlinkert)
+
+### v1.4.0-b1 (2013-03-08)
+- [#1197](https://github.com/less/less.js/pull/1197) Updates copyright year in README.md (@Starefossen)
+- [#1148](https://github.com/less/less.js/pull/1148) Better implementation of luma (@Synchro)
+- [#1147](https://github.com/less/less.js/pull/1147) HSV support for #1143 (@Synchro)
+- [#1145](https://github.com/less/less.js/pull/1145) Contrast percentage fix for #1144 (@Synchro)
+- [#933](https://github.com/less/less.js/pull/933) Allow flexible naming for amd support (#933) (@guybedford)
+
+### v1.3.1 (2012-10-18)
+- [#889](https://github.com/less/less.js/pull/889) Add dppx and dpcm units to parser dimensions (@feelepxyz)
+- [#890](https://github.com/less/less.js/pull/890) Add vmin unit to parser dimensions (@feelepxyz)
+- [#879](https://github.com/less/less.js/pull/879) Allow numbers and underscores in attribute selectors (@dmcass)
+- [#857](https://github.com/less/less.js/pull/857) Revert adding "transparent" as a color name (@clmsnskr)
+- [#753](https://github.com/less/less.js/pull/753) Adding "dpi" as a valid dimensions for media queries (@clarkni5)
+- [#800](https://github.com/less/less.js/pull/800) Added 'transparent' as a named color (@SpadarShut)
+- [#804](https://github.com/less/less.js/pull/804) Fix for unnamed parameters test fail & failing test for import-once (@jreading)
+- [#796](https://github.com/less/less.js/pull/796) fixed issue #795 (@comfuture)
+- [#268](https://github.com/less/less.js/pull/268) Implemented named arguments (@jamesfoster)
+
+### v1.3.0 (2012-03-10)
+- [#673](https://github.com/less/less.js/pull/673) mocha found a couple global variable leaks. Here's the fix. (@andrewjstone)
+- [#634](https://github.com/less/less.js/pull/634) Add @media bubbling/nesting/merging (@sirlantis)
+- [#631](https://github.com/less/less.js/pull/631) Fixed spelling error on benchmark/less-benchmark.js (@highergroundstudio)
+- [#601](https://github.com/less/less.js/pull/601) Make parse error handler more robust (@adrianheine)
+- [#595](https://github.com/less/less.js/pull/595) Fix callback called two times (@hokaccha, @cloudhead, @chrizel, @CasualSuperman, @fat)
+- [#604](https://github.com/less/less.js/pull/604) Fixes #602 (@treshugart)
+- [#585](https://github.com/less/less.js/pull/585) newline all selectors whose combined length is greater than 25 chars (@fat)
+- [#479](https://github.com/less/less.js/pull/479) CommonJS/AMD module support (@CasualSuperman)
+- [#516](https://github.com/less/less.js/pull/516) Improve Windows path support in lessc (@chrizel)
+- [#557](https://github.com/less/less.js/pull/557) Fix for issue #466 (@kmchugh)
+- [#515](https://github.com/less/less.js/pull/515) Shift the type setting in order to work with Webkit, and fix typo for IE (@imcotton)
+- [#527](https://github.com/less/less.js/pull/527) Add function `percentage` (@hokaccha)
+
+### 1.1.5-extend_patch (2011-12-13)
+- [#496](https://github.com/less/less.js/pull/496) Removed call to put header into minified build, because it's already there. (@freeeve)
+- [#379](https://github.com/less/less.js/pull/379) Accept 2xx statuses even for file requests (@khalsah)
+- [#494](https://github.com/less/less.js/pull/494) Adding support for absolute paths on Windows. (@jmcclell)
+- [#514](https://github.com/less/less.js/pull/514) Fix java.io.FileNotFoundException when @importing from LESS in subdirectory (@eager)
+- [#461](https://github.com/less/less.js/pull/461) require 'util' instead of 'sys' in lessc and less-benchmark.js (@dmcass)
+- [#506](https://github.com/less/less.js/pull/506) Issue #393 Add support for "rem" dimensions (@feelepxyz)
+- [#507](https://github.com/less/less.js/pull/507) Fixed lessc require('sys') for nodejs 0.6.* (@garth)
+- [#492](https://github.com/less/less.js/pull/492) fix comments in operations (ex: *height: 2px * 4 /* ie hack */) (@fat)
+- [#458](https://github.com/less/less.js/pull/458) Assignment entities (@fat, @cloudhead, @asolove)
+
+### 1.1.4-lastest (2011-11-14)
+- [#445](https://github.com/less/less.js/pull/445) fix undefined reference (@asolove)
+- [#450](https://github.com/less/less.js/pull/450) store index on selector element objects for line number inference (@fat)
+- [#432](https://github.com/less/less.js/pull/432) #361: Fix for quoted data URIs getting prepended with path (@asolove)
+- [#388](https://github.com/less/less.js/pull/388) Rhino support (@erwan)
+- [#355](https://github.com/less/less.js/pull/355) support imports with querystrings (google fonts) fix #265 (@revolunet)
+- [#340](https://github.com/less/less.js/pull/340) Read less-content from stdin (@snorkypie)
+- [#341](https://github.com/less/less.js/pull/341) patch for Issue 322 (@ttfkam)
+- [#335](https://github.com/less/less.js/pull/335) update ARGB support, fix IE9 style injection (@ttfkam)
+- [#229](https://github.com/less/less.js/pull/229) add fade() function (@bennyschudel)
+- [#347](https://github.com/less/less.js/pull/347) support @-moz-keyframes. (@idris)
+- [#169](https://github.com/less/less.js/pull/169) (fix) including .less files via absolute path with IE7 (@ldaley)
+- [#189](https://github.com/less/less.js/pull/189) Google Chrome(Chromium) support for extensions (@dz0ny)
+- [#247](https://github.com/less/less.js/pull/247) New "escape" function (@gilt)
+- [#134](https://github.com/less/less.js/pull/134) Fixed issue (#134) where subfiles' @imports were regarding #, ? and url portions thereafter as part of the base url. (@dbergey)

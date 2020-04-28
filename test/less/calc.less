@@ -28,3 +28,19 @@
   @v: 10px;
   height: calc(100% - ((@v * 3) + (@v * 2)));
 }
+
+.correctly-exit-calc-mode {
+    @a: 10;
+    h2 { width: unit(@a, px); }
+
+    div { width: calc(100px * 2); }
+
+    .mk-map() {
+        text: white;
+        background: black;
+    }
+
+    @p: .mk-map();
+
+    h1 { color: @p[text]; }
+}

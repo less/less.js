@@ -1,0 +1,2 @@
+ParseError: Unrecognised input in {path}invalid-color-with-comment.less on line 1, column 36:
+1 .test {color: #fffff /* comment */ ;}

@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.11.1
+ * Less - Leaner CSS v3.11.2
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -1866,7 +1866,7 @@
       };
       Eval.prototype.exitCalc = function () {
           this.calcStack.pop();
-          if (!this.calcStack) {
+          if (!this.calcStack.length) {
               this.inCalc = false;
           }
       };
@@ -8981,6 +8981,9 @@
                           continue;
                       }
                       e = this.addition() || this.entity();
+                      if (e instanceof tree.Comment) {
+                          e = null;
+                      }
                       if (e) {
                           entities.push(e);
                           // operations do not allow keyword "/" dimension (e.g. small/20px) so we support that here
@@ -10395,7 +10398,6 @@
               this.context = context;
               // Deprecated? Unused outside of here, could be useful.
               this.queue = []; // Files which haven't been imported yet
-              this.files = {}; // Holds the imported parse trees.
           }
           /**
            * Add an import to be imported
@@ -10417,12 +10419,6 @@
                       logger.info("The file " + fullPath + " was skipped because it was not found and the import was marked optional.");
                   }
                   else {
-                      // Inline imports aren't cached here.
-                      // If we start to cache them, please make sure they won't conflict with non-inline imports of the
-                      // same name as they used to do before this comment and the condition below have been added.
-                      if (!importManager.files[fullPath] && !importOptions.inline) {
-                          importManager.files[fullPath] = { root: root, options: importOptions };
-                      }
                       if (e && !importManager.error) {
                           importManager.error = e;
                       }
@@ -10479,18 +10475,9 @@
                       fileParsedFunc(null, contents, resolvedFilename);
                   }
                   else {
-                      // import (multiple) parse trees apparently get altered and can't be cached.
-                      // TODO: investigate why this is
-                      if (importManager.files[resolvedFilename]
-                          && !importManager.files[resolvedFilename].options.multiple
-                          && !importOptions.multiple) {
-                          fileParsedFunc(null, importManager.files[resolvedFilename].root, resolvedFilename);
-                      }
-                      else {
-                          new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
-                              fileParsedFunc(e, root, resolvedFilename);
-                          });
-                      }
+                      new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
+                          fileParsedFunc(e, root, resolvedFilename);
+                      });
                   }
               };
               var promise;
@@ -10816,7 +10803,7 @@
        * It's not clear what should / must be public and why.
        */
       var initial = {
-          version: [3, 11, 1],
+          version: [3, 11, 2],
           data: data,
           tree: tree,
           Environment: environment,

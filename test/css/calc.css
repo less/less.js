@@ -17,3 +17,12 @@
 .c {
   height: calc(100% - ((10px * 3) + (10px * 2)));
 }
+.correctly-exit-calc-mode h2 {
+  width: 10px;
+}
+.correctly-exit-calc-mode div {
+  width: calc(100px * 2);
+}
+.correctly-exit-calc-mode h1 {
+  color: white;
+}

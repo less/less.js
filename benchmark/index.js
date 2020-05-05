@@ -13,9 +13,9 @@ fs.readFile(file, 'utf8', function (e, data) {
     console.log("Benchmarking...\n", path.basename(file) + " (" +
              parseInt(data.length / 1024) + " KB)", "");
 
-    var renderBenchmark = []
-      , parserBenchmark = []
-      , evalBenchmark = [];
+    var renderBenchmark = [],
+        parserBenchmark = [],
+        evalBenchmark = [];
 
     var totalruns = 30;
     var ignoreruns = 5;
@@ -47,8 +47,8 @@ fs.readFile(file, 'utf8', function (e, data) {
             evalBenchmark.push(renderEnd - parserEnd);
 
             i += 1;
-            //console.log('Less Run #: ' + i);
-            if(i < totalruns) {
+            // console.log('Less Run #: ' + i);
+            if (i < totalruns) {
                 nextRun();
             }
             else {
@@ -65,7 +65,7 @@ fs.readFile(file, 'utf8', function (e, data) {
             var totalTime = 0;
             var mintime = Infinity;
             var maxtime = 0;
-            for(var i = ignoreruns; i < totalruns; i++) {
+            for (var i = ignoreruns; i < totalruns; i++) {
                 totalTime += benchMarkData[i];
                 mintime = Math.min(mintime, benchMarkData[i]);
                 maxtime = Math.max(maxtime, benchMarkData[i]);

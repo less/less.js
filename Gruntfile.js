@@ -371,12 +371,10 @@ module.exports = function (grunt) {
     var testTasks = [
         "clean",
         "eslint",
-        "shell:testbuild",
         "shell:test",
         "shell:opts",
         "shell:plugin",
-        "connect",
-        "shell:runbrowser"
+        "browsertest"
     ];
 
     if (

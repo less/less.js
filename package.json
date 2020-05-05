@@ -39,6 +39,7 @@
   "scripts": {
     "test": "grunt test",
     "grunt": "grunt",
+    "lint:fix": "eslint . --fix",
     "changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\""
   },
   "optionalDependencies": {

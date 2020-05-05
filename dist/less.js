@@ -622,18 +622,18 @@ module.exports = function(window, options) {
                 /* jshint loopfunc:true */
                 // use closure to store current style
                 less.render(lessText, instanceOptions,
-                        bind(function(style, e, result) {
-                            if (e) {
-                                errors.add(e, 'inline');
+                    bind(function(style, e, result) {
+                        if (e) {
+                            errors.add(e, 'inline');
+                        } else {
+                            style.type = 'text/css';
+                            if (style.styleSheet) {
+                                style.styleSheet.cssText = result.css;
                             } else {
-                                style.type = 'text/css';
-                                if (style.styleSheet) {
-                                    style.styleSheet.cssText = result.css;
-                                } else {
-                                    style.innerHTML = result.css;
-                                }
+                                style.innerHTML = result.css;
                             }
-                        }, null, style));
+                        }
+                    }, null, style));
             }
         }
     }
@@ -982,7 +982,7 @@ var parseCopyProperties = [
     'useFileCache',     // browser only - whether to use the per file session cache
     // context
     'processImports',   // option & context - whether to process imports. if false then imports will not be imported.
-                        // Used by the import manager to stop multiple import visitors being created.
+    // Used by the import manager to stop multiple import visitors being created.
     'pluginManager'     // Used as the plugin manager for the session
 ];
 
@@ -1026,7 +1026,7 @@ contexts.Eval.prototype.enterCalc = function () {
 
 contexts.Eval.prototype.exitCalc = function () {
     this.calcStack.pop();
-    if (!this.calcStack) {
+    if (!this.calcStack.length) {
         this.inCalc = false;
     }
 };
@@ -2398,22 +2398,22 @@ functionCaller.prototype.call = function(args) {
             }
             return true;
         })
-        .map(function(item) {
-            if (item.type === 'Expression') {
-                var subNodes = item.value.filter(function (item) {
-                    if (item.type === 'Comment') {
-                        return false;
+            .map(function(item) {
+                if (item.type === 'Expression') {
+                    var subNodes = item.value.filter(function (item) {
+                        if (item.type === 'Comment') {
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (subNodes.length === 1) {
+                        return subNodes[0];
+                    } else {
+                        return new Expression(subNodes);
                     }
-                    return true;
-                });
-                if (subNodes.length === 1) {
-                    return subNodes[0];
-                } else {
-                    return new Expression(subNodes);
                 }
-            }
-            return item;
-        });
+                return item;
+            });
     }
 
     return this.func.apply(this, args);
@@ -2612,10 +2612,10 @@ functionRegistry.addMultiple({
         }
 
         return new Ruleset([ new(Selector)([ new Element("", '&') ]) ],
-                rules,
-                rs.strictImports,
-                rs.visibilityInfo()
-            ).eval(this.context);
+            rules,
+            rs.strictImports,
+            rs.visibilityInfo()
+        ).eval(this.context);
 
     }
 });
@@ -3184,6 +3184,8 @@ module.exports = function(environment, fileManagers) {
 
 },{"./contexts":13,"./data":15,"./environment/abstract-file-manager":18,"./environment/abstract-plugin-loader":19,"./environment/environment":20,"./functions":28,"./import-manager":36,"./less-error":38,"./logger":39,"./parse":41,"./parse-tree":40,"./parser/parser":44,"./plugin-manager":45,"./render":46,"./source-map-builder":47,"./source-map-output":48,"./transform-tree":49,"./tree":67,"./utils":89,"./visitors":93}],38:[function(require,module,exports){
 var utils = require('./utils');
+
+var anonymousFunc = /(<anonymous>|Function):(\d+):(\d+)/;
 /**
  * This is a centralized class of any error that could be thrown internally (mostly by the parser).
  * Besides standard .message it keeps some additional data like a path to the file where the error
@@ -3229,11 +3231,28 @@ var LessError = module.exports = function LessError(e, fileContentMap, currentFi
         this.column = col;
 
         if (!this.line && this.stack) {
-            var found = this.stack.match(/(<anonymous>|Function):(\d+):(\d+)/);
+            var found = this.stack.match(anonymousFunc);
+
+            /**
+             * We have to figure out how this environment stringifies anonymous functions
+             * so we can correctly map plugin errors.
+             * 
+             * Note, in Node 8, the output of anonymous funcs varied based on parameters
+             * being present or not, so we inject dummy params.
+             */
+            var func = new Function('a', 'throw new Error()');
+            var lineAdjust = 0;
+            try {
+                func();
+            } catch (e) {
+                var match = e.stack.match(anonymousFunc);
+                var line = parseInt(match[2]);
+                lineAdjust = 1 - line;
+            }
 
             if (found) {
                 if (found[2]) {
-                    this.line = parseInt(found[2]) - 2;
+                    this.line = parseInt(found[2]) + lineAdjust;
                 }
                 if (found[3]) {
                     this.column = parseInt(found[3]);
@@ -4337,8 +4356,9 @@ var Parser = function Parser(context, imports, fileInfo) {
                         continue;
                     }
 
-                    node = mixin.definition() || this.declaration() || this.ruleset() ||
-                        mixin.call(false, false) || this.variableCall() || this.entities.call() || this.atrule();
+                    node = mixin.definition() || this.declaration() || mixin.call(false, false) || 
+                        this.ruleset() || this.variableCall() || this.entities.call() || this.atrule();
+
                     if (node) {
                         root.push(node);
                     } else {
@@ -4477,7 +4497,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         return {
                             parse: parse, // parsing function
                             stop:  stop   // when true - stop after parse() and return its result, 
-                                          // otherwise continue for plain args
+                            // otherwise continue for plain args
                         };
                     }
                 
@@ -4761,7 +4781,7 @@ var Parser = function Parser(context, imports, fileInfo) {
             //     color: @fink[@color];
             //
             variableCall: function (parsedName) {
-                var lookups, important, i = parserInput.i,
+                var lookups, i = parserInput.i,
                     inValue = !!parsedName, name = parsedName;
 
                 parserInput.save();
@@ -4780,10 +4800,6 @@ var Parser = function Parser(context, imports, fileInfo) {
                         name = name[1];
                     }
 
-                    if (lookups && parsers.important()) {
-                        important = true;
-                    }
-
                     var call = new tree.VariableCall(name, i, fileInfo);
                     if (!inValue && parsers.end()) {
                         parserInput.forget();
@@ -4791,7 +4807,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     }
                     else {
                         parserInput.forget();
-                        return new tree.NamespaceValue(call, lookups, important, i, fileInfo);
+                        return new tree.NamespaceValue(call, lookups, i, fileInfo);
                     }
                 }
 
@@ -4910,7 +4926,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                             parserInput.forget();
                             var mixin = new(tree.mixin.Call)(elements, args, index, fileInfo, !lookups && important);
                             if (lookups) {
-                                return new tree.NamespaceValue(mixin, lookups, important);
+                                return new tree.NamespaceValue(mixin, lookups);
                             }
                             else {
                                 return mixin;
@@ -5489,7 +5505,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                         if (value) {
                             parserInput.forget();
                             // anonymous values absorb the end ';' which is required for them to work
-                            return new (tree.Declaration)(name, value, false, merge, index, fileInfo);
+                            return new(tree.Declaration)(name, value, false, merge, index, fileInfo);
                         }
 
                         if (!value) {
@@ -5506,7 +5522,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                     if (value && (this.end() || hasDR)) {
                         parserInput.forget();
-                        return new (tree.Declaration)(name, value, important, merge, index, fileInfo);
+                        return new(tree.Declaration)(name, value, important, merge, index, fileInfo);
                     }
                     else {
                         parserInput.restore();
@@ -5899,7 +5915,7 @@ var Parser = function Parser(context, imports, fileInfo) {
 
                 if (rules || (!hasBlock && value && parserInput.$char(';'))) {
                     parserInput.forget();
-                    return new (tree.AtRule)(name, value, rules, index, fileInfo,
+                    return new(tree.AtRule)(name, value, rules, index, fileInfo,
                         context.dumpLineNumbers ? getDebugInfo(index) : null,
                         isRooted
                     );
@@ -6317,11 +6333,11 @@ var PluginManager = function(less) {
 };
 
 var pm, PluginManagerFactory = function(less, newFactory) {
-        if (newFactory || !pm) {
-            pm = new PluginManager(less);
-        }
-        return pm;
-    };
+    if (newFactory || !pm) {
+        pm = new PluginManager(less);
+    }
+    return pm;
+};
 
 /**
  * Adds all the plugins in the array
@@ -7560,7 +7576,7 @@ Declaration.prototype.eval = function (context) {
         // expand 'primitive' name directly to get
         // things faster (~10% for benchmark.less):
         name = (name.length === 1) && (name[0] instanceof Keyword) ?
-                name[0].value : evalName(context, name);
+            name[0].value : evalName(context, name);
         variable = false; // never treat expanded interpolation as new variable name
     }
 
@@ -7585,11 +7601,11 @@ Declaration.prototype.eval = function (context) {
         }
 
         return new Declaration(name,
-                          evaldValue,
-                          important,
-                          this.merge,
-                          this.getIndex(), this.fileInfo(), this.inline,
-                              variable);
+            evaldValue,
+            important,
+            this.merge,
+            this.getIndex(), this.fileInfo(), this.inline,
+            variable);
     }
     catch (e) {
         if (typeof e.index !== 'number') {
@@ -7606,10 +7622,10 @@ Declaration.prototype.eval = function (context) {
 };
 Declaration.prototype.makeImportant = function () {
     return new Declaration(this.name,
-                          this.value,
-                          '!important',
-                          this.merge,
-                          this.getIndex(), this.fileInfo(), this.inline);
+        this.value,
+        '!important',
+        this.merge,
+        this.getIndex(), this.fileInfo(), this.inline);
 };
 
 module.exports = Declaration;
@@ -7653,7 +7669,7 @@ var Dimension = function (value, unit) {
         throw new Error('Dimension is not a number.');
     }
     this.unit = (unit && unit instanceof Unit) ? unit :
-      new Unit(unit ? [unit] : undefined);
+        new Unit(unit ? [unit] : undefined);
     this.setParent(this.unit, this);
 };
 
@@ -7808,7 +7824,7 @@ var Node = require('./node'),
 
 var Element = function (combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
     this.combinator = combinator instanceof Combinator ?
-                      combinator : new Combinator(combinator);
+        combinator : new Combinator(combinator);
 
     if (typeof value === 'string') {
         this.value = value.trim();
@@ -7834,10 +7850,10 @@ Element.prototype.accept = function (visitor) {
 };
 Element.prototype.eval = function (context) {
     return new Element(this.combinator,
-                             this.value.eval ? this.value.eval(context) : this.value,
-                             this.isVariable,
-                             this.getIndex(),
-                             this.fileInfo(), this.visibilityInfo());
+        this.value.eval ? this.value.eval(context) : this.value,
+        this.isVariable,
+        this.getIndex(),
+        this.fileInfo(), this.visibilityInfo());
 };
 Element.prototype.clone = function () {
     return new Element(this.combinator,
@@ -8396,7 +8412,7 @@ Media.prototype.eval = function (context) {
     context.mediaPath.pop();
 
     return context.mediaPath.length === 0 ? media.evalTop(context) :
-                media.evalNested(context);
+        media.evalNested(context);
 };
 Media.prototype.evalTop = function (context) {
     var result = this;
@@ -8422,7 +8438,7 @@ Media.prototype.evalNested = function (context) {
     // Extract the media-query conditions separated with `,` (OR).
     for (i = 0; i < path.length; i++) {
         value = path[i].features instanceof Value ?
-                    path[i].features.value : path[i].features;
+            path[i].features.value : path[i].features;
         path[i] = Array.isArray(value) ? value : [value];
     }
 
@@ -8830,8 +8846,8 @@ Definition.prototype.matchCondition = function (args, context) {
         new contexts.Eval(context,
             [this.evalParams(context, /* the parameter variables */
                 new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames), args, [])]
-            .concat(this.frames || []) // the parent namespace/mixin frames
-            .concat(context.frames)))) { // the current environment frames
+                .concat(this.frames || []) // the parent namespace/mixin frames
+                .concat(context.frames)))) { // the current environment frames
         return false;
     }
     return true;
@@ -8879,10 +8895,9 @@ var Node = require('./node'),
     Ruleset = require('./ruleset'),
     Selector = require('./selector');
 
-var NamespaceValue = function (ruleCall, lookups, important, index, fileInfo) {
+var NamespaceValue = function (ruleCall, lookups, index, fileInfo) {
     this.value = ruleCall;
     this.lookups = lookups;
-    this.important = important;
     this._index = index;
     this._fileInfo = fileInfo;
 };
@@ -9082,7 +9097,7 @@ Node.compare = function (a, b) {
 Node.numericCompare = function (a, b) {
     return a  <  b ? -1
         : a === b ?  0
-        : a  >  b ?  1 : undefined;
+            : a  >  b ?  1 : undefined;
 };
 // Returns true if this node represents root of ast imported by reference
 Node.prototype.blocksVisibility = function () {
@@ -10795,7 +10810,7 @@ ExtendFinderVisitor.prototype = {
                 selExtendList = selector.extendList;
 
             extendList = selExtendList ? utils.copyArray(selExtendList).concat(allSelectorsExtendList)
-                                       : allSelectorsExtendList;
+                : allSelectorsExtendList;
 
             if (extendList) {
                 extendList = extendList.map(function(allSelectorsExtend) {
@@ -12004,8 +12019,16 @@ Visitor.prototype = {
             }
         }
 
-        if (visitArgs.visitDeeper && node && node.accept) {
-            node.accept(this);
+        if (visitArgs.visitDeeper && node) {
+            if (node.length) {
+                for (var i = 0, cnt = node.length; i < cnt; i++) {
+                    if (node[i].accept) {
+                        node[i].accept(this);
+                    }
+                }
+            } else if (node.accept) {
+                node.accept(this);
+            }
         }
 
         if (funcOut != _noop) {

@@ -1,4 +1,4 @@
 var less = {
-  logLevel: 4,
-  rewriteUrls: 0
+    logLevel: 4,
+    rewriteUrls: 0
 };

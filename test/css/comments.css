@@ -52,7 +52,7 @@
   -webkit-border-radius: 2px /* webkit only */;
   -moz-border-radius: 8px /* moz only with operation */;
 }
-.test {
+.test-rule {
   color: 1px;
 }
 .sr-only-focusable {

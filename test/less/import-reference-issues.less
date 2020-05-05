@@ -32,8 +32,8 @@ show-all-content {
 
 // #1851: Extend within (reference) imported files 
 // test-b is in global-scope-import.less file
-.test-c {
-  &:extend(.test-b all);
+.test-rule-c {
+  &:extend(.test-rule-b all);
 }
 
 // #1968: When using an @import (reference), mixins that contain an & selector get added to the compiled output improperly

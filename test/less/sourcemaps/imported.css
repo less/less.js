@@ -1,6 +1,6 @@
 /*comments*/
 .unused-css {
-    color: white;
+    color: inherit;
 }
 .imported {
     color: black;

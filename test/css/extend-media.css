@@ -6,7 +6,7 @@
   .ext1 .ext3,
   .tv-lowres .ext3,
   .all .ext3 {
-    color: white;
+    color: inherit;
   }
   .tv-lowres {
     background: blue;

@@ -5,12 +5,6 @@ var less = {
     math: 'always'
 };
 
-// There originally run inside describe method. However, since they have not
-// been inside it, they run at jasmine compile time (not runtime). It all
-// worked cause less.js was in async mode and custom phantom runner had
-// different setup then grunt-contrib-jasmine. They have been created before
-// less.js run, even as they have been defined in spec.
-
 // test inline less in style tags by grabbing an assortment of less files and doing `@import`s
 var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 'mixins'],
     testSheets = [];

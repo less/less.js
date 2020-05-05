@@ -1,44 +1,3 @@
-/* Add js reporter for sauce */
-jasmine.getEnv().addReporter(new jasmine.JSReporter2());
-jasmine.getEnv().defaultTimeoutInterval = 3000;
-
-// From https://github.com/axemclion/grunt-saucelabs/issues/109#issuecomment-166767282
-// (function () {
-//     var oldJSReport = window.jasmine.getJSReport;
-//     window.jasmine.getJSReport = function () {
-//         var results = oldJSReport();
-//         if (results) {
-//             return {
-//                 durationSec: results.durationSec,
-//                 suites: removePassingTests(results.suites),
-//                 passed: results.passed
-//             };
-//         } else {
-//             return null;
-//         }
-//     };
-
-//     function removePassingTests (suites) {
-//         return suites.filter(specFailed)
-//             .map(mapSuite);
-//     }
-
-//     function mapSuite (suite) {
-//         var result = {};
-//         for (var s in suite) {
-//             result[s] = suite[s];
-//         }
-//         result.specs = suite.specs.filter(specFailed);
-//         result.suites = removePassingTests(suite.suites);
-//         return result;
-//     }
-
-//     function specFailed (item) {
-//         return !item.passed;
-//     }
-// })();
-/* record log messages for testing */
-
 var logMessages = [];
 window.less = window.less || {};
 
@@ -140,9 +99,15 @@ testSheet = function (sheet) {
                             window.navigator.userAgent.indexOf('Trident/') >= 0) {
                             text = ieFormat(text);
                         }
-                        expect(lessOutput).toEqual(text);
+                        expect(lessOutput).to.equal(text);
                         done();
+                    })
+                    .catch(function(err) {
+                        done(err);
                     });
+            })
+            .catch(function(err) {
+                done(err);
             });
     });
 };
@@ -183,38 +148,41 @@ testErrorSheet = function (sheet) {
             return actualErrorElement !== null;
         }).then(function () {
             var innerText = (actualErrorElement.innerHTML
-                        .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, '')
-                        .replace(/<\/h3>/ig, ' ')
-                        .replace(/<li>|<\/ul>|<br>/ig, '\n'))
-                        .replace(/&amp;/ig, '&')
-                        // for IE8
-                        .replace(/\r\n/g, '\n')
-                        .replace(/\. \nin/, '. in');
+                .replace(/<h3>|<\/?p>|<a href="[^"]*">|<\/a>|<ul>|<\/?pre( class="?[^">]*"?)?>|<\/li>|<\/?label>/ig, '')
+                .replace(/<\/h3>/ig, ' ')
+                .replace(/<li>|<\/ul>|<br>/ig, '\n'))
+                .replace(/&amp;/ig, '&')
+            // for IE8
+                .replace(/\r\n/g, '\n')
+                .replace(/\. \nin/, '. in');
             actualErrorMsg = innerText
-                    .replace(/\n\d+/g, function (lineNo) {
-                        return lineNo + ' ';
-                    })
-                    .replace(/\n\s*in /g, ' in ')
-                    .replace(/\n{2,}/g, '\n')
-                    .replace(/\nStack Trace\n[\s\S]*/i, '')
-                    .replace(/\n$/, '')
-                    .trim();
+                .replace(/\n\d+/g, function (lineNo) {
+                    return lineNo + ' ';
+                })
+                .replace(/\n\s*in /g, ' in ')
+                .replace(/\n{2,}/g, '\n')
+                .replace(/\nStack Trace\n[\s\S]*/i, '')
+                .replace(/\n$/, '')
+                .trim();
             errorFile
-                    .then(function (errorTxt) {
-                        errorTxt = errorTxt
-                            .replace(/\{path\}/g, '')
-                            .replace(/\{pathrel\}/g, '')
-                            .replace(/\{pathhref\}/g, 'http://localhost:8081/test/less/errors/')
-                            .replace(/\{404status\}/g, ' (404)')
-                            .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
-                            .replace(/\n$/, '')
-                            .trim();
-                        expect(actualErrorMsg).toEqual(errorTxt);
-                        if (errorTxt == actualErrorMsg) {
-                            actualErrorElement.style.display = 'none';
-                        }
-                        done();
-                    });
+                .then(function (errorTxt) {
+                    errorTxt = errorTxt
+                        .replace(/\{path\}/g, '')
+                        .replace(/\{pathrel\}/g, '')
+                        .replace(/\{pathhref\}/g, 'http://localhost:8081/test/less/errors/')
+                        .replace(/\{404status\}/g, ' (404)')
+                        .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
+                        .replace(/\n$/, '')
+                        .trim();
+                    expect(actualErrorMsg).to.equal(errorTxt);
+                    if (errorTxt == actualErrorMsg) {
+                        actualErrorElement.style.display = 'none';
+                    }
+                    done();
+                })
+                .catch(function (err) {
+                    done(err);
+                });
         });
     });
 };
@@ -230,7 +198,7 @@ testErrorSheetConsole = function (sheet) {
                 .replace(/\nStack Trace\n[\s\S]*/, '');
 
         describe('the error', function () {
-            expect(actualErrorElement).toBe(null);
+            expect(actualErrorElement).to.be.null;
         });
 
         errorFile
@@ -242,7 +210,7 @@ testErrorSheetConsole = function (sheet) {
                     .replace(/\{404status\}/g, ' (404)')
                     .replace(/\{node\}.*\{\/node\}/g, '')
                     .trim();
-                expect(actualErrorMsg).toEqual(errorTxt);
+                expect(actualErrorMsg).to.equal(errorTxt);
                 done();
             });
     });
@@ -260,5 +228,3 @@ loadFile = function (href) {
         request.send(null);
     });
 };
-
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 90000;

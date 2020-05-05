@@ -1,5 +1,5 @@
 .light1 {
-  color: white;
+  color: inherit;
   margin: 1px;
 }
 .light2 {
@@ -32,19 +32,19 @@
 .default1 {
   content: default;
 }
-.test1 {
+.test-rule1 {
   content: "true.";
 }
-.test2 {
+.test-rule2 {
   content: "false.";
 }
-.test3 {
+.test-rule3 {
   content: "false.";
 }
-.test4 {
+.test-rule4 {
   content: "false.";
 }
-.test5 {
+.test-rule5 {
   content: "false.";
 }
 .bool1 {

@@ -15,7 +15,7 @@
 }
 .i.j,
 .k.j {
-  color: white;
+  color: inherit;
 }
 .l,
 .m,
@@ -58,7 +58,7 @@
 }
 .vb,
 .vc {
-  color: white;
+  color: inherit;
 }
 @media tv {
   .ma,
@@ -70,7 +70,7 @@
   .ma,
   .mb,
   .mc {
-    color: white;
+    color: inherit;
   }
 }
 @media tv and plasma {

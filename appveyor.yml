@@ -13,6 +13,8 @@ install:
   # <Cannot find module 'boom'>
   # Seems related to: https://github.com/npm/npm/issues/8152
   # using <appveyor_retry> solves this.
+  
+  # change now that we're not using phantomjs?
   - appveyor-retry call npm install
 
   # Grunt-specific stuff.

@@ -1,8 +1,8 @@
 /*!
- * Less - Leaner CSS v3.9.0
+ * Less - Leaner CSS v3.12.0
  * http://lesscss.org
  *
- * Copyright (c) 2009-2018, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  */
@@ -10,7 +10,7 @@
  /** * @license Apache-2.0
  */
 
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.less = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.less = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 var addDataAttr = require('./utils').addDataAttr,
     browser = require('./browser');
 
@@ -77,7 +77,7 @@ require('promise/polyfill');
 var options = require('../less/default-options')();
 
 if (window.less) {
-    for (key in window.less) {
+    for (var key in window.less) {
         if (window.less.hasOwnProperty(key)) {
             options[key] = window.less[key];
         }
@@ -1860,6 +1860,22 @@ function hsla(origColor, hsl) {
         return color;
     }
 }
+function toHSL(color) {
+    if (color.toHSL) {
+        return color.toHSL();
+    } else {
+        throw new Error('Argument cannot be evaluated to a color');
+    }
+}
+
+function toHSV(color) {
+    if (color.toHSV) {
+        return color.toHSV();
+    } else {
+        throw new Error('Argument cannot be evaluated to a color');
+    }
+}
+
 function number(n) {
     if (n instanceof Dimension) {
         return parseFloat(n.unit.is('%') ? n.value / 100 : n.value);
@@ -1986,22 +2002,22 @@ colorFunctions = {
     },
 
     hue: function (color) {
-        return new Dimension(color.toHSL().h);
+        return new Dimension(toHSL(color).h);
     },
     saturation: function (color) {
-        return new Dimension(color.toHSL().s * 100, '%');
+        return new Dimension(toHSL(color).s * 100, '%');
     },
     lightness: function (color) {
-        return new Dimension(color.toHSL().l * 100, '%');
+        return new Dimension(toHSL(color).l * 100, '%');
     },
     hsvhue: function(color) {
-        return new Dimension(color.toHSV().h);
+        return new Dimension(toHSV(color).h);
     },
     hsvsaturation: function (color) {
-        return new Dimension(color.toHSV().s * 100, '%');
+        return new Dimension(toHSV(color).s * 100, '%');
     },
     hsvvalue: function (color) {
-        return new Dimension(color.toHSV().v * 100, '%');
+        return new Dimension(toHSV(color).v * 100, '%');
     },
     red: function (color) {
         return new Dimension(color.rgb[0]);
@@ -2013,7 +2029,7 @@ colorFunctions = {
         return new Dimension(color.rgb[2]);
     },
     alpha: function (color) {
-        return new Dimension(color.toHSL().a);
+        return new Dimension(toHSL(color).a);
     },
     luma: function (color) {
         return new Dimension(color.luma() * color.alpha * 100, '%');
@@ -2032,7 +2048,7 @@ colorFunctions = {
         if (!color.rgb) {
             return null;
         }
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         if (typeof method !== 'undefined' && method.value === 'relative') {
             hsl.s +=  hsl.s * amount.value / 100;
@@ -2044,7 +2060,7 @@ colorFunctions = {
         return hsla(color, hsl);
     },
     desaturate: function (color, amount, method) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         if (typeof method !== 'undefined' && method.value === 'relative') {
             hsl.s -=  hsl.s * amount.value / 100;
@@ -2056,7 +2072,7 @@ colorFunctions = {
         return hsla(color, hsl);
     },
     lighten: function (color, amount, method) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         if (typeof method !== 'undefined' && method.value === 'relative') {
             hsl.l +=  hsl.l * amount.value / 100;
@@ -2068,7 +2084,7 @@ colorFunctions = {
         return hsla(color, hsl);
     },
     darken: function (color, amount, method) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         if (typeof method !== 'undefined' && method.value === 'relative') {
             hsl.l -=  hsl.l * amount.value / 100;
@@ -2080,7 +2096,7 @@ colorFunctions = {
         return hsla(color, hsl);
     },
     fadein: function (color, amount, method) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         if (typeof method !== 'undefined' && method.value === 'relative') {
             hsl.a +=  hsl.a * amount.value / 100;
@@ -2092,7 +2108,7 @@ colorFunctions = {
         return hsla(color, hsl);
     },
     fadeout: function (color, amount, method) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         if (typeof method !== 'undefined' && method.value === 'relative') {
             hsl.a -=  hsl.a * amount.value / 100;
@@ -2104,14 +2120,14 @@ colorFunctions = {
         return hsla(color, hsl);
     },
     fade: function (color, amount) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
 
         hsl.a = amount.value / 100;
         hsl.a = clamp(hsl.a);
         return hsla(color, hsl);
     },
     spin: function (color, amount) {
-        var hsl = color.toHSL();
+        var hsl = toHSL(color);
         var hue = (hsl.h + amount.value) % 360;
 
         hsl.h = hue < 0 ? 360 + hue : hue;
@@ -2123,16 +2139,12 @@ colorFunctions = {
     // http://sass-lang.com
     //
     mix: function (color1, color2, weight) {
-        if (!color1.toHSL || !color2.toHSL) {
-            console.log(color2.type);
-            console.dir(color2);
-        }
         if (!weight) {
             weight = new Dimension(50);
         }
         var p = weight.value / 100.0;
         var w = p * 2 - 1;
-        var a = color1.toHSL().a - color2.toHSL().a;
+        var a = toHSL(color1).a - toHSL(color2).a;
 
         var w1 = (((w * a == -1) ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
         var w2 = 1 - w1;
@@ -2476,6 +2488,7 @@ var Comment = require('../tree/comment'),
     Ruleset = require('../tree/ruleset'),
     Selector = require('../tree/selector'),
     Element = require('../tree/element'),
+    Quote = require('../tree/quoted'),
     functionRegistry = require('./function-registry');
 
 var getItemsFromNode = function(node) {
@@ -2492,7 +2505,8 @@ functionRegistry.addMultiple({
         return n;
     },
     extract: function(values, index) {
-        index = index.value - 1; // (1-based index)
+        // (1-based index)
+        index = index.value - 1;
 
         return getItemsFromNode(values)[index];
     },
@@ -2530,7 +2544,7 @@ functionRegistry.addMultiple({
     each: function(list, rs) {
         var rules = [], newRules, iterator;
 
-        if (list.value) {
+        if (list.value && !(list instanceof Quote)) {
             if (Array.isArray(list.value)) {
                 iterator = list.value;
             } else {
@@ -2606,7 +2620,7 @@ functionRegistry.addMultiple({
     }
 });
 
-},{"../tree/comment":57,"../tree/declaration":60,"../tree/dimension":62,"../tree/element":63,"../tree/expression":64,"../tree/ruleset":81,"../tree/selector":82,"./function-registry":27}],30:[function(require,module,exports){
+},{"../tree/comment":57,"../tree/declaration":60,"../tree/dimension":62,"../tree/element":63,"../tree/expression":64,"../tree/quoted":80,"../tree/ruleset":81,"../tree/selector":82,"./function-registry":27}],30:[function(require,module,exports){
 var Dimension = require('../tree/dimension');
 
 var MathHelper = function() {
@@ -2745,7 +2759,7 @@ var Quoted = require('../tree/quoted'),
 
 functionRegistry.addMultiple({
     e: function (str) {
-        return new Anonymous(str instanceof JavaScript ? str.evaluated : str.value);
+        return new Quoted('"', str instanceof JavaScript ? str.evaluated : str.value, true);
     },
     escape: function (str) {
         return new Anonymous(
@@ -3090,6 +3104,7 @@ module.exports = function(environment) {
         }
 
         if (importOptions.isPlugin) {
+            context.mime = 'application/javascript';
             promise = pluginLoader.loadPlugin(path, currentFileInfo.currentDirectory, context, environment, fileManager);
         }
         else {
@@ -3115,7 +3130,7 @@ module.exports = function(environment, fileManagers) {
     var SourceMapOutput, SourceMapBuilder, ParseTree, ImportManager, Environment;
 
     var initial = {
-        version: [3, 9, 0],
+        version: [3, 12, 0],
         data: require('./data'),
         tree: require('./tree'),
         Environment: (Environment = require('./environment/environment')),
@@ -4109,8 +4124,10 @@ var Parser = function Parser(context, imports, fileInfo) {
                 i = parser.i;
                 result = parsers[p]();
                 if (result) {
-                    result._index = i + currentIndex;
-                    result._fileInfo = fileInfo;
+                    try {
+                        result._index = i + currentIndex;
+                        result._fileInfo = fileInfo;
+                    } catch (e) {}
                     returnNodes.push(result);
                 }
                 else {
@@ -4638,10 +4655,15 @@ var Parser = function Parser(context, imports, fileInfo) {
                 //
                 color: function () {
                     var rgb;
+                    parserInput.save();
 
-                    if (parserInput.currentChar() === '#' && (rgb = parserInput.$re(/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})/))) {
-                        return new(tree.Color)(rgb[1], undefined, rgb[0]);
+                    if (parserInput.currentChar() === '#' && (rgb = parserInput.$re(/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})([\w.#\[])?/))) {
+                        if (!rgb[2]) {
+                            parserInput.forget();
+                            return new(tree.Color)(rgb[1], undefined, rgb[0]);
+                        } 
                     }
+                    parserInput.restore();
                 },
 
                 colorKeyword: function () {
@@ -6628,6 +6650,12 @@ module.exports = function (environment) {
                 // adjust the source
                 inputSource = inputSource.slice(this._contentsIgnoredCharsMap[fileInfo.filename]);
             }
+
+            // ignore empty content
+            if (inputSource === undefined) {
+                return;
+            }
+
             inputSource = inputSource.substring(0, index);
             sourceLines = inputSource.split('\n');
             sourceColumns = sourceLines[sourceLines.length - 1];
@@ -9266,6 +9294,7 @@ var Quoted = function (str, content, escaped, index, currentFileInfo) {
     this._fileInfo = currentFileInfo;
     this.variableRegex = /@\{([\w-]+)\}/g;
     this.propRegex = /\$\{([\w-]+)\}/g;
+    this.allowRoot = escaped;
 };
 Quoted.prototype = new Node();
 Quoted.prototype.type = 'Quoted';
@@ -9294,7 +9323,7 @@ Quoted.prototype.eval = function (context) {
     function iterativeReplace(value, regexp, replacementFnc) {
         var evaluatedValue = value;
         do {
-            value = evaluatedValue;
+            value = evaluatedValue.toString();
             evaluatedValue = value.replace(regexp, replacementFnc);
         } while (value !== evaluatedValue);
         return evaluatedValue;

@@ -156,8 +156,12 @@ function render() {
             existsSync = fs.existsSync || path.existsSync;
         if (!existsSync(dir)) {
             if (mkdirp === undefined) {
-                try {mkdirp = require('mkdirp');}
-                catch (e) { mkdirp = null; }
+                try {
+                    mkdirp = require('make-dir');
+                }
+                catch (e) {
+                    mkdirp = null;
+                }
             }
             cmd = mkdirp && mkdirp.sync || fs.mkdirSync;
             cmd(dir);

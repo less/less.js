@@ -470,7 +470,7 @@ var UrlFileManager = /** @class */ (function (_super) {
         return new Promise(function (fulfill, reject) {
             if (request === undefined) {
                 try {
-                    request = require('request');
+                    request = require('native-request');
                 }
                 catch (e) {
                     request = null;
@@ -7006,7 +7006,7 @@ var Parser = function Parser(context, imports, fileInfo) {
                     function f(parse, stop) {
                         return {
                             parse: parse,
-                            stop: stop // when true - stop after parse() and return its result, 
+                            stop: stop // when true - stop after parse() and return its result,
                             // otherwise continue for plain args
                         };
                     }

@@ -48,6 +48,12 @@ var testMap = [
             }
             return path.join('test/sourcemaps', filename) + '.json';
         }],
+
+    [{math: 'strict', strictUnits: true, globalVars: true }, 'import/json/',
+        lessTester.testImports, null, true,
+        function(filename, type, baseFolder) {
+            return path.join(baseFolder, filename) + '.json';
+        }],
     [{math: 'strict', strictUnits: true, sourceMap: {sourceMapFileInline: true}},
         'sourcemaps-empty/', lessTester.testEmptySourcemap],
     [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, 'globalVars/',

@@ -1,5 +1,13 @@
 ## Change Log
 
+### v3.11.2 (2020-06-01)
+- [#3498](https://github.com/less/less.js/pull/3498) Remove tree caching in import manager (#3498) (@matthew-dean)
+- [#3482](https://github.com/less/less.js/pull/3482) issue#3481 ignore missing debugInfo (#3482) (@5UtJAjiRWj1q)
+- [#3494](https://github.com/less/less.js/pull/3494) Additional check to avoid evaluating an expression if it is a comment (#3494) (@rgroothuijsen)
+- [#3490](https://github.com/less/less.js/pull/3490) fix: Use make-dir instead of mkdirp (#3490) (@eps1lon)
+- [#3493](https://github.com/less/less.js/pull/3493) Properly exit calc mode after use (#3493) (@rgroothuijsen)
+- [#3477](https://github.com/less/less.js/pull/3477) Convert to auto-changelog (#3477) (@matthew-dean)
+
 ### v3.11.1 (2020-02-11)
 - [#3475](https://github.com/less/less.js/pull/3475) Fixes #3469  - Include tslib dependency (#3475) (@matthew-dean)
 
@@ -128,7 +136,7 @@
 - [#3168](https://github.com/less/less.js/pull/3168) Fixes #3116 - lessc not loading plugins in 3.0 (@matthew-dean)
 
 ### v3.0.1 (2018-02-15)
-- [#3163](https://github.com/less/less.js/pull/3163) Merge 3.x into master (@matthew-dean, @barnabycolby, @kirillrogovoy, @maxbrunsfeld, @seven-phases-max, @ryysud, @bdsomer, @wiinci, @robhuzzey, @nikeee, @anthony-redFox)
+- [#3163](https://github.com/less/less.js/pull/3163) Merge 3.x into master (@matthew-dean, @barnabycolby, @kirillrogovoy, @maxbrunsfeld, @seven-phases-max, @ryysud, @bdsomer, @wiinci, @nikeee, @anthony-redFox)
 
 ### v3.0.0-RC.2 (2018-02-11)
 - [#3161](https://github.com/less/less.js/pull/3161) Remove legacy upgrade (@matthew-dean)

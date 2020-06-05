@@ -1,5 +1,8 @@
 ## Change Log
 
+### v3.11.3 (2020-06-05)
+- [#3509](https://github.com/less/less.js/pull/3509) Fixes #3508 (#3509) (@matthew-dean)
+
 ### v3.11.2 (2020-06-01)
 - [#3498](https://github.com/less/less.js/pull/3498) Remove tree caching in import manager (#3498) (@matthew-dean)
 - [#3482](https://github.com/less/less.js/pull/3482) issue#3481 ignore missing debugInfo (#3482) (@5UtJAjiRWj1q)

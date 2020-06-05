@@ -72,6 +72,7 @@ testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
 lessTester.testSyncronous({syncImport: true}, 'import');
+lessTester.testSyncronous({syncImport: true}, 'plugin');
 lessTester.testSyncronous({syncImport: true}, 'math/strict-legacy/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();

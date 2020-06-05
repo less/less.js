@@ -1,4 +1,6 @@
 /** comment at the top**/
+@plugin "./plugin/plugin-simple";
+
 @import url(/absolute/something.css) screen and (color) and (max-width: 600px);
 
 @import (optional) "file-does-not-exist.does-not-exist";
@@ -10,6 +12,7 @@
   .mixin;
   width: 10px;
   height: (@a + 10%);
+  value: pi-anon();
 }
 @import "import/import-test-e" screen and (max-width: 600px);
 

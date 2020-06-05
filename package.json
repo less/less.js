@@ -43,7 +43,7 @@
     "errno": "^0.1.1",
     "graceful-fs": "^4.1.2",
     "image-size": "~0.5.0",
-    "make-dir":"^2.1.0",
+    "make-dir": "^2.1.0",
     "mime": "^1.4.1",
     "promise": "^7.1.1",
     "request": "^2.83.0",

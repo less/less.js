@@ -140,6 +140,42 @@ module.exports = function() {
         }
     }
 
+    function testImports(name, err, compiledLess, doReplacements, sourcemap, baseFolder, imports) {
+        if (err) {
+            fail('ERROR: ' + (err && err.message));
+            return;
+        }
+
+        function stringify(str) {
+            return JSON.stringify(imports, null, '  ')
+        }
+
+        /** Imports are not sorted */
+        const importsString = stringify(imports.sort())
+
+        fs.readFile(path.join('test/less/', name) + '.json', 'utf8', function (e, expectedImports) {
+            if (e) {
+                fail('ERROR: ' + (e && e.message));
+                return;
+            }
+            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
+            expectedImports = stringify(JSON.parse(expectedImports).sort());
+            expectedImports = globalReplacements(expectedImports, baseFolder);
+
+            if (expectedImports === importsString) {
+                ok('OK');
+            } else if (err) {
+                fail('ERROR: ' + (err && err.message));
+                if (isVerbose) {
+                    process.stdout.write('\n');
+                    process.stdout.write(err.stack + '\n');
+                }
+            } else {
+                difference('FAIL', expectedImports, importsString);
+            }
+        });
+    }
+
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
@@ -303,8 +339,13 @@ module.exports = function() {
                     }
                     doubleCallCheck = (new Error()).stack;
 
+                    /**
+                     * @todo - refactor so the result object is sent to the verify function
+                     */
                     if (verifyFunction) {
-                        var verificationResult = verifyFunction(name, err, result && result.css, doReplacements, result && result.map, baseFolder);
+                        var verificationResult = verifyFunction(
+                            name, err, result && result.css, doReplacements, result && result.map, baseFolder, result && result.imports
+                        );
                         release();
                         return verificationResult;
                     }
@@ -362,7 +403,7 @@ module.exports = function() {
         process.stdout.write(stylize(msg, 'yellow') + '\n');
         failedTests++;
 
-        diff(left, right);
+        diff(left || '', right || '');
         endTest();
     }
 
@@ -452,6 +493,7 @@ module.exports = function() {
         testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
+        testImports: testImports,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         prepBomTest: prepBomTest,

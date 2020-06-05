@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.11.2
+ * Less - Leaner CSS v3.11.3
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -1750,8 +1750,11 @@
       }
       return result;
   };
-  debugInfo.asComment = function (ctx) { return "/* line " + ctx.debugInfo.lineNumber + ", " + ctx.debugInfo.fileName + " */\n"; };
+  debugInfo.asComment = function (ctx) { return ctx.debugInfo ? "/* line " + ctx.debugInfo.lineNumber + ", " + ctx.debugInfo.fileName + " */\n" : ''; };
   debugInfo.asMediaQuery = function (ctx) {
+      if (!ctx.debugInfo) {
+          return '';
+      }
       var filenameWithProtocol = ctx.debugInfo.fileName;
       if (!/^[a-z]+:\/\//i.test(filenameWithProtocol)) {
           filenameWithProtocol = "file://" + filenameWithProtocol;
@@ -10364,12 +10367,8 @@
               if (options.sourceMap) {
                   result.map = sourceMapBuilder.getExternalSourceMap();
               }
-              result.imports = [];
-              for (var file_1 in this.imports.files) {
-                  if (this.imports.files.hasOwnProperty(file_1) && file_1 !== this.imports.rootFilename) {
-                      result.imports.push(file_1);
-                  }
-              }
+              var rootFilename = this.imports.rootFilename;
+              result.imports = this.imports.files.filter(function (file) { return file !== rootFilename; });
               return result;
           };
           return ParseTree;
@@ -10398,6 +10397,7 @@
               this.context = context;
               // Deprecated? Unused outside of here, could be useful.
               this.queue = []; // Files which haven't been imported yet
+              this.files = []; // List of files imported
           }
           /**
            * Add an import to be imported
@@ -10419,6 +10419,10 @@
                       logger.info("The file " + fullPath + " was skipped because it was not found and the import was marked optional.");
                   }
                   else {
+                      var files = importManager.files;
+                      if (files.indexOf(fullPath) === -1) {
+                          files.push(fullPath);
+                      }
                       if (e && !importManager.error) {
                           importManager.error = e;
                       }
@@ -10803,7 +10807,7 @@
        * It's not clear what should / must be public and why.
        */
       var initial = {
-          version: [3, 11, 2],
+          version: [3, 11, 3],
           data: data,
           tree: tree,
           Environment: environment,

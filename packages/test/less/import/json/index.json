@@ -1,0 +1,11 @@
+[
+  "{path}/import/import-test-a.less",
+  "{path}/import/import-test-b.less",
+  "{path}/import/deeper/url-import.less",
+  "{path}/import/urls.less",
+  "{path}/import/import-test-c.less",
+  "{path}/import/deeper/deeper-2/url-import.less",
+  "{path}/import/deeper/deeper-2/url-import-2.less",
+  "{path}/import/import-test-f.less",
+  "{path}/import/import-test-e.less"
+]

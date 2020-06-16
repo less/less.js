@@ -13,6 +13,9 @@ package-lock.json
 npm-debug.log
 
 # project-specific
+packages/less/lib
+packages/*/dist
+!packages/less/dist
 tmp
 test/browser/less.min.js
 test/browser/less.min.js.map

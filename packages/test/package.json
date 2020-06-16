@@ -1,0 +1,19 @@
+{
+  "name": "@less/test",
+  "version": "3.12.0",
+  "description": "Less.js testing framework and test data",
+  "homepage": "http://lesscss.org",
+  "main": "index.js",
+  "author": {
+    "name": "Alexis Sellier",
+    "email": "self@cloudhead.net"
+  },
+  "contributors": [
+    "The Core Less Team"
+  ],
+  "dependencies": {
+    "@less/test-import-module": "3.12.0",
+    "less": "3.12.0"
+  },
+  "license": "Apache-2.0"
+}

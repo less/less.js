@@ -123,6 +123,35 @@ module.exports = function() {
         });
     }
 
+    function testSourcemapWithoutUrlAnnotation(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        if (err) {
+            fail('ERROR: ' + (err && err.message));
+            return;
+        }
+        // This matches with strings that end($) with source mapping url annotation.
+        var sourceMapRegExp = /\/\*# sourceMappingURL=.+\.css\.map \*\/$/;
+        if (sourceMapRegExp.test(compiledLess)) {
+            fail('ERROR: sourceMappingURL found in ' + baseFolder + '/' + name + '.css.');
+            return;
+        }
+
+        // Even if annotation is not necessary, the map file should be there.
+        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
+            if (sourcemap === expectedSourcemap) {
+                ok('OK');
+            } else if (err) {
+                fail('ERROR: ' + (err && err.message));
+                if (isVerbose) {
+                    process.stdout.write('\n');
+                    process.stdout.write(err.stack + '\n');
+                }
+            } else {
+                difference('FAIL', expectedSourcemap, sourcemap);
+            }
+        });
+    }
+
     function testEmptySourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
         if (err) {
@@ -309,7 +338,8 @@ module.exports = function() {
                 options.sourceMap = {
                     sourceMapOutputFilename: name + '.css',
                     sourceMapBasepath: path.join(process.cwd(), baseFolder),
-                    sourceMapRootpath: 'testweb/'
+                    sourceMapRootpath: 'testweb/',
+                    disableSourcemapAnnotation: options.sourceMap.disableSourcemapAnnotation
                 };
                 // This options is normally set by the bin/lessc script. Setting it causes the sourceMappingURL comment to be appended to the CSS
                 // output. The value is designed to allow the sourceMapBasepath option to be tested, as it should be removed by less before
@@ -493,6 +523,7 @@ module.exports = function() {
         testSyncronous: testSyncronous,
         testErrors: testErrors,
         testSourcemap: testSourcemap,
+        testSourcemapWithoutUrlAnnotation: testSourcemapWithoutUrlAnnotation,
         testImports: testImports,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,

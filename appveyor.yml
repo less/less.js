@@ -25,7 +25,7 @@ test_script:
   # Output useful info for debugging.
   - node --version && npm --version
   # Run test
-  - grunt test
+  - cd packages/less && grunt test
 
 # Don't actually build.
 build: off

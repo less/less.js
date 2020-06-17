@@ -5,7 +5,8 @@
   "description": "Less monorepo",
   "homepage": "http://lesscss.org",
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist"
+    "bootstrap": "lerna bootstrap --hoist",
+    "postinstall": "npm run bootstrap"
   },
   "author": {
     "name": "Alexis Sellier",

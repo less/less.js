@@ -44,7 +44,7 @@ module.exports = (stylesheets, helpers, spec, less) => {
         expect = chai.expect
         mocha.setup({
             ui: 'bdd',
-            timeout: 1500
+            timeout: 2500
         });
     </script>
     <script src="common.js"></script>

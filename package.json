@@ -5,7 +5,7 @@
   "description": "Less monorepo",
   "homepage": "http://lesscss.org",
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist --nohoist=grunt-saucelabs",
+    "bootstrap": "lerna bootstrap",
     "postinstall": "npm run bootstrap",
     "test": "cd packages/less && npm test"
   },

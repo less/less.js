@@ -8,8 +8,8 @@
       "type": "node",
       "request": "launch",
       "name": "Less test",
-      "program": "${workspaceFolder}/test/index.js",
-      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/packages/less/test/index.js",
+      "cwd": "${workspaceFolder}/packages/less",
       "console": "integratedTerminal"
     }
   ]

@@ -17,15 +17,12 @@ install:
   # change now that we're not using phantomjs?
   - appveyor-retry call npm install
 
-  # Grunt-specific stuff.
-  - npm install -g grunt-cli
-
 # Post-install test scripts.
 test_script:
   # Output useful info for debugging.
   - node --version && npm --version
   # Run test
-  - grunt test
+  - cd packages/less && npm test
 
 # Don't actually build.
 build: off

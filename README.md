@@ -4,20 +4,7 @@
 
 <p align="center"><a href="https://gitter.im/less/less.js?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" style="max-width:100%;"></a> <br><sup class="rich-diff-level-one">Chat with Less.js users and contributors</sup></p>
 
-# [Less.js](http://lesscss.org)
-
-> The **dynamic** stylesheet language. [http://lesscss.org](http://lesscss.org).
-
-This is the JavaScript, official, stable version of Less.
-
-
-## Getting Started
-
-Options for adding Less.js to your project:
-
-* Install with [npm](https://npmjs.org): `npm install less`
-* [Download the latest release][download]
-* Clone the repo: `git clone https://github.com/less/less.js.git`
+This is the Less.js monorepo, managed via [Lerna](https://lerna.js.org/).
 
 ## More information
 

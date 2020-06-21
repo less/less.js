@@ -55,8 +55,8 @@
   },
   "devDependencies": {
     "@less/test-import-module": "3.12.0",
-    "@typescript-eslint/eslint-plugin": "^2.3.3",
-    "@typescript-eslint/parser": "^2.3.3",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
     "benny": "^3.6.12",
     "bootstrap-less-port": "0.3.0",
     "chai": "^4.2.0",

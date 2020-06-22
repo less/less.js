@@ -12,11 +12,11 @@ class UrlFileManager extends AbstractFileManager {
     loadFile(filename, currentDirectory, options, environment) {
         return new Promise((fulfill, reject) => {
             if (request === undefined) {
-                try { request = require('request'); }
+                try { request = require('native-request'); }
                 catch (e) { request = null; }
             }
             if (!request) {
-                reject({ type: 'File', message: 'optional dependency \'request\' required to import over http(s)\n' });
+                reject({ type: 'File', message: 'optional dependency \'native-request\' required to import over http(s)\n' });
                 return;
             }
 

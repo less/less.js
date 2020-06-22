@@ -8,3 +8,7 @@ lessc text eol=lf
 *.jpg binary
 *.png binary
 *.jpeg binary
+
+# From https://github.com/alexkaratarakis/gitattributes/blob/master/Web.gitattributes
+*.lock            text -diff
+package-lock.json text -diff

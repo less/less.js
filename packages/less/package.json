@@ -57,7 +57,6 @@
 		"@typescript-eslint/parser": "^3.3.0",
 		"benny": "^3.6.12",
 		"bootstrap-less-port": "0.3.0",
-		"copy-anything": "^2.0.1",
 		"chai": "^4.2.0",
 		"diff": "^3.2.0",
 		"eslint": "^6.8.0",

@@ -61,7 +61,7 @@
     "bootstrap-less-port": "0.3.0",
     "chai": "^4.2.0",
     "diff": "^3.2.0",
-    "eslint": "^7.3.0",
+    "eslint": "^6.8.0",
     "fs-extra": "^8.1.0",
     "git-rev": "^0.2.1",
     "github-changes": "^1.1.2",

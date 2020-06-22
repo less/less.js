@@ -1,6 +1,5 @@
 /* jshint proto: true */
 import * as Constants from './constants';
-import { copy } from 'copy-anything';
 
 export function getLocation(index, inputStream) {
     let n = index + 1;
@@ -46,9 +45,9 @@ export function defaults(obj1, obj2) {
     let newObj = obj2 || {};
     if (!obj2._defaults) {
         newObj = {};
-        const defaults = copy(obj1);
+        const defaults = {...obj1};
         newObj._defaults = defaults;
-        const cloned = obj2 ? copy(obj2) : {};
+        const cloned = obj2 ? {...obj2} : {};
         Object.assign(newObj, defaults, cloned);
     }
     return newObj;

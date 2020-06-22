@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -22,7 +33,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.flattenArray = exports.merge = exports.copyOptions = exports.defaults = exports.clone = exports.copyArray = exports.getLocation = void 0;
 /* jshint proto: true */
 var Constants = __importStar(require("./constants"));
-var copy_anything_1 = require("copy-anything");
 function getLocation(index, inputStream) {
     var n = index + 1;
     var line = null;
@@ -63,9 +73,9 @@ function defaults(obj1, obj2) {
     var newObj = obj2 || {};
     if (!obj2._defaults) {
         newObj = {};
-        var defaults_1 = copy_anything_1.copy(obj1);
+        var defaults_1 = __assign({}, obj1);
         newObj._defaults = defaults_1;
-        var cloned = obj2 ? copy_anything_1.copy(obj2) : {};
+        var cloned = obj2 ? __assign({}, obj2) : {};
         Object.assign(newObj, defaults_1, cloned);
     }
     return newObj;

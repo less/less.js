@@ -3,6 +3,7 @@ node_js:
   - "14"
   - "12"
   - "10"
+  - "8"
 install:
   - npm install -g grunt-cli
   - travis_retry npm install

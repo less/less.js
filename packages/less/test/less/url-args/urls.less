@@ -33,19 +33,19 @@
     url: url(@a);
 }
 
-@import "../import/imports/font";
+@import "../_main/import/imports/font";
 
 #data-uri {
-  uri: data-uri('image/jpeg;base64', '../../data/image.jpg');
+  uri: data-uri('image/jpeg;base64', '../data/image.jpg');
 }
 
 #data-uri-guess {
-  uri: data-uri('../../data/image.jpg');
+  uri: data-uri('../data/image.jpg');
 }
 
 #data-uri-ascii {
-  uri-1: data-uri('text/html', '../../data/page.html');
-  uri-2: data-uri('../../data/page.html');
+  uri-1: data-uri('text/html', '../data/page.html');
+  uri-2: data-uri('../data/page.html');
 }
 
 #svg-functions {

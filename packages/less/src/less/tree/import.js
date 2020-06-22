@@ -171,11 +171,13 @@ class Import extends Node {
                 throw this.error;
             }
             return newImport;
-        } else {
+        } else if (this.root) {
             ruleset = new Ruleset(null, utils.copyArray(this.root.rules));
             ruleset.evalImports(context);
 
             return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
+        } else {
+            return [];
         }
     }
 }

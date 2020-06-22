@@ -13,8 +13,8 @@ var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 
 
 for (var i = 0; i < testFiles.length; i++) {
     var file = testFiles[i],
-        lessPath  = '/test/less/' + file + '.less',
-        cssPath   = '/test/css/' + file + '.css',
+        lessPath  = '/test/less/_main/' + file + '.less',
+        cssPath   = '/test/css/_main/' + file + '.css',
         lessStyle = document.createElement('style'),
         cssLink   = document.createElement('link'),
         lessText  = '@import "' + lessPath + '";';

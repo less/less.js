@@ -7,13 +7,13 @@ console.log('\n' + stylize('Less', 'underline') + '\n');
 
 lessTester.prepBomTest();
 var testMap = [
-    [{}, 'namespacing/'],
     [{
         // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
         relativeUrls: true,
         silent: true,
         javascriptEnabled: true
-    }],
+    }, '_main/'],
+    [{}, 'namespacing/'],
     [{
         math: 'strict-legacy'
     }, 'math/strict-legacy/'],
@@ -49,7 +49,7 @@ var testMap = [
             return path.join('test/sourcemaps', filename) + '.json';
         }],
 
-    [{math: 'strict', strictUnits: true, globalVars: true }, 'import/json/',
+    [{math: 'strict', strictUnits: true, globalVars: true }, '_main/import/json/',
         lessTester.testImports, null, true,
         function(filename, type, baseFolder) {
             return path.join(baseFolder, filename) + '.json';
@@ -67,20 +67,21 @@ var testMap = [
     [{rewriteUrls: 'local'}, 'rewrite-urls-local/'],
     [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'all'}, 'rootpath-rewrite-urls-all/'],
     [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'local'}, 'rootpath-rewrite-urls-local/'],
-    [{paths: ['test/data/', 'test/less/import/']}, 'include-path/'],
-    [{paths: 'test/data/'}, 'include-path-string/'],
+    [{paths: ['test/less/data/', 'test/less/_main/import/']}, 'include-path/'],
+    [{paths: 'test/less/data/'}, 'include-path-string/'],
     [{plugin: 'test/plugins/postprocess/'}, 'postProcessorPlugin/'],
     [{plugin: 'test/plugins/preprocess/'}, 'preProcessorPlugin/'],
     [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],
     [{plugin: 'test/plugins/filemanager/'}, 'filemanagerPlugin/'],
     [{}, 'no-strict-math/'],
-    [{}, '3rd-party/']
+    [{}, '3rd-party/'],
+    [{ processImports: false }, 'process-imports/']
 ];
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
-lessTester.testSyncronous({syncImport: true}, 'import');
-lessTester.testSyncronous({syncImport: true}, 'plugin');
+lessTester.testSyncronous({syncImport: true}, '_main/import');
+lessTester.testSyncronous({syncImport: true}, '_main/plugin');
 lessTester.testSyncronous({syncImport: true}, 'math/strict-legacy/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();

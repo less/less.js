@@ -3,14 +3,14 @@ module.exports = {
     main: {
     // src is used to build list of less files to compile
         src: [
-            "test/less/*.less",
-            "!test/less/plugin-preeval.less", // uses ES6 syntax
+            "test/less/_main/*.less",
+            "!test/less/_main/plugin-preeval.less", // uses ES6 syntax
             // Don't test NPM import, obviously
-            "!test/less/plugin-module.less",
-            "!test/less/import-module.less",
-            "!test/less/javascript.less",
-            "!test/less/urls.less",
-            "!test/less/empty.less"
+            "!test/less/_main/plugin-module.less",
+            "!test/less/_main/import-module.less",
+            "!test/less/_main/javascript.less",
+            "!test/less/_main/urls.less",
+            "!test/less/_main/empty.less"
         ],
         options: {
             helpers: "test/browser/runner-main-options.js",

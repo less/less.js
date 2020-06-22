@@ -1,10 +1,10 @@
 # Test against these versions of Node.js.
 environment:
   matrix:
-    - nodejs_version: "6"
     - nodejs_version: "8"
     - nodejs_version: "10"
     - nodejs_version: "12"
+    - nodejs_version: "14"
 
 # Install scripts. (runs after repo cloning)
 install:
@@ -17,15 +17,12 @@ install:
   # change now that we're not using phantomjs?
   - appveyor-retry call npm install
 
-  # Grunt-specific stuff.
-  - npm install -g grunt-cli
-
 # Post-install test scripts.
 test_script:
   # Output useful info for debugging.
   - node --version && npm --version
   # Run test
-  - grunt test
+  - cd packages/less && npm test
 
 # Don't actually build.
 build: off

@@ -1,0 +1,8 @@
+# project-specific
+tmp
+test/browser/less.min.js
+test/browser/less.min.js.map
+test/sourcemaps/**/*.map
+test/sourcemaps/*.map
+test/sourcemaps/*.css
+test/less-bom

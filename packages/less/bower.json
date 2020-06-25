@@ -6,6 +6,8 @@
     "benchmark",
     "bin",
     "lib",
+    "src",
+    "build",
     "test",
     "*.md",
     "LICENSE",
@@ -13,7 +15,8 @@
     "*.json",
     "*.yml",
     ".gitattributes",
-    ".jshintrc",
-    ".npmignore"
+    ".npmignore",
+    ".eslintignore",
+    "tsconfig.json"
   ]
 }

@@ -18,7 +18,7 @@ module.exports = (stylesheets, helpers, spec, less) => {
     <!-- for each test, generate CSS/LESS link tags -->
     $${stylesheets.map(function(fullLessName) {
         var pathParts = fullLessName.split('/');
-        var fullCssName = fullLessName.replace(/less/g, 'css');
+        var fullCssName = fullLessName.replace(/\/less\//g, '/css/').replace(/less$/, 'css')
         var lessName = pathParts[pathParts.length - 1];
         var name = lessName.split('.')[0];
         return `

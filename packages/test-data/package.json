@@ -1,0 +1,13 @@
+{
+  "name": "@less/test-data",
+  "version": "3.12.0",
+  "description": "Less files and CSS results",
+  "author": {
+    "name": "Alexis Sellier",
+    "email": "self@cloudhead.net"
+  },
+  "contributors": [
+    "The Core Less Team"
+  ],
+  "license": "Apache-2.0"
+}

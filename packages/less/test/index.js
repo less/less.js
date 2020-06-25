@@ -5,7 +5,6 @@ var lessTest = require('./less-test'),
 
 console.log('\n' + stylize('Less', 'underline') + '\n');
 
-lessTester.prepBomTest();
 var testMap = [
     [{
         // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
@@ -24,7 +23,9 @@ var testMap = [
         math: 'parens-division'
     }, 'math/parens-division/'],
     // Use legacy strictMath: true here to demonstrate it still works
-    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, 'errors/',
+    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../errors/eval/',
+        lessTester.testErrors, null],
+    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../errors/parse/',
         lessTester.testErrors, null],
 
     [{math: 'strict', strictUnits: true, javascriptEnabled: false}, 'no-js-errors/',
@@ -67,8 +68,8 @@ var testMap = [
     [{rewriteUrls: 'local'}, 'rewrite-urls-local/'],
     [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'all'}, 'rootpath-rewrite-urls-all/'],
     [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'local'}, 'rootpath-rewrite-urls-local/'],
-    [{paths: ['test/less/data/', 'test/less/_main/import/']}, 'include-path/'],
-    [{paths: 'test/less/data/'}, 'include-path-string/'],
+    [{paths: ['data/', '_main/import/']}, 'include-path/'],
+    [{paths: 'data/'}, 'include-path-string/'],
     [{plugin: 'test/plugins/postprocess/'}, 'postProcessorPlugin/'],
     [{plugin: 'test/plugins/preprocess/'}, 'preProcessorPlugin/'],
     [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],

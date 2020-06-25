@@ -3,8 +3,6 @@
 module.exports = function() {
     var path = require('path'),
         fs = require('fs'),
-        copyBom = require('./copy-bom')(),
-        doBomTest = false,
         clone = require('copy-anything').copy;
 
     var less = require('../');
@@ -18,8 +16,8 @@ module.exports = function() {
 
     var isVerbose = process.env.npm_config_loglevel !== 'concise';
 
-    var normalFolder = 'test/less';
-    var bomFolder = 'test/less-bom';
+    var testFolder = path.dirname(require.resolve('@less/test-data'));
+    var lessFolder = path.join(testFolder, 'less');
 
     // Define String.prototype.endsWith if it doesn't exist (in older versions of node)
     // This is required by the testSourceMap function below
@@ -182,7 +180,7 @@ module.exports = function() {
         /** Imports are not sorted */
         const importsString = stringify(imports.sort())
 
-        fs.readFile(path.join('test/less/', name) + '.json', 'utf8', function (e, expectedImports) {
+        fs.readFile(path.join(lessFolder, name) + '.json', 'utf8', function (e, expectedImports) {
             if (e) {
                 fail('ERROR: ' + (e && e.message));
                 return;
@@ -233,7 +231,7 @@ module.exports = function() {
             return new less.tree.Anonymous('file');
         });
         var expected = '@charset "utf-8";\n';
-        toCSS({}, require('path').join(process.cwd(), 'test/less/root-registry/root.less'), function(error, output) {
+        toCSS({}, path.join(lessFolder, 'root-registry', 'root.less'), function(error, output) {
             if (error) {
                 return fail('ERROR: ' + error);
             }
@@ -246,8 +244,8 @@ module.exports = function() {
 
     function globalReplacements(input, directory, filename) {
         var path = require('path');
-        var p = filename ? path.join(path.dirname(filename), '/') : path.join(process.cwd(), directory),
-            pathimport = path.join(process.cwd(), directory + 'import/'),
+        var p = filename ? path.join(path.dirname(filename), '/') : directory,
+            pathimport = path.join(directory + 'import/'),
             pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
             pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
@@ -257,7 +255,7 @@ module.exports = function() {
             .replace(/\{pathhref\}/g, '')
             .replace(/\{404status\}/g, '')
             .replace(/\{nodepath\}/g, path.join(process.cwd(), 'node_modules', '/'))
-            .replace(/\{pathrel\}/g, path.join(path.relative(process.cwd(), p), '/')) 
+            .replace(/\{pathrel\}/g, path.join(path.relative(lessFolder, p), '/')) 
             .replace(/\{pathesc\}/g, pathesc)
             .replace(/\{pathimport\}/g, pathimport)
             .replace(/\{pathimportesc\}/g, pathimportesc)
@@ -277,7 +275,7 @@ module.exports = function() {
         totalTests++;
         queue(function() {
             var isSync = true;
-            toCSS(options, path.join(normalFolder, filenameNoExtension + '.less'), function (err, result) {
+            toCSS(options, path.join(lessFolder, filenameNoExtension + '.less'), function (err, result) {
                 process.stdout.write('- Test Sync ' + filenameNoExtension + ': ');
 
                 if (isSync) {
@@ -291,21 +289,13 @@ module.exports = function() {
         });
     }
 
-    function prepBomTest() {
-        copyBom.copyFolderWithBom(normalFolder, bomFolder);
-        doBomTest = true;
-    }
-
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         options = options ? clone(options) : {};
-        runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
-        if (doBomTest) {
-            runTestSetInternal(bomFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
-        }
+        runTestSetInternal(lessFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
     }
 
     function runTestSetNormalOnly(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
-        runTestSetInternal(normalFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
+        runTestSetInternal(lessFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
     }
 
     function runTestSetInternal(baseFolder, opts, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
@@ -337,7 +327,7 @@ module.exports = function() {
             if (options.sourceMap && !options.sourceMap.sourceMapFileInline) {
                 options.sourceMap = {
                     sourceMapOutputFilename: name + '.css',
-                    sourceMapBasepath: path.join(process.cwd(), baseFolder),
+                    sourceMapBasepath: baseFolder,
                     sourceMapRootpath: 'testweb/',
                     disableSourcemapAnnotation: options.sourceMap.disableSourcemapAnnotation
                 };
@@ -396,7 +386,8 @@ module.exports = function() {
                     }
                     var css_name = name;
                     if (nameModifier) { css_name = nameModifier(name); }
-                    fs.readFile(path.join('test/css', css_name) + '.css', 'utf8', function (e, css) {
+
+                    fs.readFile(path.join(testFolder, 'css', css_name) + '.css', 'utf8', function (e, css) {
                         process.stdout.write('- ' + path.join(baseFolder, css_name) + ': ');
 
                         css = css && doReplacements(css, path.join(baseFolder, foldername));
@@ -478,25 +469,36 @@ module.exports = function() {
         return false;
     }
 
-    function toCSS(options, path, callback) {
+    /**
+     * 
+     * @param {Object} options 
+     * @param {string} filePath 
+     * @param {Function} callback 
+     */
+    function toCSS(options, filePath, callback) {
         options = options || {};
-        var str = fs.readFileSync(path, 'utf8'), addPath = require('path').dirname(path);
+        var str = fs.readFileSync(filePath, 'utf8'), addPath = path.dirname(filePath);
         if (typeof options.paths !== 'string') {
             options.paths = options.paths || [];
             if (!contains(options.paths, addPath)) {
                 options.paths.push(addPath);
             }
+        } else {
+            options.paths = [options.paths]
         }
-        options.filename = require('path').resolve(process.cwd(), path);
+        options.paths = options.paths.map(searchPath => {
+            return path.resolve(lessFolder, searchPath)
+        })
+        options.filename = path.resolve(process.cwd(), filePath);
         options.optimization = options.optimization || 0;
 
         if (options.globalVars) {
-            options.globalVars = options.getVars(path);
+            options.globalVars = options.getVars(filePath);
         } else if (options.modifyVars) {
-            options.modifyVars = options.getVars(path);
+            options.modifyVars = options.getVars(filePath);
         }
         if (options.plugin) {
-            var Plugin = require(require('path').resolve(process.cwd(), options.plugin));
+            var Plugin = require(path.resolve(process.cwd(), options.plugin));
             options.plugins = [Plugin];
         }
         less.render(str, options, callback);
@@ -527,7 +529,6 @@ module.exports = function() {
         testImports: testImports,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
-        prepBomTest: prepBomTest,
         testJSImport: testJSImport,
         finished: finished
     };

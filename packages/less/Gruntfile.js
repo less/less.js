@@ -1,5 +1,11 @@
 "use strict";
 
+var resolve = require('resolve');
+var path = require('path');
+
+var testFolder = path.relative(process.cwd(), path.dirname(resolve.sync('@less/test-data')));
+var lessFolder = path.join(testFolder, 'less');
+
 module.exports = function(grunt) {
     grunt.option("stack", true);
 
@@ -235,32 +241,32 @@ module.exports = function(grunt) {
                     // @TODO: make this more thorough
                     // CURRENT OPTIONS
                     // --math
-                    "node bin/lessc --math=always test/less/_main/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=parens-division test/less/_main/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=parens test/less/_main/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=strict test/less/_main/lazy-eval.less tmp/lazy-eval.css",
-                    "node bin/lessc --math=strict-legacy test/less/_main/lazy-eval.less tmp/lazy-eval.css",
+                    `node bin/lessc --math=always ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
+                    `node bin/lessc --math=parens-division ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
+                    `node bin/lessc --math=parens ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
+                    `node bin/lessc --math=strict ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
+                    `node bin/lessc --math=strict-legacy ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
 
                     // DEPRECATED OPTIONS
                     // --strict-math
-                    "node bin/lessc --strict-math=on test/less/_main/lazy-eval.less tmp/lazy-eval.css"
+                    `node bin/lessc --strict-math=on ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`
                 ].join(" && ")
             },
             plugin: {
                 command: [
-                    'node bin/lessc --clean-css="--s1 --advanced" test/less/_main/lazy-eval.less tmp/lazy-eval.css',
+                    `node bin/lessc --clean-css="--s1 --advanced" ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
                     "cd lib",
-                    'node ../bin/lessc --clean-css="--s1 --advanced" ../test/less/_main/lazy-eval.less ../tmp/lazy-eval.css',
+                    `node ../bin/lessc --clean-css="--s1 --advanced" ../${lessFolder}/_main/lazy-eval.less ../tmp/lazy-eval.css`,
                     "cd ..",
                     // Test multiple plugins
-                    'node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" test/less/_main/lazy-eval.less tmp/lazy-eval.css'
+                    `node bin/lessc --plugin=clean-css="--s1 --advanced" --plugin=autoprefix="ie 11,Edge >= 13,Chrome >= 47,Firefox >= 45,iOS >= 9.2,Safari >= 9" ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`
                 ].join(" && ")
             },
             "sourcemap-test": {
                 // quoted value doesn't seem to get picked up by time-grunt, or isn't output, at least; maybe just "sourcemap" is fine?
                 command: [
-                    "node bin/lessc --source-map=test/sourcemaps/maps/import-map.map test/less/_main/import.less test/sourcemaps/import.css",
-                    "node bin/lessc --source-map test/less/sourcemaps/basic.less test/sourcemaps/basic.css"
+                    `node bin/lessc --source-map=test/sourcemaps/maps/import-map.map ${lessFolder}/_main/import.less test/sourcemaps/import.css`,
+                    `node bin/lessc --source-map ${lessFolder}/sourcemaps/basic.less test/sourcemaps/basic.css`
                 ].join(" && ")
             }
         },

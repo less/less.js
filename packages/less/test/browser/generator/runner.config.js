@@ -1,9 +1,9 @@
 var path = require('path');
 var resolve = require('resolve')
 
-var testFolder = path.dirname(resolve.sync('@less/test-data'));
 var rootFolder = path.resolve(__dirname, '../../../');
-var lessFolder = path.join(path.relative(rootFolder, testFolder), 'less');
+var testFolder = path.relative(rootFolder, path.dirname(resolve.sync('@less/test-data')))
+var lessFolder = path.join(testFolder, 'less');
 
 module.exports = {
     main: {
@@ -43,7 +43,7 @@ module.exports = {
     errors: {
         src: [
             `${lessFolder}/errors/*.less`,
-            `${lessFolder}/../errors/javascript-error.less`,
+            `${testFolder}/errors/javascript-error.less`,
             "test/browser/less/errors/*.less"
         ],
         options: {
@@ -142,7 +142,7 @@ module.exports = {
         src: [`${lessFolder}/postProcessorPlugin/*.less`],
         options: {
             helpers: [
-                `${lessFolder}/../plugins/postprocess/index.js`,
+                `test/plugins/postprocess/index.js`,
                 "test/browser/runner-postProcessorPlugin-options.js"
             ],
             specs: "test/browser/runner-postProcessorPlugin.js",
@@ -154,7 +154,7 @@ module.exports = {
         src: [`${lessFolder}/preProcessorPlugin/*.less`],
         options: {
             helpers: [
-                `${lessFolder}/../plugins/preprocess/index.js`,
+                `test/plugins/preprocess/index.js`,
                 "test/browser/runner-preProcessorPlugin-options.js"
             ],
             specs: "test/browser/runner-preProcessorPlugin.js",
@@ -165,7 +165,7 @@ module.exports = {
         src: [`${lessFolder}/visitorPlugin/*.less`],
         options: {
             helpers: [
-                `${lessFolder}/../plugins/visitor/index.js`,
+                `test/plugins/visitor/index.js`,
                 "test/browser/runner-VisitorPlugin-options.js"
             ],
             specs: "test/browser/runner-VisitorPlugin.js",
@@ -176,7 +176,7 @@ module.exports = {
         src: [`${lessFolder}/filemanagerPlugin/*.less`],
         options: {
             helpers: [
-                `${lessFolder}/../plugins/filemanager/index.js`,
+                `test/plugins/filemanager/index.js`,
                 "test/browser/runner-filemanagerPlugin-options.js"
             ],
             specs: "test/browser/runner-filemanagerPlugin.js",

@@ -206,7 +206,10 @@ module.exports = function(grunt) {
                 }
             },
             build: {
-                command: scriptRuntime + " build/rollup.js --dist"
+                command: [
+                    scriptRuntime + " build/rollup.js --dist",
+                    "npm run copy:root"
+                ].join(" && ")
             },
             testbuild: {
                 command: [

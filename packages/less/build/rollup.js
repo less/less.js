@@ -10,7 +10,7 @@ const rootPath = path.join(__dirname, '..');
 
 const args = require('minimist')(process.argv.slice(2));
 
-let outDir = args.dist ? '../../dist' : './tmp';
+let outDir = args.dist ? './dist' : './tmp';
 
 async function buildBrowser() {
     let bundle = await rollup.rollup({

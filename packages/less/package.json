@@ -41,6 +41,7 @@
 		"build": "npm-run-all clean compile",
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
 		"compile": "tsc -p tsconfig.json",
+		"copy:root": "shx cp -rf ./dist ../../",
 		"dev": "tsc -p tsconfig.json -w"
 	},
 	"optionalDependencies": {

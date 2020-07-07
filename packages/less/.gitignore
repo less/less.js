@@ -1,6 +1,5 @@
 # project-specific
 tmp
-dist
 test/browser/less.min.js
 test/browser/less.min.js.map
 test/sourcemaps/**/*.map

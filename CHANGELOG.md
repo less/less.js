@@ -1,5 +1,14 @@
 ## Change Log
 
+### upcoming (2020-07-07)
+- [#3529](https://github.com/less/less.js/pull/3529) Duplicate dist files in root for older links (#3529) (@matthew-dean)
+- [#3525](https://github.com/less/less.js/pull/3525) Test-data module (#3525) (@matthew-dean)
+- [#3523](https://github.com/less/less.js/pull/3523) Fixes #3504 / organizes tests (#3523) (@matthew-dean)
+- [#3501](https://github.com/less/less.js/pull/3501) Restore nuked scripts (?), replace dependencies (#3501) (#3522) (@matthew-dean)
+- [#3521](https://github.com/less/less.js/pull/3521) Lerna refactor / TS compiling w/o bundling (#3521) (@matthew-dean)
+- [#3517](https://github.com/less/less.js/pull/3517) Resolve #3398 Add flag to disable sourcemap url annotation (#3517) (@hirosato)
+- [#3294](https://github.com/less/less.js/pull/3294) fix(#3294): use loadFileSync when loading plugins with syncImport: true (#3506) (@Justineo)
+
 ### v3.11.3 (2020-06-05)
 - [#3509](https://github.com/less/less.js/pull/3509) Fixes #3508 (#3509) (@matthew-dean)
 

@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.11.3
+ * Less - Leaner CSS v3.12.0
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -190,36 +190,48 @@
   });
 
   /*! *****************************************************************************
-  Copyright (c) Microsoft Corporation. All rights reserved.
-  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-  this file except in compliance with the License. You may obtain a copy of the
-  License at http://www.apache.org/licenses/LICENSE-2.0
+  Copyright (c) Microsoft Corporation.
 
-  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-  MERCHANTABLITY OR NON-INFRINGEMENT.
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
 
-  See the Apache Version 2.0 License for specific language governing permissions
-  and limitations under the License.
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
   ***************************************************************************** */
   /* global Reflect, Promise */
-
-  var extendStatics = function(d, b) {
+  var extendStatics = function (d, b) {
       extendStatics = Object.setPrototypeOf ||
           ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-          function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+          function (d, b) { for (var p in b)
+              if (b.hasOwnProperty(p))
+                  d[p] = b[p]; };
       return extendStatics(d, b);
   };
-
   function __extends(d, b) {
       extendStatics(d, b);
       function __() { this.constructor = d; }
       d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   }
-
+  var __assign = function () {
+      __assign = Object.assign || function __assign(t) {
+          for (var s, i = 1, n = arguments.length; i < n; i++) {
+              s = arguments[i];
+              for (var p in s)
+                  if (Object.prototype.hasOwnProperty.call(s, p))
+                      t[p] = s[p];
+          }
+          return t;
+      };
+      return __assign.apply(this, arguments);
+  };
   function __spreadArrays() {
-      for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+      for (var s = 0, i = 0, il = arguments.length; i < il; i++)
+          s += arguments[i].length;
       for (var r = Array(s), k = 0, i = 0; i < il; i++)
           for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
               r[k] = a[j];
@@ -547,8 +559,8 @@
       if (a.length !== b.length) {
           return undefined;
       }
-      for (var i_1 = 0; i_1 < a.length; i_1++) {
-          if (Node.compare(a[i_1], b[i_1]) !== 0) {
+      for (var i = 0; i < a.length; i++) {
+          if (Node.compare(a[i], b[i]) !== 0) {
               return undefined;
           }
       }
@@ -916,255 +928,6 @@
       ALL: 2
   };
 
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
-  }
-
-  var clone_1 = createCommonjsModule(function (module) {
-      var clone = (function () {
-          function _instanceof(obj, type) {
-              return type != null && obj instanceof type;
-          }
-          var nativeMap;
-          try {
-              nativeMap = Map;
-          }
-          catch (_) {
-              // maybe a reference error because no `Map`. Give it a dummy value that no
-              // value will ever be an instanceof.
-              nativeMap = function () { };
-          }
-          var nativeSet;
-          try {
-              nativeSet = Set;
-          }
-          catch (_) {
-              nativeSet = function () { };
-          }
-          var nativePromise;
-          try {
-              nativePromise = Promise;
-          }
-          catch (_) {
-              nativePromise = function () { };
-          }
-          /**
-           * Clones (copies) an Object using deep copying.
-           *
-           * This function supports circular references by default, but if you are certain
-           * there are no circular references in your object, you can save some CPU time
-           * by calling clone(obj, false).
-           *
-           * Caution: if `circular` is false and `parent` contains circular references,
-           * your program may enter an infinite loop and crash.
-           *
-           * @param `parent` - the object to be cloned
-           * @param `circular` - set to true if the object to be cloned may contain
-           *    circular references. (optional - true by default)
-           * @param `depth` - set to a number if the object is only to be cloned to
-           *    a particular depth. (optional - defaults to Infinity)
-           * @param `prototype` - sets the prototype to be used when cloning an object.
-           *    (optional - defaults to parent prototype).
-           * @param `includeNonEnumerable` - set to true if the non-enumerable properties
-           *    should be cloned as well. Non-enumerable properties on the prototype
-           *    chain will be ignored. (optional - false by default)
-          */
-          function clone(parent, circular, depth, prototype, includeNonEnumerable) {
-              if (typeof circular === 'object') {
-                  depth = circular.depth;
-                  prototype = circular.prototype;
-                  includeNonEnumerable = circular.includeNonEnumerable;
-                  circular = circular.circular;
-              }
-              // maintain two arrays for circular references, where corresponding parents
-              // and children have the same index
-              var allParents = [];
-              var allChildren = [];
-              var useBuffer = typeof Buffer != 'undefined';
-              if (typeof circular == 'undefined')
-                  circular = true;
-              if (typeof depth == 'undefined')
-                  depth = Infinity;
-              // recurse this function so we don't reset allParents and allChildren
-              function _clone(parent, depth) {
-                  // cloning null always returns null
-                  if (parent === null)
-                      return null;
-                  if (depth === 0)
-                      return parent;
-                  var child;
-                  var proto;
-                  if (typeof parent != 'object') {
-                      return parent;
-                  }
-                  if (_instanceof(parent, nativeMap)) {
-                      child = new nativeMap();
-                  }
-                  else if (_instanceof(parent, nativeSet)) {
-                      child = new nativeSet();
-                  }
-                  else if (_instanceof(parent, nativePromise)) {
-                      child = new nativePromise(function (resolve, reject) {
-                          parent.then(function (value) {
-                              resolve(_clone(value, depth - 1));
-                          }, function (err) {
-                              reject(_clone(err, depth - 1));
-                          });
-                      });
-                  }
-                  else if (clone.__isArray(parent)) {
-                      child = [];
-                  }
-                  else if (clone.__isRegExp(parent)) {
-                      child = new RegExp(parent.source, __getRegExpFlags(parent));
-                      if (parent.lastIndex)
-                          child.lastIndex = parent.lastIndex;
-                  }
-                  else if (clone.__isDate(parent)) {
-                      child = new Date(parent.getTime());
-                  }
-                  else if (useBuffer && Buffer.isBuffer(parent)) {
-                      if (Buffer.allocUnsafe) {
-                          // Node.js >= 4.5.0
-                          child = Buffer.allocUnsafe(parent.length);
-                      }
-                      else {
-                          // Older Node.js versions
-                          child = new Buffer(parent.length);
-                      }
-                      parent.copy(child);
-                      return child;
-                  }
-                  else if (_instanceof(parent, Error)) {
-                      child = Object.create(parent);
-                  }
-                  else {
-                      if (typeof prototype == 'undefined') {
-                          proto = Object.getPrototypeOf(parent);
-                          child = Object.create(proto);
-                      }
-                      else {
-                          child = Object.create(prototype);
-                          proto = prototype;
-                      }
-                  }
-                  if (circular) {
-                      var index = allParents.indexOf(parent);
-                      if (index != -1) {
-                          return allChildren[index];
-                      }
-                      allParents.push(parent);
-                      allChildren.push(child);
-                  }
-                  if (_instanceof(parent, nativeMap)) {
-                      parent.forEach(function (value, key) {
-                          var keyChild = _clone(key, depth - 1);
-                          var valueChild = _clone(value, depth - 1);
-                          child.set(keyChild, valueChild);
-                      });
-                  }
-                  if (_instanceof(parent, nativeSet)) {
-                      parent.forEach(function (value) {
-                          var entryChild = _clone(value, depth - 1);
-                          child.add(entryChild);
-                      });
-                  }
-                  for (var i in parent) {
-                      var attrs;
-                      if (proto) {
-                          attrs = Object.getOwnPropertyDescriptor(proto, i);
-                      }
-                      if (attrs && attrs.set == null) {
-                          continue;
-                      }
-                      child[i] = _clone(parent[i], depth - 1);
-                  }
-                  if (Object.getOwnPropertySymbols) {
-                      var symbols = Object.getOwnPropertySymbols(parent);
-                      for (var i = 0; i < symbols.length; i++) {
-                          // Don't need to worry about cloning a symbol because it is a primitive,
-                          // like a number or string.
-                          var symbol = symbols[i];
-                          var descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
-                          if (descriptor && !descriptor.enumerable && !includeNonEnumerable) {
-                              continue;
-                          }
-                          child[symbol] = _clone(parent[symbol], depth - 1);
-                          if (!descriptor.enumerable) {
-                              Object.defineProperty(child, symbol, {
-                                  enumerable: false
-                              });
-                          }
-                      }
-                  }
-                  if (includeNonEnumerable) {
-                      var allPropertyNames = Object.getOwnPropertyNames(parent);
-                      for (var i = 0; i < allPropertyNames.length; i++) {
-                          var propertyName = allPropertyNames[i];
-                          var descriptor = Object.getOwnPropertyDescriptor(parent, propertyName);
-                          if (descriptor && descriptor.enumerable) {
-                              continue;
-                          }
-                          child[propertyName] = _clone(parent[propertyName], depth - 1);
-                          Object.defineProperty(child, propertyName, {
-                              enumerable: false
-                          });
-                      }
-                  }
-                  return child;
-              }
-              return _clone(parent, depth);
-          }
-          /**
-           * Simple flat clone using prototype, accepts only objects, usefull for property
-           * override on FLAT configuration object (no nested props).
-           *
-           * USE WITH CAUTION! This may not behave as you wish if you do not know how this
-           * works.
-           */
-          clone.clonePrototype = function clonePrototype(parent) {
-              if (parent === null)
-                  return null;
-              var c = function () { };
-              c.prototype = parent;
-              return new c();
-          };
-          // private utility functions
-          function __objToStr(o) {
-              return Object.prototype.toString.call(o);
-          }
-          clone.__objToStr = __objToStr;
-          function __isDate(o) {
-              return typeof o === 'object' && __objToStr(o) === '[object Date]';
-          }
-          clone.__isDate = __isDate;
-          function __isArray(o) {
-              return typeof o === 'object' && __objToStr(o) === '[object Array]';
-          }
-          clone.__isArray = __isArray;
-          function __isRegExp(o) {
-              return typeof o === 'object' && __objToStr(o) === '[object RegExp]';
-          }
-          clone.__isRegExp = __isRegExp;
-          function __getRegExpFlags(re) {
-              var flags = '';
-              if (re.global)
-                  flags += 'g';
-              if (re.ignoreCase)
-                  flags += 'i';
-              if (re.multiline)
-                  flags += 'm';
-              return flags;
-          }
-          clone.__getRegExpFlags = __getRegExpFlags;
-          return clone;
-      })();
-      if ( module.exports) {
-          module.exports = clone;
-      }
-  });
-
-  /* jshint proto: true */
   function getLocation(index, inputStream) {
       var n = index + 1;
       var line = null;
@@ -1202,9 +965,9 @@
       var newObj = obj2 || {};
       if (!obj2._defaults) {
           newObj = {};
-          var defaults_1 = clone_1(obj1);
+          var defaults_1 = __assign({}, obj1);
           newObj._defaults = defaults_1;
-          var cloned = obj2 ? clone_1(obj2) : {};
+          var cloned = obj2 ? __assign({}, obj2) : {};
           Object.assign(newObj, defaults_1, cloned);
       }
       return newObj;
@@ -1262,8 +1025,8 @@
   }
   function flattenArray(arr, result) {
       if (result === void 0) { result = []; }
-      for (var i_1 = 0, length_1 = arr.length; i_1 < length_1; i_1++) {
-          var value = arr[i_1];
+      for (var i = 0, length_1 = arr.length; i < length_1; i++) {
+          var value = arr[i];
           if (Array.isArray(value)) {
               flattenArray(value, result);
           }
@@ -1797,9 +1560,9 @@
       if (!original) {
           return;
       }
-      for (var i_1 = 0; i_1 < propertiesToCopy.length; i_1++) {
-          if (original.hasOwnProperty(propertiesToCopy[i_1])) {
-              destination[propertiesToCopy[i_1]] = original[propertiesToCopy[i_1]];
+      for (var i = 0; i < propertiesToCopy.length; i++) {
+          if (original.hasOwnProperty(propertiesToCopy[i])) {
+              destination[propertiesToCopy[i]] = original[propertiesToCopy[i]];
           }
       }
   };
@@ -2287,8 +2050,8 @@
           }
       };
       Ruleset.prototype.lastDeclaration = function () {
-          for (var i_1 = this.rules.length; i_1 > 0; i_1--) {
-              var decl = this.rules[i_1 - 1];
+          for (var i = this.rules.length; i > 0; i--) {
+              var decl = this.rules[i - 1];
               if (decl instanceof Declaration) {
                   return this.parseValue(decl);
               }
@@ -2372,8 +2135,8 @@
                           if (selector.elements.length > match) {
                               if (!filter || filter(rule)) {
                                   foundMixins = rule.find(new Selector(selector.elements.slice(match)), self, filter);
-                                  for (var i_2 = 0; i_2 < foundMixins.length; ++i_2) {
-                                      foundMixins[i_2].path.push(rule);
+                                  for (var i = 0; i < foundMixins.length; ++i) {
+                                      foundMixins[i].path.push(rule);
                                   }
                                   Array.prototype.push.apply(rules, foundMixins);
                               }
@@ -3283,9 +3046,9 @@
           return returnValue;
       };
       Expression.prototype.genCSS = function (context, output) {
-          for (var i_1 = 0; i_1 < this.value.length; i_1++) {
-              this.value[i_1].genCSS(context, output);
-              if (!this.noSpacing && i_1 + 1 < this.value.length) {
+          for (var i = 0; i < this.value.length; i++) {
+              this.value[i].genCSS(context, output);
+              if (!this.noSpacing && i + 1 < this.value.length) {
                   output.add(' ');
               }
           }
@@ -3421,9 +3184,9 @@
       };
       Call.prototype.genCSS = function (context, output) {
           output.add(this.name + "(", this.fileInfo(), this.getIndex());
-          for (var i_1 = 0; i_1 < this.args.length; i_1++) {
-              this.args[i_1].genCSS(context, output);
-              if (i_1 + 1 < this.args.length) {
+          for (var i = 0; i < this.args.length; i++) {
+              this.args[i].genCSS(context, output);
+              if (i + 1 < this.args.length) {
                   output.add(', ');
               }
           }
@@ -3449,9 +3212,7 @@
               name = "@" + new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value;
           }
           if (this.evaluating) {
-              throw { type: 'Name',
-                  message: "Recursive variable definition for " + name,
-                  filename: this.fileInfo().filename,
+              throw { type: 'Name', message: "Recursive variable definition for " + name, filename: this.fileInfo().filename,
                   index: this.getIndex() };
           }
           this.evaluating = true;
@@ -3476,15 +3237,13 @@
               return variable;
           }
           else {
-              throw { type: 'Name',
-                  message: "variable " + name + " is undefined",
-                  filename: this.fileInfo().filename,
+              throw { type: 'Name', message: "variable " + name + " is undefined", filename: this.fileInfo().filename,
                   index: this.getIndex() };
           }
       };
       Variable.prototype.find = function (obj, fun) {
-          for (var i_1 = 0, r = void 0; i_1 < obj.length; i_1++) {
-              r = fun.call(obj, obj[i_1]);
+          for (var i = 0, r = void 0; i < obj.length; i++) {
+              r = fun.call(obj, obj[i]);
               if (r) {
                   return r;
               }
@@ -3510,9 +3269,7 @@
           // TODO: shorten this reference
           var mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
           if (this.evaluating) {
-              throw { type: 'Name',
-                  message: "Recursive property reference for " + name,
-                  filename: this.fileInfo().filename,
+              throw { type: 'Name', message: "Recursive property reference for " + name, filename: this.fileInfo().filename,
                   index: this.getIndex() };
           }
           this.evaluating = true;
@@ -3520,9 +3277,9 @@
               var v;
               var vArr = frame.property(name);
               if (vArr) {
-                  for (var i_1 = 0; i_1 < vArr.length; i_1++) {
-                      v = vArr[i_1];
-                      vArr[i_1] = new Declaration(v.name, v.value, v.important, v.merge, v.index, v.currentFileInfo, v.inline, v.variable);
+                  for (var i = 0; i < vArr.length; i++) {
+                      v = vArr[i];
+                      vArr[i] = new Declaration(v.name, v.value, v.important, v.merge, v.index, v.currentFileInfo, v.inline, v.variable);
                   }
                   mergeRules(vArr);
                   v = vArr[vArr.length - 1];
@@ -3539,15 +3296,13 @@
               return property;
           }
           else {
-              throw { type: 'Name',
-                  message: "Property '" + name + "' is undefined",
-                  filename: this.currentFileInfo.filename,
+              throw { type: 'Name', message: "Property '" + name + "' is undefined", filename: this.currentFileInfo.filename,
                   index: this.index };
           }
       };
       Property.prototype.find = function (obj, fun) {
-          for (var i_2 = 0, r = void 0; i_2 < obj.length; i_2++) {
-              r = fun.call(obj, obj[i_2]);
+          for (var i = 0, r = void 0; i < obj.length; i++) {
+              r = fun.call(obj, obj[i]);
               if (r) {
                   return r;
               }
@@ -3811,9 +3566,9 @@
           else {
               var result = [];
               var rest = this.permute(arr.slice(1));
-              for (var i_1 = 0; i_1 < rest.length; i_1++) {
+              for (var i = 0; i < rest.length; i++) {
                   for (var j = 0; j < arr[0].length; j++) {
-                      result.push([arr[0][j]].concat(rest[i_1]));
+                      result.push([arr[0][j]].concat(rest[i]));
                   }
               }
               return result;
@@ -3980,10 +3735,13 @@
               }
               return newImport;
           }
-          else {
+          else if (this.root) {
               ruleset = new Ruleset(null, copyArray(this.root.rules));
               ruleset.evalImports(context);
               return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
+          }
+          else {
+              return [];
           }
       };
       return Import;
@@ -4009,8 +3767,7 @@
               expression = new Function("return (" + expression + ")");
           }
           catch (e) {
-              throw { message: "JavaScript evaluation error: " + e.message + " from `" + expression + "`",
-                  filename: this.fileInfo().filename,
+              throw { message: "JavaScript evaluation error: " + e.message + " from `" + expression + "`", filename: this.fileInfo().filename,
                   index: this.getIndex() };
           }
           var variables = context.frames[0].variables();
@@ -4029,8 +3786,7 @@
               result = expression.call(evalContext);
           }
           catch (e) {
-              throw { message: "JavaScript evaluation error: '" + e.name + ": " + e.message.replace(/["]/g, '\'') + "'",
-                  filename: this.fileInfo().filename,
+              throw { message: "JavaScript evaluation error: '" + e.name + ": " + e.message.replace(/["]/g, '\'') + "'", filename: this.fileInfo().filename,
                   index: this.getIndex() };
           }
           return result;
@@ -4306,9 +4062,7 @@
                       rules = rules.variable(name);
                   }
                   if (!rules) {
-                      throw { type: 'Name',
-                          message: "variable " + name + " not found",
-                          filename: this.fileInfo().filename,
+                      throw { type: 'Name', message: "variable " + name + " not found", filename: this.fileInfo().filename,
                           index: this.getIndex() };
                   }
               }
@@ -4323,9 +4077,7 @@
                       rules = rules.property(name);
                   }
                   if (!rules) {
-                      throw { type: 'Name',
-                          message: "property \"" + name.substr(1) + "\" not found",
-                          filename: this.fileInfo().filename,
+                      throw { type: 'Name', message: "property \"" + name.substr(1) + "\" not found", filename: this.fileInfo().filename,
                           index: this.getIndex() };
                   }
                   // Properties are an array of values, since a ruleset can have multiple props.
@@ -4536,9 +4288,9 @@
           }
           // check patterns
           len = Math.min(requiredArgsCnt, this.arity);
-          for (var i_1 = 0; i_1 < len; i_1++) {
-              if (!this.params[i_1].name && !this.params[i_1].variadic) {
-                  if (args[i_1].value.eval(context).toCSS() != this.params[i_1].value.eval(context).toCSS()) {
+          for (var i = 0; i < len; i++) {
+              if (!this.params[i].name && !this.params[i].variadic) {
+                  if (args[i].value.eval(context).toCSS() != this.params[i].value.eval(context).toCSS()) {
                       return false;
                   }
               }
@@ -4676,9 +4428,7 @@
                   else {
                       defaultResult = defTrue;
                       if ((count[defTrue] + count[defFalse]) > 1) {
-                          throw { type: 'Runtime',
-                              message: "Ambiguous use of `default()` found when matching for `" + this.format(args) + "`",
-                              index: this.getIndex(), filename: this.fileInfo().filename };
+                          throw { type: 'Runtime', message: "Ambiguous use of `default()` found when matching for `" + this.format(args) + "`", index: this.getIndex(), filename: this.fileInfo().filename };
                       }
                   }
                   for (m = 0; m < candidates.length; m++) {
@@ -4706,14 +4456,10 @@
               }
           }
           if (isOneFound) {
-              throw { type: 'Runtime',
-                  message: "No matching definition was found for `" + this.format(args) + "`",
-                  index: this.getIndex(), filename: this.fileInfo().filename };
+              throw { type: 'Runtime', message: "No matching definition was found for `" + this.format(args) + "`", index: this.getIndex(), filename: this.fileInfo().filename };
           }
           else {
-              throw { type: 'Name',
-                  message: this.selector.toCSS().trim() + " is undefined",
-                  index: this.getIndex(), filename: this.fileInfo().filename };
+              throw { type: 'Name', message: this.selector.toCSS().trim() + " is undefined", index: this.getIndex(), filename: this.fileInfo().filename };
           }
       };
       MixinCall.prototype._setVisibilityToReplacement = function (replacement) {
@@ -4776,16 +4522,16 @@
           this._listeners.push(listener);
       },
       removeListener: function (listener) {
-          for (var i_1 = 0; i_1 < this._listeners.length; i_1++) {
-              if (this._listeners[i_1] === listener) {
-                  this._listeners.splice(i_1, 1);
+          for (var i = 0; i < this._listeners.length; i++) {
+              if (this._listeners[i] === listener) {
+                  this._listeners.splice(i, 1);
                   return;
               }
           }
       },
       _fireEvent: function (type, msg) {
-          for (var i_2 = 0; i_2 < this._listeners.length; i_2++) {
-              var logFunction = this._listeners[i_2][type];
+          for (var i = 0; i < this._listeners.length; i++) {
+              var logFunction = this._listeners[i][type];
               if (logFunction) {
                   logFunction(msg);
               }
@@ -4805,13 +4551,13 @@
           var optionalFunctions = ['encodeBase64', 'mimeLookup', 'charsetLookup', 'getSourceMapGenerator'];
           var requiredFunctions = [];
           var functions = requiredFunctions.concat(optionalFunctions);
-          for (var i_1 = 0; i_1 < functions.length; i_1++) {
-              var propName = functions[i_1];
+          for (var i = 0; i < functions.length; i++) {
+              var propName = functions[i];
               var environmentFunc = externalEnvironment[propName];
               if (environmentFunc) {
                   this[propName] = environmentFunc.bind(externalEnvironment);
               }
-              else if (i_1 < requiredFunctions.length) {
+              else if (i < requiredFunctions.length) {
                   this.warn("missing required function in environment - " + propName);
               }
           }
@@ -4827,8 +4573,8 @@
           if (options.pluginManager) {
               fileManagers = [].concat(fileManagers).concat(options.pluginManager.getFileManagers());
           }
-          for (var i_2 = fileManagers.length - 1; i_2 >= 0; i_2--) {
-              var fileManager = fileManagers[i_2];
+          for (var i = fileManagers.length - 1; i >= 0; i--) {
+              var fileManager = fileManagers[i];
               if (fileManager[isSync ? 'supportsSync' : 'supports'](filename, currentDirectory, options, environment)) {
                   return fileManager;
               }
@@ -5094,23 +4840,23 @@
               aVersion = aVersion.match(/^(\d+)\.?(\d+)?\.?(\d+)?/);
               aVersion.shift();
           }
-          for (var i_1 = 0; i_1 < aVersion.length; i_1++) {
-              if (aVersion[i_1] !== bVersion[i_1]) {
-                  return parseInt(aVersion[i_1]) > parseInt(bVersion[i_1]) ? -1 : 1;
+          for (var i = 0; i < aVersion.length; i++) {
+              if (aVersion[i] !== bVersion[i]) {
+                  return parseInt(aVersion[i]) > parseInt(bVersion[i]) ? -1 : 1;
               }
           }
           return 0;
       };
       AbstractPluginLoader.prototype.versionToString = function (version) {
           var versionString = '';
-          for (var i_2 = 0; i_2 < version.length; i_2++) {
-              versionString += (versionString ? '.' : '') + version[i_2];
+          for (var i = 0; i < version.length; i++) {
+              versionString += (versionString ? '.' : '') + version[i];
           }
           return versionString;
       };
       AbstractPluginLoader.prototype.printUsage = function (plugins) {
-          for (var i_3 = 0; i_3 < plugins.length; i_3++) {
-              var plugin = plugins[i_3];
+          for (var i = 0; i < plugins.length; i++) {
+              var plugin = plugins[i];
               if (plugin.printUsage) {
                   plugin.printUsage();
               }
@@ -5394,9 +5140,9 @@
               }
               // try appending if we haven't determined if it is css or not
               var tryAppendLessExtension = evaldImportNode.css === undefined;
-              for (var i_1 = 0; i_1 < importParent.rules.length; i_1++) {
-                  if (importParent.rules[i_1] === importNode) {
-                      importParent.rules[i_1] = evaldImportNode;
+              for (var i = 0; i < importParent.rules.length; i++) {
+                  if (importParent.rules[i] === importNode) {
+                      importParent.rules[i] = evaldImportNode;
                       break;
                   }
               }
@@ -5881,13 +5627,13 @@
               if (!(elementValue2 instanceof tree.Selector) || elementValue1.elements.length !== elementValue2.elements.length) {
                   return false;
               }
-              for (var i_1 = 0; i_1 < elementValue1.elements.length; i_1++) {
-                  if (elementValue1.elements[i_1].combinator.value !== elementValue2.elements[i_1].combinator.value) {
-                      if (i_1 !== 0 || (elementValue1.elements[i_1].combinator.value || ' ') !== (elementValue2.elements[i_1].combinator.value || ' ')) {
+              for (var i = 0; i < elementValue1.elements.length; i++) {
+                  if (elementValue1.elements[i].combinator.value !== elementValue2.elements[i].combinator.value) {
+                      if (i !== 0 || (elementValue1.elements[i].combinator.value || ' ') !== (elementValue2.elements[i].combinator.value || ' ')) {
                           return false;
                       }
                   }
-                  if (!this.isElementValuesEqual(elementValue1.elements[i_1].value, elementValue2.elements[i_1].value)) {
+                  if (!this.isElementValuesEqual(elementValue1.elements[i].value, elementValue2.elements[i].value)) {
                       return false;
                   }
               }
@@ -6191,19 +5937,17 @@
           if (!rules) {
               return;
           }
-          for (var i_1 = 0; i_1 < rules.length; i_1++) {
-              var ruleNode = rules[i_1];
+          for (var i = 0; i < rules.length; i++) {
+              var ruleNode = rules[i];
               if (isRoot && ruleNode instanceof tree.Declaration && !ruleNode.variable) {
                   throw { message: 'Properties must be inside selector blocks. They cannot be in the root',
                       index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
               }
               if (ruleNode instanceof tree.Call) {
-                  throw { message: "Function '" + ruleNode.name + "' is undefined",
-                      index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
+                  throw { message: "Function '" + ruleNode.name + "' is undefined", index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
               }
               if (ruleNode.type && !ruleNode.allowRoot) {
-                  throw { message: ruleNode.type + " node returned by a function is not valid here",
-                      index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
+                  throw { message: ruleNode.type + " node returned by a function is not valid here", index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
               }
           }
       },
@@ -6218,16 +5962,16 @@
               // remove rulesets from this ruleset body and compile them separately
               var nodeRules = rulesetNode.rules;
               var nodeRuleCnt = nodeRules ? nodeRules.length : 0;
-              for (var i_2 = 0; i_2 < nodeRuleCnt;) {
-                  rule = nodeRules[i_2];
+              for (var i = 0; i < nodeRuleCnt;) {
+                  rule = nodeRules[i];
                   if (rule && rule.rules) {
                       // visit because we are moving them out from being a child
                       rulesets.push(this._visitor.visit(rule));
-                      nodeRules.splice(i_2, 1);
+                      nodeRules.splice(i, 1);
                       nodeRuleCnt--;
                       continue;
                   }
-                  i_2++;
+                  i++;
               }
               // accept the visitor to remove rules and refactor itself
               // then we can decide nogw whether we want it or not
@@ -6312,11 +6056,11 @@
           }
           var groups = {};
           var groupsArr = [];
-          for (var i_3 = 0; i_3 < rules.length; i_3++) {
-              var rule = rules[i_3];
+          for (var i = 0; i < rules.length; i++) {
+              var rule = rules[i];
               if (rule.merge) {
                   var key = rule.name;
-                  groups[key] ? rules.splice(i_3--, 1) :
+                  groups[key] ? rules.splice(i--, 1) :
                       groupsArr.push(groups[key] = []);
                   groups[key].push(rule);
               }
@@ -6623,8 +6367,8 @@
       parserInput.$str = function (tok) {
           var tokLength = tok.length;
           // https://jsperf.com/string-startswith/21
-          for (var i_1 = 0; i_1 < tokLength; i_1++) {
-              if (input.charAt(parserInput.i + i_1) !== tok.charAt(i_1)) {
+          for (var i = 0; i < tokLength; i++) {
+              if (input.charAt(parserInput.i + i) !== tok.charAt(i)) {
                   return null;
               }
           }
@@ -6639,19 +6383,19 @@
           }
           var length = input.length;
           var currentPosition = pos;
-          for (var i_2 = 1; i_2 + currentPosition < length; i_2++) {
-              var nextChar = input.charAt(i_2 + currentPosition);
+          for (var i = 1; i + currentPosition < length; i++) {
+              var nextChar = input.charAt(i + currentPosition);
               switch (nextChar) {
                   case '\\':
-                      i_2++;
+                      i++;
                       continue;
                   case '\r':
                   case '\n':
                       break;
                   case startChar:
-                      var str = input.substr(currentPosition, i_2 + 1);
+                      var str = input.substr(currentPosition, i + 1);
                       if (!loc && loc !== 0) {
-                          skipWhitespace(i_2 + 1);
+                          skipWhitespace(i + 1);
                           return str;
                       }
                       return [startChar, str];
@@ -6777,8 +6521,8 @@
       parserInput.peek = function (tok) {
           if (typeof tok === 'string') {
               // https://jsperf.com/string-startswith/21
-              for (var i_3 = 0; i_3 < tok.length; i_3++) {
-                  if (input.charAt(parserInput.i + i_3) !== tok.charAt(i_3)) {
+              for (var i = 0; i < tok.length; i++) {
+                  if (input.charAt(parserInput.i + i) !== tok.charAt(i)) {
                       return false;
                   }
               }
@@ -6925,12 +6669,12 @@
                       index: index + currentIndex
                   });
               });
-              for (var x = 0, p = void 0, i_1; (p = parseList[x]); x++) {
-                  i_1 = parser.i;
+              for (var x = 0, p = void 0, i = void 0; (p = parseList[x]); x++) {
+                  i = parser.i;
                   result = parsers[p]();
                   if (result) {
                       try {
-                          result._index = i_1 + currentIndex;
+                          result._index = i + currentIndex;
                           result._fileInfo = fileInfo;
                       }
                       catch (e) { }
@@ -6980,8 +6724,8 @@
               modifyVars = (additionalData && additionalData.modifyVars) ? "\n" + Parser.serializeVars(additionalData.modifyVars) : '';
               if (context.pluginManager) {
                   var preProcessors = context.pluginManager.getPreProcessors();
-                  for (var i_2 = 0; i_2 < preProcessors.length; i_2++) {
-                      str = preProcessors[i_2].process(str, { context: context, imports: imports, fileInfo: fileInfo });
+                  for (var i = 0; i < preProcessors.length; i++) {
+                      str = preProcessors[i].process(str, { context: context, imports: imports, fileInfo: fileInfo });
                   }
               }
               if (globalVars || (additionalData && additionalData.banner)) {
@@ -8382,7 +8126,7 @@
                   var index = parserInput.i;
                   var dir = parserInput.$re(/^@import?\s+/);
                   if (dir) {
-                      var options_1 = (dir ? this.importOptions() : null) || {};
+                      var options = (dir ? this.importOptions() : null) || {};
                       if ((path = this.entities.quoted() || this.entities.url())) {
                           features = this.mediaFeatures();
                           if (!parserInput.$char(';')) {
@@ -8390,7 +8134,7 @@
                               error('missing semi-colon or unrecognised media features on import');
                           }
                           features = features && new (tree.Value)(features);
-                          return new (tree.Import)(path, features, options_1, index, fileInfo);
+                          return new (tree.Import)(path, features, options, index, fileInfo);
                       }
                       else {
                           parserInput.i = index;
@@ -9485,15 +9229,15 @@
       var cr;
       var r = [];
       ar = as + ab * (1 - as);
-      for (var i_1 = 0; i_1 < 3; i_1++) {
-          cb = color1.rgb[i_1] / 255;
-          cs = color2.rgb[i_1] / 255;
+      for (var i = 0; i < 3; i++) {
+          cb = color1.rgb[i] / 255;
+          cs = color2.rgb[i] / 255;
           cr = mode(cb, cs);
           if (ar) {
               cr = (as * cs + ab * (cb -
                   as * (cb + cs - cr))) / ar;
           }
-          r[i_1] = cr * 255;
+          r[i] = cr * 255;
       }
       return new Color(r, ar);
   }
@@ -9644,8 +9388,8 @@
               from = 1;
               to = start;
           }
-          for (var i_1 = from; i_1 <= to.value; i_1 += stepValue) {
-              list.push(new Dimension(i_1, to.unit));
+          for (var i = from; i <= to.value; i += stepValue) {
+              list.push(new Dimension(i, to.unit));
           }
           return new Expression(list);
       },
@@ -9685,16 +9429,16 @@
           else {
               rs = rs.ruleset;
           }
-          for (var i_2 = 0; i_2 < iterator.length; i_2++) {
+          for (var i = 0; i < iterator.length; i++) {
               var key = void 0;
               var value = void 0;
-              var item = iterator[i_2];
+              var item = iterator[i];
               if (item instanceof Declaration) {
                   key = typeof item.name === 'string' ? item.name : item.name[0].value;
                   value = item.value;
               }
               else {
-                  key = new Dimension(i_2 + 1);
+                  key = new Dimension(i + 1);
                   value = item;
               }
               if (item instanceof Comment) {
@@ -9705,7 +9449,7 @@
                   newRules.push(new Declaration(valueName, value, false, false, this.index, this.currentFileInfo));
               }
               if (indexName) {
-                  newRules.push(new Declaration(indexName, new Dimension(i_2 + 1), false, false, this.index, this.currentFileInfo));
+                  newRules.push(new Declaration(indexName, new Dimension(i + 1), false, false, this.index, this.currentFileInfo));
               }
               if (keyName) {
                   newRules.push(new Declaration(keyName, key, false, false, this.index, this.currentFileInfo));
@@ -9860,16 +9604,16 @@
       '%': function (string /* arg, arg, ... */) {
           var args = Array.prototype.slice.call(arguments, 1);
           var result = string.value;
-          var _loop_1 = function (i_1) {
+          var _loop_1 = function (i) {
               /* jshint loopfunc:true */
               result = result.replace(/%[sda]/i, function (token) {
-                  var value = ((args[i_1].type === 'Quoted') &&
-                      token.match(/s/i)) ? args[i_1].value : args[i_1].toCSS();
+                  var value = ((args[i].type === 'Quoted') &&
+                      token.match(/s/i)) ? args[i].value : args[i].toCSS();
                   return token.match(/[A-Z]$/) ? encodeURIComponent(value) : value;
               });
           };
-          for (var i_1 = 0; i_1 < args.length; i_1++) {
-              _loop_1(i_1);
+          for (var i = 0; i < args.length; i++) {
+              _loop_1(i);
           }
           result = result.replace(/%%/g, '%');
           return new Quoted(string.quote || '', result, string.escaped);
@@ -9996,8 +9740,7 @@
       isunit: isunit,
       unit: function (val, unit) {
           if (!(val instanceof Dimension)) {
-              throw { type: 'Argument',
-                  message: "the first argument to unit must be a number" + (val instanceof Operation ? '. Have you forgotten parenthesis?' : '') };
+              throw { type: 'Argument', message: "the first argument to unit must be a number" + (val instanceof Operation ? '. Have you forgotten parenthesis?' : '') };
           }
           if (unit) {
               if (unit instanceof Keyword) {
@@ -10185,7 +9928,8 @@
                   sourceMapRootpath: this.options.sourceMapRootpath,
                   outputSourceFiles: this.options.outputSourceFiles,
                   sourceMapGenerator: this.options.sourceMapGenerator,
-                  sourceMapFileInline: this.options.sourceMapFileInline
+                  sourceMapFileInline: this.options.sourceMapFileInline,
+                  disableSourcemapAnnotation: this.options.disableSourcemapAnnotation
               });
               var css = sourceMapOutput.toCSS(options);
               this.sourceMap = sourceMapOutput.sourceMap;
@@ -10205,6 +9949,9 @@
                       return '';
                   }
                   sourceMapURL = "data:application/json;base64," + environment.encodeBase64(this.sourceMap);
+              }
+              if (this.options.disableSourcemapAnnotation) {
+                  return '';
               }
               if (sourceMapURL) {
                   return "/*# sourceMappingURL=" + sourceMapURL + " */";
@@ -10360,8 +10107,8 @@
               }
               if (options.pluginManager) {
                   var postProcessors = options.pluginManager.getPostProcessors();
-                  for (var i_1 = 0; i_1 < postProcessors.length; i_1++) {
-                      result.css = postProcessors[i_1].process(result.css, { sourceMap: sourceMapBuilder, options: options, imports: this.imports });
+                  for (var i = 0; i < postProcessors.length; i++) {
+                      result.css = postProcessors[i].process(result.css, { sourceMap: sourceMapBuilder, options: options, imports: this.imports });
                   }
               }
               if (options.sourceMap) {
@@ -10484,6 +10231,7 @@
                       });
                   }
               };
+              var loadedFile;
               var promise;
               var context = clone(this.context);
               if (tryAppendExtension) {
@@ -10491,19 +10239,37 @@
               }
               if (importOptions.isPlugin) {
                   context.mime = 'application/javascript';
-                  promise = pluginLoader.loadPlugin(path, currentFileInfo.currentDirectory, context, environment, fileManager);
+                  if (context.syncImport) {
+                      loadedFile = pluginLoader.loadPluginSync(path, currentFileInfo.currentDirectory, context, environment, fileManager);
+                  }
+                  else {
+                      promise = pluginLoader.loadPlugin(path, currentFileInfo.currentDirectory, context, environment, fileManager);
+                  }
               }
               else {
-                  promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, context, environment, function (err, loadedFile) {
-                      if (err) {
-                          fileParsedFunc(err);
-                      }
-                      else {
-                          loadFileCallback(loadedFile);
-                      }
-                  });
+                  if (context.syncImport) {
+                      loadedFile = fileManager.loadFileSync(path, currentFileInfo.currentDirectory, context, environment);
+                  }
+                  else {
+                      promise = fileManager.loadFile(path, currentFileInfo.currentDirectory, context, environment, function (err, loadedFile) {
+                          if (err) {
+                              fileParsedFunc(err);
+                          }
+                          else {
+                              loadFileCallback(loadedFile);
+                          }
+                      });
+                  }
               }
-              if (promise) {
+              if (loadedFile) {
+                  if (!loadedFile.filename) {
+                      fileParsedFunc(loadedFile);
+                  }
+                  else {
+                      loadFileCallback(loadedFile);
+                  }
+              }
+              else if (promise) {
                   promise.then(loadFileCallback, fileParsedFunc);
               }
           };
@@ -10575,8 +10341,8 @@
        */
       PluginManager.prototype.addPlugins = function (plugins) {
           if (plugins) {
-              for (var i_1 = 0; i_1 < plugins.length; i_1++) {
-                  this.addPlugin(plugins[i_1]);
+              for (var i = 0; i < plugins.length; i++) {
+                  this.addPlugin(plugins[i]);
               }
           }
       };
@@ -10651,8 +10417,8 @@
        */
       PluginManager.prototype.getPreProcessors = function () {
           var preProcessors = [];
-          for (var i_2 = 0; i_2 < this.preProcessors.length; i_2++) {
-              preProcessors.push(this.preProcessors[i_2].preProcessor);
+          for (var i = 0; i < this.preProcessors.length; i++) {
+              preProcessors.push(this.preProcessors[i].preProcessor);
           }
           return preProcessors;
       };
@@ -10663,8 +10429,8 @@
        */
       PluginManager.prototype.getPostProcessors = function () {
           var postProcessors = [];
-          for (var i_3 = 0; i_3 < this.postProcessors.length; i_3++) {
-              postProcessors.push(this.postProcessors[i_3].postProcessor);
+          for (var i = 0; i < this.postProcessors.length; i++) {
+              postProcessors.push(this.postProcessors[i].postProcessor);
           }
           return postProcessors;
       };
@@ -10807,7 +10573,7 @@
        * It's not clear what should / must be public and why.
        */
       var initial = {
-          version: [3, 11, 3],
+          version: [3, 12, 0],
           data: data,
           tree: tree,
           Environment: environment,
@@ -10935,8 +10701,8 @@
           return new Promise(function (resolve, reject) {
               if (options.useFileCache && fileCache[href]) {
                   try {
-                      var lessText_1 = fileCache[href];
-                      return resolve({ contents: lessText_1, filename: href, webInfo: { lastModified: new Date() } });
+                      var lessText = fileCache[href];
+                      return resolve({ contents: lessText, filename: href, webInfo: { lastModified: new Date() } });
                   }
                   catch (e) {
                       return reject({ filename: href, message: "Error loading file " + href + " error was " + e.message });
@@ -11017,8 +10783,8 @@
                   }
               }];
       }
-      for (var i_1 = 0; i_1 < options.loggers.length; i_1++) {
-          less.logger.addListener(options.loggers[i_1]);
+      for (var i = 0; i < options.loggers.length; i++) {
+          less.logger.addListener(options.loggers[i]);
       }
   });
 
@@ -11281,16 +11047,16 @@
       function loadStyles(modifyVars) {
           var styles = document.getElementsByTagName('style');
           var style;
-          for (var i_1 = 0; i_1 < styles.length; i_1++) {
-              style = styles[i_1];
+          for (var i = 0; i < styles.length; i++) {
+              style = styles[i];
               if (style.type.match(typePattern)) {
                   var instanceOptions = clone(options);
                   instanceOptions.modifyVars = modifyVars;
-                  var lessText_1 = style.innerHTML || '';
+                  var lessText = style.innerHTML || '';
                   instanceOptions.filename = document.location.href.replace(/#.*$/, '');
                   /* jshint loopfunc:true */
                   // use closure to store current style
-                  less.render(lessText_1, instanceOptions, bind(function (style, e, result) {
+                  less.render(lessText, instanceOptions, bind(function (style, e, result) {
                       if (e) {
                           errors.add(e, 'inline');
                       }
@@ -11358,8 +11124,8 @@
           });
       }
       function loadStyleSheets(callback, reload, modifyVars) {
-          for (var i_2 = 0; i_2 < less.sheets.length; i_2++) {
-              loadStyleSheet(less.sheets[i_2], callback, reload, less.sheets.length - (i_2 + 1), modifyVars);
+          for (var i = 0; i < less.sheets.length; i++) {
+              loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1), modifyVars);
           }
       }
       function initRunningMode() {
@@ -11398,10 +11164,10 @@
       less.registerStylesheetsImmediately = function () {
           var links = document.getElementsByTagName('link');
           less.sheets = [];
-          for (var i_3 = 0; i_3 < links.length; i_3++) {
-              if (links[i_3].rel === 'stylesheet/less' || (links[i_3].rel.match(/stylesheet/) &&
-                  (links[i_3].type.match(typePattern)))) {
-                  less.sheets.push(links[i_3]);
+          for (var i = 0; i < links.length; i++) {
+              if (links[i].rel === 'stylesheet/less' || (links[i].rel.match(/stylesheet/) &&
+                  (links[i].type.match(typePattern)))) {
+                  less.sheets.push(links[i]);
               }
           }
       };

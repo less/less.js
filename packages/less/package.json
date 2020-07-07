@@ -41,7 +41,8 @@
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
 		"compile": "tsc -p tsconfig.json",
 		"copy:root": "shx cp -rf ./dist ../../",
-		"dev": "tsc -p tsconfig.json -w"
+		"dev": "tsc -p tsconfig.json -w",
+		"prepublishOnly": "grunt dist"
 	},
 	"optionalDependencies": {
 		"errno": "^0.1.1",

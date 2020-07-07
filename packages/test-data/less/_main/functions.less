@@ -263,6 +263,11 @@ html {
   j: if(not(true) and true, 6, 8);
   k: if(true or true, 1);
 
+  // see: https://github.com/less/less.js/issues/3371
+  @some: foo;
+  l: if((iscolor(@some)), darken(@some, 10%), black);
+  
+
   if((false), {g: 7}); /* results in void */
 
   @conditional: if((true), {

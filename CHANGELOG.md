@@ -1,6 +1,9 @@
 ## Change Log
 
-### upcoming (2020-07-07)
+### upcoming (2020-07-13)
+- [#3532](https://github.com/less/less.js/pull/3532) Fixes #3371 Allow conditional evaluation of function args (#3532) (@matthew-dean)
+- [#3531](https://github.com/less/less.js/pull/3531) Remove lib folder from git (#3531) (@matthew-dean)
+- [#3530](https://github.com/less/less.js/pull/3530) Move changelog to root (#3530) (@matthew-dean)
 - [#3529](https://github.com/less/less.js/pull/3529) Duplicate dist files in root for older links (#3529) (@matthew-dean)
 - [#3525](https://github.com/less/less.js/pull/3525) Test-data module (#3525) (@matthew-dean)
 - [#3523](https://github.com/less/less.js/pull/3523) Fixes #3504 / organizes tests (#3523) (@matthew-dean)

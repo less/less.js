@@ -3072,6 +3072,11 @@
           return Boolean(this.func);
       };
       functionCaller.prototype.call = function (args) {
+          var _this = this;
+          var evalArgs = this.func.evalArgs;
+          if (evalArgs !== false) {
+              args = args.map(function (a) { return a.eval(_this.context); });
+          }
           // This code is terrible and should be replaced as per this issue...
           // https://github.com/less/less.js/issues/2477
           if (Array.isArray(args)) {
@@ -3098,6 +3103,9 @@
                   }
                   return item;
               });
+          }
+          if (evalArgs === false) {
+              return this.func.apply(this, __spreadArrays([this.context], args));
           }
           return this.func.apply(this, args);
       };
@@ -3135,6 +3143,7 @@
       // The function should receive the value, not the variable.
       //
       Call.prototype.eval = function (context) {
+          var _this = this;
           /**
            * Turn off math for calc(), and switch back on for evaluating nested functions
            */
@@ -3143,18 +3152,23 @@
           if (this.calc || context.inCalc) {
               context.enterCalc();
           }
-          var args = this.args.map(function (a) { return a.eval(context); });
-          if (this.calc || context.inCalc) {
-              context.exitCalc();
-          }
-          context.mathOn = currentMathContext;
+          var exitCalc = function () {
+              if (_this.calc || context.inCalc) {
+                  context.exitCalc();
+              }
+              context.mathOn = currentMathContext;
+          };
           var result;
           var funcCaller = new functionCaller(this.name, context, this.getIndex(), this.fileInfo());
           if (funcCaller.isValid()) {
               try {
-                  result = funcCaller.call(args);
+                  result = funcCaller.call(this.args);
+                  exitCalc();
               }
               catch (e) {
+                  if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
+                      throw e;
+                  }
                   throw {
                       type: e.type || 'Runtime',
                       message: "error evaluating function `" + this.name + "`" + (e.message ? ": " + e.message : ''),
@@ -3180,6 +3194,8 @@
                   return result;
               }
           }
+          var args = this.args.map(function (a) { return a.eval(context); });
+          exitCalc();
           return new Call(this.name, args, this.getIndex(), this.fileInfo());
       };
       Call.prototype.genCSS = function (context, output) {
@@ -8815,10 +8831,15 @@
   function boolean(condition) {
       return condition ? Keyword.True : Keyword.False;
   }
-  function If(condition, trueValue, falseValue) {
-      return condition ? trueValue
-          : (falseValue || new Anonymous);
+  /**
+   * Functions with evalArgs set to false are sent context
+   * as the first argument.
+   */
+  function If(context, condition, trueValue, falseValue) {
+      return condition.eval(context) ? trueValue.eval(context)
+          : (falseValue ? falseValue.eval(context) : new Anonymous);
   }
+  If.evalArgs = false;
   var boolean$1 = { boolean: boolean, 'if': If };
 
   var colorFunctions;

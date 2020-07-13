@@ -1,6 +1,7 @@
 ## Change Log
 
-### upcoming (2020-07-13)
+### v3.12.0 (2020-07-13)
+- [#3540](https://github.com/less/less.js/pull/3540) v3.12.0-RC.2 (#3540) (@matthew-dean)
 - [#3532](https://github.com/less/less.js/pull/3532) Fixes #3371 Allow conditional evaluation of function args (#3532) (@matthew-dean)
 - [#3531](https://github.com/less/less.js/pull/3531) Remove lib folder from git (#3531) (@matthew-dean)
 - [#3530](https://github.com/less/less.js/pull/3530) Move changelog to root (#3530) (@matthew-dean)
@@ -131,8 +132,8 @@
 - [#3213](https://github.com/less/less.js/pull/3213) Fixes #3147 #2715 (#3213) (@matthew-dean)
 - [#3220](https://github.com/less/less.js/pull/3220) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors" (@matthew-dean)
 - [#3217](https://github.com/less/less.js/pull/3217) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217)" (@matthew-dean)
-- [#3212](https://github.com/less/less.js/pull/3212) Revert "Pull missed code merged into 3.x branch (#3212)" (@matthew-dean)
 - [#3215](https://github.com/less/less.js/pull/3215) Revert "Fixes #3195 (#3215)" (@matthew-dean)
+- [#3212](https://github.com/less/less.js/pull/3212) Revert "Pull missed code merged into 3.x branch (#3212)" (@matthew-dean)
 - [#3215](https://github.com/less/less.js/pull/3215) Fixes #3195 (#3215) (@matthew-dean)
 - [#3212](https://github.com/less/less.js/pull/3212) Pull missed code merged into 3.x branch (#3212) (@matthew-dean)
 - [#3217](https://github.com/less/less.js/pull/3217) Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217) (@matthew-dean)

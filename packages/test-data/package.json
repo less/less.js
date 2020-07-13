@@ -1,5 +1,8 @@
 {
   "name": "@less/test-data",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "3.12.0",
   "description": "Less files and CSS results",
   "author": {

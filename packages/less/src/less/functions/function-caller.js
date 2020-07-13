@@ -15,6 +15,10 @@ class functionCaller {
     }
 
     call(args) {
+        const evalArgs = this.func.evalArgs;
+        if (evalArgs !== false) {
+            args = args.map(a => a.eval(this.context));
+        }
         // This code is terrible and should be replaced as per this issue...
         // https://github.com/less/less.js/issues/2477
         if (Array.isArray(args)) {
@@ -40,6 +44,10 @@ class functionCaller {
                     }
                     return item;
                 });
+        }
+
+        if (evalArgs === false) {
+            return this.func(this.context, ...args);
         }
 
         return this.func(...args);

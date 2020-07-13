@@ -42,19 +42,25 @@ class Call extends Node {
         if (this.calc || context.inCalc) {
             context.enterCalc();
         }
-        const args = this.args.map(a => a.eval(context));
-        if (this.calc || context.inCalc) {
-            context.exitCalc();
-        }
-        context.mathOn = currentMathContext;
+
+        const exitCalc = () => {
+            if (this.calc || context.inCalc) {
+                context.exitCalc();
+            }
+            context.mathOn = currentMathContext;
+        };
 
         let result;
         const funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
 
         if (funcCaller.isValid()) {
             try {
-                result = funcCaller.call(args);
+                result = funcCaller.call(this.args);
+                exitCalc();
             } catch (e) {
+                if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
+                    throw e
+                }
                 throw { 
                     type: e.type || 'Runtime',
                     message: `error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
@@ -81,8 +87,10 @@ class Call extends Node {
                 result._fileInfo = this._fileInfo;
                 return result;
             }
-
         }
+
+        const args = this.args.map(a => a.eval(context));
+        exitCalc();
 
         return new Call(this.name, args, this.getIndex(), this.fileInfo());
     }

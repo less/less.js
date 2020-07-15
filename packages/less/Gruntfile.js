@@ -190,9 +190,10 @@ module.exports = function(grunt) {
     // Handle async / await in Rollup build for tests
     // Remove this when Node 6 is no longer supported for the build/test process
     const nodeVersion = semver.major(process.versions.node);
+    const tsNodeRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
     let scriptRuntime = 'node';
     if (nodeVersion < 8) {
-        scriptRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
+        scriptRuntime = tsNodeRuntime;
     }
 
     // Project configuration.
@@ -228,7 +229,10 @@ module.exports = function(grunt) {
                 command: scriptRuntime + " build/rollup.js --browser --out=./tmp/browser/less.min.js"
             },
             test: {
-                command: "node test/index.js"
+                command: [
+                    tsNodeRuntime + " test/test-es6.ts",
+                    "node test/index.js"
+                ].join(' && ')
             },
             generatebrowser: {
                 command: 'node test/browser/generator/generate.js'

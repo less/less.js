@@ -21,24 +21,21 @@ class UrlFileManager extends AbstractFileManager {
             }
 
             let urlStr = isUrlRe.test( filename ) ? filename : url.resolve(currentDirectory, filename);
-            const urlObj = url.parse(urlStr);
+            
+            /** native-request currently has a bug */
+            const hackUrlStr = urlStr.indexOf('?') === -1 ? urlStr + '?' : urlStr
 
-            if (!urlObj.protocol) {
-                urlObj.protocol = 'http';
-                urlStr = urlObj.format();
-            }
-
-            request.get({uri: urlStr, strictSSL: !options.insecure }, (error, res, body) => {
+            request.get(hackUrlStr, (error, body, status) => {
+                if (status === 404) {
+                    reject({ type: 'File', message: `resource '${urlStr}' was not found\n` });
+                    return;
+                }
                 if (error) {
                     reject({ type: 'File', message: `resource '${urlStr}' gave this Error:\n  ${error}\n` });
                     return;
                 }
-                if (res && res.statusCode === 404) {
-                    reject({ type: 'File', message: `resource '${urlStr}' was not found\n` });
-                    return;
-                }
                 if (!body) {
-                    logger.warn(`Warning: Empty body (HTTP ${res.statusCode}) returned by "${urlStr}"`);
+                    logger.warn(`Warning: Empty body (HTTP ${status}) returned by "${urlStr}"`);
                 }
                 fulfill({ contents: body, filename: urlStr });
             });

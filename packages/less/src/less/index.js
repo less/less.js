@@ -42,7 +42,7 @@ export default (environment, fileManagers) => {
      * It's not clear what should / must be public and why.
      */
     const initial = {
-        version: [3, 12, 0],
+        version: [3, 12, 2],
         data,
         tree,
         Environment,

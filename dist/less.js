@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.12.0
+ * Less - Leaner CSS v3.12.2
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -10594,7 +10594,7 @@
        * It's not clear what should / must be public and why.
        */
       var initial = {
-          version: [3, 12, 0],
+          version: [3, 12, 2],
           data: data,
           tree: tree,
           Environment: environment,
@@ -10641,6 +10641,14 @@
               }
           }
       }
+      /**
+       * Some of the functions assume a `this` context of the API object,
+       * which causes it to fail when wrapped for ES6 imports.
+       *
+       * An assumed `this` should be removed in the future.
+       */
+      initial.parse = initial.parse.bind(api);
+      initial.render = initial.render.bind(api);
       return api;
   });
 

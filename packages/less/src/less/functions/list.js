@@ -1,4 +1,5 @@
 import Comment from '../tree/comment';
+import Node from '../tree/node';
 import Dimension from '../tree/dimension';
 import Declaration from '../tree/declaration';
 import Expression from '../tree/expression';
@@ -65,20 +66,27 @@ export default {
         let newRules;
         let iterator;
 
+        const tryEval = val => {
+            if (val instanceof Node) {
+                return val.eval(this.context);
+            }
+            return val;
+        };
+
         if (list.value && !(list instanceof Quote)) {
             if (Array.isArray(list.value)) {
-                iterator = list.value;
+                iterator = list.value.map(tryEval);
             } else {
-                iterator = [list.value];
+                iterator = [tryEval(list.value)];
             }
         } else if (list.ruleset) {
-            iterator = list.ruleset.rules;
+            iterator = tryEval(list.ruleset).rules;
         } else if (list.rules) {
-            iterator = list.rules;
+            iterator = list.rules.map(tryEval);
         } else if (Array.isArray(list)) {
-            iterator = list;
+            iterator = list.map(tryEval);
         } else {
-            iterator = [list];
+            iterator = [tryEval(list)];
         }
 
         let valueName = '@value';

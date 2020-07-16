@@ -251,6 +251,7 @@ module.exports = function(grunt) {
                 command: [
                     // @TODO: make this more thorough
                     // CURRENT OPTIONS
+                    `node bin/lessc --ie-compat ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
                     // --math
                     `node bin/lessc --math=always ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,
                     `node bin/lessc --math=parens-division ${lessFolder}/_main/lazy-eval.less tmp/lazy-eval.css`,

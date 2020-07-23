@@ -24,7 +24,7 @@
   color: red;
   height: 1px;
 }
- + .dont-split-me-up {
+* .dont-split-me-up {
   sibling: true;
 }
 .scope-check {

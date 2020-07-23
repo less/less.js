@@ -158,7 +158,7 @@ guard-default-multi-4 {
     .m(2);
 }
 
-guard-default-not-ambiguos-2 {
+guard-default-not-ambiguous-2 {
     .m(@x)                     {case:         1}
     .m(@x) when (default())    {default:     @x}
     .m(@x) when not(default()) {not-default: @x}
@@ -166,7 +166,7 @@ guard-default-not-ambiguos-2 {
     .m(2);
 }
 
-guard-default-not-ambiguos-3 {
+guard-default-not-ambiguous-3 {
     .m(@x)                     {case:           1}
     .m(@x) when not(default()) {not-default-1: @x}
     .m(@x) when not(default()) {not-default-2: @x}
@@ -177,9 +177,9 @@ guard-default-not-ambiguos-3 {
 // default & scope
 
 guard-default-scopes {
-    .s1() {.m(@v)                  {1: no condition}}
-    .s2() {.m(@v) when (@v)        {2: when true}}
-    .s3() {.m(@v) when (default()) {3: when default}}
+    .s1() {.m(@v)                  {one: no condition}}
+    .s2() {.m(@v) when (@v)        {two: when true}}
+    .s3() {.m(@v) when (default()) {three: when default}}
 
     &-3 {
         .s2();

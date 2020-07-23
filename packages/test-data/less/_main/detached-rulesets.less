@@ -67,7 +67,7 @@ header {
 }
 @my-ruleset: {
     .my-selector {
-      @media tv {
+      @media (tv) {
         background-color: black;
       }
     }
@@ -75,7 +75,7 @@ header {
 @media (orientation:portrait) {
     @my-ruleset();
     .wrap-media-mixin({
-      @media tv {
+      @media (tv) {
         .triple-wrapped-mq {
           triple: true;
         }
@@ -83,8 +83,8 @@ header {
     });
 }
 .wrap-media-mixin(@ruleset) {
-  @media widescreen {
-    @media print {
+  @media (widescreen) {
+    @media (print) {
       @ruleset();
     }
     @ruleset();

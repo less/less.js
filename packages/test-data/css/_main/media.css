@@ -53,7 +53,7 @@
     width: 500px;
   }
 }
-@media a and b {
+@media a and (b) {
   .first .second .third {
     width: 300px;
   }
@@ -61,17 +61,17 @@
     width: 3;
   }
 }
-@media a and b and c {
+@media a and (b) and (c) {
   .first .second .third {
     width: 500px;
   }
 }
-@media a, b and c {
+@media a, (b) and (c) {
   .body {
     width: 95%;
   }
 }
-@media a and x, b and c and x, a and y, b and c and y {
+@media a and (x), (b) and (c) and (x), a and (y), (b) and (c) and (y) {
   .body {
     width: 100%;
   }
@@ -211,7 +211,7 @@
     display: table-cell;
   }
 }
-@media all and tv {
+@media all and (tv) {
   .all-and-tv-variables {
     var: all-and-tv;
   }

@@ -80,7 +80,7 @@
   & when (@c = 3) {
     height: 1px;
   }
-  + & when (@c = 3) { // creates invalid css but tests that we don't fold it in
+  * & when (@c = 3) {
     sibling: true;
   }
 }

@@ -132,7 +132,8 @@ a {
   &:nth-child(odd):not(:nth-child(3)) {
     color: #ff0000;
   }
- }
+}
+@prop: p;
 [prop],
 [prop=10%],
 [prop="value@{num}"],
@@ -140,9 +141,9 @@ a {
 [|prop~="val@{num}"],
 [*|prop$="val@{num}"],
 [ns|prop^="val@{num}"],
-[@{num}^="val@{num}"],
-[@{num}=@{num}],
-[@{num}] {
+[@{prop}^="val@{num}"],
+[@{prop}=@{num}],
+[@{prop}] {
   attributes: yes;
 }
 

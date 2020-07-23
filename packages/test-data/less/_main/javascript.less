@@ -30,9 +30,9 @@
 }
 .transitions(...) {
   @arg: ~`"@{arguments}".replace(/[\[\]]*/g, '')`;
-  1: @arg;              // rounded to integers
-  2: ~`"@{arguments}"`; // rounded to integers
-  3: @arguments;        // OK
+  one: @arg;              // rounded to integers
+  two: ~`"@{arguments}"`; // rounded to integers
+  three: @arguments;        // OK
 }
 .test-rule-tran {
   .transitions(opacity 0.3s ease-in 0.3s, max-height 0.6s linear, margin-bottom 0.4s linear;);

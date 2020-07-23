@@ -60,7 +60,7 @@
 .vc {
   color: inherit;
 }
-@media tv {
+@media (tv) {
   .ma,
   .mb,
   .mc {
@@ -73,7 +73,7 @@
     color: inherit;
   }
 }
-@media tv and plasma {
+@media (tv) and (plasma) {
   .me,
   .mf {
     background: red;

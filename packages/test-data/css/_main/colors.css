@@ -43,14 +43,14 @@
 #grey {
   color: #c8c8c8;
 }
-#333333 {
-  color: #333333;
+#aa3333 {
+  color: #aa3333;
 }
-#808080 {
-  color: hsl(0, 0%, 50%);
+#bb8080 {
+  color: hsl(0, 30%, 62%);
 }
-#00ff00 {
-  color: hsl(120, 100%, 50%);
+#ccff00 {
+  color: hsl(72, 100%, 50%);
 }
 .lightenblue {
   color: #3333ff;

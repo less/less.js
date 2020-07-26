@@ -133,7 +133,7 @@ p a span {
 }
 [prop],
 [prop=10%],
-[prop="value3"],
+[prop|="value3"],
 [prop*="val3"],
 [|prop~="val3"],
 [*|prop$="val3"],

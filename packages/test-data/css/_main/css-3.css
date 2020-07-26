@@ -95,9 +95,6 @@ foo|h1 {
 foo|* {
   color: yellow;
 }
-|h1 {
-  color: red;
-}
 *|h1 {
   color: green;
 }

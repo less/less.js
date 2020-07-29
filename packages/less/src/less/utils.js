@@ -59,7 +59,7 @@ export function copyOptions(obj1, obj2) {
     }
     const opts = defaults(obj1, obj2);
     if (opts.strictMath) {
-        opts.math = Constants.Math.STRICT_LEGACY;
+        opts.math = Constants.Math.PARENS;
     }
     // Back compat with changed relativeUrls option
     if (opts.relativeUrls) {
@@ -77,8 +77,8 @@ export function copyOptions(obj1, obj2) {
             case 'parens':
                 opts.math = Constants.Math.PARENS;
                 break;
-            case 'strict-legacy':
-                opts.math = Constants.Math.STRICT_LEGACY;
+            default:
+                opts.math = Constants.Math.PARENS;
         }
     }
     if (typeof opts.rewriteUrls === 'string') {

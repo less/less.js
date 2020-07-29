@@ -14,14 +14,14 @@ var testMap = [
     }, '_main/'],
     [{}, 'namespacing/'],
     [{
-        math: 'strict-legacy'
-    }, 'math/strict-legacy/'],
-    [{
         math: 'parens'
     }, 'math/strict/'],
     [{
         math: 'parens-division'
     }, 'math/parens-division/'],
+    [{
+        math: 'always'
+    }, 'math/always/'],
     // Use legacy strictMath: true here to demonstrate it still works
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../errors/eval/',
         lessTester.testErrors, null],
@@ -39,8 +39,10 @@ var testMap = [
     // TODO: Change this to rewriteUrls: false once the relativeUrls option is removed
     [{math: 'strict', relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
     [{math: 'strict', compress: true}, 'compression/'],
-    [{math: 0, strictUnits: true}, 'strict-units/'],
-    [{}, 'legacy/'],
+    
+    [{math: 0, strictUnits: true}, 'units/strict/'],
+    [{math: 0, strictUnits: false}, 'units/no-strict/'],
+
     [{math: 'strict', strictUnits: true, sourceMap: true, globalVars: true }, 'sourcemaps/',
         lessTester.testSourcemap, null, null,
         function(filename, type, baseFolder) {
@@ -74,8 +76,7 @@ var testMap = [
     [{plugin: 'test/plugins/preprocess/'}, 'preProcessorPlugin/'],
     [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],
     [{plugin: 'test/plugins/filemanager/'}, 'filemanagerPlugin/'],
-    [{}, 'no-strict-math/'],
-    [{}, '3rd-party/'],
+    [{math: 0}, '3rd-party/'],
     [{ processImports: false }, 'process-imports/']
 ];
 testMap.forEach(function(args) {
@@ -83,7 +84,7 @@ testMap.forEach(function(args) {
 });
 lessTester.testSyncronous({syncImport: true}, '_main/import');
 lessTester.testSyncronous({syncImport: true}, '_main/plugin');
-lessTester.testSyncronous({syncImport: true}, 'math/strict-legacy/css');
+lessTester.testSyncronous({syncImport: true}, 'math/strict/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();
 lessTester.finished();

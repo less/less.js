@@ -15,36 +15,30 @@ class functionCaller {
     }
 
     call(args) {
+        if (!(Array.isArray(args))) {
+            args = [args];
+        }
         const evalArgs = this.func.evalArgs;
         if (evalArgs !== false) {
             args = args.map(a => a.eval(this.context));
         }
+        const commentFilter = item => !(item.type === 'Comment');
+
         // This code is terrible and should be replaced as per this issue...
         // https://github.com/less/less.js/issues/2477
-        if (Array.isArray(args)) {
-            args = args.filter(item => {
-                if (item.type === 'Comment') {
-                    return false;
-                }
-                return true;
-            })
-                .map(item => {
-                    if (item.type === 'Expression') {
-                        const subNodes = item.value.filter(item => {
-                            if (item.type === 'Comment') {
-                                return false;
-                            }
-                            return true;
-                        });
-                        if (subNodes.length === 1) {
-                            return subNodes[0];
-                        } else {
-                            return new Expression(subNodes);
-                        }
+        args = args
+            .filter(commentFilter)
+            .map(item => {
+                if (item.type === 'Expression') {
+                    const subNodes = item.value.filter(commentFilter);
+                    if (subNodes.length === 1) {
+                        return subNodes[0];
+                    } else {
+                        return new Expression(subNodes);
                     }
-                    return item;
-                });
-        }
+                }
+                return item;
+            });
 
         if (evalArgs === false) {
             return this.func(this.context, ...args);

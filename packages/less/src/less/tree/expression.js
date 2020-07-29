@@ -23,9 +23,7 @@ class Expression extends Node {
     eval(context) {
         let returnValue;
         const mathOn = context.isMathOn();
-
-        const inParenthesis = this.parens && 
-            (context.math !== MATH.STRICT_LEGACY || !this.parensInOp);
+        const inParenthesis = this.parens;
 
         let doubleParen = false;
         if (inParenthesis) {

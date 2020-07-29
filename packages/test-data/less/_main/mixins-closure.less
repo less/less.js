@@ -6,12 +6,12 @@
 }
 
 .class {
-    .scope > .mixin;
+    .scope > .mixin();
 }
 
 .overwrite {
     @var: 0px;
-    .scope > .mixin;
+    .scope > .mixin();
 }
 
 .nested {
@@ -21,6 +21,6 @@
     }
     .class {
         @var: 10px;
-       .mixin;
+       .mixin();
     }
 }

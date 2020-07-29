@@ -908,9 +908,9 @@ const Parser = function Parser(context, imports, fileInfo) {
                             return;
                         }
 
-                        if (inValue && !lookups && !hasParens) {
-                            // This isn't a valid in-value mixin call
-                            parserInput.restore();
+                        if (!lookups && !hasParens) {
+                            // This isn't a valid mixin call
+                            parserInput.restore('Unrecognized input. Possibly missing \'(\' in mixin call.');
                             return;
                         }
 

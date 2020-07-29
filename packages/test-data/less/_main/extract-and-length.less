@@ -5,12 +5,12 @@
 .a(@i: length(@cols)) when (@i > 0) {
   @divider: e(extract(@cols, @i));
 }
-.a;
+.a();
 
 .b(@j: 1) when (@j < length(@cols)) {
   @divider: e(extract(@cols, @j));
 }
-.b;
+.b();
 
 // simple array/list:
 

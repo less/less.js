@@ -62,11 +62,11 @@
 
 @media a {
   .first {
-    @media b {
+    @media (b) {
       .second {
         .third {
           width: 300px;
-          @media c {
+          @media (c) {
             width: 500px;
           }
         }
@@ -79,10 +79,10 @@
 }
 
 .body {
-    @media a, b and c {
+    @media a, (b) and (c) {
         width: 95%;
 
-        @media x, y {
+        @media (x), (y) {
             width: 100%;
         }
     }
@@ -226,7 +226,7 @@
   }
 }
 @all: ~"all";
-@tv: ~"tv";
+@tv: ~"(tv)";
 @media @all and @tv {
   .all-and-tv-variables {
     var: all-and-tv;

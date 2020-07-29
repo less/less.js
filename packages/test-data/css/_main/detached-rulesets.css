@@ -46,22 +46,22 @@ html.lt-ie9 header {
 .without-mixins {
   b: 1;
 }
-@media (orientation: portrait) and tv {
+@media (orientation: portrait) and (tv) {
   .my-selector {
     background-color: black;
   }
 }
-@media (orientation: portrait) and widescreen and print and tv {
+@media (orientation: portrait) and (widescreen) and (print) and (tv) {
   .triple-wrapped-mq {
     triple: true;
   }
 }
-@media (orientation: portrait) and widescreen and tv {
+@media (orientation: portrait) and (widescreen) and (tv) {
   .triple-wrapped-mq {
     triple: true;
   }
 }
-@media (orientation: portrait) and tv {
+@media (orientation: portrait) and (tv) {
   .triple-wrapped-mq {
     triple: true;
   }

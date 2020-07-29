@@ -100,7 +100,6 @@ p::before {
 
 foo|h1 { color: blue; }
 foo|* { color: yellow; }
-|h1 { color: red; }
 *|h1 { color: green; }
 h1 { color: green; }
 .upper-test {
@@ -114,18 +113,18 @@ h1 { color: green; }
 ::distributed(input::placeholder) {
   color: #b3b3b3;
 }
-.shadow ^ .dom,
-body ^^ .shadow {
+.shadow > .dom,
+body > .shadow {
   display: done;
 }
 
 :host(.sel .a),
 :host-context(.sel .b),
-.sel /deep/ .b,
+.sel > .b,
 ::content .sel {
   type: shadow-dom;
 }
-/deep/ b {
+* b {
  c: 'd';
  &[e]{
    f: 'g';
@@ -147,7 +146,7 @@ body ^^ .shadow {
 }
 
 @unknown foo 42 (bar) {
-    x {y: z}    
+    x {y: z}
 }
 
 @unknown foo 43;

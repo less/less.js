@@ -112,18 +112,18 @@ guard-default-multi-4 {
   always: 2;
   case: 2;
 }
-guard-default-not-ambiguos-2 {
+guard-default-not-ambiguous-2 {
   case: 1;
   not-default: 2;
 }
-guard-default-not-ambiguos-3 {
+guard-default-not-ambiguous-3 {
   case: 1;
   not-default-1: 2;
   not-default-2: 2;
 }
 guard-default-scopes-3 {
-  3: when default;
+  three: when default;
 }
 guard-default-scopes-1 {
-  1: no condition;
+  one: no condition;
 }

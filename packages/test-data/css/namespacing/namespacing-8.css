@@ -1,0 +1,10 @@
+:root {
+  --background-color: black;
+  --color: #fff;
+}
+div {
+  display: inline-block;
+  padding: 1rem;
+  background-color: var(--background-color);
+  color: var(--color);
+}

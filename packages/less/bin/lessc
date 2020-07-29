@@ -516,6 +516,10 @@ function processPluginQueue() {
         }
 
         break;
+      
+      case 'ie-compat':
+        console.warn('The --ie-compat option is deprecated, as it has no effect on compilation.');
+        break;
 
       case 'relative-urls':
         console.warn('The --relative-urls option has been deprecated. Use --rewrite-urls=all.');

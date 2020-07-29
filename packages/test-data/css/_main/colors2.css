@@ -1,0 +1,6 @@
+foo {
+  color: #0080ff;
+  color: rgba(0, 128, 255, 0.5);
+  color: hsl(198, 28%, 50%);
+  color: hsla(198, 28%, 50%, 0.5);
+}

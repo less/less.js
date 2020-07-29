@@ -2,6 +2,8 @@ import Dimension from '../tree/dimension';
 import Color from '../tree/color';
 import Quoted from '../tree/quoted';
 import Anonymous from '../tree/anonymous';
+import Expression from '../tree/expression';
+import Operation from '../tree/operation';
 let colorFunctions;
 
 function clamp(val) {
@@ -56,7 +58,27 @@ function scaled(n, size) {
 }
 colorFunctions = {
     rgb: function (r, g, b) {
-        const color = colorFunctions.rgba(r, g, b, 1.0);
+        let a = 1
+        /**
+         * Comma-less syntax
+         *   e.g. rgb(0 128 255 / 50%)
+         */
+        if (r instanceof Expression) {
+            const val = r.value
+            r = val[0]
+            g = val[1]
+            b = val[2]
+            /** 
+             * @todo - should this be normalized in
+             *   function caller? Or parsed differently?
+             */
+            if (b instanceof Operation) {
+                const op = b
+                b = op.operands[0]
+                a = op.operands[1]
+            }
+        }
+        const color = colorFunctions.rgba(r, g, b, a);
         if (color) {
             color.value = 'rgb';
             return color;
@@ -79,7 +101,20 @@ colorFunctions = {
         catch (e) {}
     },
     hsl: function (h, s, l) {
-        const color = colorFunctions.hsla(h, s, l, 1.0);
+        let a = 1
+        if (h instanceof Expression) {
+            const val = h.value
+            h = val[0]
+            s = val[1]
+            l = val[2]
+
+            if (l instanceof Operation) {
+                const op = l
+                l = op.operands[0]
+                a = op.operands[1]
+            }
+        }
+        const color = colorFunctions.hsla(h, s, l, a);
         if (color) {
             color.value = 'hsl';
             return color;

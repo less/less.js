@@ -111,6 +111,7 @@
   min: 3mm;
   max: 3;
   max: 5em;
+  max-native: max(10vw, 100px);
   percentage: 20%;
   color-quoted-digit: #dda0dd;
   color-quoted-keyword: #dda0dd;

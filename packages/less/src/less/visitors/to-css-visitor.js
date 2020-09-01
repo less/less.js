@@ -207,7 +207,7 @@ ToCSSVisitor.prototype = {
                     index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename};
             }
             if (ruleNode instanceof tree.Call) {
-                throw { message: `Function '${ruleNode.name}' is undefined`,
+                throw { message: `Function '${ruleNode.name}' did not return a root node`,
                     index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename};
             }
             if (ruleNode.type && !ruleNode.allowRoot) {

@@ -57,25 +57,37 @@ class Call extends Node {
         if (funcCaller.isValid()) {
             try {
                 result = funcCaller.call(this.args);
-                if (result !== null && result !== undefined) {
-                    exitCalc();
-                    // Results that that are not nodes are cast as Anonymous nodes
-                    // Falsy values or booleans are returned as empty nodes
-                    if (!(result instanceof Node)) {
-                        if (!result || result === true) {
-                            result = new Anonymous(null); 
-                        }
-                        else {
-                            result = new Anonymous(result.toString()); 
-                        }
-                    }
-                    result._index = this._index;
-                    result._fileInfo = this._fileInfo;
-                    return result;
-                }
+                exitCalc();
             } catch (e) {
-                logger.warn(`Could not evaluate function '${this.name}'. Will output as-is.`);
+                if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
+                    throw e;
+                }
+                throw { 
+                    type: e.type || 'Runtime',
+                    message: `Error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
+                    index: this.getIndex(), 
+                    filename: this.fileInfo().filename,
+                    line: e.lineNumber,
+                    column: e.columnNumber
+                };
             }
+        }
+
+        if (result !== null && result !== undefined) {
+            // Results that that are not nodes are cast as Anonymous nodes
+            // Falsy values or booleans are returned as empty nodes
+            if (!(result instanceof Node)) {
+                if (!result || result === true) {
+                    result = new Anonymous(null); 
+                }
+                else {
+                    result = new Anonymous(result.toString()); 
+                }
+                
+            }
+            result._index = this._index;
+            result._fileInfo = this._fileInfo;
+            return result;
         }
 
         const args = this.args.map(a => a.eval(context));

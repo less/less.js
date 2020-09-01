@@ -7,6 +7,7 @@ import Ruleset from '../tree/ruleset';
 import Selector from '../tree/selector';
 import Element from '../tree/element';
 import Quote from '../tree/quoted';
+import Value from '../tree/value';
 
 const getItemsFromNode = node => {
     // handle non-array values as an array of length 1
@@ -20,6 +21,12 @@ const getItemsFromNode = node => {
 export default {
     _SELF: function(n) {
         return n;
+    },
+    '~': function(...expr) {
+        if (expr.length === 1) {
+            return expr[0];
+        }
+        return new Value(expr);
     },
     extract: function(values, index) {
         // (1-based index)

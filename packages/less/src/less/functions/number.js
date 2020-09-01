@@ -57,10 +57,14 @@ const minMax = function (isMin, args) {
 
 export default {
     min: function(...args) {
-        return minMax(true, args);
+        try {
+            return minMax(true, args);
+        } catch (e) {}
     },
     max: function(...args) {
-        return minMax(false, args);
+        try {
+            return minMax(false, args);
+        } catch (e) {}
     },
     convert: function (val, unit) {
         return val.convertTo(unit.value);

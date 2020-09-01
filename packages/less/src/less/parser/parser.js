@@ -421,7 +421,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     parserInput.save();
 
-                    name = parserInput.$re(/^([\w-]+|%|progid:[\w\.]+)\(/);
+                    name = parserInput.$re(/^([\w-]+|%|~|progid:[\w\.]+)\(/);
                     if (!name) {
                         parserInput.forget(); 
                         return;

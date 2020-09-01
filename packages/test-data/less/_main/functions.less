@@ -283,3 +283,17 @@ html {
   });
   @falsey();
 }
+
+.paren-escapes {
+  list-1: ~(1, 2, 3);
+  length-1: length($list-1);
+  each(~(1 2 3); {
+    item-@{value}: @value + 3;
+  })
+
+  .mixin(@list-1; @list-2) {
+    list-2: @list-1;
+    list-3: @list-2;
+  }
+  .mixin($list-1, ~(7; 8; 9));
+}

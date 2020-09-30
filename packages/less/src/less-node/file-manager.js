@@ -70,13 +70,20 @@ class FileManager extends AbstractFileManager {
                                 fullFilename = path.join(paths[i], fullFilename);
                             }
 
-                            if (!explicit && paths[i] === '.') {
+                            const isNodeModulePath = !!paths[i].match(/[/\\]node_modules[/\\]?/g);
+
+                            if (!explicit && (paths[i] === '.' || isNodeModulePath)) {
                                 try {
+                                    // can't resolve module without package.json
                                     fullFilename = require.resolve(fullFilename);
                                     isNodeModule = true;
                                 }
                                 catch (e) {
                                     filenamesTried.push(npmPrefix + fullFilename);
+                                    // node_modules path and none-node_modules path
+                                    if (fs.existsSync(fullFilename)) {
+                                        fullFilename = path.join(fullFilename, 'index');
+                                    }
                                     tryWithExtension();
                                 }
                             }

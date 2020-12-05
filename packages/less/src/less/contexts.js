@@ -43,7 +43,6 @@ contexts.Parse = function(options) {
 const evalCopyProperties = [
     'paths',             // additional include paths
     'compress',          // whether to compress
-    'ieCompat',          // whether to enforce IE compatibility (IE8 data-uri)
     'math',              // whether math has to be within parenthesis
     'strictUnits',       // whether units need to evaluate correctly
     'sourceMap',         // whether to output a source map

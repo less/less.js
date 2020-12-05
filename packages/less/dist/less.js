@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.12.1-alpha.13+ed734098
+ * Less - Leaner CSS v4.0.1-alpha.0+70e242c5
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -1674,7 +1674,6 @@
     var evalCopyProperties = [
         'paths',
         'compress',
-        'ieCompat',
         'math',
         'strictUnits',
         'sourceMap',

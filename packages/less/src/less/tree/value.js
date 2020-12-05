@@ -1,25 +1,25 @@
 import Node from './node';
 
-class Value extends Node {
-    constructor(value) {
-        super();
-
-        if (!value) {
-            throw new Error('Value requires an array argument');
-        }
-        if (!Array.isArray(value)) {
-            this.value = [ value ];
-        }
-        else {
-            this.value = value;
-        }
+const Value = function(value) {
+    if (!value) {
+        throw new Error('Value requires an array argument');
     }
+    if (!Array.isArray(value)) {
+        this.value = [ value ];
+    }
+    else {
+        this.value = value;
+    }
+};
+
+Value.prototype = Object.assign(new Node(), {
+    type: 'Value',
 
     accept(visitor) {
         if (this.value) {
             this.value = visitor.visitArray(this.value);
         }
-    }
+    },
 
     eval(context) {
         if (this.value.length === 1) {
@@ -29,7 +29,7 @@ class Value extends Node {
                 return v.eval(context);
             }));
         }
-    }
+    },
 
     genCSS(context, output) {
         let i;
@@ -40,7 +40,6 @@ class Value extends Node {
             }
         }
     }
-}
+});
 
-Value.prototype.type = 'Value';
 export default Value;

@@ -3,19 +3,19 @@ import Variable from './variable';
 import Property from './property';
 
 
-class Quoted extends Node {
-    constructor(str, content, escaped, index, currentFileInfo) {
-        super();
+const Quoted = function(str, content, escaped, index, currentFileInfo) {
+    this.escaped = (escaped == null) ? true : escaped;
+    this.value = content || '';
+    this.quote = str.charAt(0);
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.variableRegex = /@\{([\w-]+)\}/g;
+    this.propRegex = /\$\{([\w-]+)\}/g;
+    this.allowRoot = escaped;
+};
 
-        this.escaped = (escaped == null) ? true : escaped;
-        this.value = content || '';
-        this.quote = str.charAt(0);
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.variableRegex = /@\{([\w-]+)\}/g;
-        this.propRegex = /\$\{([\w-]+)\}/g;
-        this.allowRoot = escaped;
-    }
+Quoted.prototype = Object.assign(new Node(), {
+    type: 'Quoted',
 
     genCSS(context, output) {
         if (!this.escaped) {
@@ -25,11 +25,11 @@ class Quoted extends Node {
         if (!this.escaped) {
             output.add(this.quote);
         }
-    }
+    },
 
     containsVariables() {
         return this.value.match(this.variableRegex);
-    }
+    },
 
     eval(context) {
         const that = this;
@@ -53,7 +53,7 @@ class Quoted extends Node {
         value = iterativeReplace(value, this.variableRegex, variableReplacement);
         value = iterativeReplace(value, this.propRegex, propertyReplacement);
         return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
-    }
+    },
 
     compare(other) {
         // when comparing quoted strings allow the quote to differ
@@ -63,7 +63,6 @@ class Quoted extends Node {
             return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
         }
     }
-}
+});
 
-Quoted.prototype.type = 'Quoted';
 export default Quoted;

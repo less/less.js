@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v4.0.1-alpha.0+70e242c5
+ * Less - Leaner CSS v4.0.0
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -608,111 +608,60 @@
         return Node;
     }());
 
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    /* global Reflect, Promise */
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b)
-                if (b.hasOwnProperty(p))
-                    d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    function __extends(d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    }
-    var __assign = function () {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s)
-                    if (Object.prototype.hasOwnProperty.call(s, p))
-                        t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-    function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
-            s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-                r[k] = a[j];
-        return r;
-    }
-
     //
     // RGB Colors - #ff0014, #eee
     //
-    var Color = /** @class */ (function (_super) {
-        __extends(Color, _super);
-        function Color(rgb, a, originalForm) {
-            var _this = _super.call(this) || this;
-            var self = _this;
-            //
-            // The end goal here, is to parse the arguments
-            // into an integer triplet, such as `128, 255, 0`
-            //
-            // This facilitates operations and conversions.
-            //
-            if (Array.isArray(rgb)) {
-                _this.rgb = rgb;
-            }
-            else if (rgb.length >= 6) {
-                _this.rgb = [];
-                rgb.match(/.{2}/g).map(function (c, i) {
-                    if (i < 3) {
-                        self.rgb.push(parseInt(c, 16));
-                    }
-                    else {
-                        self.alpha = (parseInt(c, 16)) / 255;
-                    }
-                });
-            }
-            else {
-                _this.rgb = [];
-                rgb.split('').map(function (c, i) {
-                    if (i < 3) {
-                        self.rgb.push(parseInt(c + c, 16));
-                    }
-                    else {
-                        self.alpha = (parseInt(c + c, 16)) / 255;
-                    }
-                });
-            }
-            _this.alpha = _this.alpha || (typeof a === 'number' ? a : 1);
-            if (typeof originalForm !== 'undefined') {
-                _this.value = originalForm;
-            }
-            return _this;
+    var Color = function (rgb, a, originalForm) {
+        var self = this;
+        //
+        // The end goal here, is to parse the arguments
+        // into an integer triplet, such as `128, 255, 0`
+        //
+        // This facilitates operations and conversions.
+        //
+        if (Array.isArray(rgb)) {
+            this.rgb = rgb;
         }
-        Color.prototype.luma = function () {
+        else if (rgb.length >= 6) {
+            this.rgb = [];
+            rgb.match(/.{2}/g).map(function (c, i) {
+                if (i < 3) {
+                    self.rgb.push(parseInt(c, 16));
+                }
+                else {
+                    self.alpha = (parseInt(c, 16)) / 255;
+                }
+            });
+        }
+        else {
+            this.rgb = [];
+            rgb.split('').map(function (c, i) {
+                if (i < 3) {
+                    self.rgb.push(parseInt(c + c, 16));
+                }
+                else {
+                    self.alpha = (parseInt(c + c, 16)) / 255;
+                }
+            });
+        }
+        this.alpha = this.alpha || (typeof a === 'number' ? a : 1);
+        if (typeof originalForm !== 'undefined') {
+            this.value = originalForm;
+        }
+    };
+    Color.prototype = Object.assign(new Node(), {
+        type: 'Color',
+        luma: function () {
             var r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255;
             r = (r <= 0.03928) ? r / 12.92 : Math.pow(((r + 0.055) / 1.055), 2.4);
             g = (g <= 0.03928) ? g / 12.92 : Math.pow(((g + 0.055) / 1.055), 2.4);
             b = (b <= 0.03928) ? b / 12.92 : Math.pow(((b + 0.055) / 1.055), 2.4);
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        };
-        Color.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add(this.toCSS(context));
-        };
-        Color.prototype.toCSS = function (context, doNotCompress) {
+        },
+        toCSS: function (context, doNotCompress) {
             var compress = context && context.compress && !doNotCompress;
             var color;
             var alpha;
@@ -774,25 +723,25 @@
                 }
             }
             return color;
-        };
+        },
         //
         // Operations have to be done per-channel, if not,
         // channels will spill onto each other. Once we have
         // our result, in the form of an integer triplet,
         // we create a new Color node to hold the result.
         //
-        Color.prototype.operate = function (context, op, other) {
+        operate: function (context, op, other) {
             var rgb = new Array(3);
             var alpha = this.alpha * (1 - other.alpha) + other.alpha;
             for (var c = 0; c < 3; c++) {
                 rgb[c] = this._operate(context, op, this.rgb[c], other.rgb[c]);
             }
             return new Color(rgb, alpha);
-        };
-        Color.prototype.toRGB = function () {
+        },
+        toRGB: function () {
             return toHex(this.rgb);
-        };
-        Color.prototype.toHSL = function () {
+        },
+        toHSL: function () {
             var r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
             var max = Math.max(r, g, b), min = Math.min(r, g, b);
             var h;
@@ -818,9 +767,9 @@
                 h /= 6;
             }
             return { h: h * 360, s: s, l: l, a: a };
-        };
+        },
         // Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-        Color.prototype.toHSV = function () {
+        toHSV: function () {
             var r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
             var max = Math.max(r, g, b), min = Math.min(r, g, b);
             var h;
@@ -851,34 +800,32 @@
                 h /= 6;
             }
             return { h: h * 360, s: s, v: v, a: a };
-        };
-        Color.prototype.toARGB = function () {
+        },
+        toARGB: function () {
             return toHex([this.alpha * 255].concat(this.rgb));
-        };
-        Color.prototype.compare = function (x) {
+        },
+        compare: function (x) {
             return (x.rgb &&
                 x.rgb[0] === this.rgb[0] &&
                 x.rgb[1] === this.rgb[1] &&
                 x.rgb[2] === this.rgb[2] &&
                 x.alpha === this.alpha) ? 0 : undefined;
-        };
-        Color.fromKeyword = function (keyword) {
-            var c;
-            var key = keyword.toLowerCase();
-            if (colors.hasOwnProperty(key)) {
-                c = new Color(colors[key].slice(1));
-            }
-            else if (key === 'transparent') {
-                c = new Color([0, 0, 0], 0);
-            }
-            if (c) {
-                c.value = keyword;
-                return c;
-            }
-        };
-        return Color;
-    }(Node));
-    Color.prototype.type = 'Color';
+        }
+    });
+    Color.fromKeyword = function (keyword) {
+        var c;
+        var key = keyword.toLowerCase();
+        if (colors.hasOwnProperty(key)) {
+            c = new Color(colors[key].slice(1));
+        }
+        else if (key === 'transparent') {
+            c = new Color([0, 0, 0], 0);
+        }
+        if (c) {
+            c.value = keyword;
+            return c;
+        }
+    };
     function clamp(v, max) {
         return Math.min(Math.max(v, 0), max);
     }
@@ -889,91 +836,81 @@
         }).join('');
     }
 
-    var Paren = /** @class */ (function (_super) {
-        __extends(Paren, _super);
-        function Paren(node) {
-            var _this = _super.call(this) || this;
-            _this.value = node;
-            return _this;
-        }
-        Paren.prototype.genCSS = function (context, output) {
+    var Paren = function (node) {
+        this.value = node;
+    };
+    Paren.prototype = Object.assign(new Node(), {
+        type: 'Paren',
+        genCSS: function (context, output) {
             output.add('(');
             this.value.genCSS(context, output);
             output.add(')');
-        };
-        Paren.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             return new Paren(this.value.eval(context));
-        };
-        return Paren;
-    }(Node));
-    Paren.prototype.type = 'Paren';
+        }
+    });
 
     var _noSpaceCombinators = {
         '': true,
         ' ': true,
         '|': true
     };
-    var Combinator = /** @class */ (function (_super) {
-        __extends(Combinator, _super);
-        function Combinator(value) {
-            var _this = _super.call(this) || this;
-            if (value === ' ') {
-                _this.value = ' ';
-                _this.emptyOrWhitespace = true;
-            }
-            else {
-                _this.value = value ? value.trim() : '';
-                _this.emptyOrWhitespace = _this.value === '';
-            }
-            return _this;
+    var Combinator = function (value) {
+        if (value === ' ') {
+            this.value = ' ';
+            this.emptyOrWhitespace = true;
         }
-        Combinator.prototype.genCSS = function (context, output) {
+        else {
+            this.value = value ? value.trim() : '';
+            this.emptyOrWhitespace = this.value === '';
+        }
+    };
+    Combinator.prototype = Object.assign(new Node(), {
+        type: 'Combinator',
+        genCSS: function (context, output) {
             var spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
             output.add(spaceOrEmpty + this.value + spaceOrEmpty);
-        };
-        return Combinator;
-    }(Node));
-    Combinator.prototype.type = 'Combinator';
-
-    var Element = /** @class */ (function (_super) {
-        __extends(Element, _super);
-        function Element(combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.combinator = combinator instanceof Combinator ?
-                combinator : new Combinator(combinator);
-            if (typeof value === 'string') {
-                _this.value = value.trim();
-            }
-            else if (value) {
-                _this.value = value;
-            }
-            else {
-                _this.value = '';
-            }
-            _this.isVariable = isVariable;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.setParent(_this.combinator, _this);
-            return _this;
         }
-        Element.prototype.accept = function (visitor) {
+    });
+
+    var Element = function (combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
+        this.combinator = combinator instanceof Combinator ?
+            combinator : new Combinator(combinator);
+        if (typeof value === 'string') {
+            this.value = value.trim();
+        }
+        else if (value) {
+            this.value = value;
+        }
+        else {
+            this.value = '';
+        }
+        this.isVariable = isVariable;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.setParent(this.combinator, this);
+    };
+    Element.prototype = Object.assign(new Node(), {
+        type: 'Element',
+        accept: function (visitor) {
             var value = this.value;
             this.combinator = visitor.visit(this.combinator);
             if (typeof value === 'object') {
                 this.value = visitor.visit(value);
             }
-        };
-        Element.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             return new Element(this.combinator, this.value.eval ? this.value.eval(context) : this.value, this.isVariable, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        };
-        Element.prototype.clone = function () {
+        },
+        clone: function () {
             return new Element(this.combinator, this.value, this.isVariable, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        };
-        Element.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add(this.toCSS(context), this.fileInfo(), this.getIndex());
-        };
-        Element.prototype.toCSS = function (context) {
+        },
+        toCSS: function (context) {
             context = context || {};
             var value = this.value;
             var firstSelector = context.firstSelector;
@@ -990,10 +927,43 @@
             else {
                 return this.combinator.toCSS(context) + value;
             }
+        }
+    });
+
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    var __assign = function () {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s)
+                    if (Object.prototype.hasOwnProperty.call(s, p))
+                        t[p] = s[p];
+            }
+            return t;
         };
-        return Element;
-    }(Node));
-    Element.prototype.type = 'Element';
+        return __assign.apply(this, arguments);
+    };
+    function __spreadArrays() {
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
+            s += arguments[i].length;
+        for (var r = Array(s), k = 0, i = 0; i < il; i++)
+            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+                r[k] = a[j];
+        return r;
+    }
 
     var Math$1 = {
         ALWAYS: 0,
@@ -1267,22 +1237,20 @@
         return message;
     };
 
-    var Selector = /** @class */ (function (_super) {
-        __extends(Selector, _super);
-        function Selector(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.extendList = extendList;
-            _this.condition = condition;
-            _this.evaldCondition = !condition;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.elements = _this.getElements(elements);
-            _this.mixinElements_ = undefined;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.setParent(_this.elements, _this);
-            return _this;
-        }
-        Selector.prototype.accept = function (visitor) {
+    var Selector = function (elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
+        this.extendList = extendList;
+        this.condition = condition;
+        this.evaldCondition = !condition;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.elements = this.getElements(elements);
+        this.mixinElements_ = undefined;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.setParent(this.elements, this);
+    };
+    Selector.prototype = Object.assign(new Node(), {
+        type: 'Selector',
+        accept: function (visitor) {
             if (this.elements) {
                 this.elements = visitor.visitArray(this.elements);
             }
@@ -1292,15 +1260,15 @@
             if (this.condition) {
                 this.condition = visitor.visit(this.condition);
             }
-        };
-        Selector.prototype.createDerived = function (elements, extendList, evaldCondition) {
+        },
+        createDerived: function (elements, extendList, evaldCondition) {
             elements = this.getElements(elements);
             var newSelector = new Selector(elements, extendList || this.extendList, null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
             newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
             newSelector.mediaEmpty = this.mediaEmpty;
             return newSelector;
-        };
-        Selector.prototype.getElements = function (els) {
+        },
+        getElements: function (els) {
             if (!els) {
                 return [new Element('', '&', false, this._index, this._fileInfo)];
             }
@@ -1316,13 +1284,13 @@
                 });
             }
             return els;
-        };
-        Selector.prototype.createEmptySelectors = function () {
+        },
+        createEmptySelectors: function () {
             var el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
             sels[0].mediaEmpty = true;
             return sels;
-        };
-        Selector.prototype.match = function (other) {
+        },
+        match: function (other) {
             var elements = this.elements;
             var len = elements.length;
             var olen;
@@ -1340,8 +1308,8 @@
                 }
             }
             return olen; // return number of matched elements
-        };
-        Selector.prototype.mixinElements = function () {
+        },
+        mixinElements: function () {
             if (this.mixinElements_) {
                 return this.mixinElements_;
             }
@@ -1357,22 +1325,22 @@
                 elements = [];
             }
             return (this.mixinElements_ = elements);
-        };
-        Selector.prototype.isJustParentSelector = function () {
+        },
+        isJustParentSelector: function () {
             return !this.mediaEmpty &&
                 this.elements.length === 1 &&
                 this.elements[0].value === '&' &&
                 (this.elements[0].combinator.value === ' ' || this.elements[0].combinator.value === '');
-        };
-        Selector.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var evaldCondition = this.condition && this.condition.eval(context);
             var elements = this.elements;
             var extendList = this.extendList;
             elements = elements && elements.map(function (e) { return e.eval(context); });
             extendList = extendList && extendList.map(function (extend) { return extend.eval(context); });
             return this.createDerived(elements, extendList, evaldCondition);
-        };
-        Selector.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             var i, element;
             if ((!context || !context.firstSelector) && this.elements[0].combinator.value === '') {
                 output.add(' ', this.fileInfo(), this.getIndex());
@@ -1381,35 +1349,31 @@
                 element = this.elements[i];
                 element.genCSS(context, output);
             }
-        };
-        Selector.prototype.getIsOutput = function () {
+        },
+        getIsOutput: function () {
             return this.evaldCondition;
-        };
-        return Selector;
-    }(Node));
-    Selector.prototype.type = 'Selector';
-
-    var Value = /** @class */ (function (_super) {
-        __extends(Value, _super);
-        function Value(value) {
-            var _this = _super.call(this) || this;
-            if (!value) {
-                throw new Error('Value requires an array argument');
-            }
-            if (!Array.isArray(value)) {
-                _this.value = [value];
-            }
-            else {
-                _this.value = value;
-            }
-            return _this;
         }
-        Value.prototype.accept = function (visitor) {
+    });
+
+    var Value = function (value) {
+        if (!value) {
+            throw new Error('Value requires an array argument');
+        }
+        if (!Array.isArray(value)) {
+            this.value = [value];
+        }
+        else {
+            this.value = value;
+        }
+    };
+    Value.prototype = Object.assign(new Node(), {
+        type: 'Value',
+        accept: function (visitor) {
             if (this.value) {
                 this.value = visitor.visitArray(this.value);
             }
-        };
-        Value.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             if (this.value.length === 1) {
                 return this.value[0].eval(context);
             }
@@ -1418,8 +1382,8 @@
                     return v.eval(context);
                 }));
             }
-        };
-        Value.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             var i;
             for (i = 0; i < this.value.length; i++) {
                 this.value[i].genCSS(context, output);
@@ -1427,81 +1391,79 @@
                     output.add((context && context.compress) ? ',' : ', ');
                 }
             }
-        };
-        return Value;
-    }(Node));
-    Value.prototype.type = 'Value';
-
-    var Keyword = /** @class */ (function (_super) {
-        __extends(Keyword, _super);
-        function Keyword(value) {
-            var _this = _super.call(this) || this;
-            _this.value = value;
-            return _this;
         }
-        Keyword.prototype.genCSS = function (context, output) {
+    });
+
+    var Keyword = function (value) {
+        this.value = value;
+    };
+    Keyword.prototype = Object.assign(new Node(), {
+        type: 'Keyword',
+        genCSS: function (context, output) {
             if (this.value === '%') {
                 throw { type: 'Syntax', message: 'Invalid % without number' };
             }
             output.add(this.value);
-        };
-        return Keyword;
-    }(Node));
-    Keyword.prototype.type = 'Keyword';
+        }
+    });
     Keyword.True = new Keyword('true');
     Keyword.False = new Keyword('false');
 
-    var Anonymous = /** @class */ (function (_super) {
-        __extends(Anonymous, _super);
-        function Anonymous(value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.value = value;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.mapLines = mapLines;
-            _this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
-            _this.allowRoot = true;
-            _this.copyVisibilityInfo(visibilityInfo);
-            return _this;
-        }
-        Anonymous.prototype.eval = function () {
+    var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
+        this.value = value;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.mapLines = mapLines;
+        this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
+        this.allowRoot = true;
+        this.copyVisibilityInfo(visibilityInfo);
+    };
+    Anonymous.prototype = Object.assign(new Node(), {
+        type: 'Anonymous',
+        eval: function () {
             return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
-        };
-        Anonymous.prototype.compare = function (other) {
+        },
+        compare: function (other) {
             return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
-        };
-        Anonymous.prototype.isRulesetLike = function () {
+        },
+        isRulesetLike: function () {
             return this.rulesetLike;
-        };
-        Anonymous.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             this.nodeVisible = Boolean(this.value);
             if (this.nodeVisible) {
                 output.add(this.value, this._fileInfo, this._index, this.mapLines);
             }
-        };
-        return Anonymous;
-    }(Node));
-    Anonymous.prototype.type = 'Anonymous';
+        }
+    });
 
     var MATH = Math$1;
-    var Declaration = /** @class */ (function (_super) {
-        __extends(Declaration, _super);
-        function Declaration(name, value, important, merge, index, currentFileInfo, inline, variable) {
-            var _this = _super.call(this) || this;
-            _this.name = name;
-            _this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
-            _this.important = important ? " " + important.trim() : '';
-            _this.merge = merge;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.inline = inline || false;
-            _this.variable = (variable !== undefined) ? variable
-                : (name.charAt && (name.charAt(0) === '@'));
-            _this.allowRoot = true;
-            _this.setParent(_this.value, _this);
-            return _this;
+    function evalName(context, name) {
+        var value = '';
+        var i;
+        var n = name.length;
+        var output = { add: function (s) { value += s; } };
+        for (i = 0; i < n; i++) {
+            name[i].eval(context).genCSS(context, output);
         }
-        Declaration.prototype.genCSS = function (context, output) {
+        return value;
+    }
+    var Declaration = function (name, value, important, merge, index, currentFileInfo, inline, variable) {
+        this.name = name;
+        this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
+        this.important = important ? " " + important.trim() : '';
+        this.merge = merge;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.inline = inline || false;
+        this.variable = (variable !== undefined) ? variable
+            : (name.charAt && (name.charAt(0) === '@'));
+        this.allowRoot = true;
+        this.setParent(this.value, this);
+    };
+    Declaration.prototype = Object.assign(new Node(), {
+        type: 'Declaration',
+        genCSS: function (context, output) {
             output.add(this.name + (context.compress ? ':' : ': '), this.fileInfo(), this.getIndex());
             try {
                 this.value.genCSS(context, output);
@@ -1512,8 +1474,8 @@
                 throw e;
             }
             output.add(this.important + ((this.inline || (context.lastRule && context.compress)) ? '' : ';'), this._fileInfo, this._index);
-        };
-        Declaration.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var mathBypass = false, prevMath, name = this.name, evaldValue, variable = this.variable;
             if (typeof name !== 'string') {
                 // expand 'primitive' name directly to get
@@ -1554,23 +1516,11 @@
                     context.math = prevMath;
                 }
             }
-        };
-        Declaration.prototype.makeImportant = function () {
+        },
+        makeImportant: function () {
             return new Declaration(this.name, this.value, '!important', this.merge, this.getIndex(), this.fileInfo(), this.inline);
-        };
-        return Declaration;
-    }(Node));
-    function evalName(context, name) {
-        var value = '';
-        var i;
-        var n = name.length;
-        var output = { add: function (s) { value += s; } };
-        for (i = 0; i < n; i++) {
-            name[i].eval(context).genCSS(context, output);
         }
-        return value;
-    }
-    Declaration.prototype.type = 'Declaration';
+    });
 
     var debugInfo = /** @class */ (function () {
         function debugInfo(context, ctx, lineSeparator) {
@@ -1608,30 +1558,26 @@
         return debugInfo;
     }());
 
-    var Comment = /** @class */ (function (_super) {
-        __extends(Comment, _super);
-        function Comment(value, isLineComment, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.value = value;
-            _this.isLineComment = isLineComment;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.allowRoot = true;
-            return _this;
-        }
-        Comment.prototype.genCSS = function (context, output) {
+    var Comment = function (value, isLineComment, index, currentFileInfo) {
+        this.value = value;
+        this.isLineComment = isLineComment;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.allowRoot = true;
+    };
+    Comment.prototype = Object.assign(new Node(), {
+        type: 'Comment',
+        genCSS: function (context, output) {
             if (this.debugInfo) {
                 output.add(debugInfo(context, this), this.fileInfo(), this.getIndex());
             }
             output.add(this.value);
-        };
-        Comment.prototype.isSilent = function (context) {
+        },
+        isSilent: function (context) {
             var isCompressed = context.compress && this.value[2] !== '!';
             return this.isLineComment || isCompressed;
-        };
-        return Comment;
-    }(Node));
-    Comment.prototype.type = 'Comment';
+        }
+    });
 
     var contexts = {};
     var copyFromOriginal = function copyFromOriginal(original, destination, propertiesToCopy) {
@@ -1831,24 +1777,23 @@
         }
     };
 
-    var Ruleset = /** @class */ (function (_super) {
-        __extends(Ruleset, _super);
-        function Ruleset(selectors, rules, strictImports, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.selectors = selectors;
-            _this.rules = rules;
-            _this._lookups = {};
-            _this._variables = null;
-            _this._properties = null;
-            _this.strictImports = strictImports;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.allowRoot = true;
-            _this.setParent(_this.selectors, _this);
-            _this.setParent(_this.rules, _this);
-            return _this;
-        }
-        Ruleset.prototype.isRulesetLike = function () { return true; };
-        Ruleset.prototype.accept = function (visitor) {
+    var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
+        this.selectors = selectors;
+        this.rules = rules;
+        this._lookups = {};
+        this._variables = null;
+        this._properties = null;
+        this.strictImports = strictImports;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+        this.setParent(this.selectors, this);
+        this.setParent(this.rules, this);
+    };
+    Ruleset.prototype = Object.assign(new Node(), {
+        type: 'Ruleset',
+        isRuleset: true,
+        isRulesetLike: function () { return true; },
+        accept: function (visitor) {
             if (this.paths) {
                 this.paths = visitor.visitArray(this.paths, true);
             }
@@ -1858,8 +1803,8 @@
             if (this.rules && this.rules.length) {
                 this.rules = visitor.visitArray(this.rules);
             }
-        };
-        Ruleset.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var selectors;
             var selCnt;
             var selector;
@@ -2016,8 +1961,8 @@
                 }
             }
             return ruleset;
-        };
-        Ruleset.prototype.evalImports = function (context) {
+        },
+        evalImports: function (context) {
             var rules = this.rules;
             var i;
             var importRules;
@@ -2037,8 +1982,8 @@
                     this.resetCache();
                 }
             }
-        };
-        Ruleset.prototype.makeImportant = function () {
+        },
+        makeImportant: function () {
             var result = new Ruleset(this.selectors, this.rules.map(function (r) {
                 if (r.makeImportant) {
                     return r.makeImportant();
@@ -2048,12 +1993,12 @@
                 }
             }), this.strictImports, this.visibilityInfo());
             return result;
-        };
-        Ruleset.prototype.matchArgs = function (args) {
+        },
+        matchArgs: function (args) {
             return !args || args.length === 0;
-        };
+        },
         // lets you call a css selector with a guard
-        Ruleset.prototype.matchCondition = function (args, context) {
+        matchCondition: function (args, context) {
             var lastSelector = this.selectors[this.selectors.length - 1];
             if (!lastSelector.evaldCondition) {
                 return false;
@@ -2063,14 +2008,14 @@
                 return false;
             }
             return true;
-        };
-        Ruleset.prototype.resetCache = function () {
+        },
+        resetCache: function () {
             this._rulesets = null;
             this._variables = null;
             this._properties = null;
             this._lookups = {};
-        };
-        Ruleset.prototype.variables = function () {
+        },
+        variables: function () {
             if (!this._variables) {
                 this._variables = !this.rules ? {} : this.rules.reduce(function (hash, r) {
                     if (r instanceof Declaration && r.variable === true) {
@@ -2091,8 +2036,8 @@
                 }, {});
             }
             return this._variables;
-        };
-        Ruleset.prototype.properties = function () {
+        },
+        properties: function () {
             if (!this._properties) {
                 this._properties = !this.rules ? {} : this.rules.reduce(function (hash, r) {
                     if (r instanceof Declaration && r.variable !== true) {
@@ -2110,28 +2055,28 @@
                 }, {});
             }
             return this._properties;
-        };
-        Ruleset.prototype.variable = function (name) {
+        },
+        variable: function (name) {
             var decl = this.variables()[name];
             if (decl) {
                 return this.parseValue(decl);
             }
-        };
-        Ruleset.prototype.property = function (name) {
+        },
+        property: function (name) {
             var decl = this.properties()[name];
             if (decl) {
                 return this.parseValue(decl);
             }
-        };
-        Ruleset.prototype.lastDeclaration = function () {
+        },
+        lastDeclaration: function () {
             for (var i = this.rules.length; i > 0; i--) {
                 var decl = this.rules[i - 1];
                 if (decl instanceof Declaration) {
                     return this.parseValue(decl);
                 }
             }
-        };
-        Ruleset.prototype.parseValue = function (toParse) {
+        },
+        parseValue: function (toParse) {
             var self = this;
             function transformDeclaration(decl) {
                 if (decl.value instanceof Anonymous && !decl.parsed) {
@@ -2166,8 +2111,8 @@
                 });
                 return nodes_1;
             }
-        };
-        Ruleset.prototype.rulesets = function () {
+        },
+        rulesets: function () {
             if (!this.rules) {
                 return [];
             }
@@ -2181,8 +2126,8 @@
                 }
             }
             return filtRules;
-        };
-        Ruleset.prototype.prependRule = function (rule) {
+        },
+        prependRule: function (rule) {
             var rules = this.rules;
             if (rules) {
                 rules.unshift(rule);
@@ -2191,8 +2136,8 @@
                 this.rules = [rule];
             }
             this.setParent(rule, this);
-        };
-        Ruleset.prototype.find = function (selector, self, filter) {
+        },
+        find: function (selector, self, filter) {
             self = self || this;
             var rules = [];
             var match;
@@ -2225,8 +2170,8 @@
             });
             this._lookups[key] = rules;
             return rules;
-        };
-        Ruleset.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             var i;
             var j;
             var charsetRuleNodes = [];
@@ -2324,13 +2269,13 @@
             if (!output.isEmpty() && !context.compress && this.firstRoot) {
                 output.add('\n');
             }
-        };
-        Ruleset.prototype.joinSelectors = function (paths, context, selectors) {
+        },
+        joinSelectors: function (paths, context, selectors) {
             for (var s = 0; s < selectors.length; s++) {
                 this.joinSelector(paths, context, selectors[s]);
             }
-        };
-        Ruleset.prototype.joinSelector = function (paths, context, selector) {
+        },
+        joinSelector: function (paths, context, selector) {
             function createParenthesis(elementsToPak, originalElement) {
                 var replacementParen, j;
                 if (elementsToPak.length === 0) {
@@ -2560,41 +2505,36 @@
             for (i = 0; i < newPaths.length; i++) {
                 paths.push(newPaths[i]);
             }
-        };
-        return Ruleset;
-    }(Node));
-    Ruleset.prototype.type = 'Ruleset';
-    Ruleset.prototype.isRuleset = true;
-
-    var AtRule = /** @class */ (function (_super) {
-        __extends(AtRule, _super);
-        function AtRule(name, value, rules, index, currentFileInfo, debugInfo, isRooted, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            var i;
-            _this.name = name;
-            _this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
-            if (rules) {
-                if (Array.isArray(rules)) {
-                    _this.rules = rules;
-                }
-                else {
-                    _this.rules = [rules];
-                    _this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
-                }
-                for (i = 0; i < _this.rules.length; i++) {
-                    _this.rules[i].allowImports = true;
-                }
-                _this.setParent(_this.rules, _this);
-            }
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.debugInfo = debugInfo;
-            _this.isRooted = isRooted || false;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.allowRoot = true;
-            return _this;
         }
-        AtRule.prototype.accept = function (visitor) {
+    });
+
+    var AtRule = function (name, value, rules, index, currentFileInfo, debugInfo, isRooted, visibilityInfo) {
+        var i;
+        this.name = name;
+        this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
+        if (rules) {
+            if (Array.isArray(rules)) {
+                this.rules = rules;
+            }
+            else {
+                this.rules = [rules];
+                this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
+            }
+            for (i = 0; i < this.rules.length; i++) {
+                this.rules[i].allowImports = true;
+            }
+            this.setParent(this.rules, this);
+        }
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.debugInfo = debugInfo;
+        this.isRooted = isRooted || false;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+    };
+    AtRule.prototype = Object.assign(new Node(), {
+        type: 'AtRule',
+        accept: function (visitor) {
             var value = this.value, rules = this.rules;
             if (rules) {
                 this.rules = visitor.visitArray(rules);
@@ -2602,14 +2542,14 @@
             if (value) {
                 this.value = visitor.visit(value);
             }
-        };
-        AtRule.prototype.isRulesetLike = function () {
+        },
+        isRulesetLike: function () {
             return this.rules || !this.isCharset();
-        };
-        AtRule.prototype.isCharset = function () {
+        },
+        isCharset: function () {
             return '@charset' === this.name;
-        };
-        AtRule.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             var value = this.value, rules = this.rules;
             output.add(this.name, this.fileInfo(), this.getIndex());
             if (value) {
@@ -2622,8 +2562,8 @@
             else {
                 output.add(';');
             }
-        };
-        AtRule.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
             // media stored inside other atrule should not bubble over it
             // backpup media bubbling information
@@ -2644,26 +2584,26 @@
             context.mediaPath = mediaPathBackup;
             context.mediaBlocks = mediaBlocksBackup;
             return new AtRule(this.name, value, rules, this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo());
-        };
-        AtRule.prototype.variable = function (name) {
+        },
+        variable: function (name) {
             if (this.rules) {
                 // assuming that there is only one rule at this point - that is how parser constructs the rule
                 return Ruleset.prototype.variable.call(this.rules[0], name);
             }
-        };
-        AtRule.prototype.find = function () {
+        },
+        find: function () {
             if (this.rules) {
                 // assuming that there is only one rule at this point - that is how parser constructs the rule
                 return Ruleset.prototype.find.apply(this.rules[0], arguments);
             }
-        };
-        AtRule.prototype.rulesets = function () {
+        },
+        rulesets: function () {
             if (this.rules) {
                 // assuming that there is only one rule at this point - that is how parser constructs the rule
                 return Ruleset.prototype.rulesets.apply(this.rules[0]);
             }
-        };
-        AtRule.prototype.outputRuleset = function (context, output, rules) {
+        },
+        outputRuleset: function (context, output, rules) {
             var ruleCnt = rules.length;
             var i;
             context.tabLevel = (context.tabLevel | 0) + 1;
@@ -2692,53 +2632,45 @@
                 output.add(tabSetStr + "}");
             }
             context.tabLevel--;
-        };
-        return AtRule;
-    }(Node));
-    AtRule.prototype.type = 'AtRule';
-
-    var DetachedRuleset = /** @class */ (function (_super) {
-        __extends(DetachedRuleset, _super);
-        function DetachedRuleset(ruleset, frames) {
-            var _this = _super.call(this) || this;
-            _this.ruleset = ruleset;
-            _this.frames = frames;
-            _this.setParent(_this.ruleset, _this);
-            return _this;
         }
-        DetachedRuleset.prototype.accept = function (visitor) {
+    });
+
+    var DetachedRuleset = function (ruleset, frames) {
+        this.ruleset = ruleset;
+        this.frames = frames;
+        this.setParent(this.ruleset, this);
+    };
+    DetachedRuleset.prototype = Object.assign(new Node(), {
+        type: 'DetachedRuleset',
+        evalFirst: true,
+        accept: function (visitor) {
             this.ruleset = visitor.visit(this.ruleset);
-        };
-        DetachedRuleset.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var frames = this.frames || copyArray(context.frames);
             return new DetachedRuleset(this.ruleset, frames);
-        };
-        DetachedRuleset.prototype.callEval = function (context) {
+        },
+        callEval: function (context) {
             return this.ruleset.eval(this.frames ? new contexts.Eval(context, this.frames.concat(context.frames)) : context);
-        };
-        return DetachedRuleset;
-    }(Node));
-    DetachedRuleset.prototype.type = 'DetachedRuleset';
-    DetachedRuleset.prototype.evalFirst = true;
-
-    var Unit = /** @class */ (function (_super) {
-        __extends(Unit, _super);
-        function Unit(numerator, denominator, backupUnit) {
-            var _this = _super.call(this) || this;
-            _this.numerator = numerator ? copyArray(numerator).sort() : [];
-            _this.denominator = denominator ? copyArray(denominator).sort() : [];
-            if (backupUnit) {
-                _this.backupUnit = backupUnit;
-            }
-            else if (numerator && numerator.length) {
-                _this.backupUnit = numerator[0];
-            }
-            return _this;
         }
-        Unit.prototype.clone = function () {
+    });
+
+    var Unit = function (numerator, denominator, backupUnit) {
+        this.numerator = numerator ? copyArray(numerator).sort() : [];
+        this.denominator = denominator ? copyArray(denominator).sort() : [];
+        if (backupUnit) {
+            this.backupUnit = backupUnit;
+        }
+        else if (numerator && numerator.length) {
+            this.backupUnit = numerator[0];
+        }
+    };
+    Unit.prototype = Object.assign(new Node(), {
+        type: 'Unit',
+        clone: function () {
             return new Unit(copyArray(this.numerator), copyArray(this.denominator), this.backupUnit);
-        };
-        Unit.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             // Dimension checks the unit is singular and throws an error if in strict math mode.
             var strictUnits = context && context.strictUnits;
             if (this.numerator.length === 1) {
@@ -2750,30 +2682,30 @@
             else if (!strictUnits && this.denominator.length) {
                 output.add(this.denominator[0]);
             }
-        };
-        Unit.prototype.toString = function () {
+        },
+        toString: function () {
             var i, returnStr = this.numerator.join('*');
             for (i = 0; i < this.denominator.length; i++) {
                 returnStr += "/" + this.denominator[i];
             }
             return returnStr;
-        };
-        Unit.prototype.compare = function (other) {
+        },
+        compare: function (other) {
             return this.is(other.toString()) ? 0 : undefined;
-        };
-        Unit.prototype.is = function (unitString) {
+        },
+        is: function (unitString) {
             return this.toString().toUpperCase() === unitString.toUpperCase();
-        };
-        Unit.prototype.isLength = function () {
+        },
+        isLength: function () {
             return RegExp('^(px|em|ex|ch|rem|in|cm|mm|pc|pt|ex|vw|vh|vmin|vmax)$', 'gi').test(this.toCSS());
-        };
-        Unit.prototype.isEmpty = function () {
+        },
+        isEmpty: function () {
             return this.numerator.length === 0 && this.denominator.length === 0;
-        };
-        Unit.prototype.isSingular = function () {
+        },
+        isSingular: function () {
             return this.numerator.length <= 1 && this.denominator.length === 0;
-        };
-        Unit.prototype.map = function (callback) {
+        },
+        map: function (callback) {
             var i;
             for (i = 0; i < this.numerator.length; i++) {
                 this.numerator[i] = callback(this.numerator[i], false);
@@ -2781,8 +2713,8 @@
             for (i = 0; i < this.denominator.length; i++) {
                 this.denominator[i] = callback(this.denominator[i], true);
             }
-        };
-        Unit.prototype.usedUnits = function () {
+        },
+        usedUnits: function () {
             var group;
             var result = {};
             var mapUnit;
@@ -2801,8 +2733,8 @@
                 }
             }
             return result;
-        };
-        Unit.prototype.cancel = function () {
+        },
+        cancel: function () {
             var counter = {};
             var atomicUnit;
             var i;
@@ -2833,37 +2765,33 @@
             }
             this.numerator.sort();
             this.denominator.sort();
-        };
-        return Unit;
-    }(Node));
-    Unit.prototype.type = 'Unit';
+        }
+    });
 
     //
     // A number with a unit
     //
-    var Dimension = /** @class */ (function (_super) {
-        __extends(Dimension, _super);
-        function Dimension(value, unit) {
-            var _this = _super.call(this) || this;
-            _this.value = parseFloat(value);
-            if (isNaN(_this.value)) {
-                throw new Error('Dimension is not a number.');
-            }
-            _this.unit = (unit && unit instanceof Unit) ? unit :
-                new Unit(unit ? [unit] : undefined);
-            _this.setParent(_this.unit, _this);
-            return _this;
+    var Dimension = function (value, unit) {
+        this.value = parseFloat(value);
+        if (isNaN(this.value)) {
+            throw new Error('Dimension is not a number.');
         }
-        Dimension.prototype.accept = function (visitor) {
+        this.unit = (unit && unit instanceof Unit) ? unit :
+            new Unit(unit ? [unit] : undefined);
+        this.setParent(this.unit, this);
+    };
+    Dimension.prototype = Object.assign(new Node(), {
+        type: 'Dimension',
+        accept: function (visitor) {
             this.unit = visitor.visit(this.unit);
-        };
-        Dimension.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             return this;
-        };
-        Dimension.prototype.toColor = function () {
+        },
+        toColor: function () {
             return new Color([this.value, this.value, this.value]);
-        };
-        Dimension.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             if ((context && context.strictUnits) && !this.unit.isSingular()) {
                 throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: " + this.unit.toString());
             }
@@ -2886,11 +2814,11 @@
             }
             output.add(strValue);
             this.unit.genCSS(context, output);
-        };
+        },
         // In an operation between two Dimensions,
         // we default to the first Dimension's unit,
         // so `1px + 2` will yield `3px`.
-        Dimension.prototype.operate = function (context, op, other) {
+        operate: function (context, op, other) {
             /* jshint noempty:false */
             var value = this._operate(context, op, this.value, other.value), unit = this.unit.clone();
             if (op === '+' || op === '-') {
@@ -2920,8 +2848,8 @@
                 unit.cancel();
             }
             return new Dimension(value, unit);
-        };
-        Dimension.prototype.compare = function (other) {
+        },
+        compare: function (other) {
             var a, b;
             if (!(other instanceof Dimension)) {
                 return undefined;
@@ -2938,11 +2866,11 @@
                 }
             }
             return Node.numericCompare(a.value, b.value);
-        };
-        Dimension.prototype.unify = function () {
+        },
+        unify: function () {
             return this.convertTo({ length: 'px', duration: 's', angle: 'rad' });
-        };
-        Dimension.prototype.convertTo = function (conversions) {
+        },
+        convertTo: function (conversions) {
             var value = this.value;
             var unit = this.unit.clone();
             var i;
@@ -2982,25 +2910,21 @@
             }
             unit.cancel();
             return new Dimension(value, unit);
-        };
-        return Dimension;
-    }(Node));
-    Dimension.prototype.type = 'Dimension';
+        }
+    });
 
     var MATH$1 = Math$1;
-    var Operation = /** @class */ (function (_super) {
-        __extends(Operation, _super);
-        function Operation(op, operands, isSpaced) {
-            var _this = _super.call(this) || this;
-            _this.op = op.trim();
-            _this.operands = operands;
-            _this.isSpaced = isSpaced;
-            return _this;
-        }
-        Operation.prototype.accept = function (visitor) {
+    var Operation = function (op, operands, isSpaced) {
+        this.op = op.trim();
+        this.operands = operands;
+        this.isSpaced = isSpaced;
+    };
+    Operation.prototype = Object.assign(new Node(), {
+        type: 'Operation',
+        accept: function (visitor) {
             this.operands = visitor.visitArray(this.operands);
-        };
-        Operation.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
             if (context.isMathOn(this.op)) {
                 op = this.op === './' ? '/' : this.op;
@@ -3022,8 +2946,8 @@
             else {
                 return new Operation(this.op, [a, b], this.isSpaced);
             }
-        };
-        Operation.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             this.operands[0].genCSS(context, output);
             if (this.isSpaced) {
                 output.add(' ');
@@ -3033,26 +2957,22 @@
                 output.add(' ');
             }
             this.operands[1].genCSS(context, output);
-        };
-        return Operation;
-    }(Node));
-    Operation.prototype.type = 'Operation';
-
-    var Expression = /** @class */ (function (_super) {
-        __extends(Expression, _super);
-        function Expression(value, noSpacing) {
-            var _this = _super.call(this) || this;
-            _this.value = value;
-            _this.noSpacing = noSpacing;
-            if (!value) {
-                throw new Error('Expression requires an array parameter');
-            }
-            return _this;
         }
-        Expression.prototype.accept = function (visitor) {
+    });
+
+    var Expression = function (value, noSpacing) {
+        this.value = value;
+        this.noSpacing = noSpacing;
+        if (!value) {
+            throw new Error('Expression requires an array parameter');
+        }
+    };
+    Expression.prototype = Object.assign(new Node(), {
+        type: 'Expression',
+        accept: function (visitor) {
             this.value = visitor.visitArray(this.value);
-        };
-        Expression.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var returnValue;
             var mathOn = context.isMathOn();
             var inParenthesis = this.parens;
@@ -3085,23 +3005,21 @@
                 returnValue = new Paren(returnValue);
             }
             return returnValue;
-        };
-        Expression.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             for (var i = 0; i < this.value.length; i++) {
                 this.value[i].genCSS(context, output);
                 if (!this.noSpacing && i + 1 < this.value.length) {
                     output.add(' ');
                 }
             }
-        };
-        Expression.prototype.throwAwayComments = function () {
+        },
+        throwAwayComments: function () {
             this.value = this.value.filter(function (v) {
                 return !(v instanceof Comment);
             });
-        };
-        return Expression;
-    }(Node));
-    Expression.prototype.type = 'Expression';
+        }
+    });
 
     var functionCaller = /** @class */ (function () {
         function functionCaller(name, context, index, currentFileInfo) {
@@ -3151,22 +3069,20 @@
     //
     // A function call node.
     //
-    var Call = /** @class */ (function (_super) {
-        __extends(Call, _super);
-        function Call(name, args, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.name = name;
-            _this.args = args;
-            _this.calc = name === 'calc';
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            return _this;
-        }
-        Call.prototype.accept = function (visitor) {
+    var Call = function (name, args, index, currentFileInfo) {
+        this.name = name;
+        this.args = args;
+        this.calc = name === 'calc';
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    };
+    Call.prototype = Object.assign(new Node(), {
+        type: 'Call',
+        accept: function (visitor) {
             if (this.args) {
                 this.args = visitor.visitArray(this.args);
             }
-        };
+        },
         //
         // When evaluating a function call,
         // we either find the function in the functionRegistry,
@@ -3178,7 +3094,7 @@
         // we try to pass a variable to a function, like: `saturate(@color)`.
         // The function should receive the value, not the variable.
         //
-        Call.prototype.eval = function (context) {
+        eval: function (context) {
             var _this = this;
             /**
              * Turn off math for calc(), and switch back on for evaluating nested functions
@@ -3233,8 +3149,8 @@
             var args = this.args.map(function (a) { return a.eval(context); });
             exitCalc();
             return new Call(this.name, args, this.getIndex(), this.fileInfo());
-        };
-        Call.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add(this.name + "(", this.fileInfo(), this.getIndex());
             for (var i = 0; i < this.args.length; i++) {
                 this.args[i].genCSS(context, output);
@@ -3243,21 +3159,17 @@
                 }
             }
             output.add(')');
-        };
-        return Call;
-    }(Node));
-    Call.prototype.type = 'Call';
-
-    var Variable = /** @class */ (function (_super) {
-        __extends(Variable, _super);
-        function Variable(name, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.name = name;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            return _this;
         }
-        Variable.prototype.eval = function (context) {
+    });
+
+    var Variable = function (name, index, currentFileInfo) {
+        this.name = name;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    };
+    Variable.prototype = Object.assign(new Node(), {
+        type: 'Variable',
+        eval: function (context) {
             var variable, name = this.name;
             if (name.indexOf('@@') === 0) {
                 name = "@" + new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value;
@@ -3291,8 +3203,8 @@
                 throw { type: 'Name', message: "variable " + name + " is undefined", filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
-        };
-        Variable.prototype.find = function (obj, fun) {
+        },
+        find: function (obj, fun) {
             for (var i = 0, r = void 0; i < obj.length; i++) {
                 r = fun.call(obj, obj[i]);
                 if (r) {
@@ -3300,21 +3212,17 @@
                 }
             }
             return null;
-        };
-        return Variable;
-    }(Node));
-    Variable.prototype.type = 'Variable';
-
-    var Property = /** @class */ (function (_super) {
-        __extends(Property, _super);
-        function Property(name, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.name = name;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            return _this;
         }
-        Property.prototype.eval = function (context) {
+    });
+
+    var Property = function (name, index, currentFileInfo) {
+        this.name = name;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    };
+    Property.prototype = Object.assign(new Node(), {
+        type: 'Property',
+        eval: function (context) {
             var property;
             var name = this.name;
             // TODO: shorten this reference
@@ -3350,8 +3258,8 @@
                 throw { type: 'Name', message: "Property '" + name + "' is undefined", filename: this.currentFileInfo.filename,
                     index: this.index };
             }
-        };
-        Property.prototype.find = function (obj, fun) {
+        },
+        find: function (obj, fun) {
             for (var i = 0, r = void 0; i < obj.length; i++) {
                 r = fun.call(obj, obj[i]);
                 if (r) {
@@ -3359,53 +3267,45 @@
                 }
             }
             return null;
-        };
-        return Property;
-    }(Node));
-    Property.prototype.type = 'Property';
-
-    var Attribute = /** @class */ (function (_super) {
-        __extends(Attribute, _super);
-        function Attribute(key, op, value) {
-            var _this = _super.call(this) || this;
-            _this.key = key;
-            _this.op = op;
-            _this.value = value;
-            return _this;
         }
-        Attribute.prototype.eval = function (context) {
+    });
+
+    var Attribute = function (key, op, value) {
+        this.key = key;
+        this.op = op;
+        this.value = value;
+    };
+    Attribute.prototype = Object.assign(new Node(), {
+        type: 'Attribute',
+        eval: function (context) {
             return new Attribute(this.key.eval ? this.key.eval(context) : this.key, this.op, (this.value && this.value.eval) ? this.value.eval(context) : this.value);
-        };
-        Attribute.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add(this.toCSS(context));
-        };
-        Attribute.prototype.toCSS = function (context) {
+        },
+        toCSS: function (context) {
             var value = this.key.toCSS ? this.key.toCSS(context) : this.key;
             if (this.op) {
                 value += this.op;
                 value += (this.value.toCSS ? this.value.toCSS(context) : this.value);
             }
             return "[" + value + "]";
-        };
-        return Attribute;
-    }(Node));
-    Attribute.prototype.type = 'Attribute';
-
-    var Quoted = /** @class */ (function (_super) {
-        __extends(Quoted, _super);
-        function Quoted(str, content, escaped, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.escaped = (escaped == null) ? true : escaped;
-            _this.value = content || '';
-            _this.quote = str.charAt(0);
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.variableRegex = /@\{([\w-]+)\}/g;
-            _this.propRegex = /\$\{([\w-]+)\}/g;
-            _this.allowRoot = escaped;
-            return _this;
         }
-        Quoted.prototype.genCSS = function (context, output) {
+    });
+
+    var Quoted = function (str, content, escaped, index, currentFileInfo) {
+        this.escaped = (escaped == null) ? true : escaped;
+        this.value = content || '';
+        this.quote = str.charAt(0);
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.variableRegex = /@\{([\w-]+)\}/g;
+        this.propRegex = /\$\{([\w-]+)\}/g;
+        this.allowRoot = escaped;
+    };
+    Quoted.prototype = Object.assign(new Node(), {
+        type: 'Quoted',
+        genCSS: function (context, output) {
             if (!this.escaped) {
                 output.add(this.quote, this.fileInfo(), this.getIndex());
             }
@@ -3413,11 +3313,11 @@
             if (!this.escaped) {
                 output.add(this.quote);
             }
-        };
-        Quoted.prototype.containsVariables = function () {
+        },
+        containsVariables: function () {
             return this.value.match(this.variableRegex);
-        };
-        Quoted.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var that = this;
             var value = this.value;
             var variableReplacement = function (_, name) {
@@ -3439,8 +3339,8 @@
             value = iterativeReplace(value, this.variableRegex, variableReplacement);
             value = iterativeReplace(value, this.propRegex, propertyReplacement);
             return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
-        };
-        Quoted.prototype.compare = function (other) {
+        },
+        compare: function (other) {
             // when comparing quoted strings allow the quote to differ
             if (other.type === 'Quoted' && !this.escaped && !other.escaped) {
                 return Node.numericCompare(this.value, other.value);
@@ -3448,30 +3348,29 @@
             else {
                 return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
             }
-        };
-        return Quoted;
-    }(Node));
-    Quoted.prototype.type = 'Quoted';
-
-    var URL = /** @class */ (function (_super) {
-        __extends(URL, _super);
-        function URL(val, index, currentFileInfo, isEvald) {
-            var _this = _super.call(this) || this;
-            _this.value = val;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.isEvald = isEvald;
-            return _this;
         }
-        URL.prototype.accept = function (visitor) {
+    });
+
+    function escapePath(path) {
+        return path.replace(/[\(\)'"\s]/g, function (match) { return "\\" + match; });
+    }
+    var URL = function (val, index, currentFileInfo, isEvald) {
+        this.value = val;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.isEvald = isEvald;
+    };
+    URL.prototype = Object.assign(new Node(), {
+        type: 'URL',
+        accept: function (visitor) {
             this.value = visitor.visit(this.value);
-        };
-        URL.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add('url(');
             this.value.genCSS(context, output);
             output.add(')');
-        };
-        URL.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var val = this.value.eval(context);
             var rootpath;
             if (!this.isEvald) {
@@ -3503,48 +3402,41 @@
                 }
             }
             return new URL(val, this.getIndex(), this.fileInfo(), true);
-        };
-        return URL;
-    }(Node));
-    URL.prototype.type = 'Url';
-    function escapePath(path) {
-        return path.replace(/[\(\)'"\s]/g, function (match) { return "\\" + match; });
-    }
-
-    var Media = /** @class */ (function (_super) {
-        __extends(Media, _super);
-        function Media(value, features, index, currentFileInfo, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            var selectors = (new Selector([], null, null, _this._index, _this._fileInfo)).createEmptySelectors();
-            _this.features = new Value(features);
-            _this.rules = [new Ruleset(selectors, value)];
-            _this.rules[0].allowImports = true;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.allowRoot = true;
-            _this.setParent(selectors, _this);
-            _this.setParent(_this.features, _this);
-            _this.setParent(_this.rules, _this);
-            return _this;
         }
-        Media.prototype.isRulesetLike = function () {
+    });
+
+    var Media = function (value, features, index, currentFileInfo, visibilityInfo) {
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        var selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
+        this.features = new Value(features);
+        this.rules = [new Ruleset(selectors, value)];
+        this.rules[0].allowImports = true;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+        this.setParent(selectors, this);
+        this.setParent(this.features, this);
+        this.setParent(this.rules, this);
+    };
+    Media.prototype = Object.assign(new AtRule(), {
+        type: 'Media',
+        isRulesetLike: function () {
             return true;
-        };
-        Media.prototype.accept = function (visitor) {
+        },
+        accept: function (visitor) {
             if (this.features) {
                 this.features = visitor.visit(this.features);
             }
             if (this.rules) {
                 this.rules = visitor.visitArray(this.rules);
             }
-        };
-        Media.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add('@media ', this._fileInfo, this._index);
             this.features.genCSS(context, output);
             this.outputRuleset(context, output, this.rules);
-        };
-        Media.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             if (!context.mediaBlocks) {
                 context.mediaBlocks = [];
                 context.mediaPath = [];
@@ -3564,8 +3456,8 @@
             context.mediaPath.pop();
             return context.mediaPath.length === 0 ? media.evalTop(context) :
                 media.evalNested(context);
-        };
-        Media.prototype.evalTop = function (context) {
+        },
+        evalTop: function (context) {
             var result = this;
             // Render all dependent Media blocks.
             if (context.mediaBlocks.length > 1) {
@@ -3578,8 +3470,8 @@
             delete context.mediaBlocks;
             delete context.mediaPath;
             return result;
-        };
-        Media.prototype.evalNested = function (context) {
+        },
+        evalNested: function (context) {
             var i;
             var value;
             var path = context.mediaPath.concat([this]);
@@ -3606,8 +3498,8 @@
             this.setParent(this.features, this);
             // Fake a tree-node that doesn't output anything.
             return new Ruleset([], []);
-        };
-        Media.prototype.permute = function (arr) {
+        },
+        permute: function (arr) {
             if (arr.length === 0) {
                 return [];
             }
@@ -3624,17 +3516,15 @@
                 }
                 return result;
             }
-        };
-        Media.prototype.bubbleSelectors = function (selectors) {
+        },
+        bubbleSelectors: function (selectors) {
             if (!selectors) {
                 return;
             }
             this.rules = [new Ruleset(copyArray(selectors), [this.rules[0]])];
             this.setParent(this.rules, this);
-        };
-        return Media;
-    }(AtRule));
-    Media.prototype.type = 'Media';
+        }
+    });
 
     //
     // CSS @import node
@@ -3648,31 +3538,29 @@
     // `import,push`, we also pass it a callback, which it'll call once
     // the file has been fetched, and parsed.
     //
-    var Import = /** @class */ (function (_super) {
-        __extends(Import, _super);
-        function Import(path, features, options, index, currentFileInfo, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.options = options;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.path = path;
-            _this.features = features;
-            _this.allowRoot = true;
-            if (_this.options.less !== undefined || _this.options.inline) {
-                _this.css = !_this.options.less || _this.options.inline;
-            }
-            else {
-                var pathValue = _this.getPath();
-                if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
-                    _this.css = true;
-                }
-            }
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.setParent(_this.features, _this);
-            _this.setParent(_this.path, _this);
-            return _this;
+    var Import = function (path, features, options, index, currentFileInfo, visibilityInfo) {
+        this.options = options;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.path = path;
+        this.features = features;
+        this.allowRoot = true;
+        if (this.options.less !== undefined || this.options.inline) {
+            this.css = !this.options.less || this.options.inline;
         }
-        Import.prototype.accept = function (visitor) {
+        else {
+            var pathValue = this.getPath();
+            if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
+                this.css = true;
+            }
+        }
+        this.copyVisibilityInfo(visibilityInfo);
+        this.setParent(this.features, this);
+        this.setParent(this.path, this);
+    };
+    Import.prototype = Object.assign(new Node(), {
+        type: 'Import',
+        accept: function (visitor) {
             if (this.features) {
                 this.features = visitor.visit(this.features);
             }
@@ -3680,8 +3568,8 @@
             if (!this.options.isPlugin && !this.options.inline && this.root) {
                 this.root = visitor.visit(this.root);
             }
-        };
-        Import.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             if (this.css && this.path._fileInfo.reference === undefined) {
                 output.add('@import ', this._fileInfo, this._index);
                 this.path.genCSS(context, output);
@@ -3691,12 +3579,12 @@
                 }
                 output.add(';');
             }
-        };
-        Import.prototype.getPath = function () {
+        },
+        getPath: function () {
             return (this.path instanceof URL) ?
                 this.path.value.value : this.path.value;
-        };
-        Import.prototype.isVariableImport = function () {
+        },
+        isVariableImport: function () {
             var path = this.path;
             if (path instanceof URL) {
                 path = path.value;
@@ -3705,15 +3593,15 @@
                 return path.containsVariables();
             }
             return true;
-        };
-        Import.prototype.evalForImport = function (context) {
+        },
+        evalForImport: function (context) {
             var path = this.path;
             if (path instanceof URL) {
                 path = path.value;
             }
             return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
-        };
-        Import.prototype.evalPath = function (context) {
+        },
+        evalPath: function (context) {
             var path = this.path.eval(context);
             var fileInfo = this._fileInfo;
             if (!(path instanceof URL)) {
@@ -3729,8 +3617,8 @@
                 }
             }
             return path;
-        };
-        Import.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var result = this.doEval(context);
             if (this.options.reference || this.blocksVisibility()) {
                 if (result.length || result.length === 0) {
@@ -3743,8 +3631,8 @@
                 }
             }
             return result;
-        };
-        Import.prototype.doEval = function (context) {
+        },
+        doEval: function (context) {
             var ruleset;
             var registry;
             var features = this.features && this.features.eval(context);
@@ -3794,17 +3682,12 @@
             else {
                 return [];
             }
-        };
-        return Import;
-    }(Node));
-    Import.prototype.type = 'Import';
-
-    var JsEvalNode = /** @class */ (function (_super) {
-        __extends(JsEvalNode, _super);
-        function JsEvalNode() {
-            return _super !== null && _super.apply(this, arguments) || this;
         }
-        JsEvalNode.prototype.evaluateJavaScript = function (expression, context) {
+    });
+
+    var JsEvalNode = function () { };
+    JsEvalNode.prototype = Object.assign(new Node(), {
+        evaluateJavaScript: function (expression, context) {
             var result;
             var that = this;
             var evalContext = {};
@@ -3843,29 +3726,26 @@
                     index: this.getIndex() };
             }
             return result;
-        };
-        JsEvalNode.prototype.jsify = function (obj) {
+        },
+        jsify: function (obj) {
             if (Array.isArray(obj.value) && (obj.value.length > 1)) {
                 return "[" + obj.value.map(function (v) { return v.toCSS(); }).join(', ') + "]";
             }
             else {
                 return obj.toCSS();
             }
-        };
-        return JsEvalNode;
-    }(Node));
-
-    var JavaScript = /** @class */ (function (_super) {
-        __extends(JavaScript, _super);
-        function JavaScript(string, escaped, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.escaped = escaped;
-            _this.expression = string;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            return _this;
         }
-        JavaScript.prototype.eval = function (context) {
+    });
+
+    var JavaScript = function (string, escaped, index, currentFileInfo) {
+        this.escaped = escaped;
+        this.expression = string;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    };
+    JavaScript.prototype = Object.assign(new JsEvalNode(), {
+        type: 'JavaScript',
+        eval: function (context) {
             var result = this.evaluateJavaScript(this.expression, context);
             var type = typeof result;
             if (type === 'number' && !isNaN(result)) {
@@ -3880,29 +3760,25 @@
             else {
                 return new Anonymous(result);
             }
-        };
-        return JavaScript;
-    }(JsEvalNode));
-    JavaScript.prototype.type = 'JavaScript';
-
-    var Assignment = /** @class */ (function (_super) {
-        __extends(Assignment, _super);
-        function Assignment(key, val) {
-            var _this = _super.call(this) || this;
-            _this.key = key;
-            _this.value = val;
-            return _this;
         }
-        Assignment.prototype.accept = function (visitor) {
+    });
+
+    var Assignment = function (key, val) {
+        this.key = key;
+        this.value = val;
+    };
+    Assignment.prototype = Object.assign(new Node(), {
+        type: 'Assignment',
+        accept: function (visitor) {
             this.value = visitor.visit(this.value);
-        };
-        Assignment.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             if (this.value.eval) {
                 return new Assignment(this.key, this.value.eval(context));
             }
             return this;
-        };
-        Assignment.prototype.genCSS = function (context, output) {
+        },
+        genCSS: function (context, output) {
             output.add(this.key + "=");
             if (this.value.genCSS) {
                 this.value.genCSS(context, output);
@@ -3910,27 +3786,23 @@
             else {
                 output.add(this.value);
             }
-        };
-        return Assignment;
-    }(Node));
-    Assignment.prototype.type = 'Assignment';
-
-    var Condition = /** @class */ (function (_super) {
-        __extends(Condition, _super);
-        function Condition(op, l, r, i, negate) {
-            var _this = _super.call(this) || this;
-            _this.op = op.trim();
-            _this.lvalue = l;
-            _this.rvalue = r;
-            _this._index = i;
-            _this.negate = negate;
-            return _this;
         }
-        Condition.prototype.accept = function (visitor) {
+    });
+
+    var Condition = function (op, l, r, i, negate) {
+        this.op = op.trim();
+        this.lvalue = l;
+        this.rvalue = r;
+        this._index = i;
+        this.negate = negate;
+    };
+    Condition.prototype = Object.assign(new Node(), {
+        type: 'Condition',
+        accept: function (visitor) {
             this.lvalue = visitor.visit(this.lvalue);
             this.rvalue = visitor.visit(this.rvalue);
-        };
-        Condition.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var result = (function (op, a, b) {
                 switch (op) {
                     case 'and': return a && b;
@@ -3949,79 +3821,67 @@
                 }
             })(this.op, this.lvalue.eval(context), this.rvalue.eval(context));
             return this.negate ? !result : result;
-        };
-        return Condition;
-    }(Node));
-    Condition.prototype.type = 'Condition';
-
-    var UnicodeDescriptor = /** @class */ (function (_super) {
-        __extends(UnicodeDescriptor, _super);
-        function UnicodeDescriptor(value) {
-            var _this = _super.call(this) || this;
-            _this.value = value;
-            return _this;
         }
-        return UnicodeDescriptor;
-    }(Node));
-    UnicodeDescriptor.prototype.type = 'UnicodeDescriptor';
+    });
 
-    var Negative = /** @class */ (function (_super) {
-        __extends(Negative, _super);
-        function Negative(node) {
-            var _this = _super.call(this) || this;
-            _this.value = node;
-            return _this;
-        }
-        Negative.prototype.genCSS = function (context, output) {
+    var UnicodeDescriptor = function (value) {
+        this.value = value;
+    };
+    UnicodeDescriptor.prototype = Object.assign(new Node(), {
+        type: 'UnicodeDescriptor'
+    });
+
+    var Negative = function (node) {
+        this.value = node;
+    };
+    Negative.prototype = Object.assign(new Node(), {
+        type: 'Negative',
+        genCSS: function (context, output) {
             output.add('-');
             this.value.genCSS(context, output);
-        };
-        Negative.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             if (context.isMathOn()) {
                 return (new Operation('*', [new Dimension(-1), this.value])).eval(context);
             }
             return new Negative(this.value.eval(context));
-        };
-        return Negative;
-    }(Node));
-    Negative.prototype.type = 'Negative';
-
-    var Extend = /** @class */ (function (_super) {
-        __extends(Extend, _super);
-        function Extend(selector, option, index, currentFileInfo, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.selector = selector;
-            _this.option = option;
-            _this.object_id = Extend.next_id++;
-            _this.parent_ids = [_this.object_id];
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.allowRoot = true;
-            switch (option) {
-                case 'all':
-                    _this.allowBefore = true;
-                    _this.allowAfter = true;
-                    break;
-                default:
-                    _this.allowBefore = false;
-                    _this.allowAfter = false;
-                    break;
-            }
-            _this.setParent(_this.selector, _this);
-            return _this;
         }
-        Extend.prototype.accept = function (visitor) {
+    });
+
+    var Extend = function (selector, option, index, currentFileInfo, visibilityInfo) {
+        this.selector = selector;
+        this.option = option;
+        this.object_id = Extend.next_id++;
+        this.parent_ids = [this.object_id];
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+        switch (option) {
+            case 'all':
+                this.allowBefore = true;
+                this.allowAfter = true;
+                break;
+            default:
+                this.allowBefore = false;
+                this.allowAfter = false;
+                break;
+        }
+        this.setParent(this.selector, this);
+    };
+    Extend.prototype = Object.assign(new Node(), {
+        type: 'Extend',
+        accept: function (visitor) {
             this.selector = visitor.visit(this.selector);
-        };
-        Extend.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             return new Extend(this.selector.eval(context), this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        };
-        Extend.prototype.clone = function (context) {
+        },
+        clone: function (context) {
             return new Extend(this.selector, this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        };
+        },
         // it concatenates (joins) all selectors in selector array
-        Extend.prototype.findSelfSelectors = function (selectors) {
+        findSelfSelectors: function (selectors) {
             var selfElements = [], i, selectorElements;
             for (i = 0; i < selectors.length; i++) {
                 selectorElements = selectors[i].elements;
@@ -4034,23 +3894,19 @@
             }
             this.selfSelectors = [new Selector(selfElements)];
             this.selfSelectors[0].copyVisibilityInfo(this.visibilityInfo());
-        };
-        return Extend;
-    }(Node));
-    Extend.next_id = 0;
-    Extend.prototype.type = 'Extend';
-
-    var VariableCall = /** @class */ (function (_super) {
-        __extends(VariableCall, _super);
-        function VariableCall(variable, index, currentFileInfo) {
-            var _this = _super.call(this) || this;
-            _this.variable = variable;
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.allowRoot = true;
-            return _this;
         }
-        VariableCall.prototype.eval = function (context) {
+    });
+    Extend.next_id = 0;
+
+    var VariableCall = function (variable, index, currentFileInfo) {
+        this.variable = variable;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.allowRoot = true;
+    };
+    VariableCall.prototype = Object.assign(new Node(), {
+        type: 'VariableCall',
+        eval: function (context) {
             var rules;
             var detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
             var error = new LessError({ message: "Could not evaluate variable call " + this.variable });
@@ -4073,22 +3929,18 @@
                 return detachedRuleset.callEval(context);
             }
             throw error;
-        };
-        return VariableCall;
-    }(Node));
-    VariableCall.prototype.type = 'VariableCall';
-
-    var NamespaceValue = /** @class */ (function (_super) {
-        __extends(NamespaceValue, _super);
-        function NamespaceValue(ruleCall, lookups, index, fileInfo) {
-            var _this = _super.call(this) || this;
-            _this.value = ruleCall;
-            _this.lookups = lookups;
-            _this._index = index;
-            _this._fileInfo = fileInfo;
-            return _this;
         }
-        NamespaceValue.prototype.eval = function (context) {
+    });
+
+    var NamespaceValue = function (ruleCall, lookups, index, fileInfo) {
+        this.value = ruleCall;
+        this.lookups = lookups;
+        this._index = index;
+        this._fileInfo = fileInfo;
+    };
+    NamespaceValue.prototype = Object.assign(new Node(), {
+        type: 'NamespaceValue',
+        eval: function (context) {
             var i, name, rules = this.value.eval(context);
             for (i = 0; i < this.lookups.length; i++) {
                 name = this.lookups[i];
@@ -4141,40 +3993,37 @@
                 }
             }
             return rules;
-        };
-        return NamespaceValue;
-    }(Node));
-    NamespaceValue.prototype.type = 'NamespaceValue';
-
-    var Definition = /** @class */ (function (_super) {
-        __extends(Definition, _super);
-        function Definition(name, params, rules, condition, variadic, frames, visibilityInfo) {
-            var _this = _super.call(this) || this;
-            _this.name = name || 'anonymous mixin';
-            _this.selectors = [new Selector([new Element(null, name, false, _this._index, _this._fileInfo)])];
-            _this.params = params;
-            _this.condition = condition;
-            _this.variadic = variadic;
-            _this.arity = params.length;
-            _this.rules = rules;
-            _this._lookups = {};
-            var optionalParameters = [];
-            _this.required = params.reduce(function (count, p) {
-                if (!p.name || (p.name && !p.value)) {
-                    return count + 1;
-                }
-                else {
-                    optionalParameters.push(p.name);
-                    return count;
-                }
-            }, 0);
-            _this.optionalParameters = optionalParameters;
-            _this.frames = frames;
-            _this.copyVisibilityInfo(visibilityInfo);
-            _this.allowRoot = true;
-            return _this;
         }
-        Definition.prototype.accept = function (visitor) {
+    });
+
+    var Definition = function (name, params, rules, condition, variadic, frames, visibilityInfo) {
+        this.name = name || 'anonymous mixin';
+        this.selectors = [new Selector([new Element(null, name, false, this._index, this._fileInfo)])];
+        this.params = params;
+        this.condition = condition;
+        this.variadic = variadic;
+        this.arity = params.length;
+        this.rules = rules;
+        this._lookups = {};
+        var optionalParameters = [];
+        this.required = params.reduce(function (count, p) {
+            if (!p.name || (p.name && !p.value)) {
+                return count + 1;
+            }
+            else {
+                optionalParameters.push(p.name);
+                return count;
+            }
+        }, 0);
+        this.optionalParameters = optionalParameters;
+        this.frames = frames;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+    };
+    Definition.prototype = Object.assign(new Ruleset(), {
+        type: 'MixinDefinition',
+        evalFirst: true,
+        accept: function (visitor) {
             if (this.params && this.params.length) {
                 this.params = visitor.visitArray(this.params);
             }
@@ -4182,8 +4031,8 @@
             if (this.condition) {
                 this.condition = visitor.visit(this.condition);
             }
-        };
-        Definition.prototype.evalParams = function (context, mixinEnv, args, evaldArguments) {
+        },
+        evalParams: function (context, mixinEnv, args, evaldArguments) {
             /* jshint boss:true */
             var frame = new Ruleset(null, null);
             var varargs;
@@ -4270,8 +4119,8 @@
                 argIndex++;
             }
             return frame;
-        };
-        Definition.prototype.makeImportant = function () {
+        },
+        makeImportant: function () {
             var rules = !this.rules ? this.rules : this.rules.map(function (r) {
                 if (r.makeImportant) {
                     return r.makeImportant(true);
@@ -4282,11 +4131,11 @@
             });
             var result = new Definition(this.name, this.params, rules, this.condition, this.variadic, this.frames);
             return result;
-        };
-        Definition.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             return new Definition(this.name, this.params, this.rules, this.condition, this.variadic, this.frames || copyArray(context.frames));
-        };
-        Definition.prototype.evalCall = function (context, args, important) {
+        },
+        evalCall: function (context, args, important) {
             var _arguments = [];
             var mixinFrames = this.frames ? this.frames.concat(context.frames) : context.frames;
             var frame = this.evalParams(context, new contexts.Eval(context, mixinFrames), args, _arguments);
@@ -4301,16 +4150,16 @@
                 ruleset = ruleset.makeImportant();
             }
             return ruleset;
-        };
-        Definition.prototype.matchCondition = function (args, context) {
+        },
+        matchCondition: function (args, context) {
             if (this.condition && !this.condition.eval(new contexts.Eval(context, [this.evalParams(context, /* the parameter variables */ new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames), args, [])]
                 .concat(this.frames || []) // the parent namespace/mixin frames
                 .concat(context.frames)))) { // the current environment frames
                 return false;
             }
             return true;
-        };
-        Definition.prototype.matchArgs = function (args, context) {
+        },
+        matchArgs: function (args, context) {
             var allArgsCnt = (args && args.length) || 0;
             var len;
             var optionalParameters = this.optionalParameters;
@@ -4345,34 +4194,29 @@
                 }
             }
             return true;
-        };
-        return Definition;
-    }(Ruleset));
-    Definition.prototype.type = 'MixinDefinition';
-    Definition.prototype.evalFirst = true;
-
-    var MixinCall = /** @class */ (function (_super) {
-        __extends(MixinCall, _super);
-        function MixinCall(elements, args, index, currentFileInfo, important) {
-            var _this = _super.call(this) || this;
-            _this.selector = new Selector(elements);
-            _this.arguments = args || [];
-            _this._index = index;
-            _this._fileInfo = currentFileInfo;
-            _this.important = important;
-            _this.allowRoot = true;
-            _this.setParent(_this.selector, _this);
-            return _this;
         }
-        MixinCall.prototype.accept = function (visitor) {
+    });
+
+    var MixinCall = function (elements, args, index, currentFileInfo, important) {
+        this.selector = new Selector(elements);
+        this.arguments = args || [];
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.important = important;
+        this.allowRoot = true;
+        this.setParent(this.selector, this);
+    };
+    MixinCall.prototype = Object.assign(new Node(), {
+        type: 'MixinCall',
+        accept: function (visitor) {
             if (this.selector) {
                 this.selector = visitor.visit(this.selector);
             }
             if (this.arguments.length) {
                 this.arguments = visitor.visitArray(this.arguments);
             }
-        };
-        MixinCall.prototype.eval = function (context) {
+        },
+        eval: function (context) {
             var mixins;
             var mixin;
             var mixinPath;
@@ -4508,8 +4352,8 @@
             else {
                 throw { type: 'Name', message: this.selector.toCSS().trim() + " is undefined", index: this.getIndex(), filename: this.fileInfo().filename };
             }
-        };
-        MixinCall.prototype._setVisibilityToReplacement = function (replacement) {
+        },
+        _setVisibilityToReplacement: function (replacement) {
             var i, rule;
             if (this.blocksVisibility()) {
                 for (i = 0; i < replacement.length; i++) {
@@ -4517,8 +4361,8 @@
                     rule.addVisibilityBlock();
                 }
             }
-        };
-        MixinCall.prototype.format = function (args) {
+        },
+        format: function (args) {
             return this.selector.toCSS().trim() + "(" + (args ? args.map(function (a) {
                 var argValue = '';
                 if (a.name) {
@@ -4532,10 +4376,8 @@
                 }
                 return argValue;
             }).join(', ') : '') + ")";
-        };
-        return MixinCall;
-    }(Node));
-    MixinCall.prototype.type = 'MixinCall';
+        }
+    });
 
     var tree = {
         Node: Node, Color: Color, AtRule: AtRule, DetachedRuleset: DetachedRuleset, Operation: Operation,
@@ -10633,21 +10475,18 @@
     var logger$1;
     var fileCache = {};
     // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
-    var FileManager = /** @class */ (function (_super) {
-        __extends(FileManager, _super);
-        function FileManager() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        FileManager.prototype.alwaysMakePathsAbsolute = function () {
+    var FileManager = function () { };
+    FileManager.prototype = Object.assign(new AbstractFileManager(), {
+        alwaysMakePathsAbsolute: function () {
             return true;
-        };
-        FileManager.prototype.join = function (basePath, laterPath) {
+        },
+        join: function (basePath, laterPath) {
             if (!basePath) {
                 return laterPath;
             }
             return this.extractUrlParts(laterPath, basePath).path;
-        };
-        FileManager.prototype.doXHR = function (url, type, callback, errback) {
+        },
+        doXHR: function (url, type, callback, errback) {
             var xhr = new XMLHttpRequest();
             var async = options.isFileProtocol ? options.fileAsync : true;
             if (typeof xhr.overrideMimeType === 'function') {
@@ -10683,14 +10522,14 @@
             else {
                 handleResponse(xhr, callback, errback);
             }
-        };
-        FileManager.prototype.supports = function () {
+        },
+        supports: function () {
             return true;
-        };
-        FileManager.prototype.clearFileCache = function () {
+        },
+        clearFileCache: function () {
             fileCache = {};
-        };
-        FileManager.prototype.loadFile = function (filename, currentDirectory, options, environment) {
+        },
+        loadFile: function (filename, currentDirectory, options, environment) {
             // TODO: Add prefix support like less-node?
             // What about multiple paths?
             if (currentDirectory && !this.isPathAbsolute(filename)) {
@@ -10722,9 +10561,8 @@
                     reject({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
                 });
             });
-        };
-        return FileManager;
-    }(AbstractFileManager));
+        }
+    });
     var FM = (function (opts, log) {
         options = opts;
         logger$1 = log;
@@ -10735,22 +10573,18 @@
     /**
      * Browser Plugin Loader
      */
-    var PluginLoader = /** @class */ (function (_super) {
-        __extends(PluginLoader, _super);
-        function PluginLoader(less) {
-            var _this = _super.call(this) || this;
-            _this.less = less;
-            return _this;
-            // Should we shim this.require for browser? Probably not?
-        }
-        PluginLoader.prototype.loadPlugin = function (filename, basePath, context, environment, fileManager) {
+    var PluginLoader = function (less) {
+        this.less = less;
+        // Should we shim this.require for browser? Probably not?
+    };
+    PluginLoader.prototype = Object.assign(new AbstractPluginLoader(), {
+        loadPlugin: function (filename, basePath, context, environment, fileManager) {
             return new Promise(function (fulfill, reject) {
                 fileManager.loadFile(filename, basePath, context, environment)
                     .then(fulfill).catch(reject);
             });
-        };
-        return PluginLoader;
-    }(AbstractPluginLoader));
+        }
+    });
 
     var LogListener = (function (less, options) {
         var logLevel_debug = 4;

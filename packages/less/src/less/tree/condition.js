@@ -1,20 +1,20 @@
 import Node from './node';
 
-class Condition extends Node {
-    constructor(op, l, r, i, negate) {
-        super();
+const Condition = function(op, l, r, i, negate) {
+    this.op = op.trim();
+    this.lvalue = l;
+    this.rvalue = r;
+    this._index = i;
+    this.negate = negate;
+};
 
-        this.op = op.trim();
-        this.lvalue = l;
-        this.rvalue = r;
-        this._index = i;
-        this.negate = negate;
-    }
+Condition.prototype = Object.assign(new Node(), {
+    type: 'Condition',
 
     accept(visitor) {
         this.lvalue = visitor.visit(this.lvalue);
         this.rvalue = visitor.visit(this.rvalue);
-    }
+    },
 
     eval(context) {
         const result = (function (op, a, b) {
@@ -37,7 +37,6 @@ class Condition extends Node {
 
         return this.negate ? !result : result;
     }
-}
+});
 
-Condition.prototype.type = 'Condition';
 export default Condition;

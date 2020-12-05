@@ -7,33 +7,34 @@ import Expression from './expression';
 import contexts from '../contexts';
 import * as utils from '../utils';
 
-class Definition extends Ruleset {
-    constructor(name, params, rules, condition, variadic, frames, visibilityInfo) {
-        super();
+const Definition = function(name, params, rules, condition, variadic, frames, visibilityInfo) {
+    this.name = name || 'anonymous mixin';
+    this.selectors = [new Selector([new Element(null, name, false, this._index, this._fileInfo)])];
+    this.params = params;
+    this.condition = condition;
+    this.variadic = variadic;
+    this.arity = params.length;
+    this.rules = rules;
+    this._lookups = {};
+    const optionalParameters = [];
+    this.required = params.reduce(function (count, p) {
+        if (!p.name || (p.name && !p.value)) {
+            return count + 1;
+        }
+        else {
+            optionalParameters.push(p.name);
+            return count;
+        }
+    }, 0);
+    this.optionalParameters = optionalParameters;
+    this.frames = frames;
+    this.copyVisibilityInfo(visibilityInfo);
+    this.allowRoot = true;
+}
 
-        this.name = name || 'anonymous mixin';
-        this.selectors = [new Selector([new Element(null, name, false, this._index, this._fileInfo)])];
-        this.params = params;
-        this.condition = condition;
-        this.variadic = variadic;
-        this.arity = params.length;
-        this.rules = rules;
-        this._lookups = {};
-        const optionalParameters = [];
-        this.required = params.reduce(function (count, p) {
-            if (!p.name || (p.name && !p.value)) {
-                return count + 1;
-            }
-            else {
-                optionalParameters.push(p.name);
-                return count;
-            }
-        }, 0);
-        this.optionalParameters = optionalParameters;
-        this.frames = frames;
-        this.copyVisibilityInfo(visibilityInfo);
-        this.allowRoot = true;
-    }
+Definition.prototype = Object.assign(new Ruleset(), {
+    type: 'MixinDefinition',
+    evalFirst: true,
 
     accept(visitor) {
         if (this.params && this.params.length) {
@@ -43,7 +44,7 @@ class Definition extends Ruleset {
         if (this.condition) {
             this.condition = visitor.visit(this.condition);
         }
-    }
+    },
 
     evalParams(context, mixinEnv, args, evaldArguments) {
         /* jshint boss:true */
@@ -135,7 +136,7 @@ class Definition extends Ruleset {
         }
 
         return frame;
-    }
+    },
 
     makeImportant() {
         const rules = !this.rules ? this.rules : this.rules.map(function (r) {
@@ -147,11 +148,11 @@ class Definition extends Ruleset {
         });
         const result = new Definition(this.name, this.params, rules, this.condition, this.variadic, this.frames);
         return result;
-    }
+    },
 
     eval(context) {
         return new Definition(this.name, this.params, this.rules, this.condition, this.variadic, this.frames || utils.copyArray(context.frames));
-    }
+    },
 
     evalCall(context, args, important) {
         const _arguments = [];
@@ -171,7 +172,7 @@ class Definition extends Ruleset {
             ruleset = ruleset.makeImportant();
         }
         return ruleset;
-    }
+    },
 
     matchCondition(args, context) {
         if (this.condition && !this.condition.eval(
@@ -183,7 +184,7 @@ class Definition extends Ruleset {
             return false;
         }
         return true;
-    }
+    },
 
     matchArgs(args, context) {
         const allArgsCnt = (args && args.length) || 0;
@@ -222,8 +223,6 @@ class Definition extends Ruleset {
         }
         return true;
     }
-}
+});
 
-Definition.prototype.type = 'MixinDefinition';
-Definition.prototype.evalFirst = true;
 export default Definition;

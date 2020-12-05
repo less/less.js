@@ -4,15 +4,15 @@ import Ruleset from './ruleset';
 import DetachedRuleset from './detached-ruleset';
 import LessError from '../less-error';
 
-class VariableCall extends Node {
-    constructor(variable, index, currentFileInfo) {
-        super();
+const VariableCall = function(variable, index, currentFileInfo) {
+    this.variable = variable;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.allowRoot = true;
+};
 
-        this.variable = variable;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.allowRoot = true;
-    }
+VariableCall.prototype = Object.assign(new Node(), {
+    type: 'VariableCall',
 
     eval(context) {
         let rules;
@@ -40,7 +40,6 @@ class VariableCall extends Node {
         }
         throw error;
     }
-}
+});
 
-VariableCall.prototype.type = 'VariableCall';
 export default VariableCall;

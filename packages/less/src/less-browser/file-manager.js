@@ -7,17 +7,18 @@ let logger;
 let fileCache = {};
 
 // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
-class FileManager extends AbstractFileManager {
+const FileManager = function() {}
+FileManager.prototype = Object.assign(new AbstractFileManager(), {
     alwaysMakePathsAbsolute() {
         return true;
-    }
+    },
 
     join(basePath, laterPath) {
         if (!basePath) {
             return laterPath;
         }
         return this.extractUrlParts(laterPath, basePath).path;
-    }
+    },
 
     doXHR(url, type, callback, errback) {
         const xhr = new XMLHttpRequest();
@@ -55,15 +56,15 @@ class FileManager extends AbstractFileManager {
         } else {
             handleResponse(xhr, callback, errback);
         }
-    }
+    },
 
     supports() {
         return true;
-    }
+    },
 
     clearFileCache() {
         fileCache = {};
-    }
+    },
 
     loadFile(filename, currentDirectory, options, environment) {
         // TODO: Add prefix support like less-node?
@@ -104,7 +105,7 @@ class FileManager extends AbstractFileManager {
             });
         });
     }
-}
+});
 
 export default (opts, log) => {
     options = opts;

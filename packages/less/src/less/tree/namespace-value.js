@@ -3,15 +3,15 @@ import Variable from './variable';
 import Ruleset from './ruleset';
 import Selector from './selector';
 
-class NamespaceValue extends Node {
-    constructor(ruleCall, lookups, index, fileInfo) {
-        super();
+const NamespaceValue = function(ruleCall, lookups, index, fileInfo) {
+    this.value = ruleCall;
+    this.lookups = lookups;
+    this._index = index;
+    this._fileInfo = fileInfo;
+};
 
-        this.value = ruleCall;
-        this.lookups = lookups;
-        this._index = index;
-        this._fileInfo = fileInfo;
-    }
+NamespaceValue.prototype = Object.assign(new Node(), {
+    type: 'NamespaceValue',
 
     eval(context) {
         let i, j, name, rules = this.value.eval(context);
@@ -77,7 +77,6 @@ class NamespaceValue extends Node {
         }
         return rules;
     }
-}
+});
 
-NamespaceValue.prototype.type = 'NamespaceValue';
 export default NamespaceValue;

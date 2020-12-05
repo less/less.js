@@ -1,14 +1,14 @@
 import Node from './node';
 import Call from './call';
 
-class Variable extends Node {
-    constructor(name, index, currentFileInfo) {
-        super();
+const Variable = function(name, index, currentFileInfo) {
+    this.name = name;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+};
 
-        this.name = name;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-    }
+Variable.prototype = Object.assign(new Node(), {
+    type: 'Variable',
 
     eval(context) {
         let variable, name = this.name;
@@ -51,7 +51,7 @@ class Variable extends Node {
                 filename: this.fileInfo().filename,
                 index: this.getIndex() };
         }
-    }
+    },
 
     find(obj, fun) {
         for (let i = 0, r; i < obj.length; i++) {
@@ -60,7 +60,6 @@ class Variable extends Node {
         }
         return null;
     }
-}
+});
 
-Variable.prototype.type = 'Variable';
 export default Variable;

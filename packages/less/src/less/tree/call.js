@@ -1,27 +1,26 @@
 import Node from './node';
 import Anonymous from './anonymous';
 import FunctionCaller from '../functions/function-caller';
-import logger from '../logger';
 
 //
 // A function call node.
 //
-class Call extends Node {
-    constructor(name, args, index, currentFileInfo) {
-        super();
+const Call = function(name, args, index, currentFileInfo) {
+    this.name = name;
+    this.args = args;
+    this.calc = name === 'calc';
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+}
 
-        this.name = name;
-        this.args = args;
-        this.calc = name === 'calc';
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-    }
+Call.prototype = Object.assign(new Node(), {
+    type: 'Call',
 
     accept(visitor) {
         if (this.args) {
             this.args = visitor.visitArray(this.args);
         }
-    }
+    },
 
     //
     // When evaluating a function call,
@@ -94,7 +93,7 @@ class Call extends Node {
         exitCalc();
 
         return new Call(this.name, args, this.getIndex(), this.fileInfo());
-    }
+    },
 
     genCSS(context, output) {
         output.add(`${this.name}(`, this.fileInfo(), this.getIndex());
@@ -108,7 +107,6 @@ class Call extends Node {
 
         output.add(')');
     }
-}
+});
 
-Call.prototype.type = 'Call';
 export default Call;

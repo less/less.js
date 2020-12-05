@@ -4,43 +4,43 @@ import colors from '../data/colors';
 //
 // RGB Colors - #ff0014, #eee
 //
-class Color extends Node {
-    constructor(rgb, a, originalForm) {
-        super();
-
-        const self = this;
-        //
-        // The end goal here, is to parse the arguments
-        // into an integer triplet, such as `128, 255, 0`
-        //
-        // This facilitates operations and conversions.
-        //
-        if (Array.isArray(rgb)) {
-            this.rgb = rgb;
-        } else if (rgb.length >= 6) {
-            this.rgb = [];
-            rgb.match(/.{2}/g).map(function (c, i) {
-                if (i < 3) {
-                    self.rgb.push(parseInt(c, 16));
-                } else {
-                    self.alpha = (parseInt(c, 16)) / 255;
-                }
-            });
-        } else {
-            this.rgb = [];
-            rgb.split('').map(function (c, i) {
-                if (i < 3) {
-                    self.rgb.push(parseInt(c + c, 16));
-                } else {
-                    self.alpha = (parseInt(c + c, 16)) / 255;
-                }
-            });
-        }
-        this.alpha = this.alpha || (typeof a === 'number' ? a : 1);
-        if (typeof originalForm !== 'undefined') {
-            this.value = originalForm;
-        }
+const Color = function(rgb, a, originalForm) {
+    const self = this;
+    //
+    // The end goal here, is to parse the arguments
+    // into an integer triplet, such as `128, 255, 0`
+    //
+    // This facilitates operations and conversions.
+    //
+    if (Array.isArray(rgb)) {
+        this.rgb = rgb;
+    } else if (rgb.length >= 6) {
+        this.rgb = [];
+        rgb.match(/.{2}/g).map(function (c, i) {
+            if (i < 3) {
+                self.rgb.push(parseInt(c, 16));
+            } else {
+                self.alpha = (parseInt(c, 16)) / 255;
+            }
+        });
+    } else {
+        this.rgb = [];
+        rgb.split('').map(function (c, i) {
+            if (i < 3) {
+                self.rgb.push(parseInt(c + c, 16));
+            } else {
+                self.alpha = (parseInt(c + c, 16)) / 255;
+            }
+        });
     }
+    this.alpha = this.alpha || (typeof a === 'number' ? a : 1);
+    if (typeof originalForm !== 'undefined') {
+        this.value = originalForm;
+    }
+}
+
+Color.prototype = Object.assign(new Node(), {
+    type: 'Color',
 
     luma() {
         let r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255;
@@ -50,11 +50,11 @@ class Color extends Node {
         b = (b <= 0.03928) ? b / 12.92 : Math.pow(((b + 0.055) / 1.055), 2.4);
 
         return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    }
+    },
 
     genCSS(context, output) {
         output.add(this.toCSS(context));
-    }
+    },
 
     toCSS(context, doNotCompress) {
         const compress = context && context.compress && !doNotCompress;
@@ -122,7 +122,7 @@ class Color extends Node {
         }
 
         return color;
-    }
+    },
 
     //
     // Operations have to be done per-channel, if not,
@@ -137,11 +137,11 @@ class Color extends Node {
             rgb[c] = this._operate(context, op, this.rgb[c], other.rgb[c]);
         }
         return new Color(rgb, alpha);
-    }
+    },
 
     toRGB() {
         return toHex(this.rgb);
-    }
+    },
 
     toHSL() {
         const r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
@@ -165,7 +165,7 @@ class Color extends Node {
             h /= 6;
         }
         return { h: h * 360, s, l, a };
-    }
+    },
 
     // Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
     toHSV() {
@@ -194,11 +194,11 @@ class Color extends Node {
             h /= 6;
         }
         return { h: h * 360, s, v, a };
-    }
+    },
 
     toARGB() {
         return toHex([this.alpha * 255].concat(this.rgb));
-    }
+    },
 
     compare(x) {
         return (x.rgb &&
@@ -207,25 +207,23 @@ class Color extends Node {
             x.rgb[2] === this.rgb[2] &&
             x.alpha  === this.alpha) ? 0 : undefined;
     }
+});
 
-    static fromKeyword(keyword) {
-        let c;
-        const key = keyword.toLowerCase();
-        if (colors.hasOwnProperty(key)) {
-            c = new Color(colors[key].slice(1));
-        }
-        else if (key === 'transparent') {
-            c = new Color([0, 0, 0], 0);
-        }
-
-        if (c) {
-            c.value = keyword;
-            return c;
-        }
+Color.fromKeyword = function(keyword) {
+    let c;
+    const key = keyword.toLowerCase();
+    if (colors.hasOwnProperty(key)) {
+        c = new Color(colors[key].slice(1));
     }
-}
+    else if (key === 'transparent') {
+        c = new Color([0, 0, 0], 0);
+    }
 
-Color.prototype.type = 'Color';
+    if (c) {
+        c.value = keyword;
+        return c;
+    }
+};
 
 function clamp(v, max) {
     return Math.min(Math.max(v, 0), max);

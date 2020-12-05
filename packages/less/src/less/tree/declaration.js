@@ -5,22 +5,33 @@ import Anonymous from './anonymous';
 import * as Constants from '../constants';
 const MATH = Constants.Math;
 
-class Declaration extends Node {
-    constructor(name, value, important, merge, index, currentFileInfo, inline, variable) {
-        super();
-
-        this.name = name;
-        this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
-        this.important = important ? ` ${important.trim()}` : '';
-        this.merge = merge;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.inline = inline || false;
-        this.variable = (variable !== undefined) ? variable
-            : (name.charAt && (name.charAt(0) === '@'));
-        this.allowRoot = true;
-        this.setParent(this.value, this);
+function evalName(context, name) {
+    let value = '';
+    let i;
+    const n = name.length;
+    const output = {add: function (s) {value += s;}};
+    for (i = 0; i < n; i++) {
+        name[i].eval(context).genCSS(context, output);
     }
+    return value;
+}
+
+const Declaration = function(name, value, important, merge, index, currentFileInfo, inline, variable) {
+    this.name = name;
+    this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
+    this.important = important ? ` ${important.trim()}` : '';
+    this.merge = merge;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.inline = inline || false;
+    this.variable = (variable !== undefined) ? variable
+        : (name.charAt && (name.charAt(0) === '@'));
+    this.allowRoot = true;
+    this.setParent(this.value, this);
+};
+
+Declaration.prototype = Object.assign(new Node(), {
+    type: 'Declaration',
 
     genCSS(context, output) {
         output.add(this.name + (context.compress ? ':' : ': '), this.fileInfo(), this.getIndex());
@@ -33,7 +44,7 @@ class Declaration extends Node {
             throw e;
         }
         output.add(this.important + ((this.inline || (context.lastRule && context.compress)) ? '' : ';'), this._fileInfo, this._index);
-    }
+    },
 
     eval(context) {
         let mathBypass = false, prevMath, name = this.name, evaldValue, variable = this.variable;
@@ -84,7 +95,7 @@ class Declaration extends Node {
                 context.math = prevMath;
             }
         }
-    }
+    },
 
     makeImportant() {
         return new Declaration(this.name,
@@ -93,18 +104,6 @@ class Declaration extends Node {
             this.merge,
             this.getIndex(), this.fileInfo(), this.inline);
     }
-}
+});
 
-function evalName(context, name) {
-    let value = '';
-    let i;
-    const n = name.length;
-    const output = {add: function (s) {value += s;}};
-    for (i = 0; i < n; i++) {
-        name[i].eval(context).genCSS(context, output);
-    }
-    return value;
-}
-
-Declaration.prototype.type = 'Declaration';
 export default Declaration;

@@ -2,20 +2,20 @@ import Node from './node';
 import Element from './element';
 import LessError from '../less-error';
 
-class Selector extends Node {
-    constructor(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
-        super();
+const Selector = function(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
+    this.extendList = extendList;
+    this.condition = condition;
+    this.evaldCondition = !condition;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.elements = this.getElements(elements);
+    this.mixinElements_ = undefined;
+    this.copyVisibilityInfo(visibilityInfo);
+    this.setParent(this.elements, this);
+};
 
-        this.extendList = extendList;
-        this.condition = condition;
-        this.evaldCondition = !condition;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.elements = this.getElements(elements);
-        this.mixinElements_ = undefined;
-        this.copyVisibilityInfo(visibilityInfo);
-        this.setParent(this.elements, this);
-    }
+Selector.prototype = Object.assign(new Node(), {
+    type: 'Selector',
 
     accept(visitor) {
         if (this.elements) {
@@ -27,7 +27,7 @@ class Selector extends Node {
         if (this.condition) {
             this.condition = visitor.visit(this.condition);
         }
-    }
+    },
 
     createDerived(elements, extendList, evaldCondition) {
         elements = this.getElements(elements);
@@ -36,7 +36,7 @@ class Selector extends Node {
         newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
         newSelector.mediaEmpty = this.mediaEmpty;
         return newSelector;
-    }
+    },
 
     getElements(els) {
         if (!els) {
@@ -59,13 +59,13 @@ class Selector extends Node {
                 });
         }
         return els;
-    }
+    },
 
     createEmptySelectors() {
         const el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
         sels[0].mediaEmpty = true;
         return sels;
-    }
+    },
 
     match(other) {
         const elements = this.elements;
@@ -86,7 +86,7 @@ class Selector extends Node {
         }
 
         return olen; // return number of matched elements
-    }
+    },
 
     mixinElements() {
         if (this.mixinElements_) {
@@ -106,14 +106,14 @@ class Selector extends Node {
         }
 
         return (this.mixinElements_ = elements);
-    }
+    },
 
     isJustParentSelector() {
         return !this.mediaEmpty &&
             this.elements.length === 1 &&
             this.elements[0].value === '&' &&
             (this.elements[0].combinator.value === ' ' || this.elements[0].combinator.value === '');
-    }
+    },
 
     eval(context) {
         const evaldCondition = this.condition && this.condition.eval(context);
@@ -124,7 +124,7 @@ class Selector extends Node {
         extendList = extendList && extendList.map(function(extend) { return extend.eval(context); });
 
         return this.createDerived(elements, extendList, evaldCondition);
-    }
+    },
 
     genCSS(context, output) {
         let i, element;
@@ -135,12 +135,11 @@ class Selector extends Node {
             element = this.elements[i];
             element.genCSS(context, output);
         }
-    }
+    },
 
     getIsOutput() {
         return this.evaldCondition;
     }
-}
+});
 
-Selector.prototype.type = 'Selector';
 export default Selector;

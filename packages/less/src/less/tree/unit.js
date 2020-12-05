@@ -2,22 +2,22 @@ import Node from './node';
 import unitConversions from '../data/unit-conversions';
 import * as utils from '../utils';
 
-class Unit extends Node {
-    constructor(numerator, denominator, backupUnit) {
-        super();
-
-        this.numerator = numerator ? utils.copyArray(numerator).sort() : [];
-        this.denominator = denominator ? utils.copyArray(denominator).sort() : [];
-        if (backupUnit) {
-            this.backupUnit = backupUnit;
-        } else if (numerator && numerator.length) {
-            this.backupUnit = numerator[0];
-        }
+const Unit = function(numerator, denominator, backupUnit) {
+    this.numerator = numerator ? utils.copyArray(numerator).sort() : [];
+    this.denominator = denominator ? utils.copyArray(denominator).sort() : [];
+    if (backupUnit) {
+        this.backupUnit = backupUnit;
+    } else if (numerator && numerator.length) {
+        this.backupUnit = numerator[0];
     }
+};
+
+Unit.prototype = Object.assign(new Node(), {
+    type: 'Unit',
 
     clone() {
         return new Unit(utils.copyArray(this.numerator), utils.copyArray(this.denominator), this.backupUnit);
-    }
+    },
 
     genCSS(context, output) {
         // Dimension checks the unit is singular and throws an error if in strict math mode.
@@ -29,7 +29,7 @@ class Unit extends Node {
         } else if (!strictUnits && this.denominator.length) {
             output.add(this.denominator[0]);
         }
-    }
+    },
 
     toString() {
         let i, returnStr = this.numerator.join('*');
@@ -37,27 +37,27 @@ class Unit extends Node {
             returnStr += `/${this.denominator[i]}`;
         }
         return returnStr;
-    }
+    },
 
     compare(other) {
         return this.is(other.toString()) ? 0 : undefined;
-    }
+    },
 
     is(unitString) {
         return this.toString().toUpperCase() === unitString.toUpperCase();
-    }
+    },
 
     isLength() {
         return RegExp('^(px|em|ex|ch|rem|in|cm|mm|pc|pt|ex|vw|vh|vmin|vmax)$', 'gi').test(this.toCSS());
-    }
+    },
 
     isEmpty() {
         return this.numerator.length === 0 && this.denominator.length === 0;
-    }
+    },
 
     isSingular() {
         return this.numerator.length <= 1 && this.denominator.length === 0;
-    }
+    },
 
     map(callback) {
         let i;
@@ -69,7 +69,7 @@ class Unit extends Node {
         for (i = 0; i < this.denominator.length; i++) {
             this.denominator[i] = callback(this.denominator[i], true);
         }
-    }
+    },
 
     usedUnits() {
         let group;
@@ -95,7 +95,7 @@ class Unit extends Node {
         }
 
         return result;
-    }
+    },
 
     cancel() {
         const counter = {};
@@ -134,7 +134,6 @@ class Unit extends Node {
         this.numerator.sort();
         this.denominator.sort();
     }
-}
+});
 
-Unit.prototype.type = 'Unit';
 export default Unit;

@@ -19,29 +19,29 @@ import LessError from '../less-error';
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
-class Import extends Node {
-    constructor(path, features, options, index, currentFileInfo, visibilityInfo) {
-        super();
+const Import = function(path, features, options, index, currentFileInfo, visibilityInfo) {
+    this.options = options;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.path = path;
+    this.features = features;
+    this.allowRoot = true;
 
-        this.options = options;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.path = path;
-        this.features = features;
-        this.allowRoot = true;
-
-        if (this.options.less !== undefined || this.options.inline) {
-            this.css = !this.options.less || this.options.inline;
-        } else {
-            const pathValue = this.getPath();
-            if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
-                this.css = true;
-            }
+    if (this.options.less !== undefined || this.options.inline) {
+        this.css = !this.options.less || this.options.inline;
+    } else {
+        const pathValue = this.getPath();
+        if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
+            this.css = true;
         }
-        this.copyVisibilityInfo(visibilityInfo);
-        this.setParent(this.features, this);
-        this.setParent(this.path, this);
     }
+    this.copyVisibilityInfo(visibilityInfo);
+    this.setParent(this.features, this);
+    this.setParent(this.path, this);
+};
+
+Import.prototype = Object.assign(new Node(), {
+    type: 'Import',
 
     accept(visitor) {
         if (this.features) {
@@ -51,7 +51,7 @@ class Import extends Node {
         if (!this.options.isPlugin && !this.options.inline && this.root) {
             this.root = visitor.visit(this.root);
         }
-    }
+    },
 
     genCSS(context, output) {
         if (this.css && this.path._fileInfo.reference === undefined) {
@@ -63,12 +63,12 @@ class Import extends Node {
             }
             output.add(';');
         }
-    }
+    },
 
     getPath() {
         return (this.path instanceof URL) ?
             this.path.value.value : this.path.value;
-    }
+    },
 
     isVariableImport() {
         let path = this.path;
@@ -80,7 +80,7 @@ class Import extends Node {
         }
 
         return true;
-    }
+    },
 
     evalForImport(context) {
         let path = this.path;
@@ -90,7 +90,7 @@ class Import extends Node {
         }
 
         return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
-    }
+    },
 
     evalPath(context) {
         const path = this.path.eval(context);
@@ -109,7 +109,7 @@ class Import extends Node {
         }
 
         return path;
-    }
+    },
 
     eval(context) {
         const result = this.doEval(context);
@@ -124,7 +124,7 @@ class Import extends Node {
             }
         }
         return result;
-    }
+    },
 
     doEval(context) {
         let ruleset;
@@ -180,7 +180,6 @@ class Import extends Node {
             return [];
         }
     }
-}
+});
 
-Import.prototype.type = 'Import';
 export default Import;

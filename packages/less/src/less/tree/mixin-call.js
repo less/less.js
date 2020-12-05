@@ -3,18 +3,18 @@ import Selector from './selector';
 import MixinDefinition from './mixin-definition';
 import defaultFunc from '../functions/default';
 
-class MixinCall extends Node {
-    constructor(elements, args, index, currentFileInfo, important) {
-        super();
+const MixinCall = function(elements, args, index, currentFileInfo, important) {
+    this.selector = new Selector(elements);
+    this.arguments = args || [];
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.important = important;
+    this.allowRoot = true;
+    this.setParent(this.selector, this);
+};
 
-        this.selector = new Selector(elements);
-        this.arguments = args || [];
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.important = important;
-        this.allowRoot = true;
-        this.setParent(this.selector, this);
-    }
+MixinCall.prototype = Object.assign(new Node(), {
+    type: 'MixinCall',
 
     accept(visitor) {
         if (this.selector) {
@@ -23,7 +23,7 @@ class MixinCall extends Node {
         if (this.arguments.length) {
             this.arguments = visitor.visitArray(this.arguments);
         }
-    }
+    },
 
     eval(context) {
         let mixins;
@@ -180,7 +180,7 @@ class MixinCall extends Node {
                 message: `${this.selector.toCSS().trim()} is undefined`,
                 index:   this.getIndex(), filename: this.fileInfo().filename };
         }
-    }
+    },
 
     _setVisibilityToReplacement(replacement) {
         let i, rule;
@@ -190,7 +190,7 @@ class MixinCall extends Node {
                 rule.addVisibilityBlock();
             }
         }
-    }
+    },
 
     format(args) {
         return `${this.selector.toCSS().trim()}(${args ? args.map(function (a) {
@@ -206,7 +206,6 @@ class MixinCall extends Node {
         return argValue;
     }).join(', ') : ''})`;
     }
-}
+});
 
-MixinCall.prototype.type = 'MixinCall';
 export default MixinCall;

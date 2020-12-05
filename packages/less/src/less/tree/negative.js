@@ -2,17 +2,17 @@ import Node from './node';
 import Operation from './operation';
 import Dimension from './dimension';
 
-class Negative extends Node {
-    constructor(node) {
-        super();
+const Negative = function(node) {
+    this.value = node;
+};
 
-        this.value = node;
-    }
+Negative.prototype = Object.assign(new Node(), {
+    type: 'Negative',
 
     genCSS(context, output) {
         output.add('-');
         this.value.genCSS(context, output);
-    }
+    },
 
     eval(context) {
         if (context.isMathOn()) {
@@ -20,7 +20,6 @@ class Negative extends Node {
         }
         return new Negative(this.value.eval(context));
     }
-}
+});
 
-Negative.prototype.type = 'Negative';
 export default Negative;

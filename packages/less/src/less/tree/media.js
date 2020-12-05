@@ -6,28 +6,28 @@ import Expression from './expression';
 import AtRule from './atrule';
 import * as utils from '../utils';
 
-class Media extends AtRule {
-    constructor(value, features, index, currentFileInfo, visibilityInfo) {
-        super();
+const Media = function(value, features, index, currentFileInfo, visibilityInfo) {
+    this._index = index;
+    this._fileInfo = currentFileInfo;
 
-        this._index = index;
-        this._fileInfo = currentFileInfo;
+    const selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
 
-        const selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
+    this.features = new Value(features);
+    this.rules = [new Ruleset(selectors, value)];
+    this.rules[0].allowImports = true;
+    this.copyVisibilityInfo(visibilityInfo);
+    this.allowRoot = true;
+    this.setParent(selectors, this);
+    this.setParent(this.features, this);
+    this.setParent(this.rules, this);
+};
 
-        this.features = new Value(features);
-        this.rules = [new Ruleset(selectors, value)];
-        this.rules[0].allowImports = true;
-        this.copyVisibilityInfo(visibilityInfo);
-        this.allowRoot = true;
-        this.setParent(selectors, this);
-        this.setParent(this.features, this);
-        this.setParent(this.rules, this);
-    }
+Media.prototype = Object.assign(new AtRule(), {
+    type: 'Media',
 
     isRulesetLike() {
         return true;
-    }
+    },
 
     accept(visitor) {
         if (this.features) {
@@ -36,13 +36,13 @@ class Media extends AtRule {
         if (this.rules) {
             this.rules = visitor.visitArray(this.rules);
         }
-    }
+    },
 
     genCSS(context, output) {
         output.add('@media ', this._fileInfo, this._index);
         this.features.genCSS(context, output);
         this.outputRuleset(context, output, this.rules);
-    }
+    },
 
     eval(context) {
         if (!context.mediaBlocks) {
@@ -70,7 +70,7 @@ class Media extends AtRule {
 
         return context.mediaPath.length === 0 ? media.evalTop(context) :
             media.evalNested(context);
-    }
+    },
 
     evalTop(context) {
         let result = this;
@@ -88,7 +88,7 @@ class Media extends AtRule {
         delete context.mediaPath;
 
         return result;
-    }
+    },
 
     evalNested(context) {
         let i;
@@ -122,7 +122,7 @@ class Media extends AtRule {
 
         // Fake a tree-node that doesn't output anything.
         return new Ruleset([], []);
-    }
+    },
 
     permute(arr) {
         if (arr.length === 0) {
@@ -139,7 +139,7 @@ class Media extends AtRule {
             }
             return result;
         }
-    }
+    },
 
     bubbleSelectors(selectors) {
         if (!selectors) {
@@ -148,7 +148,6 @@ class Media extends AtRule {
         this.rules = [new Ruleset(utils.copyArray(selectors), [this.rules[0]])];
         this.setParent(this.rules, this);
     }
-}
+});
 
-Media.prototype.type = 'Media';
 export default Media;

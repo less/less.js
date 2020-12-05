@@ -3,43 +3,42 @@ import Selector from './selector';
 import Ruleset from './ruleset';
 import Anonymous from './anonymous';
 
-class AtRule extends Node {
-    constructor(
-        name,
-        value,
-        rules,
-        index,
-        currentFileInfo,
-        debugInfo,
-        isRooted,
-        visibilityInfo
-    ) {
-        super();
+const AtRule = function(
+    name,
+    value,
+    rules,
+    index,
+    currentFileInfo,
+    debugInfo,
+    isRooted,
+    visibilityInfo
+) {
+    let i;
 
-        let i;
-
-        this.name  = name;
-        this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
-        if (rules) {
-            if (Array.isArray(rules)) {
-                this.rules = rules;
-            } else {
-                this.rules = [rules];
-                this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
-            }
-            for (i = 0; i < this.rules.length; i++) {
-                this.rules[i].allowImports = true;
-            }
-            this.setParent(this.rules, this);
+    this.name  = name;
+    this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
+    if (rules) {
+        if (Array.isArray(rules)) {
+            this.rules = rules;
+        } else {
+            this.rules = [rules];
+            this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
         }
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.debugInfo = debugInfo;
-        this.isRooted = isRooted || false;
-        this.copyVisibilityInfo(visibilityInfo);
-        this.allowRoot = true;
+        for (i = 0; i < this.rules.length; i++) {
+            this.rules[i].allowImports = true;
+        }
+        this.setParent(this.rules, this);
     }
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.debugInfo = debugInfo;
+    this.isRooted = isRooted || false;
+    this.copyVisibilityInfo(visibilityInfo);
+    this.allowRoot = true;
+}
 
+AtRule.prototype = Object.assign(new Node(), {
+    type: 'AtRule',
     accept(visitor) {
         const value = this.value, rules = this.rules;
         if (rules) {
@@ -48,15 +47,15 @@ class AtRule extends Node {
         if (value) {
             this.value = visitor.visit(value);
         }
-    }
+    },
 
     isRulesetLike() {
         return this.rules || !this.isCharset();
-    }
+    },
 
     isCharset() {
         return '@charset' === this.name;
-    }
+    },
 
     genCSS(context, output) {
         const value = this.value, rules = this.rules;
@@ -70,7 +69,7 @@ class AtRule extends Node {
         } else {
             output.add(';');
         }
-    }
+    },
 
     eval(context) {
         let mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
@@ -97,28 +96,28 @@ class AtRule extends Node {
 
         return new AtRule(this.name, value, rules,
             this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo());
-    }
+    },
 
     variable(name) {
         if (this.rules) {
             // assuming that there is only one rule at this point - that is how parser constructs the rule
             return Ruleset.prototype.variable.call(this.rules[0], name);
         }
-    }
+    },
 
     find() {
         if (this.rules) {
             // assuming that there is only one rule at this point - that is how parser constructs the rule
             return Ruleset.prototype.find.apply(this.rules[0], arguments);
         }
-    }
+    },
 
     rulesets() {
         if (this.rules) {
             // assuming that there is only one rule at this point - that is how parser constructs the rule
             return Ruleset.prototype.rulesets.apply(this.rules[0]);
         }
-    }
+    },
 
     outputRuleset(context, output, rules) {
         const ruleCnt = rules.length;
@@ -152,7 +151,6 @@ class AtRule extends Node {
 
         context.tabLevel--;
     }
-}
+})
 
-AtRule.prototype.type = 'AtRule';
 export default AtRule;

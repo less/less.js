@@ -12,25 +12,25 @@ import defaultFunc from '../functions/default';
 import getDebugInfo from './debug-info';
 import * as utils from '../utils';
 
-class Ruleset extends Node {
-    constructor(selectors, rules, strictImports, visibilityInfo) {
-        super();
+const Ruleset = function(selectors, rules, strictImports, visibilityInfo) {
+    this.selectors = selectors;
+    this.rules = rules;
+    this._lookups = {};
+    this._variables = null;
+    this._properties = null;
+    this.strictImports = strictImports;
+    this.copyVisibilityInfo(visibilityInfo);
+    this.allowRoot = true;
 
-        this.selectors = selectors;
-        this.rules = rules;
-        this._lookups = {};
-        this._variables = null;
-        this._properties = null;
-        this.strictImports = strictImports;
-        this.copyVisibilityInfo(visibilityInfo);
-        this.allowRoot = true;
+    this.setParent(this.selectors, this);
+    this.setParent(this.rules, this);
+}
 
-        this.setParent(this.selectors, this);
-        this.setParent(this.rules, this);
+Ruleset.prototype = Object.assign(new Node(), {
+    type: 'Ruleset',
+    isRuleset: true,
 
-    }
-
-    isRulesetLike() { return true; }
+    isRulesetLike() { return true; },
 
     accept(visitor) {
         if (this.paths) {
@@ -41,7 +41,7 @@ class Ruleset extends Node {
         if (this.rules && this.rules.length) {
             this.rules = visitor.visitArray(this.rules);
         }
-    }
+    },
 
     eval(context) {
         const that = this;
@@ -223,7 +223,7 @@ class Ruleset extends Node {
         }
 
         return ruleset;
-    }
+    },
 
     evalImports(context) {
         const rules = this.rules;
@@ -243,7 +243,7 @@ class Ruleset extends Node {
                 this.resetCache();
             }
         }
-    }
+    },
 
     makeImportant() {
         const result = new Ruleset(this.selectors, this.rules.map(function (r) {
@@ -255,11 +255,11 @@ class Ruleset extends Node {
         }), this.strictImports, this.visibilityInfo());
 
         return result;
-    }
+    },
 
     matchArgs(args) {
         return !args || args.length === 0;
-    }
+    },
 
     // lets you call a css selector with a guard
     matchCondition(args, context) {
@@ -274,14 +274,14 @@ class Ruleset extends Node {
             return false;
         }
         return true;
-    }
+    },
 
     resetCache() {
         this._rulesets = null;
         this._variables = null;
         this._properties = null;
         this._lookups = {};
-    }
+    },
 
     variables() {
         if (!this._variables) {
@@ -304,7 +304,7 @@ class Ruleset extends Node {
             }, {});
         }
         return this._variables;
-    }
+    },
 
     properties() {
         if (!this._properties) {
@@ -324,21 +324,21 @@ class Ruleset extends Node {
             }, {});
         }
         return this._properties;
-    }
+    },
 
     variable(name) {
         const decl = this.variables()[name];
         if (decl) {
             return this.parseValue(decl);
         }
-    }
+    },
 
     property(name) {
         const decl = this.properties()[name];
         if (decl) {
             return this.parseValue(decl);
         }
-    }
+    },
 
     lastDeclaration() {
         for (let i = this.rules.length; i > 0; i--) {
@@ -347,7 +347,7 @@ class Ruleset extends Node {
                 return this.parseValue(decl);
             }
         }
-    }
+    },
 
     parseValue(toParse) {
         const self = this;
@@ -389,7 +389,7 @@ class Ruleset extends Node {
             });
             return nodes;
         }
-    }
+    },
 
     rulesets() {
         if (!this.rules) { return []; }
@@ -406,7 +406,7 @@ class Ruleset extends Node {
         }
 
         return filtRules;
-    }
+    },
 
     prependRule(rule) {
         const rules = this.rules;
@@ -416,7 +416,7 @@ class Ruleset extends Node {
             this.rules = [ rule ];
         }
         this.setParent(rule, this);
-    }
+    },
 
     find(selector, self, filter) {
         self = self || this;
@@ -450,7 +450,7 @@ class Ruleset extends Node {
         });
         this._lookups[key] = rules;
         return rules;
-    }
+    },
 
     genCSS(context, output) {
         let i;
@@ -563,13 +563,13 @@ class Ruleset extends Node {
         if (!output.isEmpty() && !context.compress && this.firstRoot) {
             output.add('\n');
         }
-    }
+    },
 
     joinSelectors(paths, context, selectors) {
         for (let s = 0; s < selectors.length; s++) {
             this.joinSelector(paths, context, selectors[s]);
         }
-    }
+    },
 
     joinSelector(paths, context, selector) {
 
@@ -844,8 +844,6 @@ class Ruleset extends Node {
         }
 
     }
-}
+});
 
-Ruleset.prototype.type = 'Ruleset';
-Ruleset.prototype.isRuleset = true;
 export default Ruleset;

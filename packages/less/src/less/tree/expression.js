@@ -5,20 +5,20 @@ import Dimension from './dimension';
 import * as Constants from '../constants';
 const MATH = Constants.Math;
 
-class Expression extends Node {
-    constructor(value, noSpacing) {
-        super();
-
-        this.value = value;
-        this.noSpacing = noSpacing;
-        if (!value) {
-            throw new Error('Expression requires an array parameter');
-        }
+const Expression = function(value, noSpacing) {
+    this.value = value;
+    this.noSpacing = noSpacing;
+    if (!value) {
+        throw new Error('Expression requires an array parameter');
     }
+};
+
+Expression.prototype = Object.assign(new Node(), {
+    type: 'Expression',
 
     accept(visitor) {
         this.value = visitor.visitArray(this.value);
-    }
+    },
 
     eval(context) {
         let returnValue;
@@ -52,7 +52,7 @@ class Expression extends Node {
             returnValue = new Paren(returnValue);
         }
         return returnValue;
-    }
+    },
 
     genCSS(context, output) {
         for (let i = 0; i < this.value.length; i++) {
@@ -61,14 +61,13 @@ class Expression extends Node {
                 output.add(' ');
             }
         }
-    }
+    },
 
     throwAwayComments() {
         this.value = this.value.filter(function(v) {
             return !(v instanceof Comment);
         });
     }
-}
+});
 
-Expression.prototype.type = 'Expression';
 export default Expression;

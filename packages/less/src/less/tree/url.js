@@ -1,24 +1,28 @@
 import Node from './node';
 
-class URL extends Node {
-    constructor(val, index, currentFileInfo, isEvald) {
-        super();
+function escapePath(path) {
+    return path.replace(/[\(\)'"\s]/g, function(match) { return `\\${match}`; });
+}
 
-        this.value = val;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.isEvald = isEvald;
-    }
+const URL = function(val, index, currentFileInfo, isEvald) {
+    this.value = val;
+    this._index = index;
+    this._fileInfo = currentFileInfo;
+    this.isEvald = isEvald;
+};
+
+URL.prototype = Object.assign(new Node(), {
+    type: 'Url',
 
     accept(visitor) {
         this.value = visitor.visit(this.value);
-    }
+    },
 
     genCSS(context, output) {
         output.add('url(');
         this.value.genCSS(context, output);
         output.add(')');
-    }
+    },
 
     eval(context) {
         const val = this.value.eval(context);
@@ -54,12 +58,6 @@ class URL extends Node {
 
         return new URL(val, this.getIndex(), this.fileInfo(), true);
     }
-}
-
-URL.prototype.type = 'Url';
-
-function escapePath(path) {
-    return path.replace(/[\(\)'"\s]/g, function(match) { return `\\${match}`; });
-}
+});
 
 export default URL;

@@ -5,18 +5,18 @@ import * as Constants from '../constants';
 const MATH = Constants.Math;
 
 
-class Operation extends Node {
-    constructor(op, operands, isSpaced) {
-        super();
+const Operation = function(op, operands, isSpaced) {
+    this.op = op.trim();
+    this.operands = operands;
+    this.isSpaced = isSpaced;
+};
 
-        this.op = op.trim();
-        this.operands = operands;
-        this.isSpaced = isSpaced;
-    }
+Operation.prototype = Object.assign(new Node(), {
+    type: 'Operation',
 
     accept(visitor) {
         this.operands = visitor.visitArray(this.operands);
-    }
+    },
 
     eval(context) {
         let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
@@ -41,7 +41,7 @@ class Operation extends Node {
         } else {
             return new Operation(this.op, [a, b], this.isSpaced);
         }
-    }
+    },
 
     genCSS(context, output) {
         this.operands[0].genCSS(context, output);
@@ -54,7 +54,6 @@ class Operation extends Node {
         }
         this.operands[1].genCSS(context, output);
     }
-}
+});
 
-Operation.prototype.type = 'Operation';
 export default Operation;

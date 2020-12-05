@@ -2,14 +2,15 @@ import path from 'path';
 import fs from './fs';
 import AbstractFileManager from '../less/environment/abstract-file-manager.js';
 
-class FileManager extends AbstractFileManager {
+const FileManager = function() {}
+FileManager.prototype = Object.assign(new AbstractFileManager(), {
     supports() {
         return true;
-    }
+    },
 
     supportsSync() {
         return true;
-    }
+    },
 
     loadFile(filename, currentDirectory, options, environment, callback) {
         let fullFilename;
@@ -137,12 +138,12 @@ class FileManager extends AbstractFileManager {
                 }
             }(0));
         }
-    }
+    },
 
     loadFileSync(filename, currentDirectory, options, environment) {
         options.syncImport = true;
         return this.loadFile(filename, currentDirectory, options, environment);
     }
-}
+});
 
 export default FileManager;

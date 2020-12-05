@@ -25,7 +25,7 @@ class Property extends Node {
 
         this.evaluating = true;
 
-        property = this.find(context.frames, frame => {
+        property = this.find(context.frames, function (frame) {
             let v;
             const vArr = frame.property(name);
             if (vArr) {

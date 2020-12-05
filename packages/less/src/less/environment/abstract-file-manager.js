@@ -20,28 +20,34 @@ class AbstractFileManager {
 
     tryAppendLessExtension(path) {
         return this.tryAppendExtension(path, '.less');
-    };
+    }
 
-    supportsSync() { return false; }
+    supportsSync() {
+        return false;
+    }
 
-    alwaysMakePathsAbsolute() { return false; }
+    alwaysMakePathsAbsolute() {
+        return false;
+    }
 
     isPathAbsolute(filename) {
         return (/^(?:[a-z-]+:|\/|\\|#)/i).test(filename);
     }
+
     // TODO: pull out / replace?
     join(basePath, laterPath) {
         if (!basePath) {
             return laterPath;
         }
         return basePath + laterPath;
-    };
+    }
 
     pathDiff(url, baseUrl) {
         // diff between two paths to create a relative path
-        const urlParts = this.extractUrlParts(url);
-        const baseUrlParts = this.extractUrlParts(baseUrl);
 
+        const urlParts = this.extractUrlParts(url);
+
+        const baseUrlParts = this.extractUrlParts(baseUrl);
         let i;
         let max;
         let urlDirectories;
@@ -63,7 +69,8 @@ class AbstractFileManager {
             diff += `${urlDirectories[i]}/`;
         }
         return diff;
-    };
+    }
+
     // helper function, not part of API
     extractUrlParts(url, baseUrl) {
         // urlParts[1] = protocol://hostname/ OR /
@@ -121,7 +128,7 @@ class AbstractFileManager {
         returner.fileUrl = returner.path + (urlParts[4] || '');
         returner.url = returner.fileUrl + (urlParts[5] || '');
         return returner;
-    };
+    }
 }
 
 export default AbstractFileManager;

@@ -30,9 +30,7 @@ class Ruleset extends Node {
 
     }
 
-    isRulesetLike() {
-        return true;
-    }
+    isRulesetLike() { return true; }
 
     accept(visitor) {
         if (this.paths) {
@@ -86,7 +84,7 @@ class Ruleset extends Node {
                     ["selectors"], 
                     selectors[0].getIndex(), 
                     selectors[0].fileInfo(), 
-                    (err, result) => {
+                    function(err, result) {
                         if (result) {
                             selectors = utils.flattenArray(result);
                         }
@@ -118,7 +116,7 @@ class Ruleset extends Node {
 
         // inherit a function registry from the frames stack when possible;
         // otherwise from the global registry
-        ruleset.functionRegistry = (frames => {
+        ruleset.functionRegistry = (function (frames) {
             let i = 0;
             const n = frames.length;
             let found;
@@ -127,7 +125,7 @@ class Ruleset extends Node {
                 if ( found ) { return found; }
             }
             return globalFunctionRegistry;
-        })(context.frames).inherit();
+        }(context.frames)).inherit();
 
         // push the current ruleset to the frames stack
         const ctxFrames = context.frames;
@@ -160,7 +158,7 @@ class Ruleset extends Node {
         for (i = 0; (rule = rsRules[i]); i++) {
             if (rule.type === 'MixinCall') {
                 /* jshint loopfunc:true */
-                rules = rule.eval(context).filter(r => {
+                rules = rule.eval(context).filter(function(r) {
                     if ((r instanceof Declaration) && r.variable) {
                         // do not pollute the scope if the variable is
                         // already there. consider returning false here
@@ -169,19 +167,19 @@ class Ruleset extends Node {
                     }
                     return true;
                 });
-                rsRules.splice(...[i, 1].concat(rules));
+                rsRules.splice.apply(rsRules, [i, 1].concat(rules));
                 i += rules.length - 1;
                 ruleset.resetCache();
             } else if (rule.type ===  'VariableCall') {
                 /* jshint loopfunc:true */
-                rules = rule.eval(context).rules.filter(r => {
+                rules = rule.eval(context).rules.filter(function(r) {
                     if ((r instanceof Declaration) && r.variable) {
                         // do not pollute the scope at all
                         return false;
                     }
                     return true;
                 });
-                rsRules.splice(...[i, 1].concat(rules));
+                rsRules.splice.apply(rsRules, [i, 1].concat(rules));
                 i += rules.length - 1;
                 ruleset.resetCache();
             }
@@ -237,7 +235,7 @@ class Ruleset extends Node {
             if (rules[i].type === 'Import') {
                 importRules = rules[i].eval(context);
                 if (importRules && (importRules.length || importRules.length === 0)) {
-                    rules.splice(...[i, 1].concat(importRules));
+                    rules.splice.apply(rules, [i, 1].concat(importRules));
                     i += importRules.length - 1;
                 } else {
                     rules.splice(i, 1, importRules);
@@ -248,7 +246,7 @@ class Ruleset extends Node {
     }
 
     makeImportant() {
-        const result = new Ruleset(this.selectors, this.rules.map(r => {
+        const result = new Ruleset(this.selectors, this.rules.map(function (r) {
             if (r.makeImportant) {
                 return r.makeImportant();
             } else {
@@ -287,7 +285,7 @@ class Ruleset extends Node {
 
     variables() {
         if (!this._variables) {
-            this._variables = !this.rules ? {} : this.rules.reduce((hash, r) => {
+            this._variables = !this.rules ? {} : this.rules.reduce(function (hash, r) {
                 if (r instanceof Declaration && r.variable === true) {
                     hash[r.name] = r;
                 }
@@ -310,7 +308,7 @@ class Ruleset extends Node {
 
     properties() {
         if (!this._properties) {
-            this._properties = !this.rules ? {} : this.rules.reduce((hash, r) => {
+            this._properties = !this.rules ? {} : this.rules.reduce(function (hash, r) {
                 if (r instanceof Declaration && r.variable !== true) {
                     const name = (r.name.length === 1) && (r.name[0] instanceof Keyword) ?
                         r.name[0].value : r.name;
@@ -361,7 +359,7 @@ class Ruleset extends Node {
                         ['value', 'important'], 
                         decl.value.getIndex(), 
                         decl.fileInfo(), 
-                        (err, result) => {
+                        function(err, result) {
                             if (err) {
                                 decl.parsed = true;
                             }
@@ -386,7 +384,7 @@ class Ruleset extends Node {
         }
         else {
             const nodes = [];
-            toParse.forEach(n => {
+            toParse.forEach(function(n) {
                 nodes.push(transformDeclaration.call(self, n));
             });
             return nodes;
@@ -420,7 +418,8 @@ class Ruleset extends Node {
         this.setParent(rule, this);
     }
 
-    find(selector, self = this, filter) {
+    find(selector, self, filter) {
+        self = self || this;
         const rules = [];
         let match;
         let foundMixins;
@@ -428,7 +427,7 @@ class Ruleset extends Node {
 
         if (key in this._lookups) { return this._lookups[key]; }
 
-        this.rulesets().forEach(rule => {
+        this.rulesets().forEach(function (rule) {
             if (rule !== self) {
                 for (let j = 0; j < rule.selectors.length; j++) {
                     match = selector.match(rule.selectors[j]);
@@ -460,7 +459,7 @@ class Ruleset extends Node {
         let ruleNodes = [];
 
         let // Line number debugging
-            debugInfo;
+        debugInfo;
 
         let rule;
         let path;
@@ -573,9 +572,9 @@ class Ruleset extends Node {
     }
 
     joinSelector(paths, context, selector) {
+
         function createParenthesis(elementsToPak, originalElement) {
-            let replacementParen;
-            let j;
+            let replacementParen, j;
             if (elementsToPak.length === 0) {
                 replacementParen = new Paren(elementsToPak[0]);
             } else {
@@ -595,8 +594,7 @@ class Ruleset extends Node {
         }
 
         function createSelector(containedElement, originalElement) {
-            let element;
-            let selector;
+            let element, selector;
             element = new Element(null, containedElement, originalElement.isVariable, originalElement._index, originalElement._fileInfo);
             selector = new Selector([element]);
             return selector;
@@ -606,9 +604,7 @@ class Ruleset extends Node {
         // `replacedElement` contains element that is being replaced by `addPath`
         // returns concatenated path
         function addReplacementIntoPath(beginningPath, addPath, replacedElement, originalSelector) {
-            let newSelectorPath;
-            let lastSelector;
-            let newJoinedSelector;
+            let newSelectorPath, lastSelector, newJoinedSelector;
             // our new selector path
             newSelectorPath = [];
 
@@ -654,7 +650,9 @@ class Ruleset extends Node {
             // put together the parent selectors after the join (e.g. the rest of the parent)
             if (addPath.length > 1) {
                 let restOfPath = addPath.slice(1);
-                restOfPath = restOfPath.map(selector => selector.createDerived(selector.elements, []));
+                restOfPath = restOfPath.map(function (selector) {
+                    return selector.createDerived(selector.elements, []);
+                });
                 newSelectorPath = newSelectorPath.concat(restOfPath);
             }
             return newSelectorPath;
@@ -673,8 +671,7 @@ class Ruleset extends Node {
         }
 
         function mergeElementsOnToSelectors(elements, selectors) {
-            let i;
-            let sel;
+            let i, sel;
 
             if (elements.length === 0) {
                 return ;
@@ -709,18 +706,7 @@ class Ruleset extends Node {
             // }
             // == [[.a] [.c]] [[.b] [.c]]
             //
-            let i;
-
-            let j;
-            let k;
-            let currentElements;
-            let newSelectors;
-            let selectorsMultiplied;
-            let sel;
-            let el;
-            let hadParentSelector = false;
-            let length;
-            let lastSelector;
+            let i, j, k, currentElements, newSelectors, selectorsMultiplied, sel, el, hadParentSelector = false, length, lastSelector;
             function findNestedSelector(element) {
                 let maybeSelector;
                 if (!(element.value instanceof Paren)) {
@@ -832,10 +818,7 @@ class Ruleset extends Node {
         }
 
         // joinSelector code follows
-        let i;
-
-        let newPaths;
-        let hadParentSelector;
+        let i, newPaths, hadParentSelector;
 
         newPaths = [];
         hadParentSelector = replaceParentSelector(newPaths, context, selector);
@@ -859,6 +842,7 @@ class Ruleset extends Node {
         for (i = 0; i < newPaths.length; i++) {
             paths.push(newPaths[i]);
         }
+
     }
 }
 

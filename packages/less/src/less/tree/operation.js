@@ -19,9 +19,7 @@ class Operation extends Node {
     }
 
     eval(context) {
-        let a = this.operands[0].eval(context);
-        let b = this.operands[1].eval(context);
-        let op;
+        let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
 
         if (context.isMathOn(this.op)) {
             op = this.op === './' ? '/' : this.op;

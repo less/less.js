@@ -13,7 +13,9 @@ class JsEvalNode extends Node {
                 index: this.getIndex() };
         }
 
-        expression = expression.replace(/@\{([\w-]+)\}/g, (_, name) => that.jsify(new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context)));
+        expression = expression.replace(/@\{([\w-]+)\}/g, function (_, name) {
+            return that.jsify(new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context));
+        });
 
         try {
             expression = new Function(`return (${expression})`);
@@ -48,7 +50,7 @@ class JsEvalNode extends Node {
 
     jsify(obj) {
         if (Array.isArray(obj.value) && (obj.value.length > 1)) {
-            return `[${obj.value.map(v => v.toCSS()).join(', ')}]`;
+            return `[${obj.value.map(function (v) { return v.toCSS(); }).join(', ')}]`;
         } else {
             return obj.toCSS();
         }

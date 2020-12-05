@@ -5,7 +5,6 @@ import Anonymous from './anonymous';
 import * as Constants from '../constants';
 const MATH = Constants.Math;
 
-
 class Declaration extends Node {
     constructor(name, value, important, merge, index, currentFileInfo, inline, variable) {
         super();
@@ -37,11 +36,7 @@ class Declaration extends Node {
     }
 
     eval(context) {
-        let mathBypass = false;
-        let prevMath;
-        let name = this.name;
-        let evaldValue;
-        let variable = this.variable;
+        let mathBypass = false, prevMath, name = this.name, evaldValue, variable = this.variable;
         if (typeof name !== 'string') {
             // expand 'primitive' name directly to get
             // things faster (~10% for benchmark.less):

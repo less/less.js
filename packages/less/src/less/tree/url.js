@@ -59,7 +59,7 @@ class URL extends Node {
 URL.prototype.type = 'Url';
 
 function escapePath(path) {
-    return path.replace(/[\(\)'"\s]/g, match => `\\${match}`);
+    return path.replace(/[\(\)'"\s]/g, function(match) { return `\\${match}`; });
 }
 
 export default URL;

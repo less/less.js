@@ -34,11 +34,11 @@ class Quoted extends Node {
     eval(context) {
         const that = this;
         let value = this.value;
-        const variableReplacement = (_, name) => {
+        const variableReplacement = function (_, name) {
             const v = new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context, true);
             return (v instanceof Quoted) ? v.value : v.toCSS();
         };
-        const propertyReplacement = (_, name) => {
+        const propertyReplacement = function (_, name) {
             const v = new Property(`$${name}`, that.getIndex(), that.fileInfo()).eval(context, true);
             return (v instanceof Quoted) ? v.value : v.toCSS();
         };
@@ -52,7 +52,6 @@ class Quoted extends Node {
         }
         value = iterativeReplace(value, this.variableRegex, variableReplacement);
         value = iterativeReplace(value, this.propRegex, propertyReplacement);
-
         return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
     }
 

@@ -1,5 +1,5 @@
 // Split the input into chunks.
-export default (input, fail) => {
+export default function (input, fail) {
     const len = input.length;
     let level = 0;
     let parenLevel = 0;

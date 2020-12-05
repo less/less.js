@@ -115,7 +115,7 @@ class Import extends Node {
         const result = this.doEval(context);
         if (this.options.reference || this.blocksVisibility()) {
             if (result.length || result.length === 0) {
-                result.forEach(node => {
+                result.forEach(function (node) {
                     node.addVisibilityBlock();
                 }
                 );

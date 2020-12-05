@@ -32,8 +32,7 @@ class Unit extends Node {
     }
 
     toString() {
-        let i;
-        let returnStr = this.numerator.join('*');
+        let i, returnStr = this.numerator.join('*');
         for (i = 0; i < this.denominator.length; i++) {
             returnStr += `/${this.denominator[i]}`;
         }
@@ -78,7 +77,7 @@ class Unit extends Node {
         let mapUnit;
         let groupName;
 
-        mapUnit = atomicUnit => {
+        mapUnit = function (atomicUnit) {
             /* jshint loopfunc:true */
             if (group.hasOwnProperty(atomicUnit) && !result[groupName]) {
                 result[groupName] = atomicUnit;

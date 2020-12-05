@@ -26,7 +26,7 @@ class FileManager extends AbstractFileManager {
 
         const paths = isAbsoluteFilename ? [''] : [currentDirectory];
 
-        if (options.paths) { paths.push(...options.paths); }
+        if (options.paths) { paths.push.apply(paths, options.paths); }
 
         if (!isAbsoluteFilename && paths.indexOf('.') === -1) { paths.push('.'); }
 
@@ -101,7 +101,7 @@ class FileManager extends AbstractFileManager {
                                     fullFilename = extFilename;
                                 }
                             }
-                        
+
                             const readFileArgs = [fullFilename];
                             if (!options.rawBuffer) {
                                 readFileArgs.push('utf-8');
@@ -121,11 +121,12 @@ class FileManager extends AbstractFileManager {
                                     if (e) {
                                         filenamesTried.push(isNodeModule ? npmPrefix + fullFilename : fullFilename);
                                         return tryPrefix(j + 1);
-                                    }
+                                    }   
                                     fulfill({ contents: data, filename: fullFilename});
                                 });
                                 fs.readFile.apply(this, readFileArgs);
                             }
+
                         }
                         else {
                             tryPathIndex(i + 1);

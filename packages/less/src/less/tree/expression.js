@@ -30,7 +30,7 @@ class Expression extends Node {
             context.inParenthesis();
         }
         if (this.value.length > 1) {
-            returnValue = new Expression(this.value.map(e => {
+            returnValue = new Expression(this.value.map(function (e) {
                 if (!e.eval) {
                     return e;
                 }
@@ -64,7 +64,9 @@ class Expression extends Node {
     }
 
     throwAwayComments() {
-        this.value = this.value.filter(v => !(v instanceof Comment));
+        this.value = this.value.filter(function(v) {
+            return !(v instanceof Comment);
+        });
     }
 }
 

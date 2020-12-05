@@ -43,6 +43,7 @@ contexts.Parse = function(options) {
 const evalCopyProperties = [
     'paths',             // additional include paths
     'compress',          // whether to compress
+    'ieCompat',          // whether to enforce IE compatibility (IE8 data-uri)
     'math',              // whether math has to be within parenthesis
     'strictUnits',       // whether units need to evaluate correctly
     'sourceMap',         // whether to output a source map
@@ -54,6 +55,105 @@ const evalCopyProperties = [
     'rewriteUrls'        // option - whether to adjust URL's to be relative
 ];
 
+contexts.Eval = function(options, frames) {
+    copyFromOriginal(options, this, evalCopyProperties);
+
+    if (typeof this.paths === 'string') { this.paths = [this.paths]; }
+
+    this.frames = frames || [];
+    this.importantScope = this.importantScope || [];
+};
+
+contexts.Eval.prototype.enterCalc = function () {
+    if (!this.calcStack) {
+        this.calcStack = [];
+    }
+    this.calcStack.push(true);
+    this.inCalc = true;
+};
+
+contexts.Eval.prototype.exitCalc = function () {
+    this.calcStack.pop();
+    if (!this.calcStack.length) {
+        this.inCalc = false;
+    }
+};
+
+contexts.Eval.prototype.inParenthesis = function () {
+    if (!this.parensStack) {
+        this.parensStack = [];
+    }
+    this.parensStack.push(true);
+};
+
+contexts.Eval.prototype.outOfParenthesis = function () {
+    this.parensStack.pop();
+};
+
+contexts.Eval.prototype.inCalc = false;
+contexts.Eval.prototype.mathOn = true;
+contexts.Eval.prototype.isMathOn = function (op) {
+    if (!this.mathOn) {
+        return false;
+    }
+    if (op === '/' && this.math !== Constants.Math.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
+        return false;
+    }
+    if (this.math > Constants.Math.PARENS_DIVISION) {
+        return this.parensStack && this.parensStack.length;
+    }
+    return true;
+};
+
+contexts.Eval.prototype.pathRequiresRewrite = function (path) {
+    const isRelative = this.rewriteUrls === Constants.RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
+
+    return isRelative(path);
+};
+
+contexts.Eval.prototype.rewritePath = function (path, rootpath) {
+    let newPath;
+
+    rootpath = rootpath || '';
+    newPath = this.normalizePath(rootpath + path);
+
+    // If a path was explicit relative and the rootpath was not an absolute path
+    // we must ensure that the new path is also explicit relative.
+    if (isPathLocalRelative(path) &&
+        isPathRelative(rootpath) &&
+        isPathLocalRelative(newPath) === false) {
+        newPath = `./${newPath}`;
+    }
+
+    return newPath;
+};
+
+contexts.Eval.prototype.normalizePath = function (path) {
+    const segments = path.split('/').reverse();
+    let segment;
+
+    path = [];
+    while (segments.length !== 0) {
+        segment = segments.pop();
+        switch ( segment ) {
+            case '.':
+                break;
+            case '..':
+                if ((path.length === 0) || (path[path.length - 1] === '..')) {
+                    path.push( segment );
+                } else {
+                    path.pop();
+                }
+                break;
+            default:
+                path.push(segment);
+                break;
+        }
+    }
+
+    return path.join('/');
+};
+
 function isPathRelative(path) {
     return !/^(?:[a-z-]+:|\/|#)/i.test(path);
 }
@@ -62,103 +162,4 @@ function isPathLocalRelative(path) {
     return path.charAt(0) === '.';
 }
 
-contexts.Eval = class {
-    constructor(options, frames) {
-        copyFromOriginal(options, this, evalCopyProperties);
-
-        if (typeof this.paths === 'string') { this.paths = [this.paths]; }
-
-        this.frames = frames || [];
-        this.importantScope = this.importantScope || [];
-        this.inCalc = false;
-        this.mathOn = true;
-    }
-
-    enterCalc() {
-        if (!this.calcStack) {
-            this.calcStack = [];
-        }
-        this.calcStack.push(true);
-        this.inCalc = true;
-    }
-
-    exitCalc() {
-        this.calcStack.pop();
-        if (!this.calcStack.length) {
-            this.inCalc = false;
-        }
-    }
-
-    inParenthesis() {
-        if (!this.parensStack) {
-            this.parensStack = [];
-        }
-        this.parensStack.push(true);
-    };
-
-    outOfParenthesis() {
-        this.parensStack.pop();
-    };
-
-    isMathOn(op) {
-        if (!this.mathOn) {
-            return false;
-        }
-        if (op === '/' && this.math !== Constants.Math.ALWAYS && (!this.parensStack || !this.parensStack.length)) {
-            return false;
-        }
-        if (this.math > Constants.Math.PARENS_DIVISION) {
-            return this.parensStack && this.parensStack.length;
-        }
-        return true;
-    }
-
-    pathRequiresRewrite(path) {
-        const isRelative = this.rewriteUrls === Constants.RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
-
-        return isRelative(path);
-    }
-
-    rewritePath(path, rootpath) {
-        let newPath;
-
-        rootpath = rootpath || '';
-        newPath = this.normalizePath(rootpath + path);
-
-        // If a path was explicit relative and the rootpath was not an absolute path
-        // we must ensure that the new path is also explicit relative.
-        if (isPathLocalRelative(path) &&
-            isPathRelative(rootpath) &&
-            isPathLocalRelative(newPath) === false) {
-            newPath = `./${newPath}`;
-        }
-
-        return newPath;
-    }
-
-    normalizePath(path) {
-        const segments = path.split('/').reverse();
-        let segment;
-
-        path = [];
-        while (segments.length !== 0) {
-            segment = segments.pop();
-            switch ( segment ) {
-                case '.':
-                    break;
-                case '..':
-                    if ((path.length === 0) || (path[path.length - 1] === '..')) {
-                        path.push( segment );
-                    } else {
-                        path.pop();
-                    }
-                    break;
-                default:
-                    path.push(segment);
-                    break;
-            }
-        }
-
-        return path.join('/');
-    }
-}
+// todo - do the same for the toCSS ?

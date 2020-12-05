@@ -17,7 +17,7 @@ class Condition extends Node {
     }
 
     eval(context) {
-        const result = ((op, a, b) => {
+        const result = (function (op, a, b) {
             switch (op) {
                 case 'and': return a && b;
                 case 'or':  return a || b;

@@ -62,8 +62,7 @@ class Selector extends Node {
     }
 
     createEmptySelectors() {
-        const el = new Element('', '&', false, this._index, this._fileInfo);
-        const sels = [new Selector([el], null, null, this._index, this._fileInfo)];
+        const el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
         sels[0].mediaEmpty = true;
         return sels;
     }
@@ -94,7 +93,9 @@ class Selector extends Node {
             return this.mixinElements_;
         }
 
-        let elements = this.elements.map( v => v.combinator.value + (v.value.value || v.value)).join('').match(/[,&#\*\.\w-]([\w-]|(\\.))*/g);
+        let elements = this.elements.map( function(v) {
+            return v.combinator.value + (v.value.value || v.value);
+        }).join('').match(/[,&#\*\.\w-]([\w-]|(\\.))*/g);
 
         if (elements) {
             if (elements[0] === '&') {
@@ -119,15 +120,14 @@ class Selector extends Node {
         let elements = this.elements;
         let extendList = this.extendList;
 
-        elements = elements && elements.map(e => e.eval(context));
-        extendList = extendList && extendList.map(extend => extend.eval(context));
+        elements = elements && elements.map(function (e) { return e.eval(context); });
+        extendList = extendList && extendList.map(function(extend) { return extend.eval(context); });
 
         return this.createDerived(elements, extendList, evaldCondition);
     }
 
     genCSS(context, output) {
-        let i;
-        let element;
+        let i, element;
         if ((!context || !context.firstSelector) && this.elements[0].combinator.value === '') {
             output.add(' ', this.fileInfo(), this.getIndex());
         }

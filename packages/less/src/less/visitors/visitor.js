@@ -1,4 +1,5 @@
 import tree from '../tree';
+
 const _visitArgs = { visitDeeper: true };
 let _hasIndexed = false;
 
@@ -8,9 +9,7 @@ function _noop(node) {
 
 function indexNodeTypes(parent, ticker) {
     // add .typeIndex to tree node types for lookup table
-    let key;
-
-    let child;
+    let key, child;
     for (key in parent) { 
         /* eslint guard-for-in: 0 */
         child = parent[key];
@@ -82,7 +81,7 @@ class Visitor {
 
         if (visitArgs.visitDeeper && node) {
             if (node.length) {
-                for (var i = 0, cnt = node.length; i < cnt; i++) {
+                for (let i = 0, cnt = node.length; i < cnt; i++) {
                     if (node[i].accept) {
                         node[i].accept(this);
                     }
@@ -134,12 +133,7 @@ class Visitor {
             out = [];
         }
 
-        let cnt;
-        let i;
-        let item;
-        let nestedCnt;
-        let j;
-        let nestedItem;
+        let cnt, i, item, nestedCnt, j, nestedItem;
 
         for (i = 0, cnt = arr.length; i < cnt; i++) {
             item = arr[i];

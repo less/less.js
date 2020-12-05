@@ -14,11 +14,8 @@ class NamespaceValue extends Node {
     }
 
     eval(context) {
-        let i;
-        let j;
-        let name;
-        let rules = this.value.eval(context);
-
+        let i, j, name, rules = this.value.eval(context);
+        
         for (i = 0; i < this.lookups.length; i++) {
             name = this.lookups[i];
 

@@ -66,9 +66,7 @@ class Dimension extends Node {
     // so `1px + 2` will yield `3px`.
     operate(context, op, other) {
         /* jshint noempty:false */
-        let value = this._operate(context, op, this.value, other.value);
-
-        let unit = this.unit.clone();
+        let value = this._operate(context, op, this.value, other.value), unit = this.unit.clone();
 
         if (op === '+' || op === '-') {
             if (unit.numerator.length === 0 && unit.denominator.length === 0) {
@@ -82,8 +80,7 @@ class Dimension extends Node {
                 other = other.convertTo(this.unit.usedUnits());
 
                 if (context.strictUnits && other.unit.toString() !== unit.toString()) {
-                    throw new Error(`Incompatible units. Change the units or use the unit function. ` + 
-                        `Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
+                    throw new Error(`Incompatible units. Change the units or use the unit function. Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
                 }
 
                 value = this._operate(context, op, this.value, other.value);
@@ -101,8 +98,7 @@ class Dimension extends Node {
     }
 
     compare(other) {
-        let a;
-        let b;
+        let a, b;
 
         if (!(other instanceof Dimension)) {
             return undefined;
@@ -145,7 +141,7 @@ class Dimension extends Node {
             }
             conversions = derivedConversions;
         }
-        applyUnit = (atomicUnit, denominator) => {
+        applyUnit = function (atomicUnit, denominator) {
             /* jshint loopfunc:true */
             if (group.hasOwnProperty(atomicUnit)) {
                 if (denominator) {

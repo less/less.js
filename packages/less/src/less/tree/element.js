@@ -51,7 +51,8 @@ class Element extends Node {
         output.add(this.toCSS(context), this.fileInfo(), this.getIndex());
     }
 
-    toCSS(context = {}) {
+    toCSS(context) {
+        context = context || {};
         let value = this.value;
         const firstSelector = context.firstSelector;
         if (value instanceof Paren) {

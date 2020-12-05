@@ -19,7 +19,7 @@ class Color extends Node {
             this.rgb = rgb;
         } else if (rgb.length >= 6) {
             this.rgb = [];
-            rgb.match(/.{2}/g).map((c, i) => {
+            rgb.match(/.{2}/g).map(function (c, i) {
                 if (i < 3) {
                     self.rgb.push(parseInt(c, 16));
                 } else {
@@ -28,7 +28,7 @@ class Color extends Node {
             });
         } else {
             this.rgb = [];
-            rgb.split('').map((c, i) => {
+            rgb.split('').map(function (c, i) {
                 if (i < 3) {
                     self.rgb.push(parseInt(c + c, 16));
                 } else {
@@ -43,9 +43,7 @@ class Color extends Node {
     }
 
     luma() {
-        let r = this.rgb[0] / 255;
-        let g = this.rgb[1] / 255;
-        let b = this.rgb[2] / 255;
+        let r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255;
 
         r = (r <= 0.03928) ? r / 12.92 : Math.pow(((r + 0.055) / 1.055), 2.4);
         g = (g <= 0.03928) ? g / 12.92 : Math.pow(((g + 0.055) / 1.055), 2.4);
@@ -92,7 +90,9 @@ class Color extends Node {
 
         switch (colorFunction) {
             case 'rgba':
-                args = this.rgb.map(c => clamp(Math.round(c), 255)).concat(clamp(alpha, 1));
+                args = this.rgb.map(function (c) {
+                    return clamp(Math.round(c), 255);
+                }).concat(clamp(alpha, 1));
                 break;
             case 'hsla':
                 args.push(clamp(alpha, 1));
@@ -144,12 +144,9 @@ class Color extends Node {
     }
 
     toHSL() {
-        const r = this.rgb[0] / 255;
-        const g = this.rgb[1] / 255;
-        const b = this.rgb[2] / 255;
-        const a = this.alpha;
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
+        const r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
+
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
         let h;
         let s;
         const l = (max + min) / 2;
@@ -172,12 +169,9 @@ class Color extends Node {
 
     // Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
     toHSV() {
-        const r = this.rgb[0] / 255;
-        const g = this.rgb[1] / 255;
-        const b = this.rgb[2] / 255;
-        const a = this.alpha;
-        const max = Math.max(r, g, b);
-        const min = Math.min(r, g, b);
+        const r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
+
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
         let h;
         let s;
         const v = max;
@@ -213,6 +207,22 @@ class Color extends Node {
             x.rgb[2] === this.rgb[2] &&
             x.alpha  === this.alpha) ? 0 : undefined;
     }
+
+    static fromKeyword(keyword) {
+        let c;
+        const key = keyword.toLowerCase();
+        if (colors.hasOwnProperty(key)) {
+            c = new Color(colors[key].slice(1));
+        }
+        else if (key === 'transparent') {
+            c = new Color([0, 0, 0], 0);
+        }
+
+        if (c) {
+            c.value = keyword;
+            return c;
+        }
+    }
 }
 
 Color.prototype.type = 'Color';
@@ -222,25 +232,10 @@ function clamp(v, max) {
 }
 
 function toHex(v) {
-    return `#${v.map(c => {
-        c = clamp(Math.round(c), 255);
-        return (c < 16 ? '0' : '') + c.toString(16);
-    }).join('')}`;
+    return `#${v.map(function (c) {
+    c = clamp(Math.round(c), 255);
+    return (c < 16 ? '0' : '') + c.toString(16);
+}).join('')}`;
 }
 
-Color.fromKeyword = keyword => {
-    let c;
-    const key = keyword.toLowerCase();
-    if (colors.hasOwnProperty(key)) {
-        c = new Color(colors[key].slice(1));
-    }
-    else if (key === 'transparent') {
-        c = new Color([0, 0, 0], 0);
-    }
-
-    if (c) {
-        c.value = keyword;
-        return c;
-    }
-};
 export default Color;

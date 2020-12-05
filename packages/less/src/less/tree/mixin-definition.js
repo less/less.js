@@ -20,7 +20,7 @@ class Definition extends Ruleset {
         this.rules = rules;
         this._lookups = {};
         const optionalParameters = [];
-        this.required = params.reduce((count, p) => {
+        this.required = params.reduce(function (count, p) {
             if (!p.name || (p.name && !p.value)) {
                 return count + 1;
             }
@@ -138,7 +138,7 @@ class Definition extends Ruleset {
     }
 
     makeImportant() {
-        const rules = !this.rules ? this.rules : this.rules.map(r => {
+        const rules = !this.rules ? this.rules : this.rules.map(function (r) {
             if (r.makeImportant) {
                 return r.makeImportant(true);
             } else {
@@ -189,7 +189,7 @@ class Definition extends Ruleset {
         const allArgsCnt = (args && args.length) || 0;
         let len;
         const optionalParameters = this.optionalParameters;
-        const requiredArgsCnt = !args ? 0 : args.reduce((count, p) => {
+        const requiredArgsCnt = !args ? 0 : args.reduce(function (count, p) {
             if (optionalParameters.indexOf(p.name) < 0) {
                 return count + 1;
             } else {

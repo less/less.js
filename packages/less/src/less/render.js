@@ -1,7 +1,6 @@
-let PromiseConstructor;
 import * as utils from './utils';
 
-export default (environment, ParseTree, ImportManager) => {
+export default function(environment, ParseTree, ImportManager) {
     const render = function (input, options, callback) {
         if (typeof options === 'function') {
             callback = options;
@@ -13,8 +12,8 @@ export default (environment, ParseTree, ImportManager) => {
 
         if (!callback) {
             const self = this;
-            return new Promise((resolve, reject) => {
-                render.call(self, input, options, (err, output) => {
+            return new Promise(function (resolve, reject) {
+                render.call(self, input, options, function(err, output) {
                     if (err) {
                         reject(err);
                     } else {
@@ -23,7 +22,7 @@ export default (environment, ParseTree, ImportManager) => {
                 });
             });
         } else {
-            this.parse(input, options, (err, root, imports, options) => {
+            this.parse(input, options, function(err, root, imports, options) {
                 if (err) { return callback(err); }
 
                 let result;

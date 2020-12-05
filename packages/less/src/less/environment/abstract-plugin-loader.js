@@ -4,17 +4,14 @@ import LessError from '../less-error';
 class AbstractPluginLoader {
     constructor() {
         // Implemented by Node.js plugin loader
-        this.require = () => null
+        this.require = function() {
+            return null;
+        }
     }
 
     evalPlugin(contents, context, imports, pluginOptions, fileInfo) {
-        let loader;
-        let registry;
-        let pluginObj;
-        let localModule;
-        let pluginManager;
-        let filename;
-        let result;
+
+        let loader, registry, pluginObj, localModule, pluginManager, filename, result;
 
         pluginManager = context.pluginManager;
 
@@ -55,7 +52,7 @@ class AbstractPluginLoader {
         };
         registry = functionRegistry.create();
 
-        const registerPlugin = obj => {
+        const registerPlugin = function(obj) {
             pluginObj = obj;
         };
 
@@ -116,6 +113,7 @@ class AbstractPluginLoader {
         }
 
         return pluginObj;
+
     }
 
     trySetOptions(plugin, filename, name, options) {

@@ -41,9 +41,7 @@ class Extend extends Node {
 
     // it concatenates (joins) all selectors in selector array
     findSelfSelectors(selectors) {
-        let selfElements = [];
-        let i;
-        let selectorElements;
+        let selfElements = [], i, selectorElements;
 
         for (i = 0; i < selectors.length; i++) {
             selectorElements = selectors[i].elements;

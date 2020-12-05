@@ -54,9 +54,7 @@ class MixinCall extends Node {
         this.selector = this.selector.eval(context);
 
         function calcDefGroup(mixin, mixinPath) {
-            let f;
-            let p;
-            let namespace;
+            let f, p, namespace;
 
             for (f = 0; f < 2; f++) {
                 conditionResult[f] = true;
@@ -95,7 +93,7 @@ class MixinCall extends Node {
             }
         }
 
-        noArgumentsFilter = rule => rule.matchArgs(null, context);
+        noArgumentsFilter = function(rule) {return rule.matchArgs(null, context);};
 
         for (i = 0; i < context.frames.length; i++) {
             if ((mixins = context.frames[i].find(this.selector, null, noArgumentsFilter)).length > 0) {
@@ -185,8 +183,7 @@ class MixinCall extends Node {
     }
 
     _setVisibilityToReplacement(replacement) {
-        let i;
-        let rule;
+        let i, rule;
         if (this.blocksVisibility()) {
             for (i = 0; i < replacement.length; i++) {
                 rule = replacement[i];
@@ -196,18 +193,18 @@ class MixinCall extends Node {
     }
 
     format(args) {
-        return `${this.selector.toCSS().trim()}(${args ? args.map(a => {
-            let argValue = '';
-            if (a.name) {
-                argValue += `${a.name}:`;
-            }
-            if (a.value.toCSS) {
-                argValue += a.value.toCSS();
-            } else {
-                argValue += '???';
-            }
-            return argValue;
-        }).join(', ') : ''})`;
+        return `${this.selector.toCSS().trim()}(${args ? args.map(function (a) {
+        let argValue = '';
+        if (a.name) {
+            argValue += `${a.name}:`;
+        }
+        if (a.value.toCSS) {
+            argValue += a.value.toCSS();
+        } else {
+            argValue += '???';
+        }
+        return argValue;
+    }).join(', ') : ''})`;
     }
 }
 

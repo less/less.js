@@ -11,8 +11,7 @@ class Variable extends Node {
     }
 
     eval(context) {
-        let variable;
-        let name = this.name;
+        let variable, name = this.name;
 
         if (name.indexOf('@@') === 0) {
             name = `@${new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value}`;
@@ -27,7 +26,7 @@ class Variable extends Node {
 
         this.evaluating = true;
 
-        variable = this.find(context.frames, frame => {
+        variable = this.find(context.frames, function (frame) {
             const v = frame.variable(name);
             if (v) {
                 if (v.important) {

@@ -38,9 +38,7 @@ class Node {
         return this._fileInfo || (this.parent && this.parent.fileInfo()) || {};
     }
 
-    isRulesetLike() {
-        return false;
-    }
+    isRulesetLike() { return false; }
 
     toCSS(context) {
         const strs = [];
@@ -78,6 +76,46 @@ class Node {
         const precision = context && context.numPrecision;
         // add "epsilon" to ensure numbers like 1.000000005 (represented as 1.000000004999...) are properly rounded:
         return (precision) ? Number((value + 2e-16).toFixed(precision)) : value;
+    }
+
+    static compare(a, b) {
+        /* returns:
+         -1: a < b
+         0: a = b
+         1: a > b
+         and *any* other value for a != b (e.g. undefined, NaN, -2 etc.) */
+
+        if ((a.compare) &&
+            // for "symmetric results" force toCSS-based comparison
+            // of Quoted or Anonymous if either value is one of those
+            !(b.type === 'Quoted' || b.type === 'Anonymous')) {
+            return a.compare(b);
+        } else if (b.compare) {
+            return -b.compare(a);
+        } else if (a.type !== b.type) {
+            return undefined;
+        }
+
+        a = a.value;
+        b = b.value;
+        if (!Array.isArray(a)) {
+            return a === b ? 0 : undefined;
+        }
+        if (a.length !== b.length) {
+            return undefined;
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (Node.compare(a[i], b[i]) !== 0) {
+                return undefined;
+            }
+        }
+        return 0;
+    }
+
+    static numericCompare(a, b) {
+        return a  <  b ? -1
+            : a === b ?  0
+                : a  >  b ?  1 : undefined;
     }
 
     // Returns true if this node represents root of ast imported by reference
@@ -138,41 +176,4 @@ class Node {
     }
 }
 
-Node.compare = (a, b) => {
-    /* returns:
-     -1: a < b
-     0: a = b
-     1: a > b
-     and *any* other value for a != b (e.g. undefined, NaN, -2 etc.) */
-
-    if ((a.compare) &&
-        // for "symmetric results" force toCSS-based comparison
-        // of Quoted or Anonymous if either value is one of those
-        !(b.type === 'Quoted' || b.type === 'Anonymous')) {
-        return a.compare(b);
-    } else if (b.compare) {
-        return -b.compare(a);
-    } else if (a.type !== b.type) {
-        return undefined;
-    }
-
-    a = a.value;
-    b = b.value;
-    if (!Array.isArray(a)) {
-        return a === b ? 0 : undefined;
-    }
-    if (a.length !== b.length) {
-        return undefined;
-    }
-    for (let i = 0; i < a.length; i++) {
-        if (Node.compare(a[i], b[i]) !== 0) {
-            return undefined;
-        }
-    }
-    return 0;
-};
-
-Node.numericCompare = (a, b) => a  <  b ? -1
-    : a === b ?  0
-        : a  >  b ?  1 : undefined;
 export default Node;

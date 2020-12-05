@@ -2,7 +2,8 @@ import contexts from './contexts';
 import visitor from './visitors';
 import tree from './tree';
 
-export default (root, options = {}) => {
+export default function(root, options) {
+    options = options || {};
     let evaldRoot;
     let variables = options.variables;
     const evalEnv = new contexts.Eval(options);
@@ -21,7 +22,7 @@ export default (root, options = {}) => {
     //   )
     //
     if (typeof variables === 'object' && !Array.isArray(variables)) {
-        variables = Object.keys(variables).map(k => {
+        variables = Object.keys(variables).map(function (k) {
             let value = variables[k];
 
             if (!(value instanceof tree.Value)) {
@@ -36,11 +37,11 @@ export default (root, options = {}) => {
     }
 
     const visitors = [
-        new visitor.JoinSelectorVisitor(),
-        new visitor.MarkVisibleSelectorsVisitor(true),
-        new visitor.ExtendVisitor(),
-        new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
-    ];
+            new visitor.JoinSelectorVisitor(),
+            new visitor.MarkVisibleSelectorsVisitor(true),
+            new visitor.ExtendVisitor(),
+            new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
+        ];
 
     const preEvalVisitors = [];
     let v;

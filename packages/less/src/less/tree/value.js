@@ -25,7 +25,9 @@ class Value extends Node {
         if (this.value.length === 1) {
             return this.value[0].eval(context);
         } else {
-            return new Value(this.value.map(v => v.eval(context)));
+            return new Value(this.value.map(function (v) {
+                return v.eval(context);
+            }));
         }
     }
 

@@ -41,8 +41,7 @@ class AtRule extends Node {
     }
 
     accept(visitor) {
-        const value = this.value;
-        const rules = this.rules;
+        const value = this.value, rules = this.rules;
         if (rules) {
             this.rules = visitor.visitArray(rules);
         }
@@ -60,8 +59,7 @@ class AtRule extends Node {
     }
 
     genCSS(context, output) {
-        const value = this.value;
-        const rules = this.rules;
+        const value = this.value, rules = this.rules;
         output.add(this.name, this.fileInfo(), this.getIndex());
         if (value) {
             output.add(' ');
@@ -75,10 +73,7 @@ class AtRule extends Node {
     }
 
     eval(context) {
-        let mediaPathBackup;
-        let mediaBlocksBackup;
-        let value = this.value;
-        let rules = this.rules;
+        let mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
 
         // media stored inside other atrule should not bubble over it
         // backpup media bubbling information
@@ -111,10 +106,10 @@ class AtRule extends Node {
         }
     }
 
-    find(...args) {
+    find() {
         if (this.rules) {
             // assuming that there is only one rule at this point - that is how parser constructs the rule
-            return Ruleset.prototype.find.apply(this.rules[0], args);
+            return Ruleset.prototype.find.apply(this.rules[0], arguments);
         }
     }
 
@@ -142,9 +137,7 @@ class AtRule extends Node {
         }
 
         // Non-compressed
-        const tabSetStr = `\n${Array(context.tabLevel).join('  ')}`;
-
-        const tabRuleStr = `${tabSetStr}  `;
+        const tabSetStr = `\n${Array(context.tabLevel).join('  ')}`, tabRuleStr = `${tabSetStr}  `;
         if (!ruleCnt) {
             output.add(` {${tabSetStr}}`);
         } else {

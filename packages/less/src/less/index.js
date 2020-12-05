@@ -82,5 +82,14 @@ export default function(environment, fileManagers) {
         }
     }
 
+    /**
+     * Some of the functions assume a `this` context of the API object,
+     * which causes it to fail when wrapped for ES6 imports.
+     * 
+     * An assumed `this` should be removed in the future.
+     */
+    initial.parse = initial.parse.bind(api);
+    initial.render = initial.render.bind(api);
+
     return api;
 };

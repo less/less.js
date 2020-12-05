@@ -230,7 +230,7 @@ module.exports = function(grunt) {
             },
             test: {
                 command: [
-                    // tsNodeRuntime + " test/test-es6.ts",
+                    tsNodeRuntime + " test/test-es6.ts",
                     "node test/index.js"
                 ].join(' && ')
             },

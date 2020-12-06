@@ -2559,7 +2559,7 @@ body {
     width: 2  * 4-5em;
   }
   subtraction: 20 - 10 - 5 - 5; // 0
-  division: 20 / 5 / 4; // 1
+  division: (20 / 5 / 4); // 1
 }
 
 @x: 4;
@@ -2588,7 +2588,7 @@ body {
   background-color: #222222 - #fff; // #000000
   .other {
     color: 2 * #111; // #222222
-    border-color: #333333 / 3 + #111; // #222222
+    border-color: (#333333 / 3) + #111; // #222222
   }
 }
 .parens {
@@ -2604,7 +2604,7 @@ body {
   padding: (2 * @var) 4 4 (@var * 1px);
   width: (@var * @var) * 6;
   height: (7 * 7) + (8 * 8);
-  margin: 4 * (5 + 5) / 2 - (@var * 2);
+  margin: 4 * ((5 + 5) / 2) - (@var * 2);
   //margin: (6 * 6)px;
 }
 
@@ -3323,7 +3323,7 @@ body {
     width: 2  * 4-5em;
   }
   subtraction: 20 - 10 - 5 - 5; // 0
-  division: 20 / 5 / 4; // 1
+  division: (20 / 5 / 4); // 1
 }
 
 @x: 4;
@@ -3352,7 +3352,7 @@ body {
   background-color: #222222 - #fff; // #000000
   .other {
     color: 2 * #111; // #222222
-    border-color: #333333 / 3 + #111; // #222222
+    border-color: (#333333 / 3) + #111; // #222222
   }
 }
 .parens {
@@ -3368,7 +3368,7 @@ body {
   padding: (2 * @var) 4 4 (@var * 1px);
   width: (@var * @var) * 6;
   height: (7 * 7) + (8 * 8);
-  margin: 4 * (5 + 5) / 2 - (@var * 2);
+  margin: 4 * ((5 + 5) / 2) - (@var * 2);
   //margin: (6 * 6)px;
 }
 

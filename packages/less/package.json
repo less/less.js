@@ -1,6 +1,6 @@
 {
 	"name": "less",
-	"version": "3.12.2",
+	"version": "3.13.0",
 	"description": "Leaner CSS",
 	"homepage": "http://lesscss.org",
 	"author": {
@@ -54,7 +54,7 @@
 		"source-map": "~0.6.0"
 	},
 	"devDependencies": {
-		"@less/test-data": "^3.12.2",
+		"@less/test-data": "^3.13.0",
 		"@less/test-import-module": "^3.12.0",
 		"@typescript-eslint/eslint-plugin": "^3.3.0",
 		"@typescript-eslint/parser": "^3.3.0",

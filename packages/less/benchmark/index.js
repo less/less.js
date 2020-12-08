@@ -2,7 +2,7 @@ var path = require('path'),
     fs = require('fs'),
     now = require("performance-now");
 
-var less = require('../test/less');
+var less = require('../.');
 var file = path.join(__dirname, 'benchmark.less');
 
 if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
@@ -31,7 +31,7 @@ fs.readFile(file, 'utf8', function (e, data) {
 
         less.parse(data, {}, function(err, root, imports, options) {
             if (err) {
-                less.writeError(err);
+                console.log(err);
                 process.exit(3);
             }
             parserEnd = now();

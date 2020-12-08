@@ -1,3 +1,0 @@
-describe('Benchmark', function() {
-  testLessEqualsInDocument();
-});

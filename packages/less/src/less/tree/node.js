@@ -1,3 +1,9 @@
+/**
+ * The reason why Node is a class and other nodes simply do not extend
+ * from Node (since we're transpiling) is due to this issue:
+ * 
+ * https://github.com/less/less.js/issues/3434
+ */
 class Node {
     constructor() {
         this.parent = null;

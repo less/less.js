@@ -4,7 +4,7 @@ import LessError from './less-error';
 import * as utils from './utils';
 import logger from './logger';
 
-export default environment => {
+export default function(environment) {
     // FileInfo = {
     //  'rewriteUrls' - option - whether to adjust URL's to be relative
     //  'filename' - full resolved filename of current file
@@ -26,7 +26,7 @@ export default environment => {
             this.context = context;
             // Deprecated? Unused outside of here, could be useful.
             this.queue = [];        // Files which haven't been imported yet
-            this.files = [];        // List of files imported
+            this.files = {};        // Holds the imported parse trees.
         }
 
         /**
@@ -38,12 +38,11 @@ export default environment => {
          * @param callback - callback for when it is imported
          */
         push(path, tryAppendExtension, currentFileInfo, importOptions, callback) {
-            const importManager = this;
-            const pluginLoader = this.context.pluginManager.Loader;
+            const importManager = this, pluginLoader = this.context.pluginManager.Loader;
 
             this.queue.push(path);
 
-            const fileParsedFunc = (e, root, fullPath) => {
+            const fileParsedFunc = function (e, root, fullPath) {
                 importManager.queue.splice(importManager.queue.indexOf(path), 1); // Remove the path from the queue
 
                 const importedEqualsRoot = fullPath === importManager.rootFilename;
@@ -52,9 +51,11 @@ export default environment => {
                     logger.info(`The file ${fullPath} was skipped because it was not found and the import was marked optional.`);
                 }
                 else {
-                    const files = importManager.files
-                    if (files.indexOf(fullPath) === -1) {
-                        files.push(fullPath)
+                    // Inline imports aren't cached here.
+                    // If we start to cache them, please make sure they won't conflict with non-inline imports of the
+                    // same name as they used to do before this comment and the condition below have been added.
+                    if (!importManager.files[fullPath] && !importOptions.inline) {
+                        importManager.files[fullPath] = { root, options: importOptions };
                     }
                     if (e && !importManager.error) { importManager.error = e; }
                     callback(e, root, importedEqualsRoot, fullPath);
@@ -75,7 +76,7 @@ export default environment => {
                 return;
             }
 
-            const loadFileCallback = loadedFile => {
+            const loadFileCallback = function(loadedFile) {
                 let plugin;
                 const resolvedFilename = loadedFile.filename;
                 const contents = loadedFile.contents.replace(/^\uFEFF/, '');
@@ -120,9 +121,20 @@ export default environment => {
                 } else if (importOptions.inline) {
                     fileParsedFunc(null, contents, resolvedFilename);
                 } else {
-                    new Parser(newEnv, importManager, newFileInfo).parse(contents, (e, root) => {
-                        fileParsedFunc(e, root, resolvedFilename);
-                    });
+
+                    // import (multiple) parse trees apparently get altered and can't be cached.
+                    // TODO: investigate why this is
+                    if (importManager.files[resolvedFilename]
+                        && !importManager.files[resolvedFilename].options.multiple
+                        && !importOptions.multiple) {
+
+                        fileParsedFunc(null, importManager.files[resolvedFilename].root, resolvedFilename);
+                    }
+                    else {
+                        new Parser(newEnv, importManager, newFileInfo).parse(contents, function (e, root) {
+                            fileParsedFunc(e, root, resolvedFilename);
+                        });
+                    }
                 }
             };
             let loadedFile;

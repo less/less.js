@@ -52,8 +52,12 @@ export default SourceMapBuilder => {
                 result.map = sourceMapBuilder.getExternalSourceMap();
             }
 
-            const rootFilename = this.imports.rootFilename
-            result.imports = this.imports.files.filter(file => file !== rootFilename);
+            result.imports = [];
+            for (const file in this.imports.files) {
+                if (this.imports.files.hasOwnProperty(file) && file !== this.imports.rootFilename) {
+                    result.imports.push(file);
+                }
+            }
             return result;
         }
     }

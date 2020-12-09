@@ -2,7 +2,7 @@
 export const Math = {
     ALWAYS: 0,
     PARENS_DIVISION: 1,
-    PARENS: 2,
+    PARENS: 2
     // removed - STRICT_LEGACY: 3
 };
 

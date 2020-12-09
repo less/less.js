@@ -194,17 +194,17 @@ MixinCall.prototype = Object.assign(new Node(), {
 
     format(args) {
         return `${this.selector.toCSS().trim()}(${args ? args.map(function (a) {
-        let argValue = '';
-        if (a.name) {
-            argValue += `${a.name}:`;
-        }
-        if (a.value.toCSS) {
-            argValue += a.value.toCSS();
-        } else {
-            argValue += '???';
-        }
-        return argValue;
-    }).join(', ') : ''})`;
+            let argValue = '';
+            if (a.name) {
+                argValue += `${a.name}:`;
+            }
+            if (a.value.toCSS) {
+                argValue += a.value.toCSS();
+            } else {
+                argValue += '???';
+            }
+            return argValue;
+        }).join(', ') : ''})`;
     }
 });
 

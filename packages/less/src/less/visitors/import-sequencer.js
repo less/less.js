@@ -8,11 +8,11 @@ class ImportSequencer {
 
     addImport(callback) {
         const importSequencer = this,
-              importItem = {
-                  callback,
-                  args: null,
-                  isReady: false
-              };
+            importItem = {
+                callback,
+                args: null,
+                isReady: false
+            };
         this.imports.push(importItem);
         return function() {
             importItem.args = Array.prototype.slice.call(arguments, 0);

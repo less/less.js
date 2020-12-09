@@ -27,11 +27,11 @@ class debugInfo {
             filenameWithProtocol = `file://${filenameWithProtocol}`;
         }
         return `@media -sass-debug-info{filename{font-family:${filenameWithProtocol.replace(/([.:\/\\])/g, function (a) {
-    if (a == '\\') {
-        a = '\/';
-    }
-    return `\\${a}`;
-})}}line{font-family:\\00003${ctx.debugInfo.lineNumber}}}\n`;
+            if (a == '\\') {
+                a = '\/';
+            }
+            return `\\${a}`;
+        })}}line{font-family:\\00003${ctx.debugInfo.lineNumber}}}\n`;
     }
 }
 

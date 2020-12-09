@@ -37,11 +37,11 @@ export default function(root, options) {
     }
 
     const visitors = [
-            new visitor.JoinSelectorVisitor(),
-            new visitor.MarkVisibleSelectorsVisitor(true),
-            new visitor.ExtendVisitor(),
-            new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
-        ];
+        new visitor.JoinSelectorVisitor(),
+        new visitor.MarkVisibleSelectorsVisitor(true),
+        new visitor.ExtendVisitor(),
+        new visitor.ToCSSVisitor({compress: Boolean(options.compress)})
+    ];
 
     const preEvalVisitors = [];
     let v;

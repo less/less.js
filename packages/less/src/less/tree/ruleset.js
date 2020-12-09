@@ -459,7 +459,7 @@ Ruleset.prototype = Object.assign(new Node(), {
         let ruleNodes = [];
 
         let // Line number debugging
-        debugInfo;
+            debugInfo;
 
         let rule;
         let path;

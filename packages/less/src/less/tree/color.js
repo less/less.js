@@ -231,9 +231,9 @@ function clamp(v, max) {
 
 function toHex(v) {
     return `#${v.map(function (c) {
-    c = clamp(Math.round(c), 255);
-    return (c < 16 ? '0' : '') + c.toString(16);
-}).join('')}`;
+        c = clamp(Math.round(c), 255);
+        return (c < 16 ? '0' : '') + c.toString(16);
+    }).join('')}`;
 }
 
 export default Color;

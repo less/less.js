@@ -101,7 +101,11 @@ ImportVisitor.prototype = {
             this.error = e;
         }
 
-        const importVisitor = this, inlineCSS = importNode.options.inline, isPlugin = importNode.options.isPlugin, isOptional = importNode.options.optional, duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
+        const importVisitor = this,
+            inlineCSS = importNode.options.inline,
+            isPlugin = importNode.options.isPlugin,
+            isOptional = importNode.options.optional,
+            duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
 
         if (!context.importMultiple) {
             if (duplicateImport) {

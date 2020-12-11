@@ -70,9 +70,7 @@ class FileManager extends AbstractFileManager {
                                 fullFilename = path.join(paths[i], fullFilename);
                             }
 
-                            const isNodeModulePath = !!paths[i].match(/[/\\]node_modules[/\\]?/g);
-
-                            if (!explicit && (paths[i] === '.' || isNodeModulePath)) {
+                            if (!explicit && (paths[i] === '.' || /*isNodeModulePath*/ Boolean(paths[i].match(/[/\\]node_modules[/\\]?/g)))) {
                                 try {
                                     // can't resolve module without package.json
                                     fullFilename = require.resolve(fullFilename);

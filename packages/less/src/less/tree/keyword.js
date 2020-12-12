@@ -1,17 +1,15 @@
 import Node from './node';
 
-class Keyword extends Node {
-    constructor(value) {
-        super();
+const Keyword = function(value) {
+    this.value = value;
+};
 
-        this.value = value;
-    }
+Keyword.prototype = new Node();
 
-    genCSS(context, output) {
-        if (this.value === '%') { throw { type: 'Syntax', message: 'Invalid % without number' }; }
-        output.add(this.value);
-    }
-}
+Keyword.prototype.genCSS = function(context, output) {
+    if (this.value === '%') { throw { type: 'Syntax', message: 'Invalid % without number' }; }
+    output.add(this.value);
+};
 
 Keyword.prototype.type = 'Keyword';
 

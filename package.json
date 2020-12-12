@@ -1,7 +1,7 @@
 {
   "name": "@less/root",
   "private": true,
-  "version": "3.12.2",
+  "version": "3.13.0",
   "description": "Less monorepo",
   "homepage": "http://lesscss.org",
   "scripts": {

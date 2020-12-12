@@ -1,13 +1,10 @@
 import Node from './node';
 
-class UnicodeDescriptor extends Node {
-    constructor(value) {
-        super();
-
-        this.value = value;
-    }
+const UnicodeDescriptor = function(value) {
+    this.value = value;
 }
 
+UnicodeDescriptor.prototype = new Node();
 UnicodeDescriptor.prototype.type = 'UnicodeDescriptor';
 
 export default UnicodeDescriptor;

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "3.12.2",
+  "version": "3.13.0",
   "description": "Less files and CSS results",
   "author": {
     "name": "Alexis Sellier",

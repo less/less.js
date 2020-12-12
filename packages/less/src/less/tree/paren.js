@@ -1,22 +1,20 @@
 import Node from './node';
 
-class Paren extends Node {
-    constructor(node) {
-        super();
+const Paren = function(node) {
+    this.value = node;
+};
 
-        this.value = node;
-    }
+Paren.prototype = new Node();
 
-    genCSS(context, output) {
-        output.add('(');
-        this.value.genCSS(context, output);
-        output.add(')');
-    }
-
-    eval(context) {
-        return new Paren(this.value.eval(context));
-    }
+Paren.prototype.genCSS = function(context, output) {
+    output.add('(');
+    this.value.genCSS(context, output);
+    output.add(')');
 }
+
+Paren.prototype.eval = function(context) {
+    return new Paren(this.value.eval(context));
+};
 
 Paren.prototype.type = 'Paren';
 export default Paren;

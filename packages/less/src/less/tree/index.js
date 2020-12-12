@@ -1,5 +1,3 @@
-const tree = Object.create(null);
-
 import Node from './node';
 import Color from './color';
 import AtRule from './atrule';

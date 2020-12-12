@@ -1,6 +1,12 @@
 ## Change Log
 
-### upcoming (2020-07-16)
+### v3.13.0 (2020-12-12)
+- [#3572](https://github.com/less/less.js/pull/3572) Fixes #3434 - memory / runtime improvements (#3572) (@matthew-dean)
+- [#3550](https://github.com/less/less.js/pull/3550) Examples contain more valid CSS, to test with a new parser (#3550) (@matthew-dean)
+- [#3546](https://github.com/less/less.js/pull/3546) Bug fixes - fixes #3446 #3368 (#3546) (@matthew-dean)
+
+### v3.12.2 (2020-07-16)
+- [#3545](https://github.com/less/less.js/pull/3545) Release 3.12.2 (#3545) (@matthew-dean)
 - [#3544](https://github.com/less/less.js/pull/3544) Fixes #3533 (#3544) (@matthew-dean)
 - [#3543](https://github.com/less/less.js/pull/3543) Fixes #3541 (#3543) (@matthew-dean)
 
@@ -135,9 +141,9 @@
 - [#3219](https://github.com/less/less.js/pull/3219) Invalidate less-node file cache if modified (#3219) (@matthew-dean)
 - [#3213](https://github.com/less/less.js/pull/3213) Fixes #3147 #2715 (#3213) (@matthew-dean)
 - [#3220](https://github.com/less/less.js/pull/3220) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors" (@matthew-dean)
+- [#3215](https://github.com/less/less.js/pull/3215) Revert "Fixes #3195 (#3215)" (@matthew-dean)
 - [#3217](https://github.com/less/less.js/pull/3217) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217)" (@matthew-dean)
 - [#3212](https://github.com/less/less.js/pull/3212) Revert "Pull missed code merged into 3.x branch (#3212)" (@matthew-dean)
-- [#3215](https://github.com/less/less.js/pull/3215) Revert "Fixes #3195 (#3215)" (@matthew-dean)
 - [#3215](https://github.com/less/less.js/pull/3215) Fixes #3195 (#3215) (@matthew-dean)
 - [#3212](https://github.com/less/less.js/pull/3212) Pull missed code merged into 3.x branch (#3212) (@matthew-dean)
 - [#3217](https://github.com/less/less.js/pull/3217) Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217) (@matthew-dean)
@@ -218,7 +224,7 @@
 - [#2773](https://github.com/less/less.js/pull/2773) Update all dependencies 🌴 (@lukeapage, @greenkeeperio-bot)
 
 ### v2.6.0 (2016-01-29)
-- [#2788](https://github.com/less/less.js/pull/2788) Update license year in README.md (@pra85)
+- [#2788](https://github.com/less/less.js/pull/2788) Update license year in README.md (@prayagverma)
 - [#2735](https://github.com/less/less.js/pull/2735) Fix for #2384 and caching enabled with modifyVars set (@less)
 - [#2783](https://github.com/less/less.js/pull/2783) Allow unknown non-{}-block at-rules (@seven-phases-max)
 - [#2779](https://github.com/less/less.js/pull/2779) Logical operator and now has higher precedence then logical operator or. (@SomMeri)
@@ -379,10 +385,10 @@
 - [#1936](https://github.com/less/less.js/pull/1936) Fix error message when using cleancss with sourcemap (@danielchatfield)
 - [#1919](https://github.com/less/less.js/pull/1919) Usage info for url-args option (@bcluca)
 - [#1907](https://github.com/less/less.js/pull/1907) Remove trailing spaces from the license header. (@XhmikosR)
-- [#1906](https://github.com/less/less.js/pull/1906) Remove twitter-bootstrap tag from SO link (@zdroid)
+- [#1906](https://github.com/less/less.js/pull/1906) Remove twitter-bootstrap tag from SO link (@zlatanvasovic)
 
 ### v1.7.0 (2014-02-27)
-- [#1890](https://github.com/less/less.js/pull/1890) Let `luma` follow spec (@roelvanduijnhoven, @seven-phases-max, @lukeapage)
+- [#1890](https://github.com/less/less.js/pull/1890) Let `luma` follow spec (@seven-phases-max, @lukeapage)
 - [#1859](https://github.com/less/less.js/pull/1859) detached rulesets (@lukeapage)
 - [#1884](https://github.com/less/less.js/pull/1884) Minor `replace` and `%` funcs improvement. (@seven-phases-max)
 - [#1855](https://github.com/less/less.js/pull/1855) Adding replace function (@jakebellacera, @mouyang)
@@ -489,13 +495,13 @@
 
 ### v1.3.0 (2012-03-10)
 - [#673](https://github.com/less/less.js/pull/673) mocha found a couple global variable leaks. Here's the fix. (@andrewjstone)
-- [#634](https://github.com/less/less.js/pull/634) Add @media bubbling/nesting/merging (@sirlantis)
+- [#634](https://github.com/less/less.js/pull/634) Add @media bubbling/nesting/merging (@NDMarcel)
 - [#631](https://github.com/less/less.js/pull/631) Fixed spelling error on benchmark/less-benchmark.js (@highergroundstudio)
 - [#601](https://github.com/less/less.js/pull/601) Make parse error handler more robust (@adrianheine)
-- [#595](https://github.com/less/less.js/pull/595) Fix callback called two times (@hokaccha, @cloudhead, @chrizel, @CasualSuperman, @fat)
+- [#595](https://github.com/less/less.js/pull/595) Fix callback called two times (@hokaccha, @cloudhead, @chrizel, @fat)
 - [#604](https://github.com/less/less.js/pull/604) Fixes #602 (@treshugart)
 - [#585](https://github.com/less/less.js/pull/585) newline all selectors whose combined length is greater than 25 chars (@fat)
-- [#479](https://github.com/less/less.js/pull/479) CommonJS/AMD module support (@CasualSuperman)
+- [#479](https://github.com/less/less.js/pull/479) CommonJS/AMD module support (@tobias104)
 - [#516](https://github.com/less/less.js/pull/516) Improve Windows path support in lessc (@chrizel)
 - [#557](https://github.com/less/less.js/pull/557) Fix for issue #466 (@kmchugh)
 - [#515](https://github.com/less/less.js/pull/515) Shift the type setting in order to work with Webkit, and fix typo for IE (@imcotton)

@@ -153,6 +153,8 @@
     @rules: {
       color: red;
     };
+    rules-defined: isdefined(@rules);
+    foo-defined: isdefined(@foo);
     ruleset: isruleset(@rules);
     color: iscolor(#ddd);
     color1: iscolor(red);

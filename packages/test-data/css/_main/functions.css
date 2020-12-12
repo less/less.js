@@ -140,6 +140,8 @@
   mixt: rgba(255, 0, 0, 0.5);
 }
 #built-in .is-a {
+  rules-defined: true;
+  foo-defined: false;
   ruleset: true;
   color: true;
   color1: true;

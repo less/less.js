@@ -28,6 +28,6 @@ Attribute.prototype = Object.assign(new Node(), {
 
         return `[${value}]`;
     }
-})
+});
 
 export default Attribute;

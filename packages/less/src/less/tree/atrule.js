@@ -151,6 +151,6 @@ AtRule.prototype = Object.assign(new Node(), {
 
         context.tabLevel--;
     }
-})
+});
 
 export default AtRule;

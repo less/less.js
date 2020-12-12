@@ -27,6 +27,6 @@ Assignment.prototype = Object.assign(new Node(), {
             output.add(this.value);
         }
     }
-})
+});
 
 export default Assignment;

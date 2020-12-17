@@ -1,4 +1,3 @@
-let PromiseConstructor;
 import * as utils from './utils';
 
 export default (environment, ParseTree, ImportManager) => {

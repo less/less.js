@@ -1,5 +1,11 @@
 ## Change Log
 
+### v4.0.0 (2020-12-18)
+- [#3573](https://github.com/less/less.js/pull/3573) v4.0.0 (#3573) (@matthew-dean)
+
+### v3.13.1 (2020-12-18)
+- [#3575](https://github.com/less/less.js/pull/3575) Fixes #3574 (#3575) (@matthew-dean)
+
 ### v3.13.0 (2020-12-12)
 - [#3572](https://github.com/less/less.js/pull/3572) Fixes #3434 - memory / runtime improvements (#3572) (@matthew-dean)
 - [#3550](https://github.com/less/less.js/pull/3550) Examples contain more valid CSS, to test with a new parser (#3550) (@matthew-dean)
@@ -7,6 +13,8 @@
 
 ### v3.12.2 (2020-07-16)
 - [#3545](https://github.com/less/less.js/pull/3545) Release 3.12.2 (#3545) (@matthew-dean)
+
+### v3.12.1 (2020-07-16)
 - [#3544](https://github.com/less/less.js/pull/3544) Fixes #3533 (#3544) (@matthew-dean)
 - [#3543](https://github.com/less/less.js/pull/3543) Fixes #3541 (#3543) (@matthew-dean)
 
@@ -141,9 +149,9 @@
 - [#3219](https://github.com/less/less.js/pull/3219) Invalidate less-node file cache if modified (#3219) (@matthew-dean)
 - [#3213](https://github.com/less/less.js/pull/3213) Fixes #3147 #2715 (#3213) (@matthew-dean)
 - [#3220](https://github.com/less/less.js/pull/3220) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors" (@matthew-dean)
-- [#3215](https://github.com/less/less.js/pull/3215) Revert "Fixes #3195 (#3215)" (@matthew-dean)
 - [#3217](https://github.com/less/less.js/pull/3217) Revert "Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217)" (@matthew-dean)
 - [#3212](https://github.com/less/less.js/pull/3212) Revert "Pull missed code merged into 3.x branch (#3212)" (@matthew-dean)
+- [#3215](https://github.com/less/less.js/pull/3215) Revert "Fixes #3195 (#3215)" (@matthew-dean)
 - [#3215](https://github.com/less/less.js/pull/3215) Fixes #3195 (#3215) (@matthew-dean)
 - [#3212](https://github.com/less/less.js/pull/3212) Pull missed code merged into 3.x branch (#3212) (@matthew-dean)
 - [#3217](https://github.com/less/less.js/pull/3217) Fixes #1421 - re-parses variable-interpolated elements to selectors (#3217) (@matthew-dean)

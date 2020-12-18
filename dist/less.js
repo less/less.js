@@ -10538,7 +10538,7 @@
         importManager = ImportManager(environment);
         var render = Render(environment, parseTree);
         var parse = Parse(environment, parseTree, importManager);
-        var v = parseNodeVersion_1(version);
+        var v = parseNodeVersion_1("v" + version);
         var initial = {
             version: [v.major, v.minor, v.patch],
             data: data,

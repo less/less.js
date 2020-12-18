@@ -1,6 +1,6 @@
 {
 	"name": "less",
-	"version": "3.13.0",
+	"version": "3.13.1",
 	"description": "Leaner CSS",
 	"homepage": "http://lesscss.org",
 	"author": {
@@ -61,7 +61,6 @@
 		"benny": "^3.6.12",
 		"bootstrap-less-port": "0.3.0",
 		"chai": "^4.2.0",
-		"copy-anything": "^2.0.1",
 		"diff": "^3.2.0",
 		"eslint": "^6.8.0",
 		"fs-extra": "^8.1.0",
@@ -128,6 +127,7 @@
 	"rawcurrent": "https://raw.github.com/less/less.js/v",
 	"sourcearchive": "https://github.com/less/less.js/archive/v",
 	"dependencies": {
+		"copy-anything": "^2.0.1",
 		"tslib": "^1.10.0"
 	}
 }

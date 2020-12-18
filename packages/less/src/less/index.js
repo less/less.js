@@ -18,6 +18,8 @@ import ParseTree from './parse-tree';
 import ImportManager from './import-manager';
 import Parse from './parse';
 import Render from './render';
+import { version } from '../../package.json';
+import parseVersion from 'parse-node-version';
 
 export default function(environment, fileManagers) {
     let sourceMapOutput, sourceMapBuilder, parseTree, importManager;
@@ -31,8 +33,9 @@ export default function(environment, fileManagers) {
     const render = Render(environment, parseTree, importManager);
     const parse = Parse(environment, parseTree, importManager);
 
+    const v = parseVersion(`v${version}`);
     const initial = {
-        version: [4, 0, 0],
+        version: [v.major, v.minor, v.patch],
         data,
         tree,
         Environment,

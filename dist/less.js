@@ -10511,6 +10511,24 @@
         return render;
     }
 
+    var version = "4.0.0";
+
+    function parseNodeVersion(version) {
+        var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
+        if (!match) {
+            throw new Error('Unable to parse: ' + version);
+        }
+        var res = {
+            major: parseInt(match[1], 10),
+            minor: parseInt(match[2], 10),
+            patch: parseInt(match[3], 10),
+            pre: match[4] || '',
+            build: match[5] || '',
+        };
+        return res;
+    }
+    var parseNodeVersion_1 = parseNodeVersion;
+
     function lessRoot (environment, fileManagers) {
         var sourceMapOutput, sourceMapBuilder, parseTree, importManager;
         environment = new Environment(environment, fileManagers);
@@ -10520,8 +10538,9 @@
         importManager = ImportManager(environment);
         var render = Render(environment, parseTree);
         var parse = Parse(environment, parseTree, importManager);
+        var v = parseNodeVersion_1(version);
         var initial = {
-            version: [4, 0, 0],
+            version: [v.major, v.minor, v.patch],
             data: data,
             tree: tree,
             Environment: Environment,

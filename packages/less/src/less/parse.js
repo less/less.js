@@ -4,7 +4,7 @@ import PluginManager from './plugin-manager';
 import LessError from './less-error';
 import * as utils from './utils';
 
-export default (environment, ParseTree, ImportManager) => {
+export default function(environment, ParseTree, ImportManager) {
     const parse = function (input, options, callback) {
 
         if (typeof options === 'function') {
@@ -17,8 +17,8 @@ export default (environment, ParseTree, ImportManager) => {
 
         if (!callback) {
             const self = this;
-            return new Promise((resolve, reject) => {
-                parse.call(self, input, options, (err, output) => {
+            return new Promise(function (resolve, reject) {
+                parse.call(self, input, options, function(err, output) {
                     if (err) {
                         reject(err);
                     } else {
@@ -61,9 +61,8 @@ export default (environment, ParseTree, ImportManager) => {
             // Do an async plugin queue like lessc
 
             if (options.plugins) {
-                options.plugins.forEach(plugin => {
-                    let evalResult;
-                    let contents;
+                options.plugins.forEach(function(plugin) {
+                    let evalResult, contents;
                     if (plugin.fileContent) {
                         contents = plugin.fileContent.replace(/^\uFEFF/, '');
                         evalResult = pluginManager.Loader.evalPlugin(contents, context, imports, plugin.options, plugin.filename);
@@ -78,7 +77,7 @@ export default (environment, ParseTree, ImportManager) => {
             }
 
             new Parser(context, imports, rootFileInfo)
-                .parse(input, (e, root) => {
+                .parse(input, function (e, root) {
                     if (e) { return callback(e); }
                     callback(null, root, imports, options);
                 }, options);

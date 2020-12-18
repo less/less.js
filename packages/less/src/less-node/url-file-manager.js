@@ -4,10 +4,11 @@ let request;
 import AbstractFileManager from '../less/environment/abstract-file-manager.js';
 import logger from '../less/logger';
 
-class UrlFileManager extends AbstractFileManager {
+const UrlFileManager = function() {}
+UrlFileManager.prototype = Object.assign(new AbstractFileManager(), {
     supports(filename, currentDirectory, options, environment) {
         return isUrlRe.test( filename ) || isUrlRe.test(currentDirectory);
-    }
+    },
 
     loadFile(filename, currentDirectory, options, environment) {
         return new Promise((fulfill, reject) => {
@@ -41,6 +42,6 @@ class UrlFileManager extends AbstractFileManager {
             });
         });
     }
-}
+});
 
 export default UrlFileManager;

@@ -13,6 +13,17 @@ function If(context, condition, trueValue, falseValue) {
     return condition.eval(context) ? trueValue.eval(context)
         : (falseValue ? falseValue.eval(context) : new Anonymous);
 }
-If.evalArgs = false
+If.evalArgs = false;
 
-export default { boolean, 'if': If };
+function isdefined(context, variable) {
+    try {
+        variable.eval(context);
+        return Keyword.True;
+    } catch (e) {
+        return Keyword.False;
+    }
+}
+
+isdefined.evalArgs = false;
+
+export default { isdefined, boolean, 'if': If };

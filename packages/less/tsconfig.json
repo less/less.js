@@ -6,6 +6,7 @@
     "sourceMap": true,
     "inlineSources": true,
     "esModuleInterop": true,
+    "importHelpers": true,
     "target": "ES5"
   },
   "include": ["src/**/*"],

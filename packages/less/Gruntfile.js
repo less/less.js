@@ -283,7 +283,7 @@ module.exports = function(grunt) {
         eslint: {
             target: [
                 "test/**/*.js",
-                "lib/less*/**/*.js",
+                "src/less*/**/*.js",
                 "!test/less/errors/plugin/plugin-error.js"
             ],
             options: {

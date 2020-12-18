@@ -25,9 +25,9 @@
 }
 
 mi-test-a {
-    .123;
-    .foo;
-    #foo;
+    .123();
+    .foo();
+    #foo();
 }
 
 .b .bb {
@@ -39,7 +39,7 @@ mi-test-a {
 }
 
 mi-test-b {
-    .b.bb.foo-xxx.yyy-foo#foo.foo.bbb;
+    .b.bb.foo-xxx.yyy-foo#foo.foo.bbb();
 }
 
 @c1: @a1;
@@ -55,9 +55,9 @@ mi-test-b {
 }
 
 mi-test-c {
-    &-1 {#foo-foo;}
-    &-2 {#foo-foo > .bar;}
-    &-3 {#foo-foo > .bar.baz;}
+    &-1 {#foo-foo();}
+    &-2 {#foo-foo > .bar();}
+    &-3 {#foo-foo > .bar.baz();}
 }
 
 .Person(@name, @gender_) {

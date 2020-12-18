@@ -5,7 +5,7 @@
 
 import logger from '../logger';
 
-class environment {
+class Environment {
     constructor(externalEnvironment, fileManagers) {
         this.fileManagers = fileManagers || [];
         externalEnvironment = externalEnvironment || {};
@@ -56,4 +56,4 @@ class environment {
     }
 }
 
-export default environment;
+export default Environment;

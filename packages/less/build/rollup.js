@@ -1,6 +1,7 @@
 const rollup = require('rollup');
 const typescript = require('rollup-plugin-typescript2');
 const commonjs = require('rollup-plugin-commonjs');
+const json = require('@rollup/plugin-json');
 const resolve = require('rollup-plugin-node-resolve');
 const terser = require('rollup-plugin-terser').terser;
 const banner = require('./banner');
@@ -28,6 +29,7 @@ async function buildBrowser() {
         plugins: [
             resolve(),
             commonjs(),
+            json(),
             typescript({
                 verbosity: 2,
                 tsconfigDefaults: {

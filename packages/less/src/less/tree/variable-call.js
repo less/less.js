@@ -11,34 +11,35 @@ const VariableCall = function(variable, index, currentFileInfo) {
     this.allowRoot = true;
 };
 
-VariableCall.prototype = new Node();
+VariableCall.prototype = Object.assign(new Node(), {
+    type: 'VariableCall',
 
-VariableCall.prototype.eval = function(context) {
-    let rules;
-    let detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
-    const error = new LessError({message: `Could not evaluate variable call ${this.variable}`});
+    eval(context) {
+        let rules;
+        let detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
+        const error = new LessError({message: `Could not evaluate variable call ${this.variable}`});
 
-    if (!detachedRuleset.ruleset) {
-        if (detachedRuleset.rules) {
-            rules = detachedRuleset;
+        if (!detachedRuleset.ruleset) {
+            if (detachedRuleset.rules) {
+                rules = detachedRuleset;
+            }
+            else if (Array.isArray(detachedRuleset)) {
+                rules = new Ruleset('', detachedRuleset);
+            }
+            else if (Array.isArray(detachedRuleset.value)) {
+                rules = new Ruleset('', detachedRuleset.value);
+            }
+            else {
+                throw error;
+            }
+            detachedRuleset = new DetachedRuleset(rules);
         }
-        else if (Array.isArray(detachedRuleset)) {
-            rules = new Ruleset('', detachedRuleset);
+
+        if (detachedRuleset.ruleset) {
+            return detachedRuleset.callEval(context);
         }
-        else if (Array.isArray(detachedRuleset.value)) {
-            rules = new Ruleset('', detachedRuleset.value);
-        }
-        else {
-            throw error;
-        }
-        detachedRuleset = new DetachedRuleset(rules);
+        throw error;
     }
+});
 
-    if (detachedRuleset.ruleset) {
-        return detachedRuleset.callEval(context);
-    }
-    throw error;
-};
-
-VariableCall.prototype.type = 'VariableCall';
 export default VariableCall;

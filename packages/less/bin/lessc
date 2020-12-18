@@ -554,7 +554,7 @@ function processPluginQueue() {
 
         if (checkArgFunc(arg, match[2])) {
           if (checkBooleanArg(match[2])) {
-            options.math = Constants.Math.STRICT_LEGACY;
+            options.math = Constants.Math.PARENS;
           }
         }
 
@@ -562,8 +562,19 @@ function processPluginQueue() {
 
       case 'm':
       case 'math':
-        if (checkArgFunc(arg, match[2])) {
-          options.math = match[2];
+        var m = match[2];
+        if (checkArgFunc(arg, m)) {
+          if (m === 'always') {
+            console.warn('--math=always is deprecated and will be removed in the future.');
+            options.math = Constants.Math.ALWAYS;
+          } else if (m === 'parens-division') {
+            options.math = Constants.Math.PARENS_DIVISION;
+          } else if (m === 'parens' || m === 'strict') {
+            options.math = Constants.Math.PARENS;
+          } else if (m === 'strict-legacy') {
+            console.warn('--math=strict-legacy has been removed. Defaulting to --math=strict');
+            options.math = Constants.Math.PARENS;
+          }
         }
 
         break;

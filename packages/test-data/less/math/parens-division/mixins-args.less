@@ -19,7 +19,7 @@
 }
 
 #hidden {
-  .hidden;
+  .hidden();
 }
 
 #hidden1 {
@@ -34,10 +34,6 @@
 
 .one-arg {
   .mixin(3px);
-}
-
-.no-parens {
-  .mixin;
 }
 
 .no-args {
@@ -98,7 +94,7 @@ body {
     @var: 10px;
     width: @var;
 }
-#var-inside { .var-inside; }
+#var-inside { .var-inside(); }
 
 .mixin-arguments (@width: 0px, ...) {
     border: @arguments;
@@ -112,7 +108,7 @@ body {
     .mixin-arguments();
 }
 .arguments3 {
-    .mixin-arguments;
+    .mixin-arguments();
 }
 
 .mixin-arguments2 (@width, @rest...) {

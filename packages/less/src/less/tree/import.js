@@ -38,147 +38,148 @@ const Import = function(path, features, options, index, currentFileInfo, visibil
     this.copyVisibilityInfo(visibilityInfo);
     this.setParent(this.features, this);
     this.setParent(this.path, this);
-}
-
-Import.prototype = new Node();
-
-Import.prototype.accept = function(visitor) {
-    if (this.features) {
-        this.features = visitor.visit(this.features);
-    }
-    this.path = visitor.visit(this.path);
-    if (!this.options.isPlugin && !this.options.inline && this.root) {
-        this.root = visitor.visit(this.root);
-    }
 };
 
-Import.prototype.genCSS = function(context, output) {
-    if (this.css && this.path._fileInfo.reference === undefined) {
-        output.add('@import ', this._fileInfo, this._index);
-        this.path.genCSS(context, output);
+Import.prototype = Object.assign(new Node(), {
+    type: 'Import',
+
+    accept(visitor) {
         if (this.features) {
-            output.add(' ');
-            this.features.genCSS(context, output);
+            this.features = visitor.visit(this.features);
         }
-        output.add(';');
-    }
-};
-
-Import.prototype.getPath = function() {
-    return (this.path instanceof URL) ?
-        this.path.value.value : this.path.value;
-};
-
-Import.prototype.isVariableImport = function() {
-    let path = this.path;
-    if (path instanceof URL) {
-        path = path.value;
-    }
-    if (path instanceof Quoted) {
-        return path.containsVariables();
-    }
-
-    return true;
-};
-
-Import.prototype.evalForImport = function(context) {
-    let path = this.path;
-
-    if (path instanceof URL) {
-        path = path.value;
-    }
-
-    return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
-};
-
-Import.prototype.evalPath = function(context) {
-    const path = this.path.eval(context);
-    const fileInfo = this._fileInfo;
-
-    if (!(path instanceof URL)) {
-        // Add the rootpath if the URL requires a rewrite
-        const pathValue = path.value;
-        if (fileInfo &&
-            pathValue &&
-            context.pathRequiresRewrite(pathValue)) {
-            path.value = context.rewritePath(pathValue, fileInfo.rootpath);
-        } else {
-            path.value = context.normalizePath(path.value);
+        this.path = visitor.visit(this.path);
+        if (!this.options.isPlugin && !this.options.inline && this.root) {
+            this.root = visitor.visit(this.root);
         }
-    }
+    },
 
-    return path;
-};
-
-Import.prototype.eval = function(context) {
-    const result = this.doEval(context);
-    if (this.options.reference || this.blocksVisibility()) {
-        if (result.length || result.length === 0) {
-            result.forEach(node => {
-                node.addVisibilityBlock();
+    genCSS(context, output) {
+        if (this.css && this.path._fileInfo.reference === undefined) {
+            output.add('@import ', this._fileInfo, this._index);
+            this.path.genCSS(context, output);
+            if (this.features) {
+                output.add(' ');
+                this.features.genCSS(context, output);
             }
-            );
-        } else {
-            result.addVisibilityBlock();
+            output.add(';');
         }
-    }
-    return result;
-};
+    },
 
-Import.prototype.doEval = function(context) {
-    let ruleset;
-    let registry;
-    const features = this.features && this.features.eval(context);
+    getPath() {
+        return (this.path instanceof URL) ?
+            this.path.value.value : this.path.value;
+    },
 
-    if (this.options.isPlugin) {
-        if (this.root && this.root.eval) {
-            try {
-                this.root.eval(context);
-            }
-            catch (e) {
-                e.message = 'Plugin error during evaluation';
-                throw new LessError(e, this.root.imports, this.root.filename);
+    isVariableImport() {
+        let path = this.path;
+        if (path instanceof URL) {
+            path = path.value;
+        }
+        if (path instanceof Quoted) {
+            return path.containsVariables();
+        }
+
+        return true;
+    },
+
+    evalForImport(context) {
+        let path = this.path;
+
+        if (path instanceof URL) {
+            path = path.value;
+        }
+
+        return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
+    },
+
+    evalPath(context) {
+        const path = this.path.eval(context);
+        const fileInfo = this._fileInfo;
+
+        if (!(path instanceof URL)) {
+            // Add the rootpath if the URL requires a rewrite
+            const pathValue = path.value;
+            if (fileInfo &&
+                pathValue &&
+                context.pathRequiresRewrite(pathValue)) {
+                path.value = context.rewritePath(pathValue, fileInfo.rootpath);
+            } else {
+                path.value = context.normalizePath(path.value);
             }
         }
-        registry = context.frames[0] && context.frames[0].functionRegistry;
-        if ( registry && this.root && this.root.functions ) {
-            registry.addMultiple( this.root.functions );
+
+        return path;
+    },
+
+    eval(context) {
+        const result = this.doEval(context);
+        if (this.options.reference || this.blocksVisibility()) {
+            if (result.length || result.length === 0) {
+                result.forEach(function (node) {
+                    node.addVisibilityBlock();
+                }
+                );
+            } else {
+                result.addVisibilityBlock();
+            }
+        }
+        return result;
+    },
+
+    doEval(context) {
+        let ruleset;
+        let registry;
+        const features = this.features && this.features.eval(context);
+
+        if (this.options.isPlugin) {
+            if (this.root && this.root.eval) {
+                try {
+                    this.root.eval(context);
+                }
+                catch (e) {
+                    e.message = 'Plugin error during evaluation';
+                    throw new LessError(e, this.root.imports, this.root.filename);
+                }
+            }
+            registry = context.frames[0] && context.frames[0].functionRegistry;
+            if ( registry && this.root && this.root.functions ) {
+                registry.addMultiple( this.root.functions );
+            }
+
+            return [];
         }
 
-        return [];
-    }
-
-    if (this.skip) {
-        if (typeof this.skip === 'function') {
-            this.skip = this.skip();
-        }
         if (this.skip) {
+            if (typeof this.skip === 'function') {
+                this.skip = this.skip();
+            }
+            if (this.skip) {
+                return [];
+            }
+        }
+        if (this.options.inline) {
+            const contents = new Anonymous(this.root, 0,
+                {
+                    filename: this.importedFilename,
+                    reference: this.path._fileInfo && this.path._fileInfo.reference
+                }, true, true);
+
+            return this.features ? new Media([contents], this.features.value) : [contents];
+        } else if (this.css) {
+            const newImport = new Import(this.evalPath(context), features, this.options, this._index);
+            if (!newImport.css && this.error) {
+                throw this.error;
+            }
+            return newImport;
+        } else if (this.root) {
+            ruleset = new Ruleset(null, utils.copyArray(this.root.rules));
+            ruleset.evalImports(context);
+
+            return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
+        } else {
             return [];
         }
     }
-    if (this.options.inline) {
-        const contents = new Anonymous(this.root, 0,
-            {
-                filename: this.importedFilename,
-                reference: this.path._fileInfo && this.path._fileInfo.reference
-            }, true, true);
+});
 
-        return this.features ? new Media([contents], this.features.value) : [contents];
-    } else if (this.css) {
-        const newImport = new Import(this.evalPath(context), features, this.options, this._index);
-        if (!newImport.css && this.error) {
-            throw this.error;
-        }
-        return newImport;
-    } else if (this.root) {
-        ruleset = new Ruleset(null, utils.copyArray(this.root.rules));
-        ruleset.evalImports(context);
-
-        return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
-    } else {
-        return [];
-    }
-};
-
-Import.prototype.type = 'Import';
 export default Import;

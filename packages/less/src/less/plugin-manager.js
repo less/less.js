@@ -157,7 +157,7 @@ class PluginManager {
 
 let pm;
 
-function PluginManagerFactory(less, newFactory) {
+const PluginManagerFactory = function(less, newFactory) {
     if (newFactory || !pm) {
         pm = new PluginManager(less);
     }

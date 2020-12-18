@@ -7,17 +7,15 @@ class ImportSequencer {
     }
 
     addImport(callback) {
-        const importSequencer = this;
-
-        const importItem = {
-            callback,
-            args: null,
-            isReady: false
-        };
-
+        const importSequencer = this,
+            importItem = {
+                callback,
+                args: null,
+                isReady: false
+            };
         this.imports.push(importItem);
-        return function(...args) {
-            importItem.args = Array.prototype.slice.call(args, 0);
+        return function() {
+            importItem.args = Array.prototype.slice.call(arguments, 0);
             importItem.isReady = true;
             importSequencer.tryRun();
         };

@@ -67,6 +67,7 @@ ImportVisitor.prototype = {
         }
 
         if (evaldImportNode && (!evaldImportNode.css || inlineCSS)) {
+
             if (evaldImportNode.options.multiple) {
                 context.importMultiple = true;
             }
@@ -81,8 +82,7 @@ ImportVisitor.prototype = {
                 }
             }
 
-            const onImported = this.onImported.bind(this, evaldImportNode, context);
-            const sequencedOnImported = this._sequencer.addImport(onImported);
+            const onImported = this.onImported.bind(this, evaldImportNode, context), sequencedOnImported = this._sequencer.addImport(onImported);
 
             this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.fileInfo(),
                 evaldImportNode.options, sequencedOnImported);
@@ -101,17 +101,17 @@ ImportVisitor.prototype = {
             this.error = e;
         }
 
-        const importVisitor = this;
-        const inlineCSS = importNode.options.inline;
-        const isPlugin = importNode.options.isPlugin;
-        const isOptional = importNode.options.optional;
-        const duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
+        const importVisitor = this,
+            inlineCSS = importNode.options.inline,
+            isPlugin = importNode.options.isPlugin,
+            isOptional = importNode.options.optional,
+            duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
 
         if (!context.importMultiple) {
             if (duplicateImport) {
                 importNode.skip = true;
             } else {
-                importNode.skip = () => {
+                importNode.skip = function() {
                     if (fullPath in importVisitor.onceFileDetectionMap) {
                         return true;
                     }

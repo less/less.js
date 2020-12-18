@@ -13,61 +13,63 @@ const Call = function(name, args, index, currentFileInfo) {
     this._fileInfo = currentFileInfo;
 }
 
-Call.prototype = new Node();
+Call.prototype = Object.assign(new Node(), {
+    type: 'Call',
 
-Call.prototype.accept = function(visitor) {
-    if (this.args) {
-        this.args = visitor.visitArray(this.args);
-    }
-};
-
-//
-// When evaluating a function call,
-// we either find the function in the functionRegistry,
-// in which case we call it, passing the  evaluated arguments,
-// if this returns null or we cannot find the function, we
-// simply print it out as it appeared originally [2].
-//
-// The reason why we evaluate the arguments, is in the case where
-// we try to pass a variable to a function, like: `saturate(@color)`.
-// The function should receive the value, not the variable.
-//
-Call.prototype.eval = function(context) {
-    /**
-     * Turn off math for calc(), and switch back on for evaluating nested functions
-     */
-    const currentMathContext = context.mathOn;
-    context.mathOn = !this.calc;
-    if (this.calc || context.inCalc) {
-        context.enterCalc();
-    }
-
-    const exitCalc = () => {
-        if (this.calc || context.inCalc) {
-            context.exitCalc();
+    accept(visitor) {
+        if (this.args) {
+            this.args = visitor.visitArray(this.args);
         }
-        context.mathOn = currentMathContext;
-    };
+    },
 
-    let result;
-    const funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
+    //
+    // When evaluating a function call,
+    // we either find the function in the functionRegistry,
+    // in which case we call it, passing the  evaluated arguments,
+    // if this returns null or we cannot find the function, we
+    // simply print it out as it appeared originally [2].
+    //
+    // The reason why we evaluate the arguments, is in the case where
+    // we try to pass a variable to a function, like: `saturate(@color)`.
+    // The function should receive the value, not the variable.
+    //
+    eval(context) {
+        /**
+         * Turn off math for calc(), and switch back on for evaluating nested functions
+         */
+        const currentMathContext = context.mathOn;
+        context.mathOn = !this.calc;
+        if (this.calc || context.inCalc) {
+            context.enterCalc();
+        }
 
-    if (funcCaller.isValid()) {
-        try {
-            result = funcCaller.call(this.args);
-            exitCalc();
-        } catch (e) {
-            if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
-                throw e
+        const exitCalc = () => {
+            if (this.calc || context.inCalc) {
+                context.exitCalc();
             }
-            throw { 
-                type: e.type || 'Runtime',
-                message: `error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
-                index: this.getIndex(), 
-                filename: this.fileInfo().filename,
-                line: e.lineNumber,
-                column: e.columnNumber
-            };
+            context.mathOn = currentMathContext;
+        };
+
+        let result;
+        const funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
+
+        if (funcCaller.isValid()) {
+            try {
+                result = funcCaller.call(this.args);
+                exitCalc();
+            } catch (e) {
+                if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
+                    throw e;
+                }
+                throw { 
+                    type: e.type || 'Runtime',
+                    message: `Error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
+                    index: this.getIndex(), 
+                    filename: this.fileInfo().filename,
+                    line: e.lineNumber,
+                    column: e.columnNumber
+                };
+            }
         }
 
         if (result !== null && result !== undefined) {
@@ -86,26 +88,25 @@ Call.prototype.eval = function(context) {
             result._fileInfo = this._fileInfo;
             return result;
         }
-    }
 
-    const args = this.args.map(a => a.eval(context));
-    exitCalc();
+        const args = this.args.map(a => a.eval(context));
+        exitCalc();
 
-    return new Call(this.name, args, this.getIndex(), this.fileInfo());
-};
+        return new Call(this.name, args, this.getIndex(), this.fileInfo());
+    },
 
-Call.prototype.genCSS = function(context, output) {
-    output.add(`${this.name}(`, this.fileInfo(), this.getIndex());
+    genCSS(context, output) {
+        output.add(`${this.name}(`, this.fileInfo(), this.getIndex());
 
-    for (let i = 0; i < this.args.length; i++) {
-        this.args[i].genCSS(context, output);
-        if (i + 1 < this.args.length) {
-            output.add(', ');
+        for (let i = 0; i < this.args.length; i++) {
+            this.args[i].genCSS(context, output);
+            if (i + 1 < this.args.length) {
+                output.add(', ');
+            }
         }
+
+        output.add(')');
     }
+});
 
-    output.add(')');
-};
-
-Call.prototype.type = 'Call';
 export default Call;

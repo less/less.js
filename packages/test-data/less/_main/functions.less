@@ -118,6 +118,7 @@
   min: min(1cm, 3mm);
   max: max(1, 3);
   max: max(3em, 1em, 2em, 5em);
+  max-native: max(10vw, 100px);
   percentage: percentage((10px / 50));
   color-quoted-digit: color("#dda0dd");
   color-quoted-keyword: color("plum");
@@ -152,6 +153,8 @@
     @rules: {
       color: red;
     };
+    rules-defined: isdefined(@rules);
+    foo-defined: isdefined(@foo);
     ruleset: isruleset(@rules);
     color: iscolor(#ddd);
     color1: iscolor(red);
@@ -281,4 +284,18 @@ html {
     color: purple;
   });
   @falsey();
+}
+
+.paren-escapes {
+  list-1: ~(1, 2, 3);
+  length-1: length($list-1);
+  each(~(1 2 3); {
+    item-@{value}: @value + 3;
+  })
+
+  .mixin(@list-1; @list-2) {
+    list-2: @list-1;
+    list-3: @list-2;
+  }
+  .mixin($list-1, ~(7; 8; 9));
 }

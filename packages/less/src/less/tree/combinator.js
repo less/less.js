@@ -13,15 +13,15 @@ const Combinator = function(value) {
         this.value = value ? value.trim() : '';
         this.emptyOrWhitespace = this.value === '';
     }
-};
+}
 
-Combinator.prototype = new Node();
+Combinator.prototype = Object.assign(new Node(), {
+    type: 'Combinator',
 
-Combinator.prototype.genCSS = function(context, output) {
-    const spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
-    output.add(spaceOrEmpty + this.value + spaceOrEmpty);
-};
-
-Combinator.prototype.type = 'Combinator';
+    genCSS(context, output) {
+        const spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
+        output.add(spaceOrEmpty + this.value + spaceOrEmpty);
+    }
+});
 
 export default Combinator;

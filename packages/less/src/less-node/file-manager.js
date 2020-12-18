@@ -2,14 +2,15 @@ import path from 'path';
 import fs from './fs';
 import AbstractFileManager from '../less/environment/abstract-file-manager.js';
 
-class FileManager extends AbstractFileManager {
+const FileManager = function() {}
+FileManager.prototype = Object.assign(new AbstractFileManager(), {
     supports() {
         return true;
-    }
+    },
 
     supportsSync() {
         return true;
-    }
+    },
 
     loadFile(filename, currentDirectory, options, environment, callback) {
         let fullFilename;
@@ -26,7 +27,7 @@ class FileManager extends AbstractFileManager {
 
         const paths = isAbsoluteFilename ? [''] : [currentDirectory];
 
-        if (options.paths) { paths.push(...options.paths); }
+        if (options.paths) { paths.push.apply(paths, options.paths); }
 
         if (!isAbsoluteFilename && paths.indexOf('.') === -1) { paths.push('.'); }
 
@@ -101,7 +102,7 @@ class FileManager extends AbstractFileManager {
                                     fullFilename = extFilename;
                                 }
                             }
-                        
+
                             const readFileArgs = [fullFilename];
                             if (!options.rawBuffer) {
                                 readFileArgs.push('utf-8');
@@ -121,11 +122,12 @@ class FileManager extends AbstractFileManager {
                                     if (e) {
                                         filenamesTried.push(isNodeModule ? npmPrefix + fullFilename : fullFilename);
                                         return tryPrefix(j + 1);
-                                    }
+                                    }   
                                     fulfill({ contents: data, filename: fullFilename});
                                 });
                                 fs.readFile.apply(this, readFileArgs);
                             }
+
                         }
                         else {
                             tryPathIndex(i + 1);
@@ -136,12 +138,12 @@ class FileManager extends AbstractFileManager {
                 }
             }(0));
         }
-    }
+    },
 
     loadFileSync(filename, currentDirectory, options, environment) {
         options.syncImport = true;
         return this.loadFile(filename, currentDirectory, options, environment);
     }
-}
+});
 
 export default FileManager;

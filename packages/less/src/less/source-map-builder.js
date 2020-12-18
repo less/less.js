@@ -1,4 +1,4 @@
-export default (SourceMapOutput, environment) => {
+export default function (SourceMapOutput, environment) {
     class SourceMapBuilder {
         constructor(options) {
             this.options = options;

@@ -28,7 +28,7 @@ class JoinSelectorVisitor {
         if (!rulesetNode.root) {
             selectors = rulesetNode.selectors;
             if (selectors) {
-                selectors = selectors.filter(selector => selector.getIsOutput());
+                selectors = selectors.filter(function(selector) { return selector.getIsOutput(); });
                 rulesetNode.selectors = selectors.length ? selectors : (selectors = null);
                 if (selectors) { rulesetNode.joinSelectors(paths, context, selectors); }
             }

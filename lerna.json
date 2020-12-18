@@ -3,5 +3,5 @@
     "packages/*"
   ],
   "npmClient": "npm",
-  "version": "3.13.0"
+  "version": "4.0.0"
 }

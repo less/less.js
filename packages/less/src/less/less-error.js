@@ -24,7 +24,7 @@ const anonymousFunc = /(<anonymous>|Function):(\d+):(\d+)/;
  * @param {Object} fileContentMap - An object with file contents in 'contents' property (like importManager) @todo - move to fileManager?
  * @param {string} [currentFilename]
  */
-const LessError = function LessError(e, fileContentMap, currentFilename) {
+const LessError = function(e, fileContentMap, currentFilename) {
     Error.call(this);
 
     const filename = e.filename || currentFilename;
@@ -35,7 +35,7 @@ const LessError = function LessError(e, fileContentMap, currentFilename) {
     if (fileContentMap && filename) {
         const input = fileContentMap.contents[filename];
         const loc = utils.getLocation(e.index, input);
-        const line = loc.line;
+        var line = loc.line;
         const col  = loc.column;
         const callLine = e.call && utils.getLocation(e.call, input).line;
         const lines = input ? input.split('\n') : '';
@@ -62,7 +62,7 @@ const LessError = function LessError(e, fileContentMap, currentFilename) {
                 func();
             } catch (e) {
                 const match = e.stack.match(anonymousFunc);
-                const line = parseInt(match[2]);
+                var line = parseInt(match[2]);
                 lineAdjust = 1 - line;
             }
 
@@ -89,7 +89,7 @@ const LessError = function LessError(e, fileContentMap, currentFilename) {
 };
 
 if (typeof Object.create === 'undefined') {
-    const F = () => {};
+    const F = function () {};
     F.prototype = Error.prototype;
     LessError.prototype = new F();
 } else {
@@ -105,11 +105,13 @@ LessError.prototype.constructor = LessError;
  * @param {Object} options
  * @returns {string}
  */
-LessError.prototype.toString = function(options = {}) {
+LessError.prototype.toString = function(options) {
+    options = options || {};
+
     let message = '';
     const extract = this.extract || [];
     let error = [];
-    let stylize = str => str;
+    let stylize = function (str) { return str; };
     if (options.stylize) {
         const type = typeof options.stylize;
         if (type !== 'function') {

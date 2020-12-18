@@ -60,7 +60,7 @@
 .default (@a: inherit) when (@a = inherit) {
   content: default;
 }
-.default1 { .default }
+.default1 { .default() }
 
 // true & false keywords
 .test-rule (@a) when (@a) {
@@ -94,7 +94,7 @@
 .bool () when not (true) and not (true)                      { content: not true and not true }
 .bool () when not (false) and (false), not (false)           { content: not false and false, not false }
 
-.bool1 { .bool }
+.bool1 { .bool() }
 
 .equality-unit-test(@num) when (@num = 1%) {
   test: fail;

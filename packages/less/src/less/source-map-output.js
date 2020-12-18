@@ -1,4 +1,4 @@
-export default environment => {
+export default function (environment) {
     class SourceMapOutput {
         constructor(options) {
             this._css = [];
@@ -46,16 +46,13 @@ export default environment => {
         }
 
         add(chunk, fileInfo, index, mapLines) {
+
             // ignore adding empty strings
             if (!chunk) {
                 return;
             }
 
-            let lines;
-            let sourceLines;
-            let columns;
-            let sourceColumns;
-            let i;
+            let lines, sourceLines, columns, sourceColumns, i;
 
             if (fileInfo && fileInfo.filename) {
                 let inputSource = this._contentsMap[fileInfo.filename];

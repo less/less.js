@@ -7,21 +7,22 @@ const Comment = function(value, isLineComment, index, currentFileInfo) {
     this._index = index;
     this._fileInfo = currentFileInfo;
     this.allowRoot = true;
-};
+}
 
-Comment.prototype = new Node();
+Comment.prototype = Object.assign(new Node(), {
+    type: 'Comment',
 
-Comment.prototype.genCSS = function(context, output) {
-    if (this.debugInfo) {
-        output.add(getDebugInfo(context, this), this.fileInfo(), this.getIndex());
+    genCSS(context, output) {
+        if (this.debugInfo) {
+            output.add(getDebugInfo(context, this), this.fileInfo(), this.getIndex());
+        }
+        output.add(this.value);
+    },
+
+    isSilent(context) {
+        const isCompressed = context.compress && this.value[2] !== '!';
+        return this.isLineComment || isCompressed;
     }
-    output.add(this.value);
-};
+});
 
-Comment.prototype.isSilent = function(context) {
-    const isCompressed = context.compress && this.value[2] !== '!';
-    return this.isLineComment || isCompressed;
-};
-
-Comment.prototype.type = 'Comment';
 export default Comment;

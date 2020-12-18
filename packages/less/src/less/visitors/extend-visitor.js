@@ -38,9 +38,7 @@ class ExtendFinderVisitor {
         let extendList;
 
         // get &:extend(.a); rules which apply to all selectors in this ruleset
-        const rules = rulesetNode.rules;
-
-        const ruleCnt = rules ? rules.length : 0;
+        const rules = rulesetNode.rules, ruleCnt = rules ? rules.length : 0;
         for (i = 0; i < ruleCnt; i++) {
             if (rulesetNode.rules[i] instanceof tree.Extend) {
                 allSelectorsExtendList.push(rules[i]);
@@ -52,15 +50,15 @@ class ExtendFinderVisitor {
         // and the ones which apply to an individual extend
         const paths = rulesetNode.paths;
         for (i = 0; i < paths.length; i++) {
-            const selectorPath = paths[i];
-            const selector = selectorPath[selectorPath.length - 1];
-            const selExtendList = selector.extendList;
+            const selectorPath = paths[i], selector = selectorPath[selectorPath.length - 1], selExtendList = selector.extendList;
 
             extendList = selExtendList ? utils.copyArray(selExtendList).concat(allSelectorsExtendList)
                 : allSelectorsExtendList;
 
             if (extendList) {
-                extendList = extendList.map(allSelectorsExtend => allSelectorsExtend.clone());
+                extendList = extendList.map(function(allSelectorsExtend) {
+                    return allSelectorsExtend.clone();
+                });
             }
 
             for (j = 0; j < extendList.length; j++) {
@@ -120,7 +118,9 @@ class ProcessExtendsVisitor {
 
     checkExtendsForNonMatched(extendList) {
         const indices = this.extendIndices;
-        extendList.filter(extend => !extend.hasFoundMatches && extend.parent_ids.length == 1).forEach(extend => {
+        extendList.filter(function(extend) {
+            return !extend.hasFoundMatches && extend.parent_ids.length == 1;
+        }).forEach(function(extend) {
             let selector = '_unknown_';
             try {
                 selector = extend.selector.toCSS({});
@@ -181,7 +181,7 @@ class ProcessExtendsVisitor {
                     extend.hasFoundMatches = true;
 
                     // we found a match, so for each self selector..
-                    extend.selfSelectors.forEach(selfSelector => {
+                    extend.selfSelectors.forEach(function(selfSelector) {
                         const info = targetExtend.visibilityInfo();
 
                         // process the extend as usual
@@ -276,7 +276,7 @@ class ProcessExtendsVisitor {
                 if (matches.length) {
                     allExtends[extendIndex].hasFoundMatches = true;
 
-                    allExtends[extendIndex].selfSelectors.forEach(selfSelector => {
+                    allExtends[extendIndex].selfSelectors.forEach(function(selfSelector) {
                         let extendedSelectors;
                         extendedSelectors = extendVisitor.extendSelector(matches, selectorPath, selfSelector, allExtends[extendIndex].isVisible());
                         selectorsToAdd.push(extendedSelectors);
@@ -406,17 +406,10 @@ class ProcessExtendsVisitor {
     }
 
     extendSelector(matches, selectorPath, replacementSelector, isVisible) {
+
         // for a set of matches, replace each match with the replacement selector
 
-        let currentSelectorPathIndex = 0;
-
-        let currentSelectorPathElementIndex = 0;
-        let path = [];
-        let matchIndex;
-        let selector;
-        let firstElement;
-        let match;
-        let newElements;
+        let currentSelectorPathIndex = 0, currentSelectorPathElementIndex = 0, path = [], matchIndex, selector, firstElement, match, newElements;
 
         for (matchIndex = 0; matchIndex < matches.length; matchIndex++) {
             match = matches[matchIndex];
@@ -466,7 +459,7 @@ class ProcessExtendsVisitor {
         }
 
         path = path.concat(selectorPath.slice(currentSelectorPathIndex, selectorPath.length));
-        path = path.map(currentValue => {
+        path = path.map(function (currentValue) {
             // we can re-use elements here, because the visibility property matters only for selectors
             const derived = currentValue.createDerived(currentValue.elements);
             if (isVisible) {

@@ -66,8 +66,12 @@ export default function (environment) {
                     inputSource = inputSource.slice(this._contentsIgnoredCharsMap[fileInfo.filename]);
                 }
 
-                // ignore empty content
+                /** 
+                 * ignore empty content, or failsafe
+                 * if contents map is incorrect
+                 */
                 if (inputSource === undefined) {
+                    this._css.push(chunk);
                     return;
                 }
 

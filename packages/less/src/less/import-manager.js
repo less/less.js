@@ -121,7 +121,6 @@ export default function(environment) {
                 } else if (importOptions.inline) {
                     fileParsedFunc(null, contents, resolvedFilename);
                 } else {
-
                     // import (multiple) parse trees apparently get altered and can't be cached.
                     // TODO: investigate why this is
                     if (importManager.files[resolvedFilename]

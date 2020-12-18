@@ -1,4 +1,3 @@
-let PromiseConstructor;
 import contexts from './contexts';
 import Parser from './parser/parser';
 import PluginManager from './plugin-manager';

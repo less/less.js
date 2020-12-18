@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v3.13.0
+ * Less - Leaner CSS v3.13.1
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
@@ -217,18 +217,6 @@
       function __() { this.constructor = d; }
       d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   }
-  var __assign = function () {
-      __assign = Object.assign || function __assign(t) {
-          for (var s, i = 1, n = arguments.length; i < n; i++) {
-              s = arguments[i];
-              for (var p in s)
-                  if (Object.prototype.hasOwnProperty.call(s, p))
-                      t[p] = s[p];
-          }
-          return t;
-      };
-      return __assign.apply(this, arguments);
-  };
   function __spreadArrays() {
       for (var s = 0, i = 0, il = arguments.length; i < il; i++)
           s += arguments[i].length;
@@ -914,6 +902,105 @@
       ALL: 2
   };
 
+  /**
+   * Returns the object type of the given payload
+   *
+   * @param {*} payload
+   * @returns {string}
+   */
+  function getType(payload) {
+      return Object.prototype.toString.call(payload).slice(8, -1);
+  }
+  /**
+   * Returns whether the payload is a plain JavaScript object (excluding special classes or objects with other prototypes)
+   *
+   * @param {*} payload
+   * @returns {payload is Record<string, any>}
+   */
+  function isPlainObject(payload) {
+      if (getType(payload) !== 'Object')
+          return false;
+      return payload.constructor === Object && Object.getPrototypeOf(payload) === Object.prototype;
+  }
+  /**
+   * Returns whether the payload is an array
+   *
+   * @param {any} payload
+   * @returns {payload is any[]}
+   */
+  function isArray(payload) {
+      return getType(payload) === 'Array';
+  }
+
+  /*! *****************************************************************************
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+  this file except in compliance with the License. You may obtain a copy of the
+  License at http://www.apache.org/licenses/LICENSE-2.0
+
+  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+  MERCHANTABLITY OR NON-INFRINGEMENT.
+
+  See the Apache Version 2.0 License for specific language governing permissions
+  and limitations under the License.
+  ***************************************************************************** */
+  function __spreadArrays$1() {
+      for (var s = 0, i = 0, il = arguments.length; i < il; i++)
+          s += arguments[i].length;
+      for (var r = Array(s), k = 0, i = 0; i < il; i++)
+          for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+              r[k] = a[j];
+      return r;
+  }
+  function assignProp(carry, key, newVal, originalObject, includeNonenumerable) {
+      var propType = {}.propertyIsEnumerable.call(originalObject, key)
+          ? 'enumerable'
+          : 'nonenumerable';
+      if (propType === 'enumerable')
+          carry[key] = newVal;
+      if (includeNonenumerable && propType === 'nonenumerable') {
+          Object.defineProperty(carry, key, {
+              value: newVal,
+              enumerable: false,
+              writable: true,
+              configurable: true,
+          });
+      }
+  }
+  /**
+   * Copy (clone) an object and all its props recursively to get rid of any prop referenced of the original object. Arrays are also cloned, however objects inside arrays are still linked.
+   *
+   * @export
+   * @template T
+   * @param {T} target Target can be anything
+   * @param {Options} [options={}] Options can be `props` or `nonenumerable`
+   * @returns {T} the target with replaced values
+   * @export
+   */
+  function copy(target, options) {
+      if (options === void 0) {
+          options = {};
+      }
+      if (isArray(target))
+          return target.map(function (i) { return copy(i, options); });
+      if (!isPlainObject(target))
+          return target;
+      var props = Object.getOwnPropertyNames(target);
+      var symbols = Object.getOwnPropertySymbols(target);
+      return __spreadArrays$1(props, symbols).reduce(function (carry, key) {
+          if (isArray(options.props) && !options.props.includes(key)) {
+              return carry;
+          }
+          var val = target[key];
+          var newVal = copy(val, options);
+          assignProp(carry, key, newVal, target, options.nonenumerable);
+          return carry;
+      }, {});
+  }
+
+  /* jshint proto: true */
   function getLocation(index, inputStream) {
       var n = index + 1;
       var line = null;
@@ -951,9 +1038,9 @@
       var newObj = obj2 || {};
       if (!obj2._defaults) {
           newObj = {};
-          var defaults_1 = __assign({}, obj1);
+          var defaults_1 = copy(obj1);
           newObj._defaults = defaults_1;
-          var cloned = obj2 ? __assign({}, obj2) : {};
+          var cloned = obj2 ? copy(obj2) : {};
           Object.assign(newObj, defaults_1, cloned);
       }
       return newObj;
@@ -9699,8 +9786,12 @@
                       // adjust the source
                       inputSource = inputSource.slice(this._contentsIgnoredCharsMap[fileInfo.filename]);
                   }
-                  // ignore empty content
+                  /**
+                   * ignore empty content, or failsafe
+                   * if contents map is incorrect
+                   */
                   if (inputSource === undefined) {
+                      this._css.push(chunk);
                       return;
                   }
                   inputSource = inputSource.substring(0, index);
@@ -10444,7 +10535,7 @@
        * It's not clear what should / must be public and why.
        */
       var initial = {
-          version: [3, 13, 0],
+          version: [3, 13, 1],
           data: data,
           tree: tree,
           Environment: environment,

@@ -1,7 +1,8 @@
 var lessTest = require('./less-test'),
     lessTester = lessTest(),
     path = require('path'),
-    stylize = require('../lib/less-node/lessc-helper').stylize;
+    stylize = require('../lib/less-node/lessc-helper').stylize,
+    nock = require('nock');
 
 console.log('\n' + stylize('Less', 'underline') + '\n');
 
@@ -39,7 +40,7 @@ var testMap = [
     // TODO: Change this to rewriteUrls: false once the relativeUrls option is removed
     [{math: 'strict', relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
     [{math: 'strict', compress: true}, 'compression/'],
-    
+
     [{math: 0, strictUnits: true}, 'units/strict/'],
     [{math: 0, strictUnits: false}, 'units/no-strict/'],
 
@@ -88,3 +89,20 @@ lessTester.testSyncronous({syncImport: true}, 'math/strict/css');
 lessTester.testNoOptions();
 lessTester.testJSImport();
 lessTester.finished();
+
+(() => {
+    // Create new tester, since tests are not independent and tests
+    // above modify tester in a way that breaks remote imports.
+    lessTester = lessTest();
+    var scope = nock('https://example.com')
+        .get('/redirect.less').query(true)
+        .reply(301, null, { location: '/target.less' })
+        .get('/target.less').query(true)
+        .reply(200);
+    lessTester.runTestSet(
+        {},
+        'import-redirect/',
+        lessTester.testImportRedirect(scope)
+    );
+    lessTester.finished();
+})();

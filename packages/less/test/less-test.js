@@ -1,5 +1,23 @@
 /* jshint latedef: nofunc */
 
+var logger = require('../lib/less/logger').default;
+
+var isVerbose = process.env.npm_config_loglevel !== 'concise';
+logger.addListener({
+    info(msg) {
+        if (isVerbose) {
+            process.stdout.write(msg + '\n');
+        }
+    },
+    warn(msg) {
+        process.stdout.write(msg + '\n');
+    },
+    erro(msg) {
+        process.stdout.write(msg + '\n');
+    }
+});
+
+
 module.exports = function() {
     var path = require('path'),
         fs = require('fs'),
@@ -14,8 +32,6 @@ module.exports = function() {
     var oneTestOnly = process.argv[2],
         isFinished = false;
 
-    var isVerbose = process.env.npm_config_loglevel !== 'concise';
-
     var testFolder = path.dirname(require.resolve('@less/test-data'));
     var lessFolder = path.join(testFolder, 'less');
 
@@ -26,20 +42,6 @@ module.exports = function() {
             return this.slice(-str.length) === str;
         }
     }
-
-    less.logger.addListener({
-        info: function(msg) {
-            if (isVerbose) {
-                process.stdout.write(msg + '\n');
-            }
-        },
-        warn: function(msg) {
-            process.stdout.write(msg + '\n');
-        },
-        error: function(msg) {
-            process.stdout.write(msg + '\n');
-        }
-    });
 
     var queueList = [],
         queueRunning = false;
@@ -519,6 +521,23 @@ module.exports = function() {
         ok(stylize('OK\n', 'green'));
     }
 
+    function testImportRedirect(nockScope) {
+        return (name, err, css, doReplacements, sourcemap, baseFolder) => {
+            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
+            if (err) {
+                fail('FAIL: ' + (err && err.message));
+                return;
+            }
+            const expected = 'h1 {\n  color: red;\n}\n';
+            if (css !== expected) {
+                difference('FAIL', expected, css);
+                return;
+            }
+            nockScope.done();
+            ok('OK');
+        };
+    }
+
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
@@ -527,6 +546,7 @@ module.exports = function() {
         testSourcemap: testSourcemap,
         testSourcemapWithoutUrlAnnotation: testSourcemapWithoutUrlAnnotation,
         testImports: testImports,
+        testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         testJSImport: testJSImport,

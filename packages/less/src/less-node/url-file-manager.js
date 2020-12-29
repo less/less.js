@@ -13,7 +13,7 @@ UrlFileManager.prototype = Object.assign(new AbstractFileManager(), {
     loadFile(filename, currentDirectory, options, environment) {
         return new Promise((fulfill, reject) => {
             if (request === undefined) {
-                try { request = require('native-request'); }
+                try { request = require('needle'); }
                 catch (e) { request = null; }
             }
             if (!request) {
@@ -22,23 +22,27 @@ UrlFileManager.prototype = Object.assign(new AbstractFileManager(), {
             }
 
             let urlStr = isUrlRe.test( filename ) ? filename : url.resolve(currentDirectory, filename);
-            
+
             /** native-request currently has a bug */
             const hackUrlStr = urlStr.indexOf('?') === -1 ? urlStr + '?' : urlStr
 
-            request.get(hackUrlStr, (error, body, status) => {
-                if (status === 404) {
-                    reject({ type: 'File', message: `resource '${urlStr}' was not found\n` });
+            request.get(hackUrlStr, { follow_max: 5 }, (err, resp, body) => {
+                if (err || resp.statusCode >= 400) {
+                    const message = resp.statusCode === 404
+                        ? `resource '${urlStr}' was not found\n`
+                        : `resource '${urlStr}' gave this Error:\n  ${err || resp.statusMessage || resp.statusCode}\n`;
+                    reject({ type: 'File', message });
                     return;
                 }
-                if (error) {
-                    reject({ type: 'File', message: `resource '${urlStr}' gave this Error:\n  ${error}\n` });
+                if (resp.statusCode >= 300) {
+                    reject({ type: 'File', message: `resource '${urlStr}' caused too many redirects` });
                     return;
                 }
+                body = body.toString('utf8');
                 if (!body) {
-                    logger.warn(`Warning: Empty body (HTTP ${status}) returned by "${urlStr}"`);
+                    logger.warn(`Warning: Empty body (HTTP ${resp.statusCode}) returned by "${urlStr}"`);
                 }
-                fulfill({ contents: body, filename: urlStr });
+                fulfill({ contents: body || '', filename: urlStr });
             });
         });
     }

@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v4.0.0
+ * Less - Leaner CSS v4.1.0
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2021, Alexis Sellier <self@cloudhead.net>
@@ -10510,7 +10510,7 @@
         return render;
     }
 
-    var version = "4.0.0";
+    var version = "4.1.0";
 
     function parseNodeVersion(version) {
       var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

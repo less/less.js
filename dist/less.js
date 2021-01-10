@@ -2,7 +2,7 @@
  * Less - Leaner CSS v4.0.0
  * http://lesscss.org
  * 
- * Copyright (c) 2009-2020, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2021, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  * @license Apache-2.0
@@ -11,7 +11,7 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
-    (global = global || self, global.less = factory());
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.less = factory());
 }(this, (function () { 'use strict';
 
     // Export a new default each time
@@ -992,14 +992,15 @@
     See the Apache Version 2.0 License for specific language governing permissions
     and limitations under the License.
     ***************************************************************************** */
+
     function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
-            s += arguments[i].length;
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
         for (var r = Array(s), k = 0, i = 0; i < il; i++)
             for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
                 r[k] = a[j];
         return r;
     }
+
     function assignProp(carry, key, newVal, originalObject, includeNonenumerable) {
         var propType = {}.propertyIsEnumerable.call(originalObject, key)
             ? 'enumerable'
@@ -1026,9 +1027,7 @@
      * @export
      */
     function copy(target, options) {
-        if (options === void 0) {
-            options = {};
-        }
+        if (options === void 0) { options = {}; }
         if (isArray(target))
             return target.map(function (i) { return copy(i, options); });
         if (!isPlainObject(target))
@@ -3046,9 +3045,9 @@
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
+
     function __spreadArrays$1() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
-            s += arguments[i].length;
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
         for (var r = Array(s), k = 0, i = 0; i < il; i++)
             for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
                 r[k] = a[j];
@@ -7267,9 +7266,9 @@
                                 parserInput.restore();
                                 return;
                             }
-                            if (!lookups && !hasParens) {
-                                // This isn't a valid mixin call
-                                parserInput.restore('Unrecognized input. Possibly missing \'(\' in mixin call.');
+                            if (inValue && !lookups && !hasParens) {
+                                // This isn't a valid in-value mixin call
+                                parserInput.restore();
                                 return;
                             }
                             if (!inValue && parsers.important()) {
@@ -10514,19 +10513,22 @@
     var version = "4.0.0";
 
     function parseNodeVersion(version) {
-        var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
-        if (!match) {
-            throw new Error('Unable to parse: ' + version);
-        }
-        var res = {
-            major: parseInt(match[1], 10),
-            minor: parseInt(match[2], 10),
-            patch: parseInt(match[3], 10),
-            pre: match[4] || '',
-            build: match[5] || '',
-        };
-        return res;
+      var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
+      if (!match) {
+        throw new Error('Unable to parse: ' + version);
+      }
+
+      var res = {
+        major: parseInt(match[1], 10),
+        minor: parseInt(match[2], 10),
+        patch: parseInt(match[3], 10),
+        pre: match[4] || '',
+        build: match[5] || '',
+      };
+
+      return res;
     }
+
     var parseNodeVersion_1 = parseNodeVersion;
 
     function lessRoot (environment, fileManagers) {

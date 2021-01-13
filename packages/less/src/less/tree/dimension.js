@@ -66,7 +66,8 @@ Dimension.prototype = Object.assign(new Node(), {
     // so `1px + 2` will yield `3px`.
     operate(context, op, other) {
         /* jshint noempty:false */
-        let value = this._operate(context, op, this.value, other.value), unit = this.unit.clone();
+        let value = this._operate(context, op, this.value, other.value);
+        let unit = this.unit.clone();
 
         if (op === '+' || op === '-') {
             if (unit.numerator.length === 0 && unit.denominator.length === 0) {

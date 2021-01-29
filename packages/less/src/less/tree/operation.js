@@ -29,8 +29,11 @@ Operation.prototype = Object.assign(new Node(), {
             if (b instanceof Dimension && a instanceof Color) {
                 b = b.toColor();
             }
-            if (!a.operate) {
-                if (a instanceof Operation && a.op === '/' && context.math === MATH.PARENS_DIVISION) {
+            if (!a.operate || !b.operate) {
+                if (
+                    (a instanceof Operation || b instanceof Operation)
+                    && a.op === '/' && context.math === MATH.PARENS_DIVISION
+                ) {
                     return new Operation(this.op, [a, b], this.isSpaced);
                 }
                 throw { type: 'Operation',

@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v4.1.0
+ * Less - Leaner CSS v4.1.1
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2021, Alexis Sellier <self@cloudhead.net>
@@ -2890,7 +2890,8 @@
         // so `1px + 2` will yield `3px`.
         operate: function (context, op, other) {
             /* jshint noempty:false */
-            var value = this._operate(context, op, this.value, other.value), unit = this.unit.clone();
+            var value = this._operate(context, op, this.value, other.value);
+            var unit = this.unit.clone();
             if (op === '+' || op === '-') {
                 if (unit.numerator.length === 0 && unit.denominator.length === 0) {
                     unit = other.unit.clone();
@@ -3005,8 +3006,9 @@
                 if (b instanceof Dimension && a instanceof Color) {
                     b = b.toColor();
                 }
-                if (!a.operate) {
-                    if (a instanceof Operation && a.op === '/' && context.math === MATH$1.PARENS_DIVISION) {
+                if (!a.operate || !b.operate) {
+                    if ((a instanceof Operation || b instanceof Operation)
+                        && a.op === '/' && context.math === MATH$1.PARENS_DIVISION) {
                         return new Operation(this.op, [a, b], this.isSpaced);
                     }
                     throw { type: 'Operation',
@@ -10510,7 +10512,7 @@
         return render;
     }
 
-    var version = "4.1.0";
+    var version = "4.1.1";
 
     function parseNodeVersion(version) {
       var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

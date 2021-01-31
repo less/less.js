@@ -27,8 +27,8 @@ UrlFileManager.prototype = Object.assign(new AbstractFileManager(), {
             const hackUrlStr = urlStr.indexOf('?') === -1 ? urlStr + '?' : urlStr
 
             request.get(hackUrlStr, { follow_max: 5 }, (err, resp, body) => {
-                if (err || resp.statusCode >= 400) {
-                    const message = resp.statusCode === 404
+                if (err || resp && resp.statusCode >= 400) {
+                    const message = resp && resp.statusCode === 404
                         ? `resource '${urlStr}' was not found\n`
                         : `resource '${urlStr}' gave this Error:\n  ${err || resp.statusMessage || resp.statusCode}\n`;
                     reject({ type: 'File', message });

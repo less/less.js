@@ -11,15 +11,14 @@ class Node {
         this.nodeVisible = undefined;
         this.rootNode = null;
         this.parsed = null;
+    }
 
-        const self = this;
-        Object.defineProperty(this, 'currentFileInfo', {
-            get: function() { return self.fileInfo(); }
-        });
-        Object.defineProperty(this, 'index', {
-            get: function() { return self.getIndex(); }
-        });
+    get currentFileInfo() {
+        return this.fileInfo();
+    }
 
+    get index() {
+        return this.getIndex();
     }
 
     setParent(nodes, parent) {

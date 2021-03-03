@@ -18,7 +18,9 @@ if (window.less) {
         }
     }
 }
-addDefaultOptions(window, options);
+if (typeof Deno === 'undefined') {
+    addDefaultOptions(window, options);
+}
 
 options.plugins = options.plugins || [];
 

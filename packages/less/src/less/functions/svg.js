@@ -79,9 +79,10 @@ export default environment => {
         }
         returner += `</${gradientType}Gradient><rect ${rectangleDimension} fill="url(#g)" /></svg>`;
 
-        returner = encodeURIComponent(returner);
+        const svgToMiniDataURI = require('mini-svg-data-uri');
+        returner = svgToMiniDataURI(returner);
 
         returner = `data:image/svg+xml,${returner}`;
-        return new URL(new Quoted(`'${returner}'`, returner, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
+        return new URL(new Quoted(`"${returner}"`, returner, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
     }};
 };

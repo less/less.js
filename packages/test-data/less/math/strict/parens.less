@@ -1,3 +1,9 @@
+.parens-issues-3615 {
+  bar: if(false, 666, 888 / 444);
+  bar2: if(false, 666, (666 / 333));
+  bar3: if(false, 666, ((444 / 222)));
+}
+
 .parens {
   @var: 1px;
   border: (@var * 2) solid black;

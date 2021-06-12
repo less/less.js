@@ -1,3 +1,8 @@
+.parens-issues-3616 {
+  bar: 888 / 444;
+  bar2: 2;
+  bar3: 2;
+}
 .parens {
   border: 2px solid black;
   margin: 1px 3px 16 3;

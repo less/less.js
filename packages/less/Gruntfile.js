@@ -230,6 +230,7 @@ module.exports = function(grunt) {
             },
             test: {
                 command: [
+                    "TS_NODE_SCOPE=true",
                     tsNodeRuntime + " test/test-es6.ts",
                     "node test/index.js"
                 ].join(' && ')

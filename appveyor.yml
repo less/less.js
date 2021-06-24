@@ -1,13 +1,16 @@
 # Test against these versions of Node.js.
 environment:
   matrix:
-    - nodejs_version: "8"
     - nodejs_version: "10"
     - nodejs_version: "12"
     - nodejs_version: "14"
+    - nodejs_version: "16"
 
 # Install scripts. (runs after repo cloning)
 install:
+  # https://help.appveyor.com/discussions/questions/11941-node-version-not-available-after-specifying-nodejs_version
+  - ps: Install-Product node $env:nodejs_version
+
   # node 0.10 & 0.12 have race condition issues when running custom install scripts
   # this can cause phantomjs-prebuilt install script to fail with the error:
   # <Cannot find module 'boom'>

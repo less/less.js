@@ -231,7 +231,7 @@ module.exports = function(grunt) {
             test: {
                 command: [
                     // https://github.com/TypeStrong/ts-node/issues/693#issuecomment-848907036
-                    "TS_NODE_SCOPE=true",
+                    "cross-env TS_NODE_SCOPE=true",
                     tsNodeRuntime + " test/test-es6.ts",
                     "node test/index.js"
                 ].join(' && ')

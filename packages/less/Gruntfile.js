@@ -191,6 +191,7 @@ module.exports = function(grunt) {
     // Remove this when Node 6 is no longer supported for the build/test process
     const nodeVersion = semver.major(process.versions.node);
     const tsNodeRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
+    const crossEnv = path.resolve(path.join('node_modules', '.bin', 'cross-env'));
     let scriptRuntime = 'node';
     if (nodeVersion < 8) {
         scriptRuntime = tsNodeRuntime;
@@ -231,7 +232,7 @@ module.exports = function(grunt) {
             test: {
                 command: [
                     // https://github.com/TypeStrong/ts-node/issues/693#issuecomment-848907036
-                    "cross-env TS_NODE_SCOPE=true",
+                    crossEnv + " TS_NODE_SCOPE=true",
                     tsNodeRuntime + " test/test-es6.ts",
                     "node test/index.js"
                 ].join(' && ')

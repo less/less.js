@@ -32,6 +32,10 @@ class functionCaller {
                 if (item.type === 'Expression') {
                     const subNodes = item.value.filter(commentFilter);
                     if (subNodes.length === 1) {
+                        // https://github.com/less/less.js/issues/3616
+                        if (item.parens && subNodes[0].op === '/') {
+                            return item;
+                        }
                         return subNodes[0];
                     } else {
                         return new Expression(subNodes);

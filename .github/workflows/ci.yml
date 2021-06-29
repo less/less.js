@@ -16,6 +16,8 @@ jobs:
         node: [10, 12, 14, 16]
     runs-on: ${{ matrix.os }}
     steps:
+     # Pull repo to test machine
+     - uses: actions/checkout@v2
      # Configures the node version used on GitHub-hosted runners
      - uses: actions/setup-node@v2
        with:

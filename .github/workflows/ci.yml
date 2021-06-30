@@ -6,14 +6,14 @@ on: [push, pull_request]
 
 jobs:
   test:
-    name: 'Tests on ${{matrix.platform}} with node${{matrix.node}}'
+    name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
     strategy:
       matrix:
         # Use appveyor to test window platform
         # If appveyor not work please add `windows-latest` to matrix.os array
         os: [ubuntu-latest, macos-latest]
         # Node LTS version
-        node: [10, 12, 14, 16]
+        node: [10, 12, 14]
     runs-on: ${{ matrix.os }}
     steps:
      # Pull repo to test machine

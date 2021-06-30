@@ -6,7 +6,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    name: unit test
+    name: 'Tests on ${{matrix.platform}} with node${{matrix.node}}'
     strategy:
       matrix:
         # Use appveyor to test window platform

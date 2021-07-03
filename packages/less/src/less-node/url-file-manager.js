@@ -17,7 +17,7 @@ UrlFileManager.prototype = Object.assign(new AbstractFileManager(), {
                 catch (e) { request = null; }
             }
             if (!request) {
-                reject({ type: 'File', message: 'optional dependency \'native-request\' required to import over http(s)\n' });
+                reject({ type: 'File', message: 'optional dependency \'needle\' required to import over http(s)\n' });
                 return;
             }
 

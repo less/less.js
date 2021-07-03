@@ -9,11 +9,10 @@ jobs:
     name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
     strategy:
       matrix:
-        # Use appveyor to test window platform
-        # If appveyor not work please add `windows-latest` to matrix.os array
-        os: [ubuntu-latest, macos-latest]
-        # Node LTS version
-        node: [10, 12, 14]
+        # Test all mainstream operating system
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Latest four Nodejs LTS version
+        node: [10, 12, 14, 16]
     runs-on: ${{ matrix.os }}
     steps:
      # Pull repo to test machine

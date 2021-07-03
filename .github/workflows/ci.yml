@@ -1,0 +1,47 @@
+# Github actions workflow name
+name: Nodejs Test
+
+# Triggers the workflow on push or pull request events
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
+    strategy:
+      matrix:
+        # Test all mainstream operating system
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Latest four Nodejs LTS version
+        node: [10, 12, 14, 16]
+    runs-on: ${{ matrix.os }}
+    steps:
+     # Pull repo to test machine
+     - uses: actions/checkout@v2
+     # Configures the node version used on GitHub-hosted runners
+     - uses: actions/setup-node@v2
+       with:
+         # The Node.js version to configure
+         node-version: ${{ matrix.node }}
+         
+     # Caching dependencies to speed up workflows    
+     - name: Get npm cache directory
+       id: npm-cache-dir
+       run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+     - uses: actions/cache@v2
+       id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
+       with:
+         path: ${{ steps.npm-cache-dir.outputs.dir }}
+         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+         restore-keys: |
+           ${{ runner.os }}-node-
+
+     - name: Install npm dependencies
+       run: npm install
+
+     - name: Print put node & npm version
+       # Output useful info for debugging.
+       run: node --version && npm --version 
+
+     - name: Run unit test
+       run: cd packages/less && npm test

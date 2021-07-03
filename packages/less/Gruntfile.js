@@ -12,7 +12,6 @@ module.exports = function(grunt) {
     // Report the elapsed execution time of tasks.
     require("time-grunt")(grunt);
 
-    var COMPRESS_FOR_TESTS = false;
     var git = require("git-rev");
 
     // Sauce Labs browser
@@ -184,17 +183,11 @@ module.exports = function(grunt) {
     // Make the SauceLabs jobs
     ["all"].concat(browserTests).map(makeJob);
 
-    var semver = require('semver');
     var path = require('path');
 
     // Handle async / await in Rollup build for tests
-    // Remove this when Node 6 is no longer supported for the build/test process
-    const nodeVersion = semver.major(process.versions.node);
     const tsNodeRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
-    let scriptRuntime = 'node';
-    if (nodeVersion < 8) {
-        scriptRuntime = tsNodeRuntime;
-    }
+    const crossEnv = path.resolve(path.join('node_modules', '.bin', 'cross-env'));
 
     // Project configuration.
     grunt.initConfig({
@@ -209,7 +202,7 @@ module.exports = function(grunt) {
             build: {
                 command: [
                     /** Browser runtime */
-                    scriptRuntime + " build/rollup.js --dist",
+                    "node build/rollup.js --dist",
                     /** Copy to repo root */
                     "npm run copy:root",
                     /** Node.js runtime */
@@ -219,17 +212,19 @@ module.exports = function(grunt) {
             testbuild: {
                 command: [
                     "npm run build",
-                    scriptRuntime + " build/rollup.js --browser --out=./tmp/browser/less.min.js"
+                    "node build/rollup.js --browser --out=./tmp/browser/less.min.js"
                 ].join(" && ")
             },
             testcjs: {
                 command: "npm run build"
             },
             testbrowser: {
-                command: scriptRuntime + " build/rollup.js --browser --out=./tmp/browser/less.min.js"
+                command: "node build/rollup.js --browser --out=./tmp/browser/less.min.js"
             },
             test: {
                 command: [
+                    // https://github.com/TypeStrong/ts-node/issues/693#issuecomment-848907036
+                    crossEnv + " TS_NODE_SCOPE=true",
                     tsNodeRuntime + " test/test-es6.ts",
                     "node test/index.js"
                 ].join(' && ')

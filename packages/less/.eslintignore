@@ -3,3 +3,4 @@ dist/*
 tmp/*
 lib/*
 test/browser/less.min.js
+node_modules

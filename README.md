@@ -1,7 +1,7 @@
 <p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117">
     
 <p align="center">
-    <a href="https://github.com/less/less.js/actions?query=branch%3Amaster"><img src="https://github.com/less/less.js/actions/workflows/ci.yml/badge.svg?branch=master"/></a>
+    <a href="https://github.com/less/less.js/actions?query=branch%3Amaster"><img src="https://github.com/less/less.js/actions/workflows/ci.yml/badge.svg?branch=master" alt="Github Actions CI"/></a>
     <a href="https://www.npmtrends.com/less"><img src="https://img.shields.io/npm/dm/less.svg?sanitize=true" alt="Downloads"></a>
     <a href="https://www.npmjs.com/package/less"><img src="https://img.shields.io/npm/v/less.svg?sanitize=true" /></a>
     <a href="https://twitter.com/lesstocss"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/lesstocss.svg?style=flat-square" style="max-width:100%;" /></a>

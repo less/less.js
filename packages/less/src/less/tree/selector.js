@@ -33,7 +33,7 @@ Selector.prototype = Object.assign(new Node(), {
         elements = this.getElements(elements);
         const newSelector = new Selector(elements, extendList || this.extendList,
             null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
+        newSelector.evaldCondition = (evaldCondition !== null) ? evaldCondition : this.evaldCondition;
         newSelector.mediaEmpty = this.mediaEmpty;
         return newSelector;
     },

@@ -4,7 +4,7 @@ import Property from './property';
 
 
 const Quoted = function(str, content, escaped, index, currentFileInfo) {
-    this.escaped = (escaped == null) ? true : escaped;
+    this.escaped = (escaped === null) ? true : escaped;
     this.value = content || '';
     this.quote = str.charAt(0);
     this._index = index;

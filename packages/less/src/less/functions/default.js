@@ -7,7 +7,7 @@ const defaultFunc = {
         if (e) {
             throw e;
         }
-        if (v != null) {
+        if (v !== null) {
             return v ? Keyword.True : Keyword.False;
         }
     },

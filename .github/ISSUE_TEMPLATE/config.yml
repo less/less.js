@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ✨ Feature Request / idea
+    url: https://github.com/less/less.js/discussions/new
+    about: Missing something in Less? Let us know.
+  - name: 💬 Question / Discussion
+    url: https://github.com/less/less.js/discussions/new
+    about: Feel free to ask anything
+  - name: 📖 View documentation
+    url: https://lesscss.org
+    about: Official Less documentation    
+  - name: ❓ StackOverflow
+    url: https://stackoverflow.com/questions/tagged/less
+    about: Ask question or find answers on Stack overflow

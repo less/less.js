@@ -1,0 +1,22 @@
+.referenced {
+    // line comment is enough to reproduce it
+    @media (hover) {
+        // sezam
+    }
+    // repeat to prove point
+    @media (hover) {
+        // sezam
+    }
+    // but block comment is not, huh
+    @media (hover) {
+        /* salabim */
+    }
+    // following block does not output, needs line comment
+    @media (hover) {
+        color: #000000;
+    }
+}
+// needs to be nested to fail
+@media (hover) {
+    // sezam
+}

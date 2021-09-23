@@ -1,22 +1,25 @@
 .referenced {
-    // line comment is enough to reproduce it
+	// This file should not output anything if referenced.
     @media (hover) {
-        // sezam
+        // This file should not output anything if referenced.
     }
-    // repeat to prove point
+	// This file should not output anything if referenced.
     @media (hover) {
-        // sezam
+		// This file should not output anything if referenced.
     }
-    // but block comment is not, huh
+	// This file should not output anything if referenced.
     @media (hover) {
-        /* salabim */
+        /* This file should not output anything if referenced. */
     }
-    // following block does not output, needs line comment
+	// This file should not output anything if referenced.
     @media (hover) {
         color: #000000;
     }
 }
-// needs to be nested to fail
+// This file should not output anything if referenced.
 @media (hover) {
-    // sezam
+	// This file should not output anything if referenced.
+}
+@media (hover) {
+	/* This file should not output anything if referenced. */
 }

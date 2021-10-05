@@ -1,5 +1,5 @@
 /* jshint latedef: nofunc */
-
+var semver = require('semver');
 var logger = require('../lib/less/logger').default;
 
 var isVerbose = process.env.npm_config_loglevel !== 'concise';

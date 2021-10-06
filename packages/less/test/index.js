@@ -28,7 +28,8 @@ var testMap = [
         lessTester.testErrors, null],
     [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../errors/parse/',
         lessTester.testErrors, null],
-
+    [{math: 'strict', strictUnits: true, javascriptEnabled: true}, 'js-type-errors/',
+        lessTester.testTypeErrors, null],
     [{math: 'strict', strictUnits: true, javascriptEnabled: false}, 'no-js-errors/',
         lessTester.testErrors, null],
     [{math: 'strict', dumpLineNumbers: 'comments'}, 'debug/', null,

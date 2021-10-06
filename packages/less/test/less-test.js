@@ -1,5 +1,5 @@
 /* jshint latedef: nofunc */
-
+var semver = require('semver');
 var logger = require('../lib/less/logger').default;
 
 var isVerbose = process.env.npm_config_loglevel !== 'concise';
@@ -207,6 +207,31 @@ module.exports = function() {
 
     function testErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
+            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
+            expectedErr = doReplacements(expectedErr, baseFolder, err && err.filename);
+            if (!err) {
+                if (compiledLess) {
+                    fail('No Error', 'red');
+                } else {
+                    fail('No Error, No Output');
+                }
+            } else {
+                var errMessage = err.toString();
+                if (errMessage === expectedErr) {
+                    ok('OK');
+                } else {
+                    difference('FAIL', expectedErr, errMessage);
+                }
+            }
+        });
+    }
+
+    // To fix ci fail about error format change in upstream v8 project
+    // https://github.com/v8/v8/commit/c0fd89c3c089e888c4f4e8582e56db7066fa779b
+    // Node 16.9.0+ include this change via https://github.com/nodejs/node/pull/39947 
+    function testTypeErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        const fileSuffix = semver.gte(process.version, 'v16.9.0') ? '-2.txt' : '.txt';
+        fs.readFile(path.join(baseFolder, name) + fileSuffix, 'utf8', function (e, expectedErr) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             expectedErr = doReplacements(expectedErr, baseFolder, err && err.filename);
             if (!err) {
@@ -543,6 +568,7 @@ module.exports = function() {
         runTestSetNormalOnly: runTestSetNormalOnly,
         testSyncronous: testSyncronous,
         testErrors: testErrors,
+        testTypeErrors: testTypeErrors,
         testSourcemap: testSourcemap,
         testSourcemapWithoutUrlAnnotation: testSourcemapWithoutUrlAnnotation,
         testImports: testImports,

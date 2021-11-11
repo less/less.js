@@ -180,6 +180,9 @@ function render() {
       var filename = sourceMapOptions.sourceMapFullFilename;
       ensureDirectory(filename);
 
+      //To fix https://github.com/less/less.js/issues/3646
+      output=output.toString();
+      
       fs.writeFile(filename, output, 'utf8', function (err) {
         if (err) {
           var description = 'Error: ';

@@ -48,3 +48,8 @@ show-all-content {
 call-mixin-with-import-by-reference-inside {
   .mixin-with-import-by-reference-inside();
 }
+
+// #3563 - Lazy variables of css custom properties with less functions (even if it's overwritten) will break building
+@import "import-reference-issues/overridden-arguments-3563.less";
+@base-color: var(--primary-color);
+@dark-color: var(--bg-color);

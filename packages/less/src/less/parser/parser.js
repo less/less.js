@@ -444,6 +444,19 @@ const Parser = function Parser(context, imports, fileInfo) {
                         return;
                     }
 
+                    for (let i = 0; i < args.length; i++) {
+                        const arg = args[i];
+                        // Do not call function with variable argument if this file is being imported by another file
+                        // and said variable is being redefined by the importing file
+                        if (fileInfo.filename !== fileInfo.rootFilename
+                            && imports.contents[fileInfo.rootFilename].match(arg.name + '\\s*:')
+                            && arg.name.match(/^(@[\w-]+)/)
+                        )
+                        {
+                            return;
+                        }
+                    }
+
                     parserInput.forget();
 
                     return new(tree.Call)(name, args, index, fileInfo);

@@ -2,15 +2,15 @@
 
 ### v4.1.2 (2021-10-04)
 - [#3602](https://github.com/less/less.js/pull/3602) Fix currentFileInfo and index properties on nodes (#3602) (@bjpbakker)
-- [#3626](https://github.com/less/less.js/pull/3626) Fix #3616 IfStatement requires double parentheses when dividing (#3626) (@iChenLei)
+- [#3626](https://github.com/less/less.js/pull/3626) Fix [#3616](https://github.com/less/less.js/issues/3616) IfStatement requires double parentheses when dividing (#3626) (@iChenLei)
 - [#3630](https://github.com/less/less.js/pull/3630) Fix needle dependency warning typo. (#3630) (@cjwilsontech)
 
 ### v4.1.1 (2021-01-31)
 - [#3597](https://github.com/less/less.js/pull/3597) Fix expected response when there's a socket error (#3597) (@zxfrank)
-- [#3589](https://github.com/less/less.js/pull/3589) Fixes #3586 (#3589) (@matthew-dean)
+- [#3589](https://github.com/less/less.js/pull/3589) Fixes [#3586](https://github.com/less/less.js/issues/3586) (#3589) (@matthew-dean)
 
 ### v4.1.0 (2021-01-10)
-- [#3582](https://github.com/less/less.js/pull/3582) Fix #3576 import redirects. Replace native-request with needle. (#3582) (@zaquest)
+- [#3582](https://github.com/less/less.js/pull/3582) Fix [#3576](https://github.com/less/less.js/issues/3576) import redirects. Replace native-request with needle. (#3582) (@zaquest)
 - [#3583](https://github.com/less/less.js/pull/3583) Update rollup and other build dependencies (#3583) (@pravi)
 - [#3588](https://github.com/less/less.js/pull/3588) Roll back paren requirement on mixin calls (#3588) (@matthew-dean)
 

@@ -1,0 +1,5 @@
+// https://github.com/less/less.js/issues/3660
+// const dir = parserInput.$re(/^@plugin?\s+/);
+// correct regexp is /^@plugin\s+/
+// so follow code will change nothing, parse result is same with raw less code
+@plugi "plugi-typo-dont-parse-as-@plugin";

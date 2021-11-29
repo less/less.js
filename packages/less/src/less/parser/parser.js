@@ -1684,7 +1684,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 let features;
                 const index = parserInput.i;
 
-                const dir = parserInput.$re(/^@import?\s+/);
+                const dir = parserInput.$re(/^@import\s+/);
 
                 if (dir) {
                     const options = (dir ? this.importOptions() : null) || {};
@@ -1844,7 +1844,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 let args;
                 let options;
                 const index = parserInput.i;
-                const dir   = parserInput.$re(/^@plugin?\s+/);
+                const dir   = parserInput.$re(/^@plugin\s+/);
 
                 if (dir) {
                     args = this.pluginArgs();

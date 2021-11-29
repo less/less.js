@@ -1,0 +1,5 @@
+// https://github.com/less/less.js/issues/3660
+// const dir = parserInput.$re(/^@import?\s+/);
+// correct regexp is /^@import\s+/
+// so follow code will change nothing, parse result is same with raw less code
+@impor "impor-typo-dont-parse-as-@import.less";

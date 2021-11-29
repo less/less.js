@@ -1,5 +1,5 @@
 ---
-name: "\U0001F41EBug report"
+name: "\U0001F41E Bug report"
 about: Something isn’t working as expected
 title: ''
 labels: 'bug'

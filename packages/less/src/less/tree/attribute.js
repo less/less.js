@@ -1,9 +1,10 @@
 import Node from './node';
 
-const Attribute = function(key, op, value) {
+const Attribute = function(key, op, value, cif) {
     this.key = key;
     this.op = op;
     this.value = value;
+    this.cif = cif;
 }
 
 Attribute.prototype = Object.assign(new Node(), {
@@ -24,6 +25,10 @@ Attribute.prototype = Object.assign(new Node(), {
         if (this.op) {
             value += this.op;
             value += (this.value.toCSS ? this.value.toCSS(context) : this.value);
+        }
+
+        if (this.cif) {
+            value = value + " " + this.cif;
         }
 
         return `[${value}]`;

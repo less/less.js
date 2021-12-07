@@ -1405,6 +1405,11 @@ const Parser = function Parser(context, imports, fileInfo) {
                 let key;
                 let val;
                 let op;
+                //
+                // case-insensitive flag
+                // e.g. [attr operator value i]
+                //
+                let cif;
 
                 if (!(key = entities.variableCurly())) {
                     key = expect(/^(?:[_A-Za-z0-9-\*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
@@ -1413,11 +1418,14 @@ const Parser = function Parser(context, imports, fileInfo) {
                 op = parserInput.$re(/^[|~*$^]?=/);
                 if (op) {
                     val = entities.quoted() || parserInput.$re(/^[0-9]+%/) || parserInput.$re(/^[\w-]+/) || entities.variableCurly();
+                    if (val) {
+                        cif = parserInput.$re(/^[iIsS]/);
+                    }
                 }
 
                 expectChar(']');
 
-                return new(tree.Attribute)(key, op, val);
+                return new(tree.Attribute)(key, op, val, cif);
             },
 
             //

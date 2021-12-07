@@ -147,6 +147,23 @@ a {
   attributes: yes;
 }
 
+/**
+ * https://www.w3.org/TR/selectors-4/#attribute-case
+ */
+@pattern: less;
+a[href*="insensitive" i] {
+  color: cyan;
+}
+a[href*="cAsE" s] {
+  color: pink;
+}
+a[href*="@{pattern}" I] {
+  background-color: silver;
+}
+a[href*="@{pattern}" S] {
+  background-color: silver;
+}
+
 /*
 Large comment means chunk will be emitted after } which means chunk will begin with whitespace...
 blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank blank

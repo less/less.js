@@ -2,8 +2,6 @@ import Node from './node';
 import Paren from './paren';
 import Comment from './comment';
 import Dimension from './dimension';
-import * as Constants from '../constants';
-const MATH = Constants.Math;
 
 const Expression = function(value, noSpacing) {
     this.value = value;

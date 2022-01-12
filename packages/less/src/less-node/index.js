@@ -4,7 +4,6 @@ import UrlFileManager from './url-file-manager';
 import createFromEnvironment from '../less';
 const less = createFromEnvironment(environment, [new FileManager(), new UrlFileManager()]);
 import lesscHelper from './lessc-helper';
-import path from 'path';
 
 // allow people to create less with their own environment
 less.createFromEnvironment = createFromEnvironment;

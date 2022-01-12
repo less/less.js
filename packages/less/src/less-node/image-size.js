@@ -11,9 +11,7 @@ export default environment => {
             currentFileInfo.currentDirectory : currentFileInfo.entryPath;
 
         const fragmentStart = filePath.indexOf('#');
-        let fragment = '';
         if (fragmentStart !== -1) {
-            fragment = filePath.slice(fragmentStart);
             filePath = filePath.slice(0, fragmentStart);
         }
 

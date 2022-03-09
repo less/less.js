@@ -90,23 +90,23 @@ ToCSSVisitor.prototype = {
         return this._visitor.visit(root);
     },
 
-    visitDeclaration: function (declNode, visitArgs) {
+    visitDeclaration: function (declNode, _visitArgs) {
         if (declNode.blocksVisibility() || declNode.variable) {
             return;
         }
         return declNode;
     },
 
-    visitMixinDefinition: function (mixinNode, visitArgs) {
+    visitMixinDefinition: function (mixinNode, _visitArgs) {
         // mixin definitions do not get eval'd - this means they keep state
         // so we have to clear that state here so it isn't used if toCSS is called twice
         mixinNode.frames = [];
     },
 
-    visitExtend: function (extendNode, visitArgs) {
+    visitExtend: function (_extendNode, _visitArgs) {
     },
 
-    visitComment: function (commentNode, visitArgs) {
+    visitComment: function (commentNode, _visitArgs) {
         if (commentNode.blocksVisibility() || commentNode.isSilent(this._context)) {
             return;
         }
@@ -121,7 +121,7 @@ ToCSSVisitor.prototype = {
         return this.utils.resolveVisibility(mediaNode, originalRules);
     },
 
-    visitImport: function (importNode, visitArgs) {
+    visitImport: function (importNode, _visitArgs) {
         if (importNode.blocksVisibility()) {
             return ;
         }
@@ -136,7 +136,7 @@ ToCSSVisitor.prototype = {
         }
     },
 
-    visitAnonymous: function(anonymousNode, visitArgs) {
+    visitAnonymous: function(anonymousNode, _visitArgs) {
         if (!anonymousNode.blocksVisibility()) {
             anonymousNode.accept(this._visitor);
             return anonymousNode;
@@ -172,7 +172,7 @@ ToCSSVisitor.prototype = {
         return this.utils.resolveVisibility(atRuleNode, originalRules);
     },
 
-    visitAtRuleWithoutBody: function(atRuleNode, visitArgs) {
+    visitAtRuleWithoutBody: function(atRuleNode, _visitArgs) {
         if (atRuleNode.blocksVisibility()) {
             return;
         }

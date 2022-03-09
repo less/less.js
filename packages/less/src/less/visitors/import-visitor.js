@@ -161,28 +161,28 @@ ImportVisitor.prototype = {
             this.context.frames.shift();
         }
     },
-    visitAtRule: function (atRuleNode, visitArgs) {
+    visitAtRule: function (atRuleNode, _visitArgs) {
         this.context.frames.unshift(atRuleNode);
     },
-    visitAtRuleOut: function (atRuleNode) {
+    visitAtRuleOut: function (_atRuleNode) {
         this.context.frames.shift();
     },
-    visitMixinDefinition: function (mixinDefinitionNode, visitArgs) {
+    visitMixinDefinition: function (mixinDefinitionNode, _visitArgs) {
         this.context.frames.unshift(mixinDefinitionNode);
     },
-    visitMixinDefinitionOut: function (mixinDefinitionNode) {
+    visitMixinDefinitionOut: function (_mixinDefinitionNode) {
         this.context.frames.shift();
     },
-    visitRuleset: function (rulesetNode, visitArgs) {
+    visitRuleset: function (rulesetNode, _visitArgs) {
         this.context.frames.unshift(rulesetNode);
     },
-    visitRulesetOut: function (rulesetNode) {
+    visitRulesetOut: function (_rulesetNode) {
         this.context.frames.shift();
     },
-    visitMedia: function (mediaNode, visitArgs) {
+    visitMedia: function (mediaNode, _visitArgs) {
         this.context.frames.unshift(mediaNode.rules[0]);
     },
-    visitMediaOut: function (mediaNode) {
+    visitMediaOut: function (_mediaNode) {
         this.context.frames.shift();
     }
 };

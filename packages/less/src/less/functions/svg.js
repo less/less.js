@@ -4,7 +4,7 @@ import Expression from '../tree/expression';
 import Quoted from '../tree/quoted';
 import URL from '../tree/url';
 
-export default environment => {
+export default _environment => {
     return { 'svg-gradient': function(direction) {
         let stops;
         let gradientDirectionSvg;

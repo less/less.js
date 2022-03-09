@@ -113,7 +113,7 @@ export default (window, less, options) => {
         }
     }
 
-    function removeErrorConsole(path) {
+    function removeErrorConsole(_path) {
         // no action
     }
 

@@ -159,7 +159,7 @@ export default (window, options) => {
             less.watchTimer = setInterval(() => {
                 if (less.watchMode) {
                     fileManager.clearFileCache();
-                    loadStyleSheets((e, css, _, sheet, webInfo) => {
+                    loadStyleSheets((e, css, _, sheet, _webInfo) => {
                         if (e) {
                             errors.add(e, e.href || sheet.href);
                         } else if (css) {
@@ -205,7 +205,7 @@ export default (window, options) => {
     // Asynchronously get all <link> tags with the 'rel' attribute set to
     // "stylesheet/less", returning a Promise.
     //
-    less.registerStylesheets = () => new Promise((resolve, reject) => {
+    less.registerStylesheets = () => new Promise((resolve, _reject) => {
         less.registerStylesheetsImmediately();
         resolve();
     });

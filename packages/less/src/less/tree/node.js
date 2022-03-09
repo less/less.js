@@ -48,7 +48,7 @@ class Node {
     toCSS(context) {
         const strs = [];
         this.genCSS(context, {
-            add: function(chunk, fileInfo, index) {
+            add: function(chunk, _fileInfo, _index) {
                 strs.push(chunk);
             },
             isEmpty: function () {

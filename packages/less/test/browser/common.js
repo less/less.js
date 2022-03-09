@@ -217,7 +217,7 @@ testErrorSheetConsole = function (sheet) {
 };
 
 loadFile = function (href) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, _reject) {
         var request = new XMLHttpRequest();
         request.open('GET', href, true);
         request.onreadystatechange = function () {

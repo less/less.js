@@ -18,15 +18,15 @@ class ExtendFinderVisitor {
         return root;
     }
 
-    visitDeclaration(declNode, visitArgs) {
+    visitDeclaration(_declNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitMixinDefinition(mixinDefinitionNode, visitArgs) {
+    visitMixinDefinition(_mixinDefinitionNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitRuleset(rulesetNode, visitArgs) {
+    visitRuleset(rulesetNode, _visitArgs) {
         if (rulesetNode.root) {
             return;
         }
@@ -80,21 +80,21 @@ class ExtendFinderVisitor {
         }
     }
 
-    visitMedia(mediaNode, visitArgs) {
+    visitMedia(mediaNode, _visitArgs) {
         mediaNode.allExtends = [];
         this.allExtendsStack.push(mediaNode.allExtends);
     }
 
-    visitMediaOut(mediaNode) {
+    visitMediaOut(_mediaNode) {
         this.allExtendsStack.length = this.allExtendsStack.length - 1;
     }
 
-    visitAtRule(atRuleNode, visitArgs) {
+    visitAtRule(atRuleNode, _visitArgs) {
         atRuleNode.allExtends = [];
         this.allExtendsStack.push(atRuleNode.allExtends);
     }
 
-    visitAtRuleOut(atRuleNode) {
+    visitAtRuleOut(_atRuleNode) {
         this.allExtendsStack.length = this.allExtendsStack.length - 1;
     }
 }
@@ -236,19 +236,19 @@ class ProcessExtendsVisitor {
         }
     }
 
-    visitDeclaration(ruleNode, visitArgs) {
+    visitDeclaration(_ruleNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitMixinDefinition(mixinDefinitionNode, visitArgs) {
+    visitMixinDefinition(_mixinDefinitionNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitSelector(selectorNode, visitArgs) {
+    visitSelector(_selectorNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitRuleset(rulesetNode, visitArgs) {
+    visitRuleset(rulesetNode, _visitArgs) {
         if (rulesetNode.root) {
             return;
         }
@@ -472,24 +472,24 @@ class ProcessExtendsVisitor {
         return path;
     }
 
-    visitMedia(mediaNode, visitArgs) {
+    visitMedia(mediaNode, _visitArgs) {
         let newAllExtends = mediaNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
         newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, mediaNode.allExtends));
         this.allExtendsStack.push(newAllExtends);
     }
 
-    visitMediaOut(mediaNode) {
+    visitMediaOut(_mediaNode) {
         const lastIndex = this.allExtendsStack.length - 1;
         this.allExtendsStack.length = lastIndex;
     }
 
-    visitAtRule(atRuleNode, visitArgs) {
+    visitAtRule(atRuleNode, _visitArgs) {
         let newAllExtends = atRuleNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
         newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, atRuleNode.allExtends));
         this.allExtendsStack.push(newAllExtends);
     }
 
-    visitAtRuleOut(atRuleNode) {
+    visitAtRuleOut(_atRuleNode) {
         const lastIndex = this.allExtendsStack.length - 1;
         this.allExtendsStack.length = lastIndex;
     }

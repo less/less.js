@@ -23,7 +23,7 @@ Dimension.prototype = Object.assign(new Node(), {
         this.unit = visitor.visit(this.unit);
     },
 
-    eval(context) {
+    eval(_context) {
         return this;
     },
 

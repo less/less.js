@@ -12,7 +12,7 @@
         return TestFileManager;
     };
 
-    exports.install = function(less, pluginManager) {
+    exports.install = function(less, _pluginManager) {
         less.environment.addFileManager(new plugin(less));
     };
 

@@ -563,6 +563,21 @@ module.exports = function() {
         };
     }
 
+    function testDisablePlugins() {
+        less.render(
+            '@plugin "../../plugin/some_plugin";',
+            {disablePlugins: true},
+            function(err) {
+                const EXPECTED = '@plugin not supported';
+                if (!err || String(err).indexOf(EXPECTED) < 0) {
+                    fail('ERROR: Expected "' + EXPECTED + '" error');
+                    return;
+                }
+                ok(stylize('OK\n', 'green'));
+            }
+        );      
+    }
+
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
@@ -575,6 +590,7 @@ module.exports = function() {
         testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
+        testDisablePlugins: testDisablePlugins,
         testJSImport: testJSImport,
         finished: finished
     };

@@ -160,7 +160,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 parsers.plugin = function() {
                     var dir = parserInput.$re(/^@plugin?\s+/);
                     if (dir) {
-                        error('@plugin not supported');
+                        error('@plugin statements are not allowed when disablePlugins is set to true');
                     }
                 }
             };

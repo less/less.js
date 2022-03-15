@@ -568,7 +568,9 @@ module.exports = function() {
             '@plugin "../../plugin/some_plugin";',
             {disablePlugins: true},
             function(err) {
-                const EXPECTED = '@plugin not supported';
+                // TODO: Need a better way of identifing exactly which error is thrown.  Checking
+                // text like this tends to be rather brittle.
+                const EXPECTED = '@plugin statements are not allowed when disablePlugins is set to true';
                 if (!err || String(err).indexOf(EXPECTED) < 0) {
                     fail('ERROR: Expected "' + EXPECTED + '" error');
                     return;

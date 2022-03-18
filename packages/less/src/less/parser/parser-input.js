@@ -58,7 +58,7 @@ export default () => {
                         nextNewLine = endIndex;
                     }
                     parserInput.i = nextNewLine;
-                    comment.text = inp.substr(comment.index, parserInput.i - comment.index);
+                    comment.text = inp.slice(comment.index, parserInput.i);
                     parserInput.commentStore.push(comment);
                     continue;
                 } else if (nextChar === '*') {
@@ -66,7 +66,7 @@ export default () => {
                     if (nextStarSlash >= 0) {
                         comment = {
                             index: parserInput.i,
-                            text: inp.substr(parserInput.i, nextStarSlash + 2 - parserInput.i),
+                            text: inp.slice(parserInput.i, nextStarSlash + 2),
                             isLineComment: false
                         };
                         parserInput.i += comment.text.length - 1;
@@ -183,7 +183,7 @@ export default () => {
                 case '\n':
                     break;
                 case startChar:
-                    const str = input.substr(currentPosition, i + 1);
+                    const str = input.slice(currentPosition, currentPosition + i + 1);
                     if (!loc && loc !== 0) {
                         skipWhitespace(i + 1);
                         return str
@@ -223,7 +223,7 @@ export default () => {
             let prevChar;
             let nextChar = input.charAt(i);
             if (blockDepth === 0 && testChar(nextChar)) {
-                returnVal = input.substr(lastPos, i - lastPos);
+                returnVal = input.slice(lastPos, i);
                 if (returnVal) {
                     parseGroups.push(returnVal);
                 }
@@ -235,7 +235,7 @@ export default () => {
                 loop = false
             } else {
                 if (inComment) {
-                    if (nextChar === '*' && 
+                    if (nextChar === '*' &&
                         input.charAt(i + 1) === '/') {
                         i++;
                         blockDepth--;
@@ -248,7 +248,7 @@ export default () => {
                     case '\\':
                         i++;
                         nextChar = input.charAt(i);
-                        parseGroups.push(input.substr(lastPos, i - lastPos + 1));
+                        parseGroups.push(input.slice(lastPos, i + 1));
                         lastPos = i + 1;
                         break;
                     case '/':
@@ -262,7 +262,7 @@ export default () => {
                     case '"':
                         quote = parserInput.$quoted(i);
                         if (quote) {
-                            parseGroups.push(input.substr(lastPos, i - lastPos), quote);
+                            parseGroups.push(input.slice(lastPos, i), quote);
                             i += quote[1].length - 1;
                             lastPos = i + 1;
                         }

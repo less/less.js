@@ -52,7 +52,7 @@ const LessError = function(e, fileContentMap, currentFilename) {
             /**
              * We have to figure out how this environment stringifies anonymous functions
              * so we can correctly map plugin errors.
-             * 
+             *
              * Note, in Node 8, the output of anonymous funcs varied based on parameters
              * being present or not, so we inject dummy params.
              */
@@ -129,7 +129,7 @@ LessError.prototype.toString = function(options) {
             let errorTxt = `${this.line} `;
             if (extract[1]) {
                 errorTxt += extract[1].slice(0, this.column) +
-                    stylize(stylize(stylize(extract[1].substr(this.column, 1), 'bold') +
+                    stylize(stylize(stylize(extract[1].slice(this.column, this.column + 1), 'bold') +
                         extract[1].slice(this.column + 1), 'red'), 'inverse');
             }
             error.push(errorTxt);

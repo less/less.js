@@ -9,7 +9,7 @@ const PluginLoader = function(less) {
     this.require = prefix => {
         prefix = path.dirname(prefix);
         return id => {
-            const str = id.substr(0, 2);
+            const str = id.slice(0, 2);
             if (str === '..' || str === './') {
                 return require(path.join(prefix, id));
             }

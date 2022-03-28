@@ -91,7 +91,7 @@ function render() {
   }
 
   if (options.disablePlugins && queuePlugins.length > 0) {
-    console.error('--plugin and --disable-plugings may not be used at the same time');
+    console.error('--plugin and --disable-plugins may not be used at the same time');
     process.exitCode = 1;
     return;
   }

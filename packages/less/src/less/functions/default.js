@@ -1,4 +1,5 @@
 import Keyword from '../tree/keyword';
+import * as utils from '../utils';
 
 const defaultFunc = {
     eval: function () {
@@ -7,7 +8,7 @@ const defaultFunc = {
         if (e) {
             throw e;
         }
-        if (v != null) {
+        if (!utils.isNullOrUndefined(v)) {
             return v ? Keyword.True : Keyword.False;
         }
     },

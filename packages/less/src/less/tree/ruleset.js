@@ -734,7 +734,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 // non parent reference elements just get added
                 if (el.value !== '&') {
                     const nestedSelector = findNestedSelector(el);
-                    if (nestedSelector != null) {
+                    if (!utils.isNullOrUndefined(nestedSelector)) {
                         // merge the current list of non parent selector elements
                         // on to the current list of selectors to add
                         mergeElementsOnToSelectors(currentElements, newSelectors);

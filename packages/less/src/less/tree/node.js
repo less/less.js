@@ -1,3 +1,5 @@
+import * as utils from '../utils';
+
 /**
  * The reason why Node is a class and other nodes simply do not extend
  * from Node (since we're transpiling) is due to this issue:
@@ -125,21 +127,21 @@ class Node {
 
     // Returns true if this node represents root of ast imported by reference
     blocksVisibility() {
-        if (this.visibilityBlocks == null) {
+        if (utils.isNullOrUndefined(this.visibilityBlocks)) {
             this.visibilityBlocks = 0;
         }
         return this.visibilityBlocks !== 0;
     }
 
     addVisibilityBlock() {
-        if (this.visibilityBlocks == null) {
+        if (utils.isNullOrUndefined(this.visibilityBlocks)) {
             this.visibilityBlocks = 0;
         }
         this.visibilityBlocks = this.visibilityBlocks + 1;
     }
 
     removeVisibilityBlock() {
-        if (this.visibilityBlocks == null) {
+        if (utils.isNullOrUndefined(this.visibilityBlocks)) {
             this.visibilityBlocks = 0;
         }
         this.visibilityBlocks = this.visibilityBlocks - 1;

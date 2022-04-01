@@ -9,7 +9,7 @@ export function extractId(href) {
 }
 
 export function addDataAttr(options, tag) {
-	if(!tag) return; // in case of tag is null or undefined
+    if (!tag) {return;} // in case of tag is null or undefined
     for (const opt in tag.dataset) {
         if (tag.dataset.hasOwnProperty(opt)) {
             if (opt === 'env' || opt === 'dumpLineNumbers' || opt === 'rootpath' || opt === 'errorReporting') {

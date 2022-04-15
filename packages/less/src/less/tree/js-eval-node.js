@@ -1,5 +1,5 @@
-import Node from './node';
-import Variable from './variable';
+import Node from './node.js';
+import Variable from './variable.js';
 
 const JsEvalNode = function() {};
 

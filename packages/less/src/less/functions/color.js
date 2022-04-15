@@ -1,9 +1,9 @@
-import Dimension from '../tree/dimension';
-import Color from '../tree/color';
-import Quoted from '../tree/quoted';
-import Anonymous from '../tree/anonymous';
-import Expression from '../tree/expression';
-import Operation from '../tree/operation';
+import Dimension from '../tree/dimension.js';
+import Color from '../tree/color.js';
+import Quoted from '../tree/quoted.js';
+import Anonymous from '../tree/anonymous.js';
+import Expression from '../tree/expression.js';
+import Operation from '../tree/operation.js';
 let colorFunctions;
 
 function clamp(val) {
@@ -12,7 +12,7 @@ function clamp(val) {
 function hsla(origColor, hsl) {
     const color = colorFunctions.hsla(hsl.h, hsl.s, hsl.l, hsl.a);
     if (color) {
-        if (origColor.value && 
+        if (origColor.value &&
             /^(rgb|hsl)/.test(origColor.value)) {
             color.value = origColor.value;
         } else {
@@ -68,7 +68,7 @@ colorFunctions = {
             r = val[0]
             g = val[1]
             b = val[2]
-            /** 
+            /**
              * @todo - should this be normalized in
              *   function caller? Or parsed differently?
              */

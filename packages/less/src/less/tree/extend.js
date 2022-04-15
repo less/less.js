@@ -1,5 +1,5 @@
-import Node from './node';
-import Selector from './selector';
+import Node from './node.js';
+import Selector from './selector.js';
 
 const Extend = function(selector, option, index, currentFileInfo, visibilityInfo) {
     this.selector = selector;

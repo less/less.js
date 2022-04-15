@@ -1,4 +1,4 @@
-import Expression from '../tree/expression';
+import Expression from '../tree/expression.js';
 
 class functionCaller {
     constructor(name, context, index, currentFileInfo) {

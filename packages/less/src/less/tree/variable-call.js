@@ -1,8 +1,8 @@
-import Node from './node';
-import Variable from './variable';
-import Ruleset from './ruleset';
-import DetachedRuleset from './detached-ruleset';
-import LessError from '../less-error';
+import Node from './node.js';
+import Variable from './variable.js';
+import Ruleset from './ruleset.js';
+import DetachedRuleset from './detached-ruleset.js';
+import LessError from '../less-error.js';
 
 const VariableCall = function(variable, index, currentFileInfo) {
     this.variable = variable;

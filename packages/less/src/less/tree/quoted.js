@@ -1,6 +1,6 @@
-import Node from './node';
-import Variable from './variable';
-import Property from './property';
+import Node from './node.js';
+import Variable from './variable.js';
+import Property from './property.js';
 
 
 const Quoted = function(str, content, escaped, index, currentFileInfo) {

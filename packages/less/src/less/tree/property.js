@@ -1,5 +1,5 @@
-import Node from './node';
-import Declaration from './declaration';
+import Node from './node.js';
+import Declaration from './declaration.js';
 
 const Property = function(name, index, currentFileInfo) {
     this.name = name;

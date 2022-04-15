@@ -1,4 +1,4 @@
-import * as utils from './utils';
+import * as utils from './utils.js';
 
 export default function(environment, ParseTree, ImportManager) {
     const render = function (input, options, callback) {

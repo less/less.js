@@ -1,13 +1,13 @@
-import Comment from '../tree/comment';
-import Node from '../tree/node';
-import Dimension from '../tree/dimension';
-import Declaration from '../tree/declaration';
-import Expression from '../tree/expression';
-import Ruleset from '../tree/ruleset';
-import Selector from '../tree/selector';
-import Element from '../tree/element';
-import Quote from '../tree/quoted';
-import Value from '../tree/value';
+import Comment from '../tree/comment.js';
+import Node from '../tree/node.js';
+import Dimension from '../tree/dimension.js';
+import Declaration from '../tree/declaration.js';
+import Expression from '../tree/expression.js';
+import Ruleset from '../tree/ruleset.js';
+import Selector from '../tree/selector.js';
+import Element from '../tree/element.js';
+import Quote from '../tree/quoted.js';
+import Value from '../tree/value.js';
 
 const getItemsFromNode = node => {
     // handle non-array values as an array of length 1
@@ -40,10 +40,10 @@ export default {
     /**
      * Creates a Less list of incremental values.
      * Modeled after Lodash's range function, also exists natively in PHP
-     * 
+     *
      * @param {Dimension} [start=1]
      * @param {Dimension} end  - e.g. 10 or 10px - unit is added to output
-     * @param {Dimension} [step=1] 
+     * @param {Dimension} [step=1]
      */
     range: function(start, end, step) {
         let from;

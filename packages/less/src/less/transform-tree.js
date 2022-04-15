@@ -1,6 +1,6 @@
-import contexts from './contexts';
-import visitor from './visitors';
-import tree from './tree';
+import contexts from './contexts.js';
+import visitor from './visitors/index.js';
+import tree from './tree/index.js';
 
 export default function(root, options) {
     options = options || {};
@@ -49,7 +49,7 @@ export default function(root, options) {
 
     /**
      * first() / get() allows visitors to be added while visiting
-     * 
+     *
      * @todo Add scoping for visitors just like functions for @plugin; right now they're global
      */
     if (options.pluginManager) {

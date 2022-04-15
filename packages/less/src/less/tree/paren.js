@@ -1,4 +1,4 @@
-import Node from './node';
+import Node from './node.js';
 
 const Paren = function(node) {
     this.value = node;

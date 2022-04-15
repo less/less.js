@@ -1,5 +1,5 @@
-import Node from './node';
-import Call from './call';
+import Node from './node.js';
+import Call from './call.js';
 
 const Variable = function(name, index, currentFileInfo) {
     this.name = name;

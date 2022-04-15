@@ -1,5 +1,5 @@
-import Node from './node';
-import colors from '../data/colors';
+import Node from './node.js';
+import colors from '../data/colors.js';
 
 //
 // RGB Colors - #ff0014, #eee

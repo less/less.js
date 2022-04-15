@@ -1,16 +1,16 @@
-import Node from './node';
-import Declaration from './declaration';
-import Keyword from './keyword';
-import Comment from './comment';
-import Paren from './paren';
-import Selector from './selector';
-import Element from './element';
-import Anonymous from './anonymous';
-import contexts from '../contexts';
-import globalFunctionRegistry from '../functions/function-registry';
-import defaultFunc from '../functions/default';
-import getDebugInfo from './debug-info';
-import * as utils from '../utils';
+import Node from './node.js';
+import Declaration from './declaration.js';
+import Keyword from './keyword.js';
+import Comment from './comment.js';
+import Paren from './paren.js';
+import Selector from './selector.js';
+import Element from './element.js';
+import Anonymous from './anonymous.js';
+import contexts from '../contexts.js';
+import globalFunctionRegistry from '../functions/function-registry.js';
+import defaultFunc from '../functions/default.js';
+import getDebugInfo from './debug-info.js';
+import * as utils from '../utils.js';
 
 const Ruleset = function(selectors, rules, strictImports, visibilityInfo) {
     this.selectors = selectors;
@@ -81,9 +81,9 @@ Ruleset.prototype = Object.assign(new Node(), {
                 }
                 this.parse.parseNode(
                     toParseSelectors.join(','),
-                    ["selectors"], 
-                    selectors[0].getIndex(), 
-                    selectors[0].fileInfo(), 
+                    ["selectors"],
+                    selectors[0].getIndex(),
+                    selectors[0].fileInfo(),
                     function(err, result) {
                         if (result) {
                             selectors = utils.flattenArray(result);
@@ -356,9 +356,9 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (typeof decl.value.value === 'string') {
                     this.parse.parseNode(
                         decl.value.value,
-                        ['value', 'important'], 
-                        decl.value.getIndex(), 
-                        decl.fileInfo(), 
+                        ['value', 'important'],
+                        decl.value.getIndex(),
+                        decl.fileInfo(),
                         function(err, result) {
                             if (err) {
                                 decl.parsed = true;

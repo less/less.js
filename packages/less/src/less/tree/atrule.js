@@ -1,7 +1,7 @@
-import Node from './node';
-import Selector from './selector';
-import Ruleset from './ruleset';
-import Anonymous from './anonymous';
+import Node from './node.js';
+import Selector from './selector.js';
+import Ruleset from './ruleset.js';
+import Anonymous from './anonymous.js';
 
 const AtRule = function(
     name,

@@ -1,11 +1,11 @@
-import Quoted from '../tree/quoted';
-import URL from '../tree/url';
-import * as utils from '../utils';
-import logger from '../logger';
+import Quoted from '../tree/quoted.js';
+import URL from '../tree/url.js';
+import * as utils from '../utils.js';
+import logger from '../logger.js';
 
 export default environment => {
-    
-    const fallback = (functionThis, node) => new URL(node, functionThis.index, functionThis.currentFileInfo).eval(functionThis.context);    
+
+    const fallback = (functionThis, node) => new URL(node, functionThis.index, functionThis.currentFileInfo).eval(functionThis.context);
 
     return { 'data-uri': function(mimetypeNode, filePathNode) {
 

@@ -1,4 +1,4 @@
-import Node from './node';
+import Node from './node.js';
 
 function escapePath(path) {
     return path.replace(/[\(\)'"\s]/g, function(match) { return `\\${match}`; });

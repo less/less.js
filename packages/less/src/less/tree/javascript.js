@@ -1,7 +1,7 @@
-import JsEvalNode from './js-eval-node';
-import Dimension from './dimension';
-import Quoted from './quoted';
-import Anonymous from './anonymous';
+import JsEvalNode from './js-eval-node.js';
+import Dimension from './dimension.js';
+import Quoted from './quoted.js';
+import Anonymous from './anonymous.js';
 
 const JavaScript = function(string, escaped, index, currentFileInfo) {
     this.escaped = escaped;

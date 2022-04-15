@@ -1,7 +1,7 @@
-import Node from './node';
-import unitConversions from '../data/unit-conversions';
-import Unit from './unit';
-import Color from './color';
+import Node from './node.js';
+import unitConversions from '../data/unit-conversions.js';
+import Unit from './unit.js';
+import Color from './color.js';
 
 //
 // A number with a unit

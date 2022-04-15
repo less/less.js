@@ -1,6 +1,6 @@
-import Quoted from '../tree/quoted';
-import Anonymous from '../tree/anonymous';
-import JavaScript from '../tree/javascript';
+import Quoted from '../tree/quoted.js';
+import Anonymous from '../tree/anonymous.js';
+import JavaScript from '../tree/javascript.js';
 
 export default {
     e: function (str) {

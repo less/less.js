@@ -1,4 +1,4 @@
-import Keyword from '../tree/keyword';
+import Keyword from '../tree/keyword.js';
 
 const defaultFunc = {
     eval: function () {

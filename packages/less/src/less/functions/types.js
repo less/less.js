@@ -1,11 +1,11 @@
-import Keyword from '../tree/keyword';
-import DetachedRuleset from '../tree/detached-ruleset';
-import Dimension from '../tree/dimension';
-import Color from '../tree/color';
-import Quoted from '../tree/quoted';
-import Anonymous from '../tree/anonymous';
-import URL from '../tree/url';
-import Operation from '../tree/operation';
+import Keyword from '../tree/keyword.js';
+import DetachedRuleset from '../tree/detached-ruleset.js';
+import Dimension from '../tree/dimension.js';
+import Color from '../tree/color.js';
+import Quoted from '../tree/quoted.js';
+import Anonymous from '../tree/anonymous.js';
+import URL from '../tree/url.js';
+import Operation from '../tree/operation.js';
 
 const isa = (n, Type) => (n instanceof Type) ? Keyword.True : Keyword.False;
 const isunit = (n, unit) => {

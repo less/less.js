@@ -1,11 +1,11 @@
-import Node from './node';
-import Media from './media';
-import URL from './url';
-import Quoted from './quoted';
-import Ruleset from './ruleset';
-import Anonymous from './anonymous';
-import * as utils from '../utils';
-import LessError from '../less-error';
+import Node from './node.js';
+import Media from './media.js';
+import URL from './url.js';
+import Quoted from './quoted.js';
+import Ruleset from './ruleset.js';
+import Anonymous from './anonymous.js';
+import * as utils from '../utils.js';
+import LessError from '../less-error.js';
 
 //
 // CSS @import node

@@ -1,6 +1,6 @@
-import Node from './node';
-import Paren from './paren';
-import Combinator from './combinator';
+import Node from './node.js';
+import Paren from './paren.js';
+import Combinator from './combinator.js';
 
 const Element = function(combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
     this.combinator = combinator instanceof Combinator ?

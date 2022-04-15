@@ -3,7 +3,7 @@
  *       environment, file managers, and plugin manager
  */
 
-import logger from '../logger';
+import logger from '../logger.js';
 
 class Environment {
     constructor(externalEnvironment, fileManagers) {

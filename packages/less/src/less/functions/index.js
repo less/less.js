@@ -1,17 +1,17 @@
-import functionRegistry from './function-registry';
-import functionCaller from './function-caller';
+import functionRegistry from './function-registry.js';
+import functionCaller from './function-caller.js';
 
-import boolean from './boolean';
-import defaultFunc from './default';
-import color from './color';
-import colorBlending from './color-blending';
-import dataUri from './data-uri';
-import list from './list';
-import math from './math';
-import number from './number';
-import string from './string';
-import svg from './svg';
-import types from './types';
+import boolean from './boolean.js';
+import defaultFunc from './default.js';
+import color from './color.js';
+import colorBlending from './color-blending.js';
+import dataUri from './data-uri.js';
+import list from './list.js';
+import math from './math.js';
+import number from './number.js';
+import string from './string.js';
+import svg from './svg.js';
+import types from './types.js';
 
 export default environment => {
     const functions = { functionRegistry, functionCaller };

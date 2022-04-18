@@ -67,7 +67,7 @@ const lessc_helper = {
         console.log('                               --plugin=less-plugin-clean-css or just --clean-css');
         console.log('                               specify options afterwards e.g. --plugin=less-plugin-clean-css="advanced"');
         console.log('                               or --clean-css="advanced"');
-        console.log('  --disable-plugins            Disallow @plugin statements');
+        console.log('  --disable-plugin-rule        Disallow @plugin statements');
         console.log('');
         console.log('-------------------------- Deprecated ----------------');
         console.log('  -sm=on|off               Legacy parens-only math. Use --math');

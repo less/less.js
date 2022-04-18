@@ -90,8 +90,8 @@ function render() {
     output = path.resolve(process.cwd(), output);
   }
 
-  if (options.disablePlugins && queuePlugins.length > 0) {
-    console.error('--plugin and --disable-plugins may not be used at the same time');
+  if (options.disablePluginRule && queuePlugins.length > 0) {
+    console.error('--plugin and --disable-plugin-rule may not be used at the same time');
     process.exitCode = 1;
     return;
   }
@@ -640,8 +640,8 @@ function processPluginQueue() {
         });
         break;
 
-      case 'disable-plugins':
-        options.disablePlugins = true;
+      case 'disable-plugin-rule':
+        options.disablePluginRule = true;
         break;
   
       default:

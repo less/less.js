@@ -563,14 +563,14 @@ module.exports = function() {
         };
     }
 
-    function testDisablePlugins() {
+    function testDisablePluginRule() {
         less.render(
             '@plugin "../../plugin/some_plugin";',
-            {disablePlugins: true},
+            {disablePluginRule: true},
             function(err) {
                 // TODO: Need a better way of identifing exactly which error is thrown.  Checking
                 // text like this tends to be rather brittle.
-                const EXPECTED = '@plugin statements are not allowed when disablePlugins is set to true';
+                const EXPECTED = '@plugin statements are not allowed when disablePluginRule is set to true';
                 if (!err || String(err).indexOf(EXPECTED) < 0) {
                     fail('ERROR: Expected "' + EXPECTED + '" error');
                     return;
@@ -592,7 +592,7 @@ module.exports = function() {
         testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
-        testDisablePlugins: testDisablePlugins,
+        testDisablePluginRule: testDisablePluginRule,
         testJSImport: testJSImport,
         finished: finished
     };

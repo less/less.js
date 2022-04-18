@@ -156,11 +156,11 @@ const Parser = function Parser(context, imports, fileInfo) {
             let preText = '';
 
             // Optionally disable @plugin parsing
-            if (additionalData && additionalData.disablePlugins) {
+            if (additionalData && additionalData.disablePluginRule) {
                 parsers.plugin = function() {
                     var dir = parserInput.$re(/^@plugin?\s+/);
                     if (dir) {
-                        error('@plugin statements are not allowed when disablePlugins is set to true');
+                        error('@plugin statements are not allowed when disablePluginRule is set to true');
                     }
                 }
             };

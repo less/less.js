@@ -6,7 +6,7 @@ on: [push, pull_request]
 
 jobs:
   platform_spec_test:
-    name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
+    name: 'CI on ${{matrix.os}} with current lts node${{matrix.node}}'
     strategy:
       matrix:
         # Test all mainstream operating system
@@ -42,11 +42,11 @@ jobs:
        run: cd packages/less && npm test
 
   fast_node_test:
-    name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
+    name: 'CI on ${{matrix.os}} with node${{matrix.node}}'
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [10, 12, 14, 17]
+        node: [10, 12, 14, 17, 18]
     runs-on: ${{ matrix.os }}
     steps:
      - uses: actions/checkout@v2

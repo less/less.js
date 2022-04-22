@@ -46,7 +46,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [10, 12, 14, 17]
+        node: [10, 12, 14, 18]
     runs-on: ${{ matrix.os }}
     steps:
      - uses: actions/checkout@v2

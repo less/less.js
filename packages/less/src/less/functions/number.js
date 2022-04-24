@@ -27,6 +27,8 @@ const minMax = function (isMin, args) {
             if (Array.isArray(args[i].value)) {
                 Array.prototype.push.apply(args, Array.prototype.slice.call(args[i].value));
                 continue;
+            } else {
+                throw { type: 'Argument', message: 'incompatible types' };
             }
         }
         currentUnified = current.unit.toString() === '' && unitClone !== undefined ? new Dimension(current.value, unitClone).unify() : current.unify();

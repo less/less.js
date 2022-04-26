@@ -4,7 +4,6 @@
  */
 
 import logger from '../logger';
-import * as utils from '../utils';
 
 class Environment {
     constructor(externalEnvironment, fileManagers) {
@@ -31,7 +30,7 @@ class Environment {
         if (!filename) {
             logger.warn('getFileManager called with no filename.. Please report this issue. continuing.');
         }
-        if (utils.isNullOrUndefined(currentDirectory)) {
+        if (currentDirectory === undefined) {
             logger.warn('getFileManager called with null directory.. Please report this issue. continuing.');
         }
 

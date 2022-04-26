@@ -581,7 +581,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     expectChar(')');
 
-                    return new(tree.URL)((!utils.isNullOrUndefined(value.value) || 
+                    return new(tree.URL)((value.value !== undefined || 
                         value instanceof tree.Variable || 
                         value instanceof tree.Property) ?
                         value : new(tree.Anonymous)(value, index), index, fileInfo);

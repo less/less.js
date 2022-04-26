@@ -5,7 +5,7 @@ import * as utils from '../utils';
 
 
 const Quoted = function(str, content, escaped, index, currentFileInfo) {
-    this.escaped = utils.isNullOrUndefined(escaped) ? true : escaped;
+    this.escaped = (escaped === undefined) ? true : escaped;
     this.value = content || '';
     this.quote = str.charAt(0);
     this._index = index;

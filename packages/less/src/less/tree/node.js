@@ -127,21 +127,21 @@ class Node {
 
     // Returns true if this node represents root of ast imported by reference
     blocksVisibility() {
-        if (utils.isNullOrUndefined(this.visibilityBlocks)) {
+        if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
         }
         return this.visibilityBlocks !== 0;
     }
 
     addVisibilityBlock() {
-        if (utils.isNullOrUndefined(this.visibilityBlocks)) {
+        if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
         }
         this.visibilityBlocks = this.visibilityBlocks + 1;
     }
 
     removeVisibilityBlock() {
-        if (utils.isNullOrUndefined(this.visibilityBlocks)) {
+        if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
         }
         this.visibilityBlocks = this.visibilityBlocks - 1;

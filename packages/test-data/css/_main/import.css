@@ -47,3 +47,15 @@
     width: 100%;
   }
 }
+.some-class {
+  color: var(--primary-color);
+  backgroundColor: var(--bg-color);
+}
+:root {
+  --primary-color: #fff;
+  --bg-color: #000;
+}
+html[data-theme="dark"] {
+  --primary-color: #000;
+  --bg-color: #fff;
+}

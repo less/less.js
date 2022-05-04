@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/* eslint indent: [2, 2, {"SwitchCase": 1}] */
+
 "use strict";
 
 var path = require('path');
@@ -87,6 +90,12 @@ function render() {
     output = path.resolve(process.cwd(), output);
   }
 
+  if (options.disablePluginRule && queuePlugins.length > 0) {
+    console.error('--plugin and --disable-plugin-rule may not be used at the same time');
+    process.exitCode = 1;
+    return;
+  }
+
   if (options.sourceMap) {
     sourceMapOptions.sourceMapInputFilename = input;
 
@@ -113,6 +122,7 @@ function render() {
       var mapDir = path.dirname(mapFilename);
       var outputDir = path.dirname(output); // find the path from the map to the output file
 
+      // eslint-disable-next-line max-len
       sourceMapOptions.sourceMapOutputFilename = path.join(path.relative(mapDir, outputDir), path.basename(output)); // make the sourcemap filename point to the sourcemap relative to the css file output directory
 
       sourceMapOptions.sourceMapFilename = path.join(path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
@@ -180,8 +190,8 @@ function render() {
       var filename = sourceMapOptions.sourceMapFullFilename;
       ensureDirectory(filename);
 
-      //To fix https://github.com/less/less.js/issues/3646
-      output=output.toString();
+      // To fix https://github.com/less/less.js/issues/3646
+      output = output.toString();
       
       fs.writeFile(filename, output, 'utf8', function (err) {
         if (err) {
@@ -444,7 +454,8 @@ function processPluginQueue() {
         break;
 
       case 'no-js':
-        console.error('The "--no-js" argument is deprecated, as inline JavaScript ' + 'is disabled by default. Use "--js" to enable inline JavaScript (not recommended).');
+        // eslint-disable-next-line max-len
+        console.error('The "--no-js" argument is deprecated, as inline JavaScript is disabled by default. Use "--js" to enable inline JavaScript (not recommended).');
         break;
 
       case 'include-path':
@@ -629,6 +640,10 @@ function processPluginQueue() {
         });
         break;
 
+      case 'disable-plugin-rule':
+        options.disablePluginRule = true;
+        break;
+  
       default:
         queuePlugins.push({
           name: arg,

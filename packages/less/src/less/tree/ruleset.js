@@ -264,6 +264,7 @@ Ruleset.prototype = Object.assign(new Node(), {
     // lets you call a css selector with a guard
     matchCondition(args, context) {
         const lastSelector = this.selectors[this.selectors.length - 1];
+        // fix:3407
         if (!lastSelector.evaldCondition && !lastSelector.condition) {
             return false;
         }

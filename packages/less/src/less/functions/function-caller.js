@@ -48,7 +48,7 @@ class functionCaller {
             return this.func(this.context, ...args);
         }
 
-        return this.func.call(this, ...args);
+        return this.func(...args);
     }
 }
 

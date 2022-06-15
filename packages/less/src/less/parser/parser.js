@@ -2035,7 +2035,7 @@ const Parser = function Parser(context, imports, fileInfo) {
             },
             important: function () {
                 if (parserInput.currentChar() === '!') {
-                    return parserInput.$re(/^! *important/);
+                    return parserInput.$re(/^! *important/i);
                 }
             },
             sub: function () {

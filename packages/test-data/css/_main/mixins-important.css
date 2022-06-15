@@ -55,3 +55,6 @@
 .class2-2421 {
   margin: 5px;
 }
+.case-insensitive {
+  background: black url('http://localhost/header.png') repeat-x !IMPORTANT;
+}

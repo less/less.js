@@ -110,7 +110,7 @@ class AbstractFileManager {
             // collapse '..' and skip '.'
             for (i = 0; i < rawDirectories.length; i++) {
 
-                if (rawDirectories[i] === '..') {
+                if (rawDirectories[i] === '..' && directories.length > 0) {
                     directories.pop();
                 }
                 else if (rawDirectories[i] !== '.') {

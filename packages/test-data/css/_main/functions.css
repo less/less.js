@@ -109,8 +109,10 @@
   min: 5;
   min: 1pt;
   min: 3mm;
+  min: min(1, 4ex, 2pt);
   max: 3;
   max: 5em;
+  max: max(5m, 3em);
   max-native: max(10vw, 100px);
   percentage: 20%;
   color-quoted-digit: #dda0dd;

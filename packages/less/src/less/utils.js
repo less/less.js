@@ -120,3 +120,7 @@ export function flattenArray(arr, result = []) {
     }
     return result;
 }
+
+export function isNullOrUndefined(val) {
+    return val === null || val === undefined
+}

@@ -4,7 +4,7 @@ const MathHelper = (fn, unit, n) => {
     if (!(n instanceof Dimension)) {
         throw { type: 'Argument', message: 'argument must be a number' };
     }
-    if (unit == null) {
+    if (unit === null) {
         unit = n.unit;
     } else {
         n = n.unify();

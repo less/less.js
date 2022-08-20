@@ -1,6 +1,7 @@
 import Node from './node';
 import Element from './element';
 import LessError from '../less-error';
+import * as utils from '../utils';
 
 const Selector = function(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
     this.extendList = extendList;
@@ -33,7 +34,7 @@ Selector.prototype = Object.assign(new Node(), {
         elements = this.getElements(elements);
         const newSelector = new Selector(elements, extendList || this.extendList,
             null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
+        newSelector.evaldCondition = (!utils.isNullOrUndefined(evaldCondition)) ? evaldCondition : this.evaldCondition;
         newSelector.mediaEmpty = this.mediaEmpty;
         return newSelector;
     },

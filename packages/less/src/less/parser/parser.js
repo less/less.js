@@ -108,8 +108,15 @@ const Parser = function Parser(context, imports, fileInfo) {
                 result = parsers[p]();
                 if (result) {
                     try {
-                        result._index = i + currentIndex;
-                        result._fileInfo = fileInfo;
+                        if (Array.isArray(result)) {
+                            result.forEach((r) => {
+                                r._index = i + currentIndex;
+                                r._fileInfo = fileInfo;
+                            })
+                        } else {
+                            result._index = i + currentIndex;
+                            result._fileInfo = fileInfo;
+                        }
                     } catch (e) {}
                     returnNodes.push(result);
                 }

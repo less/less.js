@@ -79,14 +79,22 @@ Ruleset.prototype = Object.assign(new Node(), {
                     selector = selectors[i];
                     toParseSelectors[i] = selector.toCSS(context);
                 }
+                const startingIndex = selectors[0].getIndex();
+                const selectorFileInfo = selectors[0].fileInfo();
                 this.parse.parseNode(
                     toParseSelectors.join(','),
-                    ["selectors"], 
-                    selectors[0].getIndex(), 
-                    selectors[0].fileInfo(), 
+                    ["selectors"],
+                    startingIndex,
+                    selectorFileInfo,
                     function(err, result) {
                         if (result) {
                             selectors = utils.flattenArray(result);
+                            selectors.forEach((selector) => {
+                                selector.elements.forEach((element) => {
+                                    element._index += startingIndex;
+                                    element._fileInfo = selectorFileInfo;
+                                });
+                            });
                         }
                     });
             }

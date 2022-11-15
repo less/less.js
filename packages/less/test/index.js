@@ -63,6 +63,8 @@ var testMap = [
         'sourcemaps-empty/', lessTester.testEmptySourcemap],
     [{math: 'strict', strictUnits: true, sourceMap: {disableSourcemapAnnotation: true}},
         'sourcemaps-disable-annotation/', lessTester.testSourcemapWithoutUrlAnnotation],
+    [{math: 'strict', strictUnits: true, sourceMap: true},
+        'sourcemaps-variable-selector/', lessTester.testSourcemapWithVariableInSelector],
     [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, 'globalVars/',
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
     [{modifyVars: true}, 'modifyVars/',

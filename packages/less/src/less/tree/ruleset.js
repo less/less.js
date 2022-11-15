@@ -11,6 +11,7 @@ import globalFunctionRegistry from '../functions/function-registry';
 import defaultFunc from '../functions/default';
 import getDebugInfo from './debug-info';
 import * as utils from '../utils';
+import Parser from '../parser/parser';
 
 const Ruleset = function(selectors, rules, strictImports, visibilityInfo) {
     this.selectors = selectors;
@@ -79,11 +80,11 @@ Ruleset.prototype = Object.assign(new Node(), {
                     selector = selectors[i];
                     toParseSelectors[i] = selector.toCSS(context);
                 }
-                this.parse.parseNode(
+                const startingIndex = selectors[0].getIndex();
+                const selectorFileInfo = selectors[0].fileInfo();
+                new Parser(context, this.parse.importManager, selectorFileInfo, startingIndex).parseNode(
                     toParseSelectors.join(','),
-                    ["selectors"], 
-                    selectors[0].getIndex(), 
-                    selectors[0].fileInfo(), 
+                    ["selectors"],
                     function(err, result) {
                         if (result) {
                             selectors = utils.flattenArray(result);
@@ -354,11 +355,9 @@ Ruleset.prototype = Object.assign(new Node(), {
         function transformDeclaration(decl) {
             if (decl.value instanceof Anonymous && !decl.parsed) {
                 if (typeof decl.value.value === 'string') {
-                    this.parse.parseNode(
+                    new Parser(this.parse.context, this.parse.importManager, decl.fileInfo(), decl.value.getIndex()).parseNode(
                         decl.value.value,
-                        ['value', 'important'], 
-                        decl.value.getIndex(), 
-                        decl.fileInfo(), 
+                        ['value', 'important'],
                         function(err, result) {
                             if (err) {
                                 decl.parsed = true;

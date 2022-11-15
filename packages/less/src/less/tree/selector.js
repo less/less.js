@@ -2,6 +2,7 @@ import Node from './node';
 import Element from './element';
 import LessError from '../less-error';
 import * as utils from '../utils';
+import Parser from '../parser/parser';
 
 const Selector = function(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
     this.extendList = extendList;
@@ -44,11 +45,9 @@ Selector.prototype = Object.assign(new Node(), {
             return [new Element('', '&', false, this._index, this._fileInfo)];
         }
         if (typeof els === 'string') {
-            this.parse.parseNode(
-                els, 
+            new Parser(this.parse.context, this.parse.importManager, this._fileInfo, this._index).parseNode(
+                els,
                 ['selector'],
-                this._index, 
-                this._fileInfo, 
                 function(err, result) {
                     if (err) {
                         throw new LessError({

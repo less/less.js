@@ -5,7 +5,22 @@ import functionRegistry from './../less/functions/function-registry';
 export default environment => {
 
     function imageSize(functionContext, filePathNode) {
-        let filePath = filePathNode.value;
+        let filePath;
+        
+        if (filePathNode.type === 'Url') {
+            filePath = filePathNode.value.value;
+        }
+        else if (filePathNode.type === 'Quoted') {
+            filePath = filePathNode.value;
+        }
+
+        if (typeof filePath !== 'string') {
+            throw {
+                type :'Argument',
+                message: 'invalid argument for \'image-size\' function'
+            }
+        }
+
         const currentFileInfo = functionContext.currentFileInfo;
         const currentDirectory = currentFileInfo.rewriteUrls ?
             currentFileInfo.currentDirectory : currentFileInfo.entryPath;

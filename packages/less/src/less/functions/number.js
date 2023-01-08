@@ -51,19 +51,19 @@ const minMax = function (isMin, args) {
     if (order.length == 1) {
         return order[0];
     }
-    args = order.map(function (a) { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
+    args = order.map(a => { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
     return new Anonymous(`${isMin ? 'min' : 'max'}(${args})`);
 };
 
 export default {
     min: function(...args) {
         try {
-            return minMax(true, args);
+            return minMax.call(this, true, args);
         } catch (e) {}
     },
     max: function(...args) {
         try {
-            return minMax(false, args);
+            return minMax.call(this, false, args);
         } catch (e) {}
     },
     convert: function (val, unit) {

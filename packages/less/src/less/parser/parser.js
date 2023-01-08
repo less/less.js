@@ -149,11 +149,21 @@ const Parser = function Parser(context, imports, fileInfo) {
         //
         parse: function (str, callback, additionalData) {
             let root;
-            let error = null;
+            let err = null;
             let globalVars;
             let modifyVars;
             let ignored;
             let preText = '';
+
+            // Optionally disable @plugin parsing
+            if (additionalData && additionalData.disablePluginRule) {
+                parsers.plugin = function() {
+                    var dir = parserInput.$re(/^@plugin?\s+/);
+                    if (dir) {
+                        error('@plugin statements are not allowed when disablePluginRule is set to true');
+                    }
+                }
+            };
 
             globalVars = (additionalData && additionalData.globalVars) ? `${Parser.serializeVars(additionalData.globalVars)}\n` : '';
             modifyVars = (additionalData && additionalData.modifyVars) ? `\n${Parser.serializeVars(additionalData.modifyVars)}` : '';
@@ -226,7 +236,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     }
                 }
 
-                error = new LessError({
+                err = new LessError({
                     type: 'Parse',
                     message,
                     index: endInfo.furthest,
@@ -235,7 +245,7 @@ const Parser = function Parser(context, imports, fileInfo) {
             }
 
             const finish = e => {
-                e = error || e || imports.error;
+                e = err || e || imports.error;
 
                 if (e) {
                     if (!(e instanceof LessError)) {
@@ -581,8 +591,8 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     expectChar(')');
 
-                    return new(tree.URL)((value.value != null ||
-                        value instanceof tree.Variable ||
+                    return new(tree.URL)((value.value !== undefined || 
+                        value instanceof tree.Variable || 
                         value instanceof tree.Property) ?
                         value : new(tree.Anonymous)(value, index), index, fileInfo);
                 },

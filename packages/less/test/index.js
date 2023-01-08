@@ -88,6 +88,7 @@ lessTester.testSyncronous({syncImport: true}, '_main/import');
 lessTester.testSyncronous({syncImport: true}, '_main/plugin');
 lessTester.testSyncronous({syncImport: true}, 'math/strict/css');
 lessTester.testNoOptions();
+lessTester.testDisablePluginRule();
 lessTester.testJSImport();
 lessTester.finished();
 

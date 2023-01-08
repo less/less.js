@@ -1,8 +1,8 @@
 /**
- * Less - Leaner CSS v4.1.2
+ * Less - Leaner CSS v4.1.3
  * http://lesscss.org
  * 
- * Copyright (c) 2009-2021, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2022, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  * @license Apache-2.0
@@ -80,6 +80,9 @@
             .replace(/\./g, ':'); // Replace dots with colons(for valid id)
     }
     function addDataAttr(options, tag) {
+        if (!tag) {
+            return;
+        } // in case of tag is null or undefined
         for (var opt in tag.dataset) {
             if (tag.dataset.hasOwnProperty(opt)) {
                 if (opt === 'env' || opt === 'dumpLineNumbers' || opt === 'rootpath' || opt === 'errorReporting') {
@@ -1599,41 +1602,38 @@
         }
     });
 
-    var debugInfo = /** @class */ (function () {
-        function debugInfo(context, ctx, lineSeparator) {
-            var result = '';
-            if (context.dumpLineNumbers && !context.compress) {
-                switch (context.dumpLineNumbers) {
-                    case 'comments':
-                        result = debugInfo.asComment(ctx);
-                        break;
-                    case 'mediaquery':
-                        result = debugInfo.asMediaQuery(ctx);
-                        break;
-                    case 'all':
-                        result = debugInfo.asComment(ctx) + (lineSeparator || '') + debugInfo.asMediaQuery(ctx);
-                        break;
-                }
-            }
-            return result;
+    function asComment(ctx) {
+        return "/* line " + ctx.debugInfo.lineNumber + ", " + ctx.debugInfo.fileName + " */\n";
+    }
+    function asMediaQuery(ctx) {
+        var filenameWithProtocol = ctx.debugInfo.fileName;
+        if (!/^[a-z]+:\/\//i.test(filenameWithProtocol)) {
+            filenameWithProtocol = "file://" + filenameWithProtocol;
         }
-        debugInfo.asComment = function (ctx) {
-            return "/* line " + ctx.debugInfo.lineNumber + ", " + ctx.debugInfo.fileName + " */\n";
-        };
-        debugInfo.asMediaQuery = function (ctx) {
-            var filenameWithProtocol = ctx.debugInfo.fileName;
-            if (!/^[a-z]+:\/\//i.test(filenameWithProtocol)) {
-                filenameWithProtocol = "file://" + filenameWithProtocol;
+        return "@media -sass-debug-info{filename{font-family:" + filenameWithProtocol.replace(/([.:\/\\])/g, function (a) {
+            if (a == '\\') {
+                a = '\/';
             }
-            return "@media -sass-debug-info{filename{font-family:" + filenameWithProtocol.replace(/([.:\/\\])/g, function (a) {
-                if (a == '\\') {
-                    a = '\/';
-                }
-                return "\\" + a;
-            }) + "}line{font-family:\\00003" + ctx.debugInfo.lineNumber + "}}\n";
-        };
-        return debugInfo;
-    }());
+            return "\\" + a;
+        }) + "}line{font-family:\\00003" + ctx.debugInfo.lineNumber + "}}\n";
+    }
+    function debugInfo(context, ctx, lineSeparator) {
+        var result = '';
+        if (context.dumpLineNumbers && !context.compress) {
+            switch (context.dumpLineNumbers) {
+                case 'comments':
+                    result = asComment(ctx);
+                    break;
+                case 'mediaquery':
+                    result = asMediaQuery(ctx);
+                    break;
+                case 'all':
+                    result = asComment(ctx) + (lineSeparator || '') + asMediaQuery(ctx);
+                    break;
+            }
+        }
+        return result;
+    }
 
     var Comment = function (value, isLineComment, index, currentFileInfo) {
         this.value = value;
@@ -3387,15 +3387,16 @@
         }
     });
 
-    var Attribute = function (key, op, value) {
+    var Attribute = function (key, op, value, cif) {
         this.key = key;
         this.op = op;
         this.value = value;
+        this.cif = cif;
     };
     Attribute.prototype = Object.assign(new Node(), {
         type: 'Attribute',
         eval: function (context) {
-            return new Attribute(this.key.eval ? this.key.eval(context) : this.key, this.op, (this.value && this.value.eval) ? this.value.eval(context) : this.value);
+            return new Attribute(this.key.eval ? this.key.eval(context) : this.key, this.op, (this.value && this.value.eval) ? this.value.eval(context) : this.value, this.cif);
         },
         genCSS: function (context, output) {
             output.add(this.toCSS(context));
@@ -3405,6 +3406,9 @@
             if (this.op) {
                 value += this.op;
                 value += (this.value.toCSS ? this.value.toCSS(context) : this.value);
+            }
+            if (this.cif) {
+                value = value + " " + this.cif;
             }
             return "[" + value + "]";
         }
@@ -6654,11 +6658,20 @@
             //
             parse: function (str, callback, additionalData) {
                 var root;
-                var error = null;
+                var err = null;
                 var globalVars;
                 var modifyVars;
                 var ignored;
                 var preText = '';
+                // Optionally disable @plugin parsing
+                if (additionalData && additionalData.disablePluginRule) {
+                    parsers.plugin = function () {
+                        var dir = parserInput.$re(/^@plugin?\s+/);
+                        if (dir) {
+                            error('@plugin statements are not allowed when disablePluginRule is set to true');
+                        }
+                    };
+                }
                 globalVars = (additionalData && additionalData.globalVars) ? Parser.serializeVars(additionalData.globalVars) + "\n" : '';
                 modifyVars = (additionalData && additionalData.modifyVars) ? "\n" + Parser.serializeVars(additionalData.modifyVars) : '';
                 if (context.pluginManager) {
@@ -6723,7 +6736,7 @@
                             message += '. Possibly missing something';
                         }
                     }
-                    error = new LessError({
+                    err = new LessError({
                         type: 'Parse',
                         message: message,
                         index: endInfo.furthest,
@@ -6731,7 +6744,7 @@
                     }, imports);
                 }
                 var finish = function (e) {
-                    e = error || e || imports.error;
+                    e = err || e || imports.error;
                     if (e) {
                         if (!(e instanceof LessError)) {
                             e = new LessError(e, imports, fileInfo.filename);
@@ -7808,15 +7821,23 @@
                     var key;
                     var val;
                     var op;
+                    //
+                    // case-insensitive flag
+                    // e.g. [attr operator value i]
+                    //
+                    var cif;
                     if (!(key = entities.variableCurly())) {
                         key = expect(/^(?:[_A-Za-z0-9-\*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
                     }
                     op = parserInput.$re(/^[|~*$^]?=/);
                     if (op) {
                         val = entities.quoted() || parserInput.$re(/^[0-9]+%/) || parserInput.$re(/^[\w-]+/) || entities.variableCurly();
+                        if (val) {
+                            cif = parserInput.$re(/^[iIsS]/);
+                        }
                     }
                     expectChar(']');
-                    return new (tree.Attribute)(key, op, val);
+                    return new (tree.Attribute)(key, op, val, cif);
                 },
                 //
                 // The `block` rule is used by `ruleset` and `mixin.definition`.
@@ -8063,7 +8084,7 @@
                     var path;
                     var features;
                     var index = parserInput.i;
-                    var dir = parserInput.$re(/^@import?\s+/);
+                    var dir = parserInput.$re(/^@import\s+/);
                     if (dir) {
                         var options = (dir ? this.importOptions() : null) || {};
                         if ((path = this.entities.quoted() || this.entities.url())) {
@@ -8214,7 +8235,7 @@
                     var args;
                     var options;
                     var index = parserInput.i;
-                    var dir = parserInput.$re(/^@plugin?\s+/);
+                    var dir = parserInput.$re(/^@plugin\s+/);
                     if (dir) {
                         args = this.pluginArgs();
                         if (args) {
@@ -10575,7 +10596,7 @@
         return render;
     }
 
-    var version = "4.1.2";
+    var version = "4.1.3";
 
     function parseNodeVersion(version) {
       var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

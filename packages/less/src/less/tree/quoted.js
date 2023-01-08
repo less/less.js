@@ -1,10 +1,10 @@
 import Node from './node.js';
 import Variable from './variable.js';
 import Property from './property.js';
-
+import * as utils from '../utils';
 
 const Quoted = function(str, content, escaped, index, currentFileInfo) {
-    this.escaped = (escaped == null) ? true : escaped;
+    this.escaped = (escaped === undefined) ? true : escaped;
     this.value = content || '';
     this.quote = str.charAt(0);
     this._index = index;

@@ -563,6 +563,23 @@ module.exports = function() {
         };
     }
 
+    function testDisablePluginRule() {
+        less.render(
+            '@plugin "../../plugin/some_plugin";',
+            {disablePluginRule: true},
+            function(err) {
+                // TODO: Need a better way of identifing exactly which error is thrown.  Checking
+                // text like this tends to be rather brittle.
+                const EXPECTED = '@plugin statements are not allowed when disablePluginRule is set to true';
+                if (!err || String(err).indexOf(EXPECTED) < 0) {
+                    fail('ERROR: Expected "' + EXPECTED + '" error');
+                    return;
+                }
+                ok(stylize('OK\n', 'green'));
+            }
+        );      
+    }
+
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
@@ -575,6 +592,7 @@ module.exports = function() {
         testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
+        testDisablePluginRule: testDisablePluginRule,
         testJSImport: testJSImport,
         finished: finished
     };

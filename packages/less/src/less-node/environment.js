@@ -1,14 +1,12 @@
 export default {
     encodeBase64: function encodeBase64(str) {
-        // Avoid Buffer constructor on newer versions of Node.js.
-        const buffer = (Buffer.from ? Buffer.from(str) : (new Buffer(str)));
-        return buffer.toString('base64');
+        return Buffer.from(str).toString('base64');
     },
     mimeLookup: function (filename) {
-        return require('mime').lookup(filename);
+        return require('mime').getType(filename);
     },
     charsetLookup: function (mime) {
-        return require('mime').charsets.lookup(mime);
+        return (/^text\/|^application\/(javascript|json)/).test(mime) ? 'UTF-8' : undefined;
     },
     getSourceMapGenerator: function getSourceMapGenerator() {
         return require('source-map').SourceMapGenerator;

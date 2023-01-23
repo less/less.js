@@ -30,3 +30,17 @@
 
 @charset "UTF-8"; // climb on top #2126
 
+// #3563
+@import "import/import-style.less";
+@base-color: var(--primary-color);
+@dark-color: var(--bg-color);
+
+:root {
+    --primary-color: #fff;
+    --bg-color: #000;
+}
+
+html[data-theme="dark"] {
+    --primary-color: #000;
+    --bg-color: #fff;
+}

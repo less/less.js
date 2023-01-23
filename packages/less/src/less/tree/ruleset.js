@@ -81,9 +81,9 @@ Ruleset.prototype = Object.assign(new Node(), {
                 }
                 this.parse.parseNode(
                     toParseSelectors.join(','),
-                    ["selectors"], 
-                    selectors[0].getIndex(), 
-                    selectors[0].fileInfo(), 
+                    ["selectors"],
+                    selectors[0].getIndex(),
+                    selectors[0].fileInfo(),
                     function(err, result) {
                         if (result) {
                             selectors = utils.flattenArray(result);
@@ -230,17 +230,34 @@ Ruleset.prototype = Object.assign(new Node(), {
         let i;
         let importRules;
         if (!rules) { return; }
-
+        const importDecl = {};
         for (i = 0; i < rules.length; i++) {
             if (rules[i].type === 'Import') {
                 importRules = rules[i].eval(context);
                 if (importRules && (importRules.length || importRules.length === 0)) {
+                    // fix: #3563
+                    importRules.forEach((node, index) => {
+                        if (node instanceof Declaration) {
+                            if (!importDecl[node.name]) {
+                                importDecl[node.name] = [i + index]
+                            } else {
+                                importDecl[node.name].push(i + index)
+                            }
+                        }
+                    })
                     rules.splice.apply(rules, [i, 1].concat(importRules));
                     i += importRules.length - 1;
                 } else {
                     rules.splice(i, 1, importRules);
                 }
                 this.resetCache();
+            } else if (rules[i] instanceof Declaration && importDecl[rules[i].name]) {
+                const name = rules[i].name
+                importDecl[name].forEach(e => {
+                    if (rules[e].name === name) {
+                        rules[e].value = rules[i].value
+                    }
+                })
             }
         }
     },
@@ -356,9 +373,9 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (typeof decl.value.value === 'string') {
                     this.parse.parseNode(
                         decl.value.value,
-                        ['value', 'important'], 
-                        decl.value.getIndex(), 
-                        decl.fileInfo(), 
+                        ['value', 'important'],
+                        decl.value.getIndex(),
+                        decl.fileInfo(),
                         function(err, result) {
                             if (err) {
                                 decl.parsed = true;

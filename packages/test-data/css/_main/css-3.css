@@ -136,8 +136,6 @@ body > .shadow {
   symbols: ‣;
   suffix: " ";
 }
-@-ms-viewport {
-}
 @unknown foo 42 (bar) {
   x {
     y: z;

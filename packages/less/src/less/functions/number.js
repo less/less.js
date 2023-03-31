@@ -1,5 +1,5 @@
-import Dimension from '../tree/dimension';
-import Anonymous from '../tree/anonymous';
+import Dimension from '../tree/dimension.js';
+import Anonymous from '../tree/anonymous.js';
 import mathHelper from './math-helper.js';
 
 const minMax = function (isMin, args) {

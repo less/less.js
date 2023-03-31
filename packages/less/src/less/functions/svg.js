@@ -1,8 +1,8 @@
-import Dimension from '../tree/dimension';
-import Color from '../tree/color';
-import Expression from '../tree/expression';
-import Quoted from '../tree/quoted';
-import URL from '../tree/url';
+import Dimension from '../tree/dimension.js';
+import Color from '../tree/color.js';
+import Expression from '../tree/expression.js';
+import Quoted from '../tree/quoted.js';
+import URL from '../tree/url.js';
 
 export default environment => {
     return { 'svg-gradient': function(direction) {

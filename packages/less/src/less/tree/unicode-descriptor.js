@@ -1,4 +1,4 @@
-import Node from './node';
+import Node from './node.js';
 
 const UnicodeDescriptor = function(value) {
     this.value = value;

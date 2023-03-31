@@ -1,4 +1,4 @@
-import Keyword from '../tree/keyword';
+import Keyword from '../tree/keyword.js';
 import * as utils from '../utils';
 
 const defaultFunc = {

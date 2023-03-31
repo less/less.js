@@ -1,6 +1,6 @@
-import Node from './node';
-import Element from './element';
-import LessError from '../less-error';
+import Node from './node.js';
+import Element from './element.js';
+import LessError from '../less-error.js';
 import * as utils from '../utils';
 
 const Selector = function(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
@@ -45,10 +45,10 @@ Selector.prototype = Object.assign(new Node(), {
         }
         if (typeof els === 'string') {
             this.parse.parseNode(
-                els, 
+                els,
                 ['selector'],
-                this._index, 
-                this._fileInfo, 
+                this._index,
+                this._fileInfo,
                 function(err, result) {
                     if (err) {
                         throw new LessError({

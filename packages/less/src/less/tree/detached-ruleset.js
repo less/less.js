@@ -1,6 +1,6 @@
-import Node from './node';
-import contexts from '../contexts';
-import * as utils from '../utils';
+import Node from './node.js';
+import contexts from '../contexts.js';
+import * as utils from '../utils.js';
 
 const DetachedRuleset = function(ruleset, frames) {
     this.ruleset = ruleset;

@@ -1,9 +1,9 @@
-import LessError from '../less-error';
-import tree from '../tree';
-import visitors from '../visitors';
-import getParserInput from './parser-input';
-import * as utils from '../utils';
-import functionRegistry from '../functions/function-registry';
+import LessError from '../less-error.js';
+import tree from '../tree/index.js';
+import visitors from '../visitors/index.js';
+import getParserInput from './parser-input.js';
+import * as utils from '../utils.js';
+import functionRegistry from '../functions/function-registry.js';
 
 //
 // less.js - parser
@@ -60,7 +60,7 @@ const Parser = function Parser(context, imports, fileInfo) {
         if (result) {
             return result;
         }
-        
+
         error(msg || (typeof arg === 'string'
             ? `expected '${arg}' got '${parserInput.currentChar()}'`
             : 'unexpected token'));
@@ -85,8 +85,8 @@ const Parser = function Parser(context, imports, fileInfo) {
 
     /**
      *  Used after initial parsing to create nodes on the fly
-     * 
-     *  @param {String} str          - string to parse 
+     *
+     *  @param {String} str          - string to parse
      *  @param {Array}  parseList    - array of parsers to run input through e.g. ["value", "important"]
      *  @param {Number} currentIndex - start number to begin indexing
      *  @param {Object} fileInfo     - fileInfo to attach to created nodes
@@ -207,7 +207,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 root.root = true;
                 root.firstRoot = true;
                 root.functionRegistry = functionRegistry.inherit();
-                
+
             } catch (e) {
                 return callback(new LessError(e, imports, fileInfo.filename));
             }
@@ -337,7 +337,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         continue;
                     }
 
-                    node = mixin.definition() || this.declaration() || mixin.call(false, false) || 
+                    node = mixin.definition() || this.declaration() || mixin.call(false, false) ||
                         this.ruleset() || this.variableCall() || this.entities.call() || this.atrule();
                     if (node) {
                         root.push(node);
@@ -433,7 +433,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     name = parserInput.$re(/^([\w-]+|%|~|progid:[\w\.]+)\(/);
                     if (!name) {
-                        parserInput.forget(); 
+                        parserInput.forget();
                         return;
                     }
 
@@ -458,7 +458,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     return new(tree.Call)(name, args, index, fileInfo);
                 },
-                
+
                 //
                 // Parsing rules for functions with non-standard args, e.g.:
                 //
@@ -481,11 +481,11 @@ const Parser = function Parser(context, imports, fileInfo) {
                     function f(parse, stop) {
                         return {
                             parse, // parsing function
-                            stop   // when true - stop after parse() and return its result, 
+                            stop   // when true - stop after parse() and return its result,
                             // otherwise continue for plain args
                         };
                     }
-                
+
                     function condition() {
                         return [expect(parsers.condition, 'expected condition')];
                     }
@@ -674,7 +674,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         if (!rgb[2]) {
                             parserInput.forget();
                             return new(tree.Color)(rgb[1], undefined, rgb[0]);
-                        } 
+                        }
                     }
                     parserInput.restore();
                 },
@@ -956,7 +956,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     while (true) {
                         elemIndex = parserInput.i;
                         e = parserInput.$re(re);
-                        
+
                         if (!e) {
                             break;
                         }
@@ -1167,13 +1167,13 @@ const Parser = function Parser(context, imports, fileInfo) {
                         parserInput.restore();
                     }
                 },
-            
+
                 ruleLookups: function() {
                     let rule;
                     let args;
                     const lookups = [];
 
-                    if (parserInput.currentChar() !== '[') { 
+                    if (parserInput.currentChar() !== '[') {
                         return;
                     }
 
@@ -1192,27 +1192,27 @@ const Parser = function Parser(context, imports, fileInfo) {
                         return lookups;
                     }
                 },
-    
+
                 lookupValue: function() {
                     parserInput.save();
-    
-                    if (!parserInput.$char('[')) { 
+
+                    if (!parserInput.$char('[')) {
                         parserInput.restore();
                         return;
                     }
-    
+
                     const name = parserInput.$re(/^(?:[@$]{0,2})[_a-zA-Z0-9-]*/);
-    
+
                     if (!parserInput.$char(']')) {
                         parserInput.restore();
                         return;
-                    } 
+                    }
 
                     if (name || name === '') {
                         parserInput.forget();
                         return name;
                     }
-    
+
                     parserInput.restore();
                 }
             },
@@ -1466,7 +1466,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 parserInput.save();
                 if (parserInput.$re(/^[.#]\(/)) {
                     /**
-                     * DR args currently only implemented for each() function, and not 
+                     * DR args currently only implemented for each() function, and not
                      * yet settable as `@dr: #(@arg) {}`
                      * This should be done when DRs are merged with mixins.
                      * See: https://github.com/less/less-meta/issues/16
@@ -1598,7 +1598,7 @@ const Parser = function Parser(context, imports, fileInfo) {
              * Used for custom properties, at-rules, and variables (as fallback)
              * Parses almost anything inside of {} [] () "" blocks
              * until it reaches outer-most tokens.
-             * 
+             *
              * First, it will try to parse comments and entities to reach
              * the end. This is mostly like the Expression parser except no
              * math is allowed.
@@ -1904,7 +1904,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     parserInput.forget();
                     return args[1].trim();
                 }
-                else { 
+                else {
                     parserInput.restore();
                     return null;
                 }

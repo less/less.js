@@ -1,11 +1,11 @@
-import Selector from './selector';
-import Element from './element';
-import Ruleset from './ruleset';
-import Declaration from './declaration';
-import DetachedRuleset from './detached-ruleset';
-import Expression from './expression';
-import contexts from '../contexts';
-import * as utils from '../utils';
+import Selector from './selector.js';
+import Element from './element.js';
+import Ruleset from './ruleset.js';
+import Declaration from './declaration.js';
+import DetachedRuleset from './detached-ruleset.js';
+import Expression from './expression.js';
+import contexts from '../contexts.js';
+import * as utils from '../utils.js';
 
 const Definition = function(name, params, rules, condition, variadic, frames, visibilityInfo) {
     this.name = name || 'anonymous mixin';

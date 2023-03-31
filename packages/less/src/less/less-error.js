@@ -1,4 +1,4 @@
-import * as utils from './utils';
+import * as utils from './utils.js';
 
 const anonymousFunc = /(<anonymous>|Function):(\d+):(\d+)/;
 
@@ -52,7 +52,7 @@ const LessError = function(e, fileContentMap, currentFilename) {
             /**
              * We have to figure out how this environment stringifies anonymous functions
              * so we can correctly map plugin errors.
-             * 
+             *
              * Note, in Node 8, the output of anonymous funcs varied based on parameters
              * being present or not, so we inject dummy params.
              */

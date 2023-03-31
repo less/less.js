@@ -1,10 +1,10 @@
-import Ruleset from './ruleset';
-import Value from './value';
-import Selector from './selector';
-import Anonymous from './anonymous';
-import Expression from './expression';
-import AtRule from './atrule';
-import * as utils from '../utils';
+import Ruleset from './ruleset.js';
+import Value from './value.js';
+import Selector from './selector.js';
+import Anonymous from './anonymous.js';
+import Expression from './expression.js';
+import AtRule from './atrule.js';
+import * as utils from '../utils.js';
 
 const Media = function(value, features, index, currentFileInfo, visibilityInfo) {
     this._index = index;
@@ -55,7 +55,7 @@ Media.prototype = Object.assign(new AtRule(), {
             this.rules[0].debugInfo = this.debugInfo;
             media.debugInfo = this.debugInfo;
         }
-        
+
         media.features = this.features.eval(context);
 
         context.mediaPath.push(media);

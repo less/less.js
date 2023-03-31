@@ -1,8 +1,8 @@
-import contexts from './contexts';
-import Parser from './parser/parser';
-import LessError from './less-error';
-import * as utils from './utils';
-import logger from './logger';
+import contexts from './contexts.js';
+import Parser from './parser/parser.js';
+import LessError from './less-error.js';
+import * as utils from './utils.js';
+import logger from './logger.js';
 
 export default function(environment) {
     // FileInfo = {

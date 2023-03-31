@@ -1,7 +1,7 @@
-import Node from './node';
-import Color from './color';
-import Dimension from './dimension';
-import * as Constants from '../constants';
+import Node from './node.js';
+import Color from './color.js';
+import Dimension from './dimension.js';
+import * as Constants from '../constants.js';
 const MATH = Constants.Math;
 
 

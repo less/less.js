@@ -1,7 +1,7 @@
-import Node from './node';
-import Selector from './selector';
-import MixinDefinition from './mixin-definition';
-import defaultFunc from '../functions/default';
+import Node from './node.js';
+import Selector from './selector.js';
+import MixinDefinition from './mixin-definition.js';
+import defaultFunc from '../functions/default.js';
 
 const MixinCall = function(elements, args, index, currentFileInfo, important) {
     this.selector = new Selector(elements);

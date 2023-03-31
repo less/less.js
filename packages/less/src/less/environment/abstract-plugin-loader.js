@@ -1,5 +1,5 @@
-import functionRegistry from '../functions/function-registry';
-import LessError from '../less-error';
+import functionRegistry from '../functions/function-registry.js';
+import LessError from '../less-error.js';
 
 class AbstractPluginLoader {
     constructor() {
@@ -182,4 +182,3 @@ class AbstractPluginLoader {
 }
 
 export default AbstractPluginLoader;
-

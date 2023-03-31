@@ -1,4 +1,4 @@
-import Dimension from '../tree/dimension';
+import Dimension from '../tree/dimension.js';
 
 const MathHelper = (fn, unit, n) => {
     if (!(n instanceof Dimension)) {

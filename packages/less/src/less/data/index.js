@@ -1,4 +1,4 @@
-import colors from './colors';
-import unitConversions from './unit-conversions';
+import colors from './colors.js';
+import unitConversions from './unit-conversions.js';
 
 export default { colors, unitConversions };

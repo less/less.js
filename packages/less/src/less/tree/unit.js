@@ -1,6 +1,6 @@
-import Node from './node';
-import unitConversions from '../data/unit-conversions';
-import * as utils from '../utils';
+import Node from './node.js';
+import unitConversions from '../data/unit-conversions.js';
+import * as utils from '../utils.js';
 
 const Unit = function(numerator, denominator, backupUnit) {
     this.numerator = numerator ? utils.copyArray(numerator).sort() : [];

@@ -1,6 +1,6 @@
-import LessError from './less-error';
-import transformTree from './transform-tree';
-import logger from './logger';
+import LessError from './less-error.js';
+import transformTree from './transform-tree.js';
+import logger from './logger.js';
 
 export default function(SourceMapBuilder) {
     class ParseTree {
@@ -22,7 +22,7 @@ export default function(SourceMapBuilder) {
             try {
                 const compress = Boolean(options.compress);
                 if (compress) {
-                    logger.warn('The compress option has been deprecated. ' + 
+                    logger.warn('The compress option has been deprecated. ' +
                         'We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.');
                 }
 

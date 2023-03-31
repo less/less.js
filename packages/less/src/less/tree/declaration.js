@@ -1,8 +1,8 @@
-import Node from './node';
-import Value from './value';
-import Keyword from './keyword';
-import Anonymous from './anonymous';
-import * as Constants from '../constants';
+import Node from './node.js';
+import Value from './value.js';
+import Keyword from './keyword.js';
+import Anonymous from './anonymous.js';
+import * as Constants from '../constants.js';
 const MATH = Constants.Math;
 
 function evalName(context, name) {

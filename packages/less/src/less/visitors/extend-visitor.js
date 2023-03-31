@@ -1,7 +1,7 @@
-import tree from '../tree';
-import Visitor from './visitor';
-import logger from '../logger';
-import * as utils from '../utils';
+import tree from '../tree/index.js';
+import Visitor from './visitor.js';
+import logger from '../logger.js';
+import * as utils from '../utils.js';
 
 /* jshint loopfunc:true */
 

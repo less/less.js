@@ -1,7 +1,7 @@
-import Node from './node';
-import Paren from './paren';
-import Comment from './comment';
-import Dimension from './dimension';
+import Node from './node.js';
+import Paren from './paren.js';
+import Comment from './comment.js';
+import Dimension from './dimension.js';
 
 const Expression = function(value, noSpacing) {
     this.value = value;
@@ -45,7 +45,7 @@ Expression.prototype = Object.assign(new Node(), {
         if (inParenthesis) {
             context.outOfParenthesis();
         }
-        if (this.parens && this.parensInOp && !mathOn && !doubleParen 
+        if (this.parens && this.parensInOp && !mathOn && !doubleParen
             && (!(returnValue instanceof Dimension))) {
             returnValue = new Paren(returnValue);
         }

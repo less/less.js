@@ -1,5 +1,5 @@
-import Anonymous from '../tree/anonymous';
-import Keyword from '../tree/keyword';
+import Anonymous from '../tree/anonymous.js';
+import Keyword from '../tree/keyword.js';
 
 function boolean(condition) {
     return condition ? Keyword.True : Keyword.False;

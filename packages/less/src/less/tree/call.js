@@ -1,6 +1,6 @@
-import Node from './node';
-import Anonymous from './anonymous';
-import FunctionCaller from '../functions/function-caller';
+import Node from './node.js';
+import Anonymous from './anonymous.js';
+import FunctionCaller from '../functions/function-caller.js';
 
 //
 // A function call node.
@@ -61,10 +61,10 @@ Call.prototype = Object.assign(new Node(), {
                 if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
                     throw e;
                 }
-                throw { 
+                throw {
                     type: e.type || 'Runtime',
                     message: `Error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
-                    index: this.getIndex(), 
+                    index: this.getIndex(),
                     filename: this.fileInfo().filename,
                     line: e.lineNumber,
                     column: e.columnNumber
@@ -77,12 +77,12 @@ Call.prototype = Object.assign(new Node(), {
             // Falsy values or booleans are returned as empty nodes
             if (!(result instanceof Node)) {
                 if (!result || result === true) {
-                    result = new Anonymous(null); 
+                    result = new Anonymous(null);
                 }
                 else {
-                    result = new Anonymous(result.toString()); 
+                    result = new Anonymous(result.toString());
                 }
-                
+
             }
             result._index = this._index;
             result._fileInfo = this._fileInfo;

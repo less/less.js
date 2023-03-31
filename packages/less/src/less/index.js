@@ -1,23 +1,23 @@
-import Environment from './environment/environment';
-import data from './data';
-import tree from './tree';
-import AbstractFileManager from './environment/abstract-file-manager';
-import AbstractPluginLoader from './environment/abstract-plugin-loader';
-import visitors from './visitors';
-import Parser from './parser/parser';
-import functions from './functions';
-import contexts from './contexts';
-import LessError from './less-error';
-import transformTree from './transform-tree';
-import * as utils from './utils';
-import PluginManager from './plugin-manager';
-import logger from './logger';
-import SourceMapOutput from './source-map-output';
-import SourceMapBuilder from './source-map-builder';
-import ParseTree from './parse-tree';
-import ImportManager from './import-manager';
-import Parse from './parse';
-import Render from './render';
+import Environment from './environment/environment.js';
+import data from './data/index.js';
+import tree from './tree/index.js';
+import AbstractFileManager from './environment/abstract-file-manager.js';
+import AbstractPluginLoader from './environment/abstract-plugin-loader.js';
+import visitors from './visitors/index.js';
+import Parser from './parser/parser.js';
+import functions from './functions/index.js';
+import contexts from './contexts.js';
+import LessError from './less-error.js';
+import transformTree from './transform-tree.js';
+import * as utils from './utils.js';
+import PluginManager from './plugin-manager.js';
+import logger from './logger.js';
+import SourceMapOutput from './source-map-output.js';
+import SourceMapBuilder from './source-map-builder.js';
+import ParseTree from './parse-tree.js';
+import ImportManager from './import-manager.js';
+import Parse from './parse.js';
+import Render from './render.js';
 import { version } from '../../package.json';
 import parseVersion from 'parse-node-version';
 
@@ -88,7 +88,7 @@ export default function(environment, fileManagers) {
     /**
      * Some of the functions assume a `this` context of the API object,
      * which causes it to fail when wrapped for ES6 imports.
-     * 
+     *
      * An assumed `this` should be removed in the future.
      */
     initial.parse = initial.parse.bind(api);

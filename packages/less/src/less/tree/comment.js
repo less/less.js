@@ -1,5 +1,5 @@
-import Node from './node';
-import getDebugInfo from './debug-info';
+import Node from './node.js';
+import getDebugInfo from './debug-info.js';
 
 const Comment = function(value, isLineComment, index, currentFileInfo) {
     this.value = value;

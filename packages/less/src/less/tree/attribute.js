@@ -1,4 +1,4 @@
-import Node from './node';
+import Node from './node.js';
 
 const Attribute = function(key, op, value, cif) {
     this.key = key;

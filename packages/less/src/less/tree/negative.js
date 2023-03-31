@@ -1,6 +1,6 @@
-import Node from './node';
-import Operation from './operation';
-import Dimension from './dimension';
+import Node from './node.js';
+import Operation from './operation.js';
+import Dimension from './dimension.js';
 
 const Negative = function(node) {
     this.value = node;

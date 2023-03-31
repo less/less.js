@@ -1,4 +1,4 @@
-import Color from '../tree/color';
+import Color from '../tree/color.js';
 
 // Color Blending
 // ref: http://www.w3.org/TR/compositing-1

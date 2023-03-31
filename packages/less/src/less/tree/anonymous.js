@@ -1,4 +1,4 @@
-import Node from './node';
+import Node from './node.js';
 
 const Anonymous = function(value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
     this.value = value;

@@ -1,7 +1,7 @@
-import Node from './node';
-import Variable from './variable';
-import Ruleset from './ruleset';
-import Selector from './selector';
+import Node from './node.js';
+import Variable from './variable.js';
+import Ruleset from './ruleset.js';
+import Selector from './selector.js';
 
 const NamespaceValue = function(ruleCall, lookups, index, fileInfo) {
     this.value = ruleCall;
@@ -15,7 +15,7 @@ NamespaceValue.prototype = Object.assign(new Node(), {
 
     eval(context) {
         let i, j, name, rules = this.value.eval(context);
-        
+
         for (i = 0; i < this.lookups.length; i++) {
             name = this.lookups[i];
 
@@ -38,7 +38,7 @@ NamespaceValue.prototype = Object.assign(new Node(), {
                 if (rules.variables) {
                     rules = rules.variable(name);
                 }
-                
+
                 if (!rules) {
                     throw { type: 'Name',
                         message: `variable ${name} not found`,
@@ -56,7 +56,7 @@ NamespaceValue.prototype = Object.assign(new Node(), {
                 if (rules.properties) {
                     rules = rules.property(name);
                 }
-            
+
                 if (!rules) {
                     throw { type: 'Name',
                         message: `property "${name.substr(1)}" not found`,

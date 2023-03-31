@@ -1,8 +1,8 @@
-import contexts from './contexts';
-import Parser from './parser/parser';
-import PluginManager from './plugin-manager';
-import LessError from './less-error';
-import * as utils from './utils';
+import contexts from './contexts.js';
+import Parser from './parser/parser.js';
+import PluginManager from './plugin-manager.js';
+import LessError from './less-error.js';
+import * as utils from './utils.js';
 
 export default function(environment, ParseTree, ImportManager) {
     const parse = function (input, options, callback) {

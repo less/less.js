@@ -1,4 +1,4 @@
-import chunker from './chunker';
+import chunker from './chunker.js';
 
 export default () => {
     let // Less input string
@@ -235,7 +235,7 @@ export default () => {
                 loop = false
             } else {
                 if (inComment) {
-                    if (nextChar === '*' && 
+                    if (nextChar === '*' &&
                         input.charAt(i + 1) === '/') {
                         i++;
                         blockDepth--;

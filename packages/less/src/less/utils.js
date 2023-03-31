@@ -1,5 +1,5 @@
 /* jshint proto: true */
-import * as Constants from './constants';
+import * as Constants from './constants.js';
 import { copy } from 'copy-anything';
 
 export function getLocation(index, inputStream) {

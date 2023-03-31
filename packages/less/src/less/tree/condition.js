@@ -1,4 +1,4 @@
-import Node from './node';
+import Node from './node.js';
 
 const Condition = function(op, l, r, i, negate) {
     this.op = op.trim();

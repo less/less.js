@@ -12,6 +12,10 @@ import ErrorReporting from './error-reporting';
 import Cache from './cache';
 import ImageSize from './image-size';
 
+/**
+ * @param {Window} window
+ * @param {Object} options
+ */
 export default (window, options) => {
     const document = window.document;
     const less = lessRoot();
@@ -46,42 +50,32 @@ export default (window, options) => {
         return cloned;
     }
 
-    // only really needed for phantom
-    function bind(func, thisArg) {
-        const curryArgs = Array.prototype.slice.call(arguments, 2);
-        return function() {
-            const args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
-            return func.apply(thisArg, args);
-        };
-    }
-
     function loadStyles(modifyVars) {
         const styles = document.getElementsByTagName('style');
-        let style;
 
-        for (let i = 0; i < styles.length; i++) {
-            style = styles[i];
+        for (let style of styles) {
             if (style.type.match(typePattern)) {
-                const instanceOptions = clone(options);
-                instanceOptions.modifyVars = modifyVars;
+                const instanceOptions = {
+                    ...options,
+                    modifyVars,
+                    filename: document.location.href.replace(/#.*$/, ''),
+                }
+
                 const lessText = style.innerHTML || '';
-                instanceOptions.filename = document.location.href.replace(/#.*$/, '');
 
                 /* jshint loopfunc:true */
-                // use closure to store current style
-                less.render(lessText, instanceOptions,
-                    bind((style, e, result) => {
-                        if (e) {
-                            errors.add(e, 'inline');
+                less.render(lessText, instanceOptions, (err, result) => {
+                    if (err) {
+                        errors.add(err, 'inline');
+                    } else {
+                        style.type = 'text/css';
+                        if (style.styleSheet) {
+                            style.styleSheet.cssText = result.css;
                         } else {
-                            style.type = 'text/css';
-                            if (style.styleSheet) {
-                                style.styleSheet.cssText = result.css;
-                            } else {
-                                style.innerHTML = result.css;
-                            }
+                            style.innerHTML = result.css;
                         }
-                    }, null, style));
+                    }
+                });
             }
         }
     }

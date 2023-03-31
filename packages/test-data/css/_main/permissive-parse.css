@@ -35,3 +35,12 @@ foo[attr="blah"] {
   --value: a /* { ; } */;
   --comment-within: ( /* okay?; comment; */ );
 }
+.test-no-trailing-semicolon {
+  --value: foo;
+}
+.test-no-trailing-semicolon2 {
+  --value: foo;
+}
+.test-no-trailing-semicolon3 {
+  --value: foo;
+}

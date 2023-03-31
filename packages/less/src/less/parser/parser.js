@@ -1551,7 +1551,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                         // Custom property values get permissive parsing
                         if (name[0].value && name[0].value.slice(0, 2) === '--') {
-                            value = this.permissiveValue();
+                            value = this.permissiveValue(/[;}]/);
                         }
                         // Try to store values as anonymous
                         // If we need the value later we'll re-parse it in ruleset.parseValue

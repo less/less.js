@@ -58,7 +58,7 @@ export default (window, options) => {
                 const instanceOptions = {
                     ...options,
                     modifyVars,
-                    filename: document.location.href.replace(/#.*$/, ''),
+                    filename: document.location.href.replace(/#.*$/, '')
                 }
 
                 const lessText = style.innerHTML || '';

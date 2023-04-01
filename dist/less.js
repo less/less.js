@@ -83,7 +83,7 @@
         if (!tag) {
             return;
         } // in case of tag is null or undefined
-        for (var opt in tag.dataset) {
+        for (let opt in tag.dataset) {
             if (tag.dataset.hasOwnProperty(opt)) {
                 if (opt === 'env' || opt === 'dumpLineNumbers' || opt === 'rootpath' || opt === 'errorReporting') {
                     options[opt] = tag.dataset[opt];
@@ -98,17 +98,17 @@
         }
     }
 
-    var browser = {
+    let browser = {
         createCSS: function (document, styles, sheet) {
             // Strip the query-string
-            var href = sheet.href || '';
+            let href = sheet.href || '';
             // If there is no title set, use the filename, minus the extension
-            var id = "less:" + (sheet.title || extractId(href));
+            let id = "less:" + (sheet.title || extractId(href));
             // If this has already been inserted into the DOM, we may need to replace it
-            var oldStyleNode = document.getElementById(id);
-            var keepOldStyleNode = false;
+            let oldStyleNode = document.getElementById(id);
+            let keepOldStyleNode = false;
             // Create a new stylesheet node for insertion or (if necessary) replacement
-            var styleNode = document.createElement('style');
+            let styleNode = document.createElement('style');
             styleNode.setAttribute('type', 'text/css');
             if (sheet.media) {
                 styleNode.setAttribute('media', sheet.media);
@@ -120,11 +120,11 @@
                 keepOldStyleNode = (oldStyleNode !== null && oldStyleNode.childNodes.length > 0 && styleNode.childNodes.length > 0 &&
                     oldStyleNode.firstChild.nodeValue === styleNode.firstChild.nodeValue);
             }
-            var head = document.getElementsByTagName('head')[0];
+            let head = document.getElementsByTagName('head')[0];
             // If there is no oldStyleNode, just append; otherwise, only append if we need
             // to replace oldStyleNode with an updated stylesheet
             if (oldStyleNode === null || keepOldStyleNode === false) {
-                var nextEl = sheet && sheet.nextSibling || null;
+                let nextEl = sheet && sheet.nextSibling || null;
                 if (nextEl) {
                     nextEl.parentNode.insertBefore(styleNode, nextEl);
                 }
@@ -148,15 +148,15 @@
             }
         },
         currentScript: function (window) {
-            var document = window.document;
+            let document = window.document;
             return document.currentScript || (function () {
-                var scripts = document.getElementsByTagName('script');
+                let scripts = document.getElementsByTagName('script');
                 return scripts[scripts.length - 1];
             })();
         }
     };
 
-    var addDefaultOptions = (function (window, options) {
+    let addDefaultOptions = (function (window, options) {
         // use options from the current script tag data attribues
         addDataAttr(options, browser.currentScript(window));
         if (options.isFileProtocol === undefined) {
@@ -179,7 +179,7 @@
                 window.location.port.length > 0) ||
             options.isFileProtocol ? 'development'
             : 'production');
-        var dumpLineNumbers = /!dumpLineNumbers:(comments|mediaquery|all)/.exec(window.location.hash);
+        let dumpLineNumbers = /!dumpLineNumbers:(comments|mediaquery|all)/.exec(window.location.hash);
         if (dumpLineNumbers) {
             options.dumpLineNumbers = dumpLineNumbers[1];
         }
@@ -194,7 +194,7 @@
         }
     });
 
-    var logger$1 = {
+    let logger$1 = {
         error: function (msg) {
             this._fireEvent('error', msg);
         },
@@ -211,7 +211,7 @@
             this._listeners.push(listener);
         },
         removeListener: function (listener) {
-            for (var i = 0; i < this._listeners.length; i++) {
+            for (let i = 0; i < this._listeners.length; i++) {
                 if (this._listeners[i] === listener) {
                     this._listeners.splice(i, 1);
                     return;
@@ -219,8 +219,8 @@
             }
         },
         _fireEvent: function (type, msg) {
-            for (var i = 0; i < this._listeners.length; i++) {
-                var logFunction = this._listeners[i][type];
+            for (let i = 0; i < this._listeners.length; i++) {
+                let logFunction = this._listeners[i][type];
                 if (logFunction) {
                     logFunction(msg);
                 }
@@ -233,16 +233,16 @@
      * @todo Document why this abstraction exists, and the relationship between
      *       environment, file managers, and plugin manager
      */
-    var Environment = /** @class */ (function () {
+    let Environment = /** @class */ (function () {
         function Environment(externalEnvironment, fileManagers) {
             this.fileManagers = fileManagers || [];
             externalEnvironment = externalEnvironment || {};
-            var optionalFunctions = ['encodeBase64', 'mimeLookup', 'charsetLookup', 'getSourceMapGenerator'];
-            var requiredFunctions = [];
-            var functions = requiredFunctions.concat(optionalFunctions);
-            for (var i = 0; i < functions.length; i++) {
-                var propName = functions[i];
-                var environmentFunc = externalEnvironment[propName];
+            let optionalFunctions = ['encodeBase64', 'mimeLookup', 'charsetLookup', 'getSourceMapGenerator'];
+            let requiredFunctions = [];
+            let functions = requiredFunctions.concat(optionalFunctions);
+            for (let i = 0; i < functions.length; i++) {
+                let propName = functions[i];
+                let environmentFunc = externalEnvironment[propName];
                 if (environmentFunc) {
                     this[propName] = environmentFunc.bind(externalEnvironment);
                 }
@@ -258,12 +258,12 @@
             if (currentDirectory == null) {
                 logger$1.warn('getFileManager called with null directory.. Please report this issue. continuing.');
             }
-            var fileManagers = this.fileManagers;
+            let fileManagers = this.fileManagers;
             if (options.pluginManager) {
                 fileManagers = [].concat(fileManagers).concat(options.pluginManager.getFileManagers());
             }
-            for (var i = fileManagers.length - 1; i >= 0; i--) {
-                var fileManager = fileManagers[i];
+            for (let i = fileManagers.length - 1; i >= 0; i--) {
+                let fileManager = fileManagers[i];
                 if (fileManager[isSync ? 'supportsSync' : 'supports'](filename, currentDirectory, options, environment)) {
                     return fileManager;
                 }
@@ -279,7 +279,7 @@
         return Environment;
     }());
 
-    var colors = {
+    let colors = {
         'aliceblue': '#f0f8ff',
         'antiquewhite': '#faebd7',
         'aqua': '#00ffff',
@@ -430,7 +430,7 @@
         'yellowgreen': '#9acd32'
     };
 
-    var unitConversions = {
+    let unitConversions = {
         length: {
             'm': 1,
             'cm': 0.01,
@@ -452,7 +452,7 @@
         }
     };
 
-    var data = { colors: colors, unitConversions: unitConversions };
+    let data = { colors: colors, unitConversions: unitConversions };
 
     /**
      * The reason why Node is a class and other nodes simply do not extend
@@ -460,7 +460,7 @@
      *
      * https://github.com/less/less.js/issues/3434
      */
-    var Node = /** @class */ (function () {
+    let Node = /** @class */ (function () {
         function Node() {
             this.parent = null;
             this.visibilityBlocks = undefined;
@@ -503,7 +503,7 @@
         };
         Node.prototype.isRulesetLike = function () { return false; };
         Node.prototype.toCSS = function (context) {
-            var strs = [];
+            let strs = [];
             this.genCSS(context, {
                 add: function (chunk, fileInfo, index) {
                     strs.push(chunk);
@@ -530,7 +530,7 @@
             }
         };
         Node.prototype.fround = function (context, value) {
-            var precision = context && context.numPrecision;
+            let precision = context && context.numPrecision;
             // add "epsilon" to ensure numbers like 1.000000005 (represented as 1.000000004999...) are properly rounded:
             return (precision) ? Number((value + 2e-16).toFixed(precision)) : value;
         };
@@ -560,7 +560,7 @@
             if (a.length !== b.length) {
                 return undefined;
             }
-            for (var i = 0; i < a.length; i++) {
+            for (let i = 0; i < a.length; i++) {
                 if (Node.compare(a[i], b[i]) !== 0) {
                     return undefined;
                 }
@@ -627,8 +627,8 @@
     //
     // RGB Colors - #ff0014, #eee
     //
-    var Color = function (rgb, a, originalForm) {
-        var self = this;
+    let Color = function (rgb, a, originalForm) {
+        let self = this;
         //
         // The end goal here, is to parse the arguments
         // into an integer triplet, such as `128, 255, 0`
@@ -668,7 +668,7 @@
     Color.prototype = Object.assign(new Node(), {
         type: 'Color',
         luma: function () {
-            var r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255;
+            let r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255;
             r = (r <= 0.03928) ? r / 12.92 : Math.pow(((r + 0.055) / 1.055), 2.4);
             g = (g <= 0.03928) ? g / 12.92 : Math.pow(((g + 0.055) / 1.055), 2.4);
             b = (b <= 0.03928) ? b / 12.92 : Math.pow(((b + 0.055) / 1.055), 2.4);
@@ -678,11 +678,11 @@
             output.add(this.toCSS(context));
         },
         toCSS: function (context, doNotCompress) {
-            var compress = context && context.compress && !doNotCompress;
-            var color;
-            var alpha;
-            var colorFunction;
-            var args = [];
+            let compress = context && context.compress && !doNotCompress;
+            let color;
+            let alpha;
+            let colorFunction;
+            let args = [];
             // `value` is set if this color was originally
             // converted from a named color string so we need
             // to respect this and try to output named color too.
@@ -732,7 +732,7 @@
             }
             color = this.toRGB();
             if (compress) {
-                var splitcolor = color.split('');
+                let splitcolor = color.split('');
                 // Convert color to short format
                 if (splitcolor[1] === splitcolor[2] && splitcolor[3] === splitcolor[4] && splitcolor[5] === splitcolor[6]) {
                     color = "#" + splitcolor[1] + splitcolor[3] + splitcolor[5];
@@ -747,9 +747,9 @@
         // we create a new Color node to hold the result.
         //
         operate: function (context, op, other) {
-            var rgb = new Array(3);
-            var alpha = this.alpha * (1 - other.alpha) + other.alpha;
-            for (var c = 0; c < 3; c++) {
+            let rgb = new Array(3);
+            let alpha = this.alpha * (1 - other.alpha) + other.alpha;
+            for (let c = 0; c < 3; c++) {
                 rgb[c] = this._operate(context, op, this.rgb[c], other.rgb[c]);
             }
             return new Color(rgb, alpha);
@@ -757,13 +757,14 @@
         toRGB: function () {
             return toHex(this.rgb);
         },
+
         toHSL: function () {
-            var r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
-            var max = Math.max(r, g, b), min = Math.min(r, g, b);
-            var h;
-            var s;
-            var l = (max + min) / 2;
-            var d = max - min;
+            let r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h;
+            let s;
+            let l = (max + min) / 2;
+            let d = max - min;
             if (max === min) {
                 h = s = 0;
             }
@@ -771,7 +772,7 @@
                 s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
                 switch (max) {
                     case r:
-                        h = (g - b) / d + (g < b ? 6 : 0);
+                         h = (g - b) / d + (g < b ? 6 : 0);
                         break;
                     case g:
                         h = (b - r) / d + 2;
@@ -786,12 +787,12 @@
         },
         // Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
         toHSV: function () {
-            var r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
-            var max = Math.max(r, g, b), min = Math.min(r, g, b);
-            var h;
-            var s;
-            var v = max;
-            var d = max - min;
+            let r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h;
+            let s;
+            let v = max;
+            let d = max - min;
             if (max === 0) {
                 s = 0;
             }
@@ -829,8 +830,8 @@
         }
     });
     Color.fromKeyword = function (keyword) {
-        var c;
-        var key = keyword.toLowerCase();
+        let c;
+        let key = keyword.toLowerCase();
         if (colors.hasOwnProperty(key)) {
             c = new Color(colors[key].slice(1));
         }
@@ -852,7 +853,7 @@
         }).join('');
     }
 
-    var Paren = function (node) {
+    let Paren = function (node) {
         this.value = node;
     };
     Paren.prototype = Object.assign(new Node(), {
@@ -867,12 +868,12 @@
         }
     });
 
-    var _noSpaceCombinators = {
+    let _noSpaceCombinators = {
         '': true,
         ' ': true,
         '|': true
     };
-    var Combinator = function (value) {
+    let Combinator = function (value) {
         if (value === ' ') {
             this.value = ' ';
             this.emptyOrWhitespace = true;
@@ -885,12 +886,12 @@
     Combinator.prototype = Object.assign(new Node(), {
         type: 'Combinator',
         genCSS: function (context, output) {
-            var spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
+            let spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
             output.add(spaceOrEmpty + this.value + spaceOrEmpty);
         }
     });
 
-    var Element = function (combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
+    let Element = function (combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
         this.combinator = combinator instanceof Combinator ?
             combinator : new Combinator(combinator);
         if (typeof value === 'string') {
@@ -911,7 +912,7 @@
     Element.prototype = Object.assign(new Node(), {
         type: 'Element',
         accept: function (visitor) {
-            var value = this.value;
+            let value = this.value;
             this.combinator = visitor.visit(this.combinator);
             if (typeof value === 'object') {
                 this.value = visitor.visit(value);
@@ -928,8 +929,8 @@
         },
         toCSS: function (context) {
             context = context || {};
-            var value = this.value;
-            var firstSelector = context.firstSelector;
+            let value = this.value;
+            let firstSelector = context.firstSelector;
             if (value instanceof Paren) {
                 // selector in parens should not be affected by outer selector
                 // flags (breaks only interpolated selectors - see #1973)
@@ -946,13 +947,13 @@
         }
     });
 
-    var Math$1 = {
+    let Math$1 = {
         ALWAYS: 0,
         PARENS_DIVISION: 1,
         PARENS: 2
         // removed - STRICT_LEGACY: 3
     };
-    var RewriteUrls = {
+    let RewriteUrls = {
         OFF: 0,
         LOCAL: 1,
         ALL: 2
@@ -1004,15 +1005,15 @@
     ***************************************************************************** */
 
     function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+        for (let s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+        for (let r = Array(s), k = 0, i = 0; i < il; i++)
+            for (let a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
                 r[k] = a[j];
         return r;
     }
 
     function assignProp(carry, key, newVal, originalObject, includeNonenumerable) {
-        var propType = {}.propertyIsEnumerable.call(originalObject, key)
+        let propType = {}.propertyIsEnumerable.call(originalObject, key)
             ? 'enumerable'
             : 'nonenumerable';
         if (propType === 'enumerable')
@@ -1042,14 +1043,14 @@
             return target.map(function (i) { return copy(i, options); });
         if (!isPlainObject(target))
             return target;
-        var props = Object.getOwnPropertyNames(target);
-        var symbols = Object.getOwnPropertySymbols(target);
+        let props = Object.getOwnPropertyNames(target);
+        let symbols = Object.getOwnPropertySymbols(target);
         return __spreadArrays(props, symbols).reduce(function (carry, key) {
             if (isArray(options.props) && !options.props.includes(key)) {
                 return carry;
             }
-            var val = target[key];
-            var newVal = copy(val, options);
+            let val = target[key];
+            let newVal = copy(val, options);
             assignProp(carry, key, newVal, target, options.nonenumerable);
             return carry;
         }, {});
@@ -1057,9 +1058,9 @@
 
     /* jshint proto: true */
     function getLocation(index, inputStream) {
-        var n = index + 1;
-        var line = null;
-        var column = -1;
+        let n = index + 1;
+        let line = null;
+        let column = -1;
         while (--n >= 0 && inputStream.charAt(n) !== '\n') {
             column++;
         }
@@ -1072,17 +1073,17 @@
         };
     }
     function copyArray(arr) {
-        var i;
-        var length = arr.length;
-        var copy = new Array(length);
+        let i;
+        let length = arr.length;
+        let copy = new Array(length);
         for (i = 0; i < length; i++) {
             copy[i] = arr[i];
         }
         return copy;
     }
     function clone(obj) {
-        var cloned = {};
-        for (var prop in obj) {
+        let cloned = {};
+        for (let prop in obj) {
             if (obj.hasOwnProperty(prop)) {
                 cloned[prop] = obj[prop];
             }
@@ -1090,12 +1091,12 @@
         return cloned;
     }
     function defaults(obj1, obj2) {
-        var newObj = obj2 || {};
+        let newObj = obj2 || {};
         if (!obj2._defaults) {
             newObj = {};
-            var defaults_1 = copy(obj1);
+            let defaults_1 = copy(obj1);
             newObj._defaults = defaults_1;
-            var cloned = obj2 ? copy(obj2) : {};
+            let cloned = obj2 ? copy(obj2) : {};
             Object.assign(newObj, defaults_1, cloned);
         }
         return newObj;
@@ -1104,7 +1105,7 @@
         if (obj2 && obj2._defaults) {
             return obj2;
         }
-        var opts = defaults(obj1, obj2);
+        let opts = defaults(obj1, obj2);
         if (opts.strictMath) {
             opts.math = Math$1.PARENS;
         }
@@ -1144,7 +1145,7 @@
         return opts;
     }
     function merge(obj1, obj2) {
-        for (var prop in obj2) {
+        for (let prop in obj2) {
             if (obj2.hasOwnProperty(prop)) {
                 obj1[prop] = obj2[prop];
             }
@@ -1153,8 +1154,8 @@
     }
     function flattenArray(arr, result) {
         if (result === void 0) { result = []; }
-        for (var i = 0, length_1 = arr.length; i < length_1; i++) {
-            var value = arr[i];
+        for (let i = 0, length_1 = arr.length; i < length_1; i++) {
+            let value = arr[i];
             if (Array.isArray(value)) {
                 flattenArray(value, result);
             }
@@ -1167,7 +1168,7 @@
         return result;
     }
 
-    var utils = /*#__PURE__*/Object.freeze({
+    let utils = /*#__PURE__*/Object.freeze({
         __proto__: null,
         getLocation: getLocation,
         copyArray: copyArray,
@@ -1178,7 +1179,7 @@
         flattenArray: flattenArray
     });
 
-    var anonymousFunc = /(<anonymous>|Function):(\d+):(\d+)/;
+    let anonymousFunc = /(<anonymous>|Function):(\d+):(\d+)/;
     /**
      * This is a centralized class of any error that could be thrown internally (mostly by the parser).
      * Besides standard .message it keeps some additional data like a path to the file where the error
@@ -1201,25 +1202,25 @@
      * @param {Object} fileContentMap - An object with file contents in 'contents' property (like importManager) @todo - move to fileManager?
      * @param {string} [currentFilename]
      */
-    var LessError = function (e, fileContentMap, currentFilename) {
+    let LessError = function (e, fileContentMap, currentFilename) {
         Error.call(this);
-        var filename = e.filename || currentFilename;
+        let filename = e.filename || currentFilename;
         this.message = e.message;
         this.stack = e.stack;
         if (fileContentMap && filename) {
-            var input = fileContentMap.contents[filename];
-            var loc = getLocation(e.index, input);
-            var line = loc.line;
-            var col = loc.column;
-            var callLine = e.call && getLocation(e.call, input).line;
-            var lines = input ? input.split('\n') : '';
+            let input = fileContentMap.contents[filename];
+            let loc = getLocation(e.index, input);
+            let line = loc.line;
+            let col = loc.column;
+            let callLine = e.call && getLocation(e.call, input).line;
+            let lines = input ? input.split('\n') : '';
             this.type = e.type || 'Syntax';
             this.filename = filename;
             this.index = e.index;
             this.line = typeof line === 'number' ? line + 1 : null;
             this.column = col;
             if (!this.line && this.stack) {
-                var found = this.stack.match(anonymousFunc);
+                let found = this.stack.match(anonymousFunc);
                 /**
                  * We have to figure out how this environment stringifies anonymous functions
                  * so we can correctly map plugin errors.
@@ -1227,14 +1228,14 @@
                  * Note, in Node 8, the output of anonymous funcs varied based on parameters
                  * being present or not, so we inject dummy params.
                  */
-                var func = new Function('a', 'throw new Error()');
-                var lineAdjust = 0;
+                let func = new Function('a', 'throw new Error()');
+                let lineAdjust = 0;
                 try {
                     func();
                 }
                 catch (e) {
-                    var match = e.stack.match(anonymousFunc);
-                    var line = parseInt(match[2]);
+                    let match = e.stack.match(anonymousFunc);
+                    let line = parseInt(match[2]);
                     lineAdjust = 1 - line;
                 }
                 if (found) {
@@ -1256,7 +1257,7 @@
         }
     };
     if (typeof Object.create === 'undefined') {
-        var F = function () { };
+        let F = function () { };
         F.prototype = Error.prototype;
         LessError.prototype = new F();
     }
@@ -1273,12 +1274,12 @@
      */
     LessError.prototype.toString = function (options) {
         options = options || {};
-        var message = '';
-        var extract = this.extract || [];
-        var error = [];
-        var stylize = function (str) { return str; };
+        let message = '';
+        let extract = this.extract || [];
+        let error = [];
+        let stylize = function (str) { return str; };
         if (options.stylize) {
-            var type = typeof options.stylize;
+            let type = typeof options.stylize;
             if (type !== 'function') {
                 throw Error("options.stylize should be a function, got a " + type + "!");
             }
@@ -1289,7 +1290,7 @@
                 error.push(stylize(this.line - 1 + " " + extract[0], 'grey'));
             }
             if (typeof extract[1] === 'string') {
-                var errorTxt = this.line + " ";
+                let errorTxt = this.line + " ";
                 if (extract[1]) {
                     errorTxt += extract[1].slice(0, this.column) +
                         stylize(stylize(stylize(extract[1].substr(this.column, 1), 'bold') +
@@ -1317,7 +1318,7 @@
         return message;
     };
 
-    var Selector = function (elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
+    let Selector = function (elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
         this.extendList = extendList;
         this.condition = condition;
         this.evaldCondition = !condition;
@@ -1343,7 +1344,7 @@
         },
         createDerived: function (elements, extendList, evaldCondition) {
             elements = this.getElements(elements);
-            var newSelector = new Selector(elements, extendList || this.extendList, null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
+            let newSelector = new Selector(elements, extendList || this.extendList, null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
             newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
             newSelector.mediaEmpty = this.mediaEmpty;
             return newSelector;
@@ -1366,15 +1367,15 @@
             return els;
         },
         createEmptySelectors: function () {
-            var el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
+            let el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
             sels[0].mediaEmpty = true;
             return sels;
         },
         match: function (other) {
-            var elements = this.elements;
-            var len = elements.length;
-            var olen;
-            var i;
+            let elements = this.elements;
+            let len = elements.length;
+            let olen;
+            let i;
             other = other.mixinElements();
             olen = other.length;
             if (olen === 0 || len < olen) {
@@ -1393,7 +1394,7 @@
             if (this.mixinElements_) {
                 return this.mixinElements_;
             }
-            var elements = this.elements.map(function (v) {
+            let elements = this.elements.map(function (v) {
                 return v.combinator.value + (v.value.value || v.value);
             }).join('').match(/[,&#\*\.\w-]([\w-]|(\\.))*/g);
             if (elements) {
@@ -1413,15 +1414,15 @@
                 (this.elements[0].combinator.value === ' ' || this.elements[0].combinator.value === '');
         },
         eval: function (context) {
-            var evaldCondition = this.condition && this.condition.eval(context);
-            var elements = this.elements;
-            var extendList = this.extendList;
+            let evaldCondition = this.condition && this.condition.eval(context);
+            let elements = this.elements;
+            let extendList = this.extendList;
             elements = elements && elements.map(function (e) { return e.eval(context); });
             extendList = extendList && extendList.map(function (extend) { return extend.eval(context); });
             return this.createDerived(elements, extendList, evaldCondition);
         },
         genCSS: function (context, output) {
-            var i, element;
+            let i, element;
             if ((!context || !context.firstSelector) && this.elements[0].combinator.value === '') {
                 output.add(' ', this.fileInfo(), this.getIndex());
             }
@@ -1435,7 +1436,7 @@
         }
     });
 
-    var Value = function (value) {
+    let Value = function (value) {
         if (!value) {
             throw new Error('Value requires an array argument');
         }
@@ -1464,7 +1465,7 @@
             }
         },
         genCSS: function (context, output) {
-            var i;
+            let i;
             for (i = 0; i < this.value.length; i++) {
                 this.value[i].genCSS(context, output);
                 if (i + 1 < this.value.length) {
@@ -1474,7 +1475,7 @@
         }
     });
 
-    var Keyword = function (value) {
+    let Keyword = function (value) {
         this.value = value;
     };
     Keyword.prototype = Object.assign(new Node(), {
@@ -1489,7 +1490,7 @@
     Keyword.True = new Keyword('true');
     Keyword.False = new Keyword('false');
 
-    var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
+    let Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
         this.value = value;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -1517,18 +1518,18 @@
         }
     });
 
-    var MATH$1 = Math$1;
+    let MATH$1 = Math$1;
     function evalName(context, name) {
-        var value = '';
-        var i;
-        var n = name.length;
-        var output = { add: function (s) { value += s; } };
+        let value = '';
+        let i;
+        let n = name.length;
+        let output = { add: function (s) { value += s; } };
         for (i = 0; i < n; i++) {
             name[i].eval(context).genCSS(context, output);
         }
         return value;
     }
-    var Declaration = function (name, value, important, merge, index, currentFileInfo, inline, variable) {
+    let Declaration = function (name, value, important, merge, index, currentFileInfo, inline, variable) {
         this.name = name;
         this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
         this.important = important ? " " + important.trim() : '';
@@ -1556,7 +1557,7 @@
             output.add(this.important + ((this.inline || (context.lastRule && context.compress)) ? '' : ';'), this._fileInfo, this._index);
         },
         eval: function (context) {
-            var mathBypass = false, prevMath, name = this.name, evaldValue, variable = this.variable;
+            let mathBypass = false, prevMath, name = this.name, evaldValue, variable = this.variable;
             if (typeof name !== 'string') {
                 // expand 'primitive' name directly to get
                 // things faster (~10% for benchmark.less):
@@ -1577,8 +1578,8 @@
                     throw { message: 'Rulesets cannot be evaluated on a property.',
                         index: this.getIndex(), filename: this.fileInfo().filename };
                 }
-                var important = this.important;
-                var importantResult = context.importantScope.pop();
+                let important = this.important;
+                let importantResult = context.importantScope.pop();
                 if (!important && importantResult.important) {
                     important = importantResult.important;
                 }
@@ -1606,7 +1607,7 @@
         return "/* line " + ctx.debugInfo.lineNumber + ", " + ctx.debugInfo.fileName + " */\n";
     }
     function asMediaQuery(ctx) {
-        var filenameWithProtocol = ctx.debugInfo.fileName;
+        let filenameWithProtocol = ctx.debugInfo.fileName;
         if (!/^[a-z]+:\/\//i.test(filenameWithProtocol)) {
             filenameWithProtocol = "file://" + filenameWithProtocol;
         }
@@ -1618,7 +1619,7 @@
         }) + "}line{font-family:\\00003" + ctx.debugInfo.lineNumber + "}}\n";
     }
     function debugInfo(context, ctx, lineSeparator) {
-        var result = '';
+        let result = '';
         if (context.dumpLineNumbers && !context.compress) {
             switch (context.dumpLineNumbers) {
                 case 'comments':
@@ -1635,7 +1636,7 @@
         return result;
     }
 
-    var Comment = function (value, isLineComment, index, currentFileInfo) {
+    let Comment = function (value, isLineComment, index, currentFileInfo) {
         this.value = value;
         this.isLineComment = isLineComment;
         this._index = index;
@@ -1651,17 +1652,17 @@
             output.add(this.value);
         },
         isSilent: function (context) {
-            var isCompressed = context.compress && this.value[2] !== '!';
+            let isCompressed = context.compress && this.value[2] !== '!';
             return this.isLineComment || isCompressed;
         }
     });
 
-    var contexts = {};
-    var copyFromOriginal = function copyFromOriginal(original, destination, propertiesToCopy) {
+    let contexts = {};
+    let copyFromOriginal = function copyFromOriginal(original, destination, propertiesToCopy) {
         if (!original) {
             return;
         }
-        for (var i = 0; i < propertiesToCopy.length; i++) {
+        for (let i = 0; i < propertiesToCopy.length; i++) {
             if (original.hasOwnProperty(propertiesToCopy[i])) {
                 destination[propertiesToCopy[i]] = original[propertiesToCopy[i]];
             }
@@ -1670,7 +1671,7 @@
     /*
      parse is used whilst parsing
      */
-    var parseCopyProperties = [
+    let parseCopyProperties = [
         // options
         'paths',
         'rewriteUrls',
@@ -1694,7 +1695,7 @@
             this.paths = [this.paths];
         }
     };
-    var evalCopyProperties = [
+    let evalCopyProperties = [
         'paths',
         'compress',
         'math',
@@ -1752,11 +1753,11 @@
         return true;
     };
     contexts.Eval.prototype.pathRequiresRewrite = function (path) {
-        var isRelative = this.rewriteUrls === RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
+        let isRelative = this.rewriteUrls === RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
         return isRelative(path);
     };
     contexts.Eval.prototype.rewritePath = function (path, rootpath) {
-        var newPath;
+        let newPath;
         rootpath = rootpath || '';
         newPath = this.normalizePath(rootpath + path);
         // If a path was explicit relative and the rootpath was not an absolute path
@@ -1769,8 +1770,8 @@
         return newPath;
     };
     contexts.Eval.prototype.normalizePath = function (path) {
-        var segments = path.split('/').reverse();
-        var segment;
+        let segments = path.split('/').reverse();
+        let segment;
         path = [];
         while (segments.length !== 0) {
             segment = segments.pop();
@@ -1811,7 +1812,7 @@
                 this._data[name] = func;
             },
             addMultiple: function (functions) {
-                var _this = this;
+                let _this = this;
                 Object.keys(functions).forEach(function (name) {
                     _this.add(name, functions[name]);
                 });
@@ -1830,12 +1831,12 @@
             }
         };
     }
-    var functionRegistry = makeRegistry(null);
+    let functionRegistry = makeRegistry(null);
 
-    var defaultFunc = {
+    let defaultFunc = {
         eval: function () {
-            var v = this.value_;
-            var e = this.error_;
+            let v = this.value_;
+            let e = this.error_;
             if (e) {
                 throw e;
             }
@@ -1854,7 +1855,7 @@
         }
     };
 
-    var Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
+    let Ruleset = function (selectors, rules, strictImports, visibilityInfo) {
         this.selectors = selectors;
         this.rules = rules;
         this._lookups = {};
@@ -1882,12 +1883,12 @@
             }
         },
         eval: function (context) {
-            var selectors;
-            var selCnt;
-            var selector;
-            var i;
-            var hasVariable;
-            var hasOnePassingSelector = false;
+            let selectors;
+            let selCnt;
+            let selector;
+            let i;
+            let hasVariable;
+            let hasOnePassingSelector = false;
             if (this.selectors && (selCnt = this.selectors.length)) {
                 selectors = new Array(selCnt);
                 defaultFunc.error({
@@ -1896,7 +1897,7 @@
                 });
                 for (i = 0; i < selCnt; i++) {
                     selector = this.selectors[i].eval(context);
-                    for (var j = 0; j < selector.elements.length; j++) {
+                    for (let j = 0; j < selector.elements.length; j++) {
                         if (selector.elements[j].isVariable) {
                             hasVariable = true;
                             break;
@@ -1908,7 +1909,7 @@
                     }
                 }
                 if (hasVariable) {
-                    var toParseSelectors = new Array(selCnt);
+                    let toParseSelectors = new Array(selCnt);
                     for (i = 0; i < selCnt; i++) {
                         selector = selectors[i];
                         toParseSelectors[i] = selector.toCSS(context);
@@ -1924,10 +1925,10 @@
             else {
                 hasOnePassingSelector = true;
             }
-            var rules = this.rules ? copyArray(this.rules) : null;
-            var ruleset = new Ruleset(selectors, rules, this.strictImports, this.visibilityInfo());
-            var rule;
-            var subRule;
+            let rules = this.rules ? copyArray(this.rules) : null;
+            let ruleset = new Ruleset(selectors, rules, this.strictImports, this.visibilityInfo());
+            let rule;
+            let subRule;
             ruleset.originalRuleset = this;
             ruleset.root = this.root;
             ruleset.firstRoot = this.firstRoot;
@@ -1941,9 +1942,9 @@
             // inherit a function registry from the frames stack when possible;
             // otherwise from the global registry
             ruleset.functionRegistry = (function (frames) {
-                var i = 0;
-                var n = frames.length;
-                var found;
+                let i = 0;
+                let n = frames.length;
+                let found;
                 for (; i !== n; ++i) {
                     found = frames[i].functionRegistry;
                     if (found) {
@@ -1953,10 +1954,10 @@
                 return functionRegistry;
             }(context.frames)).inherit();
             // push the current ruleset to the frames stack
-            var ctxFrames = context.frames;
+            let ctxFrames = context.frames;
             ctxFrames.unshift(ruleset);
             // currrent selectors
-            var ctxSelectors = context.selectors;
+            let ctxSelectors = context.selectors;
             if (!ctxSelectors) {
                 context.selectors = ctxSelectors = [];
             }
@@ -1967,13 +1968,13 @@
             }
             // Store the frames around mixin definitions,
             // so they can be evaluated like closures when the time comes.
-            var rsRules = ruleset.rules;
+            let rsRules = ruleset.rules;
             for (i = 0; (rule = rsRules[i]); i++) {
                 if (rule.evalFirst) {
                     rsRules[i] = rule.eval(context);
                 }
             }
-            var mediaBlockCount = (context.mediaBlocks && context.mediaBlocks.length) || 0;
+            let mediaBlockCount = (context.mediaBlocks && context.mediaBlocks.length) || 0;
             // Evaluate mixin calls.
             for (i = 0; (rule = rsRules[i]); i++) {
                 if (rule.type === 'MixinCall') {
@@ -2018,7 +2019,7 @@
                     // check if it can be folded in (e.g. & where)
                     if (rule.selectors[0] && rule.selectors[0].isJustParentSelector()) {
                         rsRules.splice(i--, 1);
-                        for (var j = 0; (subRule = rule.rules[j]); j++) {
+                        for (let j = 0; (subRule = rule.rules[j]); j++) {
                             if (subRule instanceof Node) {
                                 subRule.copyVisibilityInfo(rule.visibilityInfo());
                                 if (!(subRule instanceof Declaration) || !subRule.variable) {
@@ -2040,9 +2041,9 @@
             return ruleset;
         },
         evalImports: function (context) {
-            var rules = this.rules;
-            var i;
-            var importRules;
+            let rules = this.rules;
+            let i;
+            let importRules;
             if (!rules) {
                 return;
             }
@@ -2061,7 +2062,7 @@
             }
         },
         makeImportant: function () {
-            var result = new Ruleset(this.selectors, this.rules.map(function (r) {
+            let result = new Ruleset(this.selectors, this.rules.map(function (r) {
                 if (r.makeImportant) {
                     return r.makeImportant();
                 }
@@ -2076,7 +2077,7 @@
         },
         // lets you call a css selector with a guard
         matchCondition: function (args, context) {
-            var lastSelector = this.selectors[this.selectors.length - 1];
+            let lastSelector = this.selectors[this.selectors.length - 1];
             if (!lastSelector.evaldCondition) {
                 return false;
             }
@@ -2102,8 +2103,8 @@
                     // so we need to go inside import statements.
                     // guard against root being a string (in the case of inlined less)
                     if (r.type === 'Import' && r.root && r.root.variables) {
-                        var vars = r.root.variables();
-                        for (var name_1 in vars) {
+                        let vars = r.root.variables();
+                        for (let name_1 in vars) {
                             if (vars.hasOwnProperty(name_1)) {
                                 hash[name_1] = r.root.variable(name_1);
                             }
@@ -2118,7 +2119,7 @@
             if (!this._properties) {
                 this._properties = !this.rules ? {} : this.rules.reduce(function (hash, r) {
                     if (r instanceof Declaration && r.variable !== true) {
-                        var name_2 = (r.name.length === 1) && (r.name[0] instanceof Keyword) ?
+                        let name_2 = (r.name.length === 1) && (r.name[0] instanceof Keyword) ?
                             r.name[0].value : r.name;
                         // Properties don't overwrite as they can merge
                         if (!hash["$" + name_2]) {
@@ -2134,27 +2135,27 @@
             return this._properties;
         },
         variable: function (name) {
-            var decl = this.variables()[name];
+            let decl = this.variables()[name];
             if (decl) {
                 return this.parseValue(decl);
             }
         },
         property: function (name) {
-            var decl = this.properties()[name];
+            let decl = this.properties()[name];
             if (decl) {
                 return this.parseValue(decl);
             }
         },
         lastDeclaration: function () {
-            for (var i = this.rules.length; i > 0; i--) {
-                var decl = this.rules[i - 1];
+            for (let i = this.rules.length; i > 0; i--) {
+                let decl = this.rules[i - 1];
                 if (decl instanceof Declaration) {
                     return this.parseValue(decl);
                 }
             }
         },
         parseValue: function (toParse) {
-            var self = this;
+            let self = this;
             function transformDeclaration(decl) {
                 if (decl.value instanceof Anonymous && !decl.parsed) {
                     if (typeof decl.value.value === 'string') {
@@ -2182,7 +2183,7 @@
                 return transformDeclaration.call(self, toParse);
             }
             else {
-                var nodes_1 = [];
+                let nodes_1 = [];
                 toParse.forEach(function (n) {
                     nodes_1.push(transformDeclaration.call(self, n));
                 });
@@ -2193,10 +2194,10 @@
             if (!this.rules) {
                 return [];
             }
-            var filtRules = [];
-            var rules = this.rules;
-            var i;
-            var rule;
+            let filtRules = [];
+            let rules = this.rules;
+            let i;
+            let rule;
             for (i = 0; (rule = rules[i]); i++) {
                 if (rule.isRuleset) {
                     filtRules.push(rule);
@@ -2205,7 +2206,7 @@
             return filtRules;
         },
         prependRule: function (rule) {
-            var rules = this.rules;
+            let rules = this.rules;
             if (rules) {
                 rules.unshift(rule);
             }
@@ -2216,22 +2217,22 @@
         },
         find: function (selector, self, filter) {
             self = self || this;
-            var rules = [];
-            var match;
-            var foundMixins;
-            var key = selector.toCSS();
+            let rules = [];
+            let match;
+            let foundMixins;
+            let key = selector.toCSS();
             if (key in this._lookups) {
                 return this._lookups[key];
             }
             this.rulesets().forEach(function (rule) {
                 if (rule !== self) {
-                    for (var j = 0; j < rule.selectors.length; j++) {
+                    for (let j = 0; j < rule.selectors.length; j++) {
                         match = selector.match(rule.selectors[j]);
                         if (match) {
                             if (selector.elements.length > match) {
                                 if (!filter || filter(rule)) {
                                     foundMixins = rule.find(new Selector(selector.elements.slice(match)), self, filter);
-                                    for (var i = 0; i < foundMixins.length; ++i) {
+                                    for (let i = 0; i < foundMixins.length; ++i) {
                                         foundMixins[i].path.push(rule);
                                     }
                                     Array.prototype.push.apply(rules, foundMixins);
@@ -2249,23 +2250,23 @@
             return rules;
         },
         genCSS: function (context, output) {
-            var i;
-            var j;
-            var charsetRuleNodes = [];
-            var ruleNodes = [];
-            var // Line number debugging
+            let i;
+            let j;
+            let charsetRuleNodes = [];
+            let ruleNodes = [];
+            let // Line number debugging
             debugInfo$1;
-            var rule;
-            var path;
+            let rule;
+            let path;
             context.tabLevel = (context.tabLevel || 0);
             if (!this.root) {
                 context.tabLevel++;
             }
-            var tabRuleStr = context.compress ? '' : Array(context.tabLevel + 1).join('  ');
-            var tabSetStr = context.compress ? '' : Array(context.tabLevel).join('  ');
-            var sep;
-            var charsetNodeIndex = 0;
-            var importNodeIndex = 0;
+            let tabRuleStr = context.compress ? '' : Array(context.tabLevel + 1).join('  ');
+            let tabSetStr = context.compress ? '' : Array(context.tabLevel).join('  ');
+            let sep;
+            let charsetNodeIndex = 0;
+            let importNodeIndex = 0;
             for (i = 0; (rule = this.rules[i]); i++) {
                 if (rule instanceof Comment) {
                     if (importNodeIndex === i) {
@@ -2295,9 +2296,9 @@
                     output.add(debugInfo$1);
                     output.add(tabSetStr);
                 }
-                var paths = this.paths;
-                var pathCnt = paths.length;
-                var pathSubCnt = void 0;
+                let paths = this.paths;
+                let pathCnt = paths.length;
+                let pathSubCnt = void 0;
                 sep = context.compress ? ',' : (",\n" + tabSetStr);
                 for (i = 0; i < pathCnt; i++) {
                     path = paths[i];
@@ -2321,7 +2322,7 @@
                 if (i + 1 === ruleNodes.length) {
                     context.lastRule = true;
                 }
-                var currentLastRule = context.lastRule;
+                let currentLastRule = context.lastRule;
                 if (rule.isRulesetLike(rule)) {
                     context.lastRule = false;
                 }
@@ -2348,18 +2349,18 @@
             }
         },
         joinSelectors: function (paths, context, selectors) {
-            for (var s = 0; s < selectors.length; s++) {
+            for (let s = 0; s < selectors.length; s++) {
                 this.joinSelector(paths, context, selectors[s]);
             }
         },
         joinSelector: function (paths, context, selector) {
             function createParenthesis(elementsToPak, originalElement) {
-                var replacementParen, j;
+                let replacementParen, j;
                 if (elementsToPak.length === 0) {
                     replacementParen = new Paren(elementsToPak[0]);
                 }
                 else {
-                    var insideParent = new Array(elementsToPak.length);
+                    let insideParent = new Array(elementsToPak.length);
                     for (j = 0; j < elementsToPak.length; j++) {
                         insideParent[j] = new Element(null, elementsToPak[j], originalElement.isVariable, originalElement._index, originalElement._fileInfo);
                     }
@@ -2368,7 +2369,7 @@
                 return replacementParen;
             }
             function createSelector(containedElement, originalElement) {
-                var element, selector;
+                let element, selector;
                 element = new Element(null, containedElement, originalElement.isVariable, originalElement._index, originalElement._fileInfo);
                 selector = new Selector([element]);
                 return selector;
@@ -2377,7 +2378,7 @@
             // `replacedElement` contains element that is being replaced by `addPath`
             // returns concatenated path
             function addReplacementIntoPath(beginningPath, addPath, replacedElement, originalSelector) {
-                var newSelectorPath, lastSelector, newJoinedSelector;
+                let newSelectorPath, lastSelector, newJoinedSelector;
                 // our new selector path
                 newSelectorPath = [];
                 // construct the joined selector - if & is the first thing this will be empty,
@@ -2396,8 +2397,8 @@
                     // so if the & does not have a combinator that is "" or " " then
                     // and there is a combinator on the parent, then grab that.
                     // this also allows + a { & .b { .a & { ... though not sure why you would want to do that
-                    var combinator = replacedElement.combinator;
-                    var parentEl = addPath[0].elements[0];
+                    let combinator = replacedElement.combinator;
+                    let parentEl = addPath[0].elements[0];
                     if (combinator.emptyOrWhitespace && !parentEl.combinator.emptyOrWhitespace) {
                         combinator = parentEl.combinator;
                     }
@@ -2411,7 +2412,7 @@
                 }
                 // put together the parent selectors after the join (e.g. the rest of the parent)
                 if (addPath.length > 1) {
-                    var restOfPath = addPath.slice(1);
+                    let restOfPath = addPath.slice(1);
                     restOfPath = restOfPath.map(function (selector) {
                         return selector.createDerived(selector.elements, []);
                     });
@@ -2423,15 +2424,15 @@
             // `replacedElement` contains element that is being replaced by `addPath`
             // returns array with all concatenated paths
             function addAllReplacementsIntoPath(beginningPath, addPaths, replacedElement, originalSelector, result) {
-                var j;
+                let j;
                 for (j = 0; j < beginningPath.length; j++) {
-                    var newSelectorPath = addReplacementIntoPath(beginningPath[j], addPaths, replacedElement, originalSelector);
+                    let newSelectorPath = addReplacementIntoPath(beginningPath[j], addPaths, replacedElement, originalSelector);
                     result.push(newSelectorPath);
                 }
                 return result;
             }
             function mergeElementsOnToSelectors(elements, selectors) {
-                var i, sel;
+                let i, sel;
                 if (elements.length === 0) {
                     return;
                 }
@@ -2463,9 +2464,9 @@
                 // }
                 // == [[.a] [.c]] [[.b] [.c]]
                 //
-                var i, j, k, currentElements, newSelectors, selectorsMultiplied, sel, el, hadParentSelector = false, length, lastSelector;
+                let i, j, k, currentElements, newSelectors, selectorsMultiplied, sel, el, hadParentSelector = false, length, lastSelector;
                 function findNestedSelector(element) {
-                    var maybeSelector;
+                    let maybeSelector;
                     if (!(element.value instanceof Paren)) {
                         return null;
                     }
@@ -2486,19 +2487,19 @@
                 for (i = 0; (el = inSelector.elements[i]); i++) {
                     // non parent reference elements just get added
                     if (el.value !== '&') {
-                        var nestedSelector = findNestedSelector(el);
+                        let nestedSelector = findNestedSelector(el);
                         if (nestedSelector != null) {
                             // merge the current list of non parent selector elements
                             // on to the current list of selectors to add
                             mergeElementsOnToSelectors(currentElements, newSelectors);
-                            var nestedPaths = [];
-                            var replaced = void 0;
-                            var replacedNewSelectors = [];
+                            let nestedPaths = [];
+                            let replaced = void 0;
+                            let replacedNewSelectors = [];
                             replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
                             hadParentSelector = hadParentSelector || replaced;
                             // the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
                             for (k = 0; k < nestedPaths.length; k++) {
-                                var replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
+                                let replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
                                 addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
                             }
                             newSelectors = replacedNewSelectors;
@@ -2533,7 +2534,7 @@
                                 for (k = 0; k < context.length; k++) {
                                     // We need to put the current selectors
                                     // then join the last selector's elements on to the parents selectors
-                                    var newSelectorPath = addReplacementIntoPath(sel, context[k], el, inSelector);
+                                    let newSelectorPath = addReplacementIntoPath(sel, context[k], el, inSelector);
                                     // add that to our new set of selectors
                                     selectorsMultiplied.push(newSelectorPath);
                                 }
@@ -2558,19 +2559,19 @@
                 return hadParentSelector;
             }
             function deriveSelector(visibilityInfo, deriveFrom) {
-                var newSelector = deriveFrom.createDerived(deriveFrom.elements, deriveFrom.extendList, deriveFrom.evaldCondition);
+                let newSelector = deriveFrom.createDerived(deriveFrom.elements, deriveFrom.extendList, deriveFrom.evaldCondition);
                 newSelector.copyVisibilityInfo(visibilityInfo);
                 return newSelector;
             }
             // joinSelector code follows
-            var i, newPaths, hadParentSelector;
+            let i, newPaths, hadParentSelector;
             newPaths = [];
             hadParentSelector = replaceParentSelector(newPaths, context, selector);
             if (!hadParentSelector) {
                 if (context.length > 0) {
                     newPaths = [];
                     for (i = 0; i < context.length; i++) {
-                        var concatenated = context[i].map(deriveSelector.bind(this, selector.visibilityInfo()));
+                        let concatenated = context[i].map(deriveSelector.bind(this, selector.visibilityInfo()));
                         concatenated.push(selector);
                         newPaths.push(concatenated);
                     }
@@ -2585,8 +2586,8 @@
         }
     });
 
-    var AtRule = function (name, value, rules, index, currentFileInfo, debugInfo, isRooted, visibilityInfo) {
-        var i;
+    let AtRule = function (name, value, rules, index, currentFileInfo, debugInfo, isRooted, visibilityInfo) {
+        let i;
         this.name = name;
         this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
         if (rules) {
@@ -2612,7 +2613,7 @@
     AtRule.prototype = Object.assign(new Node(), {
         type: 'AtRule',
         accept: function (visitor) {
-            var value = this.value, rules = this.rules;
+            let value = this.value, rules = this.rules;
             if (rules) {
                 this.rules = visitor.visitArray(rules);
             }
@@ -2627,7 +2628,7 @@
             return '@charset' === this.name;
         },
         genCSS: function (context, output) {
-            var value = this.value, rules = this.rules;
+            let value = this.value, rules = this.rules;
             output.add(this.name, this.fileInfo(), this.getIndex());
             if (value) {
                 output.add(' ');
@@ -2641,7 +2642,7 @@
             }
         },
         eval: function (context) {
-            var mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
+            let mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
             // media stored inside other atrule should not bubble over it
             // backpup media bubbling information
             mediaPathBackup = context.mediaPath;
@@ -2681,8 +2682,8 @@
             }
         },
         outputRuleset: function (context, output, rules) {
-            var ruleCnt = rules.length;
-            var i;
+            let ruleCnt = rules.length;
+            let i;
             context.tabLevel = (context.tabLevel | 0) + 1;
             // Compressed
             if (context.compress) {
@@ -2695,7 +2696,7 @@
                 return;
             }
             // Non-compressed
-            var tabSetStr = "\n" + Array(context.tabLevel).join('  '), tabRuleStr = tabSetStr + "  ";
+            let tabSetStr = "\n" + Array(context.tabLevel).join('  '), tabRuleStr = tabSetStr + "  ";
             if (!ruleCnt) {
                 output.add(" {" + tabSetStr + "}");
             }
@@ -2712,7 +2713,7 @@
         }
     });
 
-    var DetachedRuleset = function (ruleset, frames) {
+    let DetachedRuleset = function (ruleset, frames) {
         this.ruleset = ruleset;
         this.frames = frames;
         this.setParent(this.ruleset, this);
@@ -2724,7 +2725,7 @@
             this.ruleset = visitor.visit(this.ruleset);
         },
         eval: function (context) {
-            var frames = this.frames || copyArray(context.frames);
+            let frames = this.frames || copyArray(context.frames);
             return new DetachedRuleset(this.ruleset, frames);
         },
         callEval: function (context) {
@@ -2732,7 +2733,7 @@
         }
     });
 
-    var Unit = function (numerator, denominator, backupUnit) {
+    let Unit = function (numerator, denominator, backupUnit) {
         this.numerator = numerator ? copyArray(numerator).sort() : [];
         this.denominator = denominator ? copyArray(denominator).sort() : [];
         if (backupUnit) {
@@ -2749,7 +2750,7 @@
         },
         genCSS: function (context, output) {
             // Dimension checks the unit is singular and throws an error if in strict math mode.
-            var strictUnits = context && context.strictUnits;
+            let strictUnits = context && context.strictUnits;
             if (this.numerator.length === 1) {
                 output.add(this.numerator[0]); // the ideal situation
             }
@@ -2761,7 +2762,7 @@
             }
         },
         toString: function () {
-            var i, returnStr = this.numerator.join('*');
+            let i, returnStr = this.numerator.join('*');
             for (i = 0; i < this.denominator.length; i++) {
                 returnStr += "/" + this.denominator[i];
             }
@@ -2783,7 +2784,7 @@
             return this.numerator.length <= 1 && this.denominator.length === 0;
         },
         map: function (callback) {
-            var i;
+            let i;
             for (i = 0; i < this.numerator.length; i++) {
                 this.numerator[i] = callback(this.numerator[i], false);
             }
@@ -2792,10 +2793,10 @@
             }
         },
         usedUnits: function () {
-            var group;
-            var result = {};
-            var mapUnit;
-            var groupName;
+            let group;
+            let result = {};
+            let mapUnit;
+            let groupName;
             mapUnit = function (atomicUnit) {
                 /* jshint loopfunc:true */
                 if (group.hasOwnProperty(atomicUnit) && !result[groupName]) {
@@ -2812,9 +2813,9 @@
             return result;
         },
         cancel: function () {
-            var counter = {};
-            var atomicUnit;
-            var i;
+            let counter = {};
+            let atomicUnit;
+            let i;
             for (i = 0; i < this.numerator.length; i++) {
                 atomicUnit = this.numerator[i];
                 counter[atomicUnit] = (counter[atomicUnit] || 0) + 1;
@@ -2827,7 +2828,7 @@
             this.denominator = [];
             for (atomicUnit in counter) {
                 if (counter.hasOwnProperty(atomicUnit)) {
-                    var count = counter[atomicUnit];
+                    let count = counter[atomicUnit];
                     if (count > 0) {
                         for (i = 0; i < count; i++) {
                             this.numerator.push(atomicUnit);
@@ -2848,7 +2849,7 @@
     //
     // A number with a unit
     //
-    var Dimension = function (value, unit) {
+    let Dimension = function (value, unit) {
         this.value = parseFloat(value);
         if (isNaN(this.value)) {
             throw new Error('Dimension is not a number.');
@@ -2872,8 +2873,8 @@
             if ((context && context.strictUnits) && !this.unit.isSingular()) {
                 throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: " + this.unit.toString());
             }
-            var value = this.fround(context, this.value);
-            var strValue = String(value);
+            let value = this.fround(context, this.value);
+            let strValue = String(value);
             if (value !== 0 && value < 0.000001 && value > -0.000001) {
                 // would be output 1e-6 etc.
                 strValue = value.toFixed(20).replace(/0+$/, '');
@@ -2897,8 +2898,8 @@
         // so `1px + 2` will yield `3px`.
         operate: function (context, op, other) {
             /* jshint noempty:false */
-            var value = this._operate(context, op, this.value, other.value);
-            var unit = this.unit.clone();
+            let value = this._operate(context, op, this.value, other.value);
+            let unit = this.unit.clone();
             if (op === '+' || op === '-') {
                 if (unit.numerator.length === 0 && unit.denominator.length === 0) {
                     unit = other.unit.clone();
@@ -2929,7 +2930,7 @@
             return new Dimension(value, unit);
         },
         compare: function (other) {
-            var a, b;
+            let a, b;
             if (!(other instanceof Dimension)) {
                 return undefined;
             }
@@ -2950,14 +2951,14 @@
             return this.convertTo({ length: 'px', duration: 's', angle: 'rad' });
         },
         convertTo: function (conversions) {
-            var value = this.value;
-            var unit = this.unit.clone();
-            var i;
-            var groupName;
-            var group;
-            var targetUnit;
-            var derivedConversions = {};
-            var applyUnit;
+            let value = this.value;
+            let unit = this.unit.clone();
+            let i;
+            let groupName;
+            let group;
+            let targetUnit;
+            let derivedConversions = {};
+            let applyUnit;
             if (typeof conversions === 'string') {
                 for (i in unitConversions) {
                     if (unitConversions[i].hasOwnProperty(conversions)) {
@@ -2992,8 +2993,8 @@
         }
     });
 
-    var MATH = Math$1;
-    var Operation = function (op, operands, isSpaced) {
+    let MATH = Math$1;
+    let Operation = function (op, operands, isSpaced) {
         this.op = op.trim();
         this.operands = operands;
         this.isSpaced = isSpaced;
@@ -3004,7 +3005,7 @@
             this.operands = visitor.visitArray(this.operands);
         },
         eval: function (context) {
-            var a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
+            let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
             if (context.isMathOn(this.op)) {
                 op = this.op === './' ? '/' : this.op;
                 if (a instanceof Dimension && b instanceof Color) {
@@ -3056,7 +3057,7 @@
     ***************************************************************************** */
 
     function __spreadArray(to, from, pack) {
-        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (pack || arguments.length === 2) for (let i = 0, l = from.length, ar; i < l; i++) {
             if (ar || !(i in from)) {
                 if (!ar) ar = Array.prototype.slice.call(from, 0, i);
                 ar[i] = from[i];
@@ -3065,7 +3066,7 @@
         return to.concat(ar || from);
     }
 
-    var Expression = function (value, noSpacing) {
+    let Expression = function (value, noSpacing) {
         this.value = value;
         this.noSpacing = noSpacing;
         if (!value) {
@@ -3078,10 +3079,10 @@
             this.value = visitor.visitArray(this.value);
         },
         eval: function (context) {
-            var returnValue;
-            var mathOn = context.isMathOn();
-            var inParenthesis = this.parens;
-            var doubleParen = false;
+            let returnValue;
+            let mathOn = context.isMathOn();
+            let inParenthesis = this.parens;
+            let doubleParen = false;
             if (inParenthesis) {
                 context.inParenthesis();
             }
@@ -3112,7 +3113,7 @@
             return returnValue;
         },
         genCSS: function (context, output) {
-            for (var i = 0; i < this.value.length; i++) {
+            for (let i = 0; i < this.value.length; i++) {
                 this.value[i].genCSS(context, output);
                 if (!this.noSpacing && i + 1 < this.value.length) {
                     output.add(' ');
@@ -3126,7 +3127,7 @@
         }
     });
 
-    var functionCaller = /** @class */ (function () {
+    let functionCaller = /** @class */ (function () {
         function functionCaller(name, context, index, currentFileInfo) {
             this.name = name.toLowerCase();
             this.index = index;
@@ -3138,22 +3139,22 @@
             return Boolean(this.func);
         };
         functionCaller.prototype.call = function (args) {
-            var _this = this;
+            let _this = this;
             if (!(Array.isArray(args))) {
                 args = [args];
             }
-            var evalArgs = this.func.evalArgs;
+            let evalArgs = this.func.evalArgs;
             if (evalArgs !== false) {
                 args = args.map(function (a) { return a.eval(_this.context); });
             }
-            var commentFilter = function (item) { return !(item.type === 'Comment'); };
+            let commentFilter = function (item) { return !(item.type === 'Comment'); };
             // This code is terrible and should be replaced as per this issue...
             // https://github.com/less/less.js/issues/2477
             args = args
                 .filter(commentFilter)
                 .map(function (item) {
                 if (item.type === 'Expression') {
-                    var subNodes = item.value.filter(commentFilter);
+                    let subNodes = item.value.filter(commentFilter);
                     if (subNodes.length === 1) {
                         // https://github.com/less/less.js/issues/3616
                         if (item.parens && subNodes[0].op === '/') {
@@ -3178,7 +3179,7 @@
     //
     // A function call node.
     //
-    var Call = function (name, args, index, currentFileInfo) {
+    let Call = function (name, args, index, currentFileInfo) {
         this.name = name;
         this.args = args;
         this.calc = name === 'calc';
@@ -3204,23 +3205,23 @@
         // The function should receive the value, not the variable.
         //
         eval: function (context) {
-            var _this = this;
+            let _this = this;
             /**
              * Turn off math for calc(), and switch back on for evaluating nested functions
              */
-            var currentMathContext = context.mathOn;
+            let currentMathContext = context.mathOn;
             context.mathOn = !this.calc;
             if (this.calc || context.inCalc) {
                 context.enterCalc();
             }
-            var exitCalc = function () {
+            let exitCalc = function () {
                 if (_this.calc || context.inCalc) {
                     context.exitCalc();
                 }
                 context.mathOn = currentMathContext;
             };
-            var result;
-            var funcCaller = new functionCaller(this.name, context, this.getIndex(), this.fileInfo());
+            let result;
+            let funcCaller = new functionCaller(this.name, context, this.getIndex(), this.fileInfo());
             if (funcCaller.isValid()) {
                 try {
                     result = funcCaller.call(this.args);
@@ -3255,13 +3256,13 @@
                 result._fileInfo = this._fileInfo;
                 return result;
             }
-            var args = this.args.map(function (a) { return a.eval(context); });
+            let args = this.args.map(function (a) { return a.eval(context); });
             exitCalc();
             return new Call(this.name, args, this.getIndex(), this.fileInfo());
         },
         genCSS: function (context, output) {
             output.add(this.name + "(", this.fileInfo(), this.getIndex());
-            for (var i = 0; i < this.args.length; i++) {
+            for (let i = 0; i < this.args.length; i++) {
                 this.args[i].genCSS(context, output);
                 if (i + 1 < this.args.length) {
                     output.add(', ');
@@ -3271,7 +3272,7 @@
         }
     });
 
-    var Variable = function (name, index, currentFileInfo) {
+    let Variable = function (name, index, currentFileInfo) {
         this.name = name;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -3279,7 +3280,7 @@
     Variable.prototype = Object.assign(new Node(), {
         type: 'Variable',
         eval: function (context) {
-            var variable, name = this.name;
+            let variable, name = this.name;
             if (name.indexOf('@@') === 0) {
                 name = "@" + new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value;
             }
@@ -3291,10 +3292,10 @@
             }
             this.evaluating = true;
             variable = this.find(context.frames, function (frame) {
-                var v = frame.variable(name);
+                let v = frame.variable(name);
                 if (v) {
                     if (v.important) {
-                        var importantScope = context.importantScope[context.importantScope.length - 1];
+                        let importantScope = context.importantScope[context.importantScope.length - 1];
                         importantScope.important = v.important;
                     }
                     // If in calc, wrap vars in a function call to cascade evaluate args first
@@ -3318,7 +3319,7 @@
             }
         },
         find: function (obj, fun) {
-            for (var i = 0, r = void 0; i < obj.length; i++) {
+            for (let i = 0, r = void 0; i < obj.length; i++) {
                 r = fun.call(obj, obj[i]);
                 if (r) {
                     return r;
@@ -3328,7 +3329,7 @@
         }
     });
 
-    var Property = function (name, index, currentFileInfo) {
+    let Property = function (name, index, currentFileInfo) {
         this.name = name;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -3336,10 +3337,10 @@
     Property.prototype = Object.assign(new Node(), {
         type: 'Property',
         eval: function (context) {
-            var property;
-            var name = this.name;
+            let property;
+            let name = this.name;
             // TODO: shorten this reference
-            var mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
+            let mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
             if (this.evaluating) {
                 throw { type: 'Name',
                     message: "Recursive property reference for " + name,
@@ -3348,17 +3349,17 @@
             }
             this.evaluating = true;
             property = this.find(context.frames, function (frame) {
-                var v;
-                var vArr = frame.property(name);
+                let v;
+                let vArr = frame.property(name);
                 if (vArr) {
-                    for (var i = 0; i < vArr.length; i++) {
+                    for (let i = 0; i < vArr.length; i++) {
                         v = vArr[i];
                         vArr[i] = new Declaration(v.name, v.value, v.important, v.merge, v.index, v.currentFileInfo, v.inline, v.variable);
                     }
                     mergeRules(vArr);
                     v = vArr[vArr.length - 1];
                     if (v.important) {
-                        var importantScope = context.importantScope[context.importantScope.length - 1];
+                        let importantScope = context.importantScope[context.importantScope.length - 1];
                         importantScope.important = v.important;
                     }
                     v = v.value.eval(context);
@@ -3377,7 +3378,7 @@
             }
         },
         find: function (obj, fun) {
-            for (var i = 0, r = void 0; i < obj.length; i++) {
+            for (let i = 0, r = void 0; i < obj.length; i++) {
                 r = fun.call(obj, obj[i]);
                 if (r) {
                     return r;
@@ -3387,7 +3388,7 @@
         }
     });
 
-    var Attribute = function (key, op, value, cif) {
+    let Attribute = function (key, op, value, cif) {
         this.key = key;
         this.op = op;
         this.value = value;
@@ -3402,7 +3403,7 @@
             output.add(this.toCSS(context));
         },
         toCSS: function (context) {
-            var value = this.key.toCSS ? this.key.toCSS(context) : this.key;
+            let value = this.key.toCSS ? this.key.toCSS(context) : this.key;
             if (this.op) {
                 value += this.op;
                 value += (this.value.toCSS ? this.value.toCSS(context) : this.value);
@@ -3414,7 +3415,7 @@
         }
     });
 
-    var Quoted = function (str, content, escaped, index, currentFileInfo) {
+    let Quoted = function (str, content, escaped, index, currentFileInfo) {
         this.escaped = (escaped == null) ? true : escaped;
         this.value = content || '';
         this.quote = str.charAt(0);
@@ -3439,18 +3440,18 @@
             return this.value.match(this.variableRegex);
         },
         eval: function (context) {
-            var that = this;
-            var value = this.value;
-            var variableReplacement = function (_, name) {
-                var v = new Variable("@" + name, that.getIndex(), that.fileInfo()).eval(context, true);
+            let that = this;
+            let value = this.value;
+            let variableReplacement = function (_, name) {
+                let v = new Variable("@" + name, that.getIndex(), that.fileInfo()).eval(context, true);
                 return (v instanceof Quoted) ? v.value : v.toCSS();
             };
-            var propertyReplacement = function (_, name) {
-                var v = new Property("$" + name, that.getIndex(), that.fileInfo()).eval(context, true);
+            let propertyReplacement = function (_, name) {
+                let v = new Property("$" + name, that.getIndex(), that.fileInfo()).eval(context, true);
                 return (v instanceof Quoted) ? v.value : v.toCSS();
             };
             function iterativeReplace(value, regexp, replacementFnc) {
-                var evaluatedValue = value;
+                let evaluatedValue = value;
                 do {
                     value = evaluatedValue.toString();
                     evaluatedValue = value.replace(regexp, replacementFnc);
@@ -3475,7 +3476,7 @@
     function escapePath(path) {
         return path.replace(/[\(\)'"\s]/g, function (match) { return "\\" + match; });
     }
-    var URL = function (val, index, currentFileInfo, isEvald) {
+    let URL = function (val, index, currentFileInfo, isEvald) {
         this.value = val;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -3492,8 +3493,8 @@
             output.add(')');
         },
         eval: function (context) {
-            var val = this.value.eval(context);
-            var rootpath;
+            let val = this.value.eval(context);
+            let rootpath;
             if (!this.isEvald) {
                 // Add the rootpath if the URL requires a rewrite
                 rootpath = this.fileInfo() && this.fileInfo().rootpath;
@@ -3511,8 +3512,8 @@
                 // Add url args if enabled
                 if (context.urlArgs) {
                     if (!val.value.match(/^\s*data:/)) {
-                        var delimiter = val.value.indexOf('?') === -1 ? '?' : '&';
-                        var urlArgs = delimiter + context.urlArgs;
+                        let delimiter = val.value.indexOf('?') === -1 ? '?' : '&';
+                        let urlArgs = delimiter + context.urlArgs;
                         if (val.value.indexOf('#') !== -1) {
                             val.value = val.value.replace('#', urlArgs + "#");
                         }
@@ -3526,10 +3527,10 @@
         }
     });
 
-    var Media = function (value, features, index, currentFileInfo, visibilityInfo) {
+    let Media = function (value, features, index, currentFileInfo, visibilityInfo) {
         this._index = index;
         this._fileInfo = currentFileInfo;
-        var selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
+        let selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
         this.features = new Value(features);
         this.rules = [new Ruleset(selectors, value)];
         this.rules[0].allowImports = true;
@@ -3562,7 +3563,7 @@
                 context.mediaBlocks = [];
                 context.mediaPath = [];
             }
-            var media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo());
+            let media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo());
             if (this.debugInfo) {
                 this.rules[0].debugInfo = this.debugInfo;
                 media.debugInfo = this.debugInfo;
@@ -3579,10 +3580,10 @@
                 media.evalNested(context);
         },
         evalTop: function (context) {
-            var result = this;
+            let result = this;
             // Render all dependent Media blocks.
             if (context.mediaBlocks.length > 1) {
-                var selectors = (new Selector([], null, null, this.getIndex(), this.fileInfo())).createEmptySelectors();
+                let selectors = (new Selector([], null, null, this.getIndex(), this.fileInfo())).createEmptySelectors();
                 result = new Ruleset(selectors, context.mediaBlocks);
                 result.multiMedia = true;
                 result.copyVisibilityInfo(this.visibilityInfo());
@@ -3593,9 +3594,9 @@
             return result;
         },
         evalNested: function (context) {
-            var i;
-            var value;
-            var path = context.mediaPath.concat([this]);
+            let i;
+            let value;
+            let path = context.mediaPath.concat([this]);
             // Extract the media-query conditions separated with `,` (OR).
             for (i = 0; i < path.length; i++) {
                 value = path[i].features instanceof Value ?
@@ -3628,10 +3629,10 @@
                 return arr[0];
             }
             else {
-                var result = [];
-                var rest = this.permute(arr.slice(1));
-                for (var i = 0; i < rest.length; i++) {
-                    for (var j = 0; j < arr[0].length; j++) {
+                let result = [];
+                let rest = this.permute(arr.slice(1));
+                for (let i = 0; i < rest.length; i++) {
+                    for (let j = 0; j < arr[0].length; j++) {
                         result.push([arr[0][j]].concat(rest[i]));
                     }
                 }
@@ -3659,7 +3660,7 @@
     // `import,push`, we also pass it a callback, which it'll call once
     // the file has been fetched, and parsed.
     //
-    var Import = function (path, features, options, index, currentFileInfo, visibilityInfo) {
+    let Import = function (path, features, options, index, currentFileInfo, visibilityInfo) {
         this.options = options;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -3670,7 +3671,7 @@
             this.css = !this.options.less || this.options.inline;
         }
         else {
-            var pathValue = this.getPath();
+            let pathValue = this.getPath();
             if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
                 this.css = true;
             }
@@ -3706,7 +3707,7 @@
                 this.path.value.value : this.path.value;
         },
         isVariableImport: function () {
-            var path = this.path;
+            let path = this.path;
             if (path instanceof URL) {
                 path = path.value;
             }
@@ -3716,18 +3717,18 @@
             return true;
         },
         evalForImport: function (context) {
-            var path = this.path;
+            let path = this.path;
             if (path instanceof URL) {
                 path = path.value;
             }
             return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
         },
         evalPath: function (context) {
-            var path = this.path.eval(context);
-            var fileInfo = this._fileInfo;
+            let path = this.path.eval(context);
+            let fileInfo = this._fileInfo;
             if (!(path instanceof URL)) {
                 // Add the rootpath if the URL requires a rewrite
-                var pathValue = path.value;
+                let pathValue = path.value;
                 if (fileInfo &&
                     pathValue &&
                     context.pathRequiresRewrite(pathValue)) {
@@ -3740,7 +3741,7 @@
             return path;
         },
         eval: function (context) {
-            var result = this.doEval(context);
+            let result = this.doEval(context);
             if (this.options.reference || this.blocksVisibility()) {
                 if (result.length || result.length === 0) {
                     result.forEach(function (node) {
@@ -3754,9 +3755,9 @@
             return result;
         },
         doEval: function (context) {
-            var ruleset;
-            var registry;
-            var features = this.features && this.features.eval(context);
+            let ruleset;
+            let registry;
+            let features = this.features && this.features.eval(context);
             if (this.options.isPlugin) {
                 if (this.root && this.root.eval) {
                     try {
@@ -3782,14 +3783,14 @@
                 }
             }
             if (this.options.inline) {
-                var contents = new Anonymous(this.root, 0, {
+                let contents = new Anonymous(this.root, 0, {
                     filename: this.importedFilename,
                     reference: this.path._fileInfo && this.path._fileInfo.reference
                 }, true, true);
                 return this.features ? new Media([contents], this.features.value) : [contents];
             }
             else if (this.css) {
-                var newImport = new Import(this.evalPath(context), features, this.options, this._index);
+                let newImport = new Import(this.evalPath(context), features, this.options, this._index);
                 if (!newImport.css && this.error) {
                     throw this.error;
                 }
@@ -3806,12 +3807,12 @@
         }
     });
 
-    var JsEvalNode = function () { };
+    let JsEvalNode = function () { };
     JsEvalNode.prototype = Object.assign(new Node(), {
         evaluateJavaScript: function (expression, context) {
-            var result;
-            var that = this;
-            var evalContext = {};
+            let result;
+            let that = this;
+            let evalContext = {};
             if (!context.javascriptEnabled) {
                 throw { message: 'Inline JavaScript is not enabled. Is it set in your options?',
                     filename: this.fileInfo().filename,
@@ -3828,8 +3829,8 @@
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
-            var variables = context.frames[0].variables();
-            for (var k in variables) {
+            let variables = context.frames[0].variables();
+            for (let k in variables) {
                 if (variables.hasOwnProperty(k)) {
                     /* jshint loopfunc:true */
                     evalContext[k.slice(1)] = {
@@ -3860,7 +3861,7 @@
         }
     });
 
-    var JavaScript = function (string, escaped, index, currentFileInfo) {
+    let JavaScript = function (string, escaped, index, currentFileInfo) {
         this.escaped = escaped;
         this.expression = string;
         this._index = index;
@@ -3869,8 +3870,8 @@
     JavaScript.prototype = Object.assign(new JsEvalNode(), {
         type: 'JavaScript',
         eval: function (context) {
-            var result = this.evaluateJavaScript(this.expression, context);
-            var type = typeof result;
+            let result = this.evaluateJavaScript(this.expression, context);
+            let type = typeof result;
             if (type === 'number' && !isNaN(result)) {
                 return new Dimension(result);
             }
@@ -3886,7 +3887,7 @@
         }
     });
 
-    var Assignment = function (key, val) {
+    let Assignment = function (key, val) {
         this.key = key;
         this.value = val;
     };
@@ -3912,7 +3913,7 @@
         }
     });
 
-    var Condition = function (op, l, r, i, negate) {
+    let Condition = function (op, l, r, i, negate) {
         this.op = op.trim();
         this.lvalue = l;
         this.rvalue = r;
@@ -3926,7 +3927,7 @@
             this.rvalue = visitor.visit(this.rvalue);
         },
         eval: function (context) {
-            var result = (function (op, a, b) {
+            let result = (function (op, a, b) {
                 switch (op) {
                     case 'and': return a && b;
                     case 'or': return a || b;
@@ -3947,14 +3948,14 @@
         }
     });
 
-    var UnicodeDescriptor = function (value) {
+    let UnicodeDescriptor = function (value) {
         this.value = value;
     };
     UnicodeDescriptor.prototype = Object.assign(new Node(), {
         type: 'UnicodeDescriptor'
     });
 
-    var Negative = function (node) {
+    let Negative = function (node) {
         this.value = node;
     };
     Negative.prototype = Object.assign(new Node(), {
@@ -3971,7 +3972,7 @@
         }
     });
 
-    var Extend = function (selector, option, index, currentFileInfo, visibilityInfo) {
+    let Extend = function (selector, option, index, currentFileInfo, visibilityInfo) {
         this.selector = selector;
         this.option = option;
         this.object_id = Extend.next_id++;
@@ -4005,7 +4006,7 @@
         },
         // it concatenates (joins) all selectors in selector array
         findSelfSelectors: function (selectors) {
-            var selfElements = [], i, selectorElements;
+            let selfElements = [], i, selectorElements;
             for (i = 0; i < selectors.length; i++) {
                 selectorElements = selectors[i].elements;
                 // duplicate the logic in genCSS function inside the selector node.
@@ -4021,7 +4022,7 @@
     });
     Extend.next_id = 0;
 
-    var VariableCall = function (variable, index, currentFileInfo) {
+    let VariableCall = function (variable, index, currentFileInfo) {
         this.variable = variable;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -4030,9 +4031,9 @@
     VariableCall.prototype = Object.assign(new Node(), {
         type: 'VariableCall',
         eval: function (context) {
-            var rules;
-            var detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
-            var error = new LessError({ message: "Could not evaluate variable call " + this.variable });
+            let rules;
+            let detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
+            let error = new LessError({ message: "Could not evaluate variable call " + this.variable });
             if (!detachedRuleset.ruleset) {
                 if (detachedRuleset.rules) {
                     rules = detachedRuleset;
@@ -4055,7 +4056,7 @@
         }
     });
 
-    var NamespaceValue = function (ruleCall, lookups, index, fileInfo) {
+    let NamespaceValue = function (ruleCall, lookups, index, fileInfo) {
         this.value = ruleCall;
         this.lookups = lookups;
         this._index = index;
@@ -4064,7 +4065,7 @@
     NamespaceValue.prototype = Object.assign(new Node(), {
         type: 'NamespaceValue',
         eval: function (context) {
-            var i, name, rules = this.value.eval(context);
+            let i, name, rules = this.value.eval(context);
             for (i = 0; i < this.lookups.length; i++) {
                 name = this.lookups[i];
                 /**
@@ -4123,7 +4124,7 @@
         }
     });
 
-    var Definition = function (name, params, rules, condition, variadic, frames, visibilityInfo) {
+    let Definition = function (name, params, rules, condition, variadic, frames, visibilityInfo) {
         this.name = name || 'anonymous mixin';
         this.selectors = [new Selector([new Element(null, name, false, this._index, this._fileInfo)])];
         this.params = params;
@@ -4132,7 +4133,7 @@
         this.arity = params.length;
         this.rules = rules;
         this._lookups = {};
-        var optionalParameters = [];
+        let optionalParameters = [];
         this.required = params.reduce(function (count, p) {
             if (!p.name || (p.name && !p.value)) {
                 return count + 1;
@@ -4161,17 +4162,17 @@
         },
         evalParams: function (context, mixinEnv, args, evaldArguments) {
             /* jshint boss:true */
-            var frame = new Ruleset(null, null);
-            var varargs;
-            var arg;
-            var params = copyArray(this.params);
-            var i;
-            var j;
-            var val;
-            var name;
-            var isNamedFound;
-            var argIndex;
-            var argsLength = 0;
+            let frame = new Ruleset(null, null);
+            let varargs;
+            let arg;
+            let params = copyArray(this.params);
+            let i;
+            let j;
+            let val;
+            let name;
+            let isNamedFound;
+            let argIndex;
+            let argsLength = 0;
             if (mixinEnv.frames && mixinEnv.frames[0] && mixinEnv.frames[0].functionRegistry) {
                 frame.functionRegistry = mixinEnv.frames[0].functionRegistry.inherit();
             }
@@ -4248,7 +4249,7 @@
             return frame;
         },
         makeImportant: function () {
-            var rules = !this.rules ? this.rules : this.rules.map(function (r) {
+            let rules = !this.rules ? this.rules : this.rules.map(function (r) {
                 if (r.makeImportant) {
                     return r.makeImportant(true);
                 }
@@ -4256,18 +4257,18 @@
                     return r;
                 }
             });
-            var result = new Definition(this.name, this.params, rules, this.condition, this.variadic, this.frames);
+            let result = new Definition(this.name, this.params, rules, this.condition, this.variadic, this.frames);
             return result;
         },
         eval: function (context) {
             return new Definition(this.name, this.params, this.rules, this.condition, this.variadic, this.frames || copyArray(context.frames));
         },
         evalCall: function (context, args, important) {
-            var _arguments = [];
-            var mixinFrames = this.frames ? this.frames.concat(context.frames) : context.frames;
-            var frame = this.evalParams(context, new contexts.Eval(context, mixinFrames), args, _arguments);
-            var rules;
-            var ruleset;
+            let _arguments = [];
+            let mixinFrames = this.frames ? this.frames.concat(context.frames) : context.frames;
+            let frame = this.evalParams(context, new contexts.Eval(context, mixinFrames), args, _arguments);
+            let rules;
+            let ruleset;
             frame.prependRule(new Declaration('@arguments', new Expression(_arguments).eval(context)));
             rules = copyArray(this.rules);
             ruleset = new Ruleset(null, rules);
@@ -4287,10 +4288,10 @@
             return true;
         },
         matchArgs: function (args, context) {
-            var allArgsCnt = (args && args.length) || 0;
-            var len;
-            var optionalParameters = this.optionalParameters;
-            var requiredArgsCnt = !args ? 0 : args.reduce(function (count, p) {
+            let allArgsCnt = (args && args.length) || 0;
+            let len;
+            let optionalParameters = this.optionalParameters;
+            let requiredArgsCnt = !args ? 0 : args.reduce(function (count, p) {
                 if (optionalParameters.indexOf(p.name) < 0) {
                     return count + 1;
                 }
@@ -4313,7 +4314,7 @@
             }
             // check patterns
             len = Math.min(requiredArgsCnt, this.arity);
-            for (var i = 0; i < len; i++) {
+            for (let i = 0; i < len; i++) {
                 if (!this.params[i].name && !this.params[i].variadic) {
                     if (args[i].value.eval(context).toCSS() != this.params[i].value.eval(context).toCSS()) {
                         return false;
@@ -4324,7 +4325,7 @@
         }
     });
 
-    var MixinCall = function (elements, args, index, currentFileInfo, important) {
+    let MixinCall = function (elements, args, index, currentFileInfo, important) {
         this.selector = new Selector(elements);
         this.arguments = args || [];
         this._index = index;
@@ -4344,33 +4345,33 @@
             }
         },
         eval: function (context) {
-            var mixins;
-            var mixin;
-            var mixinPath;
-            var args = [];
-            var arg;
-            var argValue;
-            var rules = [];
-            var match = false;
-            var i;
-            var m;
-            var f;
-            var isRecursive;
-            var isOneFound;
-            var candidates = [];
-            var candidate;
-            var conditionResult = [];
-            var defaultResult;
-            var defFalseEitherCase = -1;
-            var defNone = 0;
-            var defTrue = 1;
-            var defFalse = 2;
-            var count;
-            var originalRuleset;
-            var noArgumentsFilter;
+            let mixins;
+            let mixin;
+            let mixinPath;
+            let args = [];
+            let arg;
+            let argValue;
+            let rules = [];
+            let match = false;
+            let i;
+            let m;
+            let f;
+            let isRecursive;
+            let isOneFound;
+            let candidates = [];
+            let candidate;
+            let conditionResult = [];
+            let defaultResult;
+            let defFalseEitherCase = -1;
+            let defNone = 0;
+            let defTrue = 1;
+            let defFalse = 2;
+            let count;
+            let originalRuleset;
+            let noArgumentsFilter;
             this.selector = this.selector.eval(context);
             function calcDefGroup(mixin, mixinPath) {
-                var f, p, namespace;
+                let f, p, namespace;
                 for (f = 0; f < 2; f++) {
                     conditionResult[f] = true;
                     defaultFunc.value(f);
@@ -4461,7 +4462,7 @@
                                     mixin = new Definition('', [], mixin.rules, null, false, null, originalRuleset.visibilityInfo());
                                     mixin.originalRuleset = originalRuleset;
                                 }
-                                var newRules = mixin.evalCall(context, args, this.important).rules;
+                                let newRules = mixin.evalCall(context, args, this.important).rules;
                                 this._setVisibilityToReplacement(newRules);
                                 Array.prototype.push.apply(rules, newRules);
                             }
@@ -4487,7 +4488,7 @@
             }
         },
         _setVisibilityToReplacement: function (replacement) {
-            var i, rule;
+            let i, rule;
             if (this.blocksVisibility()) {
                 for (i = 0; i < replacement.length; i++) {
                     rule = replacement[i];
@@ -4497,7 +4498,7 @@
         },
         format: function (args) {
             return this.selector.toCSS().trim() + "(" + (args ? args.map(function (a) {
-                var argValue = '';
+                let argValue = '';
                 if (a.name) {
                     argValue += a.name + ":";
                 }
@@ -4512,7 +4513,7 @@
         }
     });
 
-    var tree = {
+    let tree = {
         Node: Node,
         Color: Color,
         AtRule: AtRule,
@@ -4553,11 +4554,11 @@
         }
     };
 
-    var AbstractFileManager = /** @class */ (function () {
+    let AbstractFileManager = /** @class */ (function () {
         function AbstractFileManager() {
         }
         AbstractFileManager.prototype.getPath = function (filename) {
-            var j = filename.lastIndexOf('?');
+            let j = filename.lastIndexOf('?');
             if (j > 0) {
                 filename = filename.slice(0, j);
             }
@@ -4594,13 +4595,13 @@
         };
         AbstractFileManager.prototype.pathDiff = function (url, baseUrl) {
             // diff between two paths to create a relative path
-            var urlParts = this.extractUrlParts(url);
-            var baseUrlParts = this.extractUrlParts(baseUrl);
-            var i;
-            var max;
-            var urlDirectories;
-            var baseUrlDirectories;
-            var diff = '';
+            let urlParts = this.extractUrlParts(url);
+            let baseUrlParts = this.extractUrlParts(baseUrl);
+            let i;
+            let max;
+            let urlDirectories;
+            let baseUrlDirectories;
+            let diff = '';
             if (urlParts.hostPart !== baseUrlParts.hostPart) {
                 return '';
             }
@@ -4627,13 +4628,13 @@
             // urlParts[3] = directories
             // urlParts[4] = filename
             // urlParts[5] = parameters
-            var urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
-            var urlParts = url.match(urlPartsRegex);
-            var returner = {};
-            var rawDirectories = [];
-            var directories = [];
-            var i;
-            var baseUrlParts;
+            let urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
+            let urlParts = url.match(urlPartsRegex);
+            let returner = {};
+            let rawDirectories = [];
+            let directories = [];
+            let i;
+            let baseUrlParts;
             if (!urlParts) {
                 throw new Error("Could not parse sheet href - '" + url + "'");
             }
@@ -4672,7 +4673,7 @@
         return AbstractFileManager;
     }());
 
-    var AbstractPluginLoader = /** @class */ (function () {
+    let AbstractPluginLoader = /** @class */ (function () {
         function AbstractPluginLoader() {
             // Implemented by Node.js plugin loader
             this.require = function () {
@@ -4680,7 +4681,7 @@
             };
         }
         AbstractPluginLoader.prototype.evalPlugin = function (contents, context, imports, pluginOptions, fileInfo) {
-            var loader, registry, pluginObj, localModule, pluginManager, filename, result;
+            let loader, registry, pluginObj, localModule, pluginManager, filename, result;
             pluginManager = context.pluginManager;
             if (fileInfo) {
                 if (typeof fileInfo === 'string') {
@@ -4690,7 +4691,7 @@
                     filename = fileInfo.filename;
                 }
             }
-            var shortname = (new this.less.FileManager()).extractUrlParts(filename).filename;
+            let shortname = (new this.less.FileManager()).extractUrlParts(filename).filename;
             if (filename) {
                 pluginObj = pluginManager.get(filename);
                 if (pluginObj) {
@@ -4716,7 +4717,7 @@
                 fileInfo: fileInfo
             };
             registry = functionRegistry.create();
-            var registerPlugin = function (obj) {
+            let registerPlugin = function (obj) {
                 pluginObj = obj;
             };
             try {
@@ -4803,7 +4804,7 @@
                 aVersion = aVersion.match(/^(\d+)\.?(\d+)?\.?(\d+)?/);
                 aVersion.shift();
             }
-            for (var i = 0; i < aVersion.length; i++) {
+            for (let i = 0; i < aVersion.length; i++) {
                 if (aVersion[i] !== bVersion[i]) {
                     return parseInt(aVersion[i]) > parseInt(bVersion[i]) ? -1 : 1;
                 }
@@ -4811,15 +4812,15 @@
             return 0;
         };
         AbstractPluginLoader.prototype.versionToString = function (version) {
-            var versionString = '';
-            for (var i = 0; i < version.length; i++) {
+            let versionString = '';
+            for (let i = 0; i < version.length; i++) {
                 versionString += (versionString ? '.' : '') + version[i];
             }
             return versionString;
         };
         AbstractPluginLoader.prototype.printUsage = function (plugins) {
-            for (var i = 0; i < plugins.length; i++) {
-                var plugin = plugins[i];
+            for (let i = 0; i < plugins.length; i++) {
+                let plugin = plugins[i];
                 if (plugin.printUsage) {
                     plugin.printUsage();
                 }
@@ -4828,14 +4829,14 @@
         return AbstractPluginLoader;
     }());
 
-    var _visitArgs = { visitDeeper: true };
-    var _hasIndexed = false;
+    let _visitArgs = { visitDeeper: true };
+    let _hasIndexed = false;
     function _noop(node) {
         return node;
     }
     function indexNodeTypes(parent, ticker) {
         // add .typeIndex to tree node types for lookup table
-        var key, child;
+        let key, child;
         for (key in parent) {
             /* eslint guard-for-in: 0 */
             child = parent[key];
@@ -4854,7 +4855,7 @@
         }
         return ticker;
     }
-    var Visitor = /** @class */ (function () {
+    let Visitor = /** @class */ (function () {
         function Visitor(implementation) {
             this._implementation = implementation;
             this._visitInCache = {};
@@ -4868,7 +4869,7 @@
             if (!node) {
                 return node;
             }
-            var nodeTypeIndex = node.typeIndex;
+            let nodeTypeIndex = node.typeIndex;
             if (!nodeTypeIndex) {
                 // MixinCall args aren't a node type?
                 if (node.value && node.value.typeIndex) {
@@ -4876,11 +4877,11 @@
                 }
                 return node;
             }
-            var impl = this._implementation;
-            var func = this._visitInCache[nodeTypeIndex];
-            var funcOut = this._visitOutCache[nodeTypeIndex];
-            var visitArgs = _visitArgs;
-            var fnName;
+            let impl = this._implementation;
+            let func = this._visitInCache[nodeTypeIndex];
+            let funcOut = this._visitOutCache[nodeTypeIndex];
+            let visitArgs = _visitArgs;
+            let fnName;
             visitArgs.visitDeeper = true;
             if (!func) {
                 fnName = "visit" + node.type;
@@ -4890,14 +4891,14 @@
                 this._visitOutCache[nodeTypeIndex] = funcOut;
             }
             if (func !== _noop) {
-                var newNode = func.call(impl, node, visitArgs);
+                let newNode = func.call(impl, node, visitArgs);
                 if (node && impl.isReplacing) {
                     node = newNode;
                 }
             }
             if (visitArgs.visitDeeper && node) {
                 if (node.length) {
-                    for (var i = 0, cnt = node.length; i < cnt; i++) {
+                    for (let i = 0, cnt = node.length; i < cnt; i++) {
                         if (node[i].accept) {
                             node[i].accept(this);
                         }
@@ -4916,8 +4917,8 @@
             if (!nodes) {
                 return nodes;
             }
-            var cnt = nodes.length;
-            var i;
+            let cnt = nodes.length;
+            let i;
             // Non-replacing
             if (nonReplacing || !this._implementation.isReplacing) {
                 for (i = 0; i < cnt; i++) {
@@ -4926,9 +4927,9 @@
                 return nodes;
             }
             // Replacing
-            var out = [];
+            let out = [];
             for (i = 0; i < cnt; i++) {
-                var evald = this.visit(nodes[i]);
+                let evald = this.visit(nodes[i]);
                 if (evald === undefined) {
                     continue;
                 }
@@ -4945,7 +4946,7 @@
             if (!out) {
                 out = [];
             }
-            var cnt, i, item, nestedCnt, j, nestedItem;
+            let cnt, i, item, nestedCnt, j, nestedItem;
             for (i = 0, cnt = arr.length; i < cnt; i++) {
                 item = arr[i];
                 if (item === undefined) {
@@ -4973,7 +4974,7 @@
         return Visitor;
     }());
 
-    var ImportSequencer = /** @class */ (function () {
+    let ImportSequencer = /** @class */ (function () {
         function ImportSequencer(onSequencerEmpty) {
             this.imports = [];
             this.variableImports = [];
@@ -4981,7 +4982,7 @@
             this._currentDepth = 0;
         }
         ImportSequencer.prototype.addImport = function (callback) {
-            var importSequencer = this, importItem = {
+            let importSequencer = this, importItem = {
                 callback: callback,
                 args: null,
                 isReady: false
@@ -5001,7 +5002,7 @@
             try {
                 while (true) {
                     while (this.imports.length > 0) {
-                        var importItem = this.imports[0];
+                        let importItem = this.imports[0];
                         if (!importItem.isReady) {
                             return;
                         }
@@ -5011,7 +5012,7 @@
                     if (this.variableImports.length === 0) {
                         break;
                     }
-                    var variableImport = this.variableImports[0];
+                    let variableImport = this.variableImports[0];
                     this.variableImports = this.variableImports.slice(1);
                     variableImport();
                 }
@@ -5026,7 +5027,7 @@
         return ImportSequencer;
     }());
 
-    var ImportVisitor = function (importer, finish) {
+    let ImportVisitor = function (importer, finish) {
         this._visitor = new Visitor(this);
         this._importer = importer;
         this._finish = finish;
@@ -5056,10 +5057,10 @@
             this._finish(this.error);
         },
         visitImport: function (importNode, visitArgs) {
-            var inlineCSS = importNode.options.inline;
+            let inlineCSS = importNode.options.inline;
             if (!importNode.css || inlineCSS) {
-                var context = new contexts.Eval(this.context, copyArray(this.context.frames));
-                var importParent = context.frames[0];
+                let context = new contexts.Eval(this.context, copyArray(this.context.frames));
+                let importParent = context.frames[0];
                 this.importCount++;
                 if (importNode.isVariableImport()) {
                     this._sequencer.addVariableImport(this.processImportNode.bind(this, importNode, context, importParent));
@@ -5071,8 +5072,8 @@
             visitArgs.visitDeeper = false;
         },
         processImportNode: function (importNode, context, importParent) {
-            var evaldImportNode;
-            var inlineCSS = importNode.options.inline;
+            let evaldImportNode;
+            let inlineCSS = importNode.options.inline;
             try {
                 evaldImportNode = importNode.evalForImport(context);
             }
@@ -5091,14 +5092,14 @@
                     context.importMultiple = true;
                 }
                 // try appending if we haven't determined if it is css or not
-                var tryAppendLessExtension = evaldImportNode.css === undefined;
-                for (var i = 0; i < importParent.rules.length; i++) {
+                let tryAppendLessExtension = evaldImportNode.css === undefined;
+                for (let i = 0; i < importParent.rules.length; i++) {
                     if (importParent.rules[i] === importNode) {
                         importParent.rules[i] = evaldImportNode;
                         break;
                     }
                 }
-                var onImported = this.onImported.bind(this, evaldImportNode, context), sequencedOnImported = this._sequencer.addImport(onImported);
+                let onImported = this.onImported.bind(this, evaldImportNode, context), sequencedOnImported = this._sequencer.addImport(onImported);
                 this._importer.push(evaldImportNode.getPath(), tryAppendLessExtension, evaldImportNode.fileInfo(), evaldImportNode.options, sequencedOnImported);
             }
             else {
@@ -5116,7 +5117,7 @@
                 }
                 this.error = e;
             }
-            var importVisitor = this, inlineCSS = importNode.options.inline, isPlugin = importNode.options.isPlugin, isOptional = importNode.options.optional, duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
+            let importVisitor = this, inlineCSS = importNode.options.inline, isPlugin = importNode.options.isPlugin, isOptional = importNode.options.optional, duplicateImport = importedAtRoot || fullPath in importVisitor.recursionDetector;
             if (!context.importMultiple) {
                 if (duplicateImport) {
                     importNode.skip = true;
@@ -5139,7 +5140,7 @@
                 importNode.importedFilename = fullPath;
                 if (!inlineCSS && !isPlugin && (context.importMultiple || !duplicateImport)) {
                     importVisitor.recursionDetector[fullPath] = true;
-                    var oldContext = this.context;
+                    let oldContext = this.context;
                     this.context = context;
                     try {
                         this._visitor.visit(root);
@@ -5194,7 +5195,7 @@
         }
     };
 
-    var SetTreeVisibilityVisitor = /** @class */ (function () {
+    let SetTreeVisibilityVisitor = /** @class */ (function () {
         function SetTreeVisibilityVisitor(visible) {
             this.visible = visible;
         }
@@ -5205,8 +5206,8 @@
             if (!nodes) {
                 return nodes;
             }
-            var cnt = nodes.length;
-            var i;
+            let cnt = nodes.length;
+            let i;
             for (i = 0; i < cnt; i++) {
                 this.visit(nodes[i]);
             }
@@ -5235,7 +5236,7 @@
     }());
 
     /* jshint loopfunc:true */
-    var ExtendFinderVisitor = /** @class */ (function () {
+    let ExtendFinderVisitor = /** @class */ (function () {
         function ExtendFinderVisitor() {
             this._visitor = new Visitor(this);
             this.contexts = [];
@@ -5256,13 +5257,13 @@
             if (rulesetNode.root) {
                 return;
             }
-            var i;
-            var j;
-            var extend;
-            var allSelectorsExtendList = [];
-            var extendList;
+            let i;
+            let j;
+            let extend;
+            let allSelectorsExtendList = [];
+            let extendList;
             // get &:extend(.a); rules which apply to all selectors in this ruleset
-            var rules = rulesetNode.rules, ruleCnt = rules ? rules.length : 0;
+            let rules = rulesetNode.rules, ruleCnt = rules ? rules.length : 0;
             for (i = 0; i < ruleCnt; i++) {
                 if (rulesetNode.rules[i] instanceof tree.Extend) {
                     allSelectorsExtendList.push(rules[i]);
@@ -5271,9 +5272,9 @@
             }
             // now find every selector and apply the extends that apply to all extends
             // and the ones which apply to an individual extend
-            var paths = rulesetNode.paths;
+            let paths = rulesetNode.paths;
             for (i = 0; i < paths.length; i++) {
-                var selectorPath = paths[i], selector = selectorPath[selectorPath.length - 1], selExtendList = selector.extendList;
+                let selectorPath = paths[i], selector = selectorPath[selectorPath.length - 1], selExtendList = selector.extendList;
                 extendList = selExtendList ? copyArray(selExtendList).concat(allSelectorsExtendList)
                     : allSelectorsExtendList;
                 if (extendList) {
@@ -5315,12 +5316,12 @@
         };
         return ExtendFinderVisitor;
     }());
-    var ProcessExtendsVisitor = /** @class */ (function () {
+    let ProcessExtendsVisitor = /** @class */ (function () {
         function ProcessExtendsVisitor() {
             this._visitor = new Visitor(this);
         }
         ProcessExtendsVisitor.prototype.run = function (root) {
-            var extendFinder = new ExtendFinderVisitor();
+            let extendFinder = new ExtendFinderVisitor();
             this.extendIndices = {};
             extendFinder.run(root);
             if (!extendFinder.foundExtends) {
@@ -5328,16 +5329,16 @@
             }
             root.allExtends = root.allExtends.concat(this.doExtendChaining(root.allExtends, root.allExtends));
             this.allExtendsStack = [root.allExtends];
-            var newRoot = this._visitor.visit(root);
+            let newRoot = this._visitor.visit(root);
             this.checkExtendsForNonMatched(root.allExtends);
             return newRoot;
         };
         ProcessExtendsVisitor.prototype.checkExtendsForNonMatched = function (extendList) {
-            var indices = this.extendIndices;
+            let indices = this.extendIndices;
             extendList.filter(function (extend) {
                 return !extend.hasFoundMatches && extend.parent_ids.length == 1;
             }).forEach(function (extend) {
-                var selector = '_unknown_';
+                let selector = '_unknown_';
                 try {
                     selector = extend.selector.toCSS({});
                 }
@@ -5357,16 +5358,16 @@
             // this method deals with all the chaining work - without it, extend is flat and doesn't work on other extend selectors
             // this is also the most expensive.. and a match on one selector can cause an extension of a selector we had already
             // processed if we look at each selector at a time, as is done in visitRuleset
-            var extendIndex;
-            var targetExtendIndex;
-            var matches;
-            var extendsToAdd = [];
-            var newSelector;
-            var extendVisitor = this;
-            var selectorPath;
-            var extend;
-            var targetExtend;
-            var newExtend;
+            let extendIndex;
+            let targetExtendIndex;
+            let matches;
+            let extendsToAdd = [];
+            let newSelector;
+            let extendVisitor = this;
+            let selectorPath;
+            let extend;
+            let targetExtend;
+            let newExtend;
             iterationCount = iterationCount || 0;
             // loop through comparing every extend with every target extend.
             // a target extend is the one on the ruleset we are looking at copy/edit/pasting in place
@@ -5389,7 +5390,7 @@
                         extend.hasFoundMatches = true;
                         // we found a match, so for each self selector..
                         extend.selfSelectors.forEach(function (selfSelector) {
-                            var info = targetExtend.visibilityInfo();
+                            let info = targetExtend.visibilityInfo();
                             // process the extend as usual
                             newSelector = extendVisitor.extendSelector(matches, selectorPath, selfSelector, extend.isVisible());
                             // but now we create a new extend from it
@@ -5418,8 +5419,8 @@
                 // may no longer be needed.
                 this.extendChainCount++;
                 if (iterationCount > 100) {
-                    var selectorOne = '{unable to calculate}';
-                    var selectorTwo = '{unable to calculate}';
+                    let selectorOne = '{unable to calculate}';
+                    let selectorTwo = '{unable to calculate}';
                     try {
                         selectorOne = extendsToAdd[0].selfSelectors[0].toCSS();
                         selectorTwo = extendsToAdd[0].selector.toCSS();
@@ -5448,13 +5449,13 @@
             if (rulesetNode.root) {
                 return;
             }
-            var matches;
-            var pathIndex;
-            var extendIndex;
-            var allExtends = this.allExtendsStack[this.allExtendsStack.length - 1];
-            var selectorsToAdd = [];
-            var extendVisitor = this;
-            var selectorPath;
+            let matches;
+            let pathIndex;
+            let extendIndex;
+            let allExtends = this.allExtendsStack[this.allExtendsStack.length - 1];
+            let selectorsToAdd = [];
+            let extendVisitor = this;
+            let selectorPath;
             // look at each selector path in the ruleset, find any extend matches and then copy, find and replace
             for (extendIndex = 0; extendIndex < allExtends.length; extendIndex++) {
                 for (pathIndex = 0; pathIndex < rulesetNode.paths.length; pathIndex++) {
@@ -5463,7 +5464,7 @@
                     if (rulesetNode.extendOnEveryPath) {
                         continue;
                     }
-                    var extendList = selectorPath[selectorPath.length - 1].extendList;
+                    let extendList = selectorPath[selectorPath.length - 1].extendList;
                     if (extendList && extendList.length) {
                         continue;
                     }
@@ -5471,7 +5472,7 @@
                     if (matches.length) {
                         allExtends[extendIndex].hasFoundMatches = true;
                         allExtends[extendIndex].selfSelectors.forEach(function (selfSelector) {
-                            var extendedSelectors;
+                            let extendedSelectors;
                             extendedSelectors = extendVisitor.extendSelector(matches, selectorPath, selfSelector, allExtends[extendIndex].isVisible());
                             selectorsToAdd.push(extendedSelectors);
                         });
@@ -5485,17 +5486,17 @@
             // look through the haystack selector path to try and find the needle - extend.selector
             // returns an array of selector matches that can then be replaced
             //
-            var haystackSelectorIndex;
-            var hackstackSelector;
-            var hackstackElementIndex;
-            var haystackElement;
-            var targetCombinator;
-            var i;
-            var extendVisitor = this;
-            var needleElements = extend.selector.elements;
-            var potentialMatches = [];
-            var potentialMatch;
-            var matches = [];
+            let haystackSelectorIndex;
+            let hackstackSelector;
+            let hackstackElementIndex;
+            let haystackElement;
+            let targetCombinator;
+            let i;
+            let extendVisitor = this;
+            let needleElements = extend.selector.elements;
+            let potentialMatches = [];
+            let potentialMatch;
+            let matches = [];
             // loop through the haystack elements
             for (haystackSelectorIndex = 0; haystackSelectorIndex < haystackSelectorPath.length; haystackSelectorIndex++) {
                 hackstackSelector = haystackSelectorPath[haystackSelectorIndex];
@@ -5575,7 +5576,7 @@
                 if (!(elementValue2 instanceof tree.Selector) || elementValue1.elements.length !== elementValue2.elements.length) {
                     return false;
                 }
-                for (var i = 0; i < elementValue1.elements.length; i++) {
+                for (let i = 0; i < elementValue1.elements.length; i++) {
                     if (elementValue1.elements[i].combinator.value !== elementValue2.elements[i].combinator.value) {
                         if (i !== 0 || (elementValue1.elements[i].combinator.value || ' ') !== (elementValue2.elements[i].combinator.value || ' ')) {
                             return false;
@@ -5591,7 +5592,7 @@
         };
         ProcessExtendsVisitor.prototype.extendSelector = function (matches, selectorPath, replacementSelector, isVisible) {
             // for a set of matches, replace each match with the replacement selector
-            var currentSelectorPathIndex = 0, currentSelectorPathElementIndex = 0, path = [], matchIndex, selector, firstElement, match, newElements;
+            let currentSelectorPathIndex = 0, currentSelectorPathElementIndex = 0, path = [], matchIndex, selector, firstElement, match, newElements;
             for (matchIndex = 0; matchIndex < matches.length; matchIndex++) {
                 match = matches[matchIndex];
                 selector = selectorPath[match.pathIndex];
@@ -5629,7 +5630,7 @@
             path = path.concat(selectorPath.slice(currentSelectorPathIndex, selectorPath.length));
             path = path.map(function (currentValue) {
                 // we can re-use elements here, because the visibility property matters only for selectors
-                var derived = currentValue.createDerived(currentValue.elements);
+                let derived = currentValue.createDerived(currentValue.elements);
                 if (isVisible) {
                     derived.ensureVisibility();
                 }
@@ -5641,27 +5642,27 @@
             return path;
         };
         ProcessExtendsVisitor.prototype.visitMedia = function (mediaNode, visitArgs) {
-            var newAllExtends = mediaNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
+            let newAllExtends = mediaNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
             newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, mediaNode.allExtends));
             this.allExtendsStack.push(newAllExtends);
         };
         ProcessExtendsVisitor.prototype.visitMediaOut = function (mediaNode) {
-            var lastIndex = this.allExtendsStack.length - 1;
+            let lastIndex = this.allExtendsStack.length - 1;
             this.allExtendsStack.length = lastIndex;
         };
         ProcessExtendsVisitor.prototype.visitAtRule = function (atRuleNode, visitArgs) {
-            var newAllExtends = atRuleNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
+            let newAllExtends = atRuleNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
             newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, atRuleNode.allExtends));
             this.allExtendsStack.push(newAllExtends);
         };
         ProcessExtendsVisitor.prototype.visitAtRuleOut = function (atRuleNode) {
-            var lastIndex = this.allExtendsStack.length - 1;
+            let lastIndex = this.allExtendsStack.length - 1;
             this.allExtendsStack.length = lastIndex;
         };
         return ProcessExtendsVisitor;
     }());
 
-    var JoinSelectorVisitor = /** @class */ (function () {
+    let JoinSelectorVisitor = /** @class */ (function () {
         function JoinSelectorVisitor() {
             this.contexts = [[]];
             this._visitor = new Visitor(this);
@@ -5676,9 +5677,9 @@
             visitArgs.visitDeeper = false;
         };
         JoinSelectorVisitor.prototype.visitRuleset = function (rulesetNode, visitArgs) {
-            var context = this.contexts[this.contexts.length - 1];
-            var paths = [];
-            var selectors;
+            let context = this.contexts[this.contexts.length - 1];
+            let paths = [];
+            let selectors;
             this.contexts.push(paths);
             if (!rulesetNode.root) {
                 selectors = rulesetNode.selectors;
@@ -5699,11 +5700,11 @@
             this.contexts.length = this.contexts.length - 1;
         };
         JoinSelectorVisitor.prototype.visitMedia = function (mediaNode, visitArgs) {
-            var context = this.contexts[this.contexts.length - 1];
+            let context = this.contexts[this.contexts.length - 1];
             mediaNode.rules[0].root = (context.length === 0 || context[0].multiMedia);
         };
         JoinSelectorVisitor.prototype.visitAtRule = function (atRuleNode, visitArgs) {
-            var context = this.contexts[this.contexts.length - 1];
+            let context = this.contexts[this.contexts.length - 1];
             if (atRuleNode.rules && atRuleNode.rules.length) {
                 atRuleNode.rules[0].root = (atRuleNode.isRooted || context.length === 0 || null);
             }
@@ -5711,17 +5712,17 @@
         return JoinSelectorVisitor;
     }());
 
-    var CSSVisitorUtils = /** @class */ (function () {
+    let CSSVisitorUtils = /** @class */ (function () {
         function CSSVisitorUtils(context) {
             this._visitor = new Visitor(this);
             this._context = context;
         }
         CSSVisitorUtils.prototype.containsSilentNonBlockedChild = function (bodyRules) {
-            var rule;
+            let rule;
             if (!bodyRules) {
                 return false;
             }
-            for (var r = 0; r < bodyRules.length; r++) {
+            for (let r = 0; r < bodyRules.length; r++) {
                 rule = bodyRules[r];
                 if (rule.isSilent && rule.isSilent(this._context) && !rule.blocksVisibility()) {
                     // the atrule contains something that was referenced (likely by extend)
@@ -5751,7 +5752,7 @@
                 }
                 return node;
             }
-            var compiledRulesBody = node.rules[0];
+            let compiledRulesBody = node.rules[0];
             this.keepOnlyVisibleChilds(compiledRulesBody);
             if (this.isEmpty(compiledRulesBody)) {
                 return;
@@ -5774,7 +5775,7 @@
         };
         return CSSVisitorUtils;
     }());
-    var ToCSSVisitor = function (context) {
+    let ToCSSVisitor = function (context) {
         this._visitor = new Visitor(this);
         this._context = context;
         this.utils = new CSSVisitorUtils(context);
@@ -5804,7 +5805,7 @@
             return commentNode;
         },
         visitMedia: function (mediaNode, visitArgs) {
-            var originalRules = mediaNode.rules[0].rules;
+            let originalRules = mediaNode.rules[0].rules;
             mediaNode.accept(this._visitor);
             visitArgs.visitDeeper = false;
             return this.utils.resolveVisibility(mediaNode, originalRules);
@@ -5833,11 +5834,11 @@
             // if there is only one nested ruleset and that one has no path, then it is
             // just fake ruleset
             function hasFakeRuleset(atRuleNode) {
-                var bodyRules = atRuleNode.rules;
+                let bodyRules = atRuleNode.rules;
                 return bodyRules.length === 1 && (!bodyRules[0].paths || bodyRules[0].paths.length === 0);
             }
             function getBodyRules(atRuleNode) {
-                var nodeRules = atRuleNode.rules;
+                let nodeRules = atRuleNode.rules;
                 if (hasFakeRuleset(atRuleNode)) {
                     return nodeRules[0].rules;
                 }
@@ -5846,7 +5847,7 @@
             // it is still true that it is only one ruleset in array
             // this is last such moment
             // process childs
-            var originalRules = getBodyRules(atRuleNode);
+            let originalRules = getBodyRules(atRuleNode);
             atRuleNode.accept(this._visitor);
             visitArgs.visitDeeper = false;
             if (!this.utils.isEmpty(atRuleNode)) {
@@ -5864,7 +5865,7 @@
                 // be considered illegal css as it has to be on the first line
                 if (this.charset) {
                     if (atRuleNode.debugInfo) {
-                        var comment = new tree.Comment("/* " + atRuleNode.toCSS(this._context).replace(/\n/g, '') + " */\n");
+                        let comment = new tree.Comment("/* " + atRuleNode.toCSS(this._context).replace(/\n/g, '') + " */\n");
                         comment.debugInfo = atRuleNode.debugInfo;
                         return this._visitor.visit(comment);
                     }
@@ -5878,8 +5879,8 @@
             if (!rules) {
                 return;
             }
-            for (var i = 0; i < rules.length; i++) {
-                var ruleNode = rules[i];
+            for (let i = 0; i < rules.length; i++) {
+                let ruleNode = rules[i];
                 if (isRoot && ruleNode instanceof tree.Declaration && !ruleNode.variable) {
                     throw { message: 'Properties must be inside selector blocks. They cannot be in the root',
                         index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
@@ -5896,16 +5897,16 @@
         },
         visitRuleset: function (rulesetNode, visitArgs) {
             // at this point rulesets are nested into each other
-            var rule;
-            var rulesets = [];
+            let rule;
+            let rulesets = [];
             this.checkValidNodes(rulesetNode.rules, rulesetNode.firstRoot);
             if (!rulesetNode.root) {
                 // remove invisible paths
                 this._compileRulesetPaths(rulesetNode);
                 // remove rulesets from this ruleset body and compile them separately
-                var nodeRules = rulesetNode.rules;
-                var nodeRuleCnt = nodeRules ? nodeRules.length : 0;
-                for (var i = 0; i < nodeRuleCnt;) {
+                let nodeRules = rulesetNode.rules;
+                let nodeRuleCnt = nodeRules ? nodeRules.length : 0;
+                for (let i = 0; i < nodeRuleCnt;) {
                     rule = nodeRules[i];
                     if (rule && rule.rules) {
                         // visit because we are moving them out from being a child
@@ -5949,7 +5950,7 @@
             if (rulesetNode.paths) {
                 rulesetNode.paths = rulesetNode.paths
                     .filter(function (p) {
-                    var i;
+                    let i;
                     if (p[0].elements[0].combinator.value === ' ') {
                         p[0].elements[0].combinator = new (tree.Combinator)('');
                     }
@@ -5967,10 +5968,10 @@
                 return;
             }
             // remove duplicates
-            var ruleCache = {};
-            var ruleList;
-            var rule;
-            var i;
+            let ruleCache = {};
+            let ruleList;
+            let rule;
+            let i;
             for (i = rules.length - 1; i >= 0; i--) {
                 rule = rules[i];
                 if (rule instanceof tree.Declaration) {
@@ -5982,7 +5983,7 @@
                         if (ruleList instanceof tree.Declaration) {
                             ruleList = ruleCache[rule.name] = [ruleCache[rule.name].toCSS(this._context)];
                         }
-                        var ruleCSS = rule.toCSS(this._context);
+                        let ruleCSS = rule.toCSS(this._context);
                         if (ruleList.indexOf(ruleCSS) !== -1) {
                             rules.splice(i, 1);
                         }
@@ -5997,12 +5998,12 @@
             if (!rules) {
                 return;
             }
-            var groups = {};
-            var groupsArr = [];
-            for (var i = 0; i < rules.length; i++) {
-                var rule = rules[i];
+            let groups = {};
+            let groupsArr = [];
+            for (let i = 0; i < rules.length; i++) {
+                let rule = rules[i];
                 if (rule.merge) {
-                    var key = rule.name;
+                    let key = rule.name;
                     groups[key] ? rules.splice(i--, 1) :
                         groupsArr.push(groups[key] = []);
                     groups[key].push(rule);
@@ -6010,9 +6011,9 @@
             }
             groupsArr.forEach(function (group) {
                 if (group.length > 0) {
-                    var result_1 = group[0];
-                    var space_1 = [];
-                    var comma_1 = [new tree.Expression(space_1)];
+                    let result_1 = group[0];
+                    let space_1 = [];
+                    let comma_1 = [new tree.Expression(space_1)];
                     group.forEach(function (rule) {
                         if ((rule.merge === '+') && (space_1.length > 0)) {
                             comma_1.push(new tree.Expression(space_1 = []));
@@ -6026,7 +6027,7 @@
         }
     };
 
-    var visitors = {
+    let visitors = {
         Visitor: Visitor,
         ImportVisitor: ImportVisitor,
         MarkVisibleSelectorsVisitor: SetTreeVisibilityVisitor,
@@ -6037,22 +6038,22 @@
 
     // Split the input into chunks.
     function chunker (input, fail) {
-        var len = input.length;
-        var level = 0;
-        var parenLevel = 0;
-        var lastOpening;
-        var lastOpeningParen;
-        var lastMultiComment;
-        var lastMultiCommentEndBrace;
-        var chunks = [];
-        var emitFrom = 0;
-        var chunkerCurrentIndex;
-        var currentChunkStartIndex;
-        var cc;
-        var cc2;
-        var matched;
+        let len = input.length;
+        let level = 0;
+        let parenLevel = 0;
+        let lastOpening;
+        let lastOpeningParen;
+        let lastMultiComment;
+        let lastMultiCommentEndBrace;
+        let chunks = [];
+        let emitFrom = 0;
+        let chunkerCurrentIndex;
+        let currentChunkStartIndex;
+        let cc;
+        let cc2;
+        let matched;
         function emitChunk(force) {
-            var len = chunkerCurrentIndex - emitFrom;
+            let len = chunkerCurrentIndex - emitFrom;
             if (((len < 512) && !force) || !len) {
                 return;
             }
@@ -6180,49 +6181,49 @@
         return chunks;
     }
 
-    var getParserInput = (function () {
-        var // Less input string
+    let getParserInput = (function () {
+        let // Less input string
         input;
-        var // current chunk
+        let // current chunk
         j;
-        var // holds state for backtracking
+        let // holds state for backtracking
         saveStack = [];
-        var // furthest index the parser has gone to
+        let // furthest index the parser has gone to
         furthest;
-        var // if this is furthest we got to, this is the probably cause
+        let // if this is furthest we got to, this is the probably cause
         furthestPossibleErrorMessage;
-        var // chunkified input
+        let // chunkified input
         chunks;
-        var // current chunk
+        let // current chunk
         current;
-        var // index of current chunk, in `input`
+        let // index of current chunk, in `input`
         currentPos;
-        var parserInput = {};
-        var CHARCODE_SPACE = 32;
-        var CHARCODE_TAB = 9;
-        var CHARCODE_LF = 10;
-        var CHARCODE_CR = 13;
-        var CHARCODE_PLUS = 43;
-        var CHARCODE_COMMA = 44;
-        var CHARCODE_FORWARD_SLASH = 47;
-        var CHARCODE_9 = 57;
+        let parserInput = {};
+        let CHARCODE_SPACE = 32;
+        let CHARCODE_TAB = 9;
+        let CHARCODE_LF = 10;
+        let CHARCODE_CR = 13;
+        let CHARCODE_PLUS = 43;
+        let CHARCODE_COMMA = 44;
+        let CHARCODE_FORWARD_SLASH = 47;
+        let CHARCODE_9 = 57;
         function skipWhitespace(length) {
-            var oldi = parserInput.i;
-            var oldj = j;
-            var curr = parserInput.i - currentPos;
-            var endIndex = parserInput.i + current.length - curr;
-            var mem = (parserInput.i += length);
-            var inp = input;
-            var c;
-            var nextChar;
-            var comment;
+            let oldi = parserInput.i;
+            let oldj = j;
+            let curr = parserInput.i - currentPos;
+            let endIndex = parserInput.i + current.length - curr;
+            let mem = (parserInput.i += length);
+            let inp = input;
+            let c;
+            let nextChar;
+            let comment;
             for (; parserInput.i < endIndex; parserInput.i++) {
                 c = inp.charCodeAt(parserInput.i);
                 if (parserInput.autoCommentAbsorb && c === CHARCODE_FORWARD_SLASH) {
                     nextChar = inp.charAt(parserInput.i + 1);
                     if (nextChar === '/') {
                         comment = { index: parserInput.i, isLineComment: true };
-                        var nextNewLine = inp.indexOf('\n', parserInput.i + 2);
+                        let nextNewLine = inp.indexOf('\n', parserInput.i + 2);
                         if (nextNewLine < 0) {
                             nextNewLine = endIndex;
                         }
@@ -6232,7 +6233,7 @@
                         continue;
                     }
                     else if (nextChar === '*') {
-                        var nextStarSlash = inp.indexOf('*/', parserInput.i + 2);
+                        let nextStarSlash = inp.indexOf('*/', parserInput.i + 2);
                         if (nextStarSlash >= 0) {
                             comment = {
                                 index: parserInput.i,
@@ -6271,7 +6272,7 @@
                 furthest = parserInput.i;
                 furthestPossibleErrorMessage = possibleErrorMessage;
             }
-            var state = saveStack.pop();
+            let state = saveStack.pop();
             current = state.current;
             currentPos = parserInput.i = state.i;
             j = state.j;
@@ -6280,8 +6281,8 @@
             saveStack.pop();
         };
         parserInput.isWhitespace = function (offset) {
-            var pos = parserInput.i + (offset || 0);
-            var code = input.charCodeAt(pos);
+            let pos = parserInput.i + (offset || 0);
+            let code = input.charCodeAt(pos);
             return (code === CHARCODE_SPACE || code === CHARCODE_CR || code === CHARCODE_TAB || code === CHARCODE_LF);
         };
         // Specialization of $(tok)
@@ -6290,7 +6291,7 @@
                 current = current.slice(parserInput.i - currentPos);
                 currentPos = parserInput.i;
             }
-            var m = tok.exec(current);
+            let m = tok.exec(current);
             if (!m) {
                 return null;
             }
@@ -6308,9 +6309,9 @@
             return tok;
         };
         parserInput.$str = function (tok) {
-            var tokLength = tok.length;
+            let tokLength = tok.length;
             // https://jsperf.com/string-startswith/21
-            for (var i = 0; i < tokLength; i++) {
+            for (let i = 0; i < tokLength; i++) {
                 if (input.charAt(parserInput.i + i) !== tok.charAt(i)) {
                     return null;
                 }
@@ -6319,15 +6320,15 @@
             return tok;
         };
         parserInput.$quoted = function (loc) {
-            var pos = loc || parserInput.i;
-            var startChar = input.charAt(pos);
+            let pos = loc || parserInput.i;
+            let startChar = input.charAt(pos);
             if (startChar !== '\'' && startChar !== '"') {
                 return;
             }
-            var length = input.length;
-            var currentPosition = pos;
-            for (var i = 1; i + currentPosition < length; i++) {
-                var nextChar = input.charAt(i + currentPosition);
+            let length = input.length;
+            let currentPosition = pos;
+            for (let i = 1; i + currentPosition < length; i++) {
+                let nextChar = input.charAt(i + currentPosition);
                 switch (nextChar) {
                     case '\\':
                         i++;
@@ -6336,7 +6337,7 @@
                     case '\n':
                         break;
                     case startChar:
-                        var str = input.substr(currentPosition, i + 1);
+                        let str = input.substr(currentPosition, i + 1);
                         if (!loc && loc !== 0) {
                             skipWhitespace(i + 1);
                             return str;
@@ -6351,18 +6352,18 @@
          * until matching token (outside of blocks)
          */
         parserInput.$parseUntil = function (tok) {
-            var quote = '';
-            var returnVal = null;
-            var inComment = false;
-            var blockDepth = 0;
-            var blockStack = [];
-            var parseGroups = [];
-            var length = input.length;
-            var startPos = parserInput.i;
-            var lastPos = parserInput.i;
-            var i = parserInput.i;
-            var loop = true;
-            var testChar;
+            let quote = '';
+            let returnVal = null;
+            let inComment = false;
+            let blockDepth = 0;
+            let blockStack = [];
+            let parseGroups = [];
+            let length = input.length;
+            let startPos = parserInput.i;
+            let lastPos = parserInput.i;
+            let i = parserInput.i;
+            let loop = true;
+            let testChar;
             if (typeof tok === 'string') {
                 testChar = function (char) { return char === tok; };
             }
@@ -6370,7 +6371,7 @@
                 testChar = function (char) { return tok.test(char); };
             }
             do {
-                var nextChar = input.charAt(i);
+                let nextChar = input.charAt(i);
                 if (blockDepth === 0 && testChar(nextChar)) {
                     returnVal = input.substr(lastPos, i - lastPos);
                     if (returnVal) {
@@ -6437,7 +6438,7 @@
                         case '}':
                         case ')':
                         case ']':
-                            var expected = blockStack.pop();
+                            let expected = blockStack.pop();
                             if (nextChar === expected) {
                                 blockDepth--;
                             }
@@ -6464,7 +6465,7 @@
         parserInput.peek = function (tok) {
             if (typeof tok === 'string') {
                 // https://jsperf.com/string-startswith/21
-                for (var i = 0; i < tok.length; i++) {
+                for (let i = 0; i < tok.length; i++) {
                     if (input.charAt(parserInput.i + i) !== tok.charAt(i)) {
                         return false;
                     }
@@ -6482,7 +6483,7 @@
         parserInput.prevChar = function () { return input.charAt(parserInput.i - 1); };
         parserInput.getInput = function () { return input; };
         parserInput.peekNotNumeric = function () {
-            var c = input.charCodeAt(parserInput.i);
+            let c = input.charCodeAt(parserInput.i);
             // Is the first char of the dimension 0-9, '.', '+' or '-'
             return (c > CHARCODE_9 || c < CHARCODE_PLUS) || c === CHARCODE_FORWARD_SLASH || c === CHARCODE_COMMA;
         };
@@ -6509,8 +6510,8 @@
             skipWhitespace(0);
         };
         parserInput.end = function () {
-            var message;
-            var isFinished = parserInput.i >= input.length;
+            let message;
+            let isFinished = parserInput.i >= input.length;
             if (parserInput.i < furthest) {
                 message = furthestPossibleErrorMessage;
                 parserInput.i = furthest;
@@ -6558,9 +6559,9 @@
     //    a terminal string or regexp, or a non-terminal function to call.
     //    It also takes care of moving all the indices forwards.
     //
-    var Parser = function Parser(context, imports, fileInfo) {
-        var parsers;
-        var parserInput = getParserInput();
+    let Parser = function Parser(context, imports, fileInfo) {
+        let parsers;
+        let parserInput = getParserInput();
         function error(msg, type) {
             throw new LessError({
                 index: parserInput.i,
@@ -6571,7 +6572,7 @@
         }
         function expect(arg, msg) {
             // some older browsers return typeof 'function' for RegExp
-            var result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
+            let result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
             if (result) {
                 return result;
             }
@@ -6587,7 +6588,7 @@
             error(msg || "expected '" + arg + "' got '" + parserInput.currentChar() + "'");
         }
         function getDebugInfo(index) {
-            var filename = fileInfo.filename;
+            let filename = fileInfo.filename;
             return {
                 lineNumber: getLocation(index, parserInput.getInput()).line + 1,
                 fileName: filename
@@ -6602,9 +6603,9 @@
          *  @param {Object} fileInfo     - fileInfo to attach to created nodes
          */
         function parseNode(str, parseList, currentIndex, fileInfo, callback) {
-            var result;
-            var returnNodes = [];
-            var parser = parserInput;
+            let result;
+            let returnNodes = [];
+            let parser = parserInput;
             try {
                 parser.start(str, false, function fail(msg, index) {
                     callback({
@@ -6612,7 +6613,7 @@
                         index: index + currentIndex
                     });
                 });
-                for (var x = 0, p = void 0, i = void 0; (p = parseList[x]); x++) {
+                for (let x = 0, p = void 0, i = void 0; (p = parseList[x]); x++) {
                     i = parser.i;
                     result = parsers[p]();
                     if (result) {
@@ -6627,7 +6628,7 @@
                         returnNodes.push(null);
                     }
                 }
-                var endInfo = parser.end();
+                let endInfo = parser.end();
                 if (endInfo.isFinished) {
                     callback(null, returnNodes);
                 }
@@ -6657,16 +6658,16 @@
             // @param [additionalData] An optional map which can contains vars - a map (key, value) of variables to apply
             //
             parse: function (str, callback, additionalData) {
-                var root;
-                var err = null;
-                var globalVars;
-                var modifyVars;
-                var ignored;
-                var preText = '';
+                let root;
+                let err = null;
+                let globalVars;
+                let modifyVars;
+                let ignored;
+                let preText = '';
                 // Optionally disable @plugin parsing
                 if (additionalData && additionalData.disablePluginRule) {
                     parsers.plugin = function () {
-                        var dir = parserInput.$re(/^@plugin?\s+/);
+                        let dir = parserInput.$re(/^@plugin?\s+/);
                         if (dir) {
                             error('@plugin statements are not allowed when disablePluginRule is set to true');
                         }
@@ -6675,8 +6676,8 @@
                 globalVars = (additionalData && additionalData.globalVars) ? Parser.serializeVars(additionalData.globalVars) + "\n" : '';
                 modifyVars = (additionalData && additionalData.modifyVars) ? "\n" + Parser.serializeVars(additionalData.modifyVars) : '';
                 if (context.pluginManager) {
-                    var preProcessors = context.pluginManager.getPreProcessors();
-                    for (var i = 0; i < preProcessors.length; i++) {
+                    let preProcessors = context.pluginManager.getPreProcessors();
+                    for (let i = 0; i < preProcessors.length; i++) {
                         str = preProcessors[i].process(str, { context: context, imports: imports, fileInfo: fileInfo });
                     }
                 }
@@ -6721,9 +6722,9 @@
                 // showing the line where the parse error occurred.
                 // We split it up into two parts (the part which parsed,
                 // and the part which didn't), so we can color them differently.
-                var endInfo = parserInput.end();
+                let endInfo = parserInput.end();
                 if (!endInfo.isFinished) {
-                    var message = endInfo.furthestPossibleErrorMessage;
+                    let message = endInfo.furthestPossibleErrorMessage;
                     if (!message) {
                         message = 'Unrecognised input';
                         if (endInfo.furthestChar === '}') {
@@ -6743,7 +6744,7 @@
                         filename: fileInfo.filename
                     }, imports);
                 }
-                var finish = function (e) {
+                let finish = function (e) {
                     e = err || e || imports.error;
                     if (e) {
                         if (!(e instanceof LessError)) {
@@ -6809,9 +6810,9 @@
                 // block rule: at the root level.
                 //
                 primary: function () {
-                    var mixin = this.mixin;
-                    var root = [];
-                    var node;
+                    let mixin = this.mixin;
+                    let root = [];
+                    let node;
                     while (true) {
                         while (true) {
                             node = this.comment();
@@ -6838,7 +6839,7 @@
                             root.push(node);
                         }
                         else {
-                            var foundSemiColon = false;
+                            let foundSemiColon = false;
                             while (parserInput.$char(';')) {
                                 foundSemiColon = true;
                             }
@@ -6853,7 +6854,7 @@
                 // where the current structure allows it
                 comment: function () {
                     if (parserInput.commentStore.length) {
-                        var comment = parserInput.commentStore.shift();
+                        let comment = parserInput.commentStore.shift();
                         return new (tree.Comment)(comment.text, comment.isLineComment, comment.index, fileInfo);
                     }
                 },
@@ -6870,9 +6871,9 @@
                     //     "milky way" 'he\'s the one!'
                     //
                     quoted: function (forceEscaped) {
-                        var str;
-                        var index = parserInput.i;
-                        var isEscaped = false;
+                        let str;
+                        let index = parserInput.i;
+                        let isEscaped = false;
                         parserInput.save();
                         if (parserInput.$char('~')) {
                             isEscaped = true;
@@ -6895,7 +6896,7 @@
                     //     black border-collapse
                     //
                     keyword: function () {
-                        var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
+                        let k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
                         if (k) {
                             return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
                         }
@@ -6908,10 +6909,10 @@
                     // The arguments are parsed with the `entities.arguments` parser.
                     //
                     call: function () {
-                        var name;
-                        var args;
-                        var func;
-                        var index = parserInput.i;
+                        let name;
+                        let args;
+                        let func;
+                        let index = parserInput.i;
                         // http://jsperf.com/case-insensitive-regex-vs-strtolower-then-regex/18
                         if (parserInput.peek(/^url\(/i)) {
                             return;
@@ -6968,10 +6969,10 @@
                         }
                     },
                     arguments: function (prevArgs) {
-                        var argsComma = prevArgs || [];
-                        var argsSemiColon = [];
-                        var isSemiColonSeparated;
-                        var value;
+                        let argsComma = prevArgs || [];
+                        let argsSemiColon = [];
+                        let isSemiColonSeparated;
+                        let value;
                         parserInput.save();
                         while (true) {
                             if (prevArgs) {
@@ -7013,8 +7014,8 @@
                     //     filter: progid:DXImageTransform.Microsoft.Alpha( *opacity=50* )
                     //
                     assignment: function () {
-                        var key;
-                        var value;
+                        let key;
+                        let value;
                         parserInput.save();
                         key = parserInput.$re(/^\w+(?=\s?=)/i);
                         if (!key) {
@@ -7042,8 +7043,8 @@
                     // to be enclosed within a string, so it can't be parsed as an Expression.
                     //
                     url: function () {
-                        var value;
-                        var index = parserInput.i;
+                        let value;
+                        let index = parserInput.i;
                         parserInput.autoCommentAbsorb = false;
                         if (!parserInput.$str('url(')) {
                             parserInput.autoCommentAbsorb = true;
@@ -7067,15 +7068,15 @@
                     // see `parsers.variable`.
                     //
                     variable: function () {
-                        var ch;
-                        var name;
-                        var index = parserInput.i;
+                        let ch;
+                        let name;
+                        let index = parserInput.i;
                         parserInput.save();
                         if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^@@?[\w-]+/))) {
                             ch = parserInput.currentChar();
                             if (ch === '(' || ch === '[' && !parserInput.prevChar().match(/^\s/)) {
                                 // this may be a VariableCall lookup
-                                var result = parsers.variableCall(name);
+                                let result = parsers.variableCall(name);
                                 if (result) {
                                     parserInput.forget();
                                     return result;
@@ -7088,8 +7089,8 @@
                     },
                     // A variable entity using the protective {} e.g. @{var}
                     variableCurly: function () {
-                        var curly;
-                        var index = parserInput.i;
+                        let curly;
+                        let index = parserInput.i;
                         if (parserInput.currentChar() === '@' && (curly = parserInput.$re(/^@\{([\w-]+)\}/))) {
                             return new (tree.Variable)("@" + curly[1], index, fileInfo);
                         }
@@ -7100,16 +7101,16 @@
                     //     background-color: $color
                     //
                     property: function () {
-                        var name;
-                        var index = parserInput.i;
+                        let name;
+                        let index = parserInput.i;
                         if (parserInput.currentChar() === '$' && (name = parserInput.$re(/^\$[\w-]+/))) {
                             return new (tree.Property)(name, index, fileInfo);
                         }
                     },
                     // A property entity useing the protective {} e.g. ${prop}
                     propertyCurly: function () {
-                        var curly;
-                        var index = parserInput.i;
+                        let curly;
+                        let index = parserInput.i;
                         if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
                             return new (tree.Property)("$" + curly[1], index, fileInfo);
                         }
@@ -7122,7 +7123,7 @@
                     // `rgb` and `hsl` colors are parsed through the `entities.call` parser.
                     //
                     color: function () {
-                        var rgb;
+                        let rgb;
                         parserInput.save();
                         if (parserInput.currentChar() === '#' && (rgb = parserInput.$re(/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})([\w.#\[])?/))) {
                             if (!rgb[2]) {
@@ -7134,16 +7135,16 @@
                     },
                     colorKeyword: function () {
                         parserInput.save();
-                        var autoCommentAbsorb = parserInput.autoCommentAbsorb;
+                        let autoCommentAbsorb = parserInput.autoCommentAbsorb;
                         parserInput.autoCommentAbsorb = false;
-                        var k = parserInput.$re(/^[_A-Za-z-][_A-Za-z0-9-]+/);
+                        let k = parserInput.$re(/^[_A-Za-z-][_A-Za-z0-9-]+/);
                         parserInput.autoCommentAbsorb = autoCommentAbsorb;
                         if (!k) {
                             parserInput.forget();
                             return;
                         }
                         parserInput.restore();
-                        var color = tree.Color.fromKeyword(k);
+                        let color = tree.Color.fromKeyword(k);
                         if (color) {
                             parserInput.$str(k);
                             return color;
@@ -7158,7 +7159,7 @@
                         if (parserInput.peekNotNumeric()) {
                             return;
                         }
-                        var value = parserInput.$re(/^([+-]?\d*\.?\d+)(%|[a-z_]+)?/i);
+                        let value = parserInput.$re(/^([+-]?\d*\.?\d+)(%|[a-z_]+)?/i);
                         if (value) {
                             return new (tree.Dimension)(value[1], value[2]);
                         }
@@ -7169,7 +7170,7 @@
                     // U+0??  or U+00A1-00A9
                     //
                     unicodeDescriptor: function () {
-                        var ud;
+                        let ud;
                         ud = parserInput.$re(/^U\+[0-9a-fA-F?]+(\-[0-9a-fA-F?]+)?/);
                         if (ud) {
                             return new (tree.UnicodeDescriptor)(ud[0]);
@@ -7181,11 +7182,11 @@
                     //     `window.location.href`
                     //
                     javascript: function () {
-                        var js;
-                        var index = parserInput.i;
+                        let js;
+                        let index = parserInput.i;
                         parserInput.save();
-                        var escape = parserInput.$char('~');
-                        var jsQuote = parserInput.$char('`');
+                        let escape = parserInput.$char('~');
+                        let jsQuote = parserInput.$char('`');
                         if (!jsQuote) {
                             parserInput.restore();
                             return;
@@ -7204,7 +7205,7 @@
                 //     @fink:
                 //
                 variable: function () {
-                    var name;
+                    let name;
                     if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^(@[\w-]+)\s*:/))) {
                         return name[1];
                     }
@@ -7218,10 +7219,10 @@
                 //     color: @fink[@color];
                 //
                 variableCall: function (parsedName) {
-                    var lookups;
-                    var i = parserInput.i;
-                    var inValue = !!parsedName;
-                    var name = parsedName;
+                    let lookups;
+                    let i = parserInput.i;
+                    let inValue = !!parsedName;
+                    let name = parsedName;
                     parserInput.save();
                     if (name || (parserInput.currentChar() === '@'
                         && (name = parserInput.$re(/^(@[\w-]+)(\(\s*\))?/)))) {
@@ -7233,7 +7234,7 @@
                         if (!inValue) {
                             name = name[1];
                         }
-                        var call = new tree.VariableCall(name, i, fileInfo);
+                        let call = new tree.VariableCall(name, i, fileInfo);
                         if (!inValue && parsers.end()) {
                             parserInput.forget();
                             return call;
@@ -7249,12 +7250,12 @@
                 // extend syntax - used to extend selectors
                 //
                 extend: function (isRule) {
-                    var elements;
-                    var e;
-                    var index = parserInput.i;
-                    var option;
-                    var extendList;
-                    var extend;
+                    let elements;
+                    let e;
+                    let index = parserInput.i;
+                    let option;
+                    let extendList;
+                    let extend;
                     if (!parserInput.$str(isRule ? '&:extend(' : ':extend(')) {
                         return;
                     }
@@ -7318,13 +7319,13 @@
                     // selector for now.
                     //
                     call: function (inValue, getLookup) {
-                        var s = parserInput.currentChar();
-                        var important = false;
-                        var lookups;
-                        var index = parserInput.i;
-                        var elements;
-                        var args;
-                        var hasParens;
+                        let s = parserInput.currentChar();
+                        let important = false;
+                        let lookups;
+                        let index = parserInput.i;
+                        let elements;
+                        let args;
+                        let hasParens;
                         if (s !== '.' && s !== '#') {
                             return;
                         }
@@ -7353,7 +7354,7 @@
                             }
                             if (inValue || parsers.end()) {
                                 parserInput.forget();
-                                var mixin = new (tree.mixin.Call)(elements, args, index, fileInfo, !lookups && important);
+                                let mixin = new (tree.mixin.Call)(elements, args, index, fileInfo, !lookups && important);
                                 if (lookups) {
                                     return new tree.NamespaceValue(mixin, lookups);
                                 }
@@ -7369,12 +7370,12 @@
                      * (Start with . or # and can have > )
                      */
                     elements: function () {
-                        var elements;
-                        var e;
-                        var c;
-                        var elem;
-                        var elemIndex;
-                        var re = /^[#.](?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/;
+                        let elements;
+                        let e;
+                        let c;
+                        let elem;
+                        let elemIndex;
+                        let re = /^[#.](?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/;
                         while (true) {
                             elemIndex = parserInput.i;
                             e = parserInput.$re(re);
@@ -7393,19 +7394,19 @@
                         return elements;
                     },
                     args: function (isCall) {
-                        var entities = parsers.entities;
-                        var returner = { args: null, variadic: false };
-                        var expressions = [];
-                        var argsSemiColon = [];
-                        var argsComma = [];
-                        var isSemiColonSeparated;
-                        var expressionContainsNamed;
-                        var name;
-                        var nameLoop;
-                        var value;
-                        var arg;
-                        var expand;
-                        var hasSep = true;
+                        let entities = parsers.entities;
+                        let returner = { args: null, variadic: false };
+                        let expressions = [];
+                        let argsSemiColon = [];
+                        let argsComma = [];
+                        let isSemiColonSeparated;
+                        let expressionContainsNamed;
+                        let name;
+                        let nameLoop;
+                        let value;
+                        let arg;
+                        let expand;
+                        let hasSep = true;
                         parserInput.save();
                         while (true) {
                             if (isCall) {
@@ -7432,7 +7433,7 @@
                                 arg.throwAwayComments();
                             }
                             value = arg;
-                            var val = null;
+                            let val = null;
                             if (isCall) {
                                 // Variable
                                 if (arg.value && arg.value.length == 1) {
@@ -7529,12 +7530,12 @@
                     // the `{...}` block.
                     //
                     definition: function () {
-                        var name;
-                        var params = [];
-                        var match;
-                        var ruleset;
-                        var cond;
-                        var variadic = false;
+                        let name;
+                        let params = [];
+                        let match;
+                        let ruleset;
+                        let cond;
+                        let variadic = false;
                         if ((parserInput.currentChar() !== '.' && parserInput.currentChar() !== '#') ||
                             parserInput.peek(/^[^{]*\}/)) {
                             return;
@@ -7543,7 +7544,7 @@
                         match = parserInput.$re(/^([#.](?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+)\s*\(/);
                         if (match) {
                             name = match[1];
-                            var argInfo = this.args(false);
+                            let argInfo = this.args(false);
                             params = argInfo.args;
                             variadic = argInfo.variadic;
                             // .mixincall("@{a}");
@@ -7573,8 +7574,8 @@
                         }
                     },
                     ruleLookups: function () {
-                        var rule;
-                        var lookups = [];
+                        let rule;
+                        let lookups = [];
                         if (parserInput.currentChar() !== '[') {
                             return;
                         }
@@ -7598,7 +7599,7 @@
                             parserInput.restore();
                             return;
                         }
-                        var name = parserInput.$re(/^(?:[@$]{0,2})[_a-zA-Z0-9-]*/);
+                        let name = parserInput.$re(/^(?:[@$]{0,2})[_a-zA-Z0-9-]*/);
                         if (!parserInput.$char(']')) {
                             parserInput.restore();
                             return;
@@ -7615,7 +7616,7 @@
                 // and can be found inside a rule's value.
                 //
                 entity: function () {
-                    var entities = this.entities;
+                    let entities = this.entities;
                     return this.comment() || entities.literal() || entities.variable() || entities.url() ||
                         entities.property() || entities.call() || entities.keyword() || this.mixin.call(true) ||
                         entities.javascript();
@@ -7634,7 +7635,7 @@
                 //     alpha(opacity=88)
                 //
                 ieAlpha: function () {
-                    var value;
+                    let value;
                     // http://jsperf.com/case-insensitive-regex-vs-strtolower-then-regex/18
                     if (!parserInput.$re(/^opacity=/i)) {
                         return;
@@ -7660,10 +7661,10 @@
                 // and an element name, such as a tag a class, or `*`.
                 //
                 element: function () {
-                    var e;
-                    var c;
-                    var v;
-                    var index = parserInput.i;
+                    let e;
+                    let c;
+                    let v;
+                    let index = parserInput.i;
                     c = this.combinator();
                     e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
                         parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
@@ -7699,10 +7700,10 @@
                 // we deal with this in *combinator.js*.
                 //
                 combinator: function () {
-                    var c = parserInput.currentChar();
+                    let c = parserInput.currentChar();
                     if (c === '/') {
                         parserInput.save();
-                        var slashedCombinator = parserInput.$re(/^\/[a-z]+\//i);
+                        let slashedCombinator = parserInput.$re(/^\/[a-z]+\//i);
                         if (slashedCombinator) {
                             parserInput.forget();
                             return new (tree.Combinator)(slashedCombinator);
@@ -7737,14 +7738,14 @@
                 // Selectors are made out of one or more Elements, see above.
                 //
                 selector: function (isLess) {
-                    var index = parserInput.i;
-                    var elements;
-                    var extendList;
-                    var c;
-                    var e;
-                    var allExtends;
-                    var when;
-                    var condition;
+                    let index = parserInput.i;
+                    let elements;
+                    let extendList;
+                    let c;
+                    let e;
+                    let allExtends;
+                    let when;
+                    let condition;
                     isLess = isLess !== false;
                     while ((isLess && (extendList = this.extend())) || (isLess && (when = parserInput.$str('when'))) || (e = this.element())) {
                         if (when) {
@@ -7786,8 +7787,8 @@
                     }
                 },
                 selectors: function () {
-                    var s;
-                    var selectors;
+                    let s;
+                    let selectors;
                     while (true) {
                         s = this.selector();
                         if (!s) {
@@ -7817,15 +7818,15 @@
                     if (!parserInput.$char('[')) {
                         return;
                     }
-                    var entities = this.entities;
-                    var key;
-                    var val;
-                    var op;
+                    let entities = this.entities;
+                    let key;
+                    let val;
+                    let op;
                     //
                     // case-insensitive flag
                     // e.g. [attr operator value i]
                     //
-                    var cif;
+                    let cif;
                     if (!(key = entities.variableCurly())) {
                         key = expect(/^(?:[_A-Za-z0-9-\*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
                     }
@@ -7844,22 +7845,22 @@
                 // It's a wrapper around the `primary` rule, with added `{}`.
                 //
                 block: function () {
-                    var content;
+                    let content;
                     if (parserInput.$char('{') && (content = this.primary()) && parserInput.$char('}')) {
                         return content;
                     }
                 },
                 blockRuleset: function () {
-                    var block = this.block();
+                    let block = this.block();
                     if (block) {
                         block = new tree.Ruleset(null, block);
                     }
                     return block;
                 },
                 detachedRuleset: function () {
-                    var argInfo;
-                    var params;
-                    var variadic;
+                    let argInfo;
+                    let params;
+                    let variadic;
                     parserInput.save();
                     if (parserInput.$re(/^[.#]\(/)) {
                         /**
@@ -7876,7 +7877,7 @@
                             return;
                         }
                     }
-                    var blockRuleset = this.blockRuleset();
+                    let blockRuleset = this.blockRuleset();
                     if (blockRuleset) {
                         parserInput.forget();
                         if (params) {
@@ -7890,9 +7891,9 @@
                 // div, .class, body > p {...}
                 //
                 ruleset: function () {
-                    var selectors;
-                    var rules;
-                    var debugInfo;
+                    let selectors;
+                    let rules;
+                    let debugInfo;
                     parserInput.save();
                     if (context.dumpLineNumbers) {
                         debugInfo = getDebugInfo(parserInput.i);
@@ -7900,7 +7901,7 @@
                     selectors = this.selectors();
                     if (selectors && (rules = this.block())) {
                         parserInput.forget();
-                        var ruleset = new (tree.Ruleset)(selectors, rules, context.strictImports);
+                        let ruleset = new (tree.Ruleset)(selectors, rules, context.strictImports);
                         if (context.dumpLineNumbers) {
                             ruleset.debugInfo = debugInfo;
                         }
@@ -7911,14 +7912,14 @@
                     }
                 },
                 declaration: function () {
-                    var name;
-                    var value;
-                    var index = parserInput.i;
-                    var hasDR;
-                    var c = parserInput.currentChar();
-                    var important;
-                    var merge;
-                    var isVariable;
+                    let name;
+                    let value;
+                    let index = parserInput.i;
+                    let hasDR;
+                    let c = parserInput.currentChar();
+                    let important;
+                    let merge;
+                    let isVariable;
                     if (c === '.' || c === '#' || c === '&' || c === ':') {
                         return;
                     }
@@ -7976,8 +7977,8 @@
                     }
                 },
                 anonymousValue: function () {
-                    var index = parserInput.i;
-                    var match = parserInput.$re(/^([^.#@\$+\/'"*`(;{}-]*);/);
+                    let index = parserInput.i;
+                    let match = parserInput.$re(/^([^.#@\$+\/'"*`(;{}-]*);/);
                     if (match) {
                         return new (tree.Anonymous)(match[1], index);
                     }
@@ -7992,15 +7993,15 @@
                  * math is allowed.
                  */
                 permissiveValue: function (untilTokens) {
-                    var i;
-                    var e;
-                    var done;
-                    var value;
-                    var tok = untilTokens || ';';
-                    var index = parserInput.i;
-                    var result = [];
+                    let i;
+                    let e;
+                    let done;
+                    let value;
+                    let tok = untilTokens || ';';
+                    let index = parserInput.i;
+                    let result = [];
                     function testCurrentChar() {
-                        var char = parserInput.currentChar();
+                        let char = parserInput.currentChar();
                         if (typeof tok === 'string') {
                             return char === tok;
                         }
@@ -8047,7 +8048,7 @@
                             parserInput.forget();
                             return new tree.Anonymous('', index);
                         }
-                        var item = void 0;
+                        let item = void 0;
                         for (i = 0; i < value.length; i++) {
                             item = value[i];
                             if (Array.isArray(item)) {
@@ -8059,7 +8060,7 @@
                                     item = item.trim();
                                 }
                                 // Treat like quoted values, but replace vars like unquoted expressions
-                                var quote = new tree.Quoted('\'', item, true, index, fileInfo);
+                                let quote = new tree.Quoted('\'', item, true, index, fileInfo);
                                 quote.variableRegex = /@([\w-]+)/g;
                                 quote.propRegex = /\$([\w-]+)/g;
                                 result.push(quote);
@@ -8081,12 +8082,12 @@
                 // stored in `import`, which we pass to the Import constructor.
                 //
                 'import': function () {
-                    var path;
-                    var features;
-                    var index = parserInput.i;
-                    var dir = parserInput.$re(/^@import\s+/);
+                    let path;
+                    let features;
+                    let index = parserInput.i;
+                    let dir = parserInput.$re(/^@import\s+/);
                     if (dir) {
-                        var options = (dir ? this.importOptions() : null) || {};
+                        let options = (dir ? this.importOptions() : null) || {};
                         if ((path = this.entities.quoted() || this.entities.url())) {
                             features = this.mediaFeatures();
                             if (!parserInput.$char(';')) {
@@ -8103,10 +8104,10 @@
                     }
                 },
                 importOptions: function () {
-                    var o;
-                    var options = {};
-                    var optionName;
-                    var value;
+                    let o;
+                    let options = {};
+                    let optionName;
+                    let value;
                     // list of options, surrounded by parens
                     if (!parserInput.$char('(')) {
                         return null;
@@ -8136,16 +8137,16 @@
                     return options;
                 },
                 importOption: function () {
-                    var opt = parserInput.$re(/^(less|css|multiple|once|inline|reference|optional)/);
+                    let opt = parserInput.$re(/^(less|css|multiple|once|inline|reference|optional)/);
                     if (opt) {
                         return opt[1];
                     }
                 },
                 mediaFeature: function () {
-                    var entities = this.entities;
-                    var nodes = [];
-                    var e;
-                    var p;
+                    let entities = this.entities;
+                    let nodes = [];
+                    let e;
+                    let p;
                     parserInput.save();
                     do {
                         e = entities.keyword() || entities.variable() || entities.mixinLookup();
@@ -8177,9 +8178,9 @@
                     }
                 },
                 mediaFeatures: function () {
-                    var entities = this.entities;
-                    var features = [];
-                    var e;
+                    let entities = this.entities;
+                    let features = [];
+                    let e;
                     do {
                         e = this.mediaFeature();
                         if (e) {
@@ -8201,11 +8202,11 @@
                     return features.length > 0 ? features : null;
                 },
                 media: function () {
-                    var features;
-                    var rules;
-                    var media;
-                    var debugInfo;
-                    var index = parserInput.i;
+                    let features;
+                    let rules;
+                    let media;
+                    let debugInfo;
+                    let index = parserInput.i;
                     if (context.dumpLineNumbers) {
                         debugInfo = getDebugInfo(index);
                     }
@@ -8231,11 +8232,11 @@
                 //     @plugin (args) "lib";
                 //
                 plugin: function () {
-                    var path;
-                    var args;
-                    var options;
-                    var index = parserInput.i;
-                    var dir = parserInput.$re(/^@plugin\s+/);
+                    let path;
+                    let args;
+                    let options;
+                    let index = parserInput.i;
+                    let dir = parserInput.$re(/^@plugin\s+/);
                     if (dir) {
                         args = this.pluginArgs();
                         if (args) {
@@ -8267,7 +8268,7 @@
                         parserInput.restore();
                         return null;
                     }
-                    var args = parserInput.$re(/^\s*([^\);]+)\)\s*/);
+                    let args = parserInput.$re(/^\s*([^\);]+)\)\s*/);
                     if (args[1]) {
                         parserInput.forget();
                         return args[1].trim();
@@ -8283,16 +8284,16 @@
                 //     @charset "utf-8";
                 //
                 atrule: function () {
-                    var index = parserInput.i;
-                    var name;
-                    var value;
-                    var rules;
-                    var nonVendorSpecificName;
-                    var hasIdentifier;
-                    var hasExpression;
-                    var hasUnknown;
-                    var hasBlock = true;
-                    var isRooted = true;
+                    let index = parserInput.i;
+                    let name;
+                    let value;
+                    let rules;
+                    let nonVendorSpecificName;
+                    let hasIdentifier;
+                    let hasExpression;
+                    let hasUnknown;
+                    let hasBlock = true;
+                    let isRooted = true;
                     if (parserInput.currentChar() !== '@') {
                         return;
                     }
@@ -8374,9 +8375,9 @@
                 // and before the `;`.
                 //
                 value: function () {
-                    var e;
-                    var expressions = [];
-                    var index = parserInput.i;
+                    let e;
+                    let expressions = [];
+                    let index = parserInput.i;
                     do {
                         e = this.expression();
                         if (e) {
@@ -8396,8 +8397,8 @@
                     }
                 },
                 sub: function () {
-                    var a;
-                    var e;
+                    let a;
+                    let e;
                     parserInput.save();
                     if (parserInput.$char('(')) {
                         a = this.addition();
@@ -8413,11 +8414,11 @@
                     parserInput.restore();
                 },
                 multiplication: function () {
-                    var m;
-                    var a;
-                    var op;
-                    var operation;
-                    var isSpaced;
+                    let m;
+                    let a;
+                    let op;
+                    let operation;
+                    let isSpaced;
                     m = this.operand();
                     if (m) {
                         isSpaced = parserInput.isWhitespace(-1);
@@ -8446,11 +8447,11 @@
                     }
                 },
                 addition: function () {
-                    var m;
-                    var a;
-                    var op;
-                    var operation;
-                    var isSpaced;
+                    let m;
+                    let a;
+                    let op;
+                    let operation;
+                    let isSpaced;
                     m = this.multiplication();
                     if (m) {
                         isSpaced = parserInput.isWhitespace(-1);
@@ -8472,10 +8473,10 @@
                     }
                 },
                 conditions: function () {
-                    var a;
-                    var b;
-                    var index = parserInput.i;
-                    var condition;
+                    let a;
+                    let b;
+                    let index = parserInput.i;
+                    let condition;
                     a = this.condition(true);
                     if (a) {
                         while (true) {
@@ -8492,9 +8493,9 @@
                     }
                 },
                 condition: function (needsParens) {
-                    var result;
-                    var logical;
-                    var next;
+                    let result;
+                    let logical;
+                    let next;
                     function or() {
                         return parserInput.$str('or');
                     }
@@ -8515,12 +8516,12 @@
                     return result;
                 },
                 conditionAnd: function (needsParens) {
-                    var result;
-                    var logical;
-                    var next;
-                    var self = this;
+                    let result;
+                    let logical;
+                    let next;
+                    let self = this;
                     function insideCondition() {
-                        var cond = self.negatedCondition(needsParens) || self.parenthesisCondition(needsParens);
+                        let cond = self.negatedCondition(needsParens) || self.parenthesisCondition(needsParens);
                         if (!cond && !needsParens) {
                             return self.atomicCondition(needsParens);
                         }
@@ -8547,7 +8548,7 @@
                 },
                 negatedCondition: function (needsParens) {
                     if (parserInput.$str('not')) {
-                        var result = this.parenthesisCondition(needsParens);
+                        let result = this.parenthesisCondition(needsParens);
                         if (result) {
                             result.negate = !result.negate;
                         }
@@ -8556,7 +8557,7 @@
                 },
                 parenthesisCondition: function (needsParens) {
                     function tryConditionFollowedByParenthesis(me) {
-                        var body;
+                        let body;
                         parserInput.save();
                         body = me.condition(needsParens);
                         if (!body) {
@@ -8570,7 +8571,7 @@
                         parserInput.forget();
                         return body;
                     }
-                    var body;
+                    let body;
                     parserInput.save();
                     if (!parserInput.$str('(')) {
                         parserInput.restore();
@@ -8594,12 +8595,12 @@
                     return body;
                 },
                 atomicCondition: function (needsParens) {
-                    var entities = this.entities;
-                    var index = parserInput.i;
-                    var a;
-                    var b;
-                    var c;
-                    var op;
+                    let entities = this.entities;
+                    let index = parserInput.i;
+                    let a;
+                    let b;
+                    let c;
+                    let op;
                     function cond() {
                         return this.addition() || entities.keyword() || entities.quoted() || entities.mixinLookup();
                     }
@@ -8653,12 +8654,12 @@
                 // such as a Color, or a Variable
                 //
                 operand: function () {
-                    var entities = this.entities;
-                    var negate;
+                    let entities = this.entities;
+                    let negate;
                     if (parserInput.peek(/^-[@\$\(]/)) {
                         negate = parserInput.$char('-');
                     }
-                    var o = this.sub() || entities.dimension() ||
+                    let o = this.sub() || entities.dimension() ||
                         entities.color() || entities.variable() ||
                         entities.property() || entities.call() ||
                         entities.quoted(true) || entities.colorKeyword() ||
@@ -8674,13 +8675,13 @@
                 // or white-space delimited Entities.
                 //
                 //     1px solid black
-                //     @var * 2
+                //     @let * 2
                 //
                 expression: function () {
-                    var entities = [];
-                    var e;
-                    var delim;
-                    var index = parserInput.i;
+                    let entities = [];
+                    let e;
+                    let delim;
+                    let index = parserInput.i;
                     do {
                         e = this.comment();
                         if (e) {
@@ -8707,26 +8708,26 @@
                     }
                 },
                 property: function () {
-                    var name = parserInput.$re(/^(\*?-?[_a-zA-Z0-9-]+)\s*:/);
+                    let name = parserInput.$re(/^(\*?-?[_a-zA-Z0-9-]+)\s*:/);
                     if (name) {
                         return name[1];
                     }
                 },
                 ruleProperty: function () {
-                    var name = [];
-                    var index = [];
-                    var s;
-                    var k;
+                    let name = [];
+                    let index = [];
+                    let s;
+                    let k;
                     parserInput.save();
-                    var simpleProperty = parserInput.$re(/^([_a-zA-Z0-9-]+)\s*:/);
+                    let simpleProperty = parserInput.$re(/^([_a-zA-Z0-9-]+)\s*:/);
                     if (simpleProperty) {
                         name = [new (tree.Keyword)(simpleProperty[1])];
                         parserInput.forget();
                         return name;
                     }
                     function match(re) {
-                        var i = parserInput.i;
-                        var chunk = parserInput.$re(re);
+                        let i = parserInput.i;
+                        let chunk = parserInput.$re(re);
                         if (chunk) {
                             index.push(i);
                             return name.push(chunk[1]);
@@ -8762,10 +8763,10 @@
         };
     };
     Parser.serializeVars = function (vars) {
-        var s = '';
-        for (var name_1 in vars) {
+        let s = '';
+        for (let name_1 in vars) {
             if (Object.hasOwnProperty.call(vars, name_1)) {
-                var value = vars[name_1];
+                let value = vars[name_1];
                 s += ((name_1[0] === '@') ? '' : '@') + name_1 + ": " + value + ((String(value).slice(-1) === ';') ? '' : ';');
             }
         }
@@ -8794,14 +8795,14 @@
         }
     }
     isdefined.evalArgs = false;
-    var boolean$1 = { isdefined: isdefined, boolean: boolean, 'if': If };
+    let boolean$1 = { isdefined: isdefined, boolean: boolean, 'if': If };
 
-    var colorFunctions;
+    let colorFunctions;
     function clamp(val) {
         return Math.min(1, Math.max(0, val));
     }
     function hsla(origColor, hsl) {
-        var color = colorFunctions.hsla(hsl.h, hsl.s, hsl.l, hsl.a);
+        let color = colorFunctions.hsla(hsl.h, hsl.s, hsl.l, hsl.a);
         if (color) {
             if (origColor.value &&
                 /^(rgb|hsl)/.test(origColor.value)) {
@@ -8853,13 +8854,13 @@
     }
     colorFunctions = {
         rgb: function (r, g, b) {
-            var a = 1;
+            let a = 1;
             /**
              * Comma-less syntax
              *   e.g. rgb(0 128 255 / 50%)
              */
             if (r instanceof Expression) {
-                var val = r.value;
+                let val = r.value;
                 r = val[0];
                 g = val[1];
                 b = val[2];
@@ -8868,12 +8869,12 @@
                  *   function caller? Or parsed differently?
                  */
                 if (b instanceof Operation) {
-                    var op = b;
+                    let op = b;
                     b = op.operands[0];
                     a = op.operands[1];
                 }
             }
-            var color = colorFunctions.rgba(r, g, b, a);
+            let color = colorFunctions.rgba(r, g, b, a);
             if (color) {
                 color.value = 'rgb';
                 return color;
@@ -8890,26 +8891,26 @@
                     }
                     return new Color(r.rgb, a, 'rgba');
                 }
-                var rgb = [r, g, b].map(function (c) { return scaled(c, 255); });
+                let rgb = [r, g, b].map(function (c) { return scaled(c, 255); });
                 a = number$1(a);
                 return new Color(rgb, a, 'rgba');
             }
             catch (e) { }
         },
         hsl: function (h, s, l) {
-            var a = 1;
+            let a = 1;
             if (h instanceof Expression) {
-                var val = h.value;
+                let val = h.value;
                 h = val[0];
                 s = val[1];
                 l = val[2];
                 if (l instanceof Operation) {
-                    var op = l;
+                    let op = l;
                     l = op.operands[0];
                     a = op.operands[1];
                 }
             }
-            var color = colorFunctions.hsla(h, s, l, a);
+            let color = colorFunctions.hsla(h, s, l, a);
             if (color) {
                 color.value = 'hsl';
                 return color;
@@ -8926,8 +8927,8 @@
                     }
                     return new Color(h.rgb, a, 'hsla');
                 }
-                var m1_1;
-                var m2_1;
+                let m1_1;
+                let m2_1;
                 function hue(h) {
                     h = h < 0 ? h + 1 : (h > 1 ? h - 1 : h);
                     if (h * 6 < 1) {
@@ -8949,7 +8950,7 @@
                 a = clamp(number$1(a));
                 m2_1 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
                 m1_1 = l * 2 - m2_1;
-                var rgb = [
+                let rgb = [
                     hue(h + 1 / 3) * 255,
                     hue(h) * 255,
                     hue(h - 1 / 3) * 255
@@ -8967,15 +8968,15 @@
             s = number$1(s);
             v = number$1(v);
             a = number$1(a);
-            var i;
-            var f;
+            let i;
+            let f;
             i = Math.floor((h / 60) % 6);
             f = (h / 60) - i;
-            var vs = [v,
+            let vs = [v,
                 v * (1 - s),
                 v * (1 - f * s),
                 v * (1 - (1 - f) * s)];
-            var perm = [[0, 3, 1],
+            let perm = [[0, 3, 1],
                 [2, 0, 1],
                 [1, 0, 3],
                 [1, 2, 0],
@@ -9017,7 +9018,7 @@
             return new Dimension(color.luma() * color.alpha * 100, '%');
         },
         luminance: function (color) {
-            var luminance = (0.2126 * color.rgb[0] / 255) +
+            let luminance = (0.2126 * color.rgb[0] / 255) +
                 (0.7152 * color.rgb[1] / 255) +
                 (0.0722 * color.rgb[2] / 255);
             return new Dimension(luminance * color.alpha * 100, '%');
@@ -9028,7 +9029,7 @@
             if (!color.rgb) {
                 return null;
             }
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             if (typeof method !== 'undefined' && method.value === 'relative') {
                 hsl.s += hsl.s * amount.value / 100;
             }
@@ -9039,7 +9040,7 @@
             return hsla(color, hsl);
         },
         desaturate: function (color, amount, method) {
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             if (typeof method !== 'undefined' && method.value === 'relative') {
                 hsl.s -= hsl.s * amount.value / 100;
             }
@@ -9050,7 +9051,7 @@
             return hsla(color, hsl);
         },
         lighten: function (color, amount, method) {
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             if (typeof method !== 'undefined' && method.value === 'relative') {
                 hsl.l += hsl.l * amount.value / 100;
             }
@@ -9061,7 +9062,7 @@
             return hsla(color, hsl);
         },
         darken: function (color, amount, method) {
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             if (typeof method !== 'undefined' && method.value === 'relative') {
                 hsl.l -= hsl.l * amount.value / 100;
             }
@@ -9072,7 +9073,7 @@
             return hsla(color, hsl);
         },
         fadein: function (color, amount, method) {
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             if (typeof method !== 'undefined' && method.value === 'relative') {
                 hsl.a += hsl.a * amount.value / 100;
             }
@@ -9083,7 +9084,7 @@
             return hsla(color, hsl);
         },
         fadeout: function (color, amount, method) {
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             if (typeof method !== 'undefined' && method.value === 'relative') {
                 hsl.a -= hsl.a * amount.value / 100;
             }
@@ -9094,14 +9095,14 @@
             return hsla(color, hsl);
         },
         fade: function (color, amount) {
-            var hsl = toHSL(color);
+            let hsl = toHSL(color);
             hsl.a = amount.value / 100;
             hsl.a = clamp(hsl.a);
             return hsla(color, hsl);
         },
         spin: function (color, amount) {
-            var hsl = toHSL(color);
-            var hue = (hsl.h + amount.value) % 360;
+            let hsl = toHSL(color);
+            let hue = (hsl.h + amount.value) % 360;
             hsl.h = hue < 0 ? 360 + hue : hue;
             return hsla(color, hsl);
         },
@@ -9113,15 +9114,15 @@
             if (!weight) {
                 weight = new Dimension(50);
             }
-            var p = weight.value / 100.0;
-            var w = p * 2 - 1;
-            var a = toHSL(color1).a - toHSL(color2).a;
-            var w1 = (((w * a == -1) ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
-            var w2 = 1 - w1;
-            var rgb = [color1.rgb[0] * w1 + color2.rgb[0] * w2,
+            let p = weight.value / 100.0;
+            let w = p * 2 - 1;
+            let a = toHSL(color1).a - toHSL(color2).a;
+            let w1 = (((w * a == -1) ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
+            let w2 = 1 - w1;
+            let rgb = [color1.rgb[0] * w1 + color2.rgb[0] * w2,
                 color1.rgb[1] * w1 + color2.rgb[1] * w2,
                 color1.rgb[2] * w1 + color2.rgb[2] * w2];
-            var alpha = color1.alpha * p + color2.alpha * (1 - p);
+            let alpha = color1.alpha * p + color2.alpha * (1 - p);
             return new Color(rgb, alpha);
         },
         greyscale: function (color) {
@@ -9141,7 +9142,7 @@
             }
             // Figure out which is actually light and dark:
             if (dark.luma() > light.luma()) {
-                var t = light;
+                let t = light;
                 light = dark;
                 dark = t;
             }
@@ -9175,10 +9176,10 @@
         //     if (typeof color2 === 'undefined') {
         //         color2 = colorFunctions.rgba(255, 255, 255, 1.0);
         //     }
-        //     var contrast1, contrast2;
-        //     var luma = color.luma();
-        //     var luma1 = color1.luma();
-        //     var luma2 = color2.luma();
+        //     let contrast1, contrast2;
+        //     let luma = color.luma();
+        //     let luma1 = color1.luma();
+        //     let luma2 = color2.luma();
         //     // Calculate contrast ratios for each color
         //     if (luma > luma1) {
         //         contrast1 = (luma + 0.05) / (luma1 + 0.05);
@@ -9202,7 +9203,7 @@
         color: function (c) {
             if ((c instanceof Quoted) &&
                 (/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})$/i.test(c.value))) {
-                var val = c.value.slice(1);
+                let val = c.value.slice(1);
                 return new Color(val, undefined, "#" + val);
             }
             if ((c instanceof Color) || (c = Color.fromKeyword(c.value))) {
@@ -9221,22 +9222,22 @@
             return colorFunctions.mix(colorFunctions.rgb(0, 0, 0), color, amount);
         }
     };
-    var color = colorFunctions;
+    let color = colorFunctions;
 
     // Color Blending
     // ref: http://www.w3.org/TR/compositing-1
     function colorBlend(mode, color1, color2) {
-        var ab = color1.alpha; // result
-        var // backdrop
+        let ab = color1.alpha; // result
+        let // backdrop
         cb;
-        var as = color2.alpha;
-        var // source
+        let as = color2.alpha;
+        let // source
         cs;
-        var ar;
-        var cr;
-        var r = [];
+        let ar;
+        let cr;
+        let r = [];
         ar = as + ab * (1 - as);
-        for (var i = 0; i < 3; i++) {
+        for (let i = 0; i < 3; i++) {
             cb = color1.rgb[i] / 255;
             cs = color2.rgb[i] / 255;
             cr = mode(cb, cs);
@@ -9248,7 +9249,7 @@
         }
         return new Color(r, ar);
     }
-    var colorBlendModeFunctions = {
+    let colorBlendModeFunctions = {
         multiply: function (cb, cs) {
             return cb * cs;
         },
@@ -9262,8 +9263,8 @@
                 colorBlendModeFunctions.screen(cb - 1, cs);
         },
         softlight: function (cb, cs) {
-            var d = 1;
-            var e = cb;
+            let d = 1;
+            let e = cb;
             if (cs > 0.5) {
                 e = 1;
                 d = (cb > 0.25) ? Math.sqrt(cb)
@@ -9288,37 +9289,37 @@
             return 1 - Math.abs(cb + cs - 1);
         }
     };
-    for (var f$1 in colorBlendModeFunctions) {
+    for (let f$1 in colorBlendModeFunctions) {
         if (colorBlendModeFunctions.hasOwnProperty(f$1)) {
             colorBlend[f$1] = colorBlend.bind(null, colorBlendModeFunctions[f$1]);
         }
     }
 
-    var dataUri = (function (environment) {
-        var fallback = function (functionThis, node) { return new URL(node, functionThis.index, functionThis.currentFileInfo).eval(functionThis.context); };
+    let dataUri = (function (environment) {
+        let fallback = function (functionThis, node) { return new URL(node, functionThis.index, functionThis.currentFileInfo).eval(functionThis.context); };
         return { 'data-uri': function (mimetypeNode, filePathNode) {
                 if (!filePathNode) {
                     filePathNode = mimetypeNode;
                     mimetypeNode = null;
                 }
-                var mimetype = mimetypeNode && mimetypeNode.value;
-                var filePath = filePathNode.value;
-                var currentFileInfo = this.currentFileInfo;
-                var currentDirectory = currentFileInfo.rewriteUrls ?
+                let mimetype = mimetypeNode && mimetypeNode.value;
+                let filePath = filePathNode.value;
+                let currentFileInfo = this.currentFileInfo;
+                let currentDirectory = currentFileInfo.rewriteUrls ?
                     currentFileInfo.currentDirectory : currentFileInfo.entryPath;
-                var fragmentStart = filePath.indexOf('#');
-                var fragment = '';
+                let fragmentStart = filePath.indexOf('#');
+                let fragment = '';
                 if (fragmentStart !== -1) {
                     fragment = filePath.slice(fragmentStart);
                     filePath = filePath.slice(0, fragmentStart);
                 }
-                var context = clone(this.context);
+                let context = clone(this.context);
                 context.rawBuffer = true;
-                var fileManager = environment.getFileManager(filePath, currentDirectory, context, environment, true);
+                let fileManager = environment.getFileManager(filePath, currentDirectory, context, environment, true);
                 if (!fileManager) {
                     return fallback(this, filePathNode);
                 }
-                var useBase64 = false;
+                let useBase64 = false;
                 // detect the mimetype if not given
                 if (!mimetypeNode) {
                     mimetype = environment.mimeLookup(filePath);
@@ -9327,7 +9328,7 @@
                     }
                     else {
                         // use base 64 unless it's an ASCII or UTF-8 format
-                        var charset = environment.charsetLookup(mimetype);
+                        let charset = environment.charsetLookup(mimetype);
                         useBase64 = ['US-ASCII', 'UTF-8'].indexOf(charset) < 0;
                     }
                     if (useBase64) {
@@ -9337,35 +9338,35 @@
                 else {
                     useBase64 = /;base64$/.test(mimetype);
                 }
-                var fileSync = fileManager.loadFileSync(filePath, currentDirectory, context, environment);
+                let fileSync = fileManager.loadFileSync(filePath, currentDirectory, context, environment);
                 if (!fileSync.contents) {
                     logger$1.warn("Skipped data-uri embedding of " + filePath + " because file not found");
                     return fallback(this, filePathNode || mimetypeNode);
                 }
-                var buf = fileSync.contents;
+                let buf = fileSync.contents;
                 if (useBase64 && !environment.encodeBase64) {
                     return fallback(this, filePathNode);
                 }
                 buf = useBase64 ? environment.encodeBase64(buf) : encodeURIComponent(buf);
-                var uri = "data:" + mimetype + "," + buf + fragment;
+                let uri = "data:" + mimetype + "," + buf + fragment;
                 return new URL(new Quoted("\"" + uri + "\"", uri, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
             } };
     });
 
-    var getItemsFromNode = function (node) {
+    let getItemsFromNode = function (node) {
         // handle non-array values as an array of length 1
         // return 'undefined' if index is invalid
-        var items = Array.isArray(node.value) ?
+        let items = Array.isArray(node.value) ?
             node.value : Array(node);
         return items;
     };
-    var list = {
+    let list = {
         _SELF: function (n) {
             return n;
         },
         '~': function () {
-            var expr = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
+            let expr = [];
+            for (let _i = 0; _i < arguments.length; _i++) {
                 expr[_i] = arguments[_i];
             }
             if (expr.length === 1) {
@@ -9390,10 +9391,10 @@
          * @param {Dimension} [step=1]
          */
         range: function (start, end, step) {
-            var from;
-            var to;
-            var stepValue = 1;
-            var list = [];
+            let from;
+            let to;
+            let stepValue = 1;
+            let list = [];
             if (end) {
                 to = end;
                 from = start.value;
@@ -9405,17 +9406,17 @@
                 from = 1;
                 to = start;
             }
-            for (var i = from; i <= to.value; i += stepValue) {
+            for (let i = from; i <= to.value; i += stepValue) {
                 list.push(new Dimension(i, to.unit));
             }
             return new Expression(list);
         },
         each: function (list, rs) {
-            var _this = this;
-            var rules = [];
-            var newRules;
-            var iterator;
-            var tryEval = function (val) {
+            let _this = this;
+            let rules = [];
+            let newRules;
+            let iterator;
+            let tryEval = function (val) {
                 if (val instanceof Node) {
                     return val.eval(_this.context);
                 }
@@ -9441,9 +9442,9 @@
             else {
                 iterator = [tryEval(list)];
             }
-            var valueName = '@value';
-            var keyName = '@key';
-            var indexName = '@index';
+            let valueName = '@value';
+            let keyName = '@key';
+            let indexName = '@index';
             if (rs.params) {
                 valueName = rs.params[0] && rs.params[0].name;
                 keyName = rs.params[1] && rs.params[1].name;
@@ -9453,10 +9454,10 @@
             else {
                 rs = rs.ruleset;
             }
-            for (var i = 0; i < iterator.length; i++) {
-                var key = void 0;
-                var value = void 0;
-                var item = iterator[i];
+            for (let i = 0; i < iterator.length; i++) {
+                let key = void 0;
+                let value = void 0;
+                let item = iterator[i];
                 if (item instanceof Declaration) {
                     key = typeof item.name === 'string' ? item.name : item.name[0].value;
                     value = item.value;
@@ -9484,7 +9485,7 @@
         }
     };
 
-    var MathHelper = function (fn, unit, n) {
+    let MathHelper = function (fn, unit, n) {
         if (!(n instanceof Dimension)) {
             throw { type: 'Argument', message: 'argument must be a number' };
         }
@@ -9497,7 +9498,7 @@
         return new Dimension(fn(parseFloat(n.value)), unit);
     };
 
-    var mathFunctions = {
+    let mathFunctions = {
         // name,  unit
         ceil: null,
         floor: null,
@@ -9510,32 +9511,32 @@
         asin: 'rad',
         acos: 'rad'
     };
-    for (var f in mathFunctions) {
+    for (let f in mathFunctions) {
         if (mathFunctions.hasOwnProperty(f)) {
             mathFunctions[f] = MathHelper.bind(null, Math[f], mathFunctions[f]);
         }
     }
     mathFunctions.round = function (n, f) {
-        var fraction = typeof f === 'undefined' ? 0 : f.value;
+        let fraction = typeof f === 'undefined' ? 0 : f.value;
         return MathHelper(function (num) { return num.toFixed(fraction); }, null, n);
     };
 
-    var minMax = function (isMin, args) {
+    let minMax = function (isMin, args) {
         args = Array.prototype.slice.call(args);
         switch (args.length) {
             case 0: throw { type: 'Argument', message: 'one or more arguments required' };
         }
-        var i; // key is the unit.toString() for unified Dimension values,
-        var j;
-        var current;
-        var currentUnified;
-        var referenceUnified;
-        var unit;
-        var unitStatic;
-        var unitClone;
-        var // elems only contains original argument values.
+        let i; // key is the unit.toString() for unified Dimension values,
+        let j;
+        let current;
+        let currentUnified;
+        let referenceUnified;
+        let unit;
+        let unitStatic;
+        let unitClone;
+        let // elems only contains original argument values.
         order = [];
-        var values = {};
+        let values = {};
         // value is the index into the order array.
         for (i = 0; i < args.length; i++) {
             current = args[i];
@@ -9570,10 +9571,10 @@
         args = order.map(function (a) { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
         return new Anonymous((isMin ? 'min' : 'max') + "(" + args + ")");
     };
-    var number = {
+    let number = {
         min: function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
+            let args = [];
+            for (let _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
             try {
@@ -9582,8 +9583,8 @@
             catch (e) { }
         },
         max: function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
+            let args = [];
+            for (let _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
             try {
@@ -9611,12 +9612,12 @@
             return new Dimension(Math.pow(x.value, y.value), x.unit);
         },
         percentage: function (n) {
-            var result = MathHelper(function (num) { return num * 100; }, '%', n);
+            let result = MathHelper(function (num) { return num * 100; }, '%', n);
             return result;
         }
     };
 
-    var string = {
+    let string = {
         e: function (str) {
             return new Quoted('"', str instanceof JavaScript ? str.evaluated : str.value, true);
         },
@@ -9625,24 +9626,24 @@
                 .replace(/\(/g, '%28').replace(/\)/g, '%29'));
         },
         replace: function (string, pattern, replacement, flags) {
-            var result = string.value;
+            let result = string.value;
             replacement = (replacement.type === 'Quoted') ?
                 replacement.value : replacement.toCSS();
             result = result.replace(new RegExp(pattern.value, flags ? flags.value : ''), replacement);
             return new Quoted(string.quote || '', result, string.escaped);
         },
         '%': function (string /* arg, arg, ... */) {
-            var args = Array.prototype.slice.call(arguments, 1);
-            var result = string.value;
-            var _loop_1 = function (i) {
+            let args = Array.prototype.slice.call(arguments, 1);
+            let result = string.value;
+            let _loop_1 = function (i) {
                 /* jshint loopfunc:true */
                 result = result.replace(/%[sda]/i, function (token) {
-                    var value = ((args[i].type === 'Quoted') &&
+                    let value = ((args[i].type === 'Quoted') &&
                         token.match(/s/i)) ? args[i].value : args[i].toCSS();
                     return token.match(/[A-Z]$/) ? encodeURIComponent(value) : value;
                 });
             };
-            for (var i = 0; i < args.length; i++) {
+            for (let i = 0; i < args.length; i++) {
                 _loop_1(i);
             }
             result = result.replace(/%%/g, '%');
@@ -9650,20 +9651,20 @@
         }
     };
 
-    var svg = (function (environment) {
+    let svg = (function (environment) {
         return { 'svg-gradient': function (direction) {
-                var stops;
-                var gradientDirectionSvg;
-                var gradientType = 'linear';
-                var rectangleDimension = 'x="0" y="0" width="1" height="1"';
-                var renderEnv = { compress: false };
-                var returner;
-                var directionValue = direction.toCSS(renderEnv);
-                var i;
-                var color;
-                var position;
-                var positionValue;
-                var alpha;
+                let stops;
+                let gradientDirectionSvg;
+                let gradientType = 'linear';
+                let rectangleDimension = 'x="0" y="0" width="1" height="1"';
+                let renderEnv = { compress: false };
+                let returner;
+                let directionValue = direction.toCSS(renderEnv);
+                let i;
+                let color;
+                let position;
+                let positionValue;
+                let alpha;
                 function throwArgumentDescriptor() {
                     throw { type: 'Argument',
                         message: 'svg-gradient expects direction, start_color [start_position], [color position,]...,' +
@@ -9728,8 +9729,8 @@
             } };
     });
 
-    var isa = function (n, Type) { return (n instanceof Type) ? Keyword.True : Keyword.False; };
-    var isunit = function (n, unit) {
+    let isa = function (n, Type) { return (n instanceof Type) ? Keyword.True : Keyword.False; };
+    let isunit = function (n, unit) {
         if (unit === undefined) {
             throw { type: 'Argument', message: 'missing the required second argument to isunit.' };
         }
@@ -9739,7 +9740,7 @@
         }
         return (n instanceof Dimension) && n.unit.is(unit) ? Keyword.True : Keyword.False;
     };
-    var types = {
+    let types = {
         isruleset: function (n) {
             return isa(n, DetachedRuleset);
         },
@@ -9791,8 +9792,8 @@
         }
     };
 
-    var functions = (function (environment) {
-        var functions = { functionRegistry: functionRegistry, functionCaller: functionCaller };
+    let functions = (function (environment) {
+        let functions = { functionRegistry: functionRegistry, functionCaller: functionCaller };
         // register functions
         functionRegistry.addMultiple(boolean$1);
         functionRegistry.add('default', defaultFunc.eval.bind(defaultFunc));
@@ -9810,9 +9811,9 @@
 
     function transformTree (root, options) {
         options = options || {};
-        var evaldRoot;
-        var variables = options.variables;
-        var evalEnv = new contexts.Eval(options);
+        let evaldRoot;
+        let variables = options.variables;
+        let evalEnv = new contexts.Eval(options);
         //
         // Allows setting variables with a hash, so:
         //
@@ -9828,7 +9829,7 @@
         //
         if (typeof variables === 'object' && !Array.isArray(variables)) {
             variables = Object.keys(variables).map(function (k) {
-                var value = variables[k];
+                let value = variables[k];
                 if (!(value instanceof tree.Value)) {
                     if (!(value instanceof tree.Expression)) {
                         value = new tree.Expression([value]);
@@ -9839,15 +9840,15 @@
             });
             evalEnv.frames = [new tree.Ruleset(null, variables)];
         }
-        var visitors$1 = [
+        let visitors$1 = [
             new visitors.JoinSelectorVisitor(),
             new visitors.MarkVisibleSelectorsVisitor(true),
             new visitors.ExtendVisitor(),
             new visitors.ToCSSVisitor({ compress: Boolean(options.compress) })
         ];
-        var preEvalVisitors = [];
-        var v;
-        var visitorIterator;
+        let preEvalVisitors = [];
+        let v;
+        let visitorIterator;
         /**
          * first() / get() allows visitors to be added while visiting
          *
@@ -9855,7 +9856,7 @@
          */
         if (options.pluginManager) {
             visitorIterator = options.pluginManager.visitor();
-            for (var i = 0; i < 2; i++) {
+            for (let i = 0; i < 2; i++) {
                 visitorIterator.first();
                 while ((v = visitorIterator.get())) {
                     if (v.isPreEvalVisitor) {
@@ -9878,7 +9879,7 @@
             }
         }
         evaldRoot = root.eval(evalEnv);
-        for (var i = 0; i < visitors$1.length; i++) {
+        for (let i = 0; i < visitors$1.length; i++) {
             visitors$1[i].run(evaldRoot);
         }
         // Run any remaining visitors added after eval pass
@@ -9896,7 +9897,7 @@
     /**
      * Plugin Manager
      */
-    var PluginManager = /** @class */ (function () {
+    let PluginManager = /** @class */ (function () {
         function PluginManager(less) {
             this.less = less;
             this.visitors = [];
@@ -9914,7 +9915,7 @@
          */
         PluginManager.prototype.addPlugins = function (plugins) {
             if (plugins) {
-                for (var i = 0; i < plugins.length; i++) {
+                for (let i = 0; i < plugins.length; i++) {
                     this.addPlugin(plugins[i]);
                 }
             }
@@ -9954,7 +9955,7 @@
          * @param {number} priority - guidelines 1 = before import, 1000 = import, 2000 = after import
          */
         PluginManager.prototype.addPreProcessor = function (preProcessor, priority) {
-            var indexToInsertAt;
+            let indexToInsertAt;
             for (indexToInsertAt = 0; indexToInsertAt < this.preProcessors.length; indexToInsertAt++) {
                 if (this.preProcessors[indexToInsertAt].priority >= priority) {
                     break;
@@ -9968,7 +9969,7 @@
          * @param {number} priority - guidelines 1 = before compression, 1000 = compression, 2000 = after compression
          */
         PluginManager.prototype.addPostProcessor = function (postProcessor, priority) {
-            var indexToInsertAt;
+            let indexToInsertAt;
             for (indexToInsertAt = 0; indexToInsertAt < this.postProcessors.length; indexToInsertAt++) {
                 if (this.postProcessors[indexToInsertAt].priority >= priority) {
                     break;
@@ -9989,8 +9990,8 @@
          * @private
          */
         PluginManager.prototype.getPreProcessors = function () {
-            var preProcessors = [];
-            for (var i = 0; i < this.preProcessors.length; i++) {
+            let preProcessors = [];
+            for (let i = 0; i < this.preProcessors.length; i++) {
                 preProcessors.push(this.preProcessors[i].preProcessor);
             }
             return preProcessors;
@@ -10001,8 +10002,8 @@
          * @private
          */
         PluginManager.prototype.getPostProcessors = function () {
-            var postProcessors = [];
-            for (var i = 0; i < this.postProcessors.length; i++) {
+            let postProcessors = [];
+            for (let i = 0; i < this.postProcessors.length; i++) {
                 postProcessors.push(this.postProcessors[i].postProcessor);
             }
             return postProcessors;
@@ -10016,7 +10017,7 @@
             return this.visitors;
         };
         PluginManager.prototype.visitor = function () {
-            var self = this;
+            let self = this;
             return {
                 first: function () {
                     self.iterator = -1;
@@ -10038,8 +10039,8 @@
         };
         return PluginManager;
     }());
-    var pm;
-    var PluginManagerFactory = function (less, newFactory) {
+    let pm;
+    let PluginManagerFactory = function (less, newFactory) {
         if (newFactory || !pm) {
             pm = new PluginManager(less);
         }
@@ -10047,7 +10048,7 @@
     };
 
     function SourceMapOutput (environment) {
-        var SourceMapOutput = /** @class */ (function () {
+        let SourceMapOutput = /** @class */ (function () {
             function SourceMapOutput(options) {
                 this._css = [];
                 this._rootNode = options.rootNode;
@@ -10094,9 +10095,9 @@
                 if (!chunk) {
                     return;
                 }
-                var lines, sourceLines, columns, sourceColumns, i;
+                let lines, sourceLines, columns, sourceColumns, i;
                 if (fileInfo && fileInfo.filename) {
-                    var inputSource = this._contentsMap[fileInfo.filename];
+                    let inputSource = this._contentsMap[fileInfo.filename];
                     // remove vars/banner added to the top of the file
                     if (this._contentsIgnoredCharsMap[fileInfo.filename]) {
                         // adjust the index
@@ -10150,9 +10151,9 @@
             SourceMapOutput.prototype.toCSS = function (context) {
                 this._sourceMapGenerator = new this._sourceMapGeneratorConstructor({ file: this._outputFilename, sourceRoot: null });
                 if (this._outputSourceFiles) {
-                    for (var filename in this._contentsMap) {
+                    for (let filename in this._contentsMap) {
                         if (this._contentsMap.hasOwnProperty(filename)) {
-                            var source = this._contentsMap[filename];
+                            let source = this._contentsMap[filename];
                             if (this._contentsIgnoredCharsMap[filename]) {
                                 source = source.slice(this._contentsIgnoredCharsMap[filename]);
                             }
@@ -10162,8 +10163,8 @@
                 }
                 this._rootNode.genCSS(context, this);
                 if (this._css.length > 0) {
-                    var sourceMapURL = void 0;
-                    var sourceMapContent = JSON.stringify(this._sourceMapGenerator.toJSON());
+                    let sourceMapURL = void 0;
+                    let sourceMapContent = JSON.stringify(this._sourceMapGenerator.toJSON());
                     if (this.sourceMapURL) {
                         sourceMapURL = this.sourceMapURL;
                     }
@@ -10181,12 +10182,12 @@
     }
 
     function SourceMapBuilder (SourceMapOutput, environment) {
-        var SourceMapBuilder = /** @class */ (function () {
+        let SourceMapBuilder = /** @class */ (function () {
             function SourceMapBuilder(options) {
                 this.options = options;
             }
             SourceMapBuilder.prototype.toCSS = function (rootNode, options, imports) {
-                var sourceMapOutput = new SourceMapOutput({
+                let sourceMapOutput = new SourceMapOutput({
                     contentsIgnoredCharsMap: imports.contentsIgnoredChars,
                     rootNode: rootNode,
                     contentsMap: imports.contents,
@@ -10200,7 +10201,7 @@
                     sourceMapFileInline: this.options.sourceMapFileInline,
                     disableSourcemapAnnotation: this.options.disableSourcemapAnnotation
                 });
-                var css = sourceMapOutput.toCSS(options);
+                let css = sourceMapOutput.toCSS(options);
                 this.sourceMap = sourceMapOutput.sourceMap;
                 this.sourceMapURL = sourceMapOutput.sourceMapURL;
                 if (this.options.sourceMapInputFilename) {
@@ -10212,7 +10213,7 @@
                 return css + this.getCSSAppendage();
             };
             SourceMapBuilder.prototype.getCSSAppendage = function () {
-                var sourceMapURL = this.sourceMapURL;
+                let sourceMapURL = this.sourceMapURL;
                 if (this.options.sourceMapFileInline) {
                     if (this.sourceMap === undefined) {
                         return '';
@@ -10251,15 +10252,15 @@
     }
 
     function ParseTree (SourceMapBuilder) {
-        var ParseTree = /** @class */ (function () {
+        let ParseTree = /** @class */ (function () {
             function ParseTree(root, imports) {
                 this.root = root;
                 this.imports = imports;
             }
             ParseTree.prototype.toCSS = function (options) {
-                var evaldRoot;
-                var result = {};
-                var sourceMapBuilder;
+                let evaldRoot;
+                let result = {};
+                let sourceMapBuilder;
                 try {
                     evaldRoot = transformTree(this.root, options);
                 }
@@ -10267,12 +10268,12 @@
                     throw new LessError(e, this.imports);
                 }
                 try {
-                    var compress = Boolean(options.compress);
+                    let compress = Boolean(options.compress);
                     if (compress) {
                         logger$1.warn('The compress option has been deprecated. ' +
                             'We recommend you use a dedicated css minifier, for instance see less-plugin-clean-css.');
                     }
-                    var toCSSOptions = {
+                    let toCSSOptions = {
                         compress: compress,
                         dumpLineNumbers: options.dumpLineNumbers,
                         strictUnits: Boolean(options.strictUnits),
@@ -10290,8 +10291,8 @@
                     throw new LessError(e, this.imports);
                 }
                 if (options.pluginManager) {
-                    var postProcessors = options.pluginManager.getPostProcessors();
-                    for (var i = 0; i < postProcessors.length; i++) {
+                    let postProcessors = options.pluginManager.getPostProcessors();
+                    for (let i = 0; i < postProcessors.length; i++) {
                         result.css = postProcessors[i].process(result.css, { sourceMap: sourceMapBuilder, options: options, imports: this.imports });
                     }
                 }
@@ -10299,7 +10300,7 @@
                     result.map = sourceMapBuilder.getExternalSourceMap();
                 }
                 result.imports = [];
-                for (var file in this.imports.files) {
+                for (let file in this.imports.files) {
                     if (this.imports.files.hasOwnProperty(file) && file !== this.imports.rootFilename) {
                         result.imports.push(file);
                     }
@@ -10320,7 +10321,7 @@
         //  'rootFilename' - filename of the base file
         //  'entryPath' - absolute path to the entry file
         //  'reference' - whether the file should not be output and only output parts that are referenced
-        var ImportManager = /** @class */ (function () {
+        let ImportManager = /** @class */ (function () {
             function ImportManager(less, context, rootFileInfo) {
                 this.less = less;
                 this.rootFilename = rootFileInfo.filename;
@@ -10343,11 +10344,11 @@
              * @param callback - callback for when it is imported
              */
             ImportManager.prototype.push = function (path, tryAppendExtension, currentFileInfo, importOptions, callback) {
-                var importManager = this, pluginLoader = this.context.pluginManager.Loader;
+                let importManager = this, pluginLoader = this.context.pluginManager.Loader;
                 this.queue.push(path);
-                var fileParsedFunc = function (e, root, fullPath) {
+                let fileParsedFunc = function (e, root, fullPath) {
                     importManager.queue.splice(importManager.queue.indexOf(path), 1); // Remove the path from the queue
-                    var importedEqualsRoot = fullPath === importManager.rootFilename;
+                    let importedEqualsRoot = fullPath === importManager.rootFilename;
                     if (importOptions.optional && e) {
                         callback(null, { rules: [] }, false, null);
                         logger$1.info("The file " + fullPath + " was skipped because it was not found and the import was marked optional.");
@@ -10365,21 +10366,21 @@
                         callback(e, root, importedEqualsRoot, fullPath);
                     }
                 };
-                var newFileInfo = {
+                let newFileInfo = {
                     rewriteUrls: this.context.rewriteUrls,
                     entryPath: currentFileInfo.entryPath,
                     rootpath: currentFileInfo.rootpath,
                     rootFilename: currentFileInfo.rootFilename
                 };
-                var fileManager = environment.getFileManager(path, currentFileInfo.currentDirectory, this.context, environment);
+                let fileManager = environment.getFileManager(path, currentFileInfo.currentDirectory, this.context, environment);
                 if (!fileManager) {
                     fileParsedFunc({ message: "Could not find a file-manager for " + path });
                     return;
                 }
-                var loadFileCallback = function (loadedFile) {
-                    var plugin;
-                    var resolvedFilename = loadedFile.filename;
-                    var contents = loadedFile.contents.replace(/^\uFEFF/, '');
+                let loadFileCallback = function (loadedFile) {
+                    let plugin;
+                    let resolvedFilename = loadedFile.filename;
+                    let contents = loadedFile.contents.replace(/^\uFEFF/, '');
                     // Pass on an updated rootpath if path of imported file is relative and file
                     // is in a (sub|sup) directory
                     //
@@ -10396,7 +10397,7 @@
                         }
                     }
                     newFileInfo.filename = resolvedFilename;
-                    var newEnv = new contexts.Parse(importManager.context);
+                    let newEnv = new contexts.Parse(importManager.context);
                     newEnv.processImports = false;
                     importManager.contents[resolvedFilename] = contents;
                     if (currentFileInfo.reference || importOptions.reference) {
@@ -10429,9 +10430,9 @@
                         }
                     }
                 };
-                var loadedFile;
-                var promise;
-                var context = clone(this.context);
+                let loadedFile;
+                let promise;
+                let context = clone(this.context);
                 if (tryAppendExtension) {
                     context.ext = importOptions.isPlugin ? '.js' : '.less';
                 }
@@ -10477,7 +10478,7 @@
     }
 
     function Parse (environment, ParseTree, ImportManager) {
-        var parse = function (input, options, callback) {
+        let parse = function (input, options, callback) {
             if (typeof options === 'function') {
                 callback = options;
                 options = copyOptions(this.options, {});
@@ -10486,7 +10487,7 @@
                 options = copyOptions(this.options, options || {});
             }
             if (!callback) {
-                var self_1 = this;
+                let self_1 = this;
                 return new Promise(function (resolve, reject) {
                     parse.call(self_1, input, options, function (err, output) {
                         if (err) {
@@ -10499,17 +10500,17 @@
                 });
             }
             else {
-                var context_1;
-                var rootFileInfo = void 0;
-                var pluginManager_1 = new PluginManagerFactory(this, !options.reUsePluginManager);
+                let context_1;
+                let rootFileInfo = void 0;
+                let pluginManager_1 = new PluginManagerFactory(this, !options.reUsePluginManager);
                 options.pluginManager = pluginManager_1;
                 context_1 = new contexts.Parse(options);
                 if (options.rootFileInfo) {
                     rootFileInfo = options.rootFileInfo;
                 }
                 else {
-                    var filename = options.filename || 'input';
-                    var entryPath = filename.replace(/[^\/\\]*$/, '');
+                    let filename = options.filename || 'input';
+                    let entryPath = filename.replace(/[^\/\\]*$/, '');
                     rootFileInfo = {
                         filename: filename,
                         rewriteUrls: context_1.rewriteUrls,
@@ -10523,13 +10524,13 @@
                         rootFileInfo.rootpath += '/';
                     }
                 }
-                var imports_1 = new ImportManager(this, context_1, rootFileInfo);
+                let imports_1 = new ImportManager(this, context_1, rootFileInfo);
                 this.importManager = imports_1;
                 // TODO: allow the plugins to be just a list of paths or names
                 // Do an async plugin queue like lessc
                 if (options.plugins) {
                     options.plugins.forEach(function (plugin) {
-                        var evalResult, contents;
+                        let evalResult, contents;
                         if (plugin.fileContent) {
                             contents = plugin.fileContent.replace(/^\uFEFF/, '');
                             evalResult = pluginManager_1.Loader.evalPlugin(contents, context_1, imports_1, plugin.options, plugin.filename);
@@ -10555,7 +10556,7 @@
     }
 
     function Render (environment, ParseTree, ImportManager) {
-        var render = function (input, options, callback) {
+        let render = function (input, options, callback) {
             if (typeof options === 'function') {
                 callback = options;
                 options = copyOptions(this.options, {});
@@ -10564,7 +10565,7 @@
                 options = copyOptions(this.options, options || {});
             }
             if (!callback) {
-                var self_1 = this;
+                let self_1 = this;
                 return new Promise(function (resolve, reject) {
                     render.call(self_1, input, options, function (err, output) {
                         if (err) {
@@ -10581,9 +10582,9 @@
                     if (err) {
                         return callback(err);
                     }
-                    var result;
+                    let result;
                     try {
-                        var parseTree = new ParseTree(root, imports);
+                        let parseTree = new ParseTree(root, imports);
                         result = parseTree.toCSS(options);
                     }
                     catch (err) {
@@ -10596,15 +10597,15 @@
         return render;
     }
 
-    var version = "4.1.3";
+    let version = "4.1.3";
 
     function parseNodeVersion(version) {
-      var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
+      let match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
       if (!match) {
         throw new Error('Unable to parse: ' + version);
       }
 
-      var res = {
+      let res = {
         major: parseInt(match[1], 10),
         minor: parseInt(match[2], 10),
         patch: parseInt(match[3], 10),
@@ -10615,19 +10616,19 @@
       return res;
     }
 
-    var parseNodeVersion_1 = parseNodeVersion;
+    let parseNodeVersion_1 = parseNodeVersion;
 
     function lessRoot (environment, fileManagers) {
-        var sourceMapOutput, sourceMapBuilder, parseTree, importManager;
+        let sourceMapOutput, sourceMapBuilder, parseTree, importManager;
         environment = new Environment(environment, fileManagers);
         sourceMapOutput = SourceMapOutput(environment);
         sourceMapBuilder = SourceMapBuilder(sourceMapOutput, environment);
         parseTree = ParseTree(sourceMapBuilder);
         importManager = ImportManager(environment);
-        var render = Render(environment, parseTree);
-        var parse = Parse(environment, parseTree, importManager);
-        var v = parseNodeVersion_1("v" + version);
-        var initial = {
+        let render = Render(environment, parseTree);
+        let parse = Parse(environment, parseTree, importManager);
+        let v = parseNodeVersion_1("v" + version);
+        let initial = {
             version: [v.major, v.minor, v.patch],
             data: data,
             tree: tree,
@@ -10652,16 +10653,16 @@
             logger: logger$1
         };
         // Create a public API
-        var ctor = function (t) {
+        let ctor = function (t) {
             return function () {
-                var obj = Object.create(t.prototype);
+                let obj = Object.create(t.prototype);
                 t.apply(obj, Array.prototype.slice.call(arguments, 0));
                 return obj;
             };
         };
-        var t;
-        var api = Object.create(initial);
-        for (var n in initial.tree) {
+        let t;
+        let api = Object.create(initial);
+        for (let n in initial.tree) {
             /* eslint guard-for-in: 0 */
             t = initial.tree[n];
             if (typeof t === 'function') {
@@ -10669,7 +10670,7 @@
             }
             else {
                 api[n] = Object.create(null);
-                for (var o in t) {
+                for (let o in t) {
                     /* eslint guard-for-in: 0 */
                     api[n][o.toLowerCase()] = ctor(t[o]);
                 }
@@ -10687,11 +10688,11 @@
     }
 
     /* global window, XMLHttpRequest */
-    var options$1;
-    var logger;
-    var fileCache = {};
+    let options$1;
+    let logger;
+    let fileCache = {};
     // TODOS - move log somewhere. pathDiff and doing something similar in node. use pathDiff in the other browser file for the initial load
-    var FileManager = function () { };
+    let FileManager = function () { };
     FileManager.prototype = Object.assign(new AbstractFileManager(), {
         alwaysMakePathsAbsolute: function () {
             return true;
@@ -10703,8 +10704,8 @@
             return this.extractUrlParts(laterPath, basePath).path;
         },
         doXHR: function (url, type, callback, errback) {
-            var xhr = new XMLHttpRequest();
-            var async = options$1.isFileProtocol ? options$1.fileAsync : true;
+            let xhr = new XMLHttpRequest();
+            let async = options$1.isFileProtocol ? options$1.fileAsync : true;
             if (typeof xhr.overrideMimeType === 'function') {
                 xhr.overrideMimeType('text/css');
             }
@@ -10755,13 +10756,13 @@
             options = options || {};
             // sheet may be set to the stylesheet for the initial load or a collection of properties including
             // some context variables for imports
-            var hrefParts = this.extractUrlParts(filename, window.location.href);
-            var href = hrefParts.url;
-            var self = this;
+            let hrefParts = this.extractUrlParts(filename, window.location.href);
+            let href = hrefParts.url;
+            let self = this;
             return new Promise(function (resolve, reject) {
                 if (options.useFileCache && fileCache[href]) {
                     try {
-                        var lessText = fileCache[href];
+                        let lessText = fileCache[href];
                         return resolve({ contents: lessText, filename: href, webInfo: { lastModified: new Date() } });
                     }
                     catch (e) {
@@ -10779,7 +10780,7 @@
             });
         }
     });
-    var FM = (function (opts, log) {
+    let FM = (function (opts, log) {
         options$1 = opts;
         logger = log;
         return FileManager;
@@ -10789,7 +10790,7 @@
     /**
      * Browser Plugin Loader
      */
-    var PluginLoader = function (less) {
+    let PluginLoader = function (less) {
         this.less = less;
         // Should we shim this.require for browser? Probably not?
     };
@@ -10802,11 +10803,11 @@
         }
     });
 
-    var LogListener = (function (less, options) {
-        var logLevel_debug = 4;
-        var logLevel_info = 3;
-        var logLevel_warn = 2;
-        var logLevel_error = 1;
+    let LogListener = (function (less, options) {
+        let logLevel_debug = 4;
+        let logLevel_info = 3;
+        let logLevel_warn = 2;
+        let logLevel_error = 1;
         // The amount of logging in the javascript console.
         // 3 - Debug, information and errors
         // 2 - Information and errors
@@ -10838,26 +10839,26 @@
                     }
                 }];
         }
-        for (var i = 0; i < options.loggers.length; i++) {
+        for (let i = 0; i < options.loggers.length; i++) {
             less.logger.addListener(options.loggers[i]);
         }
     });
 
-    var ErrorReporting = (function (window, less, options) {
+    let ErrorReporting = (function (window, less, options) {
         function errorHTML(e, rootHref) {
-            var id = "less-error-message:" + extractId(rootHref || '');
-            var template = '<li><label>{line}</label><pre class="{class}">{content}</pre></li>';
-            var elem = window.document.createElement('div');
-            var timer;
-            var content;
-            var errors = [];
-            var filename = e.filename || rootHref;
-            var filenameNoPath = filename.match(/([^\/]+(\?.*)?)$/)[1];
+            let id = "less-error-message:" + extractId(rootHref || '');
+            let template = '<li><label>{line}</label><pre class="{class}">{content}</pre></li>';
+            let elem = window.document.createElement('div');
+            let timer;
+            let content;
+            let errors = [];
+            let filename = e.filename || rootHref;
+            let filenameNoPath = filename.match(/([^\/]+(\?.*)?)$/)[1];
             elem.id = id;
             elem.className = 'less-error-message';
             content = "<h3>" + (e.type || 'Syntax') + "Error: " + (e.message || 'There is an error in your .less file') +
                 ("</h3><p>in <a href=\"" + filename + "\">" + filenameNoPath + "</a> ");
-            var errorline = function (e, i, classname) {
+            let errorline = function (e, i, classname) {
                 if (e.extract[i] !== undefined) {
                     errors.push(template.replace(/\{line\}/, (parseInt(e.line, 10) || 0) + (i - 1))
                         .replace(/\{class\}/, classname)
@@ -10926,8 +10927,8 @@
             ].join(';');
             if (options.env === 'development') {
                 timer = setInterval(function () {
-                    var document = window.document;
-                    var body = document.body;
+                    let document = window.document;
+                    let body = document.body;
                     if (body) {
                         if (document.getElementById(id)) {
                             body.replaceChild(elem, document.getElementById(id));
@@ -10941,7 +10942,7 @@
             }
         }
         function removeErrorHTML(path) {
-            var node = window.document.getElementById("less-error-message:" + extractId(path));
+            let node = window.document.getElementById("less-error-message:" + extractId(path));
             if (node) {
                 node.parentNode.removeChild(node);
             }
@@ -10956,11 +10957,11 @@
             }
         }
         function errorConsole(e, rootHref) {
-            var template = '{line} {content}';
-            var filename = e.filename || rootHref;
-            var errors = [];
-            var content = (e.type || 'Syntax') + "Error: " + (e.message || 'There is an error in your .less file') + " in " + filename;
-            var errorline = function (e, i, classname) {
+            let template = '{line} {content}';
+            let filename = e.filename || rootHref;
+            let errors = [];
+            let content = (e.type || 'Syntax') + "Error: " + (e.message || 'There is an error in your .less file') + " in " + filename;
+            let errorline = function (e, i, classname) {
                 if (e.extract[i] !== undefined) {
                     errors.push(template.replace(/\{line\}/, (parseInt(e.line, 10) || 0) + (i - 1))
                         .replace(/\{class\}/, classname)
@@ -10996,8 +10997,8 @@
     });
 
     // Cache system is a bit outdated and could do with work
-    var Cache = (function (window, options, logger) {
-        var cache = null;
+    let Cache = (function (window, options, logger) {
+        let cache = null;
         if (options.env !== 'development') {
             try {
                 cache = (typeof window.localStorage === 'undefined') ? null : window.localStorage;
@@ -11022,9 +11023,9 @@
                 }
             },
             getCSS: function (path, webInfo, modifyVars) {
-                var css = cache && cache.getItem(path);
-                var timestamp = cache && cache.getItem(path + ":timestamp");
-                var vars = cache && cache.getItem(path + ":vars");
+                let css = cache && cache.getItem(path);
+                let timestamp = cache && cache.getItem(path + ":timestamp");
+                let vars = cache && cache.getItem(path + ":vars");
                 modifyVars = modifyVars || {};
                 vars = vars || "{}"; // if not set, treat as the JSON representation of an empty object
                 if (timestamp && webInfo.lastModified &&
@@ -11038,14 +11039,14 @@
         };
     });
 
-    var ImageSize = (function () {
+    let ImageSize = (function () {
         function imageSize() {
             throw {
                 type: 'Runtime',
                 message: 'Image size functions are not supported in browser version of less'
             };
         }
-        var imageFunctions = {
+        let imageFunctions = {
             'image-size': function (filePathNode) {
                 imageSize();
                 return -1;
@@ -11063,28 +11064,28 @@
     });
 
     //
-    var root = (function (window, options) {
-        var document = window.document;
-        var less = lessRoot();
+    let root = (function (window, options) {
+        let document = window.document;
+        let less = lessRoot();
         less.options = options;
-        var environment = less.environment;
-        var FileManager = FM(options, less.logger);
-        var fileManager = new FileManager();
+        let environment = less.environment;
+        let FileManager = FM(options, less.logger);
+        let fileManager = new FileManager();
         environment.addFileManager(fileManager);
         less.FileManager = FileManager;
         less.PluginLoader = PluginLoader;
         LogListener(less, options);
-        var errors = ErrorReporting(window, less, options);
-        var cache = less.cache = options.cache || Cache(window, options, less.logger);
+        let errors = ErrorReporting(window, less, options);
+        let cache = less.cache = options.cache || Cache(window, options, less.logger);
         ImageSize(less.environment);
         // Setup user functions - Deprecate?
         if (options.functions) {
             less.functions.functionRegistry.addMultiple(options.functions);
         }
-        var typePattern = /^text\/(x-)?less$/;
+        let typePattern = /^text\/(x-)?less$/;
         function clone(obj) {
-            var cloned = {};
-            for (var prop in obj) {
+            let cloned = {};
+            for (let prop in obj) {
                 if (obj.hasOwnProperty(prop)) {
                     cloned[prop] = obj[prop];
                 }
@@ -11093,21 +11094,21 @@
         }
         // only really needed for phantom
         function bind(func, thisArg) {
-            var curryArgs = Array.prototype.slice.call(arguments, 2);
+            let curryArgs = Array.prototype.slice.call(arguments, 2);
             return function () {
-                var args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
+                let args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
                 return func.apply(thisArg, args);
             };
         }
         function loadStyles(modifyVars) {
-            var styles = document.getElementsByTagName('style');
-            var style;
-            for (var i = 0; i < styles.length; i++) {
+            let styles = document.getElementsByTagName('style');
+            let style;
+            for (let i = 0; i < styles.length; i++) {
                 style = styles[i];
                 if (style.type.match(typePattern)) {
-                    var instanceOptions = clone(options);
+                    let instanceOptions = clone(options);
                     instanceOptions.modifyVars = modifyVars;
-                    var lessText = style.innerHTML || '';
+                    let lessText = style.innerHTML || '';
                     instanceOptions.filename = document.location.href.replace(/#.*$/, '');
                     /* jshint loopfunc:true */
                     // use closure to store current style
@@ -11129,17 +11130,17 @@
             }
         }
         function loadStyleSheet(sheet, callback, reload, remaining, modifyVars) {
-            var instanceOptions = clone(options);
+            let instanceOptions = clone(options);
             addDataAttr(instanceOptions, sheet);
             instanceOptions.mime = sheet.type;
             if (modifyVars) {
                 instanceOptions.modifyVars = modifyVars;
             }
             function loadInitialFileCallback(loadedFile) {
-                var data = loadedFile.contents;
-                var path = loadedFile.filename;
-                var webInfo = loadedFile.webInfo;
-                var newFileInfo = {
+                let data = loadedFile.contents;
+                let path = loadedFile.filename;
+                let webInfo = loadedFile.webInfo;
+                let newFileInfo = {
                     currentDirectory: fileManager.getPath(path),
                     filename: path,
                     rootFilename: path,
@@ -11149,7 +11150,7 @@
                 newFileInfo.rootpath = instanceOptions.rootpath || newFileInfo.currentDirectory;
                 if (webInfo) {
                     webInfo.remaining = remaining;
-                    var css = cache.getCSS(path, webInfo, instanceOptions.modifyVars);
+                    let css = cache.getCSS(path, webInfo, instanceOptions.modifyVars);
                     if (!reload && css) {
                         webInfo.local = true;
                         callback(null, css, data, sheet, webInfo, path);
@@ -11179,7 +11180,7 @@
             });
         }
         function loadStyleSheets(callback, reload, modifyVars) {
-            for (var i = 0; i < less.sheets.length; i++) {
+            for (let i = 0; i < less.sheets.length; i++) {
                 loadStyleSheet(less.sheets[i], callback, reload, less.sheets.length - (i + 1), modifyVars);
             }
         }
@@ -11217,9 +11218,9 @@
         // "stylesheet/less".
         //
         less.registerStylesheetsImmediately = function () {
-            var links = document.getElementsByTagName('link');
+            let links = document.getElementsByTagName('link');
             less.sheets = [];
-            for (var i = 0; i < links.length; i++) {
+            for (let i = 0; i < links.length; i++) {
                 if (links[i].rel === 'stylesheet/less' || (links[i].rel.match(/stylesheet/) &&
                     (links[i].type.match(typePattern)))) {
                     less.sheets.push(links[i]);
@@ -11244,10 +11245,10 @@
                 fileManager.clearFileCache();
             }
             return new Promise(function (resolve, reject) {
-                var startTime;
-                var endTime;
-                var totalMilliseconds;
-                var remainingSheets;
+                let startTime;
+                let endTime;
+                let totalMilliseconds;
+                let remainingSheets;
                 startTime = endTime = new Date();
                 // Set counter for remaining unprocessed sheets
                 remainingSheets = less.sheets.length;
@@ -11306,9 +11307,9 @@
      * used in the browser distributed version of less
      * to kick-start less using the browser api
      */
-    var options = defaultOptions();
+    let options = defaultOptions();
     if (window.less) {
-        for (var key in window.less) {
+        for (let key in window.less) {
             if (window.less.hasOwnProperty(key)) {
                 options[key] = window.less[key];
             }
@@ -11319,11 +11320,11 @@
     if (window.LESS_PLUGINS) {
         options.plugins = options.plugins.concat(window.LESS_PLUGINS);
     }
-    var less = root(window, options);
+    let less = root(window, options);
     window.less = less;
-    var css;
-    var head;
-    var style;
+    let css;
+    let head;
+    let style;
     // Always restore page visibility
     function resolveOrReject(data) {
         if (data.filename) {

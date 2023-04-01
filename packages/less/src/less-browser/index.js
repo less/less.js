@@ -56,7 +56,7 @@ export default (window, options) => {
         for (let style of styles) {
             if (style.type.match(typePattern)) {
                 const instanceOptions = {
-                    ...options,
+                    ...clone(options),
                     modifyVars,
                     filename: document.location.href.replace(/#.*$/, '')
                 }

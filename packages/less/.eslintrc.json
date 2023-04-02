@@ -11,7 +11,7 @@
     },
     "globals": {},
     "rules": {
-        "no-eval": 2,
+        "no-eval": 1,
         "no-use-before-define": [
             2,
             {

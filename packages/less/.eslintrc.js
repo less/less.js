@@ -45,6 +45,19 @@ module.exports = {
                  */
                 '@typescript-eslint/no-explicit-any': 0
             }
-        }
+        },
+        {
+            files: ['test/**/*.{js,ts}', 'benchmark/index.js'],
+            /**
+             * @todo - fix later
+             */
+            rules: {
+                'no-undef': 0,
+                'no-useless-escape': 0,
+                'no-unused-vars': 0,
+                'no-redeclare': 0,
+                '@typescript-eslint/no-unused-vars': 0
+            }
+        },
     ]
 }

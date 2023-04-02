@@ -38,6 +38,7 @@
 		"test": "grunt test",
 		"grunt": "grunt",
 		"lint": "eslint '**/*.{ts,js}'",
+		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"build": "npm-run-all clean compile",
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
 		"compile": "tsc -p tsconfig.json",

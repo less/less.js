@@ -5,13 +5,13 @@ import less from '..';
 const lessRender = less.render;
 
 // then I call lessRender on something
-const y = lessRender(`
+lessRender(`
 body {
     a: 1;
     b: 2;
     c: 30;
     d: 4;
-}`, {sourceMap: {}},  function(error, output) {
+}`, {sourceMap: {}},  function(error: any, output: any) {
     if (error)
         console.error(error)
 })

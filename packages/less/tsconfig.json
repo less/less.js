@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./lib",
-    "rootDir": "./src",
+    "rootDir": ".",
     "allowJs": true,
     "sourceMap": true,
     "inlineSources": true,
@@ -15,6 +15,6 @@
       "rootDir": "."
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["**/*"],
+  "exclude": ["node_modules", "lib/**/*"]
 }

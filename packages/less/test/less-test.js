@@ -169,6 +169,29 @@ module.exports = function() {
         }
     }
 
+    function testSourcemapWithVariableInSelector(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+        if (err) {
+            fail('ERROR: ' + (err && err.message));
+            return;
+        }
+
+        // Even if annotation is not necessary, the map file should be there.
+        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
+            if (sourcemap === expectedSourcemap) {
+                ok('OK');
+            } else if (err) {
+                fail('ERROR: ' + (err && err.message));
+                if (isVerbose) {
+                    process.stdout.write('\n');
+                    process.stdout.write(err.stack + '\n');
+                }
+            } else {
+                difference('FAIL', expectedSourcemap, sourcemap);
+            }
+        });
+    }
+
     function testImports(name, err, compiledLess, doReplacements, sourcemap, baseFolder, imports) {
         if (err) {
             fail('ERROR: ' + (err && err.message));
@@ -228,7 +251,7 @@ module.exports = function() {
 
     // To fix ci fail about error format change in upstream v8 project
     // https://github.com/v8/v8/commit/c0fd89c3c089e888c4f4e8582e56db7066fa779b
-    // Node 16.9.0+ include this change via https://github.com/nodejs/node/pull/39947 
+    // Node 16.9.0+ include this change via https://github.com/nodejs/node/pull/39947
     function testTypeErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         const fileSuffix = semver.gte(process.version, 'v16.9.0') ? '-2.txt' : '.txt';
         fs.readFile(path.join(baseFolder, name) + fileSuffix, 'utf8', function (e, expectedErr) {
@@ -254,7 +277,7 @@ module.exports = function() {
     // https://github.com/less/less.js/issues/3112
     function testJSImport() {
         process.stdout.write('- Testing root function registry');
-        less.functions.functionRegistry.add('ext', function() { 
+        less.functions.functionRegistry.add('ext', function() {
             return new less.tree.Anonymous('file');
         });
         var expected = '@charset "utf-8";\n';
@@ -282,7 +305,7 @@ module.exports = function() {
             .replace(/\{pathhref\}/g, '')
             .replace(/\{404status\}/g, '')
             .replace(/\{nodepath\}/g, path.join(process.cwd(), 'node_modules', '/'))
-            .replace(/\{pathrel\}/g, path.join(path.relative(lessFolder, p), '/')) 
+            .replace(/\{pathrel\}/g, path.join(path.relative(lessFolder, p), '/'))
             .replace(/\{pathesc\}/g, pathesc)
             .replace(/\{pathimport\}/g, pathimport)
             .replace(/\{pathimportesc\}/g, pathimportesc)
@@ -327,7 +350,7 @@ module.exports = function() {
 
     function runTestSetInternal(baseFolder, opts, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
         foldername = foldername || '';
-        
+
         var originalOptions = opts || {};
 
         if (!doReplacements) {
@@ -497,10 +520,10 @@ module.exports = function() {
     }
 
     /**
-     * 
-     * @param {Object} options 
-     * @param {string} filePath 
-     * @param {Function} callback 
+     *
+     * @param {Object} options
+     * @param {string} filePath
+     * @param {Function} callback
      */
     function toCSS(options, filePath, callback) {
         options = options || {};
@@ -577,7 +600,7 @@ module.exports = function() {
                 }
                 ok(stylize('OK\n', 'green'));
             }
-        );      
+        );
     }
 
     return {
@@ -588,6 +611,7 @@ module.exports = function() {
         testTypeErrors: testTypeErrors,
         testSourcemap: testSourcemap,
         testSourcemapWithoutUrlAnnotation: testSourcemapWithoutUrlAnnotation,
+        testSourcemapWithVariableInSelector: testSourcemapWithVariableInSelector,
         testImports: testImports,
         testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,

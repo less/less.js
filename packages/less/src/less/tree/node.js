@@ -1,10 +1,8 @@
-import * as utils from '../utils';
-
 /**
  * The reason why Node is a class and other nodes simply do not extend
  * from Node (since we're transpiling) is due to this issue:
  * 
- * https://github.com/less/less.js/issues/3434
+ * @see https://github.com/less/less.js/issues/3434
  */
 class Node {
     constructor() {
@@ -50,6 +48,8 @@ class Node {
     toCSS(context) {
         const strs = [];
         this.genCSS(context, {
+            // remove when genCSS has JSDoc types
+            // eslint-disable-next-line no-unused-vars
             add: function(chunk, fileInfo, index) {
                 strs.push(chunk);
             },

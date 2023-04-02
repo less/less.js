@@ -7,6 +7,7 @@
     "inlineSources": true,
     "esModuleInterop": true,
     "importHelpers": true,
+    "noImplicitAny": true,
     "target": "ES5"
   },
   "ts-node": {

@@ -54,7 +54,7 @@ export default function(SourceMapBuilder) {
 
             result.imports = [];
             for (const file in this.imports.files) {
-                if (this.imports.files.hasOwnProperty(file) && file !== this.imports.rootFilename) {
+                if (Object.prototype.hasOwnProperty.call(this.imports.files, file) && file !== this.imports.rootFilename) {
                     result.imports.push(file);
                 }
             }
@@ -63,4 +63,4 @@ export default function(SourceMapBuilder) {
     }
 
     return ParseTree;
-};
+}

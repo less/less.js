@@ -180,4 +180,4 @@ export default function(environment) {
     }
 
     return ImportManager;
-};
+}

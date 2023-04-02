@@ -96,6 +96,7 @@ Color.prototype = Object.assign(new Node(), {
                 break;
             case 'hsla':
                 args.push(clamp(alpha, 1));
+            // eslint-disable-next-line no-fallthrough
             case 'hsl':
                 color = this.toHSL();
                 args = [
@@ -212,6 +213,7 @@ Color.prototype = Object.assign(new Node(), {
 Color.fromKeyword = function(keyword) {
     let c;
     const key = keyword.toLowerCase();
+    // eslint-disable-next-line no-prototype-builtins
     if (colors.hasOwnProperty(key)) {
         c = new Color(colors[key].slice(1));
     }

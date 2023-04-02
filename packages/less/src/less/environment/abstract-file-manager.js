@@ -15,7 +15,7 @@ class AbstractFileManager {
     }
 
     tryAppendExtension(path, ext) {
-        return /(\.[a-z]*$)|([\?;].*)$/.test(path) ? path : path + ext;
+        return /(\.[a-z]*$)|([?;].*)$/.test(path) ? path : path + ext;
     }
 
     tryAppendLessExtension(path) {
@@ -71,7 +71,13 @@ class AbstractFileManager {
         return diff;
     }
 
-    // helper function, not part of API
+    /**
+     * Helper function, not part of API.
+     * This should be replaceable by newer Node / Browser APIs
+     * 
+     * @param {string} url 
+     * @param {string} baseUrl
+     */
     extractUrlParts(url, baseUrl) {
         // urlParts[1] = protocol://hostname/ OR /
         // urlParts[2] = / if path relative to host base
@@ -79,7 +85,7 @@ class AbstractFileManager {
         // urlParts[4] = filename
         // urlParts[5] = parameters
 
-        const urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^\/\?#]*\/)|([\/\\]))?((?:[^\/\\\?#]*[\/\\])*)([^\/\\\?#]*)([#\?].*)?$/i;
+        const urlPartsRegex = /^((?:[a-z-]+:)?\/{2}(?:[^/?#]*\/)|([/\\]))?((?:[^/\\?#]*[/\\])*)([^/\\?#]*)([#?].*)?$/i;
 
         const urlParts = url.match(urlPartsRegex);
         const returner = {};

@@ -283,7 +283,7 @@ module.exports = function(grunt) {
                 "!test/less/errors/plugin/plugin-error.js"
             ],
             options: {
-                configFile: ".eslintrc.json",
+                configFile: ".eslintrc.js",
                 fix: true
             }
         },

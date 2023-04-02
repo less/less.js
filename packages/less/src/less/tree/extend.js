@@ -35,6 +35,8 @@ Extend.prototype = Object.assign(new Node(), {
         return new Extend(this.selector.eval(context), this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
     },
 
+    // remove when Nodes have JSDoc types
+    // eslint-disable-next-line no-unused-vars
     clone(context) {
         return new Extend(this.selector, this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
     },

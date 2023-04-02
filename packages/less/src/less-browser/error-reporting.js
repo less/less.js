@@ -11,7 +11,7 @@ export default (window, less, options) => {
         let content;
         const errors = [];
         const filename = e.filename || rootHref;
-        const filenameNoPath = filename.match(/([^\/]+(\?.*)?)$/)[1];
+        const filenameNoPath = filename.match(/([^/]+(\?.*)?)$/)[1];
 
         elem.id        = id;
         elem.className = 'less-error-message';
@@ -113,7 +113,7 @@ export default (window, less, options) => {
         }
     }
 
-    function removeErrorConsole(path) {
+    function removeErrorConsole() {
         // no action
     }
 

@@ -142,14 +142,14 @@ export default {
                     false, false, this.index, this.currentFileInfo));
             }
 
-            rules.push(new Ruleset([ new(Selector)([ new Element("", '&') ]) ],
+            rules.push(new Ruleset([ new(Selector)([ new Element('', '&') ]) ],
                 newRules,
                 rs.strictImports,
                 rs.visibilityInfo()
             ));
         }
 
-        return new Ruleset([ new(Selector)([ new Element("", '&') ]) ],
+        return new Ruleset([ new(Selector)([ new Element('', '&') ]) ],
             rules,
             rs.strictImports,
             rs.visibilityInfo()

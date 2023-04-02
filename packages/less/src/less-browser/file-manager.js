@@ -1,5 +1,3 @@
-/* global window, XMLHttpRequest */
-
 import AbstractFileManager from '../less/environment/abstract-file-manager.js';
 
 let options;
@@ -66,7 +64,7 @@ FileManager.prototype = Object.assign(new AbstractFileManager(), {
         fileCache = {};
     },
 
-    loadFile(filename, currentDirectory, options, environment) {
+    loadFile(filename, currentDirectory, options) {
         // TODO: Add prefix support like less-node?
         // What about multiple paths?
 

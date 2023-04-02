@@ -96,7 +96,7 @@ Selector.prototype = Object.assign(new Node(), {
 
         let elements = this.elements.map( function(v) {
             return v.combinator.value + (v.value.value || v.value);
-        }).join('').match(/[,&#\*\.\w-]([\w-]|(\\.))*/g);
+        }).join('').match(/[,&#*.\w-]([\w-]|(\\.))*/g);
 
         if (elements) {
             if (elements[0] === '&') {

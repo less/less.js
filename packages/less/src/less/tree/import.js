@@ -31,7 +31,7 @@ const Import = function(path, features, options, index, currentFileInfo, visibil
         this.css = !this.options.less || this.options.inline;
     } else {
         const pathValue = this.getPath();
-        if (pathValue && /[#\.\&\?]css([\?;].*)?$/.test(pathValue)) {
+        if (pathValue && /[#.&?]css([?;].*)?$/.test(pathValue)) {
             this.css = true;
         }
     }

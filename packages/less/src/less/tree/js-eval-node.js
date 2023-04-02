@@ -29,8 +29,8 @@ JsEvalNode.prototype = Object.assign(new Node(), {
 
         const variables = context.frames[0].variables();
         for (const k in variables) {
+            // eslint-disable-next-line no-prototype-builtins
             if (variables.hasOwnProperty(k)) {
-                /* jshint loopfunc:true */
                 evalContext[k.slice(1)] = {
                     value: variables[k].value,
                     toJS: function () {

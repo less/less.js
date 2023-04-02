@@ -6,7 +6,7 @@ const copyFromOriginal = function copyFromOriginal(original, destination, proper
     if (!original) { return; }
 
     for (let i = 0; i < propertiesToCopy.length; i++) {
-        if (original.hasOwnProperty(propertiesToCopy[i])) {
+        if (Object.prototype.hasOwnProperty.call(original, propertiesToCopy[i])) {
             destination[propertiesToCopy[i]] = original[propertiesToCopy[i]];
         }
     }
@@ -113,7 +113,7 @@ contexts.Eval.prototype.pathRequiresRewrite = function (path) {
 contexts.Eval.prototype.rewritePath = function (path, rootpath) {
     let newPath;
 
-    rootpath = rootpath || '';
+    rootpath = rootpath || '';
     newPath = this.normalizePath(rootpath + path);
 
     // If a path was explicit relative and the rootpath was not an absolute path

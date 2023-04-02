@@ -14,7 +14,7 @@ NamespaceValue.prototype = Object.assign(new Node(), {
     type: 'NamespaceValue',
 
     eval(context) {
-        let i, j, name, rules = this.value.eval(context);
+        let i, name, rules = this.value.eval(context);
         
         for (i = 0; i < this.lookups.length; i++) {
             name = this.lookups[i];

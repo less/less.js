@@ -32,7 +32,7 @@ Attribute.prototype = Object.assign(new Node(), {
         }
 
         if (this.cif) {
-            value = value + " " + this.cif;
+            value = value + ' ' + this.cif;
         }
 
         return `[${value}]`;

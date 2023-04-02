@@ -76,6 +76,7 @@ const colorBlendModeFunctions = {
 };
 
 for (const f in colorBlendModeFunctions) {
+    // eslint-disable-next-line no-prototype-builtins
     if (colorBlendModeFunctions.hasOwnProperty(f)) {
         colorBlend[f] = colorBlend.bind(null, colorBlendModeFunctions[f]);
     }

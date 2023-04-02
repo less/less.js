@@ -78,7 +78,7 @@ Unit.prototype = Object.assign(new Node(), {
         let groupName;
 
         mapUnit = function (atomicUnit) {
-            /* jshint loopfunc:true */
+            // eslint-disable-next-line no-prototype-builtins
             if (group.hasOwnProperty(atomicUnit) && !result[groupName]) {
                 result[groupName] = atomicUnit;
             }
@@ -87,6 +87,7 @@ Unit.prototype = Object.assign(new Node(), {
         };
 
         for (groupName in unitConversions) {
+            // eslint-disable-next-line no-prototype-builtins
             if (unitConversions.hasOwnProperty(groupName)) {
                 group = unitConversions[groupName];
 
@@ -116,6 +117,7 @@ Unit.prototype = Object.assign(new Node(), {
         this.denominator = [];
 
         for (atomicUnit in counter) {
+            // eslint-disable-next-line no-prototype-builtins
             if (counter.hasOwnProperty(atomicUnit)) {
                 const count = counter[atomicUnit];
 

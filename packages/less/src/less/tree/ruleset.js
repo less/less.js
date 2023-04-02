@@ -44,7 +44,6 @@ Ruleset.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
-        const that = this;
         let selectors;
         let selCnt;
         let selector;
@@ -61,7 +60,7 @@ Ruleset.prototype = Object.assign(new Node(), {
 
             for (i = 0; i < selCnt; i++) {
                 selector = this.selectors[i].eval(context);
-                for (var j = 0; j < selector.elements.length; j++) {
+                for (let j = 0; j < selector.elements.length; j++) {
                     if (selector.elements[j].isVariable) {
                         hasVariable = true;
                         break;
@@ -81,7 +80,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 }
                 this.parse.parseNode(
                     toParseSelectors.join(','),
-                    ["selectors"], 
+                    ['selectors'], 
                     selectors[0].getIndex(), 
                     selectors[0].fileInfo(), 
                     function(err, result) {
@@ -200,7 +199,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (rule.selectors[0] && rule.selectors[0].isJustParentSelector()) {
                     rsRules.splice(i--, 1);
 
-                    for (var j = 0; (subRule = rule.rules[j]); j++) {
+                    for (let j = 0; (subRule = rule.rules[j]); j++) {
                         if (subRule instanceof Node) {
                             subRule.copyVisibilityInfo(rule.visibilityInfo());
                             if (!(subRule instanceof Declaration) || !subRule.variable) {
@@ -295,6 +294,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (r.type === 'Import' && r.root && r.root.variables) {
                     const vars = r.root.variables();
                     for (const name in vars) {
+                        // eslint-disable-next-line no-prototype-builtins
                         if (vars.hasOwnProperty(name)) {
                             hash[name] = r.root.variable(name);
                         }

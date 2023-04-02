@@ -37,6 +37,7 @@
 	"scripts": {
 		"test": "grunt test",
 		"grunt": "grunt",
+		"lint": "eslint '**/*.{ts,js}'",
 		"build": "npm-run-all clean compile",
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
 		"compile": "tsc -p tsconfig.json",

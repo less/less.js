@@ -2232,7 +2232,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 parserInput.forget();
                 return body;
             },
-            atomicCondition: function (needsParens) {
+            atomicCondition: function (_needsParens) {
                 const entities = this.entities;
                 const index = parserInput.i;
                 let a;

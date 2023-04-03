@@ -10,15 +10,15 @@ class JoinSelectorVisitor {
         return this._visitor.visit(root);
     }
 
-    visitDeclaration(declNode, visitArgs) {
+    visitDeclaration(_declNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitMixinDefinition(mixinDefinitionNode, visitArgs) {
+    visitMixinDefinition(_mixinDefinitionNode, visitArgs) {
         visitArgs.visitDeeper = false;
     }
 
-    visitRuleset(rulesetNode, visitArgs) {
+    visitRuleset(rulesetNode, _visitArgs) {
         const context = this.contexts[this.contexts.length - 1];
         const paths = [];
         let selectors;
@@ -37,16 +37,16 @@ class JoinSelectorVisitor {
         }
     }
 
-    visitRulesetOut(rulesetNode) {
+    visitRulesetOut(_rulesetNode) {
         this.contexts.length = this.contexts.length - 1;
     }
 
-    visitMedia(mediaNode, visitArgs) {
+    visitMedia(mediaNode, _visitArgs) {
         const context = this.contexts[this.contexts.length - 1];
         mediaNode.rules[0].root = (context.length === 0 || context[0].multiMedia);
     }
 
-    visitAtRule(atRuleNode, visitArgs) {
+    visitAtRule(atRuleNode, _visitArgs) {
         const context = this.contexts[this.contexts.length - 1];
         if (atRuleNode.rules && atRuleNode.rules.length) {
             atRuleNode.rules[0].root = (atRuleNode.isRooted || context.length === 0 || null);

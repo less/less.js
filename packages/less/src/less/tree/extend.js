@@ -35,7 +35,7 @@ Extend.prototype = Object.assign(new Node(), {
         return new Extend(this.selector.eval(context), this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
     },
 
-    clone(context) {
+    clone(_context) {
         return new Extend(this.selector, this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
     },
 

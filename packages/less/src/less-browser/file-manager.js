@@ -66,7 +66,7 @@ FileManager.prototype = Object.assign(new AbstractFileManager(), {
         fileCache = {};
     },
 
-    loadFile(filename, currentDirectory, options, environment) {
+    loadFile(filename, currentDirectory, options, _environment) {
         // TODO: Add prefix support like less-node?
         // What about multiple paths?
 

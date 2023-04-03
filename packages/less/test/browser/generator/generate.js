@@ -21,6 +21,7 @@ const tmpDir = path.join(cwd, 'tmp', 'browser')
 fs.ensureDirSync(tmpDir)
 fs.copySync(path.join(cwd, 'test', 'browser', 'common.js'), path.join(tmpDir, 'common.js'))
 
+// eslint-disable-next-line no-unused-vars
 let numTests = 0
 let passedTests = 0
 let failedTests = 0

@@ -6,11 +6,11 @@ import logger from '../less/logger';
 
 const UrlFileManager = function() {}
 UrlFileManager.prototype = Object.assign(new AbstractFileManager(), {
-    supports(filename, currentDirectory, options, environment) {
+    supports(filename, currentDirectory, _options, _environment) {
         return isUrlRe.test( filename ) || isUrlRe.test(currentDirectory);
     },
 
-    loadFile(filename, currentDirectory, options, environment) {
+    loadFile(filename, currentDirectory, _options, _environment) {
         return new Promise((fulfill, reject) => {
             if (request === undefined) {
                 try { request = require('needle'); }

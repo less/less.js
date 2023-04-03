@@ -198,7 +198,7 @@ module.exports = function() {
             return;
         }
 
-        function stringify(str) {
+        function stringify(_str) {
             return JSON.stringify(imports, null, '  ')
         }
 
@@ -325,7 +325,7 @@ module.exports = function() {
         totalTests++;
         queue(function() {
             var isSync = true;
-            toCSS(options, path.join(lessFolder, filenameNoExtension + '.less'), function (err, result) {
+            toCSS(options, path.join(lessFolder, filenameNoExtension + '.less'), function (_err, _result) {
                 process.stdout.write('- Test Sync ' + filenameNoExtension + ': ');
 
                 if (isSync) {

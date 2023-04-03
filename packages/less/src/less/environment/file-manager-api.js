@@ -2,18 +2,18 @@ export default {
     /**
      * Given the full path to a file, return the path component
      * Provided by AbstractFileManager
-     * @param {string} filename
+     * @param {string} _filename
      * @returns {string}
      */
-    getPath: function(filename) {
+    getPath: function(_filename) {
     },
     /**
      * Append a .less extension if appropriate. Only called if less thinks one could be added.
      * Provided by AbstractFileManager
-     * @param filename
+     * @param _filename
      * @returns {string}
      */
-    tryAppendLessExtension: function(filename) {
+    tryAppendLessExtension: function(_filename) {
     },
     /**
      * Whether the rootpath should be converted to be absolute.
@@ -26,51 +26,51 @@ export default {
     /**
      * Returns whether a path is absolute
      * Provided by AbstractFileManager
-     * @param {string} path
+     * @param {string} _path
      * @returns {bool}
      */
-    isPathAbsolute: function(path) {
+    isPathAbsolute: function(_path) {
     },
     /**
      * joins together 2 paths
      * Provided by AbstractFileManager
-     * @param {string} basePath
-     * @param {string} laterPath
+     * @param {string} _basePath
+     * @param {string} _laterPath
      */
-    join: function(basePath, laterPath) {
+    join: function(_basePath, _laterPath) {
     },
     /**
      * Returns the difference between 2 paths
      * E.g. url = a/ baseUrl = a/b/ returns ../
      * url = a/b/ baseUrl = a/ returns b/
      * Provided by AbstractFileManager
-     * @param {string} url
-     * @param {string} baseUrl
+     * @param {string} _url
+     * @param {string} _baseUrl
      * @returns {string}
      */
-    pathDiff: function(url, baseUrl) {
+    pathDiff: function(_url, _baseUrl) {
     },
     /**
      * Returns whether this file manager supports this file for syncronous file retrieval
      * If true is returned, loadFileSync will then be called with the file.
      * Provided by AbstractFileManager (returns false)
-     * @param {string} filename
-     * @param {string} currentDirectory
-     * @param {object} options
-     * @param {less.environment.environment} environment
+     * @param {string} _filename
+     * @param {string} _currentDirectory
+     * @param {object} _options
+     * @param {less.environment.environment} _environment
      * @returns {bool}
      */
-    supportsSync: function(filename, currentDirectory, options, environment) {
+    supportsSync: function(_filename, _currentDirectory, _options, _environment) {
     },
     /**
      *
-     * @param {string} filename
-     * @param {string} currentDirectory
-     * @param {object} options
-     * @param {less.environment.environment} environment
+     * @param {string} _filename
+     * @param {string} _currentDirectory
+     * @param {object} _options
+     * @param {less.environment.environment} _environment
      * @returns {bool}
      */
-    supports: function(filename, currentDirectory, options, environment) {
+    supports: function(_filename, _currentDirectory, _options, _environment) {
     },
     /**
      * Loads a file asynchronously. Expects a promise that either rejects with an error or fulfills with an
@@ -78,13 +78,13 @@ export default {
      *  { filename: - full resolved path to file
      *    contents: - the contents of the file, as a string }
      *
-     * @param {string} filename
-     * @param {string} currentDirectory
-     * @param {object} options
-     * @param {less.environment.environment} environment
+     * @param {string} _filename
+     * @param {string} _currentDirectory
+     * @param {object} _options
+     * @param {less.environment.environment} _environment
      * @returns {Promise}
      */
-    loadFile: function(filename, currentDirectory, options, environment) {
+    loadFile: function(_filename, _currentDirectory, _options, _environment) {
     },
     /**
      * Loads a file synchronously. Expects an immediate return with an object containing
@@ -92,12 +92,12 @@ export default {
      *    filename: - full resolved path to file
      *    contents: - the contents of the file, as a string }
      *
-     * @param {string} filename
-     * @param {string} currentDirectory
-     * @param {object} options
-     * @param {less.environment.environment} environment
+     * @param {string} _filename
+     * @param {string} _currentDirectory
+     * @param {object} _options
+     * @param {less.environment.environment} _environment
      * @returns {object} should be an object containing error or contents and filename
      */
-    loadFileSync: function(filename, currentDirectory, options, environment) {
+    loadFileSync: function(_filename, _currentDirectory, _options, _environment) {
     }
 };

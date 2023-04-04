@@ -18,10 +18,6 @@ merge of your pull request!
 
 **Why**:
 
-<!-- How were these changes implemented? -->
-
-**How**:
-
 <!-- Have you done all of these things?  -->
 
 **Checklist**:

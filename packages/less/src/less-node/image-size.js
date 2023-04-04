@@ -31,7 +31,7 @@ export default environment => {
         }
 
         const sizeOf = require('image-size');
-        return sizeOf(fileSync.filename);
+        return sizeOf ? sizeOf(fileSync.filename) : {width: 0, height: 0};
     }
 
     const imageFunctions = {

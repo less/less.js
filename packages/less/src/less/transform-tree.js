@@ -54,7 +54,7 @@ export default function(root, options) {
      */
     if (options.pluginManager) {
         visitorIterator = options.pluginManager.visitor();
-        for (var i = 0; i < 2; i++) {
+        for (let i = 0; i < 2; i++) {
             visitorIterator.first();
             while ((v = visitorIterator.get())) {
                 if (v.isPreEvalVisitor) {
@@ -79,7 +79,7 @@ export default function(root, options) {
 
     evaldRoot = root.eval(evalEnv);
 
-    for (var i = 0; i < visitors.length; i++) {
+    for (let i = 0; i < visitors.length; i++) {
         visitors[i].run(evaldRoot);
     }
 
@@ -94,4 +94,4 @@ export default function(root, options) {
     }
 
     return evaldRoot;
-};
+}

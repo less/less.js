@@ -37,11 +37,13 @@
 	"scripts": {
 		"test": "grunt test",
 		"grunt": "grunt",
+		"lint": "eslint '**/*.{ts,js}'",
+		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"build": "npm-run-all clean compile",
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
-		"compile": "tsc -p tsconfig.json",
+		"compile": "tsc -p tsconfig.build.json",
 		"copy:root": "shx cp -rf ./dist ../../",
-		"dev": "tsc -p tsconfig.json -w",
+		"dev": "tsc -p tsconfig.build.json -w",
 		"prepublishOnly": "grunt dist"
 	},
 	"optionalDependencies": {

@@ -1,8 +1,6 @@
 import Node from './node';
 import Variable from './variable';
 import Property from './property';
-import * as utils from '../utils';
-
 
 const Quoted = function(str, content, escaped, index, currentFileInfo) {
     this.escaped = (escaped === undefined) ? true : escaped;

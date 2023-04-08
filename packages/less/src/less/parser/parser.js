@@ -154,7 +154,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         error('@plugin statements are not allowed when disablePluginRule is set to true');
                     }
                 }
-            };
+            }
 
             globalVars = (additionalData && additionalData.globalVars) ? `${Parser.serializeVars(additionalData.globalVars)}\n` : '';
             modifyVars = (additionalData && additionalData.modifyVars) ? `\n${Parser.serializeVars(additionalData.modifyVars)}` : '';
@@ -422,7 +422,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     parserInput.save();
 
-                    name = parserInput.$re(/^([\w-]+|%|~|progid:[\w\.]+)\(/);
+                    name = parserInput.$re(/^([\w-]+|%|~|progid:[\w.]+)\(/);
                     if (!name) {
                         parserInput.forget();
                         return;
@@ -576,7 +576,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
 
                     value = this.quoted() || this.variable() || this.property() ||
-                            parserInput.$re(/^(?:(?:\\[\(\)'"])|[^\(\)'"])+/) || '';
+                            parserInput.$re(/^(?:(?:\\[()'"])|[^()'"])+/) || '';
 
                     parserInput.autoCommentAbsorb = true;
 
@@ -661,7 +661,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     let rgb;
                     parserInput.save();
 
-                    if (parserInput.currentChar() === '#' && (rgb = parserInput.$re(/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})([\w.#\[])?/))) {
+                    if (parserInput.currentChar() === '#' && (rgb = parserInput.$re(/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})([\w.#[])?/))) {
                         if (!rgb[2]) {
                             parserInput.forget();
                             return new(tree.Color)(rgb[1], undefined, rgb[0]);
@@ -712,7 +712,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 unicodeDescriptor: function () {
                     let ud;
 
-                    ud = parserInput.$re(/^U\+[0-9a-fA-F?]+(\-[0-9a-fA-F?]+)?/);
+                    ud = parserInput.$re(/^U\+[0-9a-fA-F?]+(-[0-9a-fA-F?]+)?/);
                     if (ud) {
                         return new(tree.UnicodeDescriptor)(ud[0]);
                     }
@@ -1161,7 +1161,6 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 ruleLookups: function() {
                     let rule;
-                    let args;
                     const lookups = [];
 
                     if (parserInput.currentChar() !== '[') {
@@ -1170,7 +1169,6 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     while (true) {
                         parserInput.save();
-                        args = null;
                         rule = this.lookupValue();
                         if (!rule && rule !== '') {
                             parserInput.restore();
@@ -1268,9 +1266,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 c = this.combinator();
 
                 e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
+                    // eslint-disable-next-line no-control-regex
                     parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
                     parserInput.$char('*') || parserInput.$char('&') || this.attribute() ||
-                    parserInput.$re(/^\([^&()@]+\)/) ||  parserInput.$re(/^[\.#:](?=@)/) ||
+                    parserInput.$re(/^\([^&()@]+\)/) ||  parserInput.$re(/^[.#:](?=@)/) ||
                     this.entities.variableCurly();
 
                 if (!e) {
@@ -1389,11 +1388,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     parserInput.commentStore.length = 0;
                     if (s.condition && selectors.length > 1) {
-                        error("Guards are only currently allowed on a single selector.");
+                        error('Guards are only currently allowed on a single selector.');
                     }
                     if (!parserInput.$char(',')) { break; }
                     if (s.condition) {
-                        error("Guards are only currently allowed on a single selector.");
+                        error('Guards are only currently allowed on a single selector.');
                     }
                     parserInput.commentStore.length = 0;
                 }
@@ -1413,7 +1412,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let cif;
 
                 if (!(key = entities.variableCurly())) {
-                    key = expect(/^(?:[_A-Za-z0-9-\*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
+                    key = expect(/^(?:[_A-Za-z0-9-*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
                 }
 
                 op = parserInput.$re(/^[|~*$^]?=/);
@@ -1580,7 +1579,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             },
             anonymousValue: function () {
                 const index = parserInput.i;
-                const match = parserInput.$re(/^([^.#@\$+\/'"*`(;{}-]*);/);
+                const match = parserInput.$re(/^([^.#@$+/'"*`(;{}-]*);/);
                 if (match) {
                     return new(tree.Anonymous)(match[1], index + currentIndex);
                 }
@@ -1890,7 +1889,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     parserInput.restore();
                     return null;
                 }
-                const args = parserInput.$re(/^\s*([^\);]+)\)\s*/);
+                const args = parserInput.$re(/^\s*([^);]+)\)\s*/);
                 if (args[1]) {
                     parserInput.forget();
                     return args[1].trim();
@@ -2057,7 +2056,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (m) {
                     isSpaced = parserInput.isWhitespace(-1);
                     while (true) {
-                        if (parserInput.peek(/^\/[*\/]/)) {
+                        if (parserInput.peek(/^\/[*/]/)) {
                             break;
                         }
 
@@ -2232,7 +2231,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 parserInput.forget();
                 return body;
             },
-            atomicCondition: function (needsParens) {
+            atomicCondition: function () {
                 const entities = this.entities;
                 const index = parserInput.i;
                 let a;
@@ -2240,10 +2239,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let c;
                 let op;
 
-                function cond() {
+                const cond = (function() {
                     return this.addition() || entities.keyword() || entities.quoted() || entities.mixinLookup();
-                }
-                cond = cond.bind(this);
+                }).bind(this)
 
                 a = cond();
                 if (a) {
@@ -2292,7 +2290,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 const entities = this.entities;
                 let negate;
 
-                if (parserInput.peek(/^-[@\$\(]/)) {
+                if (parserInput.peek(/^-[@$(]/)) {
                     negate = parserInput.$char('-');
                 }
 
@@ -2338,7 +2336,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (e) {
                         entities.push(e);
                         // operations do not allow keyword "/" dimension (e.g. small/20px) so we support that here
-                        if (!parserInput.peek(/^\/[\/*]/)) {
+                        if (!parserInput.peek(/^\/[/*]/)) {
                             delim = parserInput.$char('/');
                             if (delim) {
                                 entities.push(new(tree.Anonymous)(delim, index + currentIndex));
@@ -2382,7 +2380,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 match(/^(\*?)/);
                 while (true) {
-                    if (!match(/^((?:[\w-]+)|(?:[@\$]\{[\w-]+\}))/)) {
+                    if (!match(/^((?:[\w-]+)|(?:[@$]\{[\w-]+\}))/)) {
                         break;
                     }
                 }

@@ -1,6 +1,6 @@
 import * as utils from './utils';
 
-export default function(environment, ParseTree, ImportManager) {
+export default function(environment, ParseTree) {
     const render = function (input, options, callback) {
         if (typeof options === 'function') {
             callback = options;
@@ -38,4 +38,4 @@ export default function(environment, ParseTree, ImportManager) {
     };
 
     return render;
-};
+}

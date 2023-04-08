@@ -1,3 +1,8 @@
+/* eslint-disable no-unused-vars */
+/**
+ * @todo - remove top eslint rule when FileManagers have JSDoc type
+ * and are TS-type-checked
+ */
 const isUrlRe = /^(?:https?:)?\/\//i;
 import url from 'url';
 let request;

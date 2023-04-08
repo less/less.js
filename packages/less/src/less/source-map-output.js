@@ -116,6 +116,7 @@ export default function (environment) {
 
             if (this._outputSourceFiles) {
                 for (const filename in this._contentsMap) {
+                    // eslint-disable-next-line no-prototype-builtins
                     if (this._contentsMap.hasOwnProperty(filename)) {
                         let source = this._contentsMap[filename];
                         if (this._contentsIgnoredCharsMap[filename]) {
@@ -147,4 +148,4 @@ export default function (environment) {
     }
 
     return SourceMapOutput;
-};
+}

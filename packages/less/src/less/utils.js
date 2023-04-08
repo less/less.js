@@ -35,7 +35,7 @@ export function copyArray(arr) {
 export function clone(obj) {
     const cloned = {};
     for (const prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(obj, prop)) {
             cloned[prop] = obj[prop];
         }
     }
@@ -100,7 +100,7 @@ export function copyOptions(obj1, obj2) {
 
 export function merge(obj1, obj2) {
     for (const prop in obj2) {
-        if (obj2.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(obj2, prop)) {
             obj1[prop] = obj2[prop];
         }
     }

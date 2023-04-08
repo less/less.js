@@ -1,7 +1,7 @@
 import Node from './node';
 
 function escapePath(path) {
-    return path.replace(/[\(\)'"\s]/g, function(match) { return `\\${match}`; });
+    return path.replace(/[()'"\s]/g, function(match) { return `\\${match}`; });
 }
 
 const URL = function(val, index, currentFileInfo, isEvald) {
@@ -33,7 +33,7 @@ URL.prototype = Object.assign(new Node(), {
             rootpath = this.fileInfo() && this.fileInfo().rootpath;
             if (typeof rootpath === 'string' &&
                 typeof val.value === 'string' &&
-                context.pathRequiresRewrite(val.value)) {
+                context.pathRequiresRewrite(val.value)) {
                 if (!val.quote) {
                     rootpath = escapePath(rootpath);
                 }

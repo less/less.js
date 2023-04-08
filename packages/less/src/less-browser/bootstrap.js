@@ -3,8 +3,6 @@
  * used in the browser distributed version of less
  * to kick-start less using the browser api
  */
-/* global window, document */
-
 import defaultOptions from '../less/default-options';
 import addDefaultOptions from './add-default-options';
 import root from './index';
@@ -13,7 +11,7 @@ const options = defaultOptions();
 
 if (window.less) {
     for (const key in window.less) {
-        if (window.less.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(window.less, key)) {
             options[key] = window.less[key];
         }
     }

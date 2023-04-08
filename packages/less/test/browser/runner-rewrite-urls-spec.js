@@ -1,3 +1,3 @@
-describe("less.js browser test - rewrite urls", function() {
+describe('less.js browser test - rewrite urls', function() {
     testLessEqualsInDocument();
 });

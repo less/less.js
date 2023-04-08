@@ -95,4 +95,4 @@ export default function(environment, fileManagers) {
     initial.render = initial.render.bind(api);
 
     return api;
-};
+}

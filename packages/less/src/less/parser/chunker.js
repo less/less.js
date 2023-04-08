@@ -119,4 +119,4 @@ export default function (input, fail) {
 
     emitChunk(true);
     return chunks;
-};
+}

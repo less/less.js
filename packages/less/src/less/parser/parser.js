@@ -38,7 +38,8 @@ import functionRegistry from '../functions/function-registry';
 //    It also takes care of moving all the indices forwards.
 //
 
-const Parser = function Parser(context, imports, fileInfo) {
+const Parser = function Parser(context, imports, fileInfo, currentIndex) {
+    currentIndex = currentIndex || 0;
     let parsers;
     const parserInput = getParserInput();
 
@@ -60,7 +61,7 @@ const Parser = function Parser(context, imports, fileInfo) {
         if (result) {
             return result;
         }
-        
+
         error(msg || (typeof arg === 'string'
             ? `expected '${arg}' got '${parserInput.currentChar()}'`
             : 'unexpected token'));
@@ -85,13 +86,13 @@ const Parser = function Parser(context, imports, fileInfo) {
 
     /**
      *  Used after initial parsing to create nodes on the fly
-     * 
-     *  @param {String} str          - string to parse 
+     *
+     *  @param {String} str          - string to parse
      *  @param {Array}  parseList    - array of parsers to run input through e.g. ["value", "important"]
      *  @param {Number} currentIndex - start number to begin indexing
      *  @param {Object} fileInfo     - fileInfo to attach to created nodes
      */
-    function parseNode(str, parseList, currentIndex, fileInfo, callback) {
+    function parseNode(str, parseList, callback) {
         let result;
         const returnNodes = [];
         const parser = parserInput;
@@ -103,19 +104,9 @@ const Parser = function Parser(context, imports, fileInfo) {
                     index: index + currentIndex
                 });
             });
-            for (let x = 0, p, i; (p = parseList[x]); x++) {
-                i = parser.i;
+            for (let x = 0, p; (p = parseList[x]); x++) {
                 result = parsers[p]();
-                if (result) {
-                    try {
-                        result._index = i + currentIndex;
-                        result._fileInfo = fileInfo;
-                    } catch (e) {}
-                    returnNodes.push(result);
-                }
-                else {
-                    returnNodes.push(null);
-                }
+                returnNodes.push(result || null);
             }
 
             const endInfo = parser.end();
@@ -207,7 +198,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 root.root = true;
                 root.firstRoot = true;
                 root.functionRegistry = functionRegistry.inherit();
-                
+
             } catch (e) {
                 return callback(new LessError(e, imports, fileInfo.filename));
             }
@@ -337,7 +328,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         continue;
                     }
 
-                    node = mixin.definition() || this.declaration() || mixin.call(false, false) || 
+                    node = mixin.definition() || this.declaration() || mixin.call(false, false) ||
                         this.ruleset() || this.variableCall() || this.entities.call() || this.atrule();
                     if (node) {
                         root.push(node);
@@ -360,7 +351,7 @@ const Parser = function Parser(context, imports, fileInfo) {
             comment: function () {
                 if (parserInput.commentStore.length) {
                     const comment = parserInput.commentStore.shift();
-                    return new(tree.Comment)(comment.text, comment.isLineComment, comment.index, fileInfo);
+                    return new(tree.Comment)(comment.text, comment.isLineComment, comment.index + currentIndex, fileInfo);
                 }
             },
 
@@ -396,7 +387,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     }
                     parserInput.forget();
 
-                    return new(tree.Quoted)(str.charAt(0), str.substr(1, str.length - 2), isEscaped, index, fileInfo);
+                    return new(tree.Quoted)(str.charAt(0), str.substr(1, str.length - 2), isEscaped, index + currentIndex, fileInfo);
                 },
 
                 //
@@ -433,7 +424,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     name = parserInput.$re(/^([\w-]+|%|~|progid:[\w.]+)\(/);
                     if (!name) {
-                        parserInput.forget(); 
+                        parserInput.forget();
                         return;
                     }
 
@@ -456,9 +447,9 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     parserInput.forget();
 
-                    return new(tree.Call)(name, args, index, fileInfo);
+                    return new(tree.Call)(name, args, index + currentIndex, fileInfo);
                 },
-                
+
                 //
                 // Parsing rules for functions with non-standard args, e.g.:
                 //
@@ -481,11 +472,11 @@ const Parser = function Parser(context, imports, fileInfo) {
                     function f(parse, stop) {
                         return {
                             parse, // parsing function
-                            stop   // when true - stop after parse() and return its result, 
+                            stop   // when true - stop after parse() and return its result,
                             // otherwise continue for plain args
                         };
                     }
-                
+
                     function condition() {
                         return [expect(parsers.condition, 'expected condition')];
                     }
@@ -591,10 +582,10 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     expectChar(')');
 
-                    return new(tree.URL)((value.value !== undefined || 
-                        value instanceof tree.Variable || 
+                    return new(tree.URL)((value.value !== undefined ||
+                        value instanceof tree.Variable ||
                         value instanceof tree.Property) ?
-                        value : new(tree.Anonymous)(value, index), index, fileInfo);
+                        value : new(tree.Anonymous)(value, index), index + currentIndex, fileInfo);
                 },
 
                 //
@@ -622,7 +613,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                             }
                         }
                         parserInput.forget();
-                        return new(tree.Variable)(name, index, fileInfo);
+                        return new(tree.Variable)(name, index + currentIndex, fileInfo);
                     }
                     parserInput.restore();
                 },
@@ -633,7 +624,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     const index = parserInput.i;
 
                     if (parserInput.currentChar() === '@' && (curly = parserInput.$re(/^@\{([\w-]+)\}/))) {
-                        return new(tree.Variable)(`@${curly[1]}`, index, fileInfo);
+                        return new(tree.Variable)(`@${curly[1]}`, index + currentIndex, fileInfo);
                     }
                 },
                 //
@@ -646,7 +637,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     const index = parserInput.i;
 
                     if (parserInput.currentChar() === '$' && (name = parserInput.$re(/^\$[\w-]+/))) {
-                        return new(tree.Property)(name, index, fileInfo);
+                        return new(tree.Property)(name, index + currentIndex, fileInfo);
                     }
                 },
 
@@ -656,7 +647,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     const index = parserInput.i;
 
                     if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
-                        return new(tree.Property)(`$${curly[1]}`, index, fileInfo);
+                        return new(tree.Property)(`$${curly[1]}`, index + currentIndex, fileInfo);
                     }
                 },
                 //
@@ -674,7 +665,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         if (!rgb[2]) {
                             parserInput.forget();
                             return new(tree.Color)(rgb[1], undefined, rgb[0]);
-                        } 
+                        }
                     }
                     parserInput.restore();
                 },
@@ -749,7 +740,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     js = parserInput.$re(/^[^`]*`/);
                     if (js) {
                         parserInput.forget();
-                        return new(tree.JavaScript)(js.substr(0, js.length - 1), Boolean(escape), index, fileInfo);
+                        return new(tree.JavaScript)(js.substr(0, js.length - 1), Boolean(escape), index + currentIndex, fileInfo);
                     }
                     parserInput.restore('invalid javascript definition');
                 }
@@ -844,7 +835,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     if (!elements) {
                         error('Missing target selector for :extend().');
                     }
-                    extend = new(tree.Extend)(new(tree.Selector)(elements), option, index, fileInfo);
+                    extend = new(tree.Extend)(new(tree.Selector)(elements), option, index + currentIndex, fileInfo);
                     if (extendList) {
                         extendList.push(extend);
                     } else {
@@ -930,7 +921,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                         if (inValue || parsers.end()) {
                             parserInput.forget();
-                            const mixin = new(tree.mixin.Call)(elements, args, index, fileInfo, !lookups && important);
+                            const mixin = new(tree.mixin.Call)(elements, args, index + currentIndex, fileInfo, !lookups && important);
                             if (lookups) {
                                 return new tree.NamespaceValue(mixin, lookups);
                             }
@@ -956,11 +947,11 @@ const Parser = function Parser(context, imports, fileInfo) {
                     while (true) {
                         elemIndex = parserInput.i;
                         e = parserInput.$re(re);
-                        
+
                         if (!e) {
                             break;
                         }
-                        elem = new(tree.Element)(c, e, false, elemIndex, fileInfo);
+                        elem = new(tree.Element)(c, e, false, elemIndex + currentIndex, fileInfo);
                         if (elements) {
                             elements.push(elem);
                         } else {
@@ -1167,12 +1158,12 @@ const Parser = function Parser(context, imports, fileInfo) {
                         parserInput.restore();
                     }
                 },
-            
+
                 ruleLookups: function() {
                     let rule;
                     const lookups = [];
 
-                    if (parserInput.currentChar() !== '[') { 
+                    if (parserInput.currentChar() !== '[') {
                         return;
                     }
 
@@ -1190,27 +1181,27 @@ const Parser = function Parser(context, imports, fileInfo) {
                         return lookups;
                     }
                 },
-    
+
                 lookupValue: function() {
                     parserInput.save();
-    
-                    if (!parserInput.$char('[')) { 
+
+                    if (!parserInput.$char('[')) {
                         parserInput.restore();
                         return;
                     }
-    
+
                     const name = parserInput.$re(/^(?:[@$]{0,2})[_a-zA-Z0-9-]*/);
-    
+
                     if (!parserInput.$char(']')) {
                         parserInput.restore();
                         return;
-                    } 
+                    }
 
                     if (name || name === '') {
                         parserInput.forget();
                         return name;
                     }
-    
+
                     parserInput.restore();
                 }
             },
@@ -1295,7 +1286,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     }
                 }
 
-                if (e) { return new(tree.Element)(c, e, e instanceof tree.Variable, index, fileInfo); }
+                if (e) { return new(tree.Element)(c, e, e instanceof tree.Variable, index + currentIndex, fileInfo); }
             },
 
             //
@@ -1379,7 +1370,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     }
                 }
 
-                if (elements) { return new(tree.Selector)(elements, allExtends, condition, index, fileInfo); }
+                if (elements) { return new(tree.Selector)(elements, allExtends, condition, index + currentIndex, fileInfo); }
                 if (allExtends) { error('Extend must be used to extend a selector, it cannot be used on its own'); }
             },
             selectors: function () {
@@ -1465,7 +1456,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 parserInput.save();
                 if (parserInput.$re(/^[.#]\(/)) {
                     /**
-                     * DR args currently only implemented for each() function, and not 
+                     * DR args currently only implemented for each() function, and not
                      * yet settable as `@dr: #(@arg) {}`
                      * This should be done when DRs are merged with mixins.
                      * See: https://github.com/less/less-meta/issues/16
@@ -1560,7 +1551,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         if (value) {
                             parserInput.forget();
                             // anonymous values absorb the end ';' which is required for them to work
-                            return new(tree.Declaration)(name, value, false, merge, index, fileInfo);
+                            return new(tree.Declaration)(name, value, false, merge, index + currentIndex, fileInfo);
                         }
 
                         if (!value) {
@@ -1577,7 +1568,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     if (value && (this.end() || hasDR)) {
                         parserInput.forget();
-                        return new(tree.Declaration)(name, value, important, merge, index, fileInfo);
+                        return new(tree.Declaration)(name, value, important, merge, index + currentIndex, fileInfo);
                     }
                     else {
                         parserInput.restore();
@@ -1590,14 +1581,14 @@ const Parser = function Parser(context, imports, fileInfo) {
                 const index = parserInput.i;
                 const match = parserInput.$re(/^([^.#@$+/'"*`(;{}-]*);/);
                 if (match) {
-                    return new(tree.Anonymous)(match[1], index);
+                    return new(tree.Anonymous)(match[1], index + currentIndex);
                 }
             },
             /**
              * Used for custom properties, at-rules, and variables (as fallback)
              * Parses almost anything inside of {} [] () "" blocks
              * until it reaches outer-most tokens.
-             * 
+             *
              * First, it will try to parse comments and entities to reach
              * the end. This is mostly like the Expression parser except no
              * math is allowed.
@@ -1714,7 +1705,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                             error('missing semi-colon or unrecognised media features on import');
                         }
                         features = features && new(tree.Value)(features);
-                        return new(tree.Import)(path, features, options, index, fileInfo);
+                        return new(tree.Import)(path, features, options, index + currentIndex, fileInfo);
                     }
                     else {
                         parserInput.i = index;
@@ -1776,7 +1767,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         e = this.value();
                         if (parserInput.$char(')')) {
                             if (p && e) {
-                                nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i, fileInfo, true)));
+                                nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
                             } else if (e) {
                                 nodes.push(new(tree.Paren)(e));
                             } else {
@@ -1839,7 +1830,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                     parserInput.forget();
 
-                    media = new(tree.Media)(rules, features, index, fileInfo);
+                    media = new(tree.Media)(rules, features, index + currentIndex, fileInfo);
                     if (context.dumpLineNumbers) {
                         media.debugInfo = debugInfo;
                     }
@@ -1882,7 +1873,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                             parserInput.i = index;
                             error('missing semi-colon on @plugin');
                         }
-                        return new(tree.Import)(path, null, options, index, fileInfo);
+                        return new(tree.Import)(path, null, options, index + currentIndex, fileInfo);
                     }
                     else {
                         parserInput.i = index;
@@ -1903,7 +1894,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                     parserInput.forget();
                     return args[1].trim();
                 }
-                else { 
+                else {
                     parserInput.restore();
                     return null;
                 }
@@ -1998,7 +1989,7 @@ const Parser = function Parser(context, imports, fileInfo) {
 
                 if (rules || (!hasBlock && value && parserInput.$char(';'))) {
                     parserInput.forget();
-                    return new(tree.AtRule)(name, value, rules, index, fileInfo,
+                    return new(tree.AtRule)(name, value, rules, index + currentIndex, fileInfo,
                         context.dumpLineNumbers ? getDebugInfo(index) : null,
                         isRooted
                     );
@@ -2029,7 +2020,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                 } while (e);
 
                 if (expressions.length > 0) {
-                    return new(tree.Value)(expressions, index);
+                    return new(tree.Value)(expressions, index + currentIndex);
                 }
             },
             important: function () {
@@ -2131,7 +2122,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         if (!b) {
                             break;
                         }
-                        condition = new(tree.Condition)('or', condition || a, b, index);
+                        condition = new(tree.Condition)('or', condition || a, b, index + currentIndex);
                     }
                     return condition || a;
                 }
@@ -2280,12 +2271,12 @@ const Parser = function Parser(context, imports, fileInfo) {
                     if (op) {
                         b = cond();
                         if (b) {
-                            c = new(tree.Condition)(op, a, b, index, false);
+                            c = new(tree.Condition)(op, a, b, index + currentIndex, false);
                         } else {
                             error('expected expression');
                         }
                     } else {
-                        c = new(tree.Condition)('=', a, new(tree.Keyword)('true'), index, false);
+                        c = new(tree.Condition)('=', a, new(tree.Keyword)('true'), index + currentIndex, false);
                     }
                     return c;
                 }
@@ -2348,7 +2339,7 @@ const Parser = function Parser(context, imports, fileInfo) {
                         if (!parserInput.peek(/^\/[/*]/)) {
                             delim = parserInput.$char('/');
                             if (delim) {
-                                entities.push(new(tree.Anonymous)(delim, index));
+                                entities.push(new(tree.Anonymous)(delim, index + currentIndex));
                             }
                         }
                     }
@@ -2408,8 +2399,8 @@ const Parser = function Parser(context, imports, fileInfo) {
                         name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
                             new(tree.Keyword)(s) :
                             (s.charAt(0) === '@' ?
-                                new(tree.Variable)(`@${s.slice(2, -1)}`, index[k], fileInfo) :
-                                new(tree.Property)(`$${s.slice(2, -1)}`, index[k], fileInfo));
+                                new(tree.Variable)(`@${s.slice(2, -1)}`, index[k] + currentIndex, fileInfo) :
+                                new(tree.Property)(`$${s.slice(2, -1)}`, index[k] + currentIndex, fileInfo));
                     }
                     return name;
                 }

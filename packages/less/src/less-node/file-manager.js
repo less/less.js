@@ -85,7 +85,12 @@ FileManager.prototype = Object.assign(new AbstractFileManager(), {
                             fullFilename = fileParts.rawPath + prefixes[j] + fileParts.filename;
 
                             if (paths[i]) {
-                                fullFilename = path.join(paths[i], fullFilename);
+                                if (paths[i].startsWith('#')) {
+                                    // Handling paths starting with '#'
+                                    fullFilename = paths[i].substr(1) + fullFilename;
+                                }else{
+                                    fullFilename = path.join(paths[i], fullFilename);
+                                }
                             }
 
                             if (!explicit && paths[i] === '.') {

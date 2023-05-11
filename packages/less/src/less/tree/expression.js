@@ -38,14 +38,23 @@ Expression.prototype = Object.assign(new Node(), {
             if (this.value[0].parens && !this.value[0].parensInOp && !context.inCalc) {
                 doubleParen = true;
             }
-            returnValue = this.value[0].eval(context);
+            try {
+                returnValue = this.value[0].eval(context);
+            } catch (e) {
+                // Pass through at-rules to the css file.
+                if (e.type === 'PassThrough') {
+                    returnValue = this;
+                } else {
+                    throw e;
+                }
+            }
         } else {
             returnValue = this;
         }
         if (inParenthesis) {
             context.outOfParenthesis();
         }
-        if (this.parens && this.parensInOp && !mathOn && !doubleParen 
+        if (this.parens && this.parensInOp && !mathOn && !doubleParen
             && (!(returnValue instanceof Dimension))) {
             returnValue = new Paren(returnValue);
         }

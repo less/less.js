@@ -46,8 +46,7 @@ Variable.prototype = Object.assign(new Node(), {
             this.evaluating = false;
             return variable;
         } else {
-            throw { type: 'Name',
-                message: `variable ${name} is undefined`,
+            throw { type: 'PassThrough',
                 filename: this.fileInfo().filename,
                 index: this.getIndex() };
         }

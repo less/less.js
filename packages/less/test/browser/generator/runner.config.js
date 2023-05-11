@@ -138,6 +138,14 @@ module.exports = {
             outfile: 'tmp/browser/test-runner-global-vars.html'
         }
     },
+    atrulePassthrough: {
+        src: ['test/browser/less/atrule-passthrough/*.less'],
+        options: {
+            helpers: 'test/browser/runner-atrule-passthrough-options.js',
+            specs: 'test/browser/runner-atrule-passthrough-spec.js',
+            outfile: 'tmp/browser/test-runner-atrule-passthrough.html'
+        }
+    },
     postProcessorPlugin: {
         src: [`${lessFolder}/postProcessorPlugin/*.less`],
         options: {
@@ -182,5 +190,5 @@ module.exports = {
             specs: 'test/browser/runner-filemanagerPlugin.js',
             outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
         }
-    }
+    },
 }

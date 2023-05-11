@@ -1,0 +1,5 @@
+.test {
+    --iron-autogrow-textarea: {
+    @apply --app-font-monospace;
+    }
+}

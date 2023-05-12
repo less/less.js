@@ -38,16 +38,7 @@ Expression.prototype = Object.assign(new Node(), {
             if (this.value[0].parens && !this.value[0].parensInOp && !context.inCalc) {
                 doubleParen = true;
             }
-            try {
-                returnValue = this.value[0].eval(context);
-            } catch (e) {
-                // Pass through at-rules to the css file.
-                if (e.type === 'PassThrough') {
-                    returnValue = this;
-                } else {
-                    throw e;
-                }
-            }
+            returnValue = this.value[0].eval(context);
         } else {
             returnValue = this;
         }

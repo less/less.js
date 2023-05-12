@@ -182,5 +182,5 @@ module.exports = {
             specs: 'test/browser/runner-filemanagerPlugin.js',
             outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
         }
-    },
+    }
 }

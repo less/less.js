@@ -149,6 +149,13 @@ export default () => {
         return tok;
     };
 
+    parserInput.$peekChar = tok => {
+        if (input.charAt(parserInput.i) !== tok) {
+            return null;
+        }
+        return tok;
+    };
+
     parserInput.$str = tok => {
         const tokLength = tok.length;
 

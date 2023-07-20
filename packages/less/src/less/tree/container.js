@@ -4,7 +4,7 @@ import Selector from './selector';
 import AtRule from './atrule';
 import NestableAtRulePrototype from './nested-at-rule';
 
-const Media = function(value, features, index, currentFileInfo, visibilityInfo) {
+const Container = function(value, features, index, currentFileInfo, visibilityInfo) {
     this._index = index;
     this._fileInfo = currentFileInfo;
 
@@ -20,13 +20,13 @@ const Media = function(value, features, index, currentFileInfo, visibilityInfo) 
     this.setParent(this.rules, this);
 };
 
-Media.prototype = Object.assign(new AtRule(), {
-    type: 'Media',
+Container.prototype = Object.assign(new AtRule(), {
+    type: 'Container',
 
     ...NestableAtRulePrototype,
 
     genCSS(context, output) {
-        output.add('@media ', this._fileInfo, this._index);
+        output.add('@container ', this._fileInfo, this._index);
         this.features.genCSS(context, output);
         this.outputRuleset(context, output, this.rules);
     },
@@ -37,7 +37,7 @@ Media.prototype = Object.assign(new AtRule(), {
             context.mediaPath = [];
         }
 
-        const media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo());
+        const media = new Container(null, [], this._index, this._fileInfo, this.visibilityInfo());
         if (this.debugInfo) {
             this.rules[0].debugInfo = this.debugInfo;
             media.debugInfo = this.debugInfo;
@@ -60,4 +60,4 @@ Media.prototype = Object.assign(new AtRule(), {
     }
 });
 
-export default Media;
+export default Container;

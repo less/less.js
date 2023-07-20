@@ -4,6 +4,7 @@ import visitors from '../visitors';
 import getParserInput from './parser-input';
 import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
+import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
 
 //
 // less.js - parser
@@ -1698,7 +1699,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     const options = (dir ? this.importOptions() : null) || {};
 
                     if ((path = this.entities.quoted() || this.entities.url())) {
-                        features = this.mediaFeatures();
+                        features = this.mediaFeatures({});
 
                         if (!parserInput.$char(';')) {
                             parserInput.i = index;
@@ -1752,7 +1753,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
             },
 
-            mediaFeature: function () {
+            mediaFeature: function (syntaxOptions) {
                 const entities = this.entities;
                 const nodes = [];
                 let e;
@@ -1764,10 +1765,20 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
                         p = this.property();
-                        e = this.value();
+                        parserInput.save();
+                        if (!p && syntaxOptions.queryInParens && parserInput.$re(/^[a-z-]*\s*([<>]=|<=|>=|[<>]|=)/)) {
+                            parserInput.restore();
+                            p = this.condition();
+                        } else {
+                            parserInput.restore();
+                            e = this.value();
+                        }
                         if (parserInput.$char(')')) {
-                            if (p && e) {
-                                nodes.push(new(tree.Paren)(new(tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
+                            if (p && !e) {
+                                nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, p._index)));
+                                e = p;
+                            } else if (p && e) {
+                                nodes.push(new (tree.Paren)(new (tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
                             } else if (e) {
                                 nodes.push(new(tree.Paren)(e));
                             } else {
@@ -1785,12 +1796,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
             },
 
-            mediaFeatures: function () {
+            mediaFeatures: function (syntaxOptions) {
                 const entities = this.entities;
                 const features = [];
                 let e;
                 do {
-                    e = this.mediaFeature();
+                    e = this.mediaFeature(syntaxOptions);
                     if (e) {
                         features.push(e);
                         if (!parserInput.$char(',')) { break; }
@@ -1806,38 +1817,44 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 return features.length > 0 ? features : null;
             },
 
-            media: function () {
-                let features;
-                let rules;
-                let media;
+            prepareAndGetNestableAtRule: function (treeType, index, debugInfo, syntaxOptions) {
+                const features = this.mediaFeatures(syntaxOptions);
+
+                const rules = this.block();
+
+                if (!rules) {
+                    error('media definitions require block statements after any features');
+                }
+
+                parserInput.forget();
+
+                const atRule = new (treeType)(rules, features, index + currentIndex, fileInfo);
+                if (context.dumpLineNumbers) {
+                    atRule.debugInfo = debugInfo;
+                }
+
+                return atRule;
+            },
+
+            nestableAtRule: function () {
                 let debugInfo;
                 const index = parserInput.i;
 
                 if (context.dumpLineNumbers) {
                     debugInfo = getDebugInfo(index);
                 }
-
                 parserInput.save();
 
-                if (parserInput.$str('@media')) {
-                    features = this.mediaFeatures();
-
-                    rules = this.block();
-
-                    if (!rules) {
-                        error('media definitions require block statements after any features');
+                if (parserInput.$peekChar('@')) {
+                    if (parserInput.$str('@media')) {
+                        return this.prepareAndGetNestableAtRule(tree.Media, index, debugInfo, MediaSyntaxOptions);
                     }
-
-                    parserInput.forget();
-
-                    media = new(tree.Media)(rules, features, index + currentIndex, fileInfo);
-                    if (context.dumpLineNumbers) {
-                        media.debugInfo = debugInfo;
+                    
+                    if (parserInput.$str('@container')) {
+                        return this.prepareAndGetNestableAtRule(tree.Container, index, debugInfo, ContainerSyntaxOptions);
                     }
-
-                    return media;
                 }
-
+                
                 parserInput.restore();
             },
 
@@ -1919,7 +1936,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 if (parserInput.currentChar() !== '@') { return; }
 
-                value = this['import']() || this.plugin() || this.media();
+                value = this['import']() || this.plugin() || this.nestableAtRule();
                 if (value) {
                     return value;
                 }

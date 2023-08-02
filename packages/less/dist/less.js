@@ -3213,7 +3213,7 @@
     var functionRegistry = makeRegistry(null);
 
     var MediaSyntaxOptions = {
-        queryInParens: false
+        queryInParens: true
     };
     var ContainerSyntaxOptions = {
         queryInParens: true
@@ -3579,6 +3579,12 @@
                     //
                     keyword: function () {
                         var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
+                        if (k) {
+                            return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
+                        }
+                    },
+                    mediaKeyword: function () {
+                        var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\&\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
                         if (k) {
                             return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
                         }
@@ -4830,18 +4836,24 @@
                     var nodes = [];
                     var e;
                     var p;
+                    var rangeP;
                     parserInput.save();
                     do {
-                        e = entities.keyword() || entities.variable() || entities.mixinLookup();
+                        e = entities.mediaKeyword() || entities.variable() || entities.mixinLookup();
                         if (e) {
                             nodes.push(e);
                         }
                         else if (parserInput.$char('(')) {
                             p = this.property();
                             parserInput.save();
-                            if (!p && syntaxOptions.queryInParens && parserInput.$re(/^[a-z-]*\s*([<>]=|<=|>=|[<>]|=)/)) {
+                            if (!p && syntaxOptions.queryInParens && parserInput.$re(/^[0-9a-z-]*\s*([<>]=|<=|>=|[<>]|=)/)) {
                                 parserInput.restore();
                                 p = this.condition();
+                                parserInput.save();
+                                rangeP = this.atomicCondition(null, p.rvalue);
+                                if (!rangeP) {
+                                    parserInput.restore();
+                                }
                             }
                             else {
                                 parserInput.restore();
@@ -4849,7 +4861,7 @@
                             }
                             if (parserInput.$char(')')) {
                                 if (p && !e) {
-                                    nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, p._index)));
+                                    nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index)));
                                     e = p;
                                 }
                                 else if (p && e) {
@@ -5294,7 +5306,7 @@
                     parserInput.forget();
                     return body;
                 },
-                atomicCondition: function () {
+                atomicCondition: function (needsParens, preparsedCond) {
                     var entities = this.entities;
                     var index = parserInput.i;
                     var a;
@@ -5304,7 +5316,12 @@
                     var cond = (function () {
                         return this.addition() || entities.keyword() || entities.quoted() || entities.mixinLookup();
                     }).bind(this);
-                    a = cond();
+                    if (preparsedCond) {
+                        a = preparsedCond;
+                    }
+                    else {
+                        a = cond();
+                    }
                     if (a) {
                         if (parserInput.$char('>')) {
                             if (parserInput.$char('=')) {
@@ -5342,7 +5359,7 @@
                                 error('expected expression');
                             }
                         }
-                        else {
+                        else if (!preparsedCond) {
                             c = new (tree.Condition)('=', a, new (tree.Keyword)('true'), index + currentIndex, false);
                         }
                         return c;
@@ -7946,9 +7963,11 @@
         }
     });
 
-    var QueryInParens = function (op, l, r, i) {
+    var QueryInParens = function (op, l, m, op2, r, i) {
         this.op = op.trim();
         this.lvalue = l;
+        this.mvalue = m;
+        this.op2 = op2 ? op2.trim() : null;
         this.rvalue = r;
         this._index = i;
     };
@@ -7956,17 +7975,27 @@
         type: 'QueryInParens',
         accept: function (visitor) {
             this.lvalue = visitor.visit(this.lvalue);
-            this.rvalue = visitor.visit(this.rvalue);
+            this.mvalue = visitor.visit(this.mvalue);
+            if (this.rvalue) {
+                this.rvalue = visitor.visit(this.rvalue);
+            }
         },
         eval: function (context) {
             this.lvalue = this.lvalue.eval(context);
-            this.rvalue = this.rvalue.eval(context);
+            this.mvalue = this.mvalue.eval(context);
+            if (this.rvalue) {
+                this.rvalue = this.rvalue.eval(context);
+            }
             return this;
         },
         genCSS: function (context, output) {
             this.lvalue.genCSS(context, output);
             output.add(' ' + this.op + ' ');
-            this.rvalue.genCSS(context, output);
+            this.mvalue.genCSS(context, output);
+            if (this.rvalue) {
+                output.add(' ' + this.op2 + ' ');
+                this.rvalue.genCSS(context, output);
+            }
         },
     });
 

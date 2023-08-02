@@ -239,3 +239,67 @@
     foo: bar;
   }
 }
+
+@media screen and (color), projection and (color) {
+  .selector {
+    color: #eee;
+  }
+}
+
+@media not (width <= -100px) {
+  body { 
+    background: green; 
+  }
+}
+
+@media (height > -100px) {
+  body { 
+    background: green; 
+  }
+}
+
+@media not (resolution: -300dpi) {
+  body { 
+    background: green; 
+  }
+}
+
+@media (example, all,), speech { 
+  body { 
+    background: green; 
+  }
+}
+
+@media &test, speech {
+  body { 
+    background: green; 
+  }
+}
+
+@media (min-orientation:portrait) {
+  body { 
+    background: green; 
+  }
+}
+
+@media print and (min-resolution: 118dpcm) {
+  body { 
+    background: green; 
+  }
+}
+
+@media (200px <= width <= 500px) {
+  .test-range-syntax {
+      padding: 0;
+  }
+}
+
+.selector {
+  color: #eee;
+
+  @media (200px <= width <= 500px) {
+    .test-range-syntax {
+        padding: 0;
+    }
+  }
+}

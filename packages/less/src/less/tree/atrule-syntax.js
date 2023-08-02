@@ -1,5 +1,5 @@
 export const MediaSyntaxOptions = {
-    queryInParens: false
+    queryInParens: true
 };
 
 export const ContainerSyntaxOptions = {

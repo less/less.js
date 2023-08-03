@@ -404,7 +404,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 },
 
                 mediaKeyword: function () {
-                    const k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\&\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);       
+                    const k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[&\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);       
                     if (k) {
                         return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
                     }

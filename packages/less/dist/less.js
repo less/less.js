@@ -3583,12 +3583,6 @@
                             return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
                         }
                     },
-                    mediaKeyword: function () {
-                        var k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[&\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
-                        if (k) {
-                            return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
-                        }
-                    },
                     //
                     // A function call
                     //
@@ -4839,7 +4833,7 @@
                     var rangeP;
                     parserInput.save();
                     do {
-                        e = entities.mediaKeyword() || entities.variable() || entities.mixinLookup();
+                        e = entities.keyword() || entities.variable() || entities.mixinLookup();
                         if (e) {
                             nodes.push(e);
                         }

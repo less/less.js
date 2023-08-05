@@ -1,6 +1,6 @@
 {
 	"name": "less",
-	"version": "4.1.3",
+	"version": "4.2.0",
 	"description": "Leaner CSS",
 	"homepage": "http://lesscss.org",
 	"author": {
@@ -56,7 +56,7 @@
 		"source-map": "~0.6.0"
 	},
 	"devDependencies": {
-		"@less/test-data": "^4.1.0",
+		"@less/test-data": "^4.2.0",
 		"@less/test-import-module": "^4.0.0",
 		"@rollup/plugin-commonjs": "^17.0.0",
 		"@rollup/plugin-json": "^4.1.0",

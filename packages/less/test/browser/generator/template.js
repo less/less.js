@@ -31,15 +31,15 @@ module.exports = (stylesheets, helpers, spec, less) => {
         <script src="../../${helper}"></script>
     `).join('')}
 
-    <link rel="stylesheet" href="../../node_modules/mocha/mocha.css">
+    <link rel="stylesheet" href="../../../../node_modules/mocha/mocha.css">
 </head>
 
 <body>
     <!-- content -->
     <div id="mocha"></div>
-    <script src="../../node_modules/mocha/mocha.js"></script>
-    <script src="../../node_modules/mocha-teamcity-reporter/lib/teamcityBrowser.js"></script>
-    <script src="../../node_modules/chai/chai.js"></script>
+    <script src="../../../../node_modules/mocha/mocha.js"></script>
+    <script src="../../../../node_modules/mocha-teamcity-reporter/lib/teamcityBrowser.js"></script>
+    <script src="../../../../node_modules/chai/chai.js"></script>
     <script>
         expect = chai.expect
         mocha.setup({

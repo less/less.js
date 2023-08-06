@@ -33,14 +33,14 @@ jobs:
      - name: Print ts and ts-node version
        run: cd packages/less && npm install ts-node@latest && npm list typescript && npm list ts-node
      - name: Run unit test
-       run: cd packages/less && npm test
+       run: npm run test -w packages/less
 
   fast_node_test:
     name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [16, 19]
+        node: [16, 20]
     runs-on: ${{ matrix.os }}
     steps:
      - uses: actions/checkout@v2

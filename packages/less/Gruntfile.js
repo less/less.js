@@ -225,6 +225,9 @@ module.exports = function(grunt) {
                     "node test/index.js"
                 ].join(' && ')
             },
+            copybrowsertestdata: {
+                command: 'npm run copy:browser-test-data'
+            },
             generatebrowser: {
                 command: 'node test/browser/generator/generate.js'
             },
@@ -326,6 +329,7 @@ module.exports = function(grunt) {
     // Run all browser tests
     grunt.registerTask("browsertest", [
         "browsertest-lessjs",
+        "shell:copybrowsertestdata",
         "connect",
         "shell:runbrowser"
     ]);

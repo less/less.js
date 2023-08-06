@@ -51,5 +51,7 @@ jobs:
        run: npm install
      - name: Print put node & npm version
        run: node --version && npm --version 
+     - name: Print ts and ts-node version
+       run: cd packages/less && npm install ts-node@latest && npm list typescript && npm list ts-node
      - name: Run unit test
-       run: cd packages/less && npm test
+       run: npm run test -w packages/less

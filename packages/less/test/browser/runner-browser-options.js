@@ -14,8 +14,8 @@ var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 
 /**
  * @todo - generate the node_modules path for this file and in templates
  */
-var lessFolder = '../../../../node_modules/@less/test-data/less'
-var cssFolder = '../../../../node_modules/@less/test-data/css'
+var lessFolder = './node_modules/@less/test-data/less'
+var cssFolder = './node_modules/@less/test-data/css'
 
 for (var i = 0; i < testFiles.length; i++) {
     var file = testFiles[i],

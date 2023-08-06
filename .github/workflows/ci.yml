@@ -26,12 +26,12 @@ jobs:
          # The Node.js version to configure
          node-version: ${{ matrix.node }}
      - name: Install npm dependencies
-       run: npm install && npm install ts-node@latest
+       run: npm install
      - name: Print put node & npm version
        # Output useful info for debugging.
        run: node --version && npm --version 
      - name: Print ts and ts-node version
-       run: cd packages/less && npm list typescript && npm list ts-node
+       run: cd packages/less && npm install ts-node@latest && npm list typescript && npm list ts-node
      - name: Run unit test
        run: cd packages/less && npm test
 

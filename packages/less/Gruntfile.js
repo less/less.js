@@ -373,7 +373,8 @@ module.exports = function(grunt) {
         "shell:opts",
         "shell:plugin",
         "connect",
-        "shell:runbrowser"
+        "shell:runbrowser",
+        "shell:copybrowsertestdata"
     ];
 
     if (

@@ -1,7 +1,7 @@
 var path = require('path');
 var resolve = require('resolve')
 
-var rootFolder = path.resolve(__dirname, '../../../');
+var rootFolder = path.resolve(__dirname, '../../../../../');
 var testFolder = path.relative(rootFolder, path.dirname(resolve.sync('@less/test-data')))
 var lessFolder = path.join(testFolder, 'less');
 

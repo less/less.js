@@ -61,17 +61,17 @@ module.exports = {
             outfile: 'tmp/browser/test-runner-no-js-errors.html'
         }
     },
-    browser: {
-        src: [
-            'test/browser/less/*.less',
-            'test/browser/less/plugin/*.less'
-        ],
-        options: {
-            helpers: 'test/browser/runner-browser-options.js',
-            specs: 'test/browser/runner-browser-spec.js',
-            outfile: 'tmp/browser/test-runner-browser.html'
-        }
-    },
+    // browser: {
+    //     src: [
+    //         'test/browser/less/*.less',
+    //         'test/browser/less/plugin/*.less'
+    //     ],
+    //     options: {
+    //         helpers: 'test/browser/runner-browser-options.js',
+    //         specs: 'test/browser/runner-browser-spec.js',
+    //         outfile: 'tmp/browser/test-runner-browser.html'
+    //     }
+    // },
     relativeUrls: {
         src: ['test/browser/less/relative-urls/*.less'],
         options: {

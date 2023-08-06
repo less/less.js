@@ -43,7 +43,7 @@
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
 		"compile": "tsc -p tsconfig.build.json",
 		"copy:root": "shx cp -rf ./dist ../../",
-		"copy:browser-test-data": "shx mkdir ./tmp/test-data/ && shx cp -rf ../test-data/ ./tmp/test-data/ && cd ./tmp/test-data/test-data/ && ls",
+		"copy:browser-test-data": "shx cp -rf ../test-data/ ./tmp",
 		"dev": "tsc -p tsconfig.build.json -w",
 		"prepublishOnly": "grunt dist"
 	},

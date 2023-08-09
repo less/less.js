@@ -79,7 +79,7 @@ FileManager.prototype = Object.assign(new AbstractFileManager(), {
         // sheet may be set to the stylesheet for the initial load or a collection of properties including
         // some context variables for imports
         const hrefParts = this.extractUrlParts(filename, window.location.href);
-        const href      = hrefParts.url;
+        const href      = filename.startsWith('blob:') ? filename : hrefParts.url;
         const self      = this;
         
         return new Promise((resolve, reject) => {

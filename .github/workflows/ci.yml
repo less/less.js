@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         # Test all mainstream operating system
-        os: [ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         node: [18]
     runs-on: ${{ matrix.os }}
     steps:
@@ -31,7 +31,7 @@ jobs:
        # Output useful info for debugging.
        run: node --version && npm --version 
      - name: Run unit test
-       run: cd packages/less && npm test
+       run: npm run test
 
   fast_node_test:
     name: 'Tests on ${{matrix.os}} with node${{matrix.node}}'
@@ -50,4 +50,4 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Run unit test
-       run: cd packages/less && npm test
+       run: npm run test

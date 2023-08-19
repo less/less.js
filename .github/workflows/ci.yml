@@ -26,7 +26,7 @@ jobs:
          # The Node.js version to configure
          node-version: ${{ matrix.node }}
      - name: Install npm dependencies
-       run: npm install
+       run: npm install && npx lerna bootstrap
      - name: Print put node & npm version
        # Output useful info for debugging.
        run: node --version && npm --version 
@@ -46,7 +46,7 @@ jobs:
        with:
          node-version: ${{ matrix.node }}
      - name: Install npm dependencies
-       run: npm install
+       run: npm install && npx lerna bootstrap
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Run unit test

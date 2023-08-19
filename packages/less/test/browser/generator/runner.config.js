@@ -1,9 +1,11 @@
 var path = require('path');
 var resolve = require('resolve')
 
-var rootFolder = path.resolve(__dirname, '../../../');
-var testFolder = path.relative(rootFolder, path.dirname(resolve.sync('@less/test-data')))
+/** Root of repo */
+var rootFolder = path.resolve(__dirname, '../../../../../');
+var testFolder = path.dirname(resolve.sync('@less/test-data'))
 var lessFolder = path.join(testFolder, 'less');
+var localTests = path.resolve(__dirname, '..');
 
 module.exports = {
     main: {
@@ -44,7 +46,7 @@ module.exports = {
         src: [
             `${lessFolder}/errors/*.less`,
             `${testFolder}/errors/javascript-error.less`,
-            'test/browser/less/errors/*.less'
+            `${localTests}/less/errors/*.less`
         ],
         options: {
             timeout: 20000,
@@ -63,8 +65,8 @@ module.exports = {
     },
     browser: {
         src: [
-            'test/browser/less/*.less',
-            'test/browser/less/plugin/*.less'
+            `${localTests}/less/*.less`,
+            `${localTests}/less/plugin/*.less`
         ],
         options: {
             helpers: 'test/browser/runner-browser-options.js',
@@ -73,7 +75,7 @@ module.exports = {
         }
     },
     relativeUrls: {
-        src: ['test/browser/less/relative-urls/*.less'],
+        src: [`${localTests}/less/relative-urls/*.less`],
         options: {
             helpers: 'test/browser/runner-relative-urls-options.js',
             specs: 'test/browser/runner-relative-urls-spec.js',
@@ -81,7 +83,7 @@ module.exports = {
         }
     },
     rewriteUrls: {
-        src: ['test/browser/less/rewrite-urls/*.less'],
+        src: [`${localTests}/less/rewrite-urls/*.less`],
         options: {
             helpers: 'test/browser/runner-rewrite-urls-options.js',
             specs: 'test/browser/runner-rewrite-urls-spec.js',
@@ -89,7 +91,7 @@ module.exports = {
         }
     },
     rootpath: {
-        src: ['test/browser/less/rootpath/*.less'],
+        src: [`${localTests}/less/rootpath/*.less`],
         options: {
             helpers: 'test/browser/runner-rootpath-options.js',
             specs: 'test/browser/runner-rootpath-spec.js',
@@ -97,7 +99,7 @@ module.exports = {
         }
     },
     rootpathRelative: {
-        src: ['test/browser/less/rootpath-relative/*.less'],
+        src: [`${localTests}/less/rootpath-relative/*.less`],
         options: {
             helpers: 'test/browser/runner-rootpath-relative-options.js',
             specs: 'test/browser/runner-rootpath-relative-spec.js',
@@ -105,7 +107,7 @@ module.exports = {
         }
     },
     rootpathRewriteUrls: {
-        src: ['test/browser/less/rootpath-rewrite-urls/*.less'],
+        src: [`${localTests}/less/rootpath-rewrite-urls/*.less`],
         options: {
             helpers:
             'test/browser/runner-rootpath-rewrite-urls-options.js',
@@ -115,7 +117,7 @@ module.exports = {
         }
     },
     production: {
-        src: ['test/browser/less/production/*.less'],
+        src: [`${localTests}/less/production/*.less`],
         options: {
             helpers: 'test/browser/runner-production-options.js',
             specs: 'test/browser/runner-production-spec.js',
@@ -123,7 +125,7 @@ module.exports = {
         }
     },
     modifyVars: {
-        src: ['test/browser/less/modify-vars/*.less'],
+        src: [`${localTests}/less/modify-vars/*.less`],
         options: {
             helpers: 'test/browser/runner-modify-vars-options.js',
             specs: 'test/browser/runner-modify-vars-spec.js',
@@ -131,7 +133,7 @@ module.exports = {
         }
     },
     globalVars: {
-        src: ['test/browser/less/global-vars/*.less'],
+        src: [`${localTests}/less/global-vars/*.less`],
         options: {
             helpers: 'test/browser/runner-global-vars-options.js',
             specs: 'test/browser/runner-global-vars-spec.js',

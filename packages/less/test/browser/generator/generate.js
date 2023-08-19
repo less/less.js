@@ -52,7 +52,7 @@ Object.entries(config).forEach(entry => {
     const templateString = template(paths, test.options.helpers, test.options.specs)
     fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
     tests.push(() => {
-        const file = 'http://localhost:8081/' + test.options.outfile
+        const file = 'http://localhost:8081/packages/less/' + test.options.outfile
         console.log(file)
         return runner({
             file,

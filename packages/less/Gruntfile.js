@@ -2,6 +2,7 @@
 
 var resolve = require('resolve');
 var path = require('path');
+var resolveBin = require('resolve-bin')
 
 var testFolder = path.relative(process.cwd(), path.dirname(resolve.sync('@less/test-data')));
 var lessFolder = path.join(testFolder, 'less');
@@ -186,8 +187,8 @@ module.exports = function(grunt) {
     var path = require('path');
 
     // Handle async / await in Rollup build for tests
-    const tsNodeRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
-    const crossEnv = path.resolve(path.join('node_modules', '.bin', 'cross-env'));
+    const tsNodeRuntime = resolveBin.sync('ts-node');
+    const crossEnv = resolveBin.sync('cross-env');
 
     // Project configuration.
     grunt.initConfig({
@@ -291,7 +292,8 @@ module.exports = function(grunt) {
         connect: {
             server: {
                 options: {
-                    port: 8081
+                    port: 8081,
+                    base: '../..'
                 }
             }
         },

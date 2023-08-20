@@ -49,8 +49,8 @@ function runSerial(tasks) {
 Object.entries(config).forEach(entry => {
     const test = entry[1]
     console.log(`test.src: `, test.src);
-    console.log(`test.src after: `, test.src.map((path) => path.normalize(path)));
-    const paths = globby.sync(test.src.map((path) => path.normalize(path)));
+    console.log(`test.src after: `, test.src.map((p) => path.normalize(p)));
+    const paths = globby.sync(test.src.map((p) => path.normalize(p)));
     const templateString = template(paths, test.options.helpers, test.options.specs)
     console.log(`paths: `, paths);
     console.log(`${test.options.outfile}: `, templateString);

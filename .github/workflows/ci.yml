@@ -31,7 +31,7 @@ jobs:
        # Output useful info for debugging.
        run: node --version && npm --version 
      - name: Run gurnt cli
-       run: grunt --version
+       run: npm run grunt
      - name: Run unit test
        run: npm run test
 

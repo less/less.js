@@ -50,6 +50,8 @@ Object.entries(config).forEach(entry => {
     const test = entry[1]
     const paths = globby.sync(test.src)
     const templateString = template(paths, test.options.helpers, test.options.specs)
+    console.log(`test.src: `, test.src);
+    console.log(`paths: `, paths);
     console.log(`${test.options.outfile}: `, templateString);
     fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
     tests.push(() => {

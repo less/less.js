@@ -2,7 +2,6 @@
 
 var resolve = require('resolve');
 var path = require('path');
-var resolveBin = require('resolve-bin')
 
 var testFolder = path.relative(process.cwd(), path.dirname(resolve.sync('@less/test-data')));
 var lessFolder = path.join(testFolder, 'less');

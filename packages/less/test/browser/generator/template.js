@@ -2,9 +2,9 @@ const html = require('html-template-tag')
 const path = require('path')
 
 const webRoot = path.resolve(__dirname, '../../../../../');
-const mochaDir = path.relative(webRoot, path.dirname(require.resolve('mocha')))
-const chaiDir = path.relative(webRoot, path.dirname(require.resolve('chai')))
-const mochaTeamCityDir = path.relative(webRoot, path.dirname(require.resolve('mocha-teamcity-reporter')))
+const mochaDir = path.normalize(path.relative(webRoot, path.dirname(require.resolve('mocha')))).replace(/\\/g, '/');
+const chaiDir = path.normalize(path.relative(webRoot, path.dirname(require.resolve('chai')))).replace(/\\/g, '/');
+const mochaTeamCityDir = path.normalize(path.relative(webRoot, path.dirname(require.resolve('mocha-teamcity-reporter')))).replace(/\\/g, '/');
 
 /**
  * Generates HTML templates from list of test sheets

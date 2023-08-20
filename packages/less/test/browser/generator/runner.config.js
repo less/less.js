@@ -64,8 +64,8 @@ module.exports = {
     },
     browser: {
         src: [
-            `${localTests}/less/*.less`,
-            `${localTests}/less/plugin/*.less`
+            `packages/less/test/browser/less/*.less`,
+            `packages/less/test/browser/less/plugin/*.less`
         ],
         options: {
             helpers: 'test/browser/runner-browser-options.js',

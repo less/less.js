@@ -48,12 +48,8 @@ function runSerial(tasks) {
 
 Object.entries(config).forEach(entry => {
     const test = entry[1]
-    console.log(`test.src: `, test.src);
-    console.log(`test.src after: `, test.src.map((p) => path.normalize(p).replace(/\\/g, '/')));
-    const paths = globby.sync(test.src.map((p) => path.normalize(p).replace(/\\/g, '/')));
+    const paths = globby.sync(test.src);
     const templateString = template(paths, test.options.helpers, test.options.specs)
-    console.log(`paths: `, paths);
-    console.log(`${test.options.outfile}: `, templateString);
     fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
     tests.push(() => {
         const file = 'http://localhost:8081/packages/less/' + test.options.outfile

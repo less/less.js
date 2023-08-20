@@ -2,8 +2,9 @@ var path = require('path');
 var resolve = require('resolve')
 
 /** Root of repo */
-var testFolder = path.dirname(resolve.sync('@less/test-data'))
-var lessFolder = path.join(testFolder, 'less');
+var rootFolder = path.resolve(__dirname, '../../../../../');
+var testFolder = path.relative(rootFolder, path.dirname(resolve.sync('@less/test-data')));
+var lessFolder = path.relative(rootFolder, path.join(testFolder, 'less'));
 var localTests = 'packages/less/test/browser';
 
 module.exports = {

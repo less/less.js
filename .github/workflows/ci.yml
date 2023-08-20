@@ -30,6 +30,8 @@ jobs:
      - name: Print put node & npm version
        # Output useful info for debugging.
        run: node --version && npm --version 
+     - name: Run gurnt cli
+       run: grunt --version
      - name: Run unit test
        run: npm run test
 

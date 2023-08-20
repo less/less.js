@@ -48,7 +48,7 @@ function runSerial(tasks) {
 
 Object.entries(config).forEach(entry => {
     const test = entry[1]
-    const paths = globby.sync(test.src);
+    const paths = globby.sync(test.src)
     const templateString = template(paths, test.options.helpers, test.options.specs)
     fs.writeFileSync(path.join(cwd, test.options.outfile), templateString)
     tests.push(() => {
@@ -56,7 +56,7 @@ Object.entries(config).forEach(entry => {
         console.log(file)
         return runner({
             file,
-            timeout: 5000,
+            timeout: 3500,
             args: ['disable-web-security']
         })
     })

@@ -1625,6 +1625,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (e) {
                         value.push(e);
                     }
+                    if (parserInput.peek(',')) {
+                        value.push(new (tree.Anonymous)(',', parserInput.i));
+                        parserInput.$char(',');
+                    }
                 } while (e);
 
                 done = testCurrentChar();

@@ -34,7 +34,7 @@ module.exports = {
         }
     },
     strictUnits: {
-        src: [`${lessFolder}/strict-units/*.less`],
+        src: [`${lessFolder}/units/strict/*.less`],
         options: {
             helpers: 'test/browser/runner-strict-units-options.js',
             specs: 'test/browser/runner-strict-units-spec.js',

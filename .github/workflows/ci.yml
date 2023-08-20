@@ -15,7 +15,7 @@ jobs:
       matrix:
         # Test all mainstream operating system
         # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
+        os: [windows-latest]
         node: [18]
     runs-on: ${{ matrix.os }}
     steps:

@@ -3,7 +3,7 @@
 ### v4.2.0 (2023-08-06)
 - [#3811](https://github.com/less/less.js/pull/3811) add support for [container queries](https://www.w3.org/TR/css-contain-3/) (@puckowski)
 - [#3761](https://github.com/less/less.js/pull/3761) fix faulty source map generation with variables in selectors, fixes [#3567](https://github.com/less/less.js/issues/3567) (@pgoldberg)
-- [#3700](https://github.com/less/less.js/pull/300) parsing variables fail when there is no trailing semicolon (@b-kelly)
+- [#3700](https://github.com/less/less.js/pull/3700) parsing variables fail when there is no trailing semicolon (@b-kelly)
 - [#3719](https://github.com/less/less.js/pull/3719) modify `this` pointer so that it is not empty. (@lumburr)
 - [#3649](https://github.com/less/less.js/pull/3649) fixs [#2991](https://github.com/less/less.js/issues/2991) empty @media queries generated when compiling less file with (reference) to bootstrap (@MoonCoral)
 

@@ -2,7 +2,6 @@
 // index.js
 // Should expose the additional browser functions on to the less object
 //
-const puppeteer = require('puppeteer');
 
 
 import {addDataAttr} from './utils';
@@ -50,32 +49,7 @@ export default (window, options) => {
     }
 
     // only really needed for phantom
-
-    async function bind(func, thisArg) {
-        const curryArgs = Array.prototype.slice.call(arguments, 2);
-        return async function() {
-            const args = curryArgs.concat(Array.from(arguments));
-            return await func.apply(thisArg, args);
-        };
-    }
-    
-    (async () => {
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-    
-        const bindCode = `
-            (${bind.toString()})
-            const boundFunction = bind(function(a, b) {
-                console.log('Sum:', a + b);
-            }, null, 10);
-            boundFunction(5);
-        `;
-    
-        await page.evaluate(bindCode);
-    
-        await browser.close();
-    })();
-    
+//removed phantom
 
     function loadStyles(modifyVars) {
         const styles = document.getElementsByTagName('style');

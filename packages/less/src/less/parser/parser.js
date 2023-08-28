@@ -5,6 +5,7 @@ import getParserInput from './parser-input';
 import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
 import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
+import logger from '../logger';
 
 //
 // less.js - parser
@@ -53,6 +54,20 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 message: msg
             },
             imports
+        );
+    }
+
+    function warn(msg, index) {
+        logger.warn(
+            (new LessError(
+                {
+                    index: index ?? parserInput.i,
+                    filename: fileInfo.filename,
+                    type: 'Warning',
+                    message: msg
+                },
+                imports
+            )).toString()
         );
     }
 
@@ -888,6 +903,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     let elements;
                     let args;
                     let hasParens;
+                    let parensIndex;
+                    let parensWS = false;
 
                     if (s !== '.' && s !== '#') { return; }
 
@@ -896,10 +913,15 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     elements = this.elements();
 
                     if (elements) {
+                        parensIndex = parserInput.i;
                         if (parserInput.$char('(')) {
+                            parensWS = parserInput.isWhitespace(-2);
                             args = this.args(true).args;
                             expectChar(')');
                             hasParens = true;
+                            if (parensWS) {
+                                warn('Whitespace between a mixin name and parentheses is deprecated', parensIndex);
+                            }
                         }
 
                         if (getLookup !== false) {
@@ -927,6 +949,15 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 return new tree.NamespaceValue(mixin, lookups);
                             }
                             else {
+                                for (let i = 0; i < elements.length; i++) {
+                                    const elem = elements[i];
+                                    if (elem.combinator.value === '>') {
+                                        warn("'>' and space separators between elements in a mixin call are deprecated", elem._index);
+                                    }
+                                }
+                                if (!hasParens) {
+                                    warn('Calling a mixin without parentheses is deprecated', parensIndex);
+                                }
                                 return mixin;
                             }
                         }
@@ -2086,7 +2117,14 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                         parserInput.save();
 
-                        op = parserInput.$char('/') || parserInput.$char('*') || parserInput.$str('./');
+                        op = parserInput.$char('/') || parserInput.$char('*');
+                        if (!op) {
+                            let index = parserInput.i;
+                            op = parserInput.$str('./');
+                            if (op) {
+                                warn('./ operator is deprecated', index);
+                            }
+                        }
 
                         if (!op) { parserInput.forget(); break; }
 

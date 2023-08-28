@@ -366,6 +366,8 @@ module.exports = function() {
 
             var options = clone(originalOptions);
 
+            options.stylize = stylize;
+
             var name = getBasename(file);
 
             if (oneTestOnly && name !== oneTestOnly) {

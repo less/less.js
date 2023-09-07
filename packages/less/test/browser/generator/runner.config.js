@@ -6,6 +6,11 @@ var testFolder = path.posix.normalize(path.dirname(resolve.sync('@less/test-data
 var lessFolder = path.posix.normalize(path.join(testFolder, 'less'));
 var localTests = path.posix.normalize(path.resolve(__dirname, '..'));
 
+console.log(
+    `normalize: `, path.normalize(path.dirname(resolve.sync('@less/test-data'))),
+    `posix normalize: `, path.posix.normalize(path.dirname(resolve.sync('@less/test-data')))
+)
+
 module.exports = {
     main: {
     // src is used to build list of less files to compile

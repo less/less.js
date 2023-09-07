@@ -2,9 +2,9 @@ var path = require('path');
 var resolve = require('resolve')
 
 /** Root of repo */
-var testFolder = path.normalize(path.dirname(resolve.sync('@less/test-data'))).replace(/\\/g, '/');
-var lessFolder = path.normalize(path.join(testFolder, 'less')).replace(/\\/g, '/');
-var localTests = path.normalize(path.resolve(__dirname, '..')).replace(/\\/g, '/');
+var testFolder = path.posix.normalize(path.dirname(resolve.sync('@less/test-data')));
+var lessFolder = path.posix.normalize(path.join(testFolder, 'less'));
+var localTests = path.posix.normalize(path.resolve(__dirname, '..'));
 
 module.exports = {
     main: {

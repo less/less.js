@@ -1,14 +1,15 @@
 var path = require('path');
-var resolve = require('resolve')
+var resolve = require('resolve');
+var { forceCovertToBrowserPath } = require('./utils');
 
 /** Root of repo */
-var testFolder = path.posix.normalize(path.dirname(resolve.sync('@less/test-data')));
-var lessFolder = path.posix.normalize(path.join(testFolder, 'less'));
-var localTests = path.posix.normalize(path.resolve(__dirname, '..'));
+var testFolder = forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-data')));
+var lessFolder = forceCovertToBrowserPath(path.join(testFolder, 'less'));
+var localTests = forceCovertToBrowserPath(path.resolve(__dirname, '..'));
 
 console.log(
-    `normalize: `, path.normalize(path.dirname(resolve.sync('@less/test-data'))),
-    `posix normalize: `, path.posix.normalize(path.dirname(resolve.sync('@less/test-data')))
+    `normal: `, path.dirname(resolve.sync('@less/test-data')),
+    `forceCovertToBrowserPath: `, forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-data')))
 )
 
 module.exports = {

@@ -7,11 +7,6 @@ var testFolder = forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-
 var lessFolder = forceCovertToBrowserPath(path.join(testFolder, 'less'));
 var localTests = forceCovertToBrowserPath(path.resolve(__dirname, '..'));
 
-console.log(
-    `normal: `, path.dirname(resolve.sync('@less/test-data')),
-    `forceCovertToBrowserPath: `, forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-data')))
-)
-
 module.exports = {
     main: {
     // src is used to build list of less files to compile

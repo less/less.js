@@ -1,5 +1,5 @@
 var path = require('path');
-var resolve = require('resolve');
+var resolve = require('resolve')
 var { forceCovertToBrowserPath } = require('./utils');
 
 /** Root of repo */

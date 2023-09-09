@@ -523,10 +523,6 @@
 - [#804](https://github.com/less/less.js/pull/804) Fix for unnamed parameters test fail & failing test for import-once (@jreading)
 - [#796](https://github.com/less/less.js/pull/796) fixed issue #795 (@comfuture)
 - [#268](https://github.com/less/less.js/pull/268) Implemented named arguments (@jamesfoster)
-
-
-### fix
- -[#3772] Removed PhantomJS stuff  
  
 ### v1.3.0 (2012-03-10)
 - [#673](https://github.com/less/less.js/pull/673) mocha found a couple global variable leaks. Here's the fix. (@andrewjstone)

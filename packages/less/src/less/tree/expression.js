@@ -2,6 +2,7 @@ import Node from './node';
 import Paren from './paren';
 import Comment from './comment';
 import Dimension from './dimension';
+import Anonymous from './anonymous';
 
 const Expression = function(value, noSpacing) {
     this.value = value;
@@ -56,7 +57,12 @@ Expression.prototype = Object.assign(new Node(), {
         for (let i = 0; i < this.value.length; i++) {
             this.value[i].genCSS(context, output);
             if (!this.noSpacing && i + 1 < this.value.length) {
-                output.add(' ');
+                if (!this.noSpacing && i + 1 < this.value.length) {
+                    if (i + 1 < this.value.length && !(this.value[i + 1] instanceof Anonymous) ||
+                        this.value[i + 1] instanceof Anonymous && this.value[i + 1].value !== ',') {
+                        output.add(' ');
+                    }
+                }
             }
         }
     },

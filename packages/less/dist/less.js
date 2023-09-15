@@ -4706,6 +4706,10 @@
                         if (e) {
                             value.push(e);
                         }
+                        if (parserInput.peek(',')) {
+                            value.push(new (tree.Anonymous)(',', parserInput.i));
+                            parserInput.$char(',');
+                        }
                     } while (e);
                     done = testCurrentChar();
                     if (value.length > 0) {
@@ -7125,7 +7129,12 @@
             for (var i_1 = 0; i_1 < this.value.length; i_1++) {
                 this.value[i_1].genCSS(context, output);
                 if (!this.noSpacing && i_1 + 1 < this.value.length) {
-                    output.add(' ');
+                    if (!this.noSpacing && i_1 + 1 < this.value.length) {
+                        if (i_1 + 1 < this.value.length && !(this.value[i_1 + 1] instanceof Anonymous) ||
+                            this.value[i_1 + 1] instanceof Anonymous && this.value[i_1 + 1].value !== ',') {
+                            output.add(' ');
+                        }
+                    }
                 }
             }
         },

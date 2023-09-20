@@ -951,6 +951,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             else {
                                 for (let i = 0; i < elements.length; i++) {
                                     const elem = elements[i];
+                                    /** @todo remove */
                                     if (elem.combinator.value === '>') {
                                         warn("'>' and space separators between elements in a mixin call are deprecated", elem._index);
                                     }

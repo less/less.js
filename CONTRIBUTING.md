@@ -48,3 +48,18 @@ _Pull requests are encouraged!_
 If you want to take an issue just add a small comment saying you are having a go at something, so we don't get duplication.
 
 Learn more about [developing Less.js](http://lesscss.org/usage/#developing-less).
+
+## Releases
+
+Releases are managed using Lerna. First, we determine if the release is a major (breaking), minor (new features), or patch (bug fix) change.
+
+Then, you can run Lerna with a command like:
+```
+npx lerna version minor
+```
+
+To publish, run the Lerna command for publishing without incrementing the version, as in:
+```
+npx lerna publish from-package --no-private
+```
+

@@ -2,7 +2,7 @@
  * The reason why Node is a class and other nodes simply do not extend
  * from Node (since we're transpiling) is due to this issue:
  * 
- * https://github.com/less/less.js/issues/3434
+ * @see https://github.com/less/less.js/issues/3434
  */
 class Node {
     constructor() {
@@ -48,6 +48,8 @@ class Node {
     toCSS(context) {
         const strs = [];
         this.genCSS(context, {
+            // remove when genCSS has JSDoc types
+            // eslint-disable-next-line no-unused-vars
             add: function(chunk, fileInfo, index) {
                 strs.push(chunk);
             },
@@ -125,21 +127,21 @@ class Node {
 
     // Returns true if this node represents root of ast imported by reference
     blocksVisibility() {
-        if (this.visibilityBlocks == null) {
+        if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
         }
         return this.visibilityBlocks !== 0;
     }
 
     addVisibilityBlock() {
-        if (this.visibilityBlocks == null) {
+        if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
         }
         this.visibilityBlocks = this.visibilityBlocks + 1;
     }
 
     removeVisibilityBlock() {
-        if (this.visibilityBlocks == null) {
+        if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
         }
         this.visibilityBlocks = this.visibilityBlocks - 1;

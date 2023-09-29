@@ -61,6 +61,23 @@ FileManager.prototype = Object.assign(new AbstractFileManager(), {
 
         function getFileData(fulfill, reject) {
             (function tryPathIndex(i) {
+                function tryWithExtension() {
+                    const extFilename = options.ext ? self.tryAppendExtension(fullFilename, options.ext) : fullFilename;
+
+                    if (extFilename !== fullFilename && !explicit && paths[i] === '.') {
+                        try {
+                            fullFilename = require.resolve(extFilename);
+                            isNodeModule = true;
+                        }
+                        catch (e) {
+                            filenamesTried.push(npmPrefix + extFilename);
+                            fullFilename = extFilename;
+                        }
+                    }
+                    else {
+                        fullFilename = extFilename;
+                    }
+                }
                 if (i < paths.length) {
                     (function tryPrefix(j) {
                         if (j < prefixes.length) {
@@ -83,25 +100,7 @@ FileManager.prototype = Object.assign(new AbstractFileManager(), {
                             }
                             else {
                                 tryWithExtension();
-                            }
-
-                            function tryWithExtension() {
-                                const extFilename = options.ext ? self.tryAppendExtension(fullFilename, options.ext) : fullFilename;
-
-                                if (extFilename !== fullFilename && !explicit && paths[i] === '.') {
-                                    try {
-                                        fullFilename = require.resolve(extFilename);
-                                        isNodeModule = true;
-                                    }
-                                    catch (e) {
-                                        filenamesTried.push(npmPrefix + extFilename);
-                                        fullFilename = extFilename;
-                                    }
-                                }
-                                else {
-                                    fullFilename = extFilename;
-                                }
-                            }
+                            }                            
 
                             const readFileArgs = [fullFilename];
                             if (!options.rawBuffer) {

@@ -67,6 +67,7 @@ const lessc_helper = {
         console.log('                               --plugin=less-plugin-clean-css or just --clean-css');
         console.log('                               specify options afterwards e.g. --plugin=less-plugin-clean-css="advanced"');
         console.log('                               or --clean-css="advanced"');
+        console.log('  --disable-plugin-rule        Disallow @plugin statements');
         console.log('');
         console.log('-------------------------- Deprecated ----------------');
         console.log('  -sm=on|off               Legacy parens-only math. Use --math');
@@ -87,4 +88,5 @@ const lessc_helper = {
 };
 
 // Exports helper functions
+// eslint-disable-next-line no-prototype-builtins
 for (const h in lessc_helper) { if (lessc_helper.hasOwnProperty(h)) { exports[h] = lessc_helper[h]; }}

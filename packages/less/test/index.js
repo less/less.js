@@ -63,6 +63,8 @@ var testMap = [
         'sourcemaps-empty/', lessTester.testEmptySourcemap],
     [{math: 'strict', strictUnits: true, sourceMap: {disableSourcemapAnnotation: true}},
         'sourcemaps-disable-annotation/', lessTester.testSourcemapWithoutUrlAnnotation],
+    [{math: 'strict', strictUnits: true, sourceMap: true},
+        'sourcemaps-variable-selector/', lessTester.testSourcemapWithVariableInSelector],
     [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, 'globalVars/',
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
     [{modifyVars: true}, 'modifyVars/',
@@ -88,6 +90,7 @@ lessTester.testSyncronous({syncImport: true}, '_main/import');
 lessTester.testSyncronous({syncImport: true}, '_main/plugin');
 lessTester.testSyncronous({syncImport: true}, 'math/strict/css');
 lessTester.testNoOptions();
+lessTester.testDisablePluginRule();
 lessTester.testJSImport();
 lessTester.finished();
 

@@ -62,8 +62,7 @@ const LessError = function(e, fileContentMap, currentFilename) {
                 func();
             } catch (e) {
                 const match = e.stack.match(anonymousFunc);
-                var line = parseInt(match[2]);
-                lineAdjust = 1 - line;
+                lineAdjust = 1 - parseInt(match[2]);
             }
 
             if (found) {

@@ -30,7 +30,7 @@ class Environment {
         if (!filename) {
             logger.warn('getFileManager called with no filename.. Please report this issue. continuing.');
         }
-        if (currentDirectory == null) {
+        if (currentDirectory === undefined) {
             logger.warn('getFileManager called with null directory.. Please report this issue. continuing.');
         }
 

@@ -39,7 +39,7 @@ export default (window, options) => {
     function clone(obj) {
         const cloned = {};
         for (const prop in obj) {
-            if (obj.hasOwnProperty(prop)) {
+            if (Object.prototype.hasOwnProperty.call(obj, prop)) {
                 cloned[prop] = obj[prop];
             }
         }
@@ -159,6 +159,10 @@ export default (window, options) => {
             less.watchTimer = setInterval(() => {
                 if (less.watchMode) {
                     fileManager.clearFileCache();
+                    /**
+                     * @todo remove when this is typed with JSDoc
+                     */
+                    // eslint-disable-next-line no-unused-vars
                     loadStyleSheets((e, css, _, sheet, webInfo) => {
                         if (e) {
                             errors.add(e, e.href || sheet.href);
@@ -174,7 +178,7 @@ export default (window, options) => {
     //
     // Watch mode
     //
-    less.watch   = function () {
+    less.watch = function () {
         if (!less.watchMode ) {
             less.env = 'development';
             initRunningMode();
@@ -205,7 +209,7 @@ export default (window, options) => {
     // Asynchronously get all <link> tags with the 'rel' attribute set to
     // "stylesheet/less", returning a Promise.
     //
-    less.registerStylesheets = () => new Promise((resolve, reject) => {
+    less.registerStylesheets = () => new Promise((resolve) => {
         less.registerStylesheetsImmediately();
         resolve();
     });

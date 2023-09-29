@@ -11,6 +11,7 @@ import globalFunctionRegistry from '../functions/function-registry';
 import defaultFunc from '../functions/default';
 import getDebugInfo from './debug-info';
 import * as utils from '../utils';
+import Parser from '../parser/parser';
 
 const Ruleset = function(selectors, rules, strictImports, visibilityInfo) {
     this.selectors = selectors;
@@ -44,7 +45,6 @@ Ruleset.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
-        const that = this;
         let selectors;
         let selCnt;
         let selector;
@@ -61,7 +61,7 @@ Ruleset.prototype = Object.assign(new Node(), {
 
             for (i = 0; i < selCnt; i++) {
                 selector = this.selectors[i].eval(context);
-                for (var j = 0; j < selector.elements.length; j++) {
+                for (let j = 0; j < selector.elements.length; j++) {
                     if (selector.elements[j].isVariable) {
                         hasVariable = true;
                         break;
@@ -79,11 +79,11 @@ Ruleset.prototype = Object.assign(new Node(), {
                     selector = selectors[i];
                     toParseSelectors[i] = selector.toCSS(context);
                 }
-                this.parse.parseNode(
+                const startingIndex = selectors[0].getIndex();
+                const selectorFileInfo = selectors[0].fileInfo();
+                new Parser(context, this.parse.importManager, selectorFileInfo, startingIndex).parseNode(
                     toParseSelectors.join(','),
-                    ["selectors"], 
-                    selectors[0].getIndex(), 
-                    selectors[0].fileInfo(), 
+                    ['selectors'],
                     function(err, result) {
                         if (result) {
                             selectors = utils.flattenArray(result);
@@ -200,7 +200,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (rule.selectors[0] && rule.selectors[0].isJustParentSelector()) {
                     rsRules.splice(i--, 1);
 
-                    for (var j = 0; (subRule = rule.rules[j]); j++) {
+                    for (let j = 0; (subRule = rule.rules[j]); j++) {
                         if (subRule instanceof Node) {
                             subRule.copyVisibilityInfo(rule.visibilityInfo());
                             if (!(subRule instanceof Declaration) || !subRule.variable) {
@@ -295,6 +295,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (r.type === 'Import' && r.root && r.root.variables) {
                     const vars = r.root.variables();
                     for (const name in vars) {
+                        // eslint-disable-next-line no-prototype-builtins
                         if (vars.hasOwnProperty(name)) {
                             hash[name] = r.root.variable(name);
                         }
@@ -354,11 +355,9 @@ Ruleset.prototype = Object.assign(new Node(), {
         function transformDeclaration(decl) {
             if (decl.value instanceof Anonymous && !decl.parsed) {
                 if (typeof decl.value.value === 'string') {
-                    this.parse.parseNode(
+                    new Parser(this.parse.context, this.parse.importManager, decl.fileInfo(), decl.value.getIndex()).parseNode(
                         decl.value.value,
-                        ['value', 'important'], 
-                        decl.value.getIndex(), 
-                        decl.fileInfo(), 
+                        ['value', 'important'],
                         function(err, result) {
                             if (err) {
                                 decl.parsed = true;
@@ -734,7 +733,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 // non parent reference elements just get added
                 if (el.value !== '&') {
                     const nestedSelector = findNestedSelector(el);
-                    if (nestedSelector != null) {
+                    if (nestedSelector !== null) {
                         // merge the current list of non parent selector elements
                         // on to the current list of selectors to add
                         mergeElementsOnToSelectors(currentElements, newSelectors);

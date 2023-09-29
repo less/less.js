@@ -183,12 +183,6 @@ module.exports = function(grunt) {
     // Make the SauceLabs jobs
     ["all"].concat(browserTests).map(makeJob);
 
-    var path = require('path');
-
-    // Handle async / await in Rollup build for tests
-    const tsNodeRuntime = path.resolve(path.join('node_modules', '.bin', 'ts-node'));
-    const crossEnv = path.resolve(path.join('node_modules', '.bin', 'cross-env'));
-
     // Project configuration.
     grunt.initConfig({
         shell: {
@@ -222,12 +216,7 @@ module.exports = function(grunt) {
                 command: "node build/rollup.js --browser --out=./tmp/browser/less.min.js"
             },
             test: {
-                command: [
-                    // https://github.com/TypeStrong/ts-node/issues/693#issuecomment-848907036
-                    crossEnv + " TS_NODE_SCOPE=true",
-                    tsNodeRuntime + " test/test-es6.ts",
-                    "node test/index.js"
-                ].join(' && ')
+                command: 'ts-node test/test-es6.ts && node test/index.js'
             },
             generatebrowser: {
                 command: 'node test/browser/generator/generate.js'
@@ -283,7 +272,7 @@ module.exports = function(grunt) {
                 "!test/less/errors/plugin/plugin-error.js"
             ],
             options: {
-                configFile: ".eslintrc.json",
+                configFile: ".eslintrc.js",
                 fix: true
             }
         },
@@ -291,7 +280,8 @@ module.exports = function(grunt) {
         connect: {
             server: {
                 options: {
-                    port: 8081
+                    port: 8081,
+                    base: '../..'
                 }
             }
         },

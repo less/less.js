@@ -29,7 +29,7 @@ export default (window, options, logger) => {
             let vars      = cache && cache.getItem(`${path}:vars`);
 
             modifyVars = modifyVars || {};
-            vars = vars || "{}"; // if not set, treat as the JSON representation of an empty object
+            vars = vars || '{}'; // if not set, treat as the JSON representation of an empty object
 
             if (timestamp && webInfo.lastModified &&
                 (new Date(webInfo.lastModified).valueOf() ===

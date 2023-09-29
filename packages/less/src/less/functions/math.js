@@ -15,6 +15,7 @@ const mathFunctions = {
 };
 
 for (const f in mathFunctions) {
+    // eslint-disable-next-line no-prototype-builtins
     if (mathFunctions.hasOwnProperty(f)) {
         mathFunctions[f] = mathHelper.bind(null, Math[f], mathFunctions[f]);
     }

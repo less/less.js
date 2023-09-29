@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/**
+ * @todo - Remove unused when JSDoc types are added for visitor methods
+ */
 import contexts from '../contexts';
 import Visitor from './visitor';
 import ImportSequencer from './import-sequencer';

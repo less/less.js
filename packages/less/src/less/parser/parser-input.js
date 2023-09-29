@@ -149,6 +149,13 @@ export default () => {
         return tok;
     };
 
+    parserInput.$peekChar = tok => {
+        if (input.charAt(parserInput.i) !== tok) {
+            return null;
+        }
+        return tok;
+    };
+
     parserInput.$str = tok => {
         const tokLength = tok.length;
 
@@ -182,13 +189,14 @@ export default () => {
                 case '\r':
                 case '\n':
                     break;
-                case startChar:
+                case startChar: {
                     const str = input.slice(currentPosition, currentPosition + i + 1);
                     if (!loc && loc !== 0) {
                         skipWhitespace(i + 1);
                         return str
                     }
                     return [startChar, str];
+                }
                 default:
             }
         }
@@ -220,7 +228,6 @@ export default () => {
         }
 
         do {
-            let prevChar;
             let nextChar = input.charAt(i);
             if (blockDepth === 0 && testChar(nextChar)) {
                 returnVal = input.slice(lastPos, i);
@@ -286,7 +293,7 @@ export default () => {
                         break;
                     case '}':
                     case ')':
-                    case ']':
+                    case ']': {
                         const expected = blockStack.pop();
                         if (nextChar === expected) {
                             blockDepth--;
@@ -296,13 +303,13 @@ export default () => {
                             returnVal = expected;
                             loop = false;
                         }
+                    }
                 }
                 i++;
                 if (i > length) {
                     loop = false;
                 }
             }
-            prevChar = nextChar;
         } while (loop);
 
         return returnVal ? returnVal : null;

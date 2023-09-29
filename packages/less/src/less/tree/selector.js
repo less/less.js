@@ -1,6 +1,8 @@
 import Node from './node';
 import Element from './element';
 import LessError from '../less-error';
+import * as utils from '../utils';
+import Parser from '../parser/parser';
 
 const Selector = function(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
     this.extendList = extendList;
@@ -33,7 +35,7 @@ Selector.prototype = Object.assign(new Node(), {
         elements = this.getElements(elements);
         const newSelector = new Selector(elements, extendList || this.extendList,
             null, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-        newSelector.evaldCondition = (evaldCondition != null) ? evaldCondition : this.evaldCondition;
+        newSelector.evaldCondition = (!utils.isNullOrUndefined(evaldCondition)) ? evaldCondition : this.evaldCondition;
         newSelector.mediaEmpty = this.mediaEmpty;
         return newSelector;
     },
@@ -43,11 +45,9 @@ Selector.prototype = Object.assign(new Node(), {
             return [new Element('', '&', false, this._index, this._fileInfo)];
         }
         if (typeof els === 'string') {
-            this.parse.parseNode(
-                els, 
+            new Parser(this.parse.context, this.parse.importManager, this._fileInfo, this._index).parseNode(
+                els,
                 ['selector'],
-                this._index, 
-                this._fileInfo, 
                 function(err, result) {
                     if (err) {
                         throw new LessError({
@@ -95,7 +95,7 @@ Selector.prototype = Object.assign(new Node(), {
 
         let elements = this.elements.map( function(v) {
             return v.combinator.value + (v.value.value || v.value);
-        }).join('').match(/[,&#\*\.\w-]([\w-]|(\\.))*/g);
+        }).join('').match(/[,&#*.\w-]([\w-]|(\\.))*/g);
 
         if (elements) {
             if (elements[0] === '&') {

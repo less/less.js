@@ -1,9 +1,11 @@
 var path = require('path');
 var resolve = require('resolve')
+var { forceCovertToBrowserPath } = require('./utils');
 
-var rootFolder = path.resolve(__dirname, '../../../');
-var testFolder = path.relative(rootFolder, path.dirname(resolve.sync('@less/test-data')))
-var lessFolder = path.join(testFolder, 'less');
+/** Root of repo */
+var testFolder = forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-data')));
+var lessFolder = forceCovertToBrowserPath(path.join(testFolder, 'less'));
+var localTests = forceCovertToBrowserPath(path.resolve(__dirname, '..'));
 
 module.exports = {
     main: {
@@ -19,168 +21,168 @@ module.exports = {
             `!${lessFolder}/_main/empty.less`
         ],
         options: {
-            helpers: "test/browser/runner-main-options.js",
-            specs: "test/browser/runner-main-spec.js",
-            outfile: "tmp/browser/test-runner-main.html"
+            helpers: 'test/browser/runner-main-options.js',
+            specs: 'test/browser/runner-main-spec.js',
+            outfile: 'tmp/browser/test-runner-main.html'
         }
     },
     legacy: {
         src: [`${lessFolder}/legacy/*.less`],
         options: {
-            helpers: "test/browser/runner-legacy-options.js",
-            specs: "test/browser/runner-legacy-spec.js",
-            outfile: "tmp/browser/test-runner-legacy.html"
+            helpers: 'test/browser/runner-legacy-options.js',
+            specs: 'test/browser/runner-legacy-spec.js',
+            outfile: 'tmp/browser/test-runner-legacy.html'
         }
     },
     strictUnits: {
-        src: [`${lessFolder}/strict-units/*.less`],
+        src: [`${lessFolder}/units/strict/*.less`],
         options: {
-            helpers: "test/browser/runner-strict-units-options.js",
-            specs: "test/browser/runner-strict-units-spec.js",
-            outfile: "tmp/browser/test-runner-strict-units.html"
+            helpers: 'test/browser/runner-strict-units-options.js',
+            specs: 'test/browser/runner-strict-units-spec.js',
+            outfile: 'tmp/browser/test-runner-strict-units.html'
         }
     },
     errors: {
         src: [
             `${lessFolder}/errors/*.less`,
             `${testFolder}/errors/javascript-error.less`,
-            "test/browser/less/errors/*.less"
+            `${localTests}/less/errors/*.less`
         ],
         options: {
             timeout: 20000,
-            helpers: "test/browser/runner-errors-options.js",
-            specs: "test/browser/runner-errors-spec.js",
-            outfile: "tmp/browser/test-runner-errors.html"
+            helpers: 'test/browser/runner-errors-options.js',
+            specs: 'test/browser/runner-errors-spec.js',
+            outfile: 'tmp/browser/test-runner-errors.html'
         }
     },
     noJsErrors: {
         src: [`${lessFolder}/no-js-errors/*.less`],
         options: {
-            helpers: "test/browser/runner-no-js-errors-options.js",
-            specs: "test/browser/runner-no-js-errors-spec.js",
-            outfile: "tmp/browser/test-runner-no-js-errors.html"
+            helpers: 'test/browser/runner-no-js-errors-options.js',
+            specs: 'test/browser/runner-no-js-errors-spec.js',
+            outfile: 'tmp/browser/test-runner-no-js-errors.html'
         }
     },
     browser: {
         src: [
-            "test/browser/less/*.less",
-            "test/browser/less/plugin/*.less"
+            `${localTests}/less/*.less`,
+            `${localTests}/less/plugin/*.less`
         ],
         options: {
-            helpers: "test/browser/runner-browser-options.js",
-            specs: "test/browser/runner-browser-spec.js",
-            outfile: "tmp/browser/test-runner-browser.html"
+            helpers: 'test/browser/runner-browser-options.js',
+            specs: 'test/browser/runner-browser-spec.js',
+            outfile: 'tmp/browser/test-runner-browser.html'
         }
     },
     relativeUrls: {
-        src: ["test/browser/less/relative-urls/*.less"],
+        src: [`${localTests}/less/relative-urls/*.less`],
         options: {
-            helpers: "test/browser/runner-relative-urls-options.js",
-            specs: "test/browser/runner-relative-urls-spec.js",
-            outfile: "tmp/browser/test-runner-relative-urls.html"
+            helpers: 'test/browser/runner-relative-urls-options.js',
+            specs: 'test/browser/runner-relative-urls-spec.js',
+            outfile: 'tmp/browser/test-runner-relative-urls.html'
         }
     },
     rewriteUrls: {
-        src: ["test/browser/less/rewrite-urls/*.less"],
+        src: [`${localTests}/less/rewrite-urls/*.less`],
         options: {
-            helpers: "test/browser/runner-rewrite-urls-options.js",
-            specs: "test/browser/runner-rewrite-urls-spec.js",
-            outfile: "tmp/browser/test-runner-rewrite-urls.html"
+            helpers: 'test/browser/runner-rewrite-urls-options.js',
+            specs: 'test/browser/runner-rewrite-urls-spec.js',
+            outfile: 'tmp/browser/test-runner-rewrite-urls.html'
         }
     },
     rootpath: {
-        src: ["test/browser/less/rootpath/*.less"],
+        src: [`${localTests}/less/rootpath/*.less`],
         options: {
-            helpers: "test/browser/runner-rootpath-options.js",
-            specs: "test/browser/runner-rootpath-spec.js",
-            outfile: "tmp/browser/test-runner-rootpath.html"
+            helpers: 'test/browser/runner-rootpath-options.js',
+            specs: 'test/browser/runner-rootpath-spec.js',
+            outfile: 'tmp/browser/test-runner-rootpath.html'
         }
     },
     rootpathRelative: {
-        src: ["test/browser/less/rootpath-relative/*.less"],
+        src: [`${localTests}/less/rootpath-relative/*.less`],
         options: {
-            helpers: "test/browser/runner-rootpath-relative-options.js",
-            specs: "test/browser/runner-rootpath-relative-spec.js",
-            outfile: "tmp/browser/test-runner-rootpath-relative.html"
+            helpers: 'test/browser/runner-rootpath-relative-options.js',
+            specs: 'test/browser/runner-rootpath-relative-spec.js',
+            outfile: 'tmp/browser/test-runner-rootpath-relative.html'
         }
     },
     rootpathRewriteUrls: {
-        src: ["test/browser/less/rootpath-rewrite-urls/*.less"],
+        src: [`${localTests}/less/rootpath-rewrite-urls/*.less`],
         options: {
             helpers:
-            "test/browser/runner-rootpath-rewrite-urls-options.js",
-            specs: "test/browser/runner-rootpath-rewrite-urls-spec.js",
+            'test/browser/runner-rootpath-rewrite-urls-options.js',
+            specs: 'test/browser/runner-rootpath-rewrite-urls-spec.js',
             outfile:
-            "tmp/browser/test-runner-rootpath-rewrite-urls.html"
+            'tmp/browser/test-runner-rootpath-rewrite-urls.html'
         }
     },
     production: {
-        src: ["test/browser/less/production/*.less"],
+        src: [`${localTests}/less/production/*.less`],
         options: {
-            helpers: "test/browser/runner-production-options.js",
-            specs: "test/browser/runner-production-spec.js",
-            outfile: "tmp/browser/test-runner-production.html"
+            helpers: 'test/browser/runner-production-options.js',
+            specs: 'test/browser/runner-production-spec.js',
+            outfile: 'tmp/browser/test-runner-production.html'
         }
     },
     modifyVars: {
-        src: ["test/browser/less/modify-vars/*.less"],
+        src: [`${localTests}/less/modify-vars/*.less`],
         options: {
-            helpers: "test/browser/runner-modify-vars-options.js",
-            specs: "test/browser/runner-modify-vars-spec.js",
-            outfile: "tmp/browser/test-runner-modify-vars.html"
+            helpers: 'test/browser/runner-modify-vars-options.js',
+            specs: 'test/browser/runner-modify-vars-spec.js',
+            outfile: 'tmp/browser/test-runner-modify-vars.html'
         }
     },
     globalVars: {
-        src: ["test/browser/less/global-vars/*.less"],
+        src: [`${localTests}/less/global-vars/*.less`],
         options: {
-            helpers: "test/browser/runner-global-vars-options.js",
-            specs: "test/browser/runner-global-vars-spec.js",
-            outfile: "tmp/browser/test-runner-global-vars.html"
+            helpers: 'test/browser/runner-global-vars-options.js',
+            specs: 'test/browser/runner-global-vars-spec.js',
+            outfile: 'tmp/browser/test-runner-global-vars.html'
         }
     },
     postProcessorPlugin: {
         src: [`${lessFolder}/postProcessorPlugin/*.less`],
         options: {
             helpers: [
-                `test/plugins/postprocess/index.js`,
-                "test/browser/runner-postProcessorPlugin-options.js"
+                'test/plugins/postprocess/index.js',
+                'test/browser/runner-postProcessorPlugin-options.js'
             ],
-            specs: "test/browser/runner-postProcessorPlugin.js",
+            specs: 'test/browser/runner-postProcessorPlugin.js',
             outfile:
-            "tmp/browser/test-runner-post-processor-plugin.html"
+            'tmp/browser/test-runner-post-processor-plugin.html'
         }
     },
     preProcessorPlugin: {
         src: [`${lessFolder}/preProcessorPlugin/*.less`],
         options: {
             helpers: [
-                `test/plugins/preprocess/index.js`,
-                "test/browser/runner-preProcessorPlugin-options.js"
+                'test/plugins/preprocess/index.js',
+                'test/browser/runner-preProcessorPlugin-options.js'
             ],
-            specs: "test/browser/runner-preProcessorPlugin.js",
-            outfile: "tmp/browser/test-runner-pre-processor-plugin.html"
+            specs: 'test/browser/runner-preProcessorPlugin.js',
+            outfile: 'tmp/browser/test-runner-pre-processor-plugin.html'
         }
     },
     visitorPlugin: {
         src: [`${lessFolder}/visitorPlugin/*.less`],
         options: {
             helpers: [
-                `test/plugins/visitor/index.js`,
-                "test/browser/runner-VisitorPlugin-options.js"
+                'test/plugins/visitor/index.js',
+                'test/browser/runner-VisitorPlugin-options.js'
             ],
-            specs: "test/browser/runner-VisitorPlugin.js",
-            outfile: "tmp/browser/test-runner-visitor-plugin.html"
+            specs: 'test/browser/runner-VisitorPlugin.js',
+            outfile: 'tmp/browser/test-runner-visitor-plugin.html'
         }
     },
     filemanagerPlugin: {
         src: [`${lessFolder}/filemanagerPlugin/*.less`],
         options: {
             helpers: [
-                `test/plugins/filemanager/index.js`,
-                "test/browser/runner-filemanagerPlugin-options.js"
+                'test/plugins/filemanager/index.js',
+                'test/browser/runner-filemanagerPlugin-options.js'
             ],
-            specs: "test/browser/runner-filemanagerPlugin.js",
-            outfile: "tmp/browser/test-runner-filemanager-plugin.html"
+            specs: 'test/browser/runner-filemanagerPlugin.js',
+            outfile: 'tmp/browser/test-runner-filemanager-plugin.html'
         }
     }
 }

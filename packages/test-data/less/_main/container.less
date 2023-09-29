@@ -1,0 +1,180 @@
+.widget.discoverresults, .widget.repositoriesresults {
+    container-type: inline-size;
+
+    @container (max-width: 350px) {           
+        .cite {
+            .wdr-authors {
+                display: none;
+            }
+        }
+    }
+}
+
+@container (min-width: 700px) {
+    .card h2 {
+        font-size: 2em;
+    }
+}
+
+@container sidebar (min-width: 700px) {
+    .card {
+        font-size: 2em;
+    }
+}
+
+@container (min-width: 60ch) {
+    .container:nth-child(odd) > article {
+        border: 1px solid grey;
+    }
+}
+
+@container size(min-width: 60ch) {
+    .article--post header {
+        grid-template-areas:
+            "avatar name"
+            "avatar headline";
+        align-items: start;
+    }
+  
+    .article--post {
+        grid-template-areas: "header header" ". stats" ". content";
+        grid-auto-columns: 5rem 1fr;
+        column-gap: 1rem;
+    }
+  
+    .article--post__title {
+        font-size: 1.75rem;
+    }
+}
+
+.card h2 {
+    container-type: inline-size;
+    margin: 0;
+    padding: 10px;
+
+    @container (min-width: 500px) {
+        .card-content {
+            grid-template-columns: 1fr 2fr;
+            grid-template-rows: auto 1fr;
+            align-items: start;
+            column-gap: 20px;
+        }
+ 
+        .card-content h2 {
+            padding: 0;
+            margin: 0.5em 0 0 0;
+        } 
+    }
+}
+
+@container (width >= 500px) and (height >= 500px) {
+    .card-content h2 {
+        padding: 0;
+        margin: 0.5em 0 0 0;
+    } 
+}
+
+@container (width > 760px) not (height > 670px) {
+    .card-content h2 {
+        padding: 0;
+        margin: 0.5em 0 0 0;
+    } 
+}
+
+@container not (height <= 1080px) {
+    .card-content h2 {
+        padding: 0;
+        margin: 0.5em 0 0 0;
+    } 
+}
+
+@container (width < 500px) or (height < 500px) {
+    .card-content h2 {
+        padding: 0;
+        margin: 0.5em 0 0 0;
+    } 
+}
+
+@container (width < 500px) or (height < 500px) and (inline-size >= 0px) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    } 
+}
+
+@container my-page-layout (width < 500px) or (height < 500px) and (block-size > 12em) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    } 
+}
+
+@container (width < 500px) or (height < 500px) and (aspect-ratio: 3/2) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    } 
+}
+
+@container (width < 500px) or (height < 500px) and (orientation: portrait) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    } 
+}
+
+@container card (inline-size > 30em) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    }
+    
+    @container style(--responsive: true) {
+        .card-content {
+            grid-template-columns: 1fr 2fr;
+            grid-template-rows: auto 1fr;
+            align-items: start;
+            column-gap: 20px;
+        }
+ 
+        .card-content h2 {
+            padding: 0;
+            margin: 0.5em 0 0 0;
+        }
+    }
+}
+
+@container ( width < 500px ) or (height<500px) and (orientation: portrait) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    } 
+}
+
+@container my-page-layout ( width< 500px) or ( height<500px) and ( block-size>12em ) {
+    .card-content p {
+        padding: 0;
+
+        h2 {
+            margin: 0.5em 0 0 0;
+        }
+    } 
+}

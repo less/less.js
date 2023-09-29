@@ -1,5 +1,21 @@
 ## Change Log
 
+### v4.2.0 (2023-08-06)
+- [#3811](https://github.com/less/less.js/pull/3811) add support for [container queries](https://www.w3.org/TR/css-contain-3) (@puckowski)
+- [#3761](https://github.com/less/less.js/pull/3761) fix faulty source map generation with variables in selectors, fixes [#3567](https://github.com/less/less.js/issues/3567) (@pgoldberg)
+- [#3700](https://github.com/less/less.js/pull/3700) parsing variables fail when there is no trailing semicolon (@b-kelly)
+- [#3719](https://github.com/less/less.js/pull/3719) modify `this` pointer so that it is not empty. (@lumburr)
+- [#3649](https://github.com/less/less.js/pull/3649) fixes [#2991](https://github.com/less/less.js/issues/2991) empty @media queries generated when compiling less file with (reference) to bootstrap (@MoonCoral)
+
+### v4.1.3 (2022-06-09)
+- [#3673](https://github.com/less/less.js/pull/3673) Feat: add support for case-insensitive attribute selectors (#3673) (@iChenLei)
+- [#3710](https://github.com/less/less.js/pull/3701) Feat: add `disablePluginRule` flag for render() options (#3710) (@broofa @edhgoose)
+- [#3656](https://github.com/less/less.js/pull/3656) Fix [#3655](https://github.com/less/less.js/issues/3655) for param tag is null (#3658) (@langren1353)
+- [#3658](https://github.com/less/less.js/pull/3658) Fix [#3646](https://github.com/less/less.js/issues/3656) forcefully change unsupported input to strings (#3658) (@gzb1128)
+- [#3668](https://github.com/less/less.js/pull/3668) Fix change keyword plugin and import regexp (#3668) (@iChenLei)
+- [#3613](https://github.com/less/less.js/pull/3613) Fix [#3591](https://github.com/less/less.js/issues/3591): refactor debugInfo from class to function (#3613) (@drdevlin)
+- [#3716](https://github.com/less/less.js/pull/3716) Fix https failures on macOS (#3716) (@joeyparrish)
+
 ### v4.1.2 (2021-10-04)
 - [#3602](https://github.com/less/less.js/pull/3602) Fix currentFileInfo and index properties on nodes (#3602) (@bjpbakker)
 - [#3626](https://github.com/less/less.js/pull/3626) Fix [#3616](https://github.com/less/less.js/issues/3616) IfStatement requires double parentheses when dividing (#3626) (@iChenLei)

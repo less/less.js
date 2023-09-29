@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+/**
+ * @todo - Remove unused when JSDoc types are added for visitor methods
+ */
 import tree from '../tree';
 import Visitor from './visitor';
 
@@ -39,9 +43,9 @@ class CSSVisitorUtils {
             ? (rulesetNode.paths.length > 0) : false;
     }
 
-    resolveVisibility(node, originalRules) {
+    resolveVisibility(node) {
         if (!node.blocksVisibility()) {
-            if (this.isEmpty(node) && !this.containsSilentNonBlockedChild(originalRules)) {
+            if (this.isEmpty(node)) {
                 return ;
             }
 

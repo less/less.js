@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 import Node from './node';
 import unitConversions from '../data/unit-conversions';
 import Unit from './unit';
@@ -23,6 +24,8 @@ Dimension.prototype = Object.assign(new Node(), {
         this.unit = visitor.visit(this.unit);
     },
 
+    // remove when Nodes have JSDoc types
+    // eslint-disable-next-line no-unused-vars
     eval(context) {
         return this;
     },
@@ -81,7 +84,7 @@ Dimension.prototype = Object.assign(new Node(), {
                 other = other.convertTo(this.unit.usedUnits());
 
                 if (context.strictUnits && other.unit.toString() !== unit.toString()) {
-                    throw new Error(`Incompatible units. Change the units or use the unit function. `
+                    throw new Error('Incompatible units. Change the units or use the unit function. '
                         + `Bad units: '${unit.toString()}' and '${other.unit.toString()}'.`);
                 }
 
@@ -144,7 +147,6 @@ Dimension.prototype = Object.assign(new Node(), {
             conversions = derivedConversions;
         }
         applyUnit = function (atomicUnit, denominator) {
-            /* jshint loopfunc:true */
             if (group.hasOwnProperty(atomicUnit)) {
                 if (denominator) {
                     value = value / (group[atomicUnit] / group[targetUnit]);

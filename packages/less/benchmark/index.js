@@ -1,6 +1,6 @@
 var path = require('path'),
     fs = require('fs'),
-    now = require("performance-now");
+    now = require('performance-now');
 
 var less = require('../.');
 var file = path.join(__dirname, 'benchmark.less');
@@ -10,12 +10,12 @@ if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]) }
 fs.readFile(file, 'utf8', function (e, data) {
     var start, total;
 
-    console.log("Benchmarking...\n", path.basename(file) + " (" +
-             parseInt(data.length / 1024) + " KB)", "");
+    console.log('Benchmarking...\n', path.basename(file) + ' (' +
+             parseInt(data.length / 1024) + ' KB)', '');
 
     var renderBenchmark = []
-      , parserBenchmark = []
-      , evalBenchmark = [];
+        , parserBenchmark = []
+        , evalBenchmark = [];
 
     var totalruns = 30;
     var ignoreruns = 5;
@@ -74,13 +74,13 @@ fs.readFile(file, 'utf8', function (e, data) {
             var variation = maxtime - mintime;
             var variationperc = (variation / avgtime) * 100;
 
-            console.log("Min. Time: " + Math.round(mintime) + " ms");
-            console.log("Max. Time: " + Math.round(maxtime) + " ms");
-            console.log("Total Average Time: " + Math.round(avgtime) + " ms (" +
+            console.log('Min. Time: ' + Math.round(mintime) + ' ms');
+            console.log('Max. Time: ' + Math.round(maxtime) + ' ms');
+            console.log('Total Average Time: ' + Math.round(avgtime) + ' ms (' +
                 parseInt(1000 / avgtime *
-                data.length / 1024) + " KB\/s)");
-            console.log("+/- " + Math.round(variationperc) + "%");
-            console.log("");
+                data.length / 1024) + ' KB\/s)');
+            console.log('+/- ' + Math.round(variationperc) + '%');
+            console.log('');
         }
        
         analyze('Parsing', parserBenchmark);

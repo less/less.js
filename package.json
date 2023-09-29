@@ -1,14 +1,14 @@
 {
   "name": "@less/root",
   "private": true,
-  "version": "3.13.0",
+  "version": "4.2.0",
   "description": "Less monorepo",
   "homepage": "http://lesscss.org",
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "postinstall": "npm run bootstrap",
+    "publish": "lerna publish from-package --no-private",
     "changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
-    "test": "cd packages/less && npm test"
+    "test": "cd packages/less && npm test",
+    "postinstall": "lerna bootstrap"
   },
   "author": {
     "name": "Alexis Sellier",

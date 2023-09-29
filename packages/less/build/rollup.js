@@ -47,7 +47,7 @@ async function buildBrowser() {
                 include: [/^.+\.min\.js$/],
                 output: {
                     comments: function(node, comment) {
-                        if (comment.type == "comment2") {
+                        if (comment.type == 'comment2') {
                             // preserve banner
                             return /@license/i.test(comment.value);
                         }

@@ -6,6 +6,7 @@ function makeRegistry( base ) {
             // the registry by function-caller uses lower case as well.
             name = name.toLowerCase();
 
+            // eslint-disable-next-line no-prototype-builtins
             if (this._data.hasOwnProperty(name)) {
                 // TODO warn
             }

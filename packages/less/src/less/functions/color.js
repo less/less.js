@@ -121,6 +121,25 @@ colorFunctions = {
         }
     },
     hsla: function (h, s, l, a) {
+        let m1;
+        let m2;
+
+        function hue(h) {
+            h = h < 0 ? h + 1 : (h > 1 ? h - 1 : h);
+            if (h * 6 < 1) {
+                return m1 + (m2 - m1) * h * 6;
+            }
+            else if (h * 2 < 1) {
+                return m2;
+            }
+            else if (h * 3 < 2) {
+                return m1 + (m2 - m1) * (2 / 3 - h) * 6;
+            }
+            else {
+                return m1;
+            }
+        }
+
         try {
             if (h instanceof Color) {
                 if (s) {
@@ -129,25 +148,6 @@ colorFunctions = {
                     a = h.alpha;
                 }
                 return new Color(h.rgb, a, 'hsla');
-            }
-
-            let m1;
-            let m2;
-
-            function hue(h) {
-                h = h < 0 ? h + 1 : (h > 1 ? h - 1 : h);
-                if (h * 6 < 1) {
-                    return m1 + (m2 - m1) * h * 6;
-                }
-                else if (h * 2 < 1) {
-                    return m2;
-                }
-                else if (h * 3 < 2) {
-                    return m1 + (m2 - m1) * (2 / 3 - h) * 6;
-                }
-                else {
-                    return m1;
-                }
             }
 
             h = (number(h) % 360) / 360;

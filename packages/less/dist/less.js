@@ -3622,6 +3622,32 @@
                         parserInput.forget();
                         return new (tree.Call)(name, args, index + currentIndex, fileInfo);
                     },
+                    declarationCall: function () {
+                        var validCall;
+                        var args;
+                        var index = parserInput.i;
+                        parserInput.save();
+                        validCall = parserInput.$re(/^[\w]+\(/);
+                        if (!validCall) {
+                            parserInput.forget();
+                            return;
+                        }
+                        validCall = validCall.substring(0, validCall.length - 1);
+                        var rule = this.ruleProperty();
+                        var value;
+                        if (rule) {
+                            value = this.value();
+                        }
+                        if (rule && value) {
+                            args = [new (tree.Declaration)(rule, value, null, null, parserInput.i + currentIndex, fileInfo, true)];
+                        }
+                        if (!parserInput.$char(')')) {
+                            parserInput.restore('Could not parse call arguments or missing \')\'');
+                            return;
+                        }
+                        parserInput.forget();
+                        return new (tree.Call)(validCall, args, index + currentIndex, fileInfo);
+                    },
                     //
                     // Parsing rules for functions with non-standard args, e.g.:
                     //
@@ -4837,7 +4863,7 @@
                     var rangeP;
                     parserInput.save();
                     do {
-                        e = entities.keyword() || entities.variable() || entities.mixinLookup();
+                        e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup();
                         if (e) {
                             nodes.push(e);
                         }
@@ -9952,6 +9978,29 @@
         }
     };
 
+    var styleExpression = function (args) {
+        var _this = this;
+        args = Array.prototype.slice.call(args);
+        switch (args.length) {
+            case 0: throw { type: 'Argument', message: 'one or more arguments required' };
+        }
+        var entityList = [new Variable(args[0].value, this.index, this.currentFileInfo).eval(this.context)];
+        args = entityList.map(function (a) { return a.toCSS(_this.context); }).join(this.context.compress ? ',' : ', ');
+        return new Variable("style(" + args + ")");
+    };
+    var style$1 = {
+        style: function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            try {
+                return styleExpression.call(this, args);
+            }
+            catch (e) { }
+        },
+    };
+
     var functions = (function (environment) {
         var functions = { functionRegistry: functionRegistry, functionCaller: functionCaller };
         // register functions
@@ -9966,6 +10015,7 @@
         functionRegistry.addMultiple(string);
         functionRegistry.addMultiple(svg());
         functionRegistry.addMultiple(types);
+        functionRegistry.addMultiple(style$1);
         return functions;
     });
 

@@ -12,6 +12,7 @@ import number from './number';
 import string from './string';
 import svg from './svg';
 import types from './types';
+import style from './style';
 
 export default environment => {
     const functions = { functionRegistry, functionCaller };
@@ -28,6 +29,7 @@ export default environment => {
     functionRegistry.addMultiple(string);
     functionRegistry.addMultiple(svg(environment));
     functionRegistry.addMultiple(types);
+    functionRegistry.addMultiple(style);
 
     return functions;
 };

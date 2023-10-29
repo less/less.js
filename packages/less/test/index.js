@@ -81,7 +81,8 @@ var testMap = [
     [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],
     [{plugin: 'test/plugins/filemanager/'}, 'filemanagerPlugin/'],
     [{math: 0}, '3rd-party/'],
-    [{ processImports: false }, 'process-imports/']
+    [{ processImports: false }, 'process-imports/'],
+    [{}, 'define-var/']
 ];
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)

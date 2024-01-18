@@ -451,6 +451,42 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     return new(tree.Call)(name, args, index + currentIndex, fileInfo);
                 },
 
+                declarationCall: function () {
+                    let validCall;
+                    let args;
+                    const index = parserInput.i;
+
+                    parserInput.save();
+
+                    validCall = parserInput.$re(/^[\w]+\(/);
+                    if (!validCall) {
+                        parserInput.forget();
+                        return;
+                    }
+
+                    validCall = validCall.substring(0, validCall.length - 1);
+
+                    let rule = this.ruleProperty();
+                    let value;
+                  
+                    if (rule) {
+                        value = this.value();
+                    }
+                    
+                    if (rule && value) {
+                        args = [new (tree.Declaration)(rule, value, null, null, parserInput.i + currentIndex, fileInfo, true)];
+                    }
+
+                    if (!parserInput.$char(')')) {
+                        parserInput.restore('Could not parse call arguments or missing \')\'');
+                        return;
+                    }
+
+                    parserInput.forget();
+
+                    return new(tree.Call)(validCall, args, index + currentIndex, fileInfo);
+                },
+
                 //
                 // Parsing rules for functions with non-standard args, e.g.:
                 //
@@ -1625,6 +1661,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (e) {
                         value.push(e);
                     }
+                    if (parserInput.peek(',')) {
+                        value.push(new (tree.Anonymous)(',', parserInput.i));
+                        parserInput.$char(',');
+                    }
                 } while (e);
 
                 done = testCurrentChar();
@@ -1761,7 +1801,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let rangeP;
                 parserInput.save();
                 do {
-                    e = entities.keyword() || entities.variable() || entities.mixinLookup();
+                    e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {

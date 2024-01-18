@@ -23,7 +23,7 @@
     border: 1px solid grey;
   }
 }
-@container size (min-width: 60ch) {
+@container size(min-width: 60ch) {
   .article--post header {
     grid-template-areas: "avatar name" "avatar headline";
     align-items: start;
@@ -118,7 +118,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container card (inline-size > 30em) and style (--responsive: true) {
+@container card (inline-size > 30em) and style(--responsive: true) {
   .card-content {
     grid-template-columns: 1fr 2fr;
     grid-template-rows: auto 1fr;

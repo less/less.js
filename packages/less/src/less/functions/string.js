@@ -22,11 +22,18 @@ export default {
         const args = Array.prototype.slice.call(arguments, 1);
         let result = string.value;
 
+        const toCSSOptions = {
+            compress: !!this.context.compress,
+            dumpLineNumbers: !!this.context.dumpLineNumbers,
+            strictUnits: !!this.context.strictUnits,
+            numPrecision: 8
+        };
+
         for (let i = 0; i < args.length; i++) {
             /* jshint loopfunc:true */
             result = result.replace(/%[sda]/i, token => {
                 const value = ((args[i].type === 'Quoted') &&
-                    token.match(/s/i)) ? args[i].value : args[i].toCSS();
+                    token.match(/s/i)) ? args[i].value : args[i].toCSS(toCSSOptions);
                 return token.match(/[A-Z]$/) ? encodeURIComponent(value) : value;
             });
         }

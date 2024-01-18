@@ -1,5 +1,7 @@
-<p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117">
-    
+<h1 align="center">
+    <a href="#"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117" alt="Less"></a>
+</h1>
+
 <p align="center">
     <a href="https://github.com/less/less.js/actions?query=branch%3Amaster"><img src="https://github.com/less/less.js/actions/workflows/ci.yml/badge.svg?branch=master" alt="Github Actions CI"/></a>
     <a href="https://www.npmtrends.com/less"><img src="https://img.shields.io/npm/dm/less.svg?sanitize=true" alt="Downloads"></a>

@@ -34,7 +34,15 @@ Quoted.prototype = Object.assign(new Node(), {
         const that = this;
         let value = this.value;
         const variableReplacement = function (_, name) {
-            const v = new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context, true);
+            let v;
+            try {
+                v = new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context, true);
+            } catch (e) {
+                if (e.type !== 'Name') {
+                    throw e;
+                }
+                return `@${name}`;
+            }
             return (v instanceof Quoted) ? v.value : v.toCSS();
         };
         const propertyReplacement = function (_, name) {

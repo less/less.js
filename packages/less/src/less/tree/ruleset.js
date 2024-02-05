@@ -294,13 +294,11 @@ Ruleset.prototype = Object.assign(new Node(), {
                 // guard against root being a string (in the case of inlined less)
                 if (r.type === 'Import' && r.root && r.root.variables) {
                     const vars = r.root.variables();
-                    for (const name in vars) {
-                        // eslint-disable-next-line no-prototype-builtins
-                        if (vars.hasOwnProperty(name)) {
-                            hash[name] = r.root.variable(name);
-                        }
+                    for (const [name, variable] of Object.entries(vars)) {
+                        hash[name] = variable;
                     }
                 }
+
                 return hash;
             }, {});
         }

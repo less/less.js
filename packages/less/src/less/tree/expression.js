@@ -7,6 +7,7 @@ import Anonymous from './anonymous';
 const Expression = function(value, noSpacing) {
     this.value = value;
     this.noSpacing = noSpacing;
+    this.parens = false;
     if (!value) {
         throw new Error('Expression requires an array parameter');
     }

@@ -88,7 +88,6 @@ let Parser = function Parser(context, imports, fileInfo, currentIndex) {
         Extend,
         VariableCall,
         NamespaceValue,
-        Layer,
         mixin: {
             Call: MixinCall,
             Definition: MixinDefinition
@@ -1782,17 +1781,6 @@ let Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (parserInput.$str('@container')) {
                     return prepareAndGetNestableAtRule(Container, index, debugInfo, ContainerSyntaxOptions);
                 }
-
-                if (parserInput.$re(/^@layer/)) {
-                    const keyword = pKeyword();
-                    const rules = parseBlock();
-                    const atRule = new Layer(rules, keyword, index + currentIndex, fileInfo);
-                    if (context.dumpLineNumbers) {
-                        /** @type {*} */ (atRule).debugInfo = debugInfo;
-                    }
-
-                    return atRule;
-                }
             }
             
             parserInput.restore();
@@ -1870,6 +1858,7 @@ let Parser = function Parser(context, imports, fileInfo, currentIndex) {
             let nonVendorSpecificName;
             let hasIdentifier;
             let hasExpression;
+            let hasOptionalExpression;
             let hasUnknown;
             let hasBlock = true;
             let isRooted = true;
@@ -1908,8 +1897,11 @@ let Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 /** @todo require optional keyword for `@layer` */
                 case '@document':
                 case '@supports':
-                case '@layer':
                     hasUnknown = true;
+                    isRooted = false;
+                    break;
+                case '@layer':
+                    hasOptionalExpression = true;
                     isRooted = false;
                     break;
                 default:
@@ -1924,9 +1916,9 @@ let Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (!value) {
                     error(`expected ${name} identifier`);
                 }
-            } else if (hasExpression) {
+            } else if (hasExpression || hasOptionalExpression) {
                 value = parseExpression();
-                if (!value) {
+                if (hasExpression && !value) {
                     error(`expected ${name} expression`);
                 }
             } else if (hasUnknown) {

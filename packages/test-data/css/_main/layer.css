@@ -8,3 +8,8 @@
     color: white;
   }
 }
+@layer primevue {
+  .test {
+    foo: bar;
+  }
+}

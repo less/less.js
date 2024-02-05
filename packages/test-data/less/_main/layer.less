@@ -10,3 +10,9 @@
 @layer legacy {
   @import "./import/layer-import.less";
 }
+
+@layer-name: primevue;
+
+@layer @layer-name {
+  .test { foo: bar; }
+}

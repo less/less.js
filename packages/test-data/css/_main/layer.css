@@ -3,14 +3,8 @@
     color: #f00;
   }
 }
-@layer test {
+@layer legacy {
   .sub-rule ul {
-    color: #f00;
+    color: white;
   }
-}
-.rule {
-  color: #f00;
-}
-ul {
-  color: #f00;
 }

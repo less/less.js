@@ -22,3 +22,11 @@
 }
 
 .sub-rule();
+
+@layer legacy {
+  @import "./layer-vars.less";
+}
+
+.rule {
+  use-legacy: @legacy-var;
+}

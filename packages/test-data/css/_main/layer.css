@@ -1,0 +1,5 @@
+@layer {
+  .main::before {
+    color: #f00;
+  }
+}

@@ -1,0 +1,24 @@
+// see: https://github.com/less/less.js/issues/4242
+.main{  
+  @layer{
+    &::before{
+      color:#f00;
+    }
+  }
+}
+
+// Layers are transparent
+@layer test {
+  @testvar: #f00;
+  .sub-rule {
+    ul {
+      color: @testvar;
+    }
+  }
+}
+
+.rule {
+  color: @testvar;
+}
+
+.sub-rule();

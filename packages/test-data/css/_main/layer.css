@@ -3,3 +3,14 @@
     color: #f00;
   }
 }
+@layer test {
+  .sub-rule ul {
+    color: #f00;
+  }
+}
+.rule {
+  color: #f00;
+}
+ul {
+  color: #f00;
+}

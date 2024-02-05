@@ -292,13 +292,24 @@ Ruleset.prototype = Object.assign(new Node(), {
                 // when evaluating variables in an import statement, imports have not been eval'd
                 // so we need to go inside import statements.
                 // guard against root being a string (in the case of inlined less)
-                if (r.type === 'Import' && r.root && r.root.variables) {
-                    const vars = r.root.variables();
-                    for (const name in vars) {
-                        // eslint-disable-next-line no-prototype-builtins
-                        if (vars.hasOwnProperty(name)) {
-                            hash[name] = r.root.variable(name);
-                        }
+                
+                const getImportVars = () => {
+                    if (r.type === 'Import' && r.root && r.root.variables) {
+                        return r.root.variables();
+                    }
+                }
+                /** `@layer` also added here because they are transparent to vars */
+                const getLayerVars = () => {
+                    if (r.type === 'Layer') {
+                        return r.rules[0].variables();
+                    }
+                }
+
+                const vars = getImportVars() || getLayerVars();
+
+                if (vars) {
+                    for (const [name, variable] of Object.entries(vars)) {
+                        hash[name] = variable;
                     }
                 }
                 return hash;
@@ -401,6 +412,12 @@ Ruleset.prototype = Object.assign(new Node(), {
         for (i = 0; (rule = rules[i]); i++) {
             if (rule.isRuleset) {
                 filtRules.push(rule);
+            } else if (rule.type === 'Layer') {
+                for (const subrule of rule.rules[0].rules) {
+                    if (subrule.isRuleset) {
+                        filtRules.push(subrule);
+                    }
+                }
             }
         }
 

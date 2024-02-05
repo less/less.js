@@ -1905,8 +1905,10 @@ let Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 case '@counter-style':
                     hasIdentifier = true;
                     break;
+                /** @todo require optional keyword for `@layer` */
                 case '@document':
                 case '@supports':
+                case '@layer':
                     hasUnknown = true;
                     isRooted = false;
                     break;

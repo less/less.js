@@ -270,6 +270,43 @@
   #top > #deeper > .mixin(1);
 }
 
+// guarded namespaced should pass when true
+#desktop (@ruleset) {
+  @media (min-width: 700px) {
+    @ruleset();
+  }
+}
+
+@switch: demo;
+
+.example1 {
+  #lookup when (@switch = demo) {
+    @not-found: 1;
+  }
+
+  @found: 2;
+  
+  #lookup2 {
+    @also-found: 3;
+  }
+
+  #desktop({
+    success1: #lookup[@not-found];
+    success2: @found;
+    success3: #lookup2[@also-found];
+  });
+}
+
+.example2 {
+  #lookup () when (@switch = demo) {
+    @not-found: 1;
+  }
+
+  #desktop({
+    wut: #lookup[@not-found];
+  });
+}
+
 // namespaced & guarded mixin in root
 // outputs nothing but should pass:
 

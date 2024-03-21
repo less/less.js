@@ -1543,11 +1543,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
             blockRuleset: function() {
                 let block = this.block();
-
                 if (block) {
-                    block = new tree.Ruleset(null, block);
+                    return new tree.Ruleset(null, block);
                 }
-                return block;
             },
 
             detachedRuleset: function() {

@@ -118,9 +118,11 @@
   min: min(1cm, 3mm);
   min: min(6em, 5, 4ex, 3, 2pt, 1);
   min: min(calc(1 + 1), 1);
+  min: min(~'var(--width), 802px');
   max: max(1, 3);
   max: max(3em, 1em, 2em, 5em);
   max: max(1px, 2, 3em, 4, 5m, 6);
+  max: min(var(--body-max-width), calc(100vw - 20px));
   max: max(1, calc(1 + 1));
   max-native: max(10vw, 100px);
   percentage: percentage((10px / 50));

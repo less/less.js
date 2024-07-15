@@ -303,19 +303,16 @@ ToCSSVisitor.prototype = {
         // remove duplicates
         const ruleCache = {};
 
-        let ruleList;
-        let rule;
-        let i;
-
-        for (i = rules.length - 1; i >= 0 ; i--) {
-            rule = rules[i];
+        for (let i = rules.length - 1; i >= 0 ; i--) {
+            let rule = rules[i];
             if (rule instanceof tree.Declaration) {
-                if (!ruleCache[rule.name]) {
+                if (!Object.prototype.hasOwnProperty.call(ruleCache, rule.name)) {
                     ruleCache[rule.name] = rule;
                 } else {
-                    ruleList = ruleCache[rule.name];
-                    if (ruleList instanceof tree.Declaration) {
-                        ruleList = ruleCache[rule.name] = [ruleCache[rule.name].toCSS(this._context)];
+                    let ruleList = ruleCache[rule.name];
+                    if (!Array.isArray(ruleList)) {
+                        const prevRuleCSS = ruleList.toCSS(this._context);
+                        ruleList = ruleCache[rule.name] = [prevRuleCSS];
                     }
                     const ruleCSS = rule.toCSS(this._context);
                     if (ruleList.indexOf(ruleCSS) !== -1) {

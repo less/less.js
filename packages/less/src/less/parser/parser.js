@@ -678,15 +678,6 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                 },
 
-                // A property entity useing the protective {} e.g. ${prop}
-                propertyCurly: function () {
-                    let curly;
-                    const index = parserInput.i;
-
-                    if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
-                        return new(tree.Property)(`$${curly[1]}`, index + currentIndex, fileInfo);
-                    }
-                },
                 //
                 // A Hexadecimal color
                 //

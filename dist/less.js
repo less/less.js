@@ -1,8 +1,8 @@
 /**
- * Less - Leaner CSS v4.2.0
+ * Less - Leaner CSS v4.2.1
  * http://lesscss.org
  * 
- * Copyright (c) 2009-2023, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2024, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  * @license Apache-2.0
@@ -12,7 +12,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.less = factory());
-}(this, (function () { 'use strict';
+})(this, (function () { 'use strict';
 
     // Export a new default each time
     function defaultOptions () {
@@ -103,7 +103,7 @@
             // Strip the query-string
             var href = sheet.href || '';
             // If there is no title set, use the filename, minus the extension
-            var id = "less:" + (sheet.title || extractId(href));
+            var id = "less:".concat(sheet.title || extractId(href));
             // If this has already been inserted into the DOM, we may need to replace it
             var oldStyleNode = document.getElementById(id);
             var keepOldStyleNode = false;
@@ -247,7 +247,7 @@
                     this[propName] = environmentFunc.bind(externalEnvironment);
                 }
                 else if (i_1 < requiredFunctions.length) {
-                    this.warn("missing required function in environment - " + propName);
+                    this.warn("missing required function in environment - ".concat(propName));
                 }
             }
         }
@@ -725,20 +725,20 @@
                     color = this.toHSL();
                     args = [
                         this.fround(context, color.h),
-                        this.fround(context, color.s * 100) + "%",
-                        this.fround(context, color.l * 100) + "%"
+                        "".concat(this.fround(context, color.s * 100), "%"),
+                        "".concat(this.fround(context, color.l * 100), "%")
                     ].concat(args);
             }
             if (colorFunction) {
                 // Values are capped between `0` and `255`, rounded and zero-padded.
-                return colorFunction + "(" + args.join("," + (compress ? '' : ' ')) + ")";
+                return "".concat(colorFunction, "(").concat(args.join(",".concat(compress ? '' : ' ')), ")");
             }
             color = this.toRGB();
             if (compress) {
                 var splitcolor = color.split('');
                 // Convert color to short format
                 if (splitcolor[1] === splitcolor[2] && splitcolor[3] === splitcolor[4] && splitcolor[5] === splitcolor[6]) {
-                    color = "#" + splitcolor[1] + splitcolor[3] + splitcolor[5];
+                    color = "#".concat(splitcolor[1]).concat(splitcolor[3]).concat(splitcolor[5]);
                 }
             }
             return color;
@@ -850,10 +850,10 @@
         return Math.min(Math.max(v, 0), max);
     }
     function toHex(v) {
-        return "#" + v.map(function (c) {
+        return "#".concat(v.map(function (c) {
             c = clamp$1(Math.round(c), 255);
             return (c < 16 ? '0' : '') + c.toString(16);
-        }).join('');
+        }).join(''));
     }
 
     var Paren = function (node) {
@@ -962,6 +962,47 @@
         ALL: 2
     };
 
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+
+    var __assign = function() {
+      __assign = Object.assign || function __assign(t) {
+          for (var s, i = 1, n = arguments.length; i < n; i++) {
+              s = arguments[i];
+              for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+          }
+          return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+
+    function __spreadArray(to, from, pack) {
+      if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+          if (ar || !(i in from)) {
+              if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+              ar[i] = from[i];
+          }
+      }
+      return to.concat(ar || Array.prototype.slice.call(from));
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+      var e = new Error(message);
+      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     /**
      * Returns the object type of the given payload
      *
@@ -975,7 +1016,7 @@
      * Returns whether the payload is a plain JavaScript object (excluding special classes or objects with other prototypes)
      *
      * @param {*} payload
-     * @returns {payload is Record<string, any>}
+     * @returns {payload is PlainObject}
      */
     function isPlainObject(payload) {
         if (getType(payload) !== 'Object')
@@ -992,28 +1033,6 @@
         return getType(payload) === 'Array';
     }
 
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
-
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
-
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
-    ***************************************************************************** */
-    function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++)
-            s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-                r[k] = a[j];
-        return r;
-    }
     function assignProp(carry, key, newVal, originalObject, includeNonenumerable) {
         var propType = {}.propertyIsEnumerable.call(originalObject, key)
             ? 'enumerable'
@@ -1035,21 +1054,21 @@
      * @export
      * @template T
      * @param {T} target Target can be anything
-     * @param {Options} [options={}] Options can be `props` or `nonenumerable`
+     * @param {Options} [options = {}] Options can be `props` or `nonenumerable`
      * @returns {T} the target with replaced values
      * @export
      */
     function copy(target, options) {
-        if (options === void 0) {
-            options = {};
+        if (options === void 0) { options = {}; }
+        if (isArray(target)) {
+            return target.map(function (item) { return copy(item, options); });
         }
-        if (isArray(target))
-            return target.map(function (i) { return copy(i, options); });
-        if (!isPlainObject(target))
+        if (!isPlainObject(target)) {
             return target;
+        }
         var props = Object.getOwnPropertyNames(target);
         var symbols = Object.getOwnPropertySymbols(target);
-        return __spreadArrays(props, symbols).reduce(function (carry, key) {
+        return __spreadArray(__spreadArray([], props, true), symbols, true).reduce(function (carry, key) {
             if (isArray(options.props) && !options.props.includes(key)) {
                 return carry;
             }
@@ -1288,16 +1307,16 @@
         if (options.stylize) {
             var type = typeof options.stylize;
             if (type !== 'function') {
-                throw Error("options.stylize should be a function, got a " + type + "!");
+                throw Error("options.stylize should be a function, got a ".concat(type, "!"));
             }
             stylize = options.stylize;
         }
         if (this.line !== null) {
             if (typeof extract[0] === 'string') {
-                error.push(stylize(this.line - 1 + " " + extract[0], 'grey'));
+                error.push(stylize("".concat(this.line - 1, " ").concat(extract[0]), 'grey'));
             }
             if (typeof extract[1] === 'string') {
-                var errorTxt = this.line + " ";
+                var errorTxt = "".concat(this.line, " ");
                 if (extract[1]) {
                     errorTxt += extract[1].slice(0, this.column) +
                         stylize(stylize(stylize(extract[1].substr(this.column, 1), 'bold') +
@@ -1306,21 +1325,21 @@
                 error.push(errorTxt);
             }
             if (typeof extract[2] === 'string') {
-                error.push(stylize(this.line + 1 + " " + extract[2], 'grey'));
+                error.push(stylize("".concat(this.line + 1, " ").concat(extract[2]), 'grey'));
             }
-            error = error.join('\n') + stylize('', 'reset') + "\n";
+            error = "".concat(error.join('\n') + stylize('', 'reset'), "\n");
         }
-        message += stylize(this.type + "Error: " + this.message, 'red');
+        message += stylize("".concat(this.type, "Error: ").concat(this.message), 'red');
         if (this.filename) {
             message += stylize(' in ', 'red') + this.filename;
         }
         if (this.line) {
-            message += stylize(" on line " + this.line + ", column " + (this.column + 1) + ":", 'grey');
+            message += stylize(" on line ".concat(this.line, ", column ").concat(this.column + 1, ":"), 'grey');
         }
-        message += "\n" + error;
+        message += "\n".concat(error);
         if (this.callLine) {
-            message += stylize('from ', 'red') + (this.filename || '') + "/n";
-            message += stylize(this.callLine, 'grey') + " " + this.callExtract + "/n";
+            message += "".concat(stylize('from ', 'red') + (this.filename || ''), "/n");
+            message += "".concat(stylize(this.callLine, 'grey'), " ").concat(this.callExtract, "/n");
         }
         return message;
     };
@@ -1380,9 +1399,9 @@
             var fnName;
             visitArgs.visitDeeper = true;
             if (!func) {
-                fnName = "visit" + node.type;
+                fnName = "visit".concat(node.type);
                 func = impl[fnName] || _noop;
-                funcOut = impl[fnName + "Out"] || _noop;
+                funcOut = impl["".concat(fnName, "Out")] || _noop;
                 this._visitInCache[nodeTypeIndex] = func;
                 this._visitOutCache[nodeTypeIndex] = funcOut;
             }
@@ -1578,7 +1597,7 @@
         if (isPathLocalRelative(path) &&
             isPathRelative(rootpath) &&
             isPathLocalRelative(newPath) === false) {
-            newPath = "./" + newPath;
+            newPath = "./".concat(newPath);
         }
         return newPath;
     };
@@ -1985,9 +2004,9 @@
                     selector = extend.selector.toCSS({});
                 }
                 catch (_) { }
-                if (!indices[extend.index + " " + selector]) {
-                    indices[extend.index + " " + selector] = true;
-                    logger$1.warn("extend '" + selector + "' has no matches");
+                if (!indices["".concat(extend.index, " ").concat(selector)]) {
+                    indices["".concat(extend.index, " ").concat(selector)] = true;
+                    logger$1.warn("extend '".concat(selector, "' has no matches"));
                 }
             });
         };
@@ -2068,7 +2087,7 @@
                         selectorTwo = extendsToAdd[0].selector.toCSS();
                     }
                     catch (e) { }
-                    throw { message: "extend circular reference detected. One of the circular extends is currently:" + selectorOne + ":extend(" + selectorTwo + ")" };
+                    throw { message: "extend circular reference detected. One of the circular extends is currently:".concat(selectorOne, ":extend(").concat(selectorTwo, ")") };
                 }
                 // now process the new extends on the existing rules so that we can handle a extending b extending c extending
                 // d extending e...
@@ -2509,7 +2528,7 @@
                 // be considered illegal css as it has to be on the first line
                 if (this.charset) {
                     if (atRuleNode.debugInfo) {
-                        var comment = new tree.Comment("/* " + atRuleNode.toCSS(this._context).replace(/\n/g, '') + " */\n");
+                        var comment = new tree.Comment("/* ".concat(atRuleNode.toCSS(this._context).replace(/\n/g, ''), " */\n"));
                         comment.debugInfo = atRuleNode.debugInfo;
                         return this._visitor.visit(comment);
                     }
@@ -2530,11 +2549,11 @@
                         index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
                 }
                 if (ruleNode instanceof tree.Call) {
-                    throw { message: "Function '" + ruleNode.name + "' did not return a root node",
+                    throw { message: "Function '".concat(ruleNode.name, "' did not return a root node"),
                         index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
                 }
                 if (ruleNode.type && !ruleNode.allowRoot) {
-                    throw { message: ruleNode.type + " node returned by a function is not valid here",
+                    throw { message: "".concat(ruleNode.type, " node returned by a function is not valid here"),
                         index: ruleNode.getIndex(), filename: ruleNode.fileInfo() && ruleNode.fileInfo().filename };
                 }
             }
@@ -2767,7 +2786,7 @@
                     if (matched) {
                         continue;
                     }
-                    return fail("unmatched `" + String.fromCharCode(cc) + "`", currentChunkStartIndex);
+                    return fail("unmatched `".concat(String.fromCharCode(cc), "`"), currentChunkStartIndex);
                 case 47: // /, check for comment
                     if (parenLevel || (chunkerCurrentIndex == len - 1)) {
                         continue;
@@ -3270,7 +3289,7 @@
                 return result;
             }
             error(msg || (typeof arg === 'string'
-                ? "expected '" + arg + "' got '" + parserInput.currentChar() + "'"
+                ? "expected '".concat(arg, "' got '").concat(parserInput.currentChar(), "'")
                 : 'unexpected token'));
         }
         // Specialization of expect()
@@ -3278,7 +3297,7 @@
             if (parserInput.$char(arg)) {
                 return arg;
             }
-            error(msg || "expected '" + arg + "' got '" + parserInput.currentChar() + "'");
+            error(msg || "expected '".concat(arg, "' got '").concat(parserInput.currentChar(), "'"));
         }
         function getDebugInfo(index) {
             var filename = fileInfo.filename;
@@ -3355,8 +3374,8 @@
                         }
                     };
                 }
-                globalVars = (additionalData && additionalData.globalVars) ? Parser.serializeVars(additionalData.globalVars) + "\n" : '';
-                modifyVars = (additionalData && additionalData.modifyVars) ? "\n" + Parser.serializeVars(additionalData.modifyVars) : '';
+                globalVars = (additionalData && additionalData.globalVars) ? "".concat(Parser.serializeVars(additionalData.globalVars), "\n") : '';
+                modifyVars = (additionalData && additionalData.modifyVars) ? "\n".concat(Parser.serializeVars(additionalData.modifyVars)) : '';
                 if (context.pluginManager) {
                     var preProcessors = context.pluginManager.getPreProcessors();
                     for (var i_1 = 0; i_1 < preProcessors.length; i_1++) {
@@ -3800,7 +3819,7 @@
                         var curly;
                         var index = parserInput.i;
                         if (parserInput.currentChar() === '@' && (curly = parserInput.$re(/^@\{([\w-]+)\}/))) {
-                            return new (tree.Variable)("@" + curly[1], index + currentIndex, fileInfo);
+                            return new (tree.Variable)("@".concat(curly[1]), index + currentIndex, fileInfo);
                         }
                     },
                     //
@@ -3820,7 +3839,7 @@
                         var curly;
                         var index = parserInput.i;
                         if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
-                            return new (tree.Property)("$" + curly[1], index + currentIndex, fileInfo);
+                            return new (tree.Property)("$".concat(curly[1]), index + currentIndex, fileInfo);
                         }
                     },
                     //
@@ -4351,10 +4370,10 @@
                     value = parserInput.$re(/^\d+/);
                     if (!value) {
                         value = expect(parsers.entities.variable, 'Could not parse alpha');
-                        value = "@{" + value.name.slice(1) + "}";
+                        value = "@{".concat(value.name.slice(1), "}");
                     }
                     expectChar(')');
-                    return new tree.Quoted('', "alpha(opacity=" + value + ")");
+                    return new tree.Quoted('', "alpha(opacity=".concat(value, ")"));
                 },
                 //
                 // A Selector Element
@@ -4755,7 +4774,7 @@
                     value = parserInput.$parseUntil(tok);
                     if (value) {
                         if (typeof value === 'string') {
-                            error("Expected '" + value + "'", 'Parse');
+                            error("Expected '".concat(value, "'"), 'Parse');
                         }
                         if (value.length === 1 && value[0] === ' ') {
                             parserInput.forget();
@@ -5044,7 +5063,7 @@
                     }
                     nonVendorSpecificName = name;
                     if (name.charAt(1) == '-' && name.indexOf('-', 2) > 0) {
-                        nonVendorSpecificName = "@" + name.slice(name.indexOf('-', 2) + 1);
+                        nonVendorSpecificName = "@".concat(name.slice(name.indexOf('-', 2) + 1));
                     }
                     switch (nonVendorSpecificName) {
                         case '@charset':
@@ -5072,13 +5091,13 @@
                     if (hasIdentifier) {
                         value = this.entity();
                         if (!value) {
-                            error("expected " + name + " identifier");
+                            error("expected ".concat(name, " identifier"));
                         }
                     }
                     else if (hasExpression) {
                         value = this.expression();
                         if (!value) {
-                            error("expected " + name + " expression");
+                            error("expected ".concat(name, " expression"));
                         }
                     }
                     else if (hasUnknown) {
@@ -5086,7 +5105,7 @@
                         hasBlock = (parserInput.currentChar() === '{');
                         if (!value) {
                             if (!hasBlock && parserInput.currentChar() !== ';') {
-                                error(name + " rule is missing block or ending semi-colon");
+                                error("".concat(name, " rule is missing block or ending semi-colon"));
                             }
                         }
                         else if (!value.value) {
@@ -5324,7 +5343,7 @@
                         return;
                     }
                     if (!parserInput.$char(')')) {
-                        parserInput.restore("expected ')' got '" + parserInput.currentChar() + "'");
+                        parserInput.restore("expected ')' got '".concat(parserInput.currentChar(), "'"));
                         return;
                     }
                     parserInput.forget();
@@ -5492,8 +5511,8 @@
                             name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
                                 new (tree.Keyword)(s) :
                                 (s.charAt(0) === '@' ?
-                                    new (tree.Variable)("@" + s.slice(2, -1), index[k] + currentIndex, fileInfo) :
-                                    new (tree.Property)("$" + s.slice(2, -1), index[k] + currentIndex, fileInfo));
+                                    new (tree.Variable)("@".concat(s.slice(2, -1)), index[k] + currentIndex, fileInfo) :
+                                    new (tree.Property)("$".concat(s.slice(2, -1)), index[k] + currentIndex, fileInfo));
                         }
                         return name;
                     }
@@ -5507,7 +5526,7 @@
         for (var name_1 in vars) {
             if (Object.hasOwnProperty.call(vars, name_1)) {
                 var value = vars[name_1];
-                s += ((name_1[0] === '@') ? '' : '@') + name_1 + ": " + value + ((String(value).slice(-1) === ';') ? '' : ';');
+                s += "".concat(((name_1[0] === '@') ? '' : '@') + name_1, ": ").concat(value).concat((String(value).slice(-1) === ';') ? '' : ';');
             }
         }
         return s;
@@ -5727,7 +5746,7 @@
     var Declaration = function (name, value, important, merge, index, currentFileInfo, inline, variable) {
         this.name = name;
         this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
-        this.important = important ? " " + important.trim() : '';
+        this.important = important ? " ".concat(important.trim()) : '';
         this.merge = merge;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -5799,19 +5818,19 @@
     });
 
     function asComment(ctx) {
-        return "/* line " + ctx.debugInfo.lineNumber + ", " + ctx.debugInfo.fileName + " */\n";
+        return "/* line ".concat(ctx.debugInfo.lineNumber, ", ").concat(ctx.debugInfo.fileName, " */\n");
     }
     function asMediaQuery(ctx) {
         var filenameWithProtocol = ctx.debugInfo.fileName;
         if (!/^[a-z]+:\/\//i.test(filenameWithProtocol)) {
-            filenameWithProtocol = "file://" + filenameWithProtocol;
+            filenameWithProtocol = "file://".concat(filenameWithProtocol);
         }
-        return "@media -sass-debug-info{filename{font-family:" + filenameWithProtocol.replace(/([.:/\\])/g, function (a) {
+        return "@media -sass-debug-info{filename{font-family:".concat(filenameWithProtocol.replace(/([.:/\\])/g, function (a) {
             if (a == '\\') {
                 a = '/';
             }
-            return "\\" + a;
-        }) + "}line{font-family:\\00003" + ctx.debugInfo.lineNumber + "}}\n";
+            return "\\".concat(a);
+        }), "}line{font-family:\\00003").concat(ctx.debugInfo.lineNumber, "}}\n");
     }
     function debugInfo(context, ctx, lineSeparator) {
         var result = '';
@@ -6144,11 +6163,11 @@
                         var name_2 = (r.name.length === 1) && (r.name[0] instanceof Keyword) ?
                             r.name[0].value : r.name;
                         // Properties don't overwrite as they can merge
-                        if (!hash["$" + name_2]) {
-                            hash["$" + name_2] = [r];
+                        if (!hash["$".concat(name_2)]) {
+                            hash["$".concat(name_2)] = [r];
                         }
                         else {
-                            hash["$" + name_2].push(r);
+                            hash["$".concat(name_2)].push(r);
                         }
                     }
                     return hash;
@@ -6321,7 +6340,7 @@
                 var paths = this.paths;
                 var pathCnt = paths.length;
                 var pathSubCnt = void 0;
-                sep = context.compress ? ',' : (",\n" + tabSetStr);
+                sep = context.compress ? ',' : (",\n".concat(tabSetStr));
                 for (i = 0; i < pathCnt; i++) {
                     path = paths[i];
                     if (!(pathSubCnt = path.length)) {
@@ -6356,14 +6375,14 @@
                 }
                 context.lastRule = currentLastRule;
                 if (!context.lastRule && rule.isVisible()) {
-                    output.add(context.compress ? '' : ("\n" + tabRuleStr));
+                    output.add(context.compress ? '' : ("\n".concat(tabRuleStr)));
                 }
                 else {
                     context.lastRule = false;
                 }
             }
             if (!this.root) {
-                output.add((context.compress ? '}' : "\n" + tabSetStr + "}"));
+                output.add((context.compress ? '}' : "\n".concat(tabSetStr, "}")));
                 context.tabLevel--;
             }
             if (!output.isEmpty() && !context.compress && this.firstRoot) {
@@ -6718,18 +6737,18 @@
                 return;
             }
             // Non-compressed
-            var tabSetStr = "\n" + Array(context.tabLevel).join('  '), tabRuleStr = tabSetStr + "  ";
+            var tabSetStr = "\n".concat(Array(context.tabLevel).join('  ')), tabRuleStr = "".concat(tabSetStr, "  ");
             if (!ruleCnt) {
-                output.add(" {" + tabSetStr + "}");
+                output.add(" {".concat(tabSetStr, "}"));
             }
             else {
-                output.add(" {" + tabRuleStr);
+                output.add(" {".concat(tabRuleStr));
                 rules[0].genCSS(context, output);
                 for (i = 1; i < ruleCnt; i++) {
                     output.add(tabRuleStr);
                     rules[i].genCSS(context, output);
                 }
-                output.add(tabSetStr + "}");
+                output.add("".concat(tabSetStr, "}"));
             }
             context.tabLevel--;
         }
@@ -6786,7 +6805,7 @@
         toString: function () {
             var i, returnStr = this.numerator.join('*');
             for (i = 0; i < this.denominator.length; i++) {
-                returnStr += "/" + this.denominator[i];
+                returnStr += "/".concat(this.denominator[i]);
             }
             return returnStr;
         },
@@ -6898,7 +6917,7 @@
         },
         genCSS: function (context, output) {
             if ((context && context.strictUnits) && !this.unit.isSingular()) {
-                throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: " + this.unit.toString());
+                throw new Error("Multiple units in dimension. Correct the units or use the unit function. Bad unit: ".concat(this.unit.toString()));
             }
             var value = this.fround(context, this.value);
             var strValue = String(value);
@@ -6939,7 +6958,7 @@
                     other = other.convertTo(this.unit.usedUnits());
                     if (context.strictUnits && other.unit.toString() !== unit.toString()) {
                         throw new Error('Incompatible units. Change the units or use the unit function. '
-                            + ("Bad units: '" + unit.toString() + "' and '" + other.unit.toString() + "'."));
+                            + "Bad units: '".concat(unit.toString(), "' and '").concat(other.unit.toString(), "'."));
                     }
                     value = this._operate(context, op, this.value, other.value);
                 }
@@ -7067,44 +7086,6 @@
         }
     });
 
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-    var __assign = function () {
-        __assign = Object.assign || function __assign(t) {
-            for (var s, i = 1, n = arguments.length; i < n; i++) {
-                s = arguments[i];
-                for (var p in s)
-                    if (Object.prototype.hasOwnProperty.call(s, p))
-                        t[p] = s[p];
-            }
-            return t;
-        };
-        return __assign.apply(this, arguments);
-    };
-    function __spreadArray(to, from, pack) {
-        if (pack || arguments.length === 2)
-            for (var i = 0, l = from.length, ar; i < l; i++) {
-                if (ar || !(i in from)) {
-                    if (!ar)
-                        ar = Array.prototype.slice.call(from, 0, i);
-                    ar[i] = from[i];
-                }
-            }
-        return to.concat(ar || from);
-    }
-
     var Expression = function (value, noSpacing) {
         this.value = value;
         this.noSpacing = noSpacing;
@@ -7211,7 +7192,7 @@
                 return item;
             });
             if (evalArgs === false) {
-                return this.func.apply(this, __spreadArray([this.context], args));
+                return this.func.apply(this, __spreadArray([this.context], args, false));
             }
             return this.func.apply(this, args);
         };
@@ -7276,7 +7257,7 @@
                     }
                     throw {
                         type: e.type || 'Runtime',
-                        message: "Error evaluating function `" + this.name + "`" + (e.message ? ": " + e.message : ''),
+                        message: "Error evaluating function `".concat(this.name, "`").concat(e.message ? ": ".concat(e.message) : ''),
                         index: this.getIndex(),
                         filename: this.fileInfo().filename,
                         line: e.lineNumber,
@@ -7304,7 +7285,7 @@
             return new Call(this.name, args, this.getIndex(), this.fileInfo());
         },
         genCSS: function (context, output) {
-            output.add(this.name + "(", this.fileInfo(), this.getIndex());
+            output.add("".concat(this.name, "("), this.fileInfo(), this.getIndex());
             for (var i_1 = 0; i_1 < this.args.length; i_1++) {
                 this.args[i_1].genCSS(context, output);
                 if (i_1 + 1 < this.args.length) {
@@ -7325,11 +7306,11 @@
         eval: function (context) {
             var variable, name = this.name;
             if (name.indexOf('@@') === 0) {
-                name = "@" + new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value;
+                name = "@".concat(new Variable(name.slice(1), this.getIndex(), this.fileInfo()).eval(context).value);
             }
             if (this.evaluating) {
                 throw { type: 'Name',
-                    message: "Recursive variable definition for " + name,
+                    message: "Recursive variable definition for ".concat(name),
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -7356,7 +7337,7 @@
             }
             else {
                 throw { type: 'Name',
-                    message: "variable " + name + " is undefined",
+                    message: "variable ".concat(name, " is undefined"),
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -7386,7 +7367,7 @@
             var mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
             if (this.evaluating) {
                 throw { type: 'Name',
-                    message: "Recursive property reference for " + name,
+                    message: "Recursive property reference for ".concat(name),
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -7415,7 +7396,7 @@
             }
             else {
                 throw { type: 'Name',
-                    message: "Property '" + name + "' is undefined",
+                    message: "Property '".concat(name, "' is undefined"),
                     filename: this.currentFileInfo.filename,
                     index: this.index };
             }
@@ -7454,7 +7435,7 @@
             if (this.cif) {
                 value = value + ' ' + this.cif;
             }
-            return "[" + value + "]";
+            return "[".concat(value, "]");
         }
     });
 
@@ -7486,11 +7467,11 @@
             var that = this;
             var value = this.value;
             var variableReplacement = function (_, name) {
-                var v = new Variable("@" + name, that.getIndex(), that.fileInfo()).eval(context, true);
+                var v = new Variable("@".concat(name), that.getIndex(), that.fileInfo()).eval(context, true);
                 return (v instanceof Quoted) ? v.value : v.toCSS();
             };
             var propertyReplacement = function (_, name) {
-                var v = new Property("$" + name, that.getIndex(), that.fileInfo()).eval(context, true);
+                var v = new Property("$".concat(name), that.getIndex(), that.fileInfo()).eval(context, true);
                 return (v instanceof Quoted) ? v.value : v.toCSS();
             };
             function iterativeReplace(value, regexp, replacementFnc) {
@@ -7517,7 +7498,7 @@
     });
 
     function escapePath(path) {
-        return path.replace(/[()'"\s]/g, function (match) { return "\\" + match; });
+        return path.replace(/[()'"\s]/g, function (match) { return "\\".concat(match); });
     }
     var URL = function (val, index, currentFileInfo, isEvald) {
         this.value = val;
@@ -7558,7 +7539,7 @@
                         var delimiter = val.value.indexOf('?') === -1 ? '?' : '&';
                         var urlArgs = delimiter + context.urlArgs;
                         if (val.value.indexOf('#') !== -1) {
-                            val.value = val.value.replace('#', urlArgs + "#");
+                            val.value = val.value.replace('#', "".concat(urlArgs, "#"));
                         }
                         else {
                             val.value += urlArgs;
@@ -7861,13 +7842,13 @@
                     index: this.getIndex() };
             }
             expression = expression.replace(/@\{([\w-]+)\}/g, function (_, name) {
-                return that.jsify(new Variable("@" + name, that.getIndex(), that.fileInfo()).eval(context));
+                return that.jsify(new Variable("@".concat(name), that.getIndex(), that.fileInfo()).eval(context));
             });
             try {
-                expression = new Function("return (" + expression + ")");
+                expression = new Function("return (".concat(expression, ")"));
             }
             catch (e) {
-                throw { message: "JavaScript evaluation error: " + e.message + " from `" + expression + "`",
+                throw { message: "JavaScript evaluation error: ".concat(e.message, " from `").concat(expression, "`"),
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -7887,7 +7868,7 @@
                 result = expression.call(evalContext);
             }
             catch (e) {
-                throw { message: "JavaScript evaluation error: '" + e.name + ": " + e.message.replace(/["]/g, '\'') + "'",
+                throw { message: "JavaScript evaluation error: '".concat(e.name, ": ").concat(e.message.replace(/["]/g, '\''), "'"),
                     filename: this.fileInfo().filename,
                     index: this.getIndex() };
             }
@@ -7895,7 +7876,7 @@
         },
         jsify: function (obj) {
             if (Array.isArray(obj.value) && (obj.value.length > 1)) {
-                return "[" + obj.value.map(function (v) { return v.toCSS(); }).join(', ') + "]";
+                return "[".concat(obj.value.map(function (v) { return v.toCSS(); }).join(', '), "]");
             }
             else {
                 return obj.toCSS();
@@ -7918,7 +7899,7 @@
                 return new Dimension(result);
             }
             else if (type === 'string') {
-                return new Quoted("\"" + result + "\"", result, this.escaped, this._index);
+                return new Quoted("\"".concat(result, "\""), result, this.escaped, this._index);
             }
             else if (Array.isArray(result)) {
                 return new Anonymous(result.join(', '));
@@ -7945,7 +7926,7 @@
             return this;
         },
         genCSS: function (context, output) {
-            output.add(this.key + "=");
+            output.add("".concat(this.key, "="));
             if (this.value.genCSS) {
                 this.value.genCSS(context, output);
             }
@@ -8152,7 +8133,7 @@
         eval: function (context) {
             var rules;
             var detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
-            var error = new LessError({ message: "Could not evaluate variable call " + this.variable });
+            var error = new LessError({ message: "Could not evaluate variable call ".concat(this.variable) });
             if (!detachedRuleset.ruleset) {
                 if (detachedRuleset.rules) {
                     rules = detachedRuleset;
@@ -8200,31 +8181,31 @@
                 }
                 else if (name.charAt(0) === '@') {
                     if (name.charAt(1) === '@') {
-                        name = "@" + new Variable(name.substr(1)).eval(context).value;
+                        name = "@".concat(new Variable(name.substr(1)).eval(context).value);
                     }
                     if (rules.variables) {
                         rules = rules.variable(name);
                     }
                     if (!rules) {
                         throw { type: 'Name',
-                            message: "variable " + name + " not found",
+                            message: "variable ".concat(name, " not found"),
                             filename: this.fileInfo().filename,
                             index: this.getIndex() };
                     }
                 }
                 else {
                     if (name.substring(0, 2) === '$@') {
-                        name = "$" + new Variable(name.substr(1)).eval(context).value;
+                        name = "$".concat(new Variable(name.substr(1)).eval(context).value);
                     }
                     else {
-                        name = name.charAt(0) === '$' ? name : "$" + name;
+                        name = name.charAt(0) === '$' ? name : "$".concat(name);
                     }
                     if (rules.properties) {
                         rules = rules.property(name);
                     }
                     if (!rules) {
                         throw { type: 'Name',
-                            message: "property \"" + name.substr(1) + "\" not found",
+                            message: "property \"".concat(name.substr(1), "\" not found"),
                             filename: this.fileInfo().filename,
                             index: this.getIndex() };
                     }
@@ -8317,7 +8298,7 @@
                             continue;
                         }
                         else {
-                            throw { type: 'Runtime', message: "Named argument for " + this.name + " " + args[i].name + " not found" };
+                            throw { type: 'Runtime', message: "Named argument for ".concat(this.name, " ").concat(args[i].name, " not found") };
                         }
                     }
                 }
@@ -8352,7 +8333,7 @@
                             frame.resetCache();
                         }
                         else {
-                            throw { type: 'Runtime', message: "wrong number of arguments for " + this.name + " (" + argsLength + " for " + this.arity + ")" };
+                            throw { type: 'Runtime', message: "wrong number of arguments for ".concat(this.name, " (").concat(argsLength, " for ").concat(this.arity, ")") };
                         }
                         frame.prependRule(new Declaration(name, val));
                         evaldArguments[i] = val;
@@ -8567,7 +8548,7 @@
                         defaultResult = defTrue;
                         if ((count[defTrue] + count[defFalse]) > 1) {
                             throw { type: 'Runtime',
-                                message: "Ambiguous use of `default()` found when matching for `" + this.format(args) + "`",
+                                message: "Ambiguous use of `default()` found when matching for `".concat(this.format(args), "`"),
                                 index: this.getIndex(), filename: this.fileInfo().filename };
                         }
                     }
@@ -8597,12 +8578,12 @@
             }
             if (isOneFound) {
                 throw { type: 'Runtime',
-                    message: "No matching definition was found for `" + this.format(args) + "`",
+                    message: "No matching definition was found for `".concat(this.format(args), "`"),
                     index: this.getIndex(), filename: this.fileInfo().filename };
             }
             else {
                 throw { type: 'Name',
-                    message: this.selector.toCSS().trim() + " is undefined",
+                    message: "".concat(this.selector.toCSS().trim(), " is undefined"),
                     index: this.getIndex(), filename: this.fileInfo().filename };
             }
         },
@@ -8616,10 +8597,10 @@
             }
         },
         format: function (args) {
-            return this.selector.toCSS().trim() + "(" + (args ? args.map(function (a) {
+            return "".concat(this.selector.toCSS().trim(), "(").concat(args ? args.map(function (a) {
                 var argValue = '';
                 if (a.name) {
-                    argValue += a.name + ":";
+                    argValue += "".concat(a.name, ":");
                 }
                 if (a.value.toCSS) {
                     argValue += a.value.toCSS();
@@ -8628,7 +8609,7 @@
                     argValue += '???';
                 }
                 return argValue;
-            }).join(', ') : '') + ")";
+            }).join(', ') : '', ")");
         }
     });
 
@@ -8738,7 +8719,7 @@
                 diff += '../';
             }
             for (i = 0; i < urlDirectories.length - 1; i++) {
-                diff += urlDirectories[i] + "/";
+                diff += "".concat(urlDirectories[i], "/");
             }
             return diff;
         };
@@ -8763,13 +8744,13 @@
             var i;
             var baseUrlParts;
             if (!urlParts) {
-                throw new Error("Could not parse sheet href - '" + url + "'");
+                throw new Error("Could not parse sheet href - '".concat(url, "'"));
             }
             // Stylesheets in IE don't always return the full path
             if (baseUrl && (!urlParts[1] || urlParts[2])) {
                 baseUrlParts = baseUrl.match(urlPartsRegex);
                 if (!baseUrlParts) {
-                    throw new Error("Could not parse page url - '" + baseUrl + "'");
+                    throw new Error("Could not parse page url - '".concat(baseUrl, "'"));
                 }
                 urlParts[1] = urlParts[1] || baseUrlParts[1] || '';
                 if (!urlParts[2]) {
@@ -8898,7 +8879,7 @@
         AbstractPluginLoader.prototype.trySetOptions = function (plugin, filename, name, options) {
             if (options && !plugin.setOptions) {
                 return new LessError({
-                    message: "Options have been provided but the plugin " + name + " does not support any options."
+                    message: "Options have been provided but the plugin ".concat(name, " does not support any options.")
                 });
             }
             try {
@@ -8918,7 +8899,7 @@
                 if (plugin.minVersion) {
                     if (this.compareVersion(plugin.minVersion, this.less.version) < 0) {
                         return new LessError({
-                            message: "Plugin " + name + " requires version " + this.versionToString(plugin.minVersion)
+                            message: "Plugin ".concat(name, " requires version ").concat(this.versionToString(plugin.minVersion))
                         });
                     }
                 }
@@ -9387,7 +9368,7 @@
             if ((c instanceof Quoted) &&
                 (/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})$/i.test(c.value))) {
                 var val = c.value.slice(1);
-                return new Color(val, undefined, "#" + val);
+                return new Color(val, undefined, "#".concat(val));
             }
             if ((c instanceof Color) || (c = Color.fromKeyword(c.value))) {
                 c.value = undefined;
@@ -9524,7 +9505,7 @@
                 }
                 var fileSync = fileManager.loadFileSync(filePath, currentDirectory, context, environment);
                 if (!fileSync.contents) {
-                    logger$1.warn("Skipped data-uri embedding of " + filePath + " because file not found");
+                    logger$1.warn("Skipped data-uri embedding of ".concat(filePath, " because file not found"));
                     return fallback(this, filePathNode || mimetypeNode);
                 }
                 var buf = fileSync.contents;
@@ -9532,8 +9513,8 @@
                     return fallback(this, filePathNode);
                 }
                 buf = useBase64 ? environment.encodeBase64(buf) : encodeURIComponent(buf);
-                var uri = "data:" + mimetype + "," + buf + fragment;
-                return new URL(new Quoted("\"" + uri + "\"", uri, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
+                var uri = "data:".concat(mimetype, ",").concat(buf).concat(fragment);
+                return new URL(new Quoted("\"".concat(uri, "\""), uri, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
             } };
     });
 
@@ -9755,7 +9736,7 @@
             return order[0];
         }
         args = order.map(function (a) { return a.toCSS(_this.context); }).join(this.context.compress ? ',' : ', ');
-        return new Anonymous((isMin ? 'min' : 'max') + "(" + args + ")");
+        return new Anonymous("".concat(isMin ? 'min' : 'max', "(").concat(args, ")"));
     };
     var number = {
         min: function () {
@@ -9891,7 +9872,7 @@
                         throw { type: 'Argument', message: 'svg-gradient direction must be \'to bottom\', \'to right\',' +
                                 ' \'to bottom right\', \'to top right\' or \'ellipse at center\'' };
                 }
-                returner = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><" + gradientType + "Gradient id=\"g\" " + gradientDirectionSvg + ">";
+                returner = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"><".concat(gradientType, "Gradient id=\"g\" ").concat(gradientDirectionSvg, ">");
                 for (i = 0; i < stops.length; i += 1) {
                     if (stops[i] instanceof Expression) {
                         color = stops[i].value[0];
@@ -9906,12 +9887,12 @@
                     }
                     positionValue = position ? position.toCSS(renderEnv) : i === 0 ? '0%' : '100%';
                     alpha = color.alpha;
-                    returner += "<stop offset=\"" + positionValue + "\" stop-color=\"" + color.toRGB() + "\"" + (alpha < 1 ? " stop-opacity=\"" + alpha + "\"" : '') + "/>";
+                    returner += "<stop offset=\"".concat(positionValue, "\" stop-color=\"").concat(color.toRGB(), "\"").concat(alpha < 1 ? " stop-opacity=\"".concat(alpha, "\"") : '', "/>");
                 }
-                returner += "</" + gradientType + "Gradient><rect " + rectangleDimension + " fill=\"url(#g)\" /></svg>";
+                returner += "</".concat(gradientType, "Gradient><rect ").concat(rectangleDimension, " fill=\"url(#g)\" /></svg>");
                 returner = encodeURIComponent(returner);
-                returner = "data:image/svg+xml," + returner;
-                return new URL(new Quoted("'" + returner + "'", returner, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
+                returner = "data:image/svg+xml,".concat(returner);
+                return new URL(new Quoted("'".concat(returner, "'"), returner, false, this.index, this.currentFileInfo), this.index, this.currentFileInfo);
             } };
     });
 
@@ -9958,7 +9939,7 @@
         unit: function (val, unit) {
             if (!(val instanceof Dimension)) {
                 throw { type: 'Argument',
-                    message: "the first argument to unit must be a number" + (val instanceof Operation ? '. Have you forgotten parenthesis?' : '') };
+                    message: "the first argument to unit must be a number".concat(val instanceof Operation ? '. Have you forgotten parenthesis?' : '') };
             }
             if (unit) {
                 if (unit instanceof Keyword) {
@@ -9986,7 +9967,7 @@
         }
         var entityList = [new Variable(args[0].value, this.index, this.currentFileInfo).eval(this.context)];
         args = entityList.map(function (a) { return a.toCSS(_this.context); }).join(this.context.compress ? ',' : ', ');
-        return new Variable("style(" + args + ")");
+        return new Variable("style(".concat(args, ")"));
     };
     var style$1 = {
         style: function () {
@@ -10046,7 +10027,7 @@
                     }
                     value = new tree.Value([value]);
                 }
-                return new tree.Declaration("@" + k, value, false, null, 0);
+                return new tree.Declaration("@".concat(k), value, false, null, 0);
             });
             evalEnv.frames = [new tree.Ruleset(null, variables)];
         }
@@ -10429,13 +10410,13 @@
                     if (this.sourceMap === undefined) {
                         return '';
                     }
-                    sourceMapURL = "data:application/json;base64," + environment.encodeBase64(this.sourceMap);
+                    sourceMapURL = "data:application/json;base64,".concat(environment.encodeBase64(this.sourceMap));
                 }
                 if (this.options.disableSourcemapAnnotation) {
                     return '';
                 }
                 if (sourceMapURL) {
-                    return "/*# sourceMappingURL=" + sourceMapURL + " */";
+                    return "/*# sourceMappingURL=".concat(sourceMapURL, " */");
                 }
                 return '';
             };
@@ -10562,7 +10543,7 @@
                     var importedEqualsRoot = fullPath === importManager.rootFilename;
                     if (importOptions.optional && e) {
                         callback(null, { rules: [] }, false, null);
-                        logger$1.info("The file " + fullPath + " was skipped because it was not found and the import was marked optional.");
+                        logger$1.info("The file ".concat(fullPath, " was skipped because it was not found and the import was marked optional."));
                     }
                     else {
                         // Inline imports aren't cached here.
@@ -10585,7 +10566,7 @@
                 };
                 var fileManager = environment.getFileManager(path, currentFileInfo.currentDirectory, this.context, environment);
                 if (!fileManager) {
-                    fileParsedFunc({ message: "Could not find a file-manager for " + path });
+                    fileParsedFunc({ message: "Could not find a file-manager for ".concat(path) });
                     return;
                 }
                 var loadFileCallback = function (loadedFile) {
@@ -10808,7 +10789,7 @@
         return render;
     }
 
-    var version = "4.2.0";
+    var version = "4.2.1";
 
     function parseNodeVersion(version) {
         var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
@@ -10835,7 +10816,7 @@
         importManager = ImportManager(environment);
         var render = Render(environment, parseTree);
         var parse = Parse(environment, parseTree, importManager);
-        var v = parseNodeVersion_1("v" + version);
+        var v = parseNodeVersion_1("v".concat(version));
         var initial = {
             version: [v.major, v.minor, v.patch],
             data: data,
@@ -10916,7 +10897,7 @@
             if (typeof xhr.overrideMimeType === 'function') {
                 xhr.overrideMimeType('text/css');
             }
-            logger.debug("XHR: Getting '" + url + "'");
+            logger.debug("XHR: Getting '".concat(url, "'"));
             xhr.open('GET', url, async);
             xhr.setRequestHeader('Accept', type || 'text/x-less, text/css; q=0.9, */*; q=0.5');
             xhr.send(null);
@@ -10973,7 +10954,7 @@
                         return resolve({ contents: lessText_1, filename: href, webInfo: { lastModified: new Date() } });
                     }
                     catch (e) {
-                        return reject({ filename: href, message: "Error loading file " + href + " error was " + e.message });
+                        return reject({ filename: href, message: "Error loading file ".concat(href, " error was ").concat(e.message) });
                     }
                 }
                 self.doXHR(href, options.mime, function doXHRCallback(data, lastModified) {
@@ -10982,7 +10963,7 @@
                     // Use remote copy (re-parse)
                     resolve({ contents: data, filename: href, webInfo: { lastModified: lastModified } });
                 }, function doXHRError(status, url) {
-                    reject({ type: 'File', message: "'" + url + "' wasn't found (" + status + ")", href: href });
+                    reject({ type: 'File', message: "'".concat(url, "' wasn't found (").concat(status, ")"), href: href });
                 });
             });
         }
@@ -11055,7 +11036,7 @@
 
     var ErrorReporting = (function (window, less, options) {
         function errorHTML(e, rootHref) {
-            var id = "less-error-message:" + extractId(rootHref || '');
+            var id = "less-error-message:".concat(extractId(rootHref || ''));
             var template = '<li><label>{line}</label><pre class="{class}">{content}</pre></li>';
             var elem = window.document.createElement('div');
             var timer;
@@ -11065,8 +11046,8 @@
             var filenameNoPath = filename.match(/([^/]+(\?.*)?)$/)[1];
             elem.id = id;
             elem.className = 'less-error-message';
-            content = "<h3>" + (e.type || 'Syntax') + "Error: " + (e.message || 'There is an error in your .less file') +
-                ("</h3><p>in <a href=\"" + filename + "\">" + filenameNoPath + "</a> ");
+            content = "<h3>".concat(e.type || 'Syntax', "Error: ").concat(e.message || 'There is an error in your .less file') +
+                "</h3><p>in <a href=\"".concat(filename, "\">").concat(filenameNoPath, "</a> ");
             var errorline = function (e, i, classname) {
                 if (e.extract[i] !== undefined) {
                     errors.push(template.replace(/\{line\}/, (parseInt(e.line, 10) || 0) + (i - 1))
@@ -11078,10 +11059,10 @@
                 errorline(e, 0, '');
                 errorline(e, 1, 'line');
                 errorline(e, 2, '');
-                content += "on line " + e.line + ", column " + (e.column + 1) + ":</p><ul>" + errors.join('') + "</ul>";
+                content += "on line ".concat(e.line, ", column ").concat(e.column + 1, ":</p><ul>").concat(errors.join(''), "</ul>");
             }
             if (e.stack && (e.extract || options.logLevel >= 4)) {
-                content += "<br/>Stack Trace</br />" + e.stack.split('\n').slice(1).join('<br/>');
+                content += "<br/>Stack Trace</br />".concat(e.stack.split('\n').slice(1).join('<br/>'));
             }
             elem.innerHTML = content;
             // CSS for error messages
@@ -11151,7 +11132,7 @@
             }
         }
         function removeErrorHTML(path) {
-            var node = window.document.getElementById("less-error-message:" + extractId(path));
+            var node = window.document.getElementById("less-error-message:".concat(extractId(path)));
             if (node) {
                 node.parentNode.removeChild(node);
             }
@@ -11169,7 +11150,7 @@
             var template = '{line} {content}';
             var filename = e.filename || rootHref;
             var errors = [];
-            var content = (e.type || 'Syntax') + "Error: " + (e.message || 'There is an error in your .less file') + " in " + filename;
+            var content = "".concat(e.type || 'Syntax', "Error: ").concat(e.message || 'There is an error in your .less file', " in ").concat(filename);
             var errorline = function (e, i, classname) {
                 if (e.extract[i] !== undefined) {
                     errors.push(template.replace(/\{line\}/, (parseInt(e.line, 10) || 0) + (i - 1))
@@ -11181,10 +11162,10 @@
                 errorline(e, 0, '');
                 errorline(e, 1, 'line');
                 errorline(e, 2, '');
-                content += " on line " + e.line + ", column " + (e.column + 1) + ":\n" + errors.join('\n');
+                content += " on line ".concat(e.line, ", column ").concat(e.column + 1, ":\n").concat(errors.join('\n'));
             }
             if (e.stack && (e.extract || options.logLevel >= 4)) {
-                content += "\nStack Trace\n" + e.stack;
+                content += "\nStack Trace\n".concat(e.stack);
             }
             less.logger.error(content);
         }
@@ -11217,24 +11198,24 @@
         return {
             setCSS: function (path, lastModified, modifyVars, styles) {
                 if (cache) {
-                    logger.info("saving " + path + " to cache.");
+                    logger.info("saving ".concat(path, " to cache."));
                     try {
                         cache.setItem(path, styles);
-                        cache.setItem(path + ":timestamp", lastModified);
+                        cache.setItem("".concat(path, ":timestamp"), lastModified);
                         if (modifyVars) {
-                            cache.setItem(path + ":vars", JSON.stringify(modifyVars));
+                            cache.setItem("".concat(path, ":vars"), JSON.stringify(modifyVars));
                         }
                     }
                     catch (e) {
                         // TODO - could do with adding more robust error handling
-                        logger.error("failed to save \"" + path + "\" to local storage for caching.");
+                        logger.error("failed to save \"".concat(path, "\" to local storage for caching."));
                     }
                 }
             },
             getCSS: function (path, webInfo, modifyVars) {
                 var css = cache && cache.getItem(path);
-                var timestamp = cache && cache.getItem(path + ":timestamp");
-                var vars = cache && cache.getItem(path + ":vars");
+                var timestamp = cache && cache.getItem("".concat(path, ":timestamp"));
+                var vars = cache && cache.getItem("".concat(path, ":vars"));
                 modifyVars = modifyVars || {};
                 vars = vars || '{}'; // if not set, treat as the JSON representation of an empty object
                 if (timestamp && webInfo.lastModified &&
@@ -11485,19 +11466,19 @@
                             return;
                         }
                         if (webInfo.local) {
-                            less.logger.info("Loading " + sheet.href + " from cache.");
+                            less.logger.info("Loading ".concat(sheet.href, " from cache."));
                         }
                         else {
-                            less.logger.info("Rendered " + sheet.href + " successfully.");
+                            less.logger.info("Rendered ".concat(sheet.href, " successfully."));
                         }
                         browser.createCSS(window.document, css, sheet);
-                        less.logger.info("CSS for " + sheet.href + " generated in " + (new Date() - endTime) + "ms");
+                        less.logger.info("CSS for ".concat(sheet.href, " generated in ").concat(new Date() - endTime, "ms"));
                         // Count completed sheet
                         remainingSheets--;
                         // Check if the last remaining sheet was processed and then call the promise
                         if (remainingSheets === 0) {
                             totalMilliseconds = new Date() - startTime;
-                            less.logger.info("Less has finished. CSS generated in " + totalMilliseconds + "ms");
+                            less.logger.info("Less has finished. CSS generated in ".concat(totalMilliseconds, "ms"));
                             resolve({
                                 startTime: startTime,
                                 endTime: endTime,
@@ -11571,4 +11552,4 @@
 
     return less;
 
-})));
+}));

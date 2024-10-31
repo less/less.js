@@ -15,7 +15,7 @@ jobs:
       matrix:
         # Test all mainstream operating system
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [18]
+        node: [20]
     runs-on: ${{ matrix.os }}
     steps:
      # Pull repo to test machine
@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [10, 12, 14, 16, 20]
+        node: [10, 12, 14, 16, 18, 22]
     runs-on: ${{ matrix.os }}
     steps:
      - uses: actions/checkout@v2

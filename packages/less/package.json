@@ -129,6 +129,9 @@
 		"variables in css",
 		"css less"
 	],
+	"overrides": {
+		"puppeteer": "23.6.1"
+	},
 	"rawcurrent": "https://raw.github.com/less/less.js/v",
 	"sourcearchive": "https://github.com/less/less.js/archive/v",
 	"dependencies": {

@@ -34,6 +34,7 @@ import Negative from './negative';
 import Extend from './extend';
 import VariableCall from './variable-call';
 import NamespaceValue from './namespace-value';
+import ApplyRule from './apply-rule';
 
 // mixins
 import MixinCall from './mixin-call';
@@ -47,9 +48,10 @@ export default {
     Comment, Anonymous, Value, JavaScript, Assignment,
     Condition, Paren, Media, Container, QueryInParens, 
     UnicodeDescriptor, Negative, Extend, VariableCall, 
-    NamespaceValue,
+    NamespaceValue, ApplyRule,
     mixin: {
         Call: MixinCall,
         Definition: MixinDefinition
     }
 };
+

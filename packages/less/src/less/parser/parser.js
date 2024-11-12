@@ -1999,6 +1999,19 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     nonVendorSpecificName = `@${name.slice(name.indexOf('-', 2) + 1)}`;
                 }
 
+                // Special handling for @apply
+                if (nonVendorSpecificName === '@apply') {
+                    const selector = this.entities.call() || this.entities.keyword() || this.entities.variable();
+                    if (!selector) {
+                        error('expected selector after @apply');
+                    }
+                    if (!parserInput.$char(';')) {
+                        error('missing semi-colon after @apply');
+                    }
+                    parserInput.forget();
+                    return new(tree.ApplyRule)(selector, index + currentIndex, fileInfo);
+                }
+
                 switch (nonVendorSpecificName) {
                     case '@charset':
                         hasIdentifier = true;
@@ -2023,6 +2036,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
 
                 parserInput.commentStore.length = 0;
+
 
                 if (hasIdentifier) {
                     value = this.entity();
@@ -2492,3 +2506,4 @@ Parser.serializeVars = vars => {
 };
 
 export default Parser;
+

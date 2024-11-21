@@ -295,8 +295,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (r.type === 'Import' && r.root && r.root.variables) {
                     const vars = r.root.variables();
                     for (const name in vars) {
-                        // eslint-disable-next-line no-prototype-builtins
-                        if (vars.hasOwnProperty(name)) {
+                        if (Object.prototype.hasOwnProperty.call(vars, name)) {
                             hash[name] = r.root.variable(name);
                         }
                     }

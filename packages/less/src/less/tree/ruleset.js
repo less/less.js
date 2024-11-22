@@ -506,7 +506,7 @@ Ruleset.prototype = Object.assign(new Node(), {
 
             const paths = this.paths;
             const pathCnt = paths.length;
-            let pathSubCnt;
+            let pathSubCnt, appendedAmp;
 
             sep = context.compress ? ',' : (`,\n${tabSetStr}`);
 
@@ -516,11 +516,20 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (i > 0) { output.add(sep); }
 
                 context.firstSelector = true;
-                path[0].genCSS(context, output);
+                
+                if (pathSubCnt > 1 && path[0].elements.length === 1 && path[0].elements[0].value === '&') {
+                    appendedAmp = true;
+                } else {
+                    path[0].genCSS(context, output);
+                    appendedAmp = true;
+                }
 
                 context.firstSelector = false;
                 for (j = 1; j < pathSubCnt; j++) {
+                    if (j === 0 && pathSubCnt > 1 && path[j].elements.length === 1 && path[j].elements[0].value === '&') continue;
+                    else if (path[j].elements[0].value === '&' && appendedAmp) continue;
                     path[j].genCSS(context, output);
+                    appendedAmp = true;
                 }
             }
 
@@ -564,13 +573,13 @@ Ruleset.prototype = Object.assign(new Node(), {
         }
     },
 
-    joinSelectors(paths, context, selectors) {
+    joinSelectors(paths, context, selectors, visitArgs) {
         for (let s = 0; s < selectors.length; s++) {
-            this.joinSelector(paths, context, selectors[s]);
+            this.joinSelector(paths, context, selectors[s], visitArgs);
         }
     },
 
-    joinSelector(paths, context, selector) {
+    joinSelector(paths, context, selector, visitArgs) {
 
         function createParenthesis(elementsToPak, originalElement) {
             let replacementParen, j;
@@ -754,6 +763,8 @@ Ruleset.prototype = Object.assign(new Node(), {
                         currentElements.push(el);
                     }
 
+                }  else if (el.value === '&' && el.combinator.value === '' && visitArgs && visitArgs.preserve) {
+                    currentElements.push(new Element(el.value));
                 } else {
                     hadParentSelector = true;
                     // the new list of selectors to add
@@ -820,7 +831,7 @@ Ruleset.prototype = Object.assign(new Node(), {
         let i, newPaths, hadParentSelector;
 
         newPaths = [];
-        hadParentSelector = replaceParentSelector(newPaths, context, selector);
+        hadParentSelector = replaceParentSelector(newPaths, context, selector, visitArgs);
 
         if (!hadParentSelector) {
             if (context.length > 0) {

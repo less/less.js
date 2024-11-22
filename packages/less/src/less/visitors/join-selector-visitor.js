@@ -34,7 +34,7 @@ class JoinSelectorVisitor {
             if (selectors) {
                 selectors = selectors.filter(function(selector) { return selector.getIsOutput(); });
                 rulesetNode.selectors = selectors.length ? selectors : (selectors = null);
-                if (selectors) { rulesetNode.joinSelectors(paths, context, selectors); }
+                if (selectors) { rulesetNode.joinSelectors(paths, context, selectors, visitArgs); }
             }
             if (!selectors) { rulesetNode.rules = null; }
             rulesetNode.paths = paths;

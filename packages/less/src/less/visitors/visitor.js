@@ -42,7 +42,7 @@ class Visitor {
         }
     }
 
-    visit(node) {
+    visit(node, syntaxOptions) {
         if (!node) {
             return node;
         }
@@ -59,7 +59,13 @@ class Visitor {
         const impl = this._implementation;
         let func = this._visitInCache[nodeTypeIndex];
         let funcOut = this._visitOutCache[nodeTypeIndex];
-        const visitArgs = _visitArgs;
+        let visitArgs = _visitArgs;
+        if (syntaxOptions) {
+            visitArgs = { ...syntaxOptions, ...visitArgs };
+        } else if (this._visitArgs) {
+            visitArgs = { ...this._visitArgs, ...visitArgs };
+        }
+        this._visitArgs = visitArgs;
         let fnName;
 
         visitArgs.visitDeeper = true;
@@ -98,7 +104,7 @@ class Visitor {
         return node;
     }
 
-    visitArray(nodes, nonReplacing) {
+    visitArray(nodes, nonReplacing, syntaxOptions) {
         if (!nodes) {
             return nodes;
         }
@@ -109,7 +115,7 @@ class Visitor {
         // Non-replacing
         if (nonReplacing || !this._implementation.isReplacing) {
             for (i = 0; i < cnt; i++) {
-                this.visit(nodes[i]);
+                this.visit(nodes[i], syntaxOptions);
             }
             return nodes;
         }

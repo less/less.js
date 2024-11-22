@@ -99,7 +99,7 @@ Selector.prototype = Object.assign(new Node(), {
 
         if (elements) {
             if (elements[0] === '&') {
-                elements.shift();
+                //elements.shift();
             }
         } else {
             elements = [];

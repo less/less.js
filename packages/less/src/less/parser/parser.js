@@ -4,7 +4,7 @@ import visitors from '../visitors';
 import getParserInput from './parser-input';
 import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
-import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
+import { ContainerSyntaxOptions, MediaSyntaxOptions, ScopeSyntaxOptions } from '../tree/atrule-syntax';
 
 //
 // less.js - parser
@@ -400,6 +400,13 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     const k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);
                     if (k) {
                         return tree.Color.fromKeyword(k) || new(tree.Keyword)(k);
+                    }
+                },
+
+                mediaKeyword: function () {
+                    const k = parserInput.$char('%') || parserInput.$re(/^\[?(?:[&\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?/);       
+                    if (k) {
+                        return tree.Color.fromKeyword(k) || new (tree.Keyword)(k);
                     }
                 },
 
@@ -1820,7 +1827,14 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             parserInput.restore();
                             e = this.value();
                         }
-                        if (parserInput.$char(')')) {
+
+                        if (!p && syntaxOptions.queryInParens) {
+                            parserInput.restore();
+                            p = this.selector();
+                            if (p) {
+                                nodes.push(p);
+                            }
+                        } else if (parserInput.$char(')')) {
                             if (p && !e) {
                                 nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index)));				 
                                 e = p;
@@ -1896,9 +1910,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (parserInput.$str('@media')) {
                         return this.prepareAndGetNestableAtRule(tree.Media, index, debugInfo, MediaSyntaxOptions);
                     }
-                    
-                    if (parserInput.$str('@container')) {
+                    else if (parserInput.$str('@container')) {
                         return this.prepareAndGetNestableAtRule(tree.Container, index, debugInfo, ContainerSyntaxOptions);
+                    }
+                    else if (parserInput.$str('@scope')) {
+                        return this.prepareAndGetNestableAtRule(tree.Scope, index, debugInfo, ScopeSyntaxOptions);
                     }
                 }
                 

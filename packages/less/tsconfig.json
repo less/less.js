@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./lib",
+    "moduleResolution": "node",
     "rootDir": ".",
     "allowJs": true,
     "sourceMap": true,

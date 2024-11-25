@@ -9710,8 +9710,11 @@
             if (!(current instanceof Dimension)) {
                 if (Array.isArray(args[i].value)) {
                     Array.prototype.push.apply(args, Array.prototype.slice.call(args[i].value));
+                    continue;
                 }
-                continue;
+                else {
+                    throw { type: 'Argument', message: 'incompatible types' };
+                }
             }
             currentUnified = current.unit.toString() === '' && unitClone !== undefined ? new Dimension(current.value, unitClone).unify() : current.unify();
             unit = currentUnified.unit.toString() === '' && unitStatic !== undefined ? unitStatic : currentUnified.unit.toString();

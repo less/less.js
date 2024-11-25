@@ -56,6 +56,16 @@ class JoinSelectorVisitor {
             atRuleNode.rules[0].root = (atRuleNode.isRooted || context.length === 0 || null);
         }
     }
+
+    visitStartingStyle(mediaNode, visitArgs) {
+        let context = this.contexts[this.contexts.length - 1];
+        
+        if (mediaNode.declarations) {
+            mediaNode.declarations[0].root = (context.length === 0 || context[0].multiMedia);
+        } else {
+            mediaNode.rules[0].root = (context.length === 0 || context[0].multiMedia);
+        }
+    }
 }
 
 export default JoinSelectorVisitor;

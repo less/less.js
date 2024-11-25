@@ -188,6 +188,12 @@ ImportVisitor.prototype = {
     },
     visitMediaOut: function (mediaNode) {
         this.context.frames.shift();
+    },
+    visitStartingStyle: function (mediaNode, visitArgs) {
+        this.context.frames.unshift(mediaNode.declarations ? mediaNode.declarations[0] : mediaNode.rules[0]);
+    },
+    visitStartingStyleOut: function (mediaNode) {
+        this.context.frames.shift();
     }
 };
 export default ImportVisitor;

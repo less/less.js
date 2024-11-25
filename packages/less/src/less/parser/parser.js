@@ -4,7 +4,7 @@ import visitors from '../visitors';
 import getParserInput from './parser-input';
 import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
-import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
+import { ContainerSyntaxOptions, MediaSyntaxOptions, StartingStyleSyntaxOptions } from '../tree/atrule-syntax';
 
 //
 // less.js - parser
@@ -1864,6 +1864,33 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 return features.length > 0 ? features : null;
             },
 
+            prepareStartingStyleAtRule: function(index, debugInfo) {
+                const rules = [];
+
+                if (parserInput.$re(/.*{/)) {
+                    let e;
+
+                    while (e = this.declaration()) {
+                        rules.push(e);
+                    }
+                }
+                if (rules.length === 0) {
+                    parserInput.restore();
+
+                    return this.prepareAndGetNestableAtRule(tree.StartingStyle, index, debugInfo, StartingStyleSyntaxOptions);
+                } else if (parserInput.$char('}')) {
+                    const atRule = new (tree.StartingStyle)(rules, [], index + currentIndex, fileInfo);
+                  
+                    if (context.dumpLineNumbers) {
+                        atRule.debugInfo = debugInfo;
+                    }
+
+                    return atRule;  
+                } else {
+                    error('starting-style definitions require declarations or rulesets');
+                }
+            },
+
             prepareAndGetNestableAtRule: function (treeType, index, debugInfo, syntaxOptions) {
                 const features = this.mediaFeatures(syntaxOptions);
 
@@ -1896,9 +1923,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (parserInput.$str('@media')) {
                         return this.prepareAndGetNestableAtRule(tree.Media, index, debugInfo, MediaSyntaxOptions);
                     }
-                    
-                    if (parserInput.$str('@container')) {
+                    else if (parserInput.$str('@container')) {
                         return this.prepareAndGetNestableAtRule(tree.Container, index, debugInfo, ContainerSyntaxOptions);
+                    }
+                    else if (parserInput.$str('@starting-style')) {
+                        return this.prepareStartingStyleAtRule(index, debugInfo);
                     }
                 }
                 

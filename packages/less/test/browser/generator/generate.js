@@ -57,7 +57,7 @@ Object.entries(config).forEach(entry => {
         return runner({
             file,
             timeout: 3500,
-            args: ['disable-web-security'],
+            args: ['disable-web-security', 'no-sandbox', 'disable-setuid-sandbox'],
         })
     })
 })

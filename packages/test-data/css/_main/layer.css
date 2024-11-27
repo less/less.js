@@ -1,0 +1,15 @@
+@layer {
+  .main::before {
+    color: #f00;
+  }
+}
+@layer legacy {
+  .sub-rule ul {
+    color: white;
+  }
+}
+@layer primevue {
+  .test {
+    foo: bar;
+  }
+}

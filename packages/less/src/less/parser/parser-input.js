@@ -1,31 +1,64 @@
 import chunker from './chunker';
 
 export default () => {
-    let // Less input string
-        input;
+    // Less input string
+    let input;
 
-    let // current chunk
-        j;
+    // current chunk
+    let j;
 
-    const // holds state for backtracking
-        saveStack = [];
+    // holds state for backtracking
+    const saveStack = [];
 
-    let // furthest index the parser has gone to
-        furthest;
+    // furthest index the parser has gone to
+    let furthest;
 
-    let // if this is furthest we got to, this is the probably cause
-        furthestPossibleErrorMessage;
+    // if this is furthest we got to, this is the probably cause
+    let furthestPossibleErrorMessage;
 
-    let // chunkified input
-        chunks;
+    // chunkified input
+    let chunks;
 
-    let // current chunk
-        current;
+    // current chunk
+    let current;
 
-    let // index of current chunk, in `input`
-        currentPos;
+    // index of current chunk, in `input`
+    let currentPos;
 
+    /**
+     * @type {{
+     *   i: number
+     *   save(): void
+     *   restore(possibleErrorMessage?: string): void
+     *   forget(): void
+     *   isWhitespace(offset?: number): boolean
+     *   $re(tok: RegExp): string | null
+     *   $char(tok: string): string | null
+     *   $peekChar(tok: string): string | null
+     *   $str(tok: string): string | null
+     *   $quoted(loc?: number): string | [string, string]
+     *   $parseUntil(tok: string | RegExp): string | string[] | null
+     *   autoCommentAbsorb: boolean
+     *   commentStore: {index: number, text: string, isLineComment: boolean}[]
+     *   finished: boolean
+     *   peek(tok: string | RegExp): boolean
+     *   peekChar(tok: string): boolean
+     *   currentChar(): string
+     *   prevChar(): string
+     *   getInput(): string
+     *   peekNotNumeric(): boolean
+     *   start(str: string, chunkInput: boolean, failFunction: (message: string, index?: number) => void): void
+     *   end(): {
+     *     isFinished: boolean
+     *     furthest: number
+     *     furthestPossibleErrorMessage: string
+     *     furthestReachedEnd: boolean
+     *     furthestChar: string
+     *   }
+     * }}
+     */
     const parserInput = {};
+
     const CHARCODE_SPACE = 32;
     const CHARCODE_TAB = 9;
     const CHARCODE_LF = 10;

@@ -9,6 +9,8 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
     "target": "ES5"
   },
   "ts-node": {

@@ -143,3 +143,19 @@
 .@{radio-cls-checked} {
   border-color: #fff;
 }
+
+@items:
+// Fruit
+    apple,
+    banana,
+    cherry,
+// Vegetables
+    carrot,
+    potato,
+;
+
+each(@items, {
+  div#@{value} {
+    color: blue;
+  }
+})

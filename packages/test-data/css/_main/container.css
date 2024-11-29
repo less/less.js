@@ -146,3 +146,22 @@
     margin: 0.5em 0 0 0;
   }
 }
+.wrapper {
+  container-name: wrapper;
+  container-type: size;
+}
+@container wrapper (height < 100) {
+  a {
+    max-height: 100;
+  }
+}
+@container wrapper (height < 200) {
+  a {
+    max-height: 200;
+  }
+}
+@container wrapper (height < 300) {
+  a {
+    max-height: 300;
+  }
+}

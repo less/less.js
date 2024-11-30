@@ -26,18 +26,20 @@ QueryInParens.prototype = Object.assign(new Node(), {
     eval(context) {
         this.lvalue = this.lvalue.eval(context);
         
-        let hasVariable = false;
+        let variableDeclaration;
         let rule;
 
         for (let i = 0; (rule = context.frames[i]); i++) {
             if (rule.type === 'Ruleset') {
-                rule.rules.filter(function (r) {
+                variableDeclaration = rule.rules.find(function (r) {
                     if ((r instanceof Declaration) && r.variable) {
-                        hasVariable = true;
+                        return true;
                     }
+
+                    return false;
                 });
                 
-                if (hasVariable) {
+                if (variableDeclaration) {
                     break;
                 }
             }
@@ -46,12 +48,9 @@ QueryInParens.prototype = Object.assign(new Node(), {
         if (!this.mvalueCopy) {
             this.mvalueCopy = copy(this.mvalue);
         }
-
-        if (hasVariable) {
-            this.mvalue = this.mvalueCopy;
-        }
         
-        if (hasVariable) {
+        if (variableDeclaration) {
+            this.mvalue = this.mvalueCopy;
             this.mvalue = this.mvalue.eval(context);
             this.mvalues.push(this.mvalue);
         } else {

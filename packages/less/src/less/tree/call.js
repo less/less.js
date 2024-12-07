@@ -1,6 +1,7 @@
 import Node from './node';
 import Anonymous from './anonymous';
 import FunctionCaller from '../functions/function-caller';
+import CustomProperty from './custom-property';
 
 //
 // A function call node.
@@ -98,11 +99,34 @@ Call.prototype = Object.assign(new Node(), {
 
     genCSS(context, output) {
         output.add(`${this.name}(`, this.fileInfo(), this.getIndex());
+        let isCustomProperty = false;
+        let customExpressionCount = 0;
 
         for (let i = 0; i < this.args.length; i++) {
             this.args[i].genCSS(context, output);
+            
+            if (this.args[i] instanceof CustomProperty
+                || ((i + 2 < this.args.length && this.args[i + 2] instanceof CustomProperty))) {
+                if (isCustomProperty) {
+                    isCustomProperty = false;
+                } else {
+                    isCustomProperty = true;
+                    customExpressionCount = 1;
+                }
+            }
+
+            if (customExpressionCount === 3) {
+                isCustomProperty = false;
+                customExpressionCount = 0;
+            }
+            
             if (i + 1 < this.args.length) {
-                output.add(', ');
+                if (!isCustomProperty) {
+                    output.add(', ');
+                } else {
+                    output.add(' ');
+                    customExpressionCount++;
+                }
             }
         }
 

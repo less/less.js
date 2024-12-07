@@ -797,6 +797,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             },
 
             //
+            // The custom property part of a variable definition.
+            //
+            //     --fink:
+            //
+            customProperty: function () {
+                var name;
+                if (parserInput.currentChar() === '-' && (name = parserInput.$re(/^(--[\w-]+)\s*:/))) {
+                    return name[1];
+                }
+            },
+
+            //
             // Call a variable value to retrieve a detached ruleset
             // or a value from a detached ruleset's rules.
             //
@@ -1578,7 +1590,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 parserInput.save();
 
-                name = this.variable() || this.ruleProperty();
+                name = this.variable() || this.customProperty() || this.ruleProperty();
                 if (name) {
                     isVariable = typeof name === 'string';
 
@@ -1597,7 +1609,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         merge = !isVariable && name.length > 1 && name.pop().value;
 
                         // Custom property values get permissive parsing
-                        if (name[0].value && name[0].value.slice(0, 2) === '--') {
+                        if (isVariable && name.startsWith('--')) {
                             value = this.permissiveValue(/[;}]/);
                         }
                         // Try to store values as anonymous

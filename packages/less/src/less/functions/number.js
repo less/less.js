@@ -1,6 +1,7 @@
 import Dimension from '../tree/dimension';
 import Anonymous from '../tree/anonymous';
 import mathHelper from './math-helper.js';
+import Call from '../tree/call';
 
 const minMax = function (isMin, args) {
     args = Array.prototype.slice.call(args);
@@ -78,6 +79,10 @@ export default {
         return new Dimension(a.value % b.value, a.unit);
     },
     pow: function(x, y) {
+        if (x instanceof Call || y instanceof Call) {
+            // Must return Node
+            return new Anonymous(x.toCSS() + ', ' + y.toCSS());
+        }
         if (typeof x === 'number' && typeof y === 'number') {
             x = new Dimension(x);
             y = new Dimension(y);

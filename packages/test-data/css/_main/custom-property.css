@@ -1,0 +1,29 @@
+.test {
+  --basic-deg: 20deg;
+  --basic-deg-tan: tan(var(--basic-deg));
+}
+.test2 {
+  --some-var: 5%;
+  prop: min(100% - var(--some-var), 10px);
+}
+.test3 {
+  --some-var: 55%;
+  prop: min(var(--some-var) + 5%, 15px);
+}
+.test4 {
+  color: red;
+  --other-color: green;
+}
+.test5 {
+  --font-level: 5;
+  prop: var(--font-ratio-min), var(--font-level, 0);
+}
+.test6 {
+  --some-var: 5px;
+  prop: min(100% - var(--some-var, var(--somevar, 0)), 10px);
+}
+.test7 {
+  --some-var: 6px;
+  --some-var-2: 7px;
+  prop: min(100% - var(--some-var, var(--somevar, var(--some-var-2, 8px))), 10px);
+}

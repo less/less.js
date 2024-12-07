@@ -286,7 +286,7 @@ Ruleset.prototype = Object.assign(new Node(), {
     variables() {
         if (!this._variables) {
             this._variables = !this.rules ? {} : this.rules.reduce(function (hash, r) {
-                if (r instanceof Declaration && r.variable === true) {
+                if (r instanceof Declaration && (r.variable === true  || (typeof r.name ==='string' && r.name.startsWith('--')))) {
                     hash[r.name] = r;
                 }
                 // when evaluating variables in an import statement, imports have not been eval'd

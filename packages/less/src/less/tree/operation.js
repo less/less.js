@@ -2,6 +2,7 @@ import Node from './node';
 import Color from './color';
 import Dimension from './dimension';
 import * as Constants from '../constants';
+import Call from './call';
 const MATH = Constants.Math;
 
 
@@ -19,7 +20,15 @@ Operation.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
-        let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
+        var a = this.evalVariable(context, this.operands[0])
+        if (!a) {
+            a = this.operands[0].eval(context)
+        }
+        var b = this.evalVariable(context, this.operands[1]);
+        if (!b) {
+            b = this.operands[1].eval(context);
+        }
+        var op;
 
         if (context.isMathOn(this.op)) {
             op = this.op === './' ? '/' : this.op;
@@ -56,7 +65,41 @@ Operation.prototype = Object.assign(new Node(), {
             output.add(' ');
         }
         this.operands[1].genCSS(context, output);
-    }
+    },
+
+    find: function (obj, fun) {
+        for (var i_2 = 0, r = void 0; i_2 < obj.length; i_2++) {
+            r = fun.call(obj, obj[i_2]);
+            if (r) {
+                return r;
+            }
+        }
+        return null;
+    },
+
+    evalVariable: function (context, operand) {
+        if (operand.name === 'var' && operand.args.length === 1) {
+            var varName = operand.args[0].toCSS();
+            var variable = this.find(context.frames, function (frame) {
+                var v = frame.variable(varName);
+                if (v) {
+                    if (v.important) {
+                        var importantScope = context.importantScope[context.importantScope.length - 1];
+                        importantScope.important = v.important;
+                    }
+                    // If in calc, wrap vars in a function call to cascade evaluate args first
+                    if (context.inCalc) {
+                        return (new Call('_SELF', [v.value])).eval(context);
+                    }
+                    else {
+                        return v.value.eval(context);
+                    }
+                }
+            });
+            
+            return variable;
+        }
+    },
 });
 
 export default Operation;

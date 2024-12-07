@@ -17,3 +17,14 @@
     color: red;
     --other-color: green;
 }
+
+.test5 {
+    --font-level: 5;
+    prop: pow(var(--font-ratio-min), var(--font-level, 0))
+}
+
+
+.test6 {
+    --some-var: 5px;
+    prop: min(100% - var(--some-var, var(--somevar, 0)), 10px);
+}

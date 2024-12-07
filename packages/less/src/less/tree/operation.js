@@ -3,6 +3,8 @@ import Color from './color';
 import Dimension from './dimension';
 import * as Constants from '../constants';
 import Call from './call';
+import CustomProperty from './custom-property';
+import Anonymous from './anonymous';
 const MATH = Constants.Math;
 
 
@@ -37,6 +39,12 @@ Operation.prototype = Object.assign(new Node(), {
             }
             if (b instanceof Dimension && a instanceof Color) {
                 b = b.toColor();
+            }
+            if (a instanceof Dimension && b instanceof CustomProperty) {
+                return [a, new Anonymous(op), b];
+            }
+            if (b instanceof Dimension && a instanceof CustomProperty) {
+                return [a, new Anonymous(op), b];
             }
             if (!a.operate || !b.operate) {
                 if (
@@ -78,7 +86,7 @@ Operation.prototype = Object.assign(new Node(), {
     },
 
     evalVariable: function (context, operand) {
-        if (operand.name === 'var' && operand.args.length === 1) {
+        if (operand.name === 'var' && operand.args.length >= 1) {
             var varName = operand.args[0].toCSS();
             var variable = this.find(context.frames, function (frame) {
                 var v = frame.variable(varName);
@@ -92,7 +100,7 @@ Operation.prototype = Object.assign(new Node(), {
                         return (new Call('_SELF', [v.value])).eval(context);
                     }
                     else {
-                        return v.value.eval(context);
+                        return new CustomProperty(v.name, operand.args[1] ? operand.args[1].toCSS() : null, 0, {});
                     }
                 }
             });

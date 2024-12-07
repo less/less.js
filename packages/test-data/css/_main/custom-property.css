@@ -4,13 +4,21 @@
 }
 .test2 {
   --some-var: 5%;
-  prop: min(95%, 10px);
+  prop: min(100% - var(--some-var), 10px);
 }
 .test3 {
   --some-var: 55%;
-  prop: min(60%, 15px);
+  prop: min(var(--some-var) + 5%, 15px);
 }
 .test4 {
   color: red;
   --other-color: green;
+}
+.test5 {
+  --font-level: 5;
+  prop: var(--font-ratio-min), var(--font-level, 0);
+}
+.test6 {
+  --some-var: 5px;
+  prop: min(100% - var(--some-var, var(--somevar, 0)), 10px);
 }

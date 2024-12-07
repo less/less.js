@@ -4,8 +4,8 @@ import Dimension from '../tree/dimension';
 
 const MathHelper = (fn, unit, n) => {
     if (n instanceof Call && n.name === 'var') {
-        if (n.args && n.args.length === 1) {
-            return new Call(fn.name, [new CustomProperty(n.args[0].toCSS(), n._index, n._fileInfo)], n._index, n._fileInfo);
+        if (n.args && n.args.length >= 1) {
+            return new Call(fn.name, [new CustomProperty(n.args[0].toCSS(), n.args[1] ? n.args[1].toCSS() : null, n._index, n._fileInfo)], n._index, n._fileInfo);
         } else {
             throw { type: 'Argument', message: 'var must contain one expression' };
         }

@@ -178,3 +178,20 @@
         }
     } 
 }
+
+.wrapper {
+    container-name: wrapper;
+    container-type: size;
+}
+  
+.my_mixin(@height) {
+    @container wrapper (height < @height) {
+        a {
+            max-height: @height;
+        }
+    }
+}
+  
+.my_mixin(100);
+.my_mixin(200);
+.my_mixin(300);

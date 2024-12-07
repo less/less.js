@@ -22,3 +22,8 @@
   --some-var: 5px;
   prop: min(100% - var(--some-var, var(--somevar, 0)), 10px);
 }
+.test7 {
+  --some-var: 6px;
+  --some-var-2: 7px;
+  prop: min(100% - var(--some-var, var(--somevar, var(--some-var-2, 8px))), 10px);
+}

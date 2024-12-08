@@ -69,3 +69,11 @@
   mul-px-2: 140px;
   mul-px-3: 140px;
 }
+*,
+::before,
+::after {
+  --tw-pan-x: ;
+  --tw-pan-y: ;
+  --tw-pinch-zoom: ;
+  --tw-scroll-snap-strictness: proximity;
+}

@@ -2,7 +2,7 @@
 
 const path = require('path');
 const util = require('util');
-const puppeteer = require('puppeteer');
+const { chromium } = require('playwright');
 
 function initMocha(reporter) {
 
@@ -172,25 +172,30 @@ exports.runner = function ({ file, reporter, timeout, width, height, args, execu
             args
         };
 
-        const result = puppeteer
-            .launch(options)
-            .then(browser => browser.pages()
-                .then(pages => pages.pop())            
-                .then(configureViewport.bind(this, width, height))
-                .then(page => {
-                    page.on('console', handleConsole);
-                    page.on('dialog', dialog => dialog.dismiss());
-                    page.on('pageerror', err => console.error(err));
+        const result = chromium.launch(options)
+            .then(browser => browser.newContext()
+                .then(context => context.newPage()
+                    .then(page => {
+                        if (width || height) {
+                            return page.setViewportSize({ width: width || 800, height: height || 600 }).then(() => page);
+                        }
+                        return page;
+                    })
+                    .then(page => {
+                        page.on('console', handleConsole);
+                        page.on('dialog', dialog => dialog.dismiss());
+                        page.on('pageerror', err => console.error(err));
 
-                    return page.evaluateOnNewDocument(initMocha, reporter)
-                        .then(() => page.goto(url))
-                        .then(() => page.waitForFunction(() => window.__mochaResult__, { timeout, polling }))
-                        .then(() => page.evaluate(() => window.__mochaResult__))
-                        .then(obj => {
-                            browser.close();
-                            return obj;
-                        });
-                }));
+                        return page.addInitScript(initMocha, reporter)
+                            .then(() => page.goto(url))
+                            .then(() => page.waitForFunction(() => window.__mochaResult__, { timeout, polling }))
+                            .then(() => page.evaluate(() => window.__mochaResult__))
+                            .then(result => {
+                                return browser.close().then(() => result);
+                            });
+                    })
+                )
+            );
 
         resolve(result);
     });

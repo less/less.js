@@ -69,7 +69,6 @@
   mul-px-2: 140px;
   mul-px-3: 140px;
 }
-<<<<<<< HEAD
 *,
 ::before,
 ::after {
@@ -77,8 +76,7 @@
   --tw-pan-y: ;
   --tw-pinch-zoom: ;
   --tw-scroll-snap-strictness: proximity;
-=======
+}
 .radio_checked {
   border-color: #fff;
->>>>>>> 9434f18b (fix(issue:4258) variable interpolation after math)
 }

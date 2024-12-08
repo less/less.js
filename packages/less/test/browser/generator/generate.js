@@ -3,7 +3,7 @@ let config
 const fs = require('fs-extra')
 const path = require('path')
 const globby = require('globby')
-const { runner } = require('mocha-headless-chrome')
+const { runner } = require('../../mocha-playwright/runner')
 
 
 if (process.argv[2]) {
@@ -57,7 +57,7 @@ Object.entries(config).forEach(entry => {
         return runner({
             file,
             timeout: 3500,
-            args: ['disable-web-security']
+            args: ['disable-web-security', 'no-sandbox', 'disable-setuid-sandbox'],
         })
     })
 })

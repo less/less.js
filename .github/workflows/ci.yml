@@ -80,7 +80,7 @@ jobs:
        run: npm run test
 
   allow_failure_testing_for_node23:
-    name: 'Allow failure for Nodejs v23 tests'
+    name: 'Allow failure for nodejs v23 tests'
     needs: basic_node_test
     runs-on: ubuntu-latest
     steps:

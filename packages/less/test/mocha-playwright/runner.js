@@ -3,6 +3,7 @@
 const path = require('path');
 const util = require('util');
 const { chromium } = require('playwright');
+const TIMEOUT_MILLISECONDS = 60000;
 
 function initMocha(reporter) {
 
@@ -160,7 +161,7 @@ exports.runner = function ({ file, reporter, timeout, width, height, args, execu
         }
 
         args = [].concat(args || []).map(arg => '--' + arg);
-        !timeout && (timeout = 60000);
+        !timeout && (timeout = TIMEOUT_MILLISECONDS);
         /^\d+$/.test(polling) && (polling = parseInt(polling));
 
         const url = prepareUrl(file);

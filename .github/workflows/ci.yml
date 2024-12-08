@@ -107,4 +107,5 @@ jobs:
           exit ${status}
      - name: workflow status
        if: ${{ steps.early_testing_for_node23.outputs.nodejs_v23_fail != 'true' }}
-       run: echo "::notice:: nodejs v23 test passed"
+       run: |
+          echo "::notice:: nodejs v23 test passed"

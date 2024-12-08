@@ -77,3 +77,6 @@
   --tw-pinch-zoom: ;
   --tw-scroll-snap-strictness: proximity;
 }
+.radio_checked {
+  border-color: #fff;
+}

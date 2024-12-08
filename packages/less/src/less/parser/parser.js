@@ -1731,7 +1731,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             }
                             // Treat like quoted values, but replace vars like unquoted expressions
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                            quote.variableRegex = /@([\w-]+)/g;
+                            if (!item.startsWith('@{')) {
+                                quote.variableRegex = /@([\w-]+)/g;
+                            }
                             quote.propRegex = /\$([\w-]+)/g;
                             result.push(quote);
                         }

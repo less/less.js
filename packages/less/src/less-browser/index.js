@@ -46,14 +46,6 @@ export default (window, options) => {
         return cloned;
     }
 
-    // only really needed for phantom
-    function bind(func, thisArg) {
-        const curryArgs = Array.prototype.slice.call(arguments, 2);
-        return function() {
-            const args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
-            return func.apply(thisArg, args);
-        };
-    }
 
     function loadStyles(modifyVars) {
         const styles = document.getElementsByTagName('style');
@@ -70,7 +62,7 @@ export default (window, options) => {
                 /* jshint loopfunc:true */
                 // use closure to store current style
                 less.render(lessText, instanceOptions,
-                    bind((style, e, result) => {
+                    ((style, e, result) => {
                         if (e) {
                             errors.add(e, 'inline');
                         } else {
@@ -81,7 +73,7 @@ export default (window, options) => {
                                 style.innerHTML = result.css;
                             }
                         }
-                    }, null, style));
+                    }).bind( null, style));
             }
         }
     }

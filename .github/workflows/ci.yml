@@ -11,7 +11,6 @@ on:
 jobs:
   basic_node_test:
     name: 'Basic tests on ${{matrix.os}} with node${{matrix.node}}'
-    needs: early_testing_for_node23
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -80,8 +79,9 @@ jobs:
      - name: Run unit test
        run: npm run test
 
-  early_testing_for_node23:
-    name: 'Early testing for nodejs v23'
+  allow_failure_testing_for_node23:
+    name: 'Allow failure for Nodejs v23 tests'
+    needs: basic_node_test
     runs-on: ubuntu-latest
     steps:
      - uses: actions/checkout@v2
@@ -95,17 +95,4 @@ jobs:
      - name: Install chromium
        run: npx playwright install chromium
      - name: Run unit test
-       id: nodejs_v23_test
-       run: |
-          status=0
-          npm run test || status=$?
-          if [ ${status} -ne 0 ]; then
-            echo "::error:: Early testing for node23 job failed."
-            echo "nodejs_v23_fail=true" >> "${GITHUB_OUTPUT}"
-            exit 0  # Ignore error here to keep the green checkmark going
-          fi;
-          exit ${status}
-     - name: workflow status
-       if: ${{ steps.nodejs_v23_test.outputs.nodejs_v23_fail != 'true' }}
-       run: |
-          echo "::notice:: nodejs v23 test passed"
+       run: npm run test

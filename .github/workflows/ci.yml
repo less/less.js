@@ -1,5 +1,5 @@
 # Github actions workflow name
-name: Nodejs Test
+name: CI
 
 # Triggers the workflow on push or pull request events
 on:
@@ -32,7 +32,7 @@ jobs:
        run: npm run test
 
   windows_and_macos_test:
-    name: 'Platform tests on ${{matrix.os}} with node${{matrix.node}}'
+    name: 'Platform tests on ${{matrix.os}} with nodejs v${{matrix.node}}'
     needs: basic_node_test
     strategy:
       matrix:
@@ -59,7 +59,7 @@ jobs:
        run: npm run test
 
   historical_versions_node_test:
-    name: 'Historical versions of node${{matrix.node}} test'
+    name: 'Historical version nodejs v${{matrix.node}} test'
     needs: basic_node_test
     strategy:
       matrix:
@@ -81,7 +81,8 @@ jobs:
        run: npm run test
 
   early_testing_for_node23:
-    name: 'Early testing for node23'
+    name: 'Early testing for nodejs v23'
+    id: early_testing_for_node23
     runs-on: ubuntu-latest
     steps:
      - uses: actions/checkout@v2
@@ -99,9 +100,11 @@ jobs:
           status=0
           npm run test || status=$?
           if [ ${status} -ne 0 ]; then
-            echo "::warning:: Early testing for node23 job failed."
-            echo "optional_fail=true" >> "${GITHUB_OUTPUT}"
-            echo "optional_fail_status=${status}" >> "${GITHUB_OUTPUT}"
+            echo "::error:: Early testing for node23 job failed."
+            echo "nodejs_v23_fail=true" >> "${GITHUB_OUTPUT}"
             exit 0  # Ignore error here to keep the green checkmark going
           fi;
           exit ${status}
+     - name: workflow status
+       if: ${{ steps.early_testing_for_node23.outputs.nodejs_v23_fail != 'true' }}
+       run: echo "::notice:: nodejs v23 test passed"

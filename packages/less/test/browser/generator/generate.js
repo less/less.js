@@ -3,7 +3,7 @@ let config
 const fs = require('fs-extra')
 const path = require('path')
 const globby = require('globby')
-const { runner } = require('../../mocha-pptr/runner')
+const { runner } = require('../../mocha-playwright/runner')
 
 
 if (process.argv[2]) {

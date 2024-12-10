@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "github-changes": "^1.1.2",
+    "grunt": "^1.6.1",
     "lerna": "^3.22.1",
     "npm-run-all": "^4.1.5"
   }

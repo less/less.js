@@ -208,3 +208,39 @@ a:is(.b, :is(.c)) {
 a:is(.b, :is(.c), :has(div)) {
   color: red;
 }
+
+@-moz-document domain("example.com") {
+  :is(
+    [a1],
+    [a2]
+  ):is(
+    [a3],
+    [a4]:not(
+      :is([a5],[a6])
+    ):is(
+      [a7]:not(:is([a8],[a9])),
+      [b1]:not(:is([b2],[b3]))
+    ):is(
+      [b4],[b5]
+    ),
+    [b6],
+    [b7]
+  ) {
+    color: red; }
+
+}
+
+@-moz-document domain("example.com") {
+	:is([foo], [bar] /* :is(a, b) */, [baz]) {
+		color: red; }
+}
+
+@color: red green;
+
+each(@color, {
+  :is(.color-@{key},
+  .focus-color-@{key}:focus,
+  .hover-color-@{key}:hover) {
+    color: @value !important;
+  }
+});

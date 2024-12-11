@@ -1410,7 +1410,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     } else {
                         if (allExtends) { error('Extend can only be used at the end of selector'); }
                         c = parserInput.currentChar();
-                        if (elements) {
+                        if (Array.isArray(e)){
+                            e.forEach(ele => elements.push(ele));
+                        } if (elements) {
                             elements.push(e);
                         } else {
                             elements = [ e ];

@@ -1320,14 +1320,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         }
                         vSelectors.push(v);
 
-                        if (v && parserInput.$char(')')) {
-                            if (vSelectors.length === 1) {
-                                e = new (tree.Paren)(vSelectors[0]);
+                        if (v) {
+                            if (parserInput.$char(')')) {
+                                if (vSelectors.length === 1) {
+                                    e = new (tree.Paren)(vSelectors[0]);
+                                } else {
+                                    e = new (tree.ListParen)(vSelectors);
+                                }
                             } else {
-                                e = new (tree.ListParen)(vSelectors);
+                                parserInput.restore('Missing closing \')\'');
                             }
                         } else {
-                            parserInput.restore('Missing closing \')\'');
+                            parserInput.restore('Could not find valid selector');
                         }
                     } else {
                         parserInput.forget();

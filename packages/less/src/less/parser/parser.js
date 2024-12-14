@@ -1604,6 +1604,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 value = this.permissiveValue(/[;}]/);
                             }
                         }
+                        else if (isVariable) {
+                            value = this.variableValue();
+                        }
                         // Try to store values as anonymous
                         // If we need the value later we'll re-parse it in ruleset.parseValue
                         else {
@@ -1636,6 +1639,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                 } else {
                     parserInput.restore();
+                }
+            },
+            variableValue: function () {
+                let match = this.anonymousValue();
+                if (match) {
+                    return match;
+                } else {
+                    const index = parserInput.i;
+                    match = parserInput.$re(/^([^#@$+/'"*`(;{}-]*);|(^[(?!.*\n)^.#@$+/'"*`(;{}-]*)(["'])((?!.*@.*)(?<!.*@.*).+?)\1;/);
+                    if (match) {
+                        return new(tree.Anonymous)(match[0].slice(0, -1), index + currentIndex);
+                    }
                 }
             },
             anonymousValue: function () {

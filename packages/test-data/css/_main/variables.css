@@ -88,4 +88,6 @@
   m-5: a "a.ab" c c 'a.bc' abc d;
   m-6: a.hello;
   m-7: 'a.b' "abc" abc a.b.c 'a.b.c';
+  m-8: hello;
+  m-9: 'a.hello';
 }

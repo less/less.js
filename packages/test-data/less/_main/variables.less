@@ -165,3 +165,19 @@
     m-8: @mixedSix;
     m-9: @mixedSeven;
 }
+
+@items:
+// Fruit
+    apple,
+    banana,
+    cherry,
+// Vegetables
+    carrot,
+    potato,
+;
+
+each(@items, {
+  div#@{value} {
+    color: blue;
+  }
+})

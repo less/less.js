@@ -91,3 +91,18 @@
   m-8: hello;
   m-9: 'a.hello';
 }
+div#apple {
+  color: blue;
+}
+div#banana {
+  color: blue;
+}
+div#cherry {
+  color: blue;
+}
+div#carrot {
+  color: blue;
+}
+div#potato {
+  color: blue;
+}

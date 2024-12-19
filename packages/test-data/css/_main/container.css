@@ -165,3 +165,79 @@
     max-height: 300;
   }
 }
+@media only screen and (min-width: 768px) {
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+  }
+  .media-2 {
+    font-size: 2rem;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+    @media (hover: hover) {
+      font-size: 1.75rem;
+    }
+  }
+  .media-2 {
+    font-size: 2rem;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+    @media (hover: hover) {
+      font-size: 1.75rem;
+      @media not all and (hover: hover) {
+        color: limegreen;
+      }
+      .media-3 {
+        padding: 0.5rem;
+      }
+    }
+  }
+  .media-2 {
+    font-size: 2rem;
+  }
+}
+@container (min-width: 768px) {
+  @media only screen and (min-width: 768px) {
+    color: aliceblue;
+  }
+  .container-1 {
+    color: purple;
+  }
+}

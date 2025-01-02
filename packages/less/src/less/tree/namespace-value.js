@@ -15,7 +15,7 @@ NamespaceValue.prototype = Object.assign(new Node(), {
 
     eval(context) {
         let i, name, rules = this.value.eval(context);
-        
+
         for (i = 0; i < this.lookups.length; i++) {
             name = this.lookups[i];
 
@@ -33,12 +33,12 @@ NamespaceValue.prototype = Object.assign(new Node(), {
             }
             else if (name.charAt(0) === '@') {
                 if (name.charAt(1) === '@') {
-                    name = `@${new Variable(name.substr(1)).eval(context).value}`;
+                    name = `@${new Variable(name.slice(1)).eval(context).value}`;
                 }
                 if (rules.variables) {
                     rules = rules.variable(name);
                 }
-                
+
                 if (!rules) {
                     throw { type: 'Name',
                         message: `variable ${name} not found`,
@@ -48,7 +48,7 @@ NamespaceValue.prototype = Object.assign(new Node(), {
             }
             else {
                 if (name.substring(0, 2) === '$@') {
-                    name = `$${new Variable(name.substr(1)).eval(context).value}`;
+                    name = `$${new Variable(name.slice(1)).eval(context).value}`;
                 }
                 else {
                     name = name.charAt(0) === '$' ? name : `$${name}`;
@@ -56,10 +56,10 @@ NamespaceValue.prototype = Object.assign(new Node(), {
                 if (rules.properties) {
                     rules = rules.property(name);
                 }
-            
+
                 if (!rules) {
                     throw { type: 'Name',
-                        message: `property "${name.substr(1)}" not found`,
+                        message: `property "${name.slice(1)}" not found`,
                         filename: this.fileInfo().filename,
                         index: this.getIndex() };
                 }

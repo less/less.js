@@ -1,5 +1,6 @@
 #first > .one {
   font-size: 2em;
+  hasOwnProperty: blue;
 }
 #first > .one > #second .two > #deux {
   width: 50%;

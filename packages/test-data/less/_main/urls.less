@@ -66,6 +66,14 @@
   width: image-width('../data/data-uri-fail.png');
   height: image-height('../data/data-uri-fail.png');
 }
+
+#images{
+  background-image: url('../data/data-uri-fail.png');
+  width: image-width(url('../data/data-uri-fail.png'));
+  height: image-height($background-image);
+  size: image-size(url(../data/data-uri-fail.png));
+}
+
 .add_an_import(@file_to_import) {
 @import "@{file_to_import}";
 }

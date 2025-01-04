@@ -1,8 +1,8 @@
 /**
- * Less - Leaner CSS v4.2.1
+ * Less - Leaner CSS v4.2.2
  * http://lesscss.org
  * 
- * Copyright (c) 2009-2024, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2025, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  * @license Apache-2.0
@@ -3238,6 +3238,34 @@
         queryInParens: true
     };
 
+    var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
+        this.value = value;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.mapLines = mapLines;
+        this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
+        this.allowRoot = true;
+        this.copyVisibilityInfo(visibilityInfo);
+    };
+    Anonymous.prototype = Object.assign(new Node(), {
+        type: 'Anonymous',
+        eval: function () {
+            return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
+        },
+        compare: function (other) {
+            return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
+        },
+        isRulesetLike: function () {
+            return this.rulesetLike;
+        },
+        genCSS: function (context, output) {
+            this.nodeVisible = Boolean(this.value);
+            if (this.nodeVisible) {
+                output.add(this.value, this._fileInfo, this._index, this.mapLines);
+            }
+        }
+    });
+
     //
     // less.js - parser
     //
@@ -4402,9 +4430,26 @@
                     if (!e) {
                         parserInput.save();
                         if (parserInput.$char('(')) {
-                            if ((v = this.selector(false)) && parserInput.$char(')')) {
-                                e = new (tree.Paren)(v);
-                                parserInput.forget();
+                            if ((v = this.selector(false))) {
+                                var selectors = [];
+                                while (parserInput.$char(',')) {
+                                    selectors.push(v);
+                                    selectors.push(new Anonymous(','));
+                                    v = this.selector(false);
+                                }
+                                selectors.push(v);
+                                if (parserInput.$char(')')) {
+                                    if (selectors.length > 1) {
+                                        e = new (tree.Paren)(new Selector(selectors));
+                                    }
+                                    else {
+                                        e = new (tree.Paren)(v);
+                                    }
+                                    parserInput.forget();
+                                }
+                                else {
+                                    parserInput.restore('Missing closing \')\'');
+                                }
                             }
                             else {
                                 parserInput.restore('Missing closing \')\'');
@@ -4495,6 +4540,9 @@
                                 error('Extend can only be used at the end of selector');
                             }
                             c = parserInput.currentChar();
+                            if (Array.isArray(e)) {
+                                e.forEach(function (ele) { return elements.push(ele); });
+                            }
                             if (elements) {
                                 elements.push(e);
                             }
@@ -4669,7 +4717,12 @@
                             merge = !isVariable && name.length > 1 && name.pop().value;
                             // Custom property values get permissive parsing
                             if (name[0].value && name[0].value.slice(0, 2) === '--') {
-                                value = this.permissiveValue(/[;}]/);
+                                if (parserInput.$char(';')) {
+                                    value = new Anonymous('');
+                                }
+                                else {
+                                    value = this.permissiveValue(/[;}]/);
+                                }
                             }
                             // Try to store values as anonymous
                             // If we need the value later we'll re-parse it in ruleset.parseValue
@@ -4793,7 +4846,9 @@
                                 }
                                 // Treat like quoted values, but replace vars like unquoted expressions
                                 var quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                                quote.variableRegex = /@([\w-]+)/g;
+                                if (!item.startsWith('@{')) {
+                                    quote.variableRegex = /@([\w-]+)/g;
+                                }
                                 quote.propRegex = /\$([\w-]+)/g;
                                 result.push(quote);
                             }
@@ -5443,7 +5498,7 @@
                     var index = parserInput.i;
                     do {
                         e = this.comment();
-                        if (e) {
+                        if (e && !e.isLineComment) {
                             entities.push(e);
                             continue;
                         }
@@ -5703,34 +5758,6 @@
     });
     Keyword.True = new Keyword('true');
     Keyword.False = new Keyword('false');
-
-    var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
-        this.value = value;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.mapLines = mapLines;
-        this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
-        this.allowRoot = true;
-        this.copyVisibilityInfo(visibilityInfo);
-    };
-    Anonymous.prototype = Object.assign(new Node(), {
-        type: 'Anonymous',
-        eval: function () {
-            return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
-        },
-        compare: function (other) {
-            return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
-        },
-        isRulesetLike: function () {
-            return this.rulesetLike;
-        },
-        genCSS: function (context, output) {
-            this.nodeVisible = Boolean(this.value);
-            if (this.nodeVisible) {
-                output.add(this.value, this._fileInfo, this._index, this.mapLines);
-            }
-        }
-    });
 
     var MATH$1 = Math$1;
     function evalName(context, name) {
@@ -7583,6 +7610,10 @@
             var path = context.mediaPath.concat([this]);
             // Extract the media-query conditions separated with `,` (OR).
             for (i = 0; i < path.length; i++) {
+                if (path[i].type !== this.type) {
+                    context.mediaBlocks.splice(i, 1);
+                    return this;
+                }
                 value = path[i].features instanceof Value ?
                     path[i].features.value : path[i].features;
                 path[i] = Array.isArray(value) ? value : [value];
@@ -7978,6 +8009,7 @@
         this.op2 = op2 ? op2.trim() : null;
         this.rvalue = r;
         this._index = i;
+        this.mvalues = [];
     };
     QueryInParens.prototype = Object.assign(new Node(), {
         type: 'QueryInParens',
@@ -7990,7 +8022,32 @@
         },
         eval: function (context) {
             this.lvalue = this.lvalue.eval(context);
-            this.mvalue = this.mvalue.eval(context);
+            var variableDeclaration;
+            var rule;
+            for (var i_1 = 0; (rule = context.frames[i_1]); i_1++) {
+                if (rule.type === 'Ruleset') {
+                    variableDeclaration = rule.rules.find(function (r) {
+                        if ((r instanceof Declaration) && r.variable) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (variableDeclaration) {
+                        break;
+                    }
+                }
+            }
+            if (!this.mvalueCopy) {
+                this.mvalueCopy = copy(this.mvalue);
+            }
+            if (variableDeclaration) {
+                this.mvalue = this.mvalueCopy;
+                this.mvalue = this.mvalue.eval(context);
+                this.mvalues.push(this.mvalue);
+            }
+            else {
+                this.mvalue = this.mvalue.eval(context);
+            }
             if (this.rvalue) {
                 this.rvalue = this.rvalue.eval(context);
             }
@@ -7999,6 +8056,9 @@
         genCSS: function (context, output) {
             this.lvalue.genCSS(context, output);
             output.add(' ' + this.op + ' ');
+            if (this.mvalues.length > 0) {
+                this.mvalue = this.mvalues.shift();
+            }
             this.mvalue.genCSS(context, output);
             if (this.rvalue) {
                 output.add(' ' + this.op2 + ' ');
@@ -10792,7 +10852,7 @@
         return render;
     }
 
-    var version = "4.2.1";
+    var version = "4.2.2";
 
     function parseNodeVersion(version) {
         var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

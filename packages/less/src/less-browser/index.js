@@ -46,15 +46,6 @@ export default (window, options) => {
         return cloned;
     }
 
-    // only really needed for phantom
-    function bind(func, thisArg) {
-        const curryArgs = Array.prototype.slice.call(arguments, 2);
-        return function() {
-            const args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
-            return func.apply(thisArg, args);
-        };
-    }
-
     function loadStyles(modifyVars) {
         const styles = document.getElementsByTagName('style');
         let style;

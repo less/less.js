@@ -82,7 +82,7 @@
 		"html-template-tag": "^3.2.0",
 		"jit-grunt": "^0.10.0",
 		"less-plugin-autoprefix": "^1.5.1",
-		"less-plugin-clean-css": "^1.5.1",
+		"less-plugin-clean-css": "^1.6.0",
 		"minimist": "^1.2.0",
 		"mocha": "^6.2.1",
 		"playwright": "^1.49.0",

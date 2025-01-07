@@ -75,8 +75,8 @@ jobs:
      - name: Run unit test
        run: npm run test
 
-  allow_failure_testing_for_node23:
-    name: 'Allow failure for nodejs v23 tests'
+  latest_nodejs_testing_node23:
+    name: 'Latest nodejs v23 test'
     needs: basic_node_test
     runs-on: ubuntu-latest
     steps:

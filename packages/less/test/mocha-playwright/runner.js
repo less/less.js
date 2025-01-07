@@ -129,7 +129,10 @@ function configureViewport(width, height, page) {
 function handleConsole(msg) {
     const args = msg.args() || [];
 
-    Promise.all(args.map(a => a.jsonValue().catch(() => '')))
+    Promise.all(args.map(a => a.jsonValue().catch(error => {
+        console.warn('Failed to retrieve JSON value from argument:', error);
+        return '';
+    })))
         .then(args => {
             // process stdout stub
             let isStdout = args[0] === 'stdout:';
@@ -192,6 +195,10 @@ exports.runner = function ({ file, reporter, timeout, width, height, args, execu
                             .then(() => page.waitForFunction(() => window.__mochaResult__, { timeout, polling }))
                             .then(() => page.evaluate(() => window.__mochaResult__))
                             .then(result => {
+                                if (!result) {
+                                    throw new Error('Mocha results not found after waiting. The tests may not have run correctly.');
+                                }
+                                // Close browser before resolving result
                                 return browser.close().then(() => result);
                             });
                     })

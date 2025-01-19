@@ -241,3 +241,22 @@
     color: purple;
   }
 }
+#sticky {
+  position: sticky;
+  container-type: scroll-state;
+}
+@container scroll-state (stuck: top) {
+  #sticky-child {
+    font-size: 75%;
+  }
+}
+@container scroll-state (snapped: x) {
+  #sticky-child {
+    font-size: 75%;
+  }
+}
+@container scroll-state (scrollable: top) {
+  #sticky-child {
+    font-size: 75%;
+  }
+}

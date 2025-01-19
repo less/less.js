@@ -92,3 +92,41 @@ jobs:
        run: npx playwright install chromium
      - name: Run unit test
        run: npm run test
+
+  update-changelog:
+    if: ${{ github.event_name == 'push' && contains(join(github.event.commits.*.message, ' '), 'Release v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          # Ensure we can push back to the repo
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Changelog
+        run: npm run changelog
+
+      - name: Commit and Push Changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if there are any changes to commit
+          if [ -n "$(git status --porcelain)" ]; then
+            git add CHANGELOG.md
+            git commit -m "chore(release): update CHANGELOG [ci]"
+            git push origin HEAD:master
+          else
+            echo "No changes to commit."
+          fi

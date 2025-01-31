@@ -750,10 +750,30 @@ Ruleset.prototype = Object.assign(new Node(), {
                         }
                         newSelectors = replacedNewSelectors;
                         currentElements = [];
+                    } else if (el instanceof Selector) {
+                        const nestedSelector = el;    
+                        
+                        // merge the current list of non parent selector elements
+                        // on to the current list of selectors to add
+                        mergeElementsOnToSelectors(currentElements, newSelectors);
+                            
+                        const nestedPaths = [];
+                        let replaced;
+                        let replacedNewSelectors = [];
+                        replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
+                        hadParentSelector = hadParentSelector || replaced;
+                            
+                        for (k = 0; k < nestedPaths.length; k++) {
+                            const replacementSelector = nestedPaths[k][0];
+                            addAllReplacementsIntoPath(newSelectors, [replacementSelector], el.elements[0], inSelector, replacedNewSelectors);
+                            replacedNewSelectors = [replacedNewSelectors[0]]
+                        }
+                        
+                        newSelectors = replacedNewSelectors;
+                        currentElements = [];
                     } else {
                         currentElements.push(el);
                     }
-
                 } else {
                     hadParentSelector = true;
                     // the new list of selectors to add

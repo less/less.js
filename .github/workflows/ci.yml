@@ -21,8 +21,8 @@ jobs:
        run: npm install
      - name: Print put node & npm version
        run: node --version && npm --version 
-     - name: Install browsers
-       run: npx playwright@1.49.0 install
+     - name: Install chromium
+       run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test
 
@@ -49,7 +49,7 @@ jobs:
        # Output useful info for debugging.
        run: node --version && npm --version 
      - name: Install chromium
-       run: npx playwright install chromium
+       run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test
 
@@ -71,7 +71,7 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Install chromium
-       run: npx playwright install chromium
+       run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test
 
@@ -89,6 +89,6 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Install chromium
-       run: npx playwright install chromium
+       run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test

@@ -97,6 +97,7 @@
   border-color: rgba(100%, 0, 0, 50%);
 }
 
+@color1: hsl(56, 8%, 14%);
 #rrggbbaa {
   test-1: #55FF5599;
   test-2: #5F59;
@@ -111,6 +112,7 @@
   test-10: color('#55FF5599');
   test-11: hsla(#5F59);
   test-12: hsla(#5F59, 0.5);
+  test-13: ~"@{color1}";
   --semi-transparent-dark-background: #001e00ee;
   --semi-transparent-dark-background-2: rgba(0, 30, 0, 238); // invalid opacity will be capped
 }

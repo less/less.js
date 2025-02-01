@@ -228,3 +228,15 @@ a:is(.b, :is(.c), :has(div)) {
     background-color: yellow;
   }
 }
+
+.multiple-not-by-comma3 {
+  color: #ffdde3;
+
+  &:not(&--a, &--b):not(&--c):hover {
+    background-color: #ffed54;
+  }
+
+  &:is(&--g, &--h) {
+    color: #eeff55;
+  }
+}

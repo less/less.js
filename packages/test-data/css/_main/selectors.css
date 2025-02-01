@@ -201,3 +201,12 @@ a:is(.b, :is(.c), :has(div)) {
 .multiple-not:not(.multiple-not--a):not(.multiple-not--b):hover {
   background-color: yellow;
 }
+.multiple-not-by-comma3 {
+  color: #ffdde3;
+}
+.multiple-not-by-comma3:not(.multiple-not-by-comma3--a, .multiple-not-by-comma3--b):not(.multiple-not-by-comma3--c):hover {
+  background-color: #ffed54;
+}
+.multiple-not-by-comma3:is(.multiple-not-by-comma3--g, .multiple-not-by-comma3--h) {
+  color: #eeff55;
+}

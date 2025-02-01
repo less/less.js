@@ -22,7 +22,7 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Install browsers
-       run: npx playwright install
+       run: npx playwright@1.49.0 install
      - name: Run unit test
        run: npm run test
 

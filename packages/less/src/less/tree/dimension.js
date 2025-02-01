@@ -56,7 +56,7 @@ Dimension.prototype = Object.assign(new Node(), {
 
             // Float values doesn't need a leading zero
             if (value > 0 && value < 1) {
-                strValue = (strValue).substr(1);
+                strValue = (strValue).slice(1);
             }
         }
 

@@ -5,7 +5,6 @@ import getParserInput from './parser-input';
 import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
 import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
-import Selector from '../tree/selector';
 import Anonymous from '../tree/anonymous';
 
 //
@@ -1314,27 +1313,25 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (!e) {
                     parserInput.save();
                     if (parserInput.$char('(')) {
-                        if ((v = this.selector(false))) {
-                            let selectors = [];
-                            while (parserInput.$char(',')) {
-                                selectors.push(v);
-                                selectors.push(new Anonymous(','));
-                                v = this.selector(false);
-                            }
-                            selectors.push(v);
-                                                        
+                        let vSelectors = [];
+                        while ((v = this.selector(false)) && parserInput.$char(',')) {
+                            vSelectors.push(v);
+                            vSelectors.push(new Anonymous(','));
+                        }
+                        vSelectors.push(v);
+
+                        if (v) {
                             if (parserInput.$char(')')) {
-                                if (selectors.length > 1) {
-                                    e = new (tree.Paren)(new Selector(selectors));
+                                if (vSelectors.length === 1) {
+                                    e = new (tree.Paren)(vSelectors[0]);
                                 } else {
-                                    e = new(tree.Paren)(v);
+                                    e = new (tree.ListParen)(vSelectors);
                                 }
-                                parserInput.forget();
                             } else {
                                 parserInput.restore('Missing closing \')\'');
                             }
                         } else {
-                            parserInput.restore('Missing closing \')\'');
+                            parserInput.restore('Could not find valid selector');
                         }
                     } else {
                         parserInput.forget();

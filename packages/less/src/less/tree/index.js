@@ -38,6 +38,7 @@ import NamespaceValue from './namespace-value';
 // mixins
 import MixinCall from './mixin-call';
 import MixinDefinition from './mixin-definition';
+import ListParen from './list-paren';
 
 export default {
     Node, Color, AtRule, DetachedRuleset, Operation,
@@ -47,7 +48,7 @@ export default {
     Comment, Anonymous, Value, JavaScript, Assignment,
     Condition, Paren, Media, Container, QueryInParens, 
     UnicodeDescriptor, Negative, Extend, VariableCall, 
-    NamespaceValue,
+    NamespaceValue, ListParen,
     mixin: {
         Call: MixinCall,
         Definition: MixinDefinition

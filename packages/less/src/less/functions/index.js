@@ -13,7 +13,6 @@ import string from './string';
 import svg from './svg';
 import types from './types';
 import style from './style';
-import scrollState from './scroll-state';
 
 export default environment => {
     const functions = { functionRegistry, functionCaller };
@@ -31,7 +30,6 @@ export default environment => {
     functionRegistry.addMultiple(svg(environment));
     functionRegistry.addMultiple(types);
     functionRegistry.addMultiple(style);
-    functionRegistry.addMultiple(scrollState);
 
     return functions;
 };

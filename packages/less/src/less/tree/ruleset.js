@@ -760,13 +760,18 @@ Ruleset.prototype = Object.assign(new Node(), {
                         const nestedPaths = [];
                         let replaced;
                         let replacedNewSelectors = [];
+                        let currentReplacedSelectors = [];
                         replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
                         hadParentSelector = hadParentSelector || replaced;
                             
                         for (k = 0; k < nestedPaths.length; k++) {
-                            const replacementSelector = nestedPaths[k][0];
-                            addAllReplacementsIntoPath(newSelectors, [replacementSelector], el.elements[0], inSelector, replacedNewSelectors);
-                            replacedNewSelectors = [replacedNewSelectors[0]]
+                            for (let selectorIndex = 0; selectorIndex < nestedPaths[k].length; ++selectorIndex) {
+                                const replacementSelector = nestedPaths[k][selectorIndex];
+                                addAllReplacementsIntoPath(newSelectors, [replacementSelector], el.elements[0], inSelector, replacedNewSelectors);
+                                for (let current = 0; current < currentReplacedSelectors.length; ++current) {
+                                    replacedNewSelectors.push(currentReplacedSelectors[current]);
+                                }
+                            }
                         }
                         
                         newSelectors = replacedNewSelectors;

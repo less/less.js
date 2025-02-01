@@ -12,6 +12,9 @@ jobs:
   basic_node_test:
     name: 'Basic tests on ubuntu-latest with nodejs v22 (current LTS version)'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/less
     steps:
      - uses: actions/checkout@v2
      - uses: actions/setup-node@v2

@@ -173,6 +173,18 @@
 #guarded-deeper {
   should: match 1;
 }
+@media (min-width: 700px) {
+  .example1 {
+    success1: 1;
+    success2: 2;
+    success3: 3;
+  }
+}
+@media (min-width: 700px) {
+  .example2 {
+    wut: 1;
+  }
+}
 #parenthesisNot-true {
   parenthesisNot: just-value;
   parenthesisNot: negated twice 1;

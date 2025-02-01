@@ -57,17 +57,24 @@ const minMax = function (isMin, args) {
     return new Anonymous(`${isMin ? 'min' : 'max'}(${args})`);
 };
 
+function evaluateWithFallback(func, context) {
+    return function (...args) {
+        try {
+            return func.apply(context, args);
+        } catch (e) {
+        // Return the original node as-is if evaluation fails
+            return args
+        }
+    };
+}
+
 export default {
-    min: function(...args) {
-        try {
-            return minMax.call(this, true, args);
-        } catch (e) {}
-    },
-    max: function(...args) {
-        try {
-            return minMax.call(this, false, args);
-        } catch (e) {}
-    },
+    min: evaluateWithFallback(function (...args) {
+        return minMax.call(this, true, args);
+    }, this),
+    max: evaluateWithFallback(function (...args) {
+        return minMax.call(this, false, args);
+    }, this),
     convert: function (val, unit) {
         return val.convertTo(unit.value);
     },

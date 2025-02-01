@@ -2,6 +2,8 @@
 // index.js
 // Should expose the additional browser functions on to the less object
 //
+
+
 import {addDataAttr} from './utils';
 import lessRoot from '../less';
 import browser from './browser';
@@ -47,13 +49,7 @@ export default (window, options) => {
     }
 
     // only really needed for phantom
-    function bind(func, thisArg) {
-        const curryArgs = Array.prototype.slice.call(arguments, 2);
-        return function() {
-            const args = curryArgs.concat(Array.prototype.slice.call(arguments, 0));
-            return func.apply(thisArg, args);
-        };
-    }
+//removed phantom
 
     function loadStyles(modifyVars) {
         const styles = document.getElementsByTagName('style');

@@ -22,6 +22,7 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Install chromium
+       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
        run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test
@@ -49,6 +50,7 @@ jobs:
        # Output useful info for debugging.
        run: node --version && npm --version 
      - name: Install chromium
+       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
        run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test
@@ -71,6 +73,7 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Install chromium
+       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
        run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test
@@ -89,6 +92,7 @@ jobs:
      - name: Print put node & npm version
        run: node --version && npm --version 
      - name: Install chromium
+       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
        run: npx playwright@1.49.0 install chromium
      - name: Run unit test
        run: npm run test

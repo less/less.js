@@ -12,7 +12,7 @@ logger.addListener({
     warn(msg) {
         process.stdout.write(msg + '\n');
     },
-    erro(msg) {
+    error(msg) {
         process.stdout.write(msg + '\n');
     }
 });

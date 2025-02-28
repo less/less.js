@@ -32,7 +32,7 @@
 	},
 	"browser": "./dist/less.js",
 	"engines": {
-		"node": ">=6"
+		"node": ">=14"
 	},
 	"scripts": {
 		"test": "grunt test",

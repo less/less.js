@@ -2,7 +2,7 @@
 
 /* eslint indent: [2, 2, {"SwitchCase": 1}] */
 
-"use strict";
+'use strict';
 
 var path = require('path');
 var fs = require('../lib/less-node/fs').default;
@@ -27,6 +27,7 @@ var plugins = [];
 var queuePlugins = [];
 var args = process.argv.slice(1);
 var silent = false;
+var quiet = false;
 var verbose = false;
 var options = less.options;
 options.plugins = plugins;
@@ -36,7 +37,7 @@ var continueProcessing = true;
 
 var checkArgFunc = function checkArgFunc(arg, option) {
   if (!option) {
-    console.error("".concat(arg, " option requires a parameter"));
+    console.error(''.concat(arg, ' option requires a parameter'));
     continueProcessing = false;
     process.exitCode = 1;
     return false;
@@ -49,7 +50,7 @@ var checkBooleanArg = function checkBooleanArg(arg) {
   var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
 
   if (!onOff) {
-    console.error(" unable to parse ".concat(arg, " as a boolean. use one of on/t/true/y/yes/off/f/false/n/no"));
+    console.error(' unable to parse '.concat(arg, ' as a boolean. use one of on/t/true/y/yes/off/f/false/n/no'));
     continueProcessing = false;
     process.exitCode = 1;
     return false;
@@ -110,7 +111,7 @@ function render() {
 
       if (output) {
         sourceMapOptions.sourceMapOutputFilename = path.basename(output);
-        sourceMapOptions.sourceMapFullFilename = "".concat(output, ".map");
+        sourceMapOptions.sourceMapFullFilename = ''.concat(output, '.map');
       } // its in the same directory, so always just the basename
 
 
@@ -180,7 +181,7 @@ function render() {
       return;
     }
 
-    process.stdout.write("".concat(outputbase, ": "));
+    process.stdout.write(''.concat(outputbase, ': '));
   }
 
   if (!sourceMapFileInline) {
@@ -200,14 +201,14 @@ function render() {
           if (errno && errno.errno[err.errno]) {
             description += errno.errno[err.errno].description;
           } else {
-            description += "".concat(err.code, " ").concat(err.message);
+            description += ''.concat(err.code, ' ').concat(err.message);
           }
 
-          console.error("lessc: failed to create file ".concat(filename));
+          console.error('lessc: failed to create file '.concat(filename));
           console.error(description);
           process.exitCode = 1;
         } else {
-          less.logger.info("lessc: wrote ".concat(filename));
+          less.logger.info('lessc: wrote '.concat(filename));
         }
 
         onDone();
@@ -238,14 +239,14 @@ function render() {
           if (errno && errno.errno[err.errno]) {
             description += errno.errno[err.errno].description;
           } else {
-            description += "".concat(err.code, " ").concat(err.message);
+            description += ''.concat(err.code, ' ').concat(err.message);
           }
 
-          console.error("lessc: failed to create file ".concat(output));
+          console.error('lessc: failed to create file '.concat(output));
           console.error(description);
           process.exitCode = 1;
         } else {
-          less.logger.info("lessc: wrote ".concat(output));
+          less.logger.info('lessc: wrote '.concat(output));
 
           onSuccess();
         }
@@ -261,7 +262,7 @@ function render() {
       var depends = '';
 
       for (var i = 0; i < result.imports.length; i++) {
-        depends += "".concat(result.imports[i], " ");
+        depends += ''.concat(result.imports[i], ' ');
       }
 
       console.log(depends);
@@ -270,7 +271,7 @@ function render() {
 
   var parseLessFile = function parseLessFile(e, data) {
     if (e) {
-      console.error("lessc: ".concat(e.message));
+      console.error('lessc: '.concat(e.message));
       process.exitCode = 1;
       return;
     }
@@ -297,12 +298,14 @@ function render() {
       },
       warn: function warn(msg) {
         // do not show warning if the silent option is used
-        if (!silent) {
+        if (!silent && !quiet) {
           console.warn(msg);
         }
       },
       error: function error(msg) {
-        console.error(msg);
+        if (!silent) {
+          console.error(msg);
+        }
       }
     });
 
@@ -344,7 +347,7 @@ function processPluginQueue() {
   var x = 0;
 
   function pluginError(name) {
-    console.error("Unable to load plugin ".concat(name, " please make sure that it is installed under or at the same level as less"));
+    console.error('Unable to load plugin '.concat(name, ' please make sure that it is installed under or at the same level as less'));
     process.exitCode = 1;
   }
 
@@ -393,17 +396,21 @@ function processPluginQueue() {
     switch (arg) {
       case 'v':
       case 'version':
-        console.log("lessc ".concat(less.version.join('.'), " (Less Compiler) [JavaScript]"));
+        console.log('lessc '.concat(less.version.join('.'), ' (Less Compiler) [JavaScript]'));
         continueProcessing = false;
         break;
 
       case 'verbose':
-        verbose = true;
+        options.verbose = verbose = true;
         break;
 
       case 's':
       case 'silent':
-        silent = true;
+        options.silent = silent = true;
+        break;
+      
+      case 'quiet':
+        options.quiet = quiet = true;
         break;
 
       case 'l':
@@ -552,7 +559,7 @@ function processPluginQueue() {
           } else if (m === 'all') {
             options.rewriteUrls = Constants.RewriteUrls.ALL;
           } else {
-            console.error("Unknown rewrite-urls argument ".concat(m));
+            console.error('Unknown rewrite-urls argument '.concat(m));
             continueProcessing = false;
             process.exitCode = 1;
           }
@@ -575,8 +582,8 @@ function processPluginQueue() {
         break;
 
       case 'm':
-      case 'math':
-        var m = match[2];
+      case 'math': {
+        let m = match[2];
         if (checkArgFunc(arg, m)) {
           if (m === 'always') {
             console.warn('--math=always is deprecated and will be removed in the future.');
@@ -592,7 +599,7 @@ function processPluginQueue() {
         }
 
         break;
-
+      }
       case 'su':
       case 'strict-units':
         if (checkArgFunc(arg, match[2])) {

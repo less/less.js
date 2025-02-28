@@ -59,18 +59,26 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
         );
     }
 
-    function warn(msg, index) {
-        logger.warn(
-            (new LessError(
-                {
-                    index: index ?? parserInput.i,
-                    filename: fileInfo.filename,
-                    type: 'Warning',
-                    message: msg
-                },
-                imports
-            )).toString()
-        );
+    /**
+     * 
+     * @param {string} msg 
+     * @param {number} index 
+     * @param {string} type 
+     */
+    function warn(msg, index, type) {
+        if (!context.quiet) {
+            logger.warn(
+                (new LessError(
+                    {
+                        index: index ?? parserInput.i,
+                        filename: fileInfo.filename,
+                        type: type ? `${type.toUpperCase()} WARNING` : 'WARNING',
+                        message: msg
+                    },
+                    imports
+                )).toString()
+            );
+        }
     }
 
     function expect(arg, msg) {
@@ -873,11 +881,22 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 do {
                     option = null;
                     elements = null;
+                    let first = true;
                     while (!(option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
                         e = this.element();
+
                         if (!e) {
                             break;
                         }
+                        /**
+                         * @note - This will not catch selectors in pseudos like :is() and :where() because
+                         * they don't currently parse their contents as selectors.
+                         */
+                        if (!first && e.combinator.value) {
+                            warn('Complex selector targets in :extend() are deprecated', index, 'DEPRECATED')
+                        }
+
+                        first = false;
                         if (elements) {
                             elements.push(e);
                         } else {
@@ -958,7 +977,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             expectChar(')');
                             hasParens = true;
                             if (parensWS) {
-                                warn('Whitespace between a mixin name and parentheses is deprecated', parensIndex);
+                                warn('Whitespace between a mixin name and parentheses for a mixin call is deprecated', parensIndex, 'DEPRECATED');
                             }
                         }
 
@@ -987,15 +1006,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 return new tree.NamespaceValue(mixin, lookups);
                             }
                             else {
-                                for (let i = 0; i < elements.length; i++) {
-                                    const elem = elements[i];
-                                    /** @todo remove */
-                                    if (elem.combinator.value === '>') {
-                                        warn("'>' and space separators between elements in a mixin call are deprecated", elem._index);
-                                    }
-                                }
                                 if (!hasParens) {
-                                    warn('Calling a mixin without parentheses is deprecated', parensIndex);
+                                    warn('Calling a mixin without parentheses is deprecated', parensIndex, 'DEPRECATED');
                                 }
                                 return mixin;
                             }
@@ -1316,18 +1328,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 return new tree.Quoted('', `alpha(opacity=${value})`);
             },
 
-            //
-            // A Selector Element
-            //
-            //     div
-            //     + h1
-            //     #socks
-            //     input[type="text"]
-            //
-            // Elements are the building blocks for Selectors,
-            // they are made out of a `Combinator` (see combinator rule),
-            // and an element name, such as a tag a class, or `*`.
-            //
+            /** 
+             * A Selector Element
+             *
+             *   div
+             *   + h1
+             *   #socks
+             *   input[type="text"]
+             *
+             * Elements are the building blocks for Selectors,
+             * they are made out of a `Combinator` (see combinator rule),
+             * and an element name, such as a tag a class, or `*`.
+             */
             element: function () {
                 let e;
                 let c;
@@ -1336,6 +1348,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 c = this.combinator();
 
+                /** This selector parser is quite simplistic and will pass a number of invalid selectors. */
                 e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
                     // eslint-disable-next-line no-control-regex
                     parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
@@ -2189,7 +2202,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             let index = parserInput.i;
                             op = parserInput.$str('./');
                             if (op) {
-                                warn('./ operator is deprecated', index);
+                                warn('./ operator is deprecated', index, 'DEPRECATED');
                             }
                         }
 

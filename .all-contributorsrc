@@ -1,4 +1,28 @@
 {
   "projectName": "Less.js",
-  "projectOwner": "Less CSS Team"
+  "projectOwner": "The Less CSS Team",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "gitmoji",
+  "contributors": [
+    {
+      "login": "matthew-dean",
+      "name": "Matthew Dean",
+      "avatar_url": "https://avatars.githubusercontent.com/u/414752?v=4",
+      "profile": "https://github.com/matthew-dean",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "projectManagement"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": true
 }

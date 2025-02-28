@@ -10,10 +10,7 @@
     "test": "cd packages/less && npm test",
     "postinstall": "npx only-allow pnpm"
   },
-  "author": {
-    "name": "Alexis Sellier",
-    "email": "self@cloudhead.net"
-  },
+  "author": "Alexis Sellier <self@cloudhead.net>",
   "contributors": [
     "The Core Less Team"
   ],

@@ -5,10 +5,7 @@
   },
   "version": "4.2.2",
   "description": "Less files and CSS results",
-  "author": {
-    "name": "Alexis Sellier",
-    "email": "self@cloudhead.net"
-  },
+  "author": "Alexis Sellier <self@cloudhead.net>",
   "contributors": [
     "The Core Less Team"
   ],

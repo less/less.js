@@ -3,10 +3,7 @@
   "private": true,
   "version": "4.0.0",
   "description": "Less files to be included in node_modules directory for testing import from node_modules",
-  "author": {
-    "name": "Alexis Sellier",
-    "email": "self@cloudhead.net"
-  },
+  "author": "Alexis Sellier <self@cloudhead.net>",
   "contributors": [
     "The Core Less Team"
   ],

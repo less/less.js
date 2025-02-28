@@ -1,6 +1,6 @@
 <p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117">
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
     
 <p align="center">
@@ -52,6 +52,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/matthew-dean"><img src="https://avatars.githubusercontent.com/u/414752?v=4?s=100" width="100px;" alt="Matthew Dean"/><br /><sub><b>Matthew Dean</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=matthew-dean" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/commits?author=matthew-dean" title="Documentation">📖</a> <a href="#maintenance-matthew-dean" title="Maintenance">🚧</a> <a href="#projectManagement-matthew-dean" title="Project Management">📆</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://cloudhead.io/"><img src="https://avatars.githubusercontent.com/u/40774?v=4?s=100" width="100px;" alt="Alexis Sellier"/><br /><sub><b>Alexis Sellier</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=cloudhead" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/commits?author=cloudhead" title="Documentation">📖</a></td>
     </tr>
   </tbody>
   <tfoot>

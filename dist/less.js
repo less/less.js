@@ -1481,7 +1481,8 @@
         // context
         'processImports',
         // Used by the import manager to stop multiple import visitors being created.
-        'pluginManager' // Used as the plugin manager for the session
+        'pluginManager',
+        'quiet', // option - whether to log warnings
     ];
     contexts.Parse = function (options) {
         copyFromOriginal(options, this, parseCopyProperties);
@@ -1968,7 +1969,12 @@
                 catch (_) { }
                 if (!indices["".concat(extend.index, " ").concat(selector)]) {
                     indices["".concat(extend.index, " ").concat(selector)] = true;
-                    logger$1.warn("extend '".concat(selector, "' has no matches"));
+                    /**
+                     * @todo Shouldn't this be an error? To alert the developer
+                     * that they may have made an error in the selector they are
+                     * targeting?
+                     */
+                    logger$1.warn("WARNING: extend '".concat(selector, "' has no matches"));
                 }
             });
         };
@@ -3272,13 +3278,21 @@
                 message: msg
             }, imports);
         }
-        function warn(msg, index) {
-            logger$1.warn((new LessError({
-                index: index !== null && index !== void 0 ? index : parserInput.i,
-                filename: fileInfo.filename,
-                type: 'Warning',
-                message: msg
-            }, imports)).toString());
+        /**
+         *
+         * @param {string} msg
+         * @param {number} index
+         * @param {string} type
+         */
+        function warn(msg, index, type) {
+            if (!context.quiet) {
+                logger$1.warn((new LessError({
+                    index: index !== null && index !== void 0 ? index : parserInput.i,
+                    filename: fileInfo.filename,
+                    type: type ? "".concat(type.toUpperCase(), " WARNING") : 'WARNING',
+                    message: msg
+                }, imports)).toString());
+            }
         }
         function expect(arg, msg) {
             // some older browsers return typeof 'function' for RegExp
@@ -3987,11 +4001,20 @@
                     do {
                         option = null;
                         elements = null;
+                        var first = true;
                         while (!(option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
                             e = this.element();
                             if (!e) {
                                 break;
                             }
+                            /**
+                             * @note - This will not catch selectors in pseudos like :is() and :where() because
+                             * they don't currently parse their contents as selectors.
+                             */
+                            if (!first && e.combinator.value) {
+                                warn('Complex selector targets in :extend() are deprecated', index, 'DEPRECATED');
+                            }
+                            first = false;
                             if (elements) {
                                 elements.push(e);
                             }
@@ -4066,7 +4089,7 @@
                                 expectChar(')');
                                 hasParens = true;
                                 if (parensWS) {
-                                    warn('Whitespace between a mixin name and parentheses is deprecated', parensIndex);
+                                    warn('Whitespace between a mixin name and parentheses for a mixin call is deprecated', parensIndex, 'DEPRECATED');
                                 }
                             }
                             if (getLookup !== false) {
@@ -4091,15 +4114,8 @@
                                     return new tree.NamespaceValue(mixin, lookups);
                                 }
                                 else {
-                                    for (var i_2 = 0; i_2 < elements.length; i_2++) {
-                                        var elem = elements[i_2];
-                                        /** @todo remove */
-                                        if (elem.combinator.value === '>') {
-                                            warn("'>' and space separators between elements in a mixin call are deprecated", elem._index);
-                                        }
-                                    }
                                     if (!hasParens) {
-                                        warn('Calling a mixin without parentheses is deprecated', parensIndex);
+                                        warn('Calling a mixin without parentheses is deprecated', parensIndex, 'DEPRECATED');
                                     }
                                     return mixin;
                                 }
@@ -4390,24 +4406,25 @@
                     expectChar(')');
                     return new tree.Quoted('', "alpha(opacity=".concat(value, ")"));
                 },
-                //
-                // A Selector Element
-                //
-                //     div
-                //     + h1
-                //     #socks
-                //     input[type="text"]
-                //
-                // Elements are the building blocks for Selectors,
-                // they are made out of a `Combinator` (see combinator rule),
-                // and an element name, such as a tag a class, or `*`.
-                //
+                /**
+                 * A Selector Element
+                 *
+                 *   div
+                 *   + h1
+                 *   #socks
+                 *   input[type="text"]
+                 *
+                 * Elements are the building blocks for Selectors,
+                 * they are made out of a `Combinator` (see combinator rule),
+                 * and an element name, such as a tag a class, or `*`.
+                 */
                 element: function () {
                     var e;
                     var c;
                     var v;
                     var index = parserInput.i;
                     c = this.combinator();
+                    /** This selector parser is quite simplistic and will pass a number of invalid selectors. */
                     e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
                         // eslint-disable-next-line no-control-regex
                         parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
@@ -5229,7 +5246,7 @@
                                 var index = parserInput.i;
                                 op = parserInput.$str('./');
                                 if (op) {
-                                    warn('./ operator is deprecated', index);
+                                    warn('./ operator is deprecated', index, 'DEPRECATED');
                                 }
                             }
                             if (!op) {

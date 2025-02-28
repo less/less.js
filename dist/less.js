@@ -4012,7 +4012,7 @@
                              * they don't currently parse their contents as selectors.
                              */
                             if (!first && e.combinator.value) {
-                                warn('Complex selector targets in :extend() are deprecated', index, 'DEPRECATED');
+                                warn('Targeting complex selectors can have unexpected behavior, and this behavior may change in the future.', index);
                             }
                             first = false;
                             if (elements) {

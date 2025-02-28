@@ -1,6 +1,6 @@
 <p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117">
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
     
 <p align="center">
@@ -56,6 +56,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/lukeapage"><img src="https://avatars.githubusercontent.com/u/309321?v=4?s=100" width="100px;" alt="Luke Page"/><br /><sub><b>Luke Page</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=lukeapage" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/seven-phases-max"><img src="https://avatars.githubusercontent.com/u/5304376?v=4?s=100" width="100px;" alt="Max Mikhailov"/><br /><sub><b>Max Mikhailov</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=seven-phases-max" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/iChenLei"><img src="https://avatars.githubusercontent.com/u/14012511?v=4?s=100" width="100px;" alt="Lei Chen"/><br /><sub><b>Lei Chen</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=iChenLei" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/issues?q=author%3AiChenLei" title="Bug reports">🐛</a> <a href="https://github.com/The Less CSS Team/Less.js/commits?author=iChenLei" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/puckowski"><img src="https://avatars.githubusercontent.com/u/3059609?v=4?s=100" width="100px;" alt="Daniel Puckowski"/><br /><sub><b>Daniel Puckowski</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=puckowski" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/issues?q=author%3Apuckowski" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
   <tfoot>

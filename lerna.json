@@ -1,8 +1,0 @@
-{
-  "packages": [
-    "packages/*"
-  ],
-  "useNx": false,
-  "npmClient": "npm",
-  "version": "4.2.0"
-}

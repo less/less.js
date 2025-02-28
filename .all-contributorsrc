@@ -49,6 +49,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "iChenLei",
+      "name": "Lei Chen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14012511?v=4",
+      "profile": "https://github.com/iChenLei",
+      "contributions": [
+        "code",
+        "bug",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,

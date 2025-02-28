@@ -56,8 +56,8 @@
 		"source-map": "~0.6.0"
 	},
 	"devDependencies": {
-		"@less/test-data": "^4.2.0",
-		"@less/test-import-module": "^4.0.0",
+		"@less/test-data": "workspace:*",
+		"@less/test-import-module": "workspace:*",
 		"@rollup/plugin-commonjs": "^17.0.0",
 		"@rollup/plugin-json": "^4.1.0",
 		"@rollup/plugin-node-resolve": "^11.0.0",

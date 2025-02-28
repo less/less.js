@@ -56,10 +56,10 @@ importers:
         version: 0.6.1
     devDependencies:
       '@less/test-data':
-        specifier: ^4.2.0
-        version: 4.2.2
+        specifier: workspace:*
+        version: link:../test-data
       '@less/test-import-module':
-        specifier: ^4.0.0
+        specifier: workspace:*
         version: link:../test-import-module
       '@rollup/plugin-commonjs':
         specifier: ^17.0.0
@@ -1186,10 +1186,6 @@ packages:
     dependencies:
       npmlog: 4.1.2
       write-file-atomic: 2.4.3
-    dev: true
-
-  /@less/test-data@4.2.2:
-    resolution: {integrity: sha512-Y7se/85n/8ltOseu4eutLLKlOOIRCiz3AioWfEkr+S8Lx2DlKRNgJyfngSIzii6j4H81ewCi/HtNQsc2AU4VdQ==}
     dev: true
 
   /@mrmlnc/readdir-enhanced@2.2.1:

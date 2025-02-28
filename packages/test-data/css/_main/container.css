@@ -23,7 +23,7 @@
     border: 1px solid grey;
   }
 }
-@container size (min-width: 60ch) {
+@container size(min-width: 60ch) {
   .article--post header {
     grid-template-areas: "avatar name" "avatar headline";
     align-items: start;
@@ -118,7 +118,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container card (inline-size > 30em) and style (--responsive: true) {
+@container card (inline-size > 30em) and style(--responsive: true) {
   .card-content {
     grid-template-columns: 1fr 2fr;
     grid-template-rows: auto 1fr;
@@ -144,5 +144,100 @@
   }
   .card-content p h2 {
     margin: 0.5em 0 0 0;
+  }
+}
+.wrapper {
+  container-name: wrapper;
+  container-type: size;
+}
+@container wrapper (height < 100) {
+  a {
+    max-height: 100;
+  }
+}
+@container wrapper (height < 200) {
+  a {
+    max-height: 200;
+  }
+}
+@container wrapper (height < 300) {
+  a {
+    max-height: 300;
+  }
+}
+@media only screen and (min-width: 768px) {
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+  }
+  .media-2 {
+    font-size: 2rem;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+    @media (hover: hover) {
+      font-size: 1.75rem;
+    }
+  }
+  .media-2 {
+    font-size: 2rem;
+  }
+}
+@media only screen and (min-width: 768px) {
+  .media-1 {
+    font-size: 1.5rem;
+  }
+  @container (min-width: 500px) {
+    .primary-content {
+      font-size: 1rem;
+    }
+    @media (hover: hover) {
+      font-size: 1.75rem;
+      @media not all and (hover: hover) {
+        color: limegreen;
+      }
+      .media-3 {
+        padding: 0.5rem;
+      }
+    }
+  }
+  .media-2 {
+    font-size: 2rem;
+  }
+}
+@container (min-width: 768px) {
+  @media only screen and (min-width: 768px) {
+    color: aliceblue;
+  }
+  .container-1 {
+    color: purple;
   }
 }

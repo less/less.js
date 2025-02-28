@@ -6,6 +6,8 @@ import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
 import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
 import logger from '../logger';
+import Selector from '../tree/selector';
+import Anonymous from '../tree/anonymous';
 
 //
 // less.js - parser
@@ -464,6 +466,42 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     parserInput.forget();
 
                     return new(tree.Call)(name, args, index + currentIndex, fileInfo);
+                },
+
+                declarationCall: function () {
+                    let validCall;
+                    let args;
+                    const index = parserInput.i;
+
+                    parserInput.save();
+
+                    validCall = parserInput.$re(/^[\w]+\(/);
+                    if (!validCall) {
+                        parserInput.forget();
+                        return;
+                    }
+
+                    validCall = validCall.substring(0, validCall.length - 1);
+
+                    let rule = this.ruleProperty();
+                    let value;
+                  
+                    if (rule) {
+                        value = this.value();
+                    }
+                    
+                    if (rule && value) {
+                        args = [new (tree.Declaration)(rule, value, null, null, parserInput.i + currentIndex, fileInfo, true)];
+                    }
+
+                    if (!parserInput.$char(')')) {
+                        parserInput.restore('Could not parse call arguments or missing \')\'');
+                        return;
+                    }
+
+                    parserInput.forget();
+
+                    return new(tree.Call)(validCall, args, index + currentIndex, fileInfo);
                 },
 
                 //
@@ -1308,9 +1346,25 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (!e) {
                     parserInput.save();
                     if (parserInput.$char('(')) {
-                        if ((v = this.selector(false)) && parserInput.$char(')')) {
-                            e = new(tree.Paren)(v);
-                            parserInput.forget();
+                        if ((v = this.selector(false))) {
+                            let selectors = [];
+                            while (parserInput.$char(',')) {
+                                selectors.push(v);
+                                selectors.push(new Anonymous(','));
+                                v = this.selector(false);
+                            }
+                            selectors.push(v);
+                                                        
+                            if (parserInput.$char(')')) {
+                                if (selectors.length > 1) {
+                                    e = new (tree.Paren)(new Selector(selectors));
+                                } else {
+                                    e = new(tree.Paren)(v);
+                                }
+                                parserInput.forget();
+                            } else {
+                                parserInput.restore('Missing closing \')\'');
+                            }
                         } else {
                             parserInput.restore('Missing closing \')\'');
                         }
@@ -1391,7 +1445,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     } else {
                         if (allExtends) { error('Extend can only be used at the end of selector'); }
                         c = parserInput.currentChar();
-                        if (elements) {
+                        if (Array.isArray(e)){
+                            e.forEach(ele => elements.push(ele));
+                        } if (elements) {
                             elements.push(e);
                         } else {
                             elements = [ e ];
@@ -1574,7 +1630,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                         // Custom property values get permissive parsing
                         if (name[0].value && name[0].value.slice(0, 2) === '--') {
-                            value = this.permissiveValue(/[;}]/);
+                            if (parserInput.$char(';')) {
+                                value = new Anonymous('');
+                            } else {
+                                value = this.permissiveValue(/[;}]/);
+                            }
                         }
                         // Try to store values as anonymous
                         // If we need the value later we'll re-parse it in ruleset.parseValue
@@ -1657,6 +1717,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (e) {
                         value.push(e);
                     }
+                    if (parserInput.peek(',')) {
+                        value.push(new (tree.Anonymous)(',', parserInput.i));
+                        parserInput.$char(',');
+                    }
                 } while (e);
 
                 done = testCurrentChar();
@@ -1699,7 +1763,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             }
                             // Treat like quoted values, but replace vars like unquoted expressions
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                            quote.variableRegex = /@([\w-]+)/g;
+                            if (!item.startsWith('@{')) {
+                                quote.variableRegex = /@([\w-]+)/g;
+                            }
                             quote.propRegex = /\$([\w-]+)/g;
                             result.push(quote);
                         }
@@ -1793,7 +1859,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let rangeP;
                 parserInput.save();
                 do {
-                    e = entities.keyword() || entities.variable() || entities.mixinLookup();
+                    e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
                     } else if (parserInput.$char('(')) {
@@ -2391,7 +2457,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 do {
                     e = this.comment();
-                    if (e) {
+                    if (e && !e.isLineComment) {
                         entities.push(e);
                         continue;
                     }

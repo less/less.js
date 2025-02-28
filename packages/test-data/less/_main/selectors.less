@@ -200,3 +200,11 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
     &.active2:extend(.extend-this) { }
   }
 }
+
+a:is(.b, :is(.c)) {
+  color: blue;
+}
+
+a:is(.b, :is(.c), :has(div)) {
+  color: red;
+}

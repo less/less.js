@@ -183,3 +183,9 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 .first-level .second-level.active2 {
   content: '\2661';
 }
+a:is(.b, :is(.c)) {
+  color: blue;
+}
+a:is(.b, :is(.c), :has(div)) {
+  color: red;
+}

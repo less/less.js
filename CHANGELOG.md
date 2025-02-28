@@ -1,5 +1,27 @@
 ## Change Log
 
+### v4.2.2 (2025-01-04)
+
+- [#4290](https://github.com/less/less.js/pull/4290) Fix [#4268](https://github.com/less/less.js/issues/4268) nested pseudo-selector parsing (@puckowski)
+- [#4291](https://github.com/less/less.js/pull/4291) Enhance Less.js test environment setup (#4291) (@iChenLei)
+- [#4295](https://github.com/less/less.js/pull/4295) Fix [#4252](https://github.com/less/less.js/issues/4252) container queries created via mixin evaluating variables incorrectly (@puckowski)
+- [#4294](https://github.com/less/less.js/pull/4294) Fix [#3737](https://github.com/less/less.js/issues/3737) allow blank variable declarationd (@puckowski)
+- [#4292](https://github.com/less/less.js/pull/4292) Fix [#4258](https://github.com/less/less.js/issues/4258) variable interpolation after math (@puckowski)
+- [#4293](https://github.com/less/less.js/pull/4293) Fix [#4264](https://github.com/less/less.js/issues/4264) strip line comment from expression (@puckowski)
+- [#4302](https://github.com/less/less.js/pull/4302) Fix [#4301](https://github.com/less/less.js/issues/4301) at-rule declarations missing (@puckowski)
+- [#4309](https://github.com/less/less.js/pull/4309) Fix Node 23 CI (#4309) (@iChenLei)
+
+### v4.2.1 (2024-09-26)
+
+- [#4237](https://github.com/less/less.js/pull/4237) Fix [#4235](https://github.com/less/less.js/issues/4235) container style queries extra space resolved (@puckowski)
+
+### v4.2.0 (2023-08-06)
+- [#3811](https://github.com/less/less.js/pull/3811) add support for [container queries](https://www.w3.org/TR/css-contain-3) (@puckowski)
+- [#3761](https://github.com/less/less.js/pull/3761) fix faulty source map generation with variables in selectors, fixes [#3567](https://github.com/less/less.js/issues/3567) (@pgoldberg)
+- [#3700](https://github.com/less/less.js/pull/3700) parsing variables fail when there is no trailing semicolon (@b-kelly)
+- [#3719](https://github.com/less/less.js/pull/3719) modify `this` pointer so that it is not empty. (@lumburr)
+- [#3649](https://github.com/less/less.js/pull/3649) fixes [#2991](https://github.com/less/less.js/issues/2991) empty @media queries generated when compiling less file with (reference) to bootstrap (@MoonCoral)
+
 ### v4.1.3 (2022-06-09)
 - [#3673](https://github.com/less/less.js/pull/3673) Feat: add support for case-insensitive attribute selectors (#3673) (@iChenLei)
 - [#3710](https://github.com/less/less.js/pull/3701) Feat: add `disablePluginRule` flag for render() options (#3710) (@broofa @edhgoose)

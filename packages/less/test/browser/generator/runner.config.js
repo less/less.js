@@ -1,11 +1,11 @@
 var path = require('path');
 var resolve = require('resolve')
+var { forceCovertToBrowserPath } = require('./utils');
 
 /** Root of repo */
-var rootFolder = path.resolve(__dirname, '../../../../../');
-var testFolder = path.dirname(resolve.sync('@less/test-data'))
-var lessFolder = path.join(testFolder, 'less');
-var localTests = path.resolve(__dirname, '..');
+var testFolder = forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-data')));
+var lessFolder = forceCovertToBrowserPath(path.join(testFolder, 'less'));
+var localTests = forceCovertToBrowserPath(path.resolve(__dirname, '..'));
 
 module.exports = {
     main: {
@@ -35,7 +35,7 @@ module.exports = {
         }
     },
     strictUnits: {
-        src: [`${lessFolder}/strict-units/*.less`],
+        src: [`${lessFolder}/units/strict/*.less`],
         options: {
             helpers: 'test/browser/runner-strict-units-options.js',
             specs: 'test/browser/runner-strict-units-spec.js',

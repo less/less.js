@@ -40,6 +40,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "seven-phases-max",
+      "name": "Max Mikhailov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5304376?v=4",
+      "profile": "https://github.com/seven-phases-max",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

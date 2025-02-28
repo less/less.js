@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: 'Tests on ${{matrix.os}} with nodejs v${{matrix.node}}'
+    name: 'Tests on ${{matrix.os}} with Node "${{matrix.node}}"'
     strategy:
       matrix:
         # Test all mainstream operating systems
@@ -23,6 +23,8 @@ jobs:
             node: 'lts/-1'
           - os: ubuntu-latest
             node: 'lts/-2'
+          - os: ubuntu-latest
+            node: 'lts/-3'
 
     runs-on: ${{ matrix.os }}
     # This has copy/paste steps and should be refactored using DRY

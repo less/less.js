@@ -882,7 +882,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     option = null;
                     elements = null;
                     let first = true;
-                    while (!(option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
+                    while (!(option = parserInput.$re(/^(!?all)(?=\s*(\)|,))/))) {
                         e = this.element();
 
                         if (!e) {
@@ -1646,7 +1646,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             if (parserInput.$char(';')) {
                                 value = new Anonymous('');
                             } else {
-                                value = this.permissiveValue(/[;}]/);
+                                value = this.permissiveValue(/[;}]/, true);
                             }
                         }
                         // Try to store values as anonymous
@@ -1667,7 +1667,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         if (value) {
                             important = this.important();
                         } else if (isVariable) {
-                            // As a last resort, try permissiveValue
+                            /**
+                             * As a last resort, try permissiveValue
+                             *
+                             * @todo - This has created some knock-on problems of not
+                             * flagging incorrect syntax or detecting user intent.
+                             */
                             value = this.permissiveValue();
                         }
                     }
@@ -1698,6 +1703,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
              * First, it will try to parse comments and entities to reach
              * the end. This is mostly like the Expression parser except no
              * math is allowed.
+             * 
+             * @param {RexExp} untilTokens - Characters to stop parsing at
              */
             permissiveValue: function (untilTokens) {
                 let i;
@@ -1763,6 +1770,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         parserInput.forget();
                         return new tree.Anonymous('', index);
                     }
+                    /** @type {string} */
                     let item;
                     for (i = 0; i < value.length; i++) {
                         item = value[i];
@@ -1776,10 +1784,16 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             }
                             // Treat like quoted values, but replace vars like unquoted expressions
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                            if (!item.startsWith('@{')) {
-                                quote.variableRegex = /@([\w-]+)/g;
+                            const variableRegex = /@([\w-]+)/g;
+                            const propRegex = /\$([\w-]+)/g;
+                            if (variableRegex.test(item)) {
+                                warn('@[ident] in unknown values will not be evaluated as variables in the future. Use @{[ident]}', index, 'DEPRECATED');
                             }
-                            quote.propRegex = /\$([\w-]+)/g;
+                            if (propRegex.test(item)) {
+                                warn('$[ident] in unknown values will not be evaluated as property references in the future. Use ${[ident]}', index, 'DEPRECATED');
+                            }
+                            quote.variableRegex = /@([\w-]+)|@{([\w-]+)}/g;
+                            quote.propRegex = /\$([\w-]+)|\${([\w-]+)}/g;
                             result.push(quote);
                         }
                     }

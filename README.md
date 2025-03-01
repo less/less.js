@@ -1,8 +1,5 @@
-<p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117">
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-    
+<p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117"></p>
+
 <p align="center">
     <a href="https://github.com/less/less.js/actions?query=branch%3Amaster"><img src="https://github.com/less/less.js/actions/workflows/ci.yml/badge.svg?branch=master" alt="Github Actions CI"/></a>
     <a href="https://www.npmtrends.com/less"><img src="https://img.shields.io/npm/dm/less.svg?sanitize=true" alt="Downloads"></a>
@@ -10,9 +7,7 @@
     <a href="https://twitter.com/lesstocss"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/lesstocss.svg?style=flat-square" style="max-width:100%;" /></a>
 </p>
 
-<p align="center"><a href="https://gitter.im/less/less.js?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" style="max-width:100%;"></a> <br><sup class="rich-diff-level-one">Chat with Less.js users and contributors</sup></p>
-
-This is the Less.js monorepo, managed via [Lerna](https://lerna.js.org/).
+This is the Less.js monorepo.
 
 ## More information
 

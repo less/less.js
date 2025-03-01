@@ -12,7 +12,7 @@ logger.addListener({
     warn(msg) {
         process.stdout.write(msg + '\n');
     },
-    erro(msg) {
+    error(msg) {
         process.stdout.write(msg + '\n');
     }
 });
@@ -365,6 +365,8 @@ module.exports = function() {
             if (!/\.less$/.test(file)) { return; }
 
             var options = clone(originalOptions);
+
+            options.stylize = stylize;
 
             var name = getBasename(file);
 

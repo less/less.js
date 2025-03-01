@@ -1,4 +1,7 @@
 <p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117">
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
     
 <p align="center">
     <a href="https://github.com/less/less.js/actions?query=branch%3Amaster"><img src="https://github.com/less/less.js/actions/workflows/ci.yml/badge.svg?branch=master" alt="Github Actions CI"/></a>
@@ -39,10 +42,38 @@ See the [changelog](CHANGELOG.md)
 
 ## Contributors
 
-### Code Contributors
-
 This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
 <a href="https://github.com/less/less.js/graphs/contributors"><img src="https://opencollective.com/less/contributors.svg?width=890&button=false" /></a>
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/matthew-dean"><img src="https://avatars.githubusercontent.com/u/414752?v=4?s=100" width="100px;" alt="Matthew Dean"/><br /><sub><b>Matthew Dean</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=matthew-dean" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/commits?author=matthew-dean" title="Documentation">📖</a> <a href="#maintenance-matthew-dean" title="Maintenance">🚧</a> <a href="#projectManagement-matthew-dean" title="Project Management">📆</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://cloudhead.io/"><img src="https://avatars.githubusercontent.com/u/40774?v=4?s=100" width="100px;" alt="Alexis Sellier"/><br /><sub><b>Alexis Sellier</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=cloudhead" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/commits?author=cloudhead" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lukeapage"><img src="https://avatars.githubusercontent.com/u/309321?v=4?s=100" width="100px;" alt="Luke Page"/><br /><sub><b>Luke Page</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=lukeapage" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/seven-phases-max"><img src="https://avatars.githubusercontent.com/u/5304376?v=4?s=100" width="100px;" alt="Max Mikhailov"/><br /><sub><b>Max Mikhailov</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=seven-phases-max" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/iChenLei"><img src="https://avatars.githubusercontent.com/u/14012511?v=4?s=100" width="100px;" alt="Lei Chen"/><br /><sub><b>Lei Chen</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=iChenLei" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/issues?q=author%3AiChenLei" title="Bug reports">🐛</a> <a href="https://github.com/The Less CSS Team/Less.js/commits?author=iChenLei" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/puckowski"><img src="https://avatars.githubusercontent.com/u/3059609?v=4?s=100" width="100px;" alt="Daniel Puckowski"/><br /><sub><b>Daniel Puckowski</b></sub></a><br /><a href="https://github.com/The Less CSS Team/Less.js/commits?author=puckowski" title="Code">💻</a> <a href="https://github.com/The Less CSS Team/Less.js/issues?q=author%3Apuckowski" title="Bug reports">🐛</a></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td align="center" size="13px" colspan="7">
+        <img src="https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg">
+          <a href="https://all-contributors.js.org/docs/en/bot/usage">Add your contributions</a>
+        </img>
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 
 ## [License](LICENSE)

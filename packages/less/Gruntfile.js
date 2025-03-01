@@ -197,8 +197,6 @@ module.exports = function(grunt) {
                 command: [
                     /** Browser runtime */
                     "node build/rollup.js --dist",
-                    /** Copy to repo root */
-                    "npm run copy:root",
                     /** Node.js runtime */
                     "npm run build"
                 ].join(" && ")

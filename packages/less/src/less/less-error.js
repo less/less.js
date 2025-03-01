@@ -106,6 +106,9 @@ LessError.prototype.constructor = LessError;
  */
 LessError.prototype.toString = function(options) {
     options = options || {};
+    const isWarning = (this.type ?? '').toLowerCase().includes('warning');
+    const type = isWarning ? this.type : `${this.type}Error`;
+    const color = isWarning ? 'yellow' : 'red';
 
     let message = '';
     const extract = this.extract || [];
@@ -120,7 +123,7 @@ LessError.prototype.toString = function(options) {
     }
 
     if (this.line !== null) {
-        if (typeof extract[0] === 'string') {
+        if (!isWarning && typeof extract[0] === 'string') {
             error.push(stylize(`${this.line - 1} ${extract[0]}`, 'grey'));
         }
 
@@ -134,15 +137,15 @@ LessError.prototype.toString = function(options) {
             error.push(errorTxt);
         }
 
-        if (typeof extract[2] === 'string') {
+        if (!isWarning && typeof extract[2] === 'string') {
             error.push(stylize(`${this.line + 1} ${extract[2]}`, 'grey'));
         }
         error = `${error.join('\n') + stylize('', 'reset')}\n`;
     }
 
-    message += stylize(`${this.type}Error: ${this.message}`, 'red');
+    message += stylize(`${type}: ${this.message}`, color);
     if (this.filename) {
-        message += stylize(' in ', 'red') + this.filename;
+        message += stylize(' in ', color) + this.filename;
     }
     if (this.line) {
         message += stylize(` on line ${this.line}, column ${this.column + 1}:`, 'grey');
@@ -151,7 +154,7 @@ LessError.prototype.toString = function(options) {
     message += `\n${error}`;
 
     if (this.callLine) {
-        message += `${stylize('from ', 'red') + (this.filename || '')}/n`;
+        message += `${stylize('from ', color) + (this.filename || '')}/n`;
         message += `${stylize(this.callLine, 'grey')} ${this.callExtract}/n`;
     }
 

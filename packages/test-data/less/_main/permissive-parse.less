@@ -43,6 +43,12 @@
     this: works;
   }
 }
+@tablet: (min-width: @{size});
+@media @tablet {
+  .with-curly {
+    this: works;
+  }
+}
 // @todo - fix comment absorption after property
 .test-rule-comment {
   --value: a/* { ; } */;

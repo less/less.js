@@ -9,53 +9,6 @@ on:
     branches: [main, master]
 
 jobs:
-<<<<<<< HEAD
-  basic_node_test:
-    name: 'Basic tests on ubuntu-latest with nodejs v22 (current LTS version)'
-    runs-on: ubuntu-latest
-    steps:
-     - uses: actions/checkout@v2
-     - uses: actions/setup-node@v2
-       with:
-         node-version: ${{ matrix.node }}
-     - name: Install npm dependencies
-       run: npm install
-     - name: Print put node & npm version
-       run: node --version && npm --version 
-     - name: Install chromium
-       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
-       run: npx playwright@1.49.0 install chromium
-     - name: Run unit test
-       run: npm run test
-
-  windows_and_macos_test:
-    name: 'Platform tests on ${{matrix.os}} with nodejs v${{matrix.node}}'
-    needs: basic_node_test
-    strategy:
-      matrix:
-        # Test all mainstream operating system
-        os: [macos-latest, windows-latest]
-        node: [22]
-    runs-on: ${{ matrix.os }}
-    steps:
-     # Pull repo to test machine
-     - uses: actions/checkout@v2
-     # Configures the node version used on GitHub-hosted runners
-     - uses: actions/setup-node@v2
-       with:
-         # The Node.js version to configure
-         node-version: ${{ matrix.node }}
-     - name: Install npm dependencies
-       run: npm install
-     - name: Print put node & npm version
-       # Output useful info for debugging.
-       run: node --version && npm --version 
-     - name: Install chromium
-       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
-       run: npx playwright@1.49.0 install chromium
-     - name: Run unit test
-       run: npm run test
-=======
   test:
     name: 'Tests on ${{matrix.os}} with Node "${{matrix.node}}"'
     strategy:
@@ -72,45 +25,10 @@ jobs:
             node: 'lts/-2'
           - os: ubuntu-latest
             node: 'lts/-3'
->>>>>>> master
 
     runs-on: ${{ matrix.os }}
     # This has copy/paste steps and should be refactored using DRY
     steps:
-<<<<<<< HEAD
-     - uses: actions/checkout@v2
-     - uses: actions/setup-node@v2
-       with:
-         node-version: ${{ matrix.node }}
-     - name: Install npm dependencies
-       run: npm install
-     - name: Print put node & npm version
-       run: node --version && npm --version 
-     - name: Install chromium
-       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
-       run: npx playwright@1.49.0 install chromium
-     - name: Run unit test
-       run: npm run test
-
-  latest_nodejs_testing_node23:
-    name: 'Latest nodejs v23 test'
-    needs: basic_node_test
-    runs-on: ubuntu-latest
-    steps:
-     - uses: actions/checkout@v2
-     - uses: actions/setup-node@v2
-       with:
-         node-version: 23
-     - name: Install npm dependencies
-       run: npm install
-     - name: Print put node & npm version
-       run: node --version && npm --version 
-     - name: Install chromium
-       # package.json specifies 1.49.X; we need to align to ensure the correct browser binaries are installed as playwright may push new releases
-       run: npx playwright@1.49.0 install chromium
-     - name: Run unit test
-       run: npm run test
-=======
       - uses: actions/checkout@v4
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -128,4 +46,3 @@ jobs:
         run: npx playwright install chromium
       - name: Run unit test
         run: pnpm run test
->>>>>>> master

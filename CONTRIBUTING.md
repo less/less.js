@@ -25,7 +25,7 @@ Please report documentation issues in [the documentation project](https://github
 
 * Please search for existing feature requests first to see if something similar already exists.
 * Include a clear and specific use-case. We love new ideas, but we do not add language features without a reason.
-* Consider whether or not your language feature would be better as a function or implemented in a 3rd-party build system such as [assemble-less](http://github.com/assemble/assemble-less).
+* Consider whether or not your language feature would be better as a function or implemented in a 3rd-party build system
 
 
 ## Pull Requests
@@ -51,15 +51,4 @@ Learn more about [developing Less.js](http://lesscss.org/usage/#developing-less)
 
 ## Releases
 
-Releases are managed using Lerna. First, we determine if the release is a major (breaking), minor (new features), or patch (bug fix) change.
-
-Then, you can run Lerna with a command like:
-```
-npx lerna version minor
-```
-
-To publish, run the Lerna command for publishing without incrementing the version, as in:
-```
-npx lerna publish from-package --no-private
-```
-
+Releases are managed using PNPM. Instructions TBD

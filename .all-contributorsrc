@@ -1,0 +1,77 @@
+{
+  "projectName": "Less.js",
+  "projectOwner": "The Less CSS Team",
+  "repoType": "github",
+  "repoHost": "https://github.com/less/less.js",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "gitmoji",
+  "contributors": [
+    {
+      "login": "matthew-dean",
+      "name": "Matthew Dean",
+      "avatar_url": "https://avatars.githubusercontent.com/u/414752?v=4",
+      "profile": "https://github.com/matthew-dean",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance",
+        "projectManagement"
+      ]
+    },
+    {
+      "login": "cloudhead",
+      "name": "Alexis Sellier",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40774?v=4",
+      "profile": "https://cloudhead.io/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
+    },
+    {
+      "login": "lukeapage",
+      "name": "Luke Page",
+      "avatar_url": "https://avatars.githubusercontent.com/u/309321?v=4",
+      "profile": "https://github.com/lukeapage",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "seven-phases-max",
+      "name": "Max Mikhailov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5304376?v=4",
+      "profile": "https://github.com/seven-phases-max",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "iChenLei",
+      "name": "Lei Chen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14012511?v=4",
+      "profile": "https://github.com/iChenLei",
+      "contributions": [
+        "code",
+        "bug",
+        "doc"
+      ]
+    },
+    {
+      "login": "puckowski",
+      "name": "Daniel Puckowski",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3059609?v=4",
+      "profile": "https://github.com/puckowski",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": true
+}

@@ -1,5 +1,16 @@
 ## Change Log
 
+### v4.2.2 (2025-01-04)
+
+- [#4290](https://github.com/less/less.js/pull/4290) Fix [#4268](https://github.com/less/less.js/issues/4268) nested pseudo-selector parsing (@puckowski)
+- [#4291](https://github.com/less/less.js/pull/4291) Enhance Less.js test environment setup (#4291) (@iChenLei)
+- [#4295](https://github.com/less/less.js/pull/4295) Fix [#4252](https://github.com/less/less.js/issues/4252) container queries created via mixin evaluating variables incorrectly (@puckowski)
+- [#4294](https://github.com/less/less.js/pull/4294) Fix [#3737](https://github.com/less/less.js/issues/3737) allow blank variable declarationd (@puckowski)
+- [#4292](https://github.com/less/less.js/pull/4292) Fix [#4258](https://github.com/less/less.js/issues/4258) variable interpolation after math (@puckowski)
+- [#4293](https://github.com/less/less.js/pull/4293) Fix [#4264](https://github.com/less/less.js/issues/4264) strip line comment from expression (@puckowski)
+- [#4302](https://github.com/less/less.js/pull/4302) Fix [#4301](https://github.com/less/less.js/issues/4301) at-rule declarations missing (@puckowski)
+- [#4309](https://github.com/less/less.js/pull/4309) Fix Node 23 CI (#4309) (@iChenLei)
+
 ### v4.2.1 (2024-09-26)
 
 - [#4237](https://github.com/less/less.js/pull/4237) Fix [#4235](https://github.com/less/less.js/issues/4235) container style queries extra space resolved (@puckowski)

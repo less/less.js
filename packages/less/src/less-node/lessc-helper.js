@@ -33,6 +33,7 @@ const lessc_helper = {
         console.log('  --js                         Enables inline JavaScript in less files');
         console.log('  -l, --lint                   Syntax check only (lint).');
         console.log('  -s, --silent                 Suppresses output of error messages.');
+        console.log('  --quiet                      Suppresses output of warnings.');
         console.log('  --strict-imports             Forces evaluation of imports.');
         console.log('  --insecure                   Allows imports from insecure https hosts.');
         console.log('  -v, --version                Prints version number and exit.');

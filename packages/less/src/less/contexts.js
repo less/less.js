@@ -31,7 +31,8 @@ const parseCopyProperties = [
     // context
     'processImports',   // option & context - whether to process imports. if false then imports will not be imported.
     // Used by the import manager to stop multiple import visitors being created.
-    'pluginManager'     // Used as the plugin manager for the session
+    'pluginManager',    // Used as the plugin manager for the session
+    'quiet',            // option - whether to log warnings
 ];
 
 contexts.Parse = function(options) {

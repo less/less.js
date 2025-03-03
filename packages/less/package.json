@@ -1,6 +1,6 @@
 {
 	"name": "less",
-	"version": "4.2.1",
+	"version": "4.2.2",
 	"description": "Leaner CSS",
 	"homepage": "http://lesscss.org",
 	"author": {
@@ -32,7 +32,7 @@
 	},
 	"browser": "./dist/less.js",
 	"engines": {
-		"node": ">=6"
+		"node": ">=14"
 	},
 	"scripts": {
 		"test": "grunt test",
@@ -42,7 +42,6 @@
 		"build": "npm-run-all clean compile",
 		"clean": "shx rm -rf ./lib tsconfig.tsbuildinfo",
 		"compile": "tsc -p tsconfig.build.json",
-		"copy:root": "shx cp -rf ./dist ../../",
 		"dev": "tsc -p tsconfig.build.json -w",
 		"prepublishOnly": "grunt dist"
 	},
@@ -56,8 +55,8 @@
 		"source-map": "~0.6.0"
 	},
 	"devDependencies": {
-		"@less/test-data": "^4.2.1",
-		"@less/test-import-module": "^4.0.0",
+		"@less/test-data": "workspace:*",
+		"@less/test-import-module": "workspace:*",
 		"@rollup/plugin-commonjs": "^17.0.0",
 		"@rollup/plugin-json": "^4.1.0",
 		"@rollup/plugin-node-resolve": "^11.0.0",

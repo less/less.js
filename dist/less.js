@@ -4002,7 +4002,7 @@
                         option = null;
                         elements = null;
                         var first = true;
-                        while (!(option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
+                        while (!(option = parserInput.$re(/^(!?all)(?=\s*(\)|,))/))) {
                             e = this.element();
                             if (!e) {
                                 break;
@@ -4725,7 +4725,7 @@
                                     value = new Anonymous('');
                                 }
                                 else {
-                                    value = this.permissiveValue(/[;}]/);
+                                    value = this.permissiveValue(/[;}]/, true);
                                 }
                             }
                             // Try to store values as anonymous
@@ -4745,7 +4745,12 @@
                                 important = this.important();
                             }
                             else if (isVariable) {
-                                // As a last resort, try permissiveValue
+                                /**
+                                 * As a last resort, try permissiveValue
+                                 *
+                                 * @todo - This has created some knock-on problems of not
+                                 * flagging incorrect syntax or detecting user intent.
+                                 */
                                 value = this.permissiveValue();
                             }
                         }
@@ -4776,6 +4781,8 @@
                  * First, it will try to parse comments and entities to reach
                  * the end. This is mostly like the Expression parser except no
                  * math is allowed.
+                 *
+                 * @param {RexExp} untilTokens - Characters to stop parsing at
                  */
                 permissiveValue: function (untilTokens) {
                     var i;
@@ -4837,6 +4844,7 @@
                             parserInput.forget();
                             return new tree.Anonymous('', index);
                         }
+                        /** @type {string} */
                         var item = void 0;
                         for (i = 0; i < value.length; i++) {
                             item = value[i];
@@ -4850,10 +4858,16 @@
                                 }
                                 // Treat like quoted values, but replace vars like unquoted expressions
                                 var quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                                if (!item.startsWith('@{')) {
-                                    quote.variableRegex = /@([\w-]+)/g;
+                                var variableRegex = /@([\w-]+)/g;
+                                var propRegex = /\$([\w-]+)/g;
+                                if (variableRegex.test(item)) {
+                                    warn('@[ident] in unknown values will not be evaluated as variables in the future. Use @{[ident]}', index, 'DEPRECATED');
                                 }
-                                quote.propRegex = /\$([\w-]+)/g;
+                                if (propRegex.test(item)) {
+                                    warn('$[ident] in unknown values will not be evaluated as property references in the future. Use ${[ident]}', index, 'DEPRECATED');
+                                }
+                                quote.variableRegex = /@([\w-]+)|@{([\w-]+)}/g;
+                                quote.propRegex = /\$([\w-]+)|\${([\w-]+)}/g;
                                 result.push(quote);
                             }
                         }
@@ -7545,12 +7559,12 @@
         eval: function (context) {
             var that = this;
             var value = this.value;
-            var variableReplacement = function (_, name) {
-                var v = new Variable("@".concat(name), that.getIndex(), that.fileInfo()).eval(context, true);
+            var variableReplacement = function (_, name1, name2) {
+                var v = new Variable("@".concat(name1 !== null && name1 !== void 0 ? name1 : name2), that.getIndex(), that.fileInfo()).eval(context, true);
                 return (v instanceof Quoted) ? v.value : v.toCSS();
             };
-            var propertyReplacement = function (_, name) {
-                var v = new Property("$".concat(name), that.getIndex(), that.fileInfo()).eval(context, true);
+            var propertyReplacement = function (_, name1, name2) {
+                var v = new Property("$".concat(name1 !== null && name1 !== void 0 ? name1 : name2), that.getIndex(), that.fileInfo()).eval(context, true);
                 return (v instanceof Quoted) ? v.value : v.toCSS();
             };
             function iterativeReplace(value, regexp, replacementFnc) {
@@ -8192,6 +8206,7 @@
         this.copyVisibilityInfo(visibilityInfo);
         this.allowRoot = true;
         switch (option) {
+            case '!all':
             case 'all':
                 this.allowBefore = true;
                 this.allowAfter = true;
@@ -11646,27 +11661,43 @@
             head.removeChild(style);
         }
     }
-    if (options.onReady) {
-        if (/!watch/.test(window.location.hash)) {
-            less.watch();
-        }
-        // Simulate synchronous stylesheet loading by hiding page rendering
-        if (!options.async) {
-            css = 'body { display: none !important }';
-            head = document.head || document.getElementsByTagName('head')[0];
-            style = document.createElement('style');
-            style.type = 'text/css';
-            if (style.styleSheet) {
-                style.styleSheet.cssText = css;
-            }
-            else {
-                style.appendChild(document.createTextNode(css));
-            }
-            head.appendChild(style);
-        }
-        less.registerStylesheetsImmediately();
-        less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
+    function waitForHTMLHead() {
+        return new Promise(function (resolve) {
+            var checkHead = function () {
+                var head = document.head || document.getElementsByTagName('head')[0];
+                if (head) {
+                    resolve(head);
+                }
+                else {
+                    requestAnimationFrame(checkHead);
+                }
+            };
+            checkHead();
+        });
     }
+    waitForHTMLHead().then(function () {
+        if (options.onReady) {
+            if (/!watch/.test(window.location.hash)) {
+                less.watch();
+            }
+            // Simulate synchronous stylesheet loading by hiding page rendering
+            if (!options.async) {
+                css = 'body { display: none !important }';
+                head = document.head || document.getElementsByTagName('head')[0];
+                style = document.createElement('style');
+                style.type = 'text/css';
+                if (style.styleSheet) {
+                    style.styleSheet.cssText = css;
+                }
+                else {
+                    style.appendChild(document.createTextNode(css));
+                }
+                head.appendChild(style);
+            }
+            less.registerStylesheetsImmediately();
+            less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
+        }
+    });
 
     return less;
 

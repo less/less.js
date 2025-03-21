@@ -57,7 +57,7 @@ Expression.prototype = Object.assign(new Node(), {
         for (let i = 0; i < this.value.length; i++) {
             this.value[i].genCSS(context, output);
             if (!this.noSpacing && i + 1 < this.value.length) {
-                if (i + 1 < this.value.length && !(this.value[i + 1] instanceof Anonymous) ||
+                if (!(this.value[i + 1] instanceof Anonymous) ||
                     this.value[i + 1] instanceof Anonymous && this.value[i + 1].value !== ',') {
                     output.add(' ');
                 }

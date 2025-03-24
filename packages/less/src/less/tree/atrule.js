@@ -2,6 +2,7 @@ import Node from './node';
 import Selector from './selector';
 import Ruleset from './ruleset';
 import Anonymous from './anonymous';
+import NestableAtRulePrototype from './nested-at-rule';
 
 const AtRule = function(
     name,
@@ -14,19 +15,45 @@ const AtRule = function(
     visibilityInfo
 ) {
     let i;
+    var selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
 
     this.name  = name;
     this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
     if (rules) {
         if (Array.isArray(rules)) {
-            this.rules = rules;
+            const allDeclarations = rules.filter(function (node) { return node.type === 'Declaration' && !node.merge; }).length === rules.length;
+           
+            let allRulesetDeclarations = true;
+            rules.forEach(rule => {
+                if (rule.type === 'Ruleset' && rule.rules) allRulesetDeclarations = allRulesetDeclarations && rule.rules.filter(function (node) { return node.type === 'Declaration'; }).length === rule.rules.length
+            });
+
+            if (allDeclarations && !isRooted) {
+                this.simpleBlock = true;
+                this.declarations = rules;
+            } else if (allRulesetDeclarations && rules.length === 1 && !isRooted && !value) {
+                this.simpleBlock = true;
+                this.declarations = rules[0].rules ? rules[0].rules : rules;
+            } else {
+                this.rules = rules;
+            }
         } else {
-            this.rules = [rules];
-            this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
+            const allDeclarations = rules.rules.filter(function (node) { return node.type === 'Declaration' && !node.merge}).length === rules.rules.length;
+            
+            if (allDeclarations && !isRooted && !value) {
+                this.simpleBlock = true;
+                this.declarations = rules.rules;
+            } else {
+                this.rules = [rules];
+                this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
+            }
         }
-        for (i = 0; i < this.rules.length; i++) {
-            this.rules[i].allowImports = true;
+        if (!this.simpleBlock) {
+            for (i = 0; i < this.rules.length; i++) {
+                this.rules[i].allowImports = true;
+            }
         }
+        this.setParent(selectors, this);
         this.setParent(this.rules, this);
     }
     this._index = index;
@@ -39,10 +66,16 @@ const AtRule = function(
 
 AtRule.prototype = Object.assign(new Node(), {
     type: 'AtRule',
+
+    ...NestableAtRulePrototype,
+
     accept(visitor) {
-        const value = this.value, rules = this.rules;
+        const value = this.value, rules = this.rules, declarations = this.declarations;
+
         if (rules) {
             this.rules = visitor.visitArray(rules);
+        } else if (declarations) {
+            this.declarations = visitor.visitArray(declarations);   
         }
         if (value) {
             this.value = visitor.visit(value);
@@ -58,13 +91,15 @@ AtRule.prototype = Object.assign(new Node(), {
     },
 
     genCSS(context, output) {
-        const value = this.value, rules = this.rules;
+        const value = this.value, rules = this.rules || this.declarations;
         output.add(this.name, this.fileInfo(), this.getIndex());
         if (value) {
             output.add(' ');
             value.genCSS(context, output);
         }
-        if (rules) {
+        if (this.simpleBlock) {
+            this.outputRuleset(context, output, this.declarations);
+        } else if (rules) {
             this.outputRuleset(context, output, rules);
         } else {
             output.add(';');
@@ -72,8 +107,8 @@ AtRule.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
-        let mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules;
-
+        let mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules || this.declarations;
+ 
         // media stored inside other atrule should not bubble over it
         // backpup media bubbling information
         mediaPathBackup = context.mediaPath;
@@ -85,17 +120,77 @@ AtRule.prototype = Object.assign(new Node(), {
         if (value) {
             value = value.eval(context);
         }
+
         if (rules) {
-            // assuming that there is only one rule at this point - that is how parser constructs the rule
-            rules = [rules[0].eval(context)];
-            rules[0].root = true;
+            rules = this.evalRoot(context, rules);
         }
+        if (Array.isArray(rules) && rules[0].rules && Array.isArray(rules[0].rules) && rules[0].rules.length) {
+            const allMergeableDeclarations = rules[0].rules.filter(function (node) { return node.type === 'Declaration'; }).length === rules[0].rules.length;
+            if (allMergeableDeclarations && !this.isRooted && !value) {
+                var mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
+                mergeRules(rules[0].rules);
+                rules = rules[0].rules;
+            }
+        }
+        if (this.simpleBlock && rules) {
+            rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
+            rules= rules.map(function (rule) { return rule.eval(context); });
+        }
+
         // restore media bubbling information
         context.mediaPath = mediaPathBackup;
         context.mediaBlocks = mediaBlocksBackup;
+        return new AtRule(this.name, value, rules, this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo());
+    },
 
-        return new AtRule(this.name, value, rules,
-            this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo());
+    evalRoot(context, rules) {
+        let ampersandCount = 0;
+        let noAmpersandCount = 0;
+        let noAmpersands = true;
+        let allAmpersands = false;
+
+        if (!this.simpleBlock) {
+            rules = [rules[0].eval(context)];
+        }
+
+        let precedingSelectors = [];
+        if (context.frames.length > 0) {
+            for (let index = 0; index < context.frames.length; index++) {
+                const frame = context.frames[index];
+                if (
+                    frame.type === 'Ruleset' &&
+                    frame.rules &&
+                    frame.rules.length > 0
+                ) {
+                    if (frame && !frame.root && frame.selectors && frame.selectors.length > 0) {
+                        precedingSelectors = precedingSelectors.concat(frame.selectors);
+                    }
+                }
+                if (precedingSelectors.length > 0) {
+                    let value = '';
+                    const output = { add: function (s) { value += s; } };
+                    for (let i = 0; i < precedingSelectors.length; i++) {
+                        precedingSelectors[i].genCSS(context, output);
+                    }
+                    if (/^&+$/.test(value.replace(/\s+/g, ''))) {
+                        noAmpersands = false;
+                        noAmpersandCount++;
+                    } else {
+                        allAmpersands = false;
+                        ampersandCount++;
+                    }
+                }
+            }
+        }
+
+        const mixedAmpersands = ampersandCount > 0 && noAmpersandCount > 0 && !allAmpersands && !noAmpersands;
+        if (
+            (this.isRooted && ampersandCount > 0 && noAmpersandCount === 0 && !allAmpersands && noAmpersands)
+            || !mixedAmpersands
+        ) {
+            rules[0].root = true;
+        }
+        return rules;
     },
 
     variable(name) {

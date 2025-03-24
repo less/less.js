@@ -166,7 +166,18 @@ ImportVisitor.prototype = {
         }
     },
     visitAtRule: function (atRuleNode, visitArgs) {
-        this.context.frames.unshift(atRuleNode);
+        //this.context.frames.unshift(atRuleNode);
+        if (atRuleNode.value) {//}} && !atRuleNode.declarations && !atRuleNode.rules) {
+            this.context.frames.unshift(atRuleNode);
+        } else if (atRuleNode.declarations && atRuleNode.declarations.length) {
+            if (atRuleNode.isRooted) {
+                this.context.frames.unshift(atRuleNode);
+            } else {
+                this.context.frames.unshift(atRuleNode.declarations[0]);
+            }
+        } else if (atRuleNode.rules && atRuleNode.rules.length) {
+            this.context.frames.unshift(atRuleNode);
+        }
     },
     visitAtRuleOut: function (atRuleNode) {
         this.context.frames.shift();

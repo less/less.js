@@ -46,3 +46,10 @@ nav > [popover]:popover-open {
     padding: 10px 8px 6px 4px;
   }
 }
+aside > [popover]:popover-open {
+  opacity: 1;
+  transform: scaleX(1);
+  @starting-style {
+    padding: 10px 20px 30px 40px;
+  }
+}

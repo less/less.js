@@ -60,3 +60,15 @@ nav > [popover]:popover-open {
     padding+_: 4px;
   }
 }
+
+aside > [popover]:popover-open {
+  opacity: 1;
+  transform: scaleX(1);
+
+  @starting-style {
+    // vector math
+    each(1 2 3 4, {
+        padding+_: (@value * 10px);
+    });
+  }
+}

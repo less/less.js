@@ -482,13 +482,20 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     const index = parserInput.i;
 
                     parserInput.save();
-
+                    
+                    let keywordEntity = this.entities.keyword();
+                    parserInput.restore();
+                    parserInput.save();
+                    
                     validCall = parserInput.$re(/^[\w]+\(/);
                     if (!validCall) {
                         parserInput.forget();
                         return;
+                    } else if (validCall && keywordEntity && !functionRegistry.get(validCall.substring(0, validCall.length - 1))) {
+                        parserInput.restore();
+                        return;
                     }
-
+                        
                     validCall = validCall.substring(0, validCall.length - 1);
 
                     let rule = this.ruleProperty();

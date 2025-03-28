@@ -21,11 +21,11 @@ const AtRule = function(
     this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
     if (rules) {
         if (Array.isArray(rules)) {
-            const allDeclarations = rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge; }).length === rules.length;
+            const allDeclarations = this.declarationsBlock(rules);
            
             let allRulesetDeclarations = true;
             rules.forEach(rule => {
-                if (rule.type === 'Ruleset' && rule.rules) allRulesetDeclarations = allRulesetDeclarations && rule.rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rule.rules.length
+                if (rule.type === 'Ruleset' && rule.rules) allRulesetDeclarations = allRulesetDeclarations && this.declarationsBlock(rule.rules, true);
             });
 
             if (allDeclarations && !isRooted) {
@@ -38,7 +38,7 @@ const AtRule = function(
                 this.rules = rules;
             }
         } else {
-            const allDeclarations = rules.rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge}).length === rules.rules.length;
+            const allDeclarations = this.declarationsBlock(rules.rules);
             
             if (allDeclarations && !isRooted && !value) {
                 this.simpleBlock = true;
@@ -68,6 +68,14 @@ AtRule.prototype = Object.assign(new Node(), {
     type: 'AtRule',
 
     ...NestableAtRulePrototype,
+
+    declarationsBlock(rules, mergable = false) {
+        if (!mergable) {
+            return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge}).length === rules.length;
+        } else {
+            return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules.length;
+        }
+    },
 
     accept(visitor) {
         const value = this.value, rules = this.rules, declarations = this.declarations;
@@ -125,7 +133,7 @@ AtRule.prototype = Object.assign(new Node(), {
             rules = this.evalRoot(context, rules);
         }
         if (Array.isArray(rules) && rules[0].rules && Array.isArray(rules[0].rules) && rules[0].rules.length) {
-            const allMergeableDeclarations = rules[0].rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules[0].rules.length;
+            const allMergeableDeclarations = this.declarationsBlock(rules[0].rules, true);
             if (allMergeableDeclarations && !this.isRooted && !value) {
                 var mergeRules = context.pluginManager.less.visitors.ToCSSVisitor.prototype._mergeRules;
                 mergeRules(rules[0].rules);

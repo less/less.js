@@ -69,8 +69,8 @@ AtRule.prototype = Object.assign(new Node(), {
 
     ...NestableAtRulePrototype,
 
-    declarationsBlock(rules, mergable = false) {
-        if (!mergable) {
+    declarationsBlock(rules, mergeable = false) {
+        if (!mergeable) {
             return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge}).length === rules.length;
         } else {
             return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules.length;

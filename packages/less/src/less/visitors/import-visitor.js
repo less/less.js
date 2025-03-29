@@ -166,8 +166,7 @@ ImportVisitor.prototype = {
         }
     },
     visitAtRule: function (atRuleNode, visitArgs) {
-        //this.context.frames.unshift(atRuleNode);
-        if (atRuleNode.value) {//}} && !atRuleNode.declarations && !atRuleNode.rules) {
+        if (atRuleNode.value) {
             this.context.frames.unshift(atRuleNode);
         } else if (atRuleNode.declarations && atRuleNode.declarations.length) {
             if (atRuleNode.isRooted) {

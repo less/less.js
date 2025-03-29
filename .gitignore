@@ -12,3 +12,13 @@
 node_modules
 !package-lock.json
 npm-debug.log
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.sum

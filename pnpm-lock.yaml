@@ -136,7 +136,7 @@ importers:
         specifier: ^2.2.3
         version: 2.9.3
       playwright:
-        specifier: ~1.50.1
+        specifier: 1.50.1
         version: 1.50.1
       promise:
         specifier: ^7.1.1

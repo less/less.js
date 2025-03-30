@@ -42,7 +42,8 @@ jobs:
         run: pnpm install
       - name: Print put node & npm version
         run: node --version && pnpm --version 
+      # Pin the version of Playwright to match package.json to avoid installing a newer version which may expect different binaries
       - name: Install chromium
-        run: npx playwright install chromium
+        run: npx playwright@1.50.1 install chromium
       - name: Run unit test
         run: pnpm run test

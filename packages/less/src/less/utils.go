@@ -32,7 +32,7 @@ func GetLocation(index interface{}, inputStream string) Location {
 	}
 }
 
-// CopyArray creates a shallow copy of a slice
+// Should just use go's build in copy function instead of this when possible
 func CopyArray(arr []interface{}) []interface{} {
 	copy := make([]interface{}, len(arr))
 	for i, v := range arr {

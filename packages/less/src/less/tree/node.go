@@ -193,7 +193,18 @@ func Compare(a, b *Node) int {
 
 	// Check type equality
 	if fmt.Sprintf("%T", a.Value) != fmt.Sprintf("%T", b.Value) {
-		return 0 // Equivalent to JavaScript's undefined
+		// If types don't match, check if one is a string and the other is a number
+		if aStr, ok := a.Value.(string); ok {
+			if bNum, ok := b.Value.(float64); ok {
+				return strings.Compare(aStr, fmt.Sprintf("%v", bNum))
+			}
+		}
+		if bStr, ok := b.Value.(string); ok {
+			if aNum, ok := a.Value.(float64); ok {
+				return strings.Compare(fmt.Sprintf("%v", aNum), bStr)
+			}
+		}
+		return 0 // Different types should return 0 (false) for equality comparison
 	}
 
 	// Handle array comparison

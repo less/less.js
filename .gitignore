@@ -7,6 +7,7 @@
 *.iml
 *.sublime-*
 .DS_Store
+.cursor
 
 # npm
 node_modules

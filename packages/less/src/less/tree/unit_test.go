@@ -297,16 +297,16 @@ func TestUnit(t *testing.T) {
 		t.Run("returns 0 for identical units", func(t *testing.T) {
 			unit1 := NewUnit([]string{"px"}, nil, "")
 			unit2 := NewUnit([]string{"px"}, nil, "")
-			if unit1.Compare(&Node{Value: unit2}) != 0 {
+			if unit1.Compare(unit2) != 0 {
 				t.Error("Expected comparison to return 0")
 			}
 		})
 
-		t.Run("returns 0 for different units", func(t *testing.T) {
+		t.Run("returns non-zero for different units", func(t *testing.T) {
 			unit1 := NewUnit([]string{"px"}, nil, "")
 			unit2 := NewUnit([]string{"em"}, nil, "")
-			if unit1.Compare(&Node{Value: unit2}) != 0 {
-				t.Error("Expected comparison to return 0")
+			if unit1.Compare(unit2) == 0 {
+				t.Error("Expected comparison to return non-zero for different units")
 			}
 		})
 	})

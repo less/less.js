@@ -103,18 +103,21 @@ func (u *Unit) ToString() string {
 	return strings.Join(parts, "/")
 }
 
-// Compare compares two units
-func (u *Unit) Compare(other *Node) int {
+// Compare compares this unit with another unit.
+func (u *Unit) Compare(other *Unit) int {
 	if other == nil {
-		return 0
+		if u.IsEmpty() {
+			return 0 // Both effectively empty/nil
+		}
+		return 1 // Indicate difference: this unit exists, other is nil
 	}
 
-	if otherUnit, ok := other.Value.(*Unit); ok {
-		if u.Is(otherUnit.ToString()) {
-			return 0
-		}
+	if u.Is(other.ToString()) {
+		return 0 // Units are equal by string representation
 	}
-	return 0 // Equivalent to JavaScript's undefined
+
+	// Units are not equal
+	return 1 // Indicate difference
 }
 
 // Is checks if the unit matches a given unit string

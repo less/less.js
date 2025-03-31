@@ -33,6 +33,7 @@ const LessError = function(e, fileContentMap, currentFilename) {
     this.stack = e.stack;
 
     if (fileContentMap && filename) {
+        console.warn('test');
         const input = fileContentMap.contents[filename];
         const loc = utils.getLocation(e.index, input);
         var line = loc.line;

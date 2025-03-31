@@ -2109,6 +2109,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         hasUnknown = true;
                         isRooted = false;
                         break;
+                    case '@starting-style':
+                        isRooted = false;
+                        break;
                     default:
                         hasUnknown = true;
                         break;

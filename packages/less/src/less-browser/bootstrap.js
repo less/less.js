@@ -42,26 +42,41 @@ function resolveOrReject(data) {
         head.removeChild(style);
     }
 }
-
-if (options.onReady) {
-    if (/!watch/.test(window.location.hash)) {
-        less.watch();
-    }
-    // Simulate synchronous stylesheet loading by hiding page rendering
-    if (!options.async) {
-        css = 'body { display: none !important }';
-        head = document.head || document.getElementsByTagName('head')[0];
-        style = document.createElement('style');
-
-        style.type = 'text/css';
-        if (style.styleSheet) {
-            style.styleSheet.cssText = css;
-        } else {
-            style.appendChild(document.createTextNode(css));
-        }
-
-        head.appendChild(style);
-    }
-    less.registerStylesheetsImmediately();
-    less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
+function waitForHTMLHead() {
+    return new Promise((resolve) => {
+        const checkHead = () => {
+            const head = document.head || document.getElementsByTagName('head')[0];
+            if (head) {
+                resolve(head);
+            } else {
+                requestAnimationFrame(checkHead);
+            }
+        };
+        checkHead();
+    });
 }
+
+waitForHTMLHead().then(() => {
+    if (options.onReady) {
+        if (/!watch/.test(window.location.hash)) {
+            less.watch();
+        }
+        // Simulate synchronous stylesheet loading by hiding page rendering
+        if (!options.async) {
+            css = 'body { display: none !important }';
+            head = document.head || document.getElementsByTagName('head')[0];
+            style = document.createElement('style');
+    
+            style.type = 'text/css';
+            if (style.styleSheet) {
+                style.styleSheet.cssText = css;
+            } else {
+                style.appendChild(document.createTextNode(css));
+            }
+    
+            head.appendChild(style);
+        }
+        less.registerStylesheetsImmediately();
+        less.pageLoadFinished = less.refresh(less.env === 'development').then(resolveOrReject, resolveOrReject);
+    }
+})

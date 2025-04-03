@@ -133,7 +133,12 @@ class ProcessExtendsVisitor {
 
             if (!indices[`${extend.index} ${selector}`]) {
                 indices[`${extend.index} ${selector}`] = true;
-                logger.warn(`extend '${selector}' has no matches`);
+                /**
+                 * @todo Shouldn't this be an error? To alert the developer
+                 * that they may have made an error in the selector they are
+                 * targeting?
+                 */
+                logger.warn(`WARNING: extend '${selector}' has no matches`);
             }
         });
     }

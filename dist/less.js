@@ -1,8 +1,8 @@
 /**
- * Less - Leaner CSS v4.2.1
+ * Less - Leaner CSS v4.2.2
  * http://lesscss.org
  * 
- * Copyright (c) 2009-2024, Alexis Sellier <self@cloudhead.net>
+ * Copyright (c) 2009-2025, Alexis Sellier <self@cloudhead.net>
  * Licensed under the Apache-2.0 License.
  *
  * @license Apache-2.0
@@ -962,47 +962,6 @@
         ALL: 2
     };
 
-    /******************************************************************************
-    Copyright (c) Microsoft Corporation.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted.
-
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
-    ***************************************************************************** */
-
-    var __assign = function() {
-      __assign = Object.assign || function __assign(t) {
-          for (var s, i = 1, n = arguments.length; i < n; i++) {
-              s = arguments[i];
-              for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-          }
-          return t;
-      };
-      return __assign.apply(this, arguments);
-    };
-
-    function __spreadArray(to, from, pack) {
-      if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-          if (ar || !(i in from)) {
-              if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-              ar[i] = from[i];
-          }
-      }
-      return to.concat(ar || Array.prototype.slice.call(from));
-    }
-
-    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-      var e = new Error(message);
-      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-    };
-
     /**
      * Returns the object type of the given payload
      *
@@ -1034,7 +993,7 @@
     }
 
     function assignProp(carry, key, newVal, originalObject, includeNonenumerable) {
-        var propType = {}.propertyIsEnumerable.call(originalObject, key)
+        const propType = {}.propertyIsEnumerable.call(originalObject, key)
             ? 'enumerable'
             : 'nonenumerable';
         if (propType === 'enumerable')
@@ -1058,22 +1017,21 @@
      * @returns {T} the target with replaced values
      * @export
      */
-    function copy(target, options) {
-        if (options === void 0) { options = {}; }
+    function copy(target, options = {}) {
         if (isArray(target)) {
-            return target.map(function (item) { return copy(item, options); });
+            return target.map((item) => copy(item, options));
         }
         if (!isPlainObject(target)) {
             return target;
         }
-        var props = Object.getOwnPropertyNames(target);
-        var symbols = Object.getOwnPropertySymbols(target);
-        return __spreadArray(__spreadArray([], props, true), symbols, true).reduce(function (carry, key) {
+        const props = Object.getOwnPropertyNames(target);
+        const symbols = Object.getOwnPropertySymbols(target);
+        return [...props, ...symbols].reduce((carry, key) => {
             if (isArray(options.props) && !options.props.includes(key)) {
                 return carry;
             }
-            var val = target[key];
-            var newVal = copy(val, options);
+            const val = target[key];
+            const newVal = copy(val, options);
             assignProp(carry, key, newVal, target, options.nonenumerable);
             return carry;
         }, {});
@@ -1299,20 +1257,24 @@
      * @returns {string}
      */
     LessError.prototype.toString = function (options) {
+        var _a;
         options = options || {};
+        var isWarning = ((_a = this.type) !== null && _a !== void 0 ? _a : '').toLowerCase().includes('warning');
+        var type = isWarning ? this.type : "".concat(this.type, "Error");
+        var color = isWarning ? 'yellow' : 'red';
         var message = '';
         var extract = this.extract || [];
         var error = [];
         var stylize = function (str) { return str; };
         if (options.stylize) {
-            var type = typeof options.stylize;
-            if (type !== 'function') {
-                throw Error("options.stylize should be a function, got a ".concat(type, "!"));
+            var type_1 = typeof options.stylize;
+            if (type_1 !== 'function') {
+                throw Error("options.stylize should be a function, got a ".concat(type_1, "!"));
             }
             stylize = options.stylize;
         }
         if (this.line !== null) {
-            if (typeof extract[0] === 'string') {
+            if (!isWarning && typeof extract[0] === 'string') {
                 error.push(stylize("".concat(this.line - 1, " ").concat(extract[0]), 'grey'));
             }
             if (typeof extract[1] === 'string') {
@@ -1324,21 +1286,21 @@
                 }
                 error.push(errorTxt);
             }
-            if (typeof extract[2] === 'string') {
+            if (!isWarning && typeof extract[2] === 'string') {
                 error.push(stylize("".concat(this.line + 1, " ").concat(extract[2]), 'grey'));
             }
             error = "".concat(error.join('\n') + stylize('', 'reset'), "\n");
         }
-        message += stylize("".concat(this.type, "Error: ").concat(this.message), 'red');
+        message += stylize("".concat(type, ": ").concat(this.message), color);
         if (this.filename) {
-            message += stylize(' in ', 'red') + this.filename;
+            message += stylize(' in ', color) + this.filename;
         }
         if (this.line) {
             message += stylize(" on line ".concat(this.line, ", column ").concat(this.column + 1, ":"), 'grey');
         }
         message += "\n".concat(error);
         if (this.callLine) {
-            message += "".concat(stylize('from ', 'red') + (this.filename || ''), "/n");
+            message += "".concat(stylize('from ', color) + (this.filename || ''), "/n");
             message += "".concat(stylize(this.callLine, 'grey'), " ").concat(this.callExtract, "/n");
         }
         return message;
@@ -1519,7 +1481,8 @@
         // context
         'processImports',
         // Used by the import manager to stop multiple import visitors being created.
-        'pluginManager' // Used as the plugin manager for the session
+        'pluginManager',
+        'quiet', // option - whether to log warnings
     ];
     contexts.Parse = function (options) {
         copyFromOriginal(options, this, parseCopyProperties);
@@ -2006,7 +1969,12 @@
                 catch (_) { }
                 if (!indices["".concat(extend.index, " ").concat(selector)]) {
                     indices["".concat(extend.index, " ").concat(selector)] = true;
-                    logger$1.warn("extend '".concat(selector, "' has no matches"));
+                    /**
+                     * @todo Shouldn't this be an error? To alert the developer
+                     * that they may have made an error in the selector they are
+                     * targeting?
+                     */
+                    logger$1.warn("WARNING: extend '".concat(selector, "' has no matches"));
                 }
             });
         };
@@ -3238,6 +3206,34 @@
         queryInParens: true
     };
 
+    var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
+        this.value = value;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.mapLines = mapLines;
+        this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
+        this.allowRoot = true;
+        this.copyVisibilityInfo(visibilityInfo);
+    };
+    Anonymous.prototype = Object.assign(new Node(), {
+        type: 'Anonymous',
+        eval: function () {
+            return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
+        },
+        compare: function (other) {
+            return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
+        },
+        isRulesetLike: function () {
+            return this.rulesetLike;
+        },
+        genCSS: function (context, output) {
+            this.nodeVisible = Boolean(this.value);
+            if (this.nodeVisible) {
+                output.add(this.value, this._fileInfo, this._index, this.mapLines);
+            }
+        }
+    });
+
     //
     // less.js - parser
     //
@@ -3281,6 +3277,22 @@
                 type: type || 'Syntax',
                 message: msg
             }, imports);
+        }
+        /**
+         *
+         * @param {string} msg
+         * @param {number} index
+         * @param {string} type
+         */
+        function warn(msg, index, type) {
+            if (!context.quiet) {
+                logger$1.warn((new LessError({
+                    index: index !== null && index !== void 0 ? index : parserInput.i,
+                    filename: fileInfo.filename,
+                    type: type ? "".concat(type.toUpperCase(), " WARNING") : 'WARNING',
+                    message: msg
+                }, imports)).toString());
+            }
         }
         function expect(arg, msg) {
             // some older browsers return typeof 'function' for RegExp
@@ -3989,11 +4001,20 @@
                     do {
                         option = null;
                         elements = null;
+                        var first = true;
                         while (!(option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
                             e = this.element();
                             if (!e) {
                                 break;
                             }
+                            /**
+                             * @note - This will not catch selectors in pseudos like :is() and :where() because
+                             * they don't currently parse their contents as selectors.
+                             */
+                            if (!first && e.combinator.value) {
+                                warn('Targeting complex selectors can have unexpected behavior, and this behavior may change in the future.', index);
+                            }
+                            first = false;
                             if (elements) {
                                 elements.push(e);
                             }
@@ -4053,16 +4074,23 @@
                         var elements;
                         var args;
                         var hasParens;
+                        var parensIndex;
+                        var parensWS = false;
                         if (s !== '.' && s !== '#') {
                             return;
                         }
                         parserInput.save(); // stop us absorbing part of an invalid selector
                         elements = this.elements();
                         if (elements) {
+                            parensIndex = parserInput.i;
                             if (parserInput.$char('(')) {
+                                parensWS = parserInput.isWhitespace(-2);
                                 args = this.args(true).args;
                                 expectChar(')');
                                 hasParens = true;
+                                if (parensWS) {
+                                    warn('Whitespace between a mixin name and parentheses for a mixin call is deprecated', parensIndex, 'DEPRECATED');
+                                }
                             }
                             if (getLookup !== false) {
                                 lookups = this.ruleLookups();
@@ -4086,6 +4114,9 @@
                                     return new tree.NamespaceValue(mixin, lookups);
                                 }
                                 else {
+                                    if (!hasParens) {
+                                        warn('Calling a mixin without parentheses is deprecated', parensIndex, 'DEPRECATED');
+                                    }
                                     return mixin;
                                 }
                             }
@@ -4375,24 +4406,25 @@
                     expectChar(')');
                     return new tree.Quoted('', "alpha(opacity=".concat(value, ")"));
                 },
-                //
-                // A Selector Element
-                //
-                //     div
-                //     + h1
-                //     #socks
-                //     input[type="text"]
-                //
-                // Elements are the building blocks for Selectors,
-                // they are made out of a `Combinator` (see combinator rule),
-                // and an element name, such as a tag a class, or `*`.
-                //
+                /**
+                 * A Selector Element
+                 *
+                 *   div
+                 *   + h1
+                 *   #socks
+                 *   input[type="text"]
+                 *
+                 * Elements are the building blocks for Selectors,
+                 * they are made out of a `Combinator` (see combinator rule),
+                 * and an element name, such as a tag a class, or `*`.
+                 */
                 element: function () {
                     var e;
                     var c;
                     var v;
                     var index = parserInput.i;
                     c = this.combinator();
+                    /** This selector parser is quite simplistic and will pass a number of invalid selectors. */
                     e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
                         // eslint-disable-next-line no-control-regex
                         parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
@@ -4402,9 +4434,26 @@
                     if (!e) {
                         parserInput.save();
                         if (parserInput.$char('(')) {
-                            if ((v = this.selector(false)) && parserInput.$char(')')) {
-                                e = new (tree.Paren)(v);
-                                parserInput.forget();
+                            if ((v = this.selector(false))) {
+                                var selectors = [];
+                                while (parserInput.$char(',')) {
+                                    selectors.push(v);
+                                    selectors.push(new Anonymous(','));
+                                    v = this.selector(false);
+                                }
+                                selectors.push(v);
+                                if (parserInput.$char(')')) {
+                                    if (selectors.length > 1) {
+                                        e = new (tree.Paren)(new Selector(selectors));
+                                    }
+                                    else {
+                                        e = new (tree.Paren)(v);
+                                    }
+                                    parserInput.forget();
+                                }
+                                else {
+                                    parserInput.restore('Missing closing \')\'');
+                                }
                             }
                             else {
                                 parserInput.restore('Missing closing \')\'');
@@ -4495,6 +4544,9 @@
                                 error('Extend can only be used at the end of selector');
                             }
                             c = parserInput.currentChar();
+                            if (Array.isArray(e)) {
+                                e.forEach(function (ele) { return elements.push(ele); });
+                            }
                             if (elements) {
                                 elements.push(e);
                             }
@@ -4669,7 +4721,12 @@
                             merge = !isVariable && name.length > 1 && name.pop().value;
                             // Custom property values get permissive parsing
                             if (name[0].value && name[0].value.slice(0, 2) === '--') {
-                                value = this.permissiveValue(/[;}]/);
+                                if (parserInput.$char(';')) {
+                                    value = new Anonymous('');
+                                }
+                                else {
+                                    value = this.permissiveValue(/[;}]/);
+                                }
                             }
                             // Try to store values as anonymous
                             // If we need the value later we'll re-parse it in ruleset.parseValue
@@ -4793,7 +4850,9 @@
                                 }
                                 // Treat like quoted values, but replace vars like unquoted expressions
                                 var quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                                quote.variableRegex = /@([\w-]+)/g;
+                                if (!item.startsWith('@{')) {
+                                    quote.variableRegex = /@([\w-]+)/g;
+                                }
                                 quote.propRegex = /\$([\w-]+)/g;
                                 result.push(quote);
                             }
@@ -5182,7 +5241,14 @@
                                 break;
                             }
                             parserInput.save();
-                            op = parserInput.$char('/') || parserInput.$char('*') || parserInput.$str('./');
+                            op = parserInput.$char('/') || parserInput.$char('*');
+                            if (!op) {
+                                var index = parserInput.i;
+                                op = parserInput.$str('./');
+                                if (op) {
+                                    warn('./ operator is deprecated', index, 'DEPRECATED');
+                                }
+                            }
                             if (!op) {
                                 parserInput.forget();
                                 break;
@@ -5443,7 +5509,7 @@
                     var index = parserInput.i;
                     do {
                         e = this.comment();
-                        if (e) {
+                        if (e && !e.isLineComment) {
                             entities.push(e);
                             continue;
                         }
@@ -5703,34 +5769,6 @@
     });
     Keyword.True = new Keyword('true');
     Keyword.False = new Keyword('false');
-
-    var Anonymous = function (value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
-        this.value = value;
-        this._index = index;
-        this._fileInfo = currentFileInfo;
-        this.mapLines = mapLines;
-        this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
-        this.allowRoot = true;
-        this.copyVisibilityInfo(visibilityInfo);
-    };
-    Anonymous.prototype = Object.assign(new Node(), {
-        type: 'Anonymous',
-        eval: function () {
-            return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
-        },
-        compare: function (other) {
-            return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
-        },
-        isRulesetLike: function () {
-            return this.rulesetLike;
-        },
-        genCSS: function (context, output) {
-            this.nodeVisible = Boolean(this.value);
-            if (this.nodeVisible) {
-                output.add(this.value, this._fileInfo, this._index, this.mapLines);
-            }
-        }
-    });
 
     var MATH$1 = Math$1;
     function evalName(context, name) {
@@ -7086,6 +7124,47 @@
         }
     });
 
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+
+    var __assign = function() {
+      __assign = Object.assign || function __assign(t) {
+          for (var s, i = 1, n = arguments.length; i < n; i++) {
+              s = arguments[i];
+              for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+          }
+          return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+
+    function __spreadArray(to, from, pack) {
+      if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+          if (ar || !(i in from)) {
+              if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+              ar[i] = from[i];
+          }
+      }
+      return to.concat(ar || Array.prototype.slice.call(from));
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+      var e = new Error(message);
+      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     var Expression = function (value, noSpacing) {
         this.value = value;
         this.noSpacing = noSpacing;
@@ -7583,6 +7662,10 @@
             var path = context.mediaPath.concat([this]);
             // Extract the media-query conditions separated with `,` (OR).
             for (i = 0; i < path.length; i++) {
+                if (path[i].type !== this.type) {
+                    context.mediaBlocks.splice(i, 1);
+                    return this;
+                }
                 value = path[i].features instanceof Value ?
                     path[i].features.value : path[i].features;
                 path[i] = Array.isArray(value) ? value : [value];
@@ -7978,6 +8061,7 @@
         this.op2 = op2 ? op2.trim() : null;
         this.rvalue = r;
         this._index = i;
+        this.mvalues = [];
     };
     QueryInParens.prototype = Object.assign(new Node(), {
         type: 'QueryInParens',
@@ -7990,7 +8074,32 @@
         },
         eval: function (context) {
             this.lvalue = this.lvalue.eval(context);
-            this.mvalue = this.mvalue.eval(context);
+            var variableDeclaration;
+            var rule;
+            for (var i_1 = 0; (rule = context.frames[i_1]); i_1++) {
+                if (rule.type === 'Ruleset') {
+                    variableDeclaration = rule.rules.find(function (r) {
+                        if ((r instanceof Declaration) && r.variable) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (variableDeclaration) {
+                        break;
+                    }
+                }
+            }
+            if (!this.mvalueCopy) {
+                this.mvalueCopy = copy(this.mvalue);
+            }
+            if (variableDeclaration) {
+                this.mvalue = this.mvalueCopy;
+                this.mvalue = this.mvalue.eval(context);
+                this.mvalues.push(this.mvalue);
+            }
+            else {
+                this.mvalue = this.mvalue.eval(context);
+            }
             if (this.rvalue) {
                 this.rvalue = this.rvalue.eval(context);
             }
@@ -7999,6 +8108,9 @@
         genCSS: function (context, output) {
             this.lvalue.genCSS(context, output);
             output.add(' ' + this.op + ' ');
+            if (this.mvalues.length > 0) {
+                this.mvalue = this.mvalues.shift();
+            }
             this.mvalue.genCSS(context, output);
             if (this.rvalue) {
                 output.add(' ' + this.op2 + ' ');
@@ -10792,22 +10904,25 @@
         return render;
     }
 
-    var version = "4.2.1";
+    var version = "4.2.2";
 
     function parseNodeVersion(version) {
-        var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
-        if (!match) {
-            throw new Error('Unable to parse: ' + version);
-        }
-        var res = {
-            major: parseInt(match[1], 10),
-            minor: parseInt(match[2], 10),
-            patch: parseInt(match[3], 10),
-            pre: match[4] || '',
-            build: match[5] || '',
-        };
-        return res;
+      var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len
+      if (!match) {
+        throw new Error('Unable to parse: ' + version);
+      }
+
+      var res = {
+        major: parseInt(match[1], 10),
+        minor: parseInt(match[2], 10),
+        patch: parseInt(match[3], 10),
+        pre: match[4] || '',
+        build: match[5] || '',
+      };
+
+      return res;
     }
+
     var parseNodeVersion_1 = parseNodeVersion;
 
     function lessRoot (environment, fileManagers) {

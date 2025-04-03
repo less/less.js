@@ -33,12 +33,12 @@ Quoted.prototype = Object.assign(new Node(), {
     eval(context) {
         const that = this;
         let value = this.value;
-        const variableReplacement = function (_, name) {
-            const v = new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context, true);
+        const variableReplacement = function (_, name1, name2) {
+            const v = new Variable(`@${name1 ?? name2}`, that.getIndex(), that.fileInfo()).eval(context, true);
             return (v instanceof Quoted) ? v.value : v.toCSS();
         };
-        const propertyReplacement = function (_, name) {
-            const v = new Property(`$${name}`, that.getIndex(), that.fileInfo()).eval(context, true);
+        const propertyReplacement = function (_, name1, name2) {
+            const v = new Property(`$${name1 ?? name2}`, that.getIndex(), that.fileInfo()).eval(context, true);
             return (v instanceof Quoted) ? v.value : v.toCSS();
         };
         function iterativeReplace(value, regexp, replacementFnc) {

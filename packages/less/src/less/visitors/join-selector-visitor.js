@@ -52,7 +52,11 @@ class JoinSelectorVisitor {
 
     visitAtRule(atRuleNode, visitArgs) {
         const context = this.contexts[this.contexts.length - 1];
-        if (atRuleNode.rules && atRuleNode.rules.length) {
+
+        if (atRuleNode.declarations && atRuleNode.declarations.length) {
+            atRuleNode.declarations[0].root = (context.length === 0 || context[0].multiMedia);
+        }
+        else if (atRuleNode.rules && atRuleNode.rules.length) {
             atRuleNode.rules[0].root = (atRuleNode.isRooted || context.length === 0 || null);
         }
     }

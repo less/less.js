@@ -5,6 +5,7 @@ import getParserInput from './parser-input';
 import * as utils from '../utils';
 import functionRegistry from '../functions/function-registry';
 import { ContainerSyntaxOptions, MediaSyntaxOptions } from '../tree/atrule-syntax';
+import logger from '../logger';
 import Selector from '../tree/selector';
 import Anonymous from '../tree/anonymous';
 
@@ -56,6 +57,28 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             },
             imports
         );
+    }
+
+    /**
+     * 
+     * @param {string} msg 
+     * @param {number} index 
+     * @param {string} type 
+     */
+    function warn(msg, index, type) {
+        if (!context.quiet) {
+            logger.warn(
+                (new LessError(
+                    {
+                        index: index ?? parserInput.i,
+                        filename: fileInfo.filename,
+                        type: type ? `${type.toUpperCase()} WARNING` : 'WARNING',
+                        message: msg
+                    },
+                    imports
+                )).toString()
+            );
+        }
     }
 
     function expect(arg, msg) {
@@ -858,11 +881,22 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 do {
                     option = null;
                     elements = null;
-                    while (!(option = parserInput.$re(/^(all)(?=\s*(\)|,))/))) {
+                    let first = true;
+                    while (!(option = parserInput.$re(/^(!?all)(?=\s*(\)|,))/))) {
                         e = this.element();
+
                         if (!e) {
                             break;
                         }
+                        /**
+                         * @note - This will not catch selectors in pseudos like :is() and :where() because
+                         * they don't currently parse their contents as selectors.
+                         */
+                        if (!first && e.combinator.value) {
+                            warn('Targeting complex selectors can have unexpected behavior, and this behavior may change in the future.', index)
+                        }
+
+                        first = false;
                         if (elements) {
                             elements.push(e);
                         } else {
@@ -926,6 +960,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     let elements;
                     let args;
                     let hasParens;
+                    let parensIndex;
+                    let parensWS = false;
 
                     if (s !== '.' && s !== '#') { return; }
 
@@ -934,10 +970,15 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     elements = this.elements();
 
                     if (elements) {
+                        parensIndex = parserInput.i;
                         if (parserInput.$char('(')) {
+                            parensWS = parserInput.isWhitespace(-2);
                             args = this.args(true).args;
                             expectChar(')');
                             hasParens = true;
+                            if (parensWS) {
+                                warn('Whitespace between a mixin name and parentheses for a mixin call is deprecated', parensIndex, 'DEPRECATED');
+                            }
                         }
 
                         if (getLookup !== false) {
@@ -965,6 +1006,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 return new tree.NamespaceValue(mixin, lookups);
                             }
                             else {
+                                if (!hasParens) {
+                                    warn('Calling a mixin without parentheses is deprecated', parensIndex, 'DEPRECATED');
+                                }
                                 return mixin;
                             }
                         }
@@ -1284,18 +1328,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 return new tree.Quoted('', `alpha(opacity=${value})`);
             },
 
-            //
-            // A Selector Element
-            //
-            //     div
-            //     + h1
-            //     #socks
-            //     input[type="text"]
-            //
-            // Elements are the building blocks for Selectors,
-            // they are made out of a `Combinator` (see combinator rule),
-            // and an element name, such as a tag a class, or `*`.
-            //
+            /** 
+             * A Selector Element
+             *
+             *   div
+             *   + h1
+             *   #socks
+             *   input[type="text"]
+             *
+             * Elements are the building blocks for Selectors,
+             * they are made out of a `Combinator` (see combinator rule),
+             * and an element name, such as a tag a class, or `*`.
+             */
             element: function () {
                 let e;
                 let c;
@@ -1304,6 +1348,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 c = this.combinator();
 
+                /** This selector parser is quite simplistic and will pass a number of invalid selectors. */
                 e = parserInput.$re(/^(?:\d+\.\d+|\d+)%/) ||
                     // eslint-disable-next-line no-control-regex
                     parserInput.$re(/^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+/) ||
@@ -1601,7 +1646,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             if (parserInput.$char(';')) {
                                 value = new Anonymous('');
                             } else {
-                                value = this.permissiveValue(/[;}]/);
+                                value = this.permissiveValue(/[;}]/, true);
                             }
                         }
                         // Try to store values as anonymous
@@ -1622,7 +1667,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         if (value) {
                             important = this.important();
                         } else if (isVariable) {
-                            // As a last resort, try permissiveValue
+                            /**
+                             * As a last resort, try permissiveValue
+                             *
+                             * @todo - This has created some knock-on problems of not
+                             * flagging incorrect syntax or detecting user intent.
+                             */
                             value = this.permissiveValue();
                         }
                     }
@@ -1653,6 +1703,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
              * First, it will try to parse comments and entities to reach
              * the end. This is mostly like the Expression parser except no
              * math is allowed.
+             * 
+             * @param {RexExp} untilTokens - Characters to stop parsing at
              */
             permissiveValue: function (untilTokens) {
                 let i;
@@ -1718,6 +1770,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         parserInput.forget();
                         return new tree.Anonymous('', index);
                     }
+                    /** @type {string} */
                     let item;
                     for (i = 0; i < value.length; i++) {
                         item = value[i];
@@ -1731,10 +1784,16 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             }
                             // Treat like quoted values, but replace vars like unquoted expressions
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
-                            if (!item.startsWith('@{')) {
-                                quote.variableRegex = /@([\w-]+)/g;
+                            const variableRegex = /@([\w-]+)/g;
+                            const propRegex = /\$([\w-]+)/g;
+                            if (variableRegex.test(item)) {
+                                warn('@[ident] in unknown values will not be evaluated as variables in the future. Use @{[ident]}', index, 'DEPRECATED');
                             }
-                            quote.propRegex = /\$([\w-]+)/g;
+                            if (propRegex.test(item)) {
+                                warn('$[ident] in unknown values will not be evaluated as property references in the future. Use ${[ident]}', index, 'DEPRECATED');
+                            }
+                            quote.variableRegex = /@([\w-]+)|@{([\w-]+)}/g;
+                            quote.propRegex = /\$([\w-]+)|\${([\w-]+)}/g;
                             result.push(quote);
                         }
                     }
@@ -2043,6 +2102,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         hasUnknown = true;
                         isRooted = false;
                         break;
+                    case '@starting-style':
+                        isRooted = false;
+                        break;
                     default:
                         hasUnknown = true;
                         break;
@@ -2152,7 +2214,14 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                         parserInput.save();
 
-                        op = parserInput.$char('/') || parserInput.$char('*') || parserInput.$str('./');
+                        op = parserInput.$char('/') || parserInput.$char('*');
+                        if (!op) {
+                            let index = parserInput.i;
+                            op = parserInput.$str('./');
+                            if (op) {
+                                warn('./ operator is deprecated', index, 'DEPRECATED');
+                            }
+                        }
 
                         if (!op) { parserInput.forget(); break; }
 

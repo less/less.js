@@ -31,6 +31,11 @@ foo[attr="blah"] {
     this: works;
   }
 }
+@media (min-width: 640px) {
+  .with-curly {
+    this: works;
+  }
+}
 .test-rule-comment {
   --value: a /* { ; } */;
   --comment-within: ( /* okay?; comment; */ );

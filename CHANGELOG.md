@@ -1,5 +1,12 @@
 ## Change Log
 
+### v4.3.0 (2025-04-04)
+
+- [#4319](https://github.com/less/less.js/pull/4319) Add deprecation warnings to Less output during parsing and new quiet flag (@matthew-dean)
+- [#4320](https://github.com/less/less.js/pull/4320) Update README.md to remove Lerna reference (@matthew-dean)
+- [#4322](https://github.com/less/less.js/pull/4322) Revise Playwright install method for CI stability (@puckowski)
+- [#4333](https://github.com/less/less.js/pull/4333) Add support for ```starting-style``` at rule. (@puckowski)
+
 ### v4.2.2 (2025-01-04)
 
 - [#4290](https://github.com/less/less.js/pull/4290) Fix [#4268](https://github.com/less/less.js/issues/4268) nested pseudo-selector parsing (@puckowski)

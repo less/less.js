@@ -18,7 +18,7 @@ type Color struct {
 }
 
 // NewColor creates a new Color instance
-func NewColor(rgb interface{}, alpha float64, originalForm string) *Color {
+func NewColor(rgb any, alpha float64, originalForm string) *Color {
 	c := &Color{
 		Node:  NewNode(),
 		RGB:   []float64{},
@@ -145,12 +145,12 @@ func (c *Color) Luma() float64 {
 }
 
 // GenCSS generates CSS representation
-func (c *Color) GenCSS(context interface{}, output *CSSOutput) {
+func (c *Color) GenCSS(context any, output *CSSOutput) {
 	output.Add(c.ToCSS(context), nil, nil)
 }
 
 // ToCSS generates CSS string representation
-func (c *Color) ToCSS(context interface{}) string {
+func (c *Color) ToCSS(context any) string {
 	if len(c.RGB) == 0 {
 		return "#000000"
 	}
@@ -170,7 +170,7 @@ func (c *Color) ToCSS(context interface{}) string {
 	}
 
 	compress := false
-	if ctx, ok := context.(map[string]interface{}); ok {
+	if ctx, ok := context.(map[string]any); ok {
 		if comp, ok := ctx["compress"].(bool); ok {
 			compress = comp
 		}
@@ -178,7 +178,7 @@ func (c *Color) ToCSS(context interface{}) string {
 
 	alpha := c.Fround(context, c.Alpha)
 	var colorFunction string
-	var args []interface{}
+	var args []any
 
 	// Handle malformed hex strings
 	if strings.HasPrefix(c.Value, "#") {
@@ -217,7 +217,7 @@ func (c *Color) ToCSS(context interface{}) string {
 		fallthrough
 	case "hsl":
 		hsl := c.ToHSL()
-		args = append([]interface{}{
+		args = append([]any{
 			c.Fround(context, hsl.H),
 			fmt.Sprintf("%v%%", c.Fround(context, hsl.S*100)),
 			fmt.Sprintf("%v%%", c.Fround(context, hsl.L*100)),
@@ -248,7 +248,7 @@ func (c *Color) ToCSS(context interface{}) string {
 }
 
 // OperateColor performs color operations
-func (c *Color) OperateColor(context interface{}, op string, other *Color) *Color {
+func (c *Color) OperateColor(context any, op string, other *Color) *Color {
 	// Handle empty or nil colors
 	if other == nil {
 		other = NewColor([]float64{}, 1, "")

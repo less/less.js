@@ -10,7 +10,7 @@ type Comment struct {
 }
 
 // NewComment creates a new Comment instance
-func NewComment(value string, isLineComment bool, index int, currentFileInfo map[string]interface{}) *Comment {
+func NewComment(value string, isLineComment bool, index int, currentFileInfo map[string]any) *Comment {
 	comment := &Comment{
 		Node:         NewNode(),
 		Value:        value,
@@ -23,7 +23,7 @@ func NewComment(value string, isLineComment bool, index int, currentFileInfo map
 }
 
 // GenCSS generates CSS representation of the comment
-func (c *Comment) GenCSS(context interface{}, output *CSSOutput) {
+func (c *Comment) GenCSS(context any, output *CSSOutput) {
 	if c.DebugInfo != nil {
 		output.Add(DebugInfo(context.(*Context), c.DebugInfo, ""), c.FileInfo(), c.GetIndex())
 	}
@@ -31,7 +31,7 @@ func (c *Comment) GenCSS(context interface{}, output *CSSOutput) {
 }
 
 // IsSilent determines if the comment should be silent based on context
-func (c *Comment) IsSilent(context interface{}) bool {
+func (c *Comment) IsSilent(context any) bool {
 	ctx, ok := context.(*Context)
 	if !ok {
 		return false
@@ -41,7 +41,7 @@ func (c *Comment) IsSilent(context interface{}) bool {
 }
 
 // SetParent sets the parent for the comment node
-func (c *Comment) SetParent(node interface{}, parent *Node) {
+func (c *Comment) SetParent(node any, parent *Node) {
 	if parent != nil {
 		c.Parent = parent
 	}

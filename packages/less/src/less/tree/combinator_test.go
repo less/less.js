@@ -82,10 +82,10 @@ func TestCombinator(t *testing.T) {
 		t.Run("should generate CSS with no spaces for empty combinator", func(t *testing.T) {
 			combinator := NewCombinator("")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+			combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 			if len(output) != 1 || output[0] != "" {
 				t.Errorf("Expected empty string, got %v", output)
 			}
@@ -94,10 +94,10 @@ func TestCombinator(t *testing.T) {
 		t.Run("should generate CSS with no spaces for space combinator", func(t *testing.T) {
 			combinator := NewCombinator(" ")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+			combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 			if len(output) != 1 || output[0] != " " {
 				t.Errorf("Expected space, got %v", output)
 			}
@@ -106,10 +106,10 @@ func TestCombinator(t *testing.T) {
 		t.Run("should generate CSS with spaces for non-empty combinator when not compressed", func(t *testing.T) {
 			combinator := NewCombinator(">")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+			combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 			if len(output) != 1 || output[0] != " > " {
 				t.Errorf("Expected ' > ', got %v", output)
 			}
@@ -118,10 +118,10 @@ func TestCombinator(t *testing.T) {
 		t.Run("should generate CSS without spaces for non-empty combinator when compressed", func(t *testing.T) {
 			combinator := NewCombinator(">")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			combinator.GenCSS(map[string]interface{}{"compress": true}, &CSSOutput{Add: outputFunc})
+			combinator.GenCSS(map[string]any{"compress": true}, &CSSOutput{Add: outputFunc})
 			if len(output) != 1 || output[0] != ">" {
 				t.Errorf("Expected '>', got %v", output)
 			}
@@ -130,10 +130,10 @@ func TestCombinator(t *testing.T) {
 		t.Run("should generate CSS without spaces for pipe combinator even when not compressed", func(t *testing.T) {
 			combinator := NewCombinator("|")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+			combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 			if len(output) != 1 || output[0] != "|" {
 				t.Errorf("Expected '|', got %v", output)
 			}
@@ -144,10 +144,10 @@ func TestCombinator(t *testing.T) {
 			for _, value := range combinators {
 				combinator := NewCombinator(value)
 				var output []string
-				outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				outputFunc := func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				}
-				combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+				combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 				expected := " " + value + " "
 				if len(output) != 1 || output[0] != expected {
 					t.Errorf("Expected '%s', got %v", expected, output)
@@ -158,10 +158,10 @@ func TestCombinator(t *testing.T) {
 		t.Run("should handle special characters in combinator value", func(t *testing.T) {
 			combinator := NewCombinator("*")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+			combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 			if len(output) != 1 || output[0] != " * " {
 				t.Errorf("Expected ' * ', got %v", output)
 			}
@@ -172,10 +172,10 @@ func TestCombinator(t *testing.T) {
 			for _, value := range specialCombinators {
 				combinator := NewCombinator(value)
 				var output []string
-				outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				outputFunc := func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				}
-				combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+				combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 				if len(output) != 1 || output[0] != value {
 					t.Errorf("Expected '%s', got %v", value, output)
 				}
@@ -208,10 +208,10 @@ func TestCombinator(t *testing.T) {
 			for _, value := range specialChars {
 				combinator := NewCombinator(value)
 				var output []string
-				outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				outputFunc := func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				}
-				combinator.GenCSS(map[string]interface{}{"compress": false}, &CSSOutput{Add: outputFunc})
+				combinator.GenCSS(map[string]any{"compress": false}, &CSSOutput{Add: outputFunc})
 				expected := " " + value + " "
 				if len(output) != 1 || output[0] != expected {
 					t.Errorf("Expected '%s', got %v", expected, output)
@@ -222,7 +222,7 @@ func TestCombinator(t *testing.T) {
 		t.Run("should handle undefined context", func(t *testing.T) {
 			combinator := NewCombinator(">")
 			var output []string
-			outputFunc := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFunc := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			combinator.GenCSS(nil, &CSSOutput{Add: outputFunc})

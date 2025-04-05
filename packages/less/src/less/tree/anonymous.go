@@ -7,16 +7,16 @@ import (
 // Anonymous represents an anonymous node in the Less AST
 type Anonymous struct {
 	*Node
-	Value      interface{}
+	Value      any
 	Index      int
-	FileInfo   map[string]interface{}
+	FileInfo   map[string]any
 	MapLines   bool
 	RulesetLike bool
 	AllowRoot  bool
 }
 
 // NewAnonymous creates a new Anonymous instance
-func NewAnonymous(value interface{}, index int, fileInfo map[string]interface{}, mapLines bool, rulesetLike bool, visibilityInfo map[string]interface{}) *Anonymous {
+func NewAnonymous(value any, index int, fileInfo map[string]any, mapLines bool, rulesetLike bool, visibilityInfo map[string]any) *Anonymous {
 	anon := &Anonymous{
 		Node:       NewNode(),
 		Value:      value,
@@ -38,9 +38,9 @@ func NewAnonymous(value interface{}, index int, fileInfo map[string]interface{},
 }
 
 // Eval returns a new Anonymous instance with the same properties
-func (a *Anonymous) Eval() interface{} {
+func (a *Anonymous) Eval() any {
 	// Create a new instance with the same properties
-	visibilityInfo := map[string]interface{}{}
+	visibilityInfo := map[string]any{}
 	if a.VisibilityBlocks != nil {
 		blocks := *a.VisibilityBlocks
 		visibilityInfo["visibilityBlocks"] = blocks
@@ -53,7 +53,7 @@ func (a *Anonymous) Eval() interface{} {
 }
 
 // Compare compares two nodes
-func (a *Anonymous) Compare(other interface{}) interface{} {
+func (a *Anonymous) Compare(other any) any {
 	if other == nil {
 		return nil
 	}
@@ -67,14 +67,14 @@ func (a *Anonymous) Compare(other interface{}) interface{} {
 	// Compare CSS output like the JavaScript version
 	var output1, output2 string
 	a.GenCSS(nil, &CSSOutput{
-		Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+		Add: func(chunk any, fileInfo any, index any) {
 			if chunk != nil {
 				output1 += fmt.Sprintf("%v", chunk)
 			}
 		},
 	})
 	otherAnon.GenCSS(nil, &CSSOutput{
-		Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+		Add: func(chunk any, fileInfo any, index any) {
 			if chunk != nil {
 				output2 += fmt.Sprintf("%v", chunk)
 			}
@@ -94,7 +94,7 @@ func (a *Anonymous) IsRulesetLike() bool {
 }
 
 // GenCSS generates CSS representation
-func (a *Anonymous) GenCSS(context interface{}, output *CSSOutput) {
+func (a *Anonymous) GenCSS(context any, output *CSSOutput) {
 	if a.Value != nil {
 		// Always set visibility based on value like JavaScript version
 		visible := a.Value != nil && a.Value != ""
@@ -107,7 +107,7 @@ func (a *Anonymous) GenCSS(context interface{}, output *CSSOutput) {
 }
 
 // CopyVisibilityInfo copies visibility information from another node
-func (a *Anonymous) CopyVisibilityInfo(info map[string]interface{}) {
+func (a *Anonymous) CopyVisibilityInfo(info map[string]any) {
 	if info == nil {
 		return
 	}

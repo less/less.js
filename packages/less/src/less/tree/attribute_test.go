@@ -8,12 +8,12 @@ import (
 
 // MockEvaluable implements Evaluable interface for testing
 type MockEvaluable struct {
-	value interface{}
+	value any
 }
 
-func (m *MockEvaluable) Eval(context interface{}) interface{} {
-	if ctx, ok := context.(map[string]interface{}); ok {
-		if val, ok := ctx["variables"].(map[string]interface{}); ok {
+func (m *MockEvaluable) Eval(context any) any {
+	if ctx, ok := context.(map[string]any); ok {
+		if val, ok := ctx["variables"].(map[string]any); ok {
 			return val[m.value.(string)]
 		}
 	}
@@ -22,12 +22,12 @@ func (m *MockEvaluable) Eval(context interface{}) interface{} {
 
 // MockCSSable implements CSSable interface for testing
 type MockCSSable struct {
-	value interface{}
+	value any
 }
 
-func (m *MockCSSable) ToCSS(context interface{}) string {
-	if ctx, ok := context.(map[string]interface{}); ok {
-		if val, ok := ctx["variables"].(map[string]interface{}); ok {
+func (m *MockCSSable) ToCSS(context any) string {
+	if ctx, ok := context.(map[string]any); ok {
+		if val, ok := ctx["variables"].(map[string]any); ok {
 			return val[m.value.(string)].(string)
 		}
 	}
@@ -38,7 +38,7 @@ func TestAttribute(t *testing.T) {
 	tests := []struct {
 		name     string
 		attr     *Attribute
-		context  interface{}
+		context  any
 		expected string
 		expectError bool
 	}{
@@ -65,8 +65,8 @@ func TestAttribute(t *testing.T) {
 				&MockEvaluable{value: "value"},
 				"",
 			),
-			context: map[string]interface{}{
-				"variables": map[string]interface{}{
+			context: map[string]any{
+				"variables": map[string]any{
 					"key":   "data-test",
 					"value": "test-value",
 				},
@@ -81,8 +81,8 @@ func TestAttribute(t *testing.T) {
 				&MockCSSable{value: "value"},
 				"",
 			),
-			context: map[string]interface{}{
-				"variables": map[string]interface{}{
+			context: map[string]any{
+				"variables": map[string]any{
 					"key":   "data-test",
 					"value": "test-value",
 				},
@@ -147,8 +147,8 @@ func TestAttribute(t *testing.T) {
 		{
 			name:     "attribute with evaluable object with only eval method",
 			attr:     NewAttribute(&MockEvaluable{value: "key"}, "=", "value", ""),
-			context: map[string]interface{}{
-				"variables": map[string]interface{}{
+			context: map[string]any{
+				"variables": map[string]any{
 					"key": "data-test",
 				},
 			},
@@ -157,8 +157,8 @@ func TestAttribute(t *testing.T) {
 		{
 			name:     "attribute with evaluable object with only toCSS method",
 			attr:     NewAttribute(&MockCSSable{value: "key"}, "=", "value", ""),
-			context: map[string]interface{}{
-				"variables": map[string]interface{}{
+			context: map[string]any{
+				"variables": map[string]any{
 					"key": "data-test",
 				},
 			},
@@ -203,7 +203,7 @@ func TestAttribute(t *testing.T) {
 func TestAttributeGenCSS(t *testing.T) {
 	attr := NewAttribute("data-test", "=", "value", "")
 	output := &CSSOutput{
-		Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+		Add: func(chunk any, fileInfo any, index any) {
 			if chunk != "[data-test=value]" {
 				t.Errorf("GenCSS() output = %v, want %v", chunk, "[data-test=value]")
 			}

@@ -10,24 +10,46 @@ func TestGetLocation(t *testing.T) {
 		input := "first line\nsecond line\nthird line"
 		index := strings.Index(input, "second")
 		result := GetLocation(index, input)
-		expectedColumn := index - (strings.Index(input, "\n") + 1)
 		if result.Line == nil || *result.Line != 1 {
 			t.Errorf("Expected line to be 1, got %v", result.Line)
 		}
-		if result.Column != expectedColumn {
-			t.Errorf("Expected column to be %d, got %d", expectedColumn, result.Column)
+		if result.Column != 0 {
+			t.Errorf("Expected column to be 0, got %d", result.Column)
 		}
 	})
 
-	t.Run("should return column counting correctly when no newline is present before index", func(t *testing.T) {
-		input := "abcdefghijklmnopqrstuvwxyz"
-		index := 10
-		result := GetLocation(index, input)
-		if result.Line != nil && *result.Line != 0 {
+	t.Run("should handle index at start of file", func(t *testing.T) {
+		input := "first line\nsecond line"
+		result := GetLocation(0, input)
+		if result.Line == nil || *result.Line != 0 {
 			t.Errorf("Expected line to be 0, got %v", result.Line)
 		}
-		if result.Column != index {
-			t.Errorf("Expected column to be %d, got %d", index, result.Column)
+		if result.Column != 0 {
+			t.Errorf("Expected column to be 0, got %d", result.Column)
+		}
+	})
+
+	t.Run("should handle index at end of line", func(t *testing.T) {
+		input := "first\nsecond\n"
+		index := strings.Index(input, "\n")
+		result := GetLocation(index, input)
+		if result.Line == nil || *result.Line != 0 {
+			t.Errorf("Expected line to be 0, got %v", result.Line)
+		}
+		if result.Column != 5 {
+			t.Errorf("Expected column to be 5, got %d", result.Column)
+		}
+	})
+
+	t.Run("should handle index after newline", func(t *testing.T) {
+		input := "first\nsecond"
+		index := strings.Index(input, "second")
+		result := GetLocation(index, input)
+		if result.Line == nil || *result.Line != 1 {
+			t.Errorf("Expected line to be 1, got %v", result.Line)
+		}
+		if result.Column != 0 {
+			t.Errorf("Expected column to be 0, got %d", result.Column)
 		}
 	})
 
@@ -41,11 +63,44 @@ func TestGetLocation(t *testing.T) {
 			t.Errorf("Expected column to be -1, got %d", result.Column)
 		}
 	})
+
+	t.Run("should handle index at end of file", func(t *testing.T) {
+		input := "first\nsecond"
+		result := GetLocation(len(input), input)
+		if result.Line == nil || *result.Line != 1 {
+			t.Errorf("Expected line to be 1, got %v", result.Line)
+		}
+		if result.Column != 6 {
+			t.Errorf("Expected column to be 6, got %d", result.Column)
+		}
+	})
+
+	t.Run("should handle out of bounds index", func(t *testing.T) {
+		input := "first\nsecond"
+		result := GetLocation(len(input)+1, input)
+		if result.Line != nil {
+			t.Errorf("Expected line to be nil, got %v", result.Line)
+		}
+		if result.Column != -1 {
+			t.Errorf("Expected column to be -1, got %d", result.Column)
+		}
+	})
+
+	t.Run("should handle negative index", func(t *testing.T) {
+		input := "first\nsecond"
+		result := GetLocation(-1, input)
+		if result.Line != nil {
+			t.Errorf("Expected line to be nil, got %v", result.Line)
+		}
+		if result.Column != -1 {
+			t.Errorf("Expected column to be -1, got %d", result.Column)
+		}
+	})
 }
 
 func TestCopyArray(t *testing.T) {
 	t.Run("should return a shallow copy of the array", func(t *testing.T) {
-		arr := []interface{}{1, 2, 3}
+		arr := []any{1, 2, 3}
 		newArr := CopyArray(arr)
 		if len(newArr) != len(arr) {
 			t.Errorf("Expected length %d, got %d", len(arr), len(newArr))
@@ -58,7 +113,7 @@ func TestCopyArray(t *testing.T) {
 	})
 
 	t.Run("should work for an empty array", func(t *testing.T) {
-		arr := []interface{}{}
+		arr := []any{}
 		newArr := CopyArray(arr)
 		if len(newArr) != 0 {
 			t.Errorf("Expected empty array, got length %d", len(newArr))
@@ -68,7 +123,7 @@ func TestCopyArray(t *testing.T) {
 
 func TestClone(t *testing.T) {
 	t.Run("should clone only own properties", func(t *testing.T) {
-		obj := map[string]interface{}{
+		obj := map[string]any{
 			"a": 1,
 			"b": 2,
 		}
@@ -82,7 +137,7 @@ func TestClone(t *testing.T) {
 	})
 
 	t.Run("should return an empty map when cloning an empty map", func(t *testing.T) {
-		obj := map[string]interface{}{}
+		obj := map[string]any{}
 		cloned := Clone(obj)
 		if len(cloned) != 0 {
 			t.Errorf("Expected empty map, got length %d", len(cloned))
@@ -92,12 +147,12 @@ func TestClone(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	t.Run("should merge default properties when obj2 is nil", func(t *testing.T) {
-		obj1 := map[string]interface{}{
+		obj1 := map[string]any{
 			"a": 1,
 			"b": 2,
 		}
 		result := Defaults(obj1, nil)
-		if defaults, ok := result["_defaults"].(map[string]interface{}); !ok {
+		if defaults, ok := result["_defaults"].(map[string]any); !ok {
 			t.Error("Expected _defaults property")
 		} else if defaults["a"] != 1 || defaults["b"] != 2 {
 			t.Errorf("Expected _defaults to be %v, got %v", obj1, defaults)
@@ -108,16 +163,16 @@ func TestDefaults(t *testing.T) {
 	})
 
 	t.Run("should merge defaults when obj2 does not contain _defaults", func(t *testing.T) {
-		obj1 := map[string]interface{}{
+		obj1 := map[string]any{
 			"a": 1,
 			"b": 2,
 		}
-		obj2 := map[string]interface{}{
+		obj2 := map[string]any{
 			"b": 3,
 			"c": 4,
 		}
 		result := Defaults(obj1, obj2)
-		if defaults, ok := result["_defaults"].(map[string]interface{}); !ok {
+		if defaults, ok := result["_defaults"].(map[string]any); !ok {
 			t.Error("Expected _defaults property")
 		} else if defaults["a"] != 1 || defaults["b"] != 2 {
 			t.Errorf("Expected _defaults to be %v, got %v", obj1, defaults)
@@ -128,12 +183,12 @@ func TestDefaults(t *testing.T) {
 	})
 
 	t.Run("should return obj2 unchanged if it already has _defaults", func(t *testing.T) {
-		obj1 := map[string]interface{}{
+		obj1 := map[string]any{
 			"a": 1,
 		}
-		obj2 := map[string]interface{}{
+		obj2 := map[string]any{
 			"b": 2,
-			"_defaults": map[string]interface{}{
+			"_defaults": map[string]any{
 				"already": true,
 			},
 		}
@@ -141,7 +196,7 @@ func TestDefaults(t *testing.T) {
 		if result["b"] != 2 {
 			t.Errorf("Expected b to be 2, got %v", result["b"])
 		}
-		if defaults, ok := result["_defaults"].(map[string]interface{}); !ok || defaults["already"] != true {
+		if defaults, ok := result["_defaults"].(map[string]any); !ok || defaults["already"] != true {
 			t.Error("Expected _defaults to be unchanged")
 		}
 	})
@@ -149,31 +204,31 @@ func TestDefaults(t *testing.T) {
 
 func TestCopyOptions(t *testing.T) {
 	t.Run("should return opts as is if _defaults property exists", func(t *testing.T) {
-		opts := map[string]interface{}{
-			"_defaults": map[string]interface{}{"a": 1},
+		opts := map[string]any{
+			"_defaults": map[string]any{"a": 1},
 			"math":     "always",
 		}
-		result := CopyOptions(map[string]interface{}{}, opts)
+		result := CopyOptions(map[string]any{}, opts)
 		if result["math"] != "always" {
 			t.Errorf("Expected math to be 'always', got %v", result["math"])
 		}
 	})
 
 	t.Run("should add strictMath change to opts", func(t *testing.T) {
-		opts := map[string]interface{}{
+		opts := map[string]any{
 			"strictMath": true,
 		}
-		result := CopyOptions(map[string]interface{}{}, opts)
+		result := CopyOptions(map[string]any{}, opts)
 		if result["math"] != Math.Parens {
 			t.Errorf("Expected math to be Math.Parens, got %v", result["math"])
 		}
 	})
 
 	t.Run("should handle relativeUrls option", func(t *testing.T) {
-		opts := map[string]interface{}{
+		opts := map[string]any{
 			"relativeUrls": true,
 		}
-		result := CopyOptions(map[string]interface{}{}, opts)
+		result := CopyOptions(map[string]any{}, opts)
 		if result["rewriteUrls"] != RewriteUrls.All {
 			t.Errorf("Expected rewriteUrls to be RewriteUrls.All, got %v", result["rewriteUrls"])
 		}
@@ -192,10 +247,10 @@ func TestCopyOptions(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			opts := map[string]interface{}{
+			opts := map[string]any{
 				"math": c.input,
 			}
-			result := CopyOptions(map[string]interface{}{}, opts)
+			result := CopyOptions(map[string]any{}, opts)
 			if result["math"] != c.expected {
 				t.Errorf("For input %s, expected %v, got %v", c.input, c.expected, result["math"])
 			}
@@ -213,10 +268,10 @@ func TestCopyOptions(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			opts := map[string]interface{}{
+			opts := map[string]any{
 				"rewriteUrls": c.input,
 			}
-			result := CopyOptions(map[string]interface{}{}, opts)
+			result := CopyOptions(map[string]any{}, opts)
 			if result["rewriteUrls"] != c.expected {
 				t.Errorf("For input %s, expected %v, got %v", c.input, c.expected, result["rewriteUrls"])
 			}
@@ -224,11 +279,11 @@ func TestCopyOptions(t *testing.T) {
 	})
 
 	t.Run("should keep numeric math and rewriteUrls values unchanged", func(t *testing.T) {
-		opts := map[string]interface{}{
+		opts := map[string]any{
 			"math":         Math.ParensDivision,
 			"rewriteUrls":  RewriteUrls.Local,
 		}
-		result := CopyOptions(map[string]interface{}{}, opts)
+		result := CopyOptions(map[string]any{}, opts)
 		if result["math"] != Math.ParensDivision {
 			t.Errorf("Expected math to be Math.ParensDivision, got %v", result["math"])
 		}
@@ -240,11 +295,11 @@ func TestCopyOptions(t *testing.T) {
 
 func TestMerge(t *testing.T) {
 	t.Run("should merge properties from obj2 into obj1", func(t *testing.T) {
-		obj1 := map[string]interface{}{
+		obj1 := map[string]any{
 			"a": 1,
 			"b": 2,
 		}
-		obj2 := map[string]interface{}{
+		obj2 := map[string]any{
 			"b": 3,
 			"c": 4,
 		}
@@ -255,10 +310,10 @@ func TestMerge(t *testing.T) {
 	})
 
 	t.Run("should overwrite properties in obj1 with those in obj2", func(t *testing.T) {
-		obj1 := map[string]interface{}{
+		obj1 := map[string]any{
 			"key": "value1",
 		}
-		obj2 := map[string]interface{}{
+		obj2 := map[string]any{
 			"key": "value2",
 		}
 		result := Merge(obj1, obj2)
@@ -270,17 +325,17 @@ func TestMerge(t *testing.T) {
 
 func TestFlattenArray(t *testing.T) {
 	t.Run("should flatten nested arrays", func(t *testing.T) {
-		arr := []interface{}{
+		arr := []any{
 			1,
-			[]interface{}{
+			[]any{
 				2,
-				[]interface{}{3, 4},
+				[]any{3, 4},
 				5,
 			},
 			6,
 		}
 		result := FlattenArray(arr)
-		expected := []interface{}{1, 2, 3, 4, 5, 6}
+		expected := []any{1, 2, 3, 4, 5, 6}
 		if len(result) != len(expected) {
 			t.Errorf("Expected length %d, got %d", len(expected), len(result))
 		}
@@ -292,17 +347,17 @@ func TestFlattenArray(t *testing.T) {
 	})
 
 	t.Run("should ignore nil values", func(t *testing.T) {
-		arr := []interface{}{
+		arr := []any{
 			1,
 			nil,
-			[]interface{}{
+			[]any{
 				2,
 				nil,
 				3,
 			},
 		}
 		result := FlattenArray(arr)
-		expected := []interface{}{1, 2, 3}
+		expected := []any{1, 2, 3}
 		if len(result) != len(expected) {
 			t.Errorf("Expected length %d, got %d", len(expected), len(result))
 		}
@@ -314,7 +369,7 @@ func TestFlattenArray(t *testing.T) {
 	})
 
 	t.Run("should handle an already flat array", func(t *testing.T) {
-		arr := []interface{}{1, 2, 3}
+		arr := []any{1, 2, 3}
 		result := FlattenArray(arr)
 		if len(result) != len(arr) {
 			t.Errorf("Expected length %d, got %d", len(arr), len(result))
@@ -335,11 +390,11 @@ func TestIsNullOrUndefined(t *testing.T) {
 	})
 
 	t.Run("should return false for non-nil values", func(t *testing.T) {
-		values := []interface{}{
+		values := []any{
 			0,
 			"",
 			false,
-			map[string]interface{}{},
+			map[string]any{},
 		}
 		for _, v := range values {
 			if IsNullOrUndefined(v) {

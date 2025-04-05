@@ -21,7 +21,7 @@ type Dimension struct {
 
 // NewDimension creates a new Dimension instance.
 // value can be a number (int, float64) or a numeric string. unit can be a string or *Unit. If unit is nil or empty string, an empty Unit is used.
-func NewDimension(value interface{}, unit interface{}) (*Dimension, error) {
+func NewDimension(value any, unit any) (*Dimension, error) {
 	var v float64
 	switch t := value.(type) {
 	case float64:
@@ -32,13 +32,13 @@ func NewDimension(value interface{}, unit interface{}) (*Dimension, error) {
 		var err error
 		v, err = strconv.ParseFloat(t, 64)
 		if err != nil {
-			return nil, errors.New("Dimension is not a number.")
+			return nil, errors.New("Dimension is not a number")
 		}
 	default:
-		return nil, errors.New("Dimension is not a number.")
+		return nil, errors.New("Dimension is not a number")
 	}
 	if math.IsNaN(v) {
-		return nil, errors.New("Dimension is not a number.")
+		return nil, errors.New("Dimension is not a number")
 	}
 
 	var u *Unit
@@ -93,7 +93,7 @@ func (d *Dimension) Accept(visitor Visitor) {
 }
 
 // Eval returns the dimension itself.
-func (d *Dimension) Eval(context interface{}) *Dimension {
+func (d *Dimension) Eval(context any) *Dimension {
 	return d
 }
 
@@ -103,10 +103,10 @@ func (d *Dimension) ToColor() *Color {
 }
 
 // GenCSS generates the CSS representation for the Dimension.
-func (d *Dimension) GenCSS(context interface{}, output *CSSOutput) {
+func (d *Dimension) GenCSS(context any, output *CSSOutput) {
 	var strictUnits bool
 	var compress bool
-	if ctx, ok := context.(map[string]interface{}); ok {
+	if ctx, ok := context.(map[string]any); ok {
 		if val, exists := ctx["strictUnits"].(bool); exists {
 			strictUnits = val
 		}
@@ -131,9 +131,7 @@ func (d *Dimension) GenCSS(context interface{}, output *CSSOutput) {
 			return
 		}
 		if roundedValue > 0 && roundedValue < 1 {
-			if strings.HasPrefix(strValue, "0") {
-				strValue = strValue[1:]
-			}
+			strValue = strings.TrimPrefix(strValue, "0")
 		}
 	}
 	output.Add(strValue, nil, nil)
@@ -141,7 +139,7 @@ func (d *Dimension) GenCSS(context interface{}, output *CSSOutput) {
 }
 
 // Operate performs an arithmetic operation between two Dimensions and returns a new Dimension.
-func (d *Dimension) Operate(context interface{}, op string, other *Dimension) *Dimension {
+func (d *Dimension) Operate(context any, op string, other *Dimension) *Dimension {
 	value := d.OperateArithmetic(context, op, d.Value, other.Value)
 	unit := d.Unit.Clone()
 
@@ -155,7 +153,7 @@ func (d *Dimension) Operate(context interface{}, op string, other *Dimension) *D
 			// do nothing
 		} else {
 			otherConverted := other.ConvertTo(d.Unit.UsedUnits())
-			if ctx, ok := context.(map[string]interface{}); ok {
+			if ctx, ok := context.(map[string]any); ok {
 				if strict, exists := ctx["strictUnits"].(bool); exists && strict {
 					if otherConverted.Unit.ToString() != unit.ToString() {
 						panic(fmt.Sprintf("Incompatible units. Change the units or use the unit function. Bad units: '%s' and '%s'.", unit.ToString(), otherConverted.Unit.ToString()))
@@ -181,12 +179,12 @@ func (d *Dimension) Operate(context interface{}, op string, other *Dimension) *D
 }
 
 // OperateArithmetic wraps Node.Operate for performing arithmetic operations.
-func (d *Dimension) OperateArithmetic(context interface{}, op string, a, b float64) float64 {
+func (d *Dimension) OperateArithmetic(context any, op string, a, b float64) float64 {
 	return d.Node.Operate(context, op, a, b)
 }
 
 // Compare compares the Dimension with another. It returns a pointer to int if comparable, or nil if not (simulating undefined in JS).
-func (d *Dimension) Compare(other interface{}) *int {
+func (d *Dimension) Compare(other any) *int {
 	o, ok := other.(*Dimension)
 	if !ok || o == nil {
 		return nil
@@ -208,12 +206,12 @@ func (d *Dimension) Compare(other interface{}) *int {
 
 // Unify converts the Dimension to standard units.
 func (d *Dimension) Unify() *Dimension {
-	conv := map[string]interface{}{ "length": "px", "duration": "s", "angle": "rad" }
+	conv := map[string]any{ "length": "px", "duration": "s", "angle": "rad" }
 	return d.ConvertTo(conv)
 }
 
 // ConvertTo converts the Dimension to specified units. 'conversions' may be a string or a map from group to target unit.
-func (d *Dimension) ConvertTo(conversions interface{}) *Dimension {
+func (d *Dimension) ConvertTo(conversions any) *Dimension {
 	value := d.Value
 	unit := d.Unit.Clone()
 	var convMap map[string]string
@@ -230,7 +228,7 @@ func (d *Dimension) ConvertTo(conversions interface{}) *Dimension {
 		if _, ok := data.UnitConversionsAngle[t]; ok {
 			convMap["angle"] = t
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		convMap = make(map[string]string)
 		for key, val := range t {
 			if s, ok := val.(string); ok {

@@ -123,7 +123,7 @@ func TestColor(t *testing.T) {
 
 	t.Run("should generate compressed CSS when context.compress is true", func(t *testing.T) {
 		color := NewColor([]float64{255, 0, 0}, 1, "")
-		expectString(t, color.ToCSS(map[string]interface{}{"compress": true}), "#f00")
+		expectString(t, color.ToCSS(map[string]any{"compress": true}), "#f00")
 	})
 
 	t.Run("should clamp alpha values in CSS output", func(t *testing.T) {
@@ -236,8 +236,8 @@ func TestColor(t *testing.T) {
 	// Context Formatting
 	t.Run("should respect context formatting options", func(t *testing.T) {
 		color := NewColor([]float64{255, 0, 0}, 1, "")
-		expectString(t, color.ToCSS(map[string]interface{}{"compress": true}), "#f00")
-		expectString(t, color.ToCSS(map[string]interface{}{"compress": false}), "#ff0000")
+		expectString(t, color.ToCSS(map[string]any{"compress": true}), "#f00")
+		expectString(t, color.ToCSS(map[string]any{"compress": false}), "#ff0000")
 	})
 
 	// Additional HSL/HSV Input Tests
@@ -345,7 +345,7 @@ func TestColor(t *testing.T) {
 
 		// All formats should represent the same color
 		expectString(t, color.ToCSS(nil), "#ff0000")
-		expectString(t, color.ToCSS(map[string]interface{}{"compress": true}), "#f00")
+		expectString(t, color.ToCSS(map[string]any{"compress": true}), "#f00")
 	})
 
 	// Value Clamping Tests
@@ -419,14 +419,14 @@ func expectInt(t *testing.T, got, want int) {
 	}
 }
 
-func expectNil(t *testing.T, got interface{}) {
+func expectNil(t *testing.T, got any) {
 	t.Helper()
 	if got != nil {
 		t.Errorf("Expected nil, got %v", got)
 	}
 }
 
-func expectNotNil(t *testing.T, got interface{}) {
+func expectNotNil(t *testing.T, got any) {
 	t.Helper()
 	if got == nil {
 		t.Error("Expected non-nil value, got nil")

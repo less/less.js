@@ -9,7 +9,7 @@ import (
 // DebugContext represents the context containing debug information
 type DebugContext struct {
 	DebugInfo struct {
-		LineNumber interface{}
+		LineNumber any
 		FileName   string
 	}
 }

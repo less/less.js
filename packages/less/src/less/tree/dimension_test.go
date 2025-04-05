@@ -13,7 +13,7 @@ type testCSSOutput struct {
 	output string
 }
 
-func (t *testCSSOutput) Add(chunk interface{}, _ interface{}, _ interface{}) {
+func (t *testCSSOutput) Add(chunk any, _ any, _ any) {
 	t.output += fmt.Sprintf("%v", chunk)
 }
 
@@ -22,7 +22,7 @@ func (t *testCSSOutput) IsEmpty() bool {
 }
 
 // Helper to create a new Dimension and fail test if error
-func mustNewDimension(t *testing.T, value interface{}, unit interface{}) *Dimension {
+func mustNewDimension(t *testing.T, value any, unit any) *Dimension {
 	d, err := NewDimension(value, unit)
 	if err != nil {
 		t.Fatalf("Failed to create Dimension: %v", err)
@@ -124,7 +124,7 @@ func TestToColor(t *testing.T) {
 // TestGenCSS tests the CSS output generation
 func TestGenCSS(t *testing.T) {
 	// Helper to get CSS string output
-	genCSS := func(d *Dimension, context map[string]interface{}) string {
+	genCSS := func(d *Dimension, context map[string]any) string {
 		testOut := &testCSSOutput{}
 		cssOut := &CSSOutput{
 			Add:     testOut.Add,
@@ -136,7 +136,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("generate CSS with value and unit", func(t *testing.T) {
 		d := mustNewDimension(t, 5, "px")
-		out := genCSS(d, map[string]interface{}{})
+		out := genCSS(d, map[string]any{})
 		expected := "5px"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -145,7 +145,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("handle zero values without unit in compressed mode", func(t *testing.T) {
 		d := mustNewDimension(t, 0, "px")
-		out := genCSS(d, map[string]interface{}{ "compress": true })
+		out := genCSS(d, map[string]any{ "compress": true })
 		expected := "0"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -154,7 +154,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("handle small values correctly", func(t *testing.T) {
 		d := mustNewDimension(t, 0.0000001, nil)
-		out := genCSS(d, map[string]interface{}{})
+		out := genCSS(d, map[string]any{})
 		expected := "0.0000001"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -163,7 +163,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("remove leading zero in compressed mode", func(t *testing.T) {
 		d := mustNewDimension(t, 0.5, "px")
-		out := genCSS(d, map[string]interface{}{ "compress": true })
+		out := genCSS(d, map[string]any{ "compress": true })
 		expected := ".5px"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -188,12 +188,12 @@ func TestGenCSS(t *testing.T) {
 			Add:     testOut.Add,
 			IsEmpty: testOut.IsEmpty,
 		}
-		d.GenCSS(map[string]interface{}{ "strictUnits": true }, cssOut) // Pass cssOut
+		d.GenCSS(map[string]any{ "strictUnits": true }, cssOut) // Pass cssOut
 	})
 
 	t.Run("output zero value with unit in non-compressed mode", func(t *testing.T) {
 		d := mustNewDimension(t, 0, "px")
-		out := genCSS(d, map[string]interface{}{})
+		out := genCSS(d, map[string]any{})
 		expected := "0px"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -202,7 +202,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("output zero value with non-length unit in compressed mode", func(t *testing.T) {
 		d := mustNewDimension(t, 0, "%")
-		out := genCSS(d, map[string]interface{}{ "compress": true })
+		out := genCSS(d, map[string]any{ "compress": true })
 		expected := "0%"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -211,7 +211,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("handle negative values between -1 and 0 in compressed mode", func(t *testing.T) {
 		d := mustNewDimension(t, -0.5, "px")
-		out := genCSS(d, map[string]interface{}{ "compress": true })
+		out := genCSS(d, map[string]any{ "compress": true })
 		expected := "-0.5px"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -220,7 +220,7 @@ func TestGenCSS(t *testing.T) {
 
 	t.Run("handle very small values near zero", func(t *testing.T) {
 		d := mustNewDimension(t, 0.0000005, "px")
-		out := genCSS(d, map[string]interface{}{})
+		out := genCSS(d, map[string]any{})
 		expected := "0.0000005px"
 		if out != expected {
 			t.Errorf("expected '%s', got '%s'", expected, out)
@@ -446,7 +446,7 @@ func TestConvertTo(t *testing.T) {
 
 	t.Run("convert to specified units object", func(t *testing.T) {
 		d := mustNewDimension(t, 5, "px")
-		convMap := map[string]interface{}{ "length": "cm" }
+		convMap := map[string]any{ "length": "cm" }
 		converted := d.ConvertTo(convMap)
 		if converted.Unit.ToString() != "cm" {
 			t.Errorf("expected unit 'cm', got '%s'", converted.Unit.ToString())
@@ -455,7 +455,7 @@ func TestConvertTo(t *testing.T) {
 
 	t.Run("handle multiple unit conversions, target length takes precedence", func(t *testing.T) {
 		d := mustNewDimension(t, 5, "px")
-		convMap := map[string]interface{}{ "length": "cm", "duration": "s" }
+		convMap := map[string]any{ "length": "cm", "duration": "s" }
 		converted := d.ConvertTo(convMap)
 		if converted.Unit.ToString() != "cm" {
 			t.Errorf("expected unit 'cm', got '%s'", converted.Unit.ToString())
@@ -472,7 +472,7 @@ func TestConvertTo(t *testing.T) {
 
 	t.Run("do not convert when target unit is from a different group", func(t *testing.T) {
 		d := mustNewDimension(t, 1, "px")
-		converted := d.ConvertTo(map[string]interface{}{ "angle": "deg" })
+		converted := d.ConvertTo(map[string]any{ "angle": "deg" })
 		if converted.Unit.ToString() != "px" {
 			t.Errorf("expected unit 'px', got '%s'", converted.Unit.ToString())
 		}

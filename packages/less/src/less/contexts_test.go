@@ -7,9 +7,10 @@ import (
 func TestContexts(t *testing.T) {
 	t.Run("Parse context", func(t *testing.T) {
 		t.Run("should create a Parse context with default options", func(t *testing.T) {
-			parseContext := NewParse(map[string]interface{}{})
+			parseContext := NewParse(map[string]any{})
 			if parseContext == nil {
 				t.Error("Parse context should be defined")
+				return
 			}
 			if parseContext.Paths != nil {
 				t.Error("Paths should be nil")
@@ -17,7 +18,7 @@ func TestContexts(t *testing.T) {
 		})
 
 		t.Run("should copy all specified properties from options", func(t *testing.T) {
-			options := map[string]interface{}{
+			options := map[string]any{
 				"paths":           []string{"/test/path"},
 				"rewriteUrls":     RewriteUrlsAll,
 				"rootpath":        "/root",
@@ -80,7 +81,7 @@ func TestContexts(t *testing.T) {
 		})
 
 		t.Run("should convert string paths to array", func(t *testing.T) {
-			parseContext := NewParse(map[string]interface{}{
+			parseContext := NewParse(map[string]any{
 				"paths": "/test/path",
 			})
 			if len(parseContext.Paths) != 1 || parseContext.Paths[0] != "/test/path" {
@@ -89,7 +90,7 @@ func TestContexts(t *testing.T) {
 		})
 
 		t.Run("should handle empty paths array", func(t *testing.T) {
-			parseContext := NewParse(map[string]interface{}{
+			parseContext := NewParse(map[string]any{
 				"paths": []string{},
 			})
 			if len(parseContext.Paths) != 0 {
@@ -100,9 +101,9 @@ func TestContexts(t *testing.T) {
 
 	t.Run("Eval context", func(t *testing.T) {
 		t.Run("should create an Eval context with default options", func(t *testing.T) {
-			evalContext := NewEval(map[string]interface{}{}, nil)
+			evalContext := NewEval(map[string]any{}, nil)
 			if evalContext == nil {
-				t.Error("Eval context should be defined")
+				t.Fatal("Eval context should be defined")
 			}
 			if len(evalContext.Frames) != 0 {
 				t.Error("Frames should be empty")
@@ -119,7 +120,7 @@ func TestContexts(t *testing.T) {
 		})
 
 		t.Run("should copy all specified properties from options", func(t *testing.T) {
-			options := map[string]interface{}{
+			options := map[string]any{
 				"paths":            []string{"/test/path"},
 				"compress":         true,
 				"math":             MathParens,
@@ -171,7 +172,7 @@ func TestContexts(t *testing.T) {
 
 		t.Run("calc stack operations", func(t *testing.T) {
 			t.Run("should handle entering and exiting calc context", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 
 				evalContext.EnterCalc()
 				if !evalContext.InCalc {
@@ -206,7 +207,7 @@ func TestContexts(t *testing.T) {
 
 		t.Run("parenthesis stack operations", func(t *testing.T) {
 			t.Run("should handle entering and exiting parenthesis context", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 
 				evalContext.InParenthesis()
 				if len(evalContext.ParensStack) != 1 || !evalContext.ParensStack[0] {
@@ -232,7 +233,7 @@ func TestContexts(t *testing.T) {
 
 		t.Run("math operations", func(t *testing.T) {
 			t.Run("should handle math operations correctly based on settings", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{
+				evalContext := NewEval(map[string]any{
 					"math": MathAlways,
 				}, nil)
 
@@ -276,7 +277,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should handle invalid operators when mathOn is true", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if !evalContext.IsMathOn("invalid") {
 					t.Error("Math should be on for invalid operator")
 				}
@@ -286,7 +287,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should respect mathOn setting", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				evalContext.MathOn = false
 				if evalContext.IsMathOn("+") {
 					t.Error("Math should be off when mathOn is false")
@@ -302,7 +303,7 @@ func TestContexts(t *testing.T) {
 
 		t.Run("path handling", func(t *testing.T) {
 			t.Run("should correctly identify relative paths", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.PathRequiresRewrite("http://example.com") {
 					t.Error("Should not rewrite http URLs")
 				}
@@ -321,7 +322,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should correctly identify local relative paths", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{
+				evalContext := NewEval(map[string]any{
 					"rewriteUrls": RewriteUrlsLocal,
 				}, nil)
 				if !evalContext.PathRequiresRewrite("./local/path") {
@@ -336,7 +337,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should normalize paths correctly", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("a/b/c") != "a/b/c" {
 					t.Error("Should not modify simple paths")
 				}
@@ -355,7 +356,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should rewrite paths correctly with rootpath", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.RewritePath("path/to/file", "/root") != "/rootpath/to/file" {
 					t.Error("Should rewrite path with rootpath")
 				}
@@ -368,7 +369,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should handle paths with special characters", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("path/with spaces/file") != "path/with spaces/file" {
 					t.Error("Should preserve spaces in paths")
 				}
@@ -381,7 +382,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should handle Windows-style paths", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("C:\\path\\to\\file") != "C:\\path\\to\\file" {
 					t.Error("Should preserve Windows backslashes")
 				}
@@ -391,7 +392,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should handle URLs with query parameters and hash fragments", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.PathRequiresRewrite("http://example.com?param=value") {
 					t.Error("Should not rewrite URLs with query parameters")
 				}
@@ -406,15 +407,15 @@ func TestContexts(t *testing.T) {
 
 		t.Run("frames handling", func(t *testing.T) {
 			t.Run("should initialize with provided frames", func(t *testing.T) {
-				frames := []interface{}{struct{ ID int }{1}, struct{ ID int }{2}}
-				evalContext := NewEval(map[string]interface{}{}, frames)
+				frames := []any{struct{ ID int }{1}, struct{ ID int }{2}}
+				evalContext := NewEval(map[string]any{}, frames)
 				if len(evalContext.Frames) != 2 {
 					t.Error("Should initialize with provided frames")
 				}
 			})
 
 			t.Run("should initialize with empty frames array if not provided", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if len(evalContext.Frames) != 0 {
 					t.Error("Should initialize with empty frames array")
 				}
@@ -424,7 +425,7 @@ func TestContexts(t *testing.T) {
 		t.Run("importantScope handling", func(t *testing.T) {
 			t.Run("should initialize with provided importantScope", func(t *testing.T) {
 				importantScope := []string{"!important"}
-				evalContext := NewEval(map[string]interface{}{
+				evalContext := NewEval(map[string]any{
 					"importantScope": importantScope,
 				}, nil)
 				if len(evalContext.ImportantScope) != 1 || evalContext.ImportantScope[0] != "!important" {
@@ -433,7 +434,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should initialize with empty importantScope array if not provided", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if len(evalContext.ImportantScope) != 0 {
 					t.Error("Should initialize with empty importantScope array")
 				}
@@ -442,21 +443,21 @@ func TestContexts(t *testing.T) {
 
 		t.Run("path normalization edge cases", func(t *testing.T) {
 			t.Run("should preserve multiple consecutive slashes", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("a//b///c") != "a//b///c" {
 					t.Error("Should preserve multiple consecutive slashes")
 				}
 			})
 
 			t.Run("should handle empty path", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("") != "" {
 					t.Error("Should handle empty path")
 				}
 			})
 
 			t.Run("should handle root path", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{}, nil)
+				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("/") != "/" {
 					t.Error("Should handle root path")
 				}
@@ -465,7 +466,7 @@ func TestContexts(t *testing.T) {
 
 		t.Run("url handling", func(t *testing.T) {
 			t.Run("should handle urlArgs correctly", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{
+				evalContext := NewEval(map[string]any{
 					"urlArgs": "?v=1",
 				}, nil)
 				if evalContext.UrlArgs != "?v=1" {
@@ -474,7 +475,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should handle javascriptEnabled option", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{
+				evalContext := NewEval(map[string]any{
 					"javascriptEnabled": true,
 				}, nil)
 				if !evalContext.JavascriptEnabled {
@@ -483,7 +484,7 @@ func TestContexts(t *testing.T) {
 			})
 
 			t.Run("should handle importMultiple option", func(t *testing.T) {
-				evalContext := NewEval(map[string]interface{}{
+				evalContext := NewEval(map[string]any{
 					"importMultiple": true,
 				}, nil)
 				if !evalContext.ImportMultiple {
@@ -506,7 +507,7 @@ func TestCopyFromOriginal(t *testing.T) {
 
 	t.Run("should handle empty original map", func(t *testing.T) {
 		parse := &Parse{}
-		copyFromOriginal(map[string]interface{}{}, parse)
+		copyFromOriginal(map[string]any{}, parse)
 		// Should not panic and parse should remain unchanged
 		if parse.Paths != nil {
 			t.Error("Parse should remain unchanged with empty original")
@@ -515,7 +516,7 @@ func TestCopyFromOriginal(t *testing.T) {
 
 	t.Run("should handle nil values in original map", func(t *testing.T) {
 		parse := &Parse{}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"paths": nil,
 		}
 		copyFromOriginal(original, parse)
@@ -526,7 +527,7 @@ func TestCopyFromOriginal(t *testing.T) {
 
 	t.Run("should handle invalid type conversions gracefully", func(t *testing.T) {
 		parse := &Parse{}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"paths": 123, // Invalid type for paths
 			"compress": "not a boolean", // Invalid type for compress
 		}
@@ -541,7 +542,7 @@ func TestCopyFromOriginal(t *testing.T) {
 
 	t.Run("should handle partial property copying", func(t *testing.T) {
 		parse := &Parse{}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"paths": []string{"/test/path"},
 			"compress": true,
 			"invalidProperty": "should not copy",
@@ -558,7 +559,7 @@ func TestCopyFromOriginal(t *testing.T) {
 
 	t.Run("should handle nested struct copying", func(t *testing.T) {
 		eval := &Eval{}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"paths": []string{"/test/path"},
 			"math": MathAlways,
 			"importantScope": []string{"!important"},
@@ -577,7 +578,7 @@ func TestCopyFromOriginal(t *testing.T) {
 
 	t.Run("should handle zero values correctly", func(t *testing.T) {
 		parse := &Parse{}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"paths": []string{},
 			"compress": false,
 			"strictImports": false,
@@ -594,15 +595,15 @@ func TestCopyFromOriginal(t *testing.T) {
 		}
 	})
 
-	t.Run("should handle interface{} type properties", func(t *testing.T) {
+	t.Run("should handle any type properties", func(t *testing.T) {
 		parse := &Parse{}
 		pluginManager := struct{}{}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"pluginManager": pluginManager,
 		}
 		copyFromOriginal(original, parse)
 		if parse.PluginManager == nil {
-			t.Error("Should copy interface{} type properties")
+			t.Error("Should copy any type properties")
 		}
 	})
 
@@ -610,7 +611,7 @@ func TestCopyFromOriginal(t *testing.T) {
 		parse := &Parse{
 			Paths: []string{"/existing/path"},
 		}
-		original := map[string]interface{}{
+		original := map[string]any{
 			"compress": true,
 		}
 		copyFromOriginal(original, parse)

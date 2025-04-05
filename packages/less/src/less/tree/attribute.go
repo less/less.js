@@ -7,14 +7,14 @@ import (
 // Attribute represents a CSS attribute selector node
 type Attribute struct {
 	*Node
-	Key   interface{}
+	Key   any
 	Op    string
-	Value interface{}
+	Value any
 	Cif   string
 }
 
 // NewAttribute creates a new Attribute node
-func NewAttribute(key interface{}, op string, value interface{}, cif string) *Attribute {
+func NewAttribute(key any, op string, value any, cif string) *Attribute {
 	return &Attribute{
 		Node:  NewNode(),
 		Key:   key,
@@ -25,9 +25,9 @@ func NewAttribute(key interface{}, op string, value interface{}, cif string) *At
 }
 
 // Eval evaluates the attribute node in the given context
-func (a *Attribute) Eval(context interface{}) *Attribute {
-	var key interface{}
-	var value interface{}
+func (a *Attribute) Eval(context any) *Attribute {
+	var key any
+	var value any
 
 	if evaluable, ok := a.Key.(Evaluable); ok {
 		key = evaluable.Eval(context)
@@ -47,12 +47,12 @@ func (a *Attribute) Eval(context interface{}) *Attribute {
 }
 
 // GenCSS generates CSS representation
-func (a *Attribute) GenCSS(context interface{}, output *CSSOutput) {
+func (a *Attribute) GenCSS(context any, output *CSSOutput) {
 	output.Add(a.ToCSS(context), nil, nil)
 }
 
 // ToCSS generates CSS string representation
-func (a *Attribute) ToCSS(context interface{}) string {
+func (a *Attribute) ToCSS(context any) string {
 	var value string
 
 	if a.Key == nil {
@@ -86,10 +86,10 @@ func (a *Attribute) ToCSS(context interface{}) string {
 
 // Evaluable interface defines the Eval method
 type Evaluable interface {
-	Eval(interface{}) interface{}
+	Eval(any) any
 }
 
 // CSSable interface defines the ToCSS method
 type CSSable interface {
-	ToCSS(interface{}) string
+	ToCSS(any) string
 } 

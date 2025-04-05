@@ -24,8 +24,8 @@ func NewUnit(numerator []string, denominator []string, backupUnit string) *Unit 
 	}
 
 	if numerator != nil {
-		// Convert []string to []interface{} for CopyArray
-		numInterface := make([]interface{}, len(numerator))
+		// Convert []string to []any for CopyArray
+		numInterface := make([]any, len(numerator))
 		for i, v := range numerator {
 			numInterface[i] = v
 		}
@@ -35,8 +35,8 @@ func NewUnit(numerator []string, denominator []string, backupUnit string) *Unit 
 	}
 
 	if denominator != nil {
-		// Convert []string to []interface{} for CopyArray
-		denInterface := make([]interface{}, len(denominator))
+		// Convert []string to []any for CopyArray
+		denInterface := make([]any, len(denominator))
 		for i, v := range denominator {
 			denInterface[i] = v
 		}
@@ -66,9 +66,9 @@ func (u *Unit) Clone() *Unit {
 }
 
 // GenCSS generates CSS representation
-func (u *Unit) GenCSS(context interface{}, output *CSSOutput) {
+func (u *Unit) GenCSS(context any, output *CSSOutput) {
 	strictUnits := false
-	if ctx, ok := context.(map[string]interface{}); ok {
+	if ctx, ok := context.(map[string]any); ok {
 		if strict, ok := ctx["strictUnits"].(bool); ok {
 			strictUnits = strict
 		}
@@ -96,9 +96,7 @@ func (u *Unit) ToString() string {
 		parts = append(parts, "")
 	}
 
-	for _, d := range u.Denominator {
-		parts = append(parts, d)
-	}
+	parts = append(parts, u.Denominator...)
 
 	return strings.Join(parts, "/")
 }
@@ -122,7 +120,7 @@ func (u *Unit) Compare(other *Unit) int {
 
 // Is checks if the unit matches a given unit string
 func (u *Unit) Is(unitString string) bool {
-	return strings.ToUpper(u.ToString()) == strings.ToUpper(unitString)
+	return strings.EqualFold(u.ToString(), unitString)
 }
 
 // IsLength checks if the unit is a valid length unit

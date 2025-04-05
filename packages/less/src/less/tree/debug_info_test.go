@@ -11,7 +11,7 @@ func createContext(dumpLineNumbers string, compress bool) *Context {
 	}
 }
 
-func createDebugContext(lineNumber interface{}, fileName string) *DebugContext {
+func createDebugContext(lineNumber any, fileName string) *DebugContext {
 	ctx := &DebugContext{}
 	ctx.DebugInfo.LineNumber = lineNumber
 	ctx.DebugInfo.FileName = fileName

@@ -21,12 +21,12 @@ type Parse struct {
 	// Context
 	ProcessImports bool
 	// Used by the import manager to stop multiple import visitors being created
-	PluginManager interface{}
+	PluginManager any
 	Quiet         bool
 }
 
 // NewParse creates a new Parse context with the given options
-func NewParse(options map[string]interface{}) *Parse {
+func NewParse(options map[string]any) *Parse {
 	p := &Parse{}
 	copyFromOriginal(options, p)
 	if paths, ok := options["paths"].(string); ok {
@@ -48,12 +48,12 @@ type Eval struct {
 	ImportMultiple  bool
 	UrlArgs         string
 	JavascriptEnabled bool
-	PluginManager   interface{}
+	PluginManager   any
 	ImportantScope  []string
 	RewriteUrls     RewriteUrlsType
 
 	// Internal state
-	Frames       []interface{}
+	Frames       []any
 	CalcStack    []bool
 	ParensStack  []bool
 	InCalc       bool
@@ -61,7 +61,7 @@ type Eval struct {
 }
 
 // NewEval creates a new Eval context with the given options and frames
-func NewEval(options map[string]interface{}, frames []interface{}) *Eval {
+func NewEval(options map[string]any, frames []any) *Eval {
 	e := &Eval{
 		Frames:      frames,
 		MathOn:      true,
@@ -186,7 +186,7 @@ func isPathLocalRelative(path string) bool {
 }
 
 // copyFromOriginal copies properties from a map to a struct
-func copyFromOriginal(original map[string]interface{}, destination interface{}) {
+func copyFromOriginal(original map[string]any, destination any) {
 	if original == nil {
 		return
 	}

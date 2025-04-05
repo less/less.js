@@ -70,7 +70,7 @@ func TestNode(t *testing.T) {
 		}
 
 		parentNode2 := NewNode()
-		fileInfoData := map[string]interface{}{"filename": "test.less"}
+		fileInfoData := map[string]any{"filename": "test.less"}
 		parentNode2.SetFileInfo(fileInfoData)
 		node.Parent = parentNode2
 		if node.FileInfo()["filename"] != "test.less" {
@@ -108,7 +108,7 @@ func TestNode(t *testing.T) {
 		}
 
 		// Test fround with precision
-		context := map[string]interface{}{"numPrecision": 2}
+		context := map[string]any{"numPrecision": 2}
 		if node.Fround(context, 1.2345) != 1.23 {
 			t.Error("Fround should round numbers based on precision")
 		}
@@ -120,7 +120,7 @@ func TestNode(t *testing.T) {
 		}
 
 		// Test fround with different precisions
-		context3 := map[string]interface{}{"numPrecision": 3}
+		context3 := map[string]any{"numPrecision": 3}
 		if node.Fround(context3, 1.2345) != 1.235 {
 			t.Error("Fround should handle different precisions correctly")
 		}
@@ -159,16 +159,16 @@ func TestNode(t *testing.T) {
 
 		// Test array comparison
 		arrNode1 := NewNode()
-		arrNode1.Value = []interface{}{1, 2, 3}
+		arrNode1.Value = []any{1, 2, 3}
 		arrNode2 := NewNode()
-		arrNode2.Value = []interface{}{1, 2, 3}
+		arrNode2.Value = []any{1, 2, 3}
 		if Compare(arrNode1, arrNode2) != 0 {
 			t.Error("Compare should handle array comparison")
 		}
 
 		// Test array comparison with different lengths
 		arrNode3 := NewNode()
-		arrNode3.Value = []interface{}{1, 2}
+		arrNode3.Value = []any{1, 2}
 		if Compare(arrNode1, arrNode3) != 0 {
 			t.Error("Compare should return 0 for arrays of different lengths")
 		}
@@ -273,7 +273,7 @@ func TestNode(t *testing.T) {
 
 		node.Value = "original"
 		visitor := &testVisitor{
-			visitFunc: func(val interface{}) interface{} {
+			visitFunc: func(val any) any {
 				if str, ok := val.(string); ok {
 					return str + "-visited"
 				}
@@ -296,10 +296,10 @@ func TestNode(t *testing.T) {
 
 // testVisitor implements the Visitor interface for testing
 type testVisitor struct {
-	visitFunc func(interface{}) interface{}
+	visitFunc func(any) any
 }
 
-func (v *testVisitor) Visit(val interface{}) interface{} {
+func (v *testVisitor) Visit(val any) any {
 	return v.visitFunc(val)
 }
 

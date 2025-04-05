@@ -129,7 +129,7 @@ func TestUnit(t *testing.T) {
 		t.Run("outputs single numerator unit", func(t *testing.T) {
 			unit := NewUnit([]string{"px"}, nil, "")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			unit.GenCSS(nil, &CSSOutput{Add: outputFn})
@@ -141,7 +141,7 @@ func TestUnit(t *testing.T) {
 		t.Run("outputs backup unit when no strict units and no single numerator", func(t *testing.T) {
 			unit := NewUnit([]string{"px", "em"}, nil, "em")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			unit.GenCSS(nil, &CSSOutput{Add: outputFn})
@@ -153,10 +153,10 @@ func TestUnit(t *testing.T) {
 		t.Run("handles strict units mode", func(t *testing.T) {
 			unit := NewUnit([]string{"px", "em"}, nil, "")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
-			unit.GenCSS(map[string]interface{}{"strictUnits": true}, &CSSOutput{Add: outputFn})
+			unit.GenCSS(map[string]any{"strictUnits": true}, &CSSOutput{Add: outputFn})
 			if len(output) != 0 {
 				t.Errorf("Expected empty output, got %v", output)
 			}
@@ -165,7 +165,7 @@ func TestUnit(t *testing.T) {
 		t.Run("handles null context", func(t *testing.T) {
 			unit := NewUnit([]string{"px"}, nil, "")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			unit.GenCSS(nil, &CSSOutput{Add: outputFn})
@@ -177,7 +177,7 @@ func TestUnit(t *testing.T) {
 		t.Run("handles undefined context", func(t *testing.T) {
 			unit := NewUnit([]string{"px"}, nil, "")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			unit.GenCSS(nil, &CSSOutput{Add: outputFn})
@@ -189,7 +189,7 @@ func TestUnit(t *testing.T) {
 		t.Run("handles empty backupUnit", func(t *testing.T) {
 			unit := NewUnit([]string{"px", "em"}, nil, "")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			unit.GenCSS(nil, &CSSOutput{Add: outputFn})
@@ -201,7 +201,7 @@ func TestUnit(t *testing.T) {
 		t.Run("handles multiple backup units", func(t *testing.T) {
 			unit := NewUnit([]string{"px", "em"}, []string{"s"}, "em")
 			var output []string
-			outputFn := func(chunk interface{}, fileInfo interface{}, index interface{}) {
+			outputFn := func(chunk any, fileInfo any, index any) {
 				output = append(output, chunk.(string))
 			}
 			unit.GenCSS(nil, &CSSOutput{Add: outputFn})

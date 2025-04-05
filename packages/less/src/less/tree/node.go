@@ -12,10 +12,12 @@ type Node struct {
 	VisibilityBlocks *int
 	NodeVisible     *bool
 	RootNode        *Node
-	Parsed          interface{}
-	Value           interface{}
+	Parsed          any
+	Value           any
 	Index           int
-	fileInfo        map[string]interface{}
+	fileInfo        map[string]any
+	Parens          bool
+	ParensInOp      bool
 }
 
 // NewNode creates a new Node instance
@@ -28,12 +30,12 @@ func NewNode() *Node {
 		Parsed:          nil,
 		Value:           nil,
 		Index:           0,
-		fileInfo:        make(map[string]interface{}),
+		fileInfo:        make(map[string]any),
 	}
 }
 
 // SetParent sets the parent for one or more nodes
-func (n *Node) SetParent(nodes interface{}, parent *Node) {
+func (n *Node) SetParent(nodes any, parent *Node) {
 	switch v := nodes.(type) {
 	case []*Node:
 		for _, node := range v {
@@ -64,18 +66,18 @@ func (n *Node) GetIndex() int {
 }
 
 // FileInfo returns the node's file information
-func (n *Node) FileInfo() map[string]interface{} {
+func (n *Node) FileInfo() map[string]any {
 	if len(n.fileInfo) > 0 {
 		return n.fileInfo
 	}
 	if n.Parent != nil {
 		return n.Parent.FileInfo()
 	}
-	return make(map[string]interface{})
+	return make(map[string]any)
 }
 
 // SetFileInfo sets the node's file information
-func (n *Node) SetFileInfo(info map[string]interface{}) {
+func (n *Node) SetFileInfo(info map[string]any) {
 	n.fileInfo = info
 }
 
@@ -85,10 +87,10 @@ func (n *Node) IsRulesetLike() bool {
 }
 
 // ToCSS generates CSS string representation
-func (n *Node) ToCSS(context interface{}) string {
+func (n *Node) ToCSS(context any) string {
 	var strs []string
 	output := &CSSOutput{
-		Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+		Add: func(chunk any, fileInfo any, index any) {
 			strs = append(strs, fmt.Sprintf("%v", chunk))
 		},
 		IsEmpty: func() bool {
@@ -101,12 +103,12 @@ func (n *Node) ToCSS(context interface{}) string {
 
 // CSSOutput represents the output structure for CSS generation
 type CSSOutput struct {
-	Add     func(interface{}, interface{}, interface{})
+	Add     func(any, any, any)
 	IsEmpty func() bool
 }
 
 // GenCSS generates CSS representation
-func (n *Node) GenCSS(context interface{}, output *CSSOutput) {
+func (n *Node) GenCSS(context any, output *CSSOutput) {
 	if n.Value != nil {
 		output.Add(n.Value, nil, nil)
 	}
@@ -114,11 +116,11 @@ func (n *Node) GenCSS(context interface{}, output *CSSOutput) {
 
 // Visitor interface defines the Visit method
 type Visitor interface {
-	Visit(interface{}) interface{}
+	Visit(any) any
 }
 
 // Accept visits the node with a visitor
-func (n *Node) Accept(visitor interface{}) {
+func (n *Node) Accept(visitor any) {
 	if v, ok := visitor.(Visitor); ok {
 		if n.Value != nil {
 			n.Value = v.Visit(n.Value)
@@ -132,7 +134,7 @@ func (n *Node) Eval() *Node {
 }
 
 // Operate performs basic arithmetic operations
-func (n *Node) Operate(context interface{}, op string, a, b float64) float64 {
+func (n *Node) Operate(context any, op string, a, b float64) float64 {
 	switch op {
 	case "+":
 		return a + b
@@ -148,14 +150,14 @@ func (n *Node) Operate(context interface{}, op string, a, b float64) float64 {
 }
 
 // Fround rounds numbers based on precision
-func (n *Node) Fround(context interface{}, value float64) float64 {
+func (n *Node) Fround(context any, value float64) float64 {
 	if context == nil {
 		return value
 	}
 	
 	// Add "epsilon" to ensure numbers like 1.000000005 are properly rounded
 	epsilon := 2e-16
-	if ctx, ok := context.(map[string]interface{}); ok {
+	if ctx, ok := context.(map[string]any); ok {
 		if precision, ok := ctx["numPrecision"].(int); ok {
 			// Use math.Round to match JavaScript's toFixed behavior
 			rounded := math.Round((value+epsilon)*math.Pow10(precision)) / math.Pow10(precision)
@@ -193,23 +195,15 @@ func Compare(a, b *Node) int {
 
 	// Check type equality
 	if fmt.Sprintf("%T", a.Value) != fmt.Sprintf("%T", b.Value) {
-		// If types don't match, check if one is a string and the other is a number
-		if aStr, ok := a.Value.(string); ok {
-			if bNum, ok := b.Value.(float64); ok {
-				return strings.Compare(aStr, fmt.Sprintf("%v", bNum))
-			}
-		}
-		if bStr, ok := b.Value.(string); ok {
-			if aNum, ok := a.Value.(float64); ok {
-				return strings.Compare(fmt.Sprintf("%v", aNum), bStr)
-			}
-		}
-		return 0 // Different types should return 0 (false) for equality comparison
+		// If types don't match, they are generally considered incomparable
+		// unless a specific comparison method handles it (checked above).
+		// Return 0 signifies incomparable or equal for base types.
+		return 0 // Return 0 for different types as per original logic/test expectation
 	}
 
 	// Handle array comparison
-	if aArr, ok := a.Value.([]interface{}); ok {
-		if bArr, ok := b.Value.([]interface{}); ok {
+	if aArr, ok := a.Value.([]any); ok {
+		if bArr, ok := b.Value.([]any); ok {
 			if len(aArr) != len(bArr) {
 				return 0 // Equivalent to JavaScript's undefined
 			}
@@ -304,15 +298,15 @@ func (n *Node) IsVisible() *bool {
 }
 
 // VisibilityInfo returns the node's visibility information
-func (n *Node) VisibilityInfo() map[string]interface{} {
-	return map[string]interface{}{
+func (n *Node) VisibilityInfo() map[string]any {
+	return map[string]any{
 		"visibilityBlocks": n.VisibilityBlocks,
 		"nodeVisible":     n.NodeVisible,
 	}
 }
 
 // CopyVisibilityInfo copies visibility information from another node
-func (n *Node) CopyVisibilityInfo(info map[string]interface{}) {
+func (n *Node) CopyVisibilityInfo(info map[string]any) {
 	if info == nil {
 		return
 	}

@@ -8,122 +8,122 @@ import (
 // Condition represents a condition node in the Less AST
 type Condition struct {
 	*Node
-	Op      string
-	LValue  interface{}
-	RValue  interface{}
-	Index   int
-	Negate  bool
+	Op     string
+	Lvalue any
+	Rvalue any
+	Index  int
+	Negate bool
 }
 
-// NewCondition creates a new Condition instance
-func NewCondition(op string, l, r interface{}, i int, negate bool) *Condition {
+// NewCondition creates a new Condition
+func NewCondition(op string, l, r any, i int, negate bool) *Condition {
 	return &Condition{
-		Node:    NewNode(),
-		Op:      strings.TrimSpace(op),
-		LValue:  l,
-		RValue:  r,
-		Index:   i,
-		Negate:  negate,
+		Node:   NewNode(),
+		Op:     strings.TrimSpace(op),
+		Lvalue: l,
+		Rvalue: r,
+		Index:  i,
+		Negate: negate,
 	}
 }
 
-// Type returns the node type
-func (c *Condition) Type() string {
-	return "Condition"
-}
-
-// Accept visits the node with a visitor
-func (c *Condition) Accept(visitor interface{}) {
+// Accept implements the Node Accept method
+func (c *Condition) Accept(visitor any) {
 	if v, ok := visitor.(Visitor); ok {
-		c.LValue = v.Visit(c.LValue)
-		c.RValue = v.Visit(c.RValue)
+		c.Lvalue = v.Visit(c.Lvalue)
+		c.Rvalue = v.Visit(c.Rvalue)
 	}
 }
 
 // Eval evaluates the condition
-func (c *Condition) Eval(context interface{}) interface{} {
-	// Helper function to evaluate the condition
-	evalCondition := func(op string, a, b interface{}) bool {
-		switch op {
-		case "and":
-			// Handle MockNode values
-			if aNode, ok := a.(*MockNode); ok {
-				a = aNode.value
+func (c *Condition) Eval(context any) bool {
+	// Define a safe evaluation function
+	safeEval := func(node any) any {
+		if node == nil {
+			return nil
+		}
+		
+		// Try to find an Eval method
+		if evaluator, ok := node.(interface{ Eval(any) any }); ok {
+			return evaluator.Eval(context)
+		}
+		
+		// If no Eval method, return the node itself
+		return node
+	}
+
+	lresult := safeEval(c.Lvalue)
+	rresult := safeEval(c.Rvalue)
+	
+	// Handle nil cases
+	if lresult == nil || rresult == nil {
+		return c.Negate // negate false for error case
+	}
+
+	var result bool
+
+	switch c.Op {
+	case "and":
+		// For logical operators, we expect boolean results
+		lbool, lok := lresult.(bool)
+		rbool, rok := rresult.(bool)
+		if lok && rok {
+			result = lbool && rbool
+		} else {
+			result = false
+		}
+	case "or":
+		lbool, lok := lresult.(bool)
+		rbool, rok := rresult.(bool)
+		if lok && rok {
+			result = lbool || rbool
+		} else {
+			result = false
+		}
+	default:
+		// For comparison operators
+		lnode, lok := lresult.(*Node)
+		rnode, rok := rresult.(*Node)
+		
+		if !lok || !rok {
+			return c.Negate // negate false for error case
+		}
+
+		// Compare types if both nodes have String() methods that identify type
+		areTypesEqual := true
+		if lStringer, lok := lnode.Value.(fmt.Stringer); lok {
+			if rStringer, rok := rnode.Value.(fmt.Stringer); rok {
+				areTypesEqual = lStringer.String() == rStringer.String()
 			}
-			if bNode, ok := b.(*MockNode); ok {
-				b = bNode.value
-			}
-			aBool, ok1 := a.(bool)
-			bBool, ok2 := b.(bool)
-			if !ok1 || !ok2 {
-				return false
-			}
-			return aBool && bBool
-		case "or":
-			// Handle MockNode values
-			if aNode, ok := a.(*MockNode); ok {
-				a = aNode.value
-			}
-			if bNode, ok := b.(*MockNode); ok {
-				b = bNode.value
-			}
-			aBool, ok1 := a.(bool)
-			bBool, ok2 := b.(bool)
-			if !ok1 || !ok2 {
-				return false
-			}
-			return aBool || bBool
+		}
+		
+		// If types are different and we're testing for equality,
+		// return false (or negated false)
+		if !areTypesEqual && c.Op == "=" {
+			return c.Negate
+		}
+
+		// Now do the actual comparison
+		compareResult := Compare(lnode, rnode)
+		
+		// If compareResult is 0 but we know types are different, 
+		// consider them not equal
+		if compareResult == 0 && !areTypesEqual && c.Op == "=" {
+			return c.Negate
+		}
+		
+		switch compareResult {
+		case -1:
+			result = c.Op == "<" || c.Op == "=<" || c.Op == "<="
+		case 0:
+			result = c.Op == "=" || c.Op == ">=" || c.Op == "=<" || c.Op == "<="
+		case 1:
+			result = c.Op == ">" || c.Op == ">="
 		default:
-			// For comparison operators, use Node.Compare
-			// Create nodes with the actual values, not the MockNodes
-			var aVal, bVal interface{}
-			if aNode, ok := a.(*MockNode); ok {
-				aVal = aNode.value
-			} else {
-				aVal = a
-			}
-			if bNode, ok := b.(*MockNode); ok {
-				bVal = bNode.value
-			} else {
-				bVal = b
-			}
-
-			// For equality comparison, check types first
-			if op == "=" {
-				if fmt.Sprintf("%T", aVal) != fmt.Sprintf("%T", bVal) {
-					return false
-				}
-			}
-
-			result := Compare(&Node{Value: aVal}, &Node{Value: bVal})
-			switch result {
-			case -1:
-				return op == "<" || op == "=<" || op == "<="
-			case 0:
-				return op == "=" || op == ">=" || op == "=<" || op == "<="
-			case 1:
-				return op == ">" || op == ">="
-			default:
-				return false
-			}
+			result = false
 		}
 	}
 
-	// Evaluate the left and right values
-	var lVal, rVal interface{}
-	if lNode, ok := c.LValue.(Node); ok {
-		lVal = lNode.Eval()
-	} else {
-		lVal = c.LValue
-	}
-
-	if rNode, ok := c.RValue.(Node); ok {
-		rVal = rNode.Eval()
-	} else {
-		rVal = c.RValue
-	}
-
-	result := evalCondition(c.Op, lVal, rVal)
 	if c.Negate {
 		return !result
 	}

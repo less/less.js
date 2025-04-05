@@ -61,9 +61,9 @@ func isUnicodeWhitespace(r rune) bool {
 }
 
 // GenCSS generates CSS representation of the combinator
-func (c *Combinator) GenCSS(context interface{}, output *CSSOutput) {
+func (c *Combinator) GenCSS(context any, output *CSSOutput) {
 	var spaceOrEmpty string
-	if ctx, ok := context.(map[string]interface{}); ok {
+	if ctx, ok := context.(map[string]any); ok {
 		if compress, ok := ctx["compress"].(bool); ok && compress {
 			spaceOrEmpty = ""
 		} else if NoSpaceCombinators[c.Value] {

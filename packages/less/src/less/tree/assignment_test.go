@@ -45,7 +45,7 @@ func TestAssignment(t *testing.T) {
 		t.Run("should visit the value with the visitor", func(t *testing.T) {
 			assignment := NewAssignment("color", "#000")
 			mockVisitor := &MockVisitor{
-				visitFunc: func(value interface{}) interface{} {
+				visitFunc: func(value any) any {
 					return "#fff"
 				},
 			}
@@ -64,7 +64,7 @@ func TestAssignment(t *testing.T) {
 		t.Run("should handle visitor that throws error", func(t *testing.T) {
 			assignment := NewAssignment("color", "#000")
 			mockVisitor := &MockVisitor{
-				visitFunc: func(value interface{}) interface{} {
+				visitFunc: func(value any) any {
 					panic("Visitor error")
 				},
 			}
@@ -84,12 +84,12 @@ func TestAssignment(t *testing.T) {
 	t.Run("eval", func(t *testing.T) {
 		t.Run("should evaluate the value if it has an eval method", func(t *testing.T) {
 			mockValue := &MockEvalNode{
-				evalFunc: func(context interface{}) interface{} {
+				evalFunc: func(context any) any {
 					return "#fff"
 				},
 			}
 			assignment := NewAssignment("color", mockValue)
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			result := assignment.Eval(context)
 			if result == nil {
@@ -109,7 +109,7 @@ func TestAssignment(t *testing.T) {
 
 		t.Run("should return the assignment unchanged if value has no eval method", func(t *testing.T) {
 			assignment := NewAssignment("color", "#000")
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			result := assignment.Eval(context)
 			if result == nil {
@@ -129,12 +129,12 @@ func TestAssignment(t *testing.T) {
 
 		t.Run("should handle value.eval that throws error", func(t *testing.T) {
 			mockValue := &MockEvalNode{
-				evalFunc: func(context interface{}) interface{} {
+				evalFunc: func(context any) any {
 					panic("Eval error")
 				},
 			}
 			assignment := NewAssignment("color", mockValue)
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			defer func() {
 				if r := recover(); r == nil {
@@ -153,14 +153,14 @@ func TestAssignment(t *testing.T) {
 			assignment := NewAssignment("color", "#000")
 			var output []string
 			mockOutput := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, fmt.Sprintf("%v", chunk))
 				},
 				IsEmpty: func() bool {
 					return len(output) == 0
 				},
 			}
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			assignment.GenCSS(context, mockOutput)
 			if len(output) != 2 {
@@ -176,21 +176,21 @@ func TestAssignment(t *testing.T) {
 
 		t.Run("should handle values with genCSS method", func(t *testing.T) {
 			mockValue := &MockGenCSSNode{
-				genCSSFunc: func(context interface{}, output *CSSOutput) {
+				genCSSFunc: func(context any, output *CSSOutput) {
 					output.Add("#fff", nil, nil)
 				},
 			}
 			assignment := NewAssignment("color", mockValue)
 			var output []string
 			mockOutput := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, fmt.Sprintf("%v", chunk))
 				},
 				IsEmpty: func() bool {
 					return len(output) == 0
 				},
 			}
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			assignment.GenCSS(context, mockOutput)
 			if len(output) != 2 {
@@ -208,14 +208,14 @@ func TestAssignment(t *testing.T) {
 			assignment := NewAssignment("color", "")
 			var output []string
 			mockOutput := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, fmt.Sprintf("%v", chunk))
 				},
 				IsEmpty: func() bool {
 					return len(output) == 0
 				},
 			}
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			assignment.GenCSS(context, mockOutput)
 			if len(output) != 2 {
@@ -233,14 +233,14 @@ func TestAssignment(t *testing.T) {
 			assignment := NewAssignment("color:special", "value:with:colons")
 			var output []string
 			mockOutput := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, fmt.Sprintf("%v", chunk))
 				},
 				IsEmpty: func() bool {
 					return len(output) == 0
 				},
 			}
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			assignment.GenCSS(context, mockOutput)
 			if len(output) != 2 {
@@ -256,16 +256,16 @@ func TestAssignment(t *testing.T) {
 
 		t.Run("should handle value.genCSS that throws error", func(t *testing.T) {
 			mockValue := &MockGenCSSNode{
-				genCSSFunc: func(context interface{}, output *CSSOutput) {
+				genCSSFunc: func(context any, output *CSSOutput) {
 					panic("genCSS error")
 				},
 			}
 			assignment := NewAssignment("color", mockValue)
 			output := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {},
+				Add: func(chunk any, fileInfo any, index any) {},
 				IsEmpty: func() bool { return false },
 			}
-			context := make(map[string]interface{})
+			context := make(map[string]any)
 
 			defer func() {
 				if r := recover(); r == nil {
@@ -281,7 +281,7 @@ func TestAssignment(t *testing.T) {
 		t.Run("should handle nil/undefined context in genCSS", func(t *testing.T) {
 			assignment := NewAssignment("color", "#000")
 			output := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {},
+				Add: func(chunk any, fileInfo any, index any) {},
 				IsEmpty: func() bool { return false },
 			}
 
@@ -293,27 +293,27 @@ func TestAssignment(t *testing.T) {
 
 // Mock types for testing
 type MockVisitor struct {
-	visitFunc func(interface{}) interface{}
+	visitFunc func(any) any
 }
 
-func (v *MockVisitor) Visit(value interface{}) interface{} {
+func (v *MockVisitor) Visit(value any) any {
 	return v.visitFunc(value)
 }
 
 type MockEvalNode struct {
 	*Node
-	evalFunc func(interface{}) interface{}
+	evalFunc func(any) any
 }
 
-func (n *MockEvalNode) Eval(context interface{}) interface{} {
+func (n *MockEvalNode) Eval(context any) any {
 	return n.evalFunc(context)
 }
 
 type MockGenCSSNode struct {
 	*Node
-	genCSSFunc func(interface{}, *CSSOutput)
+	genCSSFunc func(any, *CSSOutput)
 }
 
-func (n *MockGenCSSNode) GenCSS(context interface{}, output *CSSOutput) {
+func (n *MockGenCSSNode) GenCSS(context any, output *CSSOutput) {
 	n.genCSSFunc(context, output)
 } 

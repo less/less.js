@@ -28,7 +28,7 @@ func TestComment(t *testing.T) {
 
 		t.Run("should set index and fileInfo", func(t *testing.T) {
 			index := 5
-			fileInfo := map[string]interface{}{"filename": "test.less"}
+			fileInfo := map[string]any{"filename": "test.less"}
 			comment := NewComment("/* test */", false, index, fileInfo)
 
 			if comment.GetIndex() != index {
@@ -52,7 +52,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/* test */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -72,7 +72,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/*\n * Multi-line\n * comment\n */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -93,7 +93,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/* @#$%%^&*() */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -113,7 +113,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/* */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -133,7 +133,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/*   test   */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -154,7 +154,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment(largeComment, false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -174,7 +174,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/* 🌟 Hello 世界 */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -194,7 +194,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/* @variable: value; */", false, 0, nil)
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -214,7 +214,7 @@ func TestComment(t *testing.T) {
 			comment := NewComment("/* test */", false, 0, nil)
 			comment.DebugInfo = &DebugContext{
 				DebugInfo: struct {
-					LineNumber interface{}
+					LineNumber any
 					FileName   string
 				}{
 					LineNumber: 1,
@@ -223,7 +223,7 @@ func TestComment(t *testing.T) {
 			}
 			var output []string
 			outputter := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					output = append(output, chunk.(string))
 				},
 				IsEmpty: func() bool {
@@ -308,7 +308,7 @@ func TestComment(t *testing.T) {
 
 		t.Run("should get fileInfo from parent if not set", func(t *testing.T) {
 			parent := NewNode()
-			parent.SetFileInfo(map[string]interface{}{"filename": "test.less"})
+			parent.SetFileInfo(map[string]any{"filename": "test.less"})
 			comment := NewComment("/* test */", false, 0, nil)
 
 			comment.SetParent(comment, parent)

@@ -29,8 +29,8 @@ func TestAnonymous(t *testing.T) {
 		})
 
 		t.Run("should create an instance with all parameters", func(t *testing.T) {
-			fileInfo := map[string]interface{}{"filename": "test.less"}
-			visibilityInfo := map[string]interface{}{
+			fileInfo := map[string]any{"filename": "test.less"}
+			visibilityInfo := map[string]any{
 				"visibilityBlocks": 1,
 				"nodeVisible":     true,
 			}
@@ -65,7 +65,7 @@ func TestAnonymous(t *testing.T) {
 
 	t.Run("eval", func(t *testing.T) {
 		t.Run("should return a new Anonymous instance with same properties", func(t *testing.T) {
-			original := NewAnonymous("test", 1, map[string]interface{}{"filename": "test.less"}, false, false, nil)
+			original := NewAnonymous("test", 1, map[string]any{"filename": "test.less"}, false, false, nil)
 			evaluated := original.Eval()
 
 			if evaluated == nil {
@@ -157,12 +157,12 @@ func TestAnonymous(t *testing.T) {
 
 	t.Run("genCSS", func(t *testing.T) {
 		t.Run("should add value to output when node is visible", func(t *testing.T) {
-			anonymous := NewAnonymous("test", 0, nil, false, false, map[string]interface{}{
+			anonymous := NewAnonymous("test", 0, nil, false, false, map[string]any{
 				"visibilityBlocks": 0,
 				"nodeVisible":     true,
 			})
 			output := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					if chunk != "test" {
 						t.Errorf("Expected chunk to be 'test', got %v", chunk)
 					}
@@ -172,12 +172,12 @@ func TestAnonymous(t *testing.T) {
 		})
 
 		t.Run("should not add value to output when node is not visible", func(t *testing.T) {
-			anonymous := NewAnonymous("", 0, nil, false, false, map[string]interface{}{
+			anonymous := NewAnonymous("", 0, nil, false, false, map[string]any{
 				"visibilityBlocks": 0,
 				"nodeVisible":     false,
 			})
 			output := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {
+				Add: func(chunk any, fileInfo any, index any) {
 					t.Error("Expected Add not to be called")
 				},
 			}
@@ -188,7 +188,7 @@ func TestAnonymous(t *testing.T) {
 			// Test with non-empty value
 			anon1 := NewAnonymous("test", 0, nil, false, false, nil)
 			output1 := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {},
+				Add: func(chunk any, fileInfo any, index any) {},
 			}
 			anon1.GenCSS(nil, output1)
 			if anon1.NodeVisible == nil || !*anon1.NodeVisible {
@@ -198,7 +198,7 @@ func TestAnonymous(t *testing.T) {
 			// Test with empty string value
 			anon2 := NewAnonymous("", 0, nil, false, false, nil)
 			output2 := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {},
+				Add: func(chunk any, fileInfo any, index any) {},
 			}
 			anon2.GenCSS(nil, output2)
 			if anon2.NodeVisible == nil || *anon2.NodeVisible {
@@ -208,7 +208,7 @@ func TestAnonymous(t *testing.T) {
 			// Test with nil value
 			anon3 := NewAnonymous(nil, 0, nil, false, false, nil)
 			output3 := &CSSOutput{
-				Add: func(chunk interface{}, fileInfo interface{}, index interface{}) {},
+				Add: func(chunk any, fileInfo any, index any) {},
 			}
 			anon3.GenCSS(nil, output3)
 			if anon3.NodeVisible != nil {
@@ -220,7 +220,7 @@ func TestAnonymous(t *testing.T) {
 	t.Run("visibility handling", func(t *testing.T) {
 		t.Run("should copy visibility info correctly", func(t *testing.T) {
 			anonymous := NewAnonymous("test", 0, nil, false, false, nil)
-			visibilityInfo := map[string]interface{}{
+			visibilityInfo := map[string]any{
 				"visibilityBlocks": 2,
 				"nodeVisible":     true,
 			}
@@ -293,7 +293,7 @@ func TestAnonymous(t *testing.T) {
 		})
 
 		t.Run("should copy visibility info in eval", func(t *testing.T) {
-			visibilityInfo := map[string]interface{}{
+			visibilityInfo := map[string]any{
 				"visibilityBlocks": 2,
 				"nodeVisible":     true,
 			}

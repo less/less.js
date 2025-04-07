@@ -2065,6 +2065,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let hasUnknown;
                 let hasBlock = true;
                 let isRooted = true;
+                let isKeywordList = false;
 
                 if (parserInput.currentChar() !== '@') { return; }
 
@@ -2105,6 +2106,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     case '@starting-style':
                         isRooted = false;
                         break;
+                    case '@layer':
+                        isRooted = false;
+                        break;
                     default:
                         hasUnknown = true;
                         break;
@@ -2137,9 +2141,38 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 if (hasBlock) {
                     rules = this.blockRuleset();
+
+                    parserInput.save();
+
+                    if (!rules && !isRooted) {
+                        value = this.entity();
+                        rules = this.blockRuleset();
+                    }
+
+                    if (!rules && !isRooted) {
+                        parserInput.restore();
+
+                        let e = [];
+                        value = this.entity();
+
+                        while (parserInput.$char(',')) {
+                            e.push(value);
+                            value = this.entity();
+                        }
+
+                        if (value && e.length > 0) {
+                            e.push(value);
+                            value = e;
+                            isKeywordList = true;
+                        } else {
+                            rules = this.blockRuleset();
+                        }
+                    } else {
+                        parserInput.forget();
+                    }
                 }
 
-                if (rules || (!hasBlock && value && parserInput.$char(';'))) {
+                if (rules || isKeywordList || (!hasBlock && value && parserInput.$char(';'))) {
                     parserInput.forget();
                     return new(tree.AtRule)(name, value, rules, index + currentIndex, fileInfo,
                         context.dumpLineNumbers ? getDebugInfo(index) : null,

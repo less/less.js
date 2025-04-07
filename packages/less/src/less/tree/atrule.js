@@ -77,6 +77,14 @@ AtRule.prototype = Object.assign(new Node(), {
         }
     },
 
+    keywordList(rules) {
+        if (!Array.isArray(rules)) {
+            return false;
+        } else { 
+            return rules.filter(function (node) { return (node.type === 'Keyword' || node.type === 'Comment'); }).length === rules.length;
+        }
+    },
+
     accept(visitor) {
         const value = this.value, rules = this.rules, declarations = this.declarations;
 
@@ -127,6 +135,9 @@ AtRule.prototype = Object.assign(new Node(), {
 
         if (value) {
             value = value.eval(context);
+            if (value.value && this.keywordList(value.value)) {
+                value = new Anonymous(value.value.map(keyword => keyword.value).join(', '), this.getIndex(), this.fileInfo());
+            }
         }
 
         if (rules) {
@@ -143,7 +154,7 @@ AtRule.prototype = Object.assign(new Node(), {
         }
         if (this.simpleBlock && rules) {
             rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
-            rules= rules.map(function (rule) { return rule.eval(context); });
+            rules = rules.map(function (rule) { return rule.eval(context); });
         }
 
         // restore media bubbling information

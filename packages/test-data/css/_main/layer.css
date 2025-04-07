@@ -1,0 +1,66 @@
+@layer {
+  .main::before {
+    color: #f00;
+  }
+}
+@layer legacy {
+  .sub-rule ul {
+    color: white;
+  }
+}
+@layer primevue {
+  .test {
+    foo: bar;
+  }
+}
+@layer reset, base, components, utilities;
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+@layer base {
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+  }
+  body header {
+    background-color: #f0f0f0;
+    padding: 1rem;
+  }
+}
+@layer components {
+  .button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: blue;
+    color: white;
+  }
+  .button:hover {
+    background-color: darkblue;
+  }
+}
+@layer utilities {
+  .text-center {
+    text-align: center;
+  }
+  .responsive {
+    width: 100%;
+  }
+  @media (min-width: 768px) {
+    .responsive {
+      width: 50%;
+    }
+  }
+}
+.parent {
+  color: black;
+}
+.parent .child {
+  color: red;
+}
+.parent:hover {
+  background: lightgray;
+}

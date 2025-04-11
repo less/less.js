@@ -66,7 +66,10 @@ func TestAnonymous(t *testing.T) {
 	t.Run("eval", func(t *testing.T) {
 		t.Run("should return a new Anonymous instance with same properties", func(t *testing.T) {
 			original := NewAnonymous("test", 1, map[string]any{"filename": "test.less"}, false, false, nil)
-			evaluated := original.Eval()
+			evaluated, err := original.Eval(nil)
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
 
 			if evaluated == nil {
 				t.Fatal("Expected evaluated to not be nil")
@@ -298,7 +301,10 @@ func TestAnonymous(t *testing.T) {
 				"nodeVisible":     true,
 			}
 			original := NewAnonymous("test", 0, nil, false, false, visibilityInfo)
-			evaluated := original.Eval()
+			evaluated, err := original.Eval(nil)
+			if err != nil {
+				t.Fatalf("Expected no error, got %v", err)
+			}
 
 			if evaluated == nil {
 				t.Fatal("Expected evaluated to not be nil")

@@ -2,7 +2,9 @@ package tree
 
 import (
 	"fmt"
+	"math"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -100,14 +102,25 @@ func (j *JsEvalNode) EvaluateJavaScript(expression string, context any) (any, er
 		javascriptEnabled = jsCtx.IsJavaScriptEnabled()
 	}
 
+	// Helper function to get filename safely
+	getFilename := func() string {
+		info := j.FileInfo()
+		if info != nil {
+			if filename, ok := info["filename"].(string); ok {
+				return filename
+			}
+		}
+		return "<unknown>"
+	}
+
 	if !javascriptEnabled {
 		return nil, fmt.Errorf("inline JavaScript is not enabled. Is it set in your options? (filename: %s, index: %d)",
-			j.FileInfo()["filename"], j.GetIndex())
+			getFilename(), j.GetIndex())
 	}
 
 	// Replace Less variables with their values for better error messages
 	varRegex := regexp.MustCompile(`@\{([\w-]+)\}`)
-	expression = varRegex.ReplaceAllStringFunc(expression, func(match string) string {
+	expressionForError := varRegex.ReplaceAllStringFunc(expression, func(match string) string {
 		// Extract variable name without @ and {}
 		varName := match[2 : len(match)-1]
 		// Create a Variable node
@@ -122,44 +135,84 @@ func (j *JsEvalNode) EvaluateJavaScript(expression string, context any) (any, er
 
 	// JavaScript evaluation is not supported in the Go port
 	return nil, fmt.Errorf("JavaScript evaluation is not supported in the Go port. Expression: %s (filename: %s, index: %d)",
-		expression, j.FileInfo()["filename"], j.GetIndex())
+		expressionForError, getFilename(), j.GetIndex())
 }
 
-// jsify converts Less values to JavaScript representation
+// jsify converts Less values to a simple string representation suitable for error messages.
 func (j *JsEvalNode) jsify(obj any) string {
 	if obj == nil {
 		return "null"
 	}
 
-	// Try to extract the value from the result
-	if value, ok := obj.(map[string]any); ok {
-		if val, ok := value["value"]; ok {
+	// Check for Node types and get their value
+	if node, ok := obj.(*Node); ok {
+		obj = node.Value // Use the actual value within the node
+	}
+
+	// If obj is a map containing a "value" key, extract it
+	if mapVal, ok := obj.(map[string]any); ok {
+		if val, exists := mapVal["value"]; exists {
 			obj = val
 		}
 	}
 
-	// Handle array values
-	if arr, ok := obj.([]any); ok && len(arr) > 1 {
-		var result strings.Builder
-		result.WriteString("[")
-		for i, v := range arr {
-			if i > 0 {
-				result.WriteString(", ")
-			}
-			if cssable, ok := v.(interface{ ToCSS() string }); ok {
-				result.WriteString(cssable.ToCSS())
-			} else {
-				result.WriteString(fmt.Sprintf("%v", v))
-			}
+	// Handle specific types
+	switch v := obj.(type) {
+	case string:
+		return v // Return string directly
+	case float64:
+		if math.IsNaN(v) {
+			return "NaN"
 		}
-		result.WriteString("]")
-		return result.String()
+		// Format float without unnecessary trailing zeros
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case int:
+		return strconv.Itoa(v)
+	case bool:
+		return fmt.Sprintf("%t", v)
+	case nil:
+		return "null"
+	case *Quoted:
+		return v.value // Return the raw string content
+	case *Dimension:
+		return v.ToCSS(nil) // Use the CSS representation
+	case *Color:
+		return v.ToCSS(nil) // Use the CSS representation
+	case *Anonymous:
+		// If Anonymous contains a simple type, stringify that
+		switch anonVal := v.Value.(type) {
+		case string:
+			return anonVal
+		case float64:
+			return strconv.FormatFloat(anonVal, 'f', -1, 64)
+		case int:
+			return strconv.Itoa(anonVal)
+		case bool:
+			return fmt.Sprintf("%t", anonVal)
+		case nil:
+			return "null"
+		default:
+			// Fallback for complex Anonymous values: use ToCSS
+			return v.ToCSS(nil)
+		}
+	case []any:
+		// Handle arrays recursively
+		var parts []string
+		for _, item := range v {
+			parts = append(parts, j.jsify(item)) // Recursively call jsify
+		}
+		// Return comma-separated string wrapped in square brackets
+		return "[" + strings.Join(parts, ", ") + "]"
+	default:
+		// Fallback: Try ToCSS(any) first
+		if cssableAny, ok := obj.(interface{ ToCSS(any) string }); ok {
+			return cssableAny.ToCSS(nil)
+		}
+		// Then try ToCSS() for simpler mocks/types
+		if cssableSimple, ok := obj.(interface{ ToCSS() string }); ok {
+			return cssableSimple.ToCSS()
+		}
+		// Last resort: Use default Go formatting
+		return fmt.Sprintf("%v", obj)
 	}
-
-	// Handle individual values
-	if cssable, ok := obj.(interface{ ToCSS() string }); ok {
-		return cssable.ToCSS()
-	}
-
-	return fmt.Sprintf("%v", obj)
 } 

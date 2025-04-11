@@ -13,12 +13,16 @@ type mockEvalContext struct {
 	inCalc bool
 	enterCalcCalled int
 	exitCalcCalled  int
+	frames []Frame
+	importantScope []map[string]bool
 }
 
 func newMockEvalContext() *mockEvalContext {
 	return &mockEvalContext{
 		mathOn: true,
 		inCalc: false,
+		frames: make([]Frame, 0),
+		importantScope: make([]map[string]bool, 0),
 	}
 }
 
@@ -42,6 +46,14 @@ func (m *mockEvalContext) EnterCalc() {
 func (m *mockEvalContext) ExitCalc() {
 	m.exitCalcCalled++
 	m.inCalc = false
+}
+
+func (m *mockEvalContext) GetFrames() []Frame {
+	return m.frames
+}
+
+func (m *mockEvalContext) GetImportantScope() []map[string]bool {
+	return m.importantScope
 }
 
 // Mock FunctionCaller implementation

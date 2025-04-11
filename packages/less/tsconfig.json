@@ -9,7 +9,8 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "noImplicitAny": true,
-    "target": "ES5"
+    "target": "ES5",
+    "skipLibCheck": true
   },
   "ts-node": {
     "compilerOptions": {

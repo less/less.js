@@ -11,6 +11,8 @@ type EvalContext interface {
 	IsInCalc() bool
 	EnterCalc()
 	ExitCalc()
+	GetFrames() []Frame
+	GetImportantScope() []map[string]bool
 }
 
 // FunctionCaller represents the interface needed to call functions

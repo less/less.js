@@ -37,19 +37,9 @@ func NewAnonymous(value any, index int, fileInfo map[string]any, mapLines bool, 
 	return anon
 }
 
-// Eval returns a new Anonymous instance with the same properties
-func (a *Anonymous) Eval() any {
-	// Create a new instance with the same properties
-	visibilityInfo := map[string]any{}
-	if a.VisibilityBlocks != nil {
-		blocks := *a.VisibilityBlocks
-		visibilityInfo["visibilityBlocks"] = blocks
-	}
-	if a.NodeVisible != nil {
-		visible := *a.NodeVisible
-		visibilityInfo["nodeVisible"] = visible
-	}
-	return NewAnonymous(a.Value, a.Index, a.FileInfo, a.MapLines, a.RulesetLike, visibilityInfo)
+// Eval evaluates the anonymous value
+func (a *Anonymous) Eval(context any) (any, error) {
+	return a, nil
 }
 
 // Compare compares two nodes

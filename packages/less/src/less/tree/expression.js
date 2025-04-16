@@ -20,6 +20,7 @@ Expression.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
+        const noSpacing = this.noSpacing;
         let returnValue;
         const mathOn = context.isMathOn();
         const inParenthesis = this.parens;
@@ -50,6 +51,7 @@ Expression.prototype = Object.assign(new Node(), {
             && (!(returnValue instanceof Dimension))) {
             returnValue = new Paren(returnValue);
         }
+        returnValue.noSpacing = returnValue.noSpacing || noSpacing;
         return returnValue;
     },
 

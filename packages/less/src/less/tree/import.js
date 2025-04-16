@@ -201,7 +201,6 @@ Import.prototype = Object.assign(new Node(), {
                             && featureValue[1].type === 'Paren';
                         if (isLayer) {
                             this.layerCss = true;
-                            // expr.noSpacing = true;
                             featureValue[0] = new Expression(featureValue.slice(0, 2));
                             featureValue.splice(1, 1);
                             featureValue[0].noSpacing = true;

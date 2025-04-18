@@ -11,8 +11,12 @@ Attribute.prototype = Object.assign(new Node(), {
     type: 'Attribute',
 
     eval(context) {
+        let key = [];
+        for(let i=0;i<this.key.length;++i){
+            key.push(this.key[i].eval?this.key[i].eval(context):this.key[i]);
+        }
         return new Attribute(
-            this.key.eval ? this.key.eval(context) : this.key,
+            key,
             this.op,
             (this.value && this.value.eval) ? this.value.eval(context) : this.value,
             this.cif
@@ -24,7 +28,10 @@ Attribute.prototype = Object.assign(new Node(), {
     },
 
     toCSS(context) {
-        let value = this.key.toCSS ? this.key.toCSS(context) : this.key;
+        let value = '';
+        for(let i=0;i<this.key.length;++i){
+            value += this.key[i].toCSS ? this.key[i].toCSS(context) : this.key[i];
+        }
 
         if (this.op) {
             value += this.op;

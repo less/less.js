@@ -1513,8 +1513,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 //
                 let cif;
 
-                if (!(key = entities.variableCurly())) {
-                    key = expect(/^(?:[_A-Za-z0-9-*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/);
+                let keys;
+                while((key = entities.variableCurly()) || (key = parserInput.$re(/^(?:[_A-Za-z0-9-*]*\|)?(?:[_A-Za-z0-9-]|\\.)+/))){
+                    if(keys){
+                        keys.push(key);
+                    }else{
+                        keys = [key];
+                    }
+                    key = null
+                }
+
+                if(keys.length == 0){
+                    error('unexpected token');
                 }
 
                 op = parserInput.$re(/^[|~*$^]?=/);
@@ -1527,7 +1537,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 expectChar(']');
 
-                return new(tree.Attribute)(key, op, val, cif);
+                return new(tree.Attribute)(keys, op, val, cif);
             },
 
             //

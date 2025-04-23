@@ -14,7 +14,13 @@ Paren.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
-        return new Paren(this.value.eval(context));
+        const paren = new Paren(this.value.eval(context));
+       
+        if (this.noSpacing) {
+            paren.noSpacing = true;
+        }
+
+        return paren;
     }
 });
 

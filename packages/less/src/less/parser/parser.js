@@ -1884,8 +1884,15 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let e;
                 let p;
                 let rangeP;
+                let spacing = false;
                 parserInput.save();
                 do {
+                    parserInput.save();
+                    if (parserInput.$re(/^[0-9a-z-]*\s+\(/)) {
+                        spacing = true;
+                    }
+                    parserInput.restore();
+
                     e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
@@ -1911,8 +1918,13 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 e = p;
                             } else if (p && e) {
                                 nodes.push(new (tree.Paren)(new (tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
+                                if (!spacing) {
+                                    nodes[nodes.length - 1].noSpacing = true;
+                                }
+                                spacing = false;
                             } else if (e) {
                                 nodes.push(new(tree.Paren)(e));
+                                spacing = false;
                             } else {
                                 error('badly formed media feature definition');
                             }

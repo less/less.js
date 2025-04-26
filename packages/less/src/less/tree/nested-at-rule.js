@@ -5,12 +5,6 @@ import Anonymous from './anonymous';
 import Expression from './expression';
 import * as utils from '../utils';
 
-const NESTABLE_UNMERGED_KEYWORD_SET = new Set([
-    'and',
-    'not',
-    'or'
-]);
-
 const NestableAtRulePrototype = {
 
     isRulesetLike() {
@@ -36,10 +30,6 @@ const NestableAtRulePrototype = {
 
         for (let index = 0; index < exprValues.length; ++index) {
             expr = exprValues[index];
-
-            if (NESTABLE_UNMERGED_KEYWORD_SET.has(expr.value)) {
-                continue;
-            }
 
             if (expr.type === 'Keyword' && index + 1 < exprValues.length) {
                 paren =  exprValues[index + 1];

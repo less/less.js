@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/toakleaf/less.go/packages/less/src/less/tree"
+	"github.com/toakleaf/less.go/packages/less/src/less/go_parser"
 )
 
 // Context represents the evaluation context.
@@ -125,7 +125,7 @@ func (fc *FunctionCaller) Call(args []any) (any, error) {
 		}
 
 		// Handle Expression nodes specifically
-		if expr, ok := item.(*tree.Expression); ok {
+		if expr, ok := item.(*go_parser.Expression); ok {
 			// Filter comments *within* the expression's value list
 			subNodes := make([]any, 0, len(expr.Value))
 			for _, subItem := range expr.Value {
@@ -141,7 +141,7 @@ func (fc *FunctionCaller) Call(args []any) (any, error) {
 				nodeWithOp, opOk := subNodes[0].(NodeWithOp)
 				hasParens := false
 				// Direct field access on the Expression struct itself
-				if exprItem, exprOk := item.(*tree.Expression); exprOk {
+				if exprItem, exprOk := item.(*go_parser.Expression); exprOk {
 					hasParens = exprItem.Parens // Check Expression.Parens, not Node.Parens
 				}
 
@@ -153,7 +153,7 @@ func (fc *FunctionCaller) Call(args []any) (any, error) {
 			} else {
 				// If multiple nodes remain after filtering, create a new Expression.
 				// Pass NoSpacing from original expression
-				newExpr, err := tree.NewExpression(subNodes, expr.NoSpacing)
+				newExpr, err := go_parser.NewExpression(subNodes, expr.NoSpacing)
 				if err != nil {
 					// This should ideally not happen if subNodes is valid
 					return nil, fmt.Errorf("error creating new expression from filtered nodes: %w", err)

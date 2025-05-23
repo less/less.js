@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/toakleaf/less.go/packages/less/src/less/tree"
+	"github.com/toakleaf/less.go/packages/less/src/less/go_parser"
 )
 
 // --- Mocks --- //
@@ -261,7 +261,7 @@ func TestFunctionCaller_Call(t *testing.T) {
 
 		exprValue := []any{&mockNode{NodeType: "Comment"}}
 		// Note: Need a proper *tree.Expression here
-		origExpr, _ := tree.NewExpression(exprValue, false)
+		origExpr, _ := go_parser.NewExpression(exprValue, false)
 		arg := &mockEvaluable{Value: origExpr}
 
 		_, err := caller.Call([]any{arg})
@@ -270,7 +270,7 @@ func TestFunctionCaller_Call(t *testing.T) {
 		assertEqual(t, 1, len(mockFunc.CalledWith), "Should have one arg passed")
 
 		passedArg := mockFunc.CalledWith[0]
-		passedExpr, ok := passedArg.(*tree.Expression)
+		passedExpr, ok := passedArg.(*go_parser.Expression)
 		if !ok {
 			t.Fatalf("Expected arg to be *tree.Expression, got %T", passedArg)
 		}
@@ -284,7 +284,7 @@ func TestFunctionCaller_Call(t *testing.T) {
 
 		singleItem := &mockNode{NodeType: "Value"} // Using mockNode for simplicity
 		exprValue := []any{singleItem}
-		origExpr, _ := tree.NewExpression(exprValue, false)
+		origExpr, _ := go_parser.NewExpression(exprValue, false)
 		arg := &mockEvaluable{Value: origExpr}
 
 		_, err := caller.Call([]any{arg})
@@ -301,7 +301,7 @@ func TestFunctionCaller_Call(t *testing.T) {
 
 		divNode := &mockNode{NodeType: "Operation", Op: "/"}
 		exprValue := []any{divNode}
-		origExpr, _ := tree.NewExpression(exprValue, false)
+		origExpr, _ := go_parser.NewExpression(exprValue, false)
 		origExpr.Parens = true // Set Parens on the Expression node itself
 		arg := &mockEvaluable{Value: origExpr}
 
@@ -320,7 +320,7 @@ func TestFunctionCaller_Call(t *testing.T) {
 		val1 := &mockNode{NodeType: "Value"}
 		val2 := &mockNode{NodeType: "Value"}
 		exprValue := []any{val1, &mockNode{NodeType: "Comment"}, val2}
-		origExpr, _ := tree.NewExpression(exprValue, true) // NoSpacing = true
+		origExpr, _ := go_parser.NewExpression(exprValue, true) // NoSpacing = true
 		arg := &mockEvaluable{Value: origExpr}
 
 		_, err := caller.Call([]any{arg})
@@ -329,7 +329,7 @@ func TestFunctionCaller_Call(t *testing.T) {
 		assertEqual(t, 1, len(mockFunc.CalledWith), "Should have one arg passed")
 
 		passedArg := mockFunc.CalledWith[0]
-		passedExpr, ok := passedArg.(*tree.Expression)
+		passedExpr, ok := passedArg.(*go_parser.Expression)
 		if !ok {
 			t.Fatalf("Expected arg to be *tree.Expression, got %T", passedArg)
 		}

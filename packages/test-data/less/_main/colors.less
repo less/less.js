@@ -114,3 +114,51 @@
   --semi-transparent-dark-background: #001e00ee;
   --semi-transparent-dark-background-2: rgba(0, 30, 0, 238); // invalid opacity will be capped
 }
+
+.color-oklch-sub {
+  background: oklch(from #0000FF calc(l - 0.1) c h); 
+}
+
+.color-oklch-add {
+  background: oklch(from #0000FF calc(l + 0.1) c h);
+}
+
+.color-oklch-mult {
+  background: oklch(from #0000FF calc(l * 0.1) c h);
+}
+
+.color-oklch-div {
+  background: oklch(from #0000FF calc(l / 2) c h);
+}
+
+.color-hsl-sub {
+  background: hsl(from #0000FF calc(h - 1) s l);
+}
+
+.color-hsl-add {
+  background: hsl(from #0000FF calc(h + 1) s l);
+}
+
+.color-hsl-mult {
+  background: hsl(from #0000FF calc(h * 1) s l);
+}
+
+.color-hsl-div {
+  background: hsl(from #0000FF calc(h / 2) s l);
+}
+
+.color-rgb-sub {
+  background: rgb(from #0000FF calc(r - 1) g b);
+}
+
+.color-rgb-add {
+  background: rgb(from #0000FF calc(r + 1) g b);
+}
+
+.color-rgb-mult {
+  background: rgb(from #0000FF calc(r * 1) g b);
+}
+
+.color-rgb-div {
+  background: rgb(from #0000FF calc(r / 2) g b);
+}

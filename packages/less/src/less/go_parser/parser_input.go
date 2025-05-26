@@ -270,7 +270,7 @@ func (p *ParserInput) Quoted(loc int) any {
 			i++
 			continue
 		case '\r', '\n':
-			break
+			// ignore newline in quoted string
 		case startChar:
 			str := p.input[currentPosition : i+currentPosition+1]
 			if loc < 0 {
@@ -337,7 +337,6 @@ func (p *ParserInput) ParseUntil(tok any) any {
 			case '\\':
 				i++
 				if i < length {
-					nextChar = p.input[i]
 					parseGroups = append(parseGroups, p.input[lastPos:i+1])
 					lastPos = i + 1
 				}

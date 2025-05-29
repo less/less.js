@@ -160,7 +160,7 @@ Import.prototype = Object.assign(new Node(), {
         }
         if (this.features) {
             let featureValue = this.features.value;
-            if (Array.isArray(featureValue) && featureValue.length === 1) {
+            if (Array.isArray(featureValue) && featureValue.length >= 1) {
                 const expr = featureValue[0];
                 if (expr.type === 'Expression' && Array.isArray(expr.value) && expr.value.length >= 2) {
                     featureValue = expr.value;

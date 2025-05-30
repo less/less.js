@@ -6,6 +6,7 @@ import Ruleset from './ruleset';
 import Anonymous from './anonymous';
 import * as utils from '../utils';
 import LessError from '../less-error';
+import Expression from './expression';
 
 //
 // CSS @import node
@@ -157,6 +158,20 @@ Import.prototype = Object.assign(new Node(), {
                 return [];
             }
         }
+        if (this.features) {
+            let featureValue = this.features.value;
+            if (Array.isArray(featureValue) && featureValue.length >= 1) {
+                const expr = featureValue[0];
+                if (expr.type === 'Expression' && Array.isArray(expr.value) && expr.value.length >= 2) {
+                    featureValue = expr.value;
+                    const isLayer = featureValue[0].type === 'Keyword' && featureValue[0].value === 'layer'
+                        && featureValue[1].type === 'Paren';
+                    if (isLayer) {
+                        this.css = false;
+                    }
+                }
+            }
+        }
         if (this.options.inline) {
             const contents = new Anonymous(this.root, 0,
                 {
@@ -165,18 +180,57 @@ Import.prototype = Object.assign(new Node(), {
                 }, true, true);
 
             return this.features ? new Media([contents], this.features.value) : [contents];
-        } else if (this.css) {
+        } else if (this.css || this.layerCss) {
             const newImport = new Import(this.evalPath(context), features, this.options, this._index);
+            if (this.layerCss) {
+                newImport.css = this.layerCss;
+                newImport.path._fileInfo = this._fileInfo;
+            }
             if (!newImport.css && this.error) {
                 throw this.error;
             }
             return newImport;
         } else if (this.root) {
+            if (this.features) {
+                let featureValue = this.features.value;
+                if (Array.isArray(featureValue) && featureValue.length === 1) {
+                    const expr = featureValue[0];
+                    if (expr.type === 'Expression' && Array.isArray(expr.value) && expr.value.length >= 2) {
+                        featureValue = expr.value;
+                        const isLayer = featureValue[0].type === 'Keyword' && featureValue[0].value === 'layer'
+                            && featureValue[1].type === 'Paren';
+                        if (isLayer) {
+                            this.layerCss = true;
+                            featureValue[0] = new Expression(featureValue.slice(0, 2));
+                            featureValue.splice(1, 1);
+                            featureValue[0].noSpacing = true;
+                            return this;
+                        }
+                    }
+                }
+            }
             ruleset = new Ruleset(null, utils.copyArray(this.root.rules));
             ruleset.evalImports(context);
 
             return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
         } else {
+            if (this.features) {
+                let featureValue = this.features.value;
+                if (Array.isArray(featureValue) && featureValue.length >= 1) {
+                    featureValue = featureValue[0].value;
+                    if (Array.isArray(featureValue) && featureValue.length >= 2) {
+                        const isLayer = featureValue[0].type === 'Keyword' && featureValue[0].value === 'layer'
+                            && featureValue[1].type === 'Paren';
+                        if (isLayer) {
+                            this.css = true;
+                            featureValue[0] = new Expression(featureValue.slice(0, 2));
+                            featureValue.splice(1, 1);
+                            featureValue[0].noSpacing = true;
+                            return this;
+                        }
+                    }
+                }
+            }
             return [];
         }
     }

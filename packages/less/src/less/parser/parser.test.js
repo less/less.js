@@ -1149,9 +1149,8 @@ describe('Parser', () => {
                 expect(err).toBeInstanceOf(LessError);
                 expect(err.message).toContain('Unrecognised input');
             } else {
-                console.warn(
-                    'Permissive parsing for unexpected token in test: .class { color: red !; }'
-                );
+                // Parser is permissive with this syntax - no error thrown
+                expect(err).toBeNull();
             }
         });
 
@@ -1161,9 +1160,8 @@ describe('Parser', () => {
                 expect(err).toBeInstanceOf(LessError);
                 expect(err.message).toContain("expected ':' got 'color'");
             } else {
-                console.warn(
-                    'Permissive parsing for malformed variable in test: @myvar color: red;'
-                );
+                // Parser is permissive with this syntax - no error thrown
+                expect(err).toBeNull();
             }
         });
 

@@ -680,6 +680,16 @@ func (r *Ruleset) HasVariable(name string) bool {
 	return exists
 }
 
+// HasVariables indicates whether this ruleset supports variables (matches JavaScript rules.variables)
+func (r *Ruleset) HasVariables() bool {
+	return true // Rulesets always support variables
+}
+
+// HasProperties indicates whether this ruleset supports properties (matches JavaScript rules.properties)
+func (r *Ruleset) HasProperties() bool {
+	return true // Rulesets always support properties
+}
+
 // Variable returns a variable by name, matching JavaScript behavior
 func (r *Ruleset) variable(name string) any {
 	decl := r.Variables()[name]

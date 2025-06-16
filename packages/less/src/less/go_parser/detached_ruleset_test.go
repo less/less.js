@@ -6,11 +6,11 @@ import (
 	"github.com/toakleaf/less.go/packages/less/src/less"
 )
 
-type mockVisitor struct {
+type mockDetachedRulesetVisitor struct {
 	visited *Node
 }
 
-func (m *mockVisitor) Visit(node any) any {
+func (m *mockDetachedRulesetVisitor) Visit(node any) any {
 	m.visited = node.(*Node)
 	return node
 }
@@ -177,7 +177,7 @@ func TestDetachedRuleset(t *testing.T) {
 		t.Run("should visit the ruleset with the provided visitor", func(t *testing.T) {
 			ruleset := NewNode()
 			dr := NewDetachedRuleset(ruleset, nil)
-			visitor := &mockVisitor{}
+			visitor := &mockDetachedRulesetVisitor{}
 			dr.Accept(visitor)
 			if visitor.visited != ruleset {
 				t.Errorf("Expected visited node to be %v, got %v", ruleset, visitor.visited)

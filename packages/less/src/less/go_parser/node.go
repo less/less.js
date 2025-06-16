@@ -47,10 +47,39 @@ func (n *Node) SetParent(nodes any, parent *Node) {
 		if v != nil {
 			v.Parent = parent
 		}
+	case []any:
+		// Handle slice of any containing objects with Node fields (like *Ruleset)
+		for _, item := range v {
+			if item != nil {
+				// Check if the item has a Node field (like *Ruleset does)
+				if nodeContainer, ok := item.(interface{ GetNode() *Node }); ok {
+					if node := nodeContainer.GetNode(); node != nil {
+						node.Parent = parent
+					}
+				} else if ruleset, ok := item.(*Ruleset); ok {
+					// Handle *Ruleset specifically since it embeds *Node
+					if ruleset.Node != nil {
+						ruleset.Node.Parent = parent
+					}
+				} else if node, ok := item.(*Node); ok {
+					// Handle direct *Node types
+					node.Parent = parent
+				}
+			}
+		}
 	case nil:
 		// Handle nil case gracefully
 	default:
-		// Handle non-Node types gracefully
+		// Handle single item that might have a Node field
+		if nodeContainer, ok := nodes.(interface{ GetNode() *Node }); ok {
+			if node := nodeContainer.GetNode(); node != nil {
+				node.Parent = parent
+			}
+		} else if ruleset, ok := nodes.(*Ruleset); ok {
+			if ruleset.Node != nil {
+				ruleset.Node.Parent = parent
+			}
+		}
 	}
 }
 

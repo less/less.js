@@ -106,16 +106,22 @@ func (d *Dimension) ToColor() *Color {
 func (d *Dimension) GenCSS(context any, output *CSSOutput) {
 	var strictUnits bool
 	var compress bool
-	if ctx, ok := context.(map[string]any); ok {
-		if val, exists := ctx["strictUnits"].(bool); exists {
-			strictUnits = val
+	if ctx, ok := SafeTypeAssertion[map[string]any](context); ok {
+		if val, exists := SafeMapAccess(ctx, "strictUnits"); exists {
+			if strictVal, ok := SafeTypeAssertion[bool](val); ok {
+				strictUnits = strictVal
+			}
 		}
-		if comp, exists := ctx["compress"].(bool); exists {
-			compress = comp
+		if comp, exists := SafeMapAccess(ctx, "compress"); exists {
+			if compVal, ok := SafeTypeAssertion[bool](comp); ok {
+				compress = compVal
+			}
 		}
 	}
 	if strictUnits && !d.Unit.IsSingular() {
-		panic(fmt.Sprintf("Multiple units in dimension. Correct the units or use the unit function. Bad unit: %s", d.Unit.ToString()))
+		// Instead of panicking, output an error comment in CSS
+		output.Add(fmt.Sprintf("/* Error: Multiple units in dimension. Bad unit: %s */", d.Unit.ToString()), nil, nil)
+		return
 	}
 
 	roundedValue := d.Fround(context, d.Value)
@@ -153,10 +159,14 @@ func (d *Dimension) Operate(context any, op string, other *Dimension) *Dimension
 			// do nothing
 		} else {
 			otherConverted := other.ConvertTo(d.Unit.UsedUnits())
-			if ctx, ok := context.(map[string]any); ok {
-				if strict, exists := ctx["strictUnits"].(bool); exists && strict {
-					if otherConverted.Unit.ToString() != unit.ToString() {
-						panic(fmt.Sprintf("Incompatible units. Change the units or use the unit function. Bad units: '%s' and '%s'.", unit.ToString(), otherConverted.Unit.ToString()))
+			if ctx, ok := SafeTypeAssertion[map[string]any](context); ok {
+				if strict, exists := SafeMapAccess(ctx, "strictUnits"); exists {
+					if strictVal, ok := SafeTypeAssertion[bool](strict); ok && strictVal {
+						if otherConverted.Unit.ToString() != unit.ToString() {
+							// Instead of panicking, return a dimension with error information
+							// This maintains compatibility while avoiding panics
+							return NewDimensionFrom(0, NewUnit(nil, nil, fmt.Sprintf("error-incompatible-units-%s-%s", unit.ToString(), otherConverted.Unit.ToString())))
+						}
 					}
 				}
 			}

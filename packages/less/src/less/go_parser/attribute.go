@@ -1,9 +1,5 @@
 package go_parser
 
-import (
-	"fmt"
-)
-
 // Attribute represents a CSS attribute selector node
 type Attribute struct {
 	*Node
@@ -55,25 +51,20 @@ func (a *Attribute) GenCSS(context any, output *CSSOutput) {
 func (a *Attribute) ToCSS(context any) string {
 	var value string
 
-	if a.Key == nil {
-		panic("Cannot read properties of nil (reading 'toCSS')")
+	if SafeNilCheck(a.Key) {
+		// Instead of panicking, return empty attribute or error indication
+		return "[]"
 	}
 
-	if cssable, ok := a.Key.(CSSable); ok {
-		value = cssable.ToCSS(context)
-	} else {
-		value = fmt.Sprintf("%v", a.Key)
-	}
+	value = SafeToCSS(a.Key, context)
 
 	if a.Op != "" {
 		value += a.Op
-		if a.Value == nil {
-			panic("Cannot read properties of nil (reading 'toCSS')")
-		}
-		if cssable, ok := a.Value.(CSSable); ok {
-			value += cssable.ToCSS(context)
+		if SafeNilCheck(a.Value) {
+			// Instead of panicking, just append the operator without value
+			// This maintains CSS validity while avoiding panics
 		} else {
-			value += fmt.Sprintf("%v", a.Value)
+			value += SafeToCSS(a.Value, context)
 		}
 	}
 

@@ -40,7 +40,11 @@ func Chunker(input string, fail func(msg string, pos int)) []string {
 	}
 
 	for chunkerCurrentIndex = 0; chunkerCurrentIndex < inputLen; chunkerCurrentIndex++ {
-		cc = input[chunkerCurrentIndex]
+		if char, ok := SafeStringIndex(input, chunkerCurrentIndex); ok {
+			cc = char
+		} else {
+			break // Safety check: if we can't access the character, exit the loop
+		}
 		if ((cc >= 97) && (cc <= 122)) || (cc < 34) {
 			// a-z or whitespace
 			continue
@@ -82,13 +86,19 @@ func Chunker(input string, fail func(msg string, pos int)) []string {
 				chunkerCurrentIndex++
 				continue
 			}
-			fail("unescaped `\\`", chunkerCurrentIndex)
+			if fail != nil {
+				fail("unescaped `\\`", chunkerCurrentIndex)
+			}
 			return nil
 		case 34, 39, 96: // ", ' and `
 			matched = false
 			currentChunkStartIndex = chunkerCurrentIndex
 			for chunkerCurrentIndex = chunkerCurrentIndex + 1; chunkerCurrentIndex < inputLen; chunkerCurrentIndex++ {
-				cc2 = input[chunkerCurrentIndex]
+				if char, ok := SafeStringIndex(input, chunkerCurrentIndex); ok {
+					cc2 = char
+				} else {
+					break // Safety check: exit if we can't access the character
+				}
 				if cc2 > 96 {
 					continue
 				}
@@ -98,7 +108,9 @@ func Chunker(input string, fail func(msg string, pos int)) []string {
 				}
 				if cc2 == 92 { // \
 					if chunkerCurrentIndex == inputLen-1 {
-						fail("unescaped `\\`", chunkerCurrentIndex)
+						if fail != nil {
+							fail("unescaped `\\`", chunkerCurrentIndex)
+						}
 						return nil
 					}
 					chunkerCurrentIndex++
@@ -107,17 +119,27 @@ func Chunker(input string, fail func(msg string, pos int)) []string {
 			if matched {
 				continue
 			}
-			fail("unmatched `"+string(cc)+"`", currentChunkStartIndex)
+			if fail != nil {
+				fail("unmatched `"+string(cc)+"`", currentChunkStartIndex)
+			}
 			return nil
 		case 47: // /, check for comment
 			if parenLevel != 0 || chunkerCurrentIndex == inputLen-1 {
 				continue
 			}
-			cc2 = input[chunkerCurrentIndex+1]
+			if char, ok := SafeStringIndex(input, chunkerCurrentIndex+1); ok {
+				cc2 = char
+			} else {
+				continue // Safety check: skip if we can't access the next character
+			}
 			if cc2 == 47 {
 				// //, find lnfeed
 				for chunkerCurrentIndex = chunkerCurrentIndex + 2; chunkerCurrentIndex < inputLen; chunkerCurrentIndex++ {
-					cc2 = input[chunkerCurrentIndex]
+					if char, ok := SafeStringIndex(input, chunkerCurrentIndex); ok {
+						cc2 = char
+					} else {
+						break
+					}
 					if (cc2 <= 13) && ((cc2 == 10) || (cc2 == 13)) {
 						break
 					}
@@ -127,27 +149,35 @@ func Chunker(input string, fail func(msg string, pos int)) []string {
 				lastMultiComment = chunkerCurrentIndex
 				currentChunkStartIndex = chunkerCurrentIndex
 				for chunkerCurrentIndex = chunkerCurrentIndex + 2; chunkerCurrentIndex < inputLen-1; chunkerCurrentIndex++ {
-					cc2 = input[chunkerCurrentIndex]
+					if char, ok := SafeStringIndex(input, chunkerCurrentIndex); ok {
+						cc2 = char
+					} else {
+						break
+					}
 					if cc2 == 125 {
 						lastMultiCommentEndBrace = chunkerCurrentIndex
 					}
 					if cc2 != 42 {
 						continue
 					}
-					if input[chunkerCurrentIndex+1] == 47 {
+					if char, ok := SafeStringIndex(input, chunkerCurrentIndex+1); ok && char == 47 {
 						break
 					}
 				}
 				if chunkerCurrentIndex == inputLen-1 {
-					fail("missing closing `*/`", currentChunkStartIndex)
+					if fail != nil {
+						fail("missing closing `*/`", currentChunkStartIndex)
+					}
 					return nil
 				}
 				chunkerCurrentIndex++
 			}
 			continue
 		case 42: // *, check for unmatched */
-			if (chunkerCurrentIndex < inputLen-1) && (input[chunkerCurrentIndex+1] == 47) {
-				fail("unmatched `/*`", chunkerCurrentIndex)
+			if char, ok := SafeStringIndex(input, chunkerCurrentIndex+1); ok && char == 47 {
+				if fail != nil {
+					fail("unmatched `/*`", chunkerCurrentIndex)
+				}
 				return nil
 			}
 			continue
@@ -155,14 +185,18 @@ func Chunker(input string, fail func(msg string, pos int)) []string {
 	}
 
 	if level != 0 {
-		if (lastMultiComment > lastOpening) && (lastMultiCommentEndBrace > lastMultiComment) {
-			fail("missing closing `}` or `*/`", lastOpening)
-		} else {
-			fail("missing closing `}`", lastOpening)
+		if fail != nil {
+			if (lastMultiComment > lastOpening) && (lastMultiCommentEndBrace > lastMultiComment) {
+				fail("missing closing `}` or `*/`", lastOpening)
+			} else {
+				fail("missing closing `}`", lastOpening)
+			}
 		}
 		return nil
 	} else if parenLevel != 0 {
-		fail("missing closing `)`", lastOpeningParen)
+		if fail != nil {
+			fail("missing closing `)`", lastOpeningParen)
+		}
 		return nil
 	}
 

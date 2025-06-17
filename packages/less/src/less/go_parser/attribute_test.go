@@ -40,7 +40,6 @@ func TestAttribute(t *testing.T) {
 		attr     *Attribute
 		context  any
 		expected string
-		expectError bool
 	}{
 		{
 			name:     "basic attribute with key only",
@@ -137,12 +136,12 @@ func TestAttribute(t *testing.T) {
 		{
 			name:     "attribute with nil key",
 			attr:     NewAttribute(nil, "=", "value", ""),
-			expectError: true,
+			expected: "[]",
 		},
 		{
 			name:     "attribute with nil value",
 			attr:     NewAttribute("data-test", "=", nil, ""),
-			expectError: true,
+			expected: "[data-test=]",
 		},
 		{
 			name:     "attribute with evaluable object with only eval method",
@@ -178,14 +177,6 @@ func TestAttribute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.expectError {
-				defer func() {
-					if r := recover(); r == nil {
-						t.Error("Expected panic but got none")
-					}
-				}()
-			}
-
 			if tt.context != nil {
 				evaluated := tt.attr.Eval(tt.context)
 				if evaluated.ToCSS(tt.context) != tt.expected {

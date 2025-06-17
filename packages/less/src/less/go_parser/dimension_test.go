@@ -170,25 +170,25 @@ func TestGenCSS(t *testing.T) {
 		}
 	})
 
-	t.Run("throw error for multiple units in strict mode", func(t *testing.T) {
+	t.Run("handle error for multiple units in strict mode safely", func(t *testing.T) {
 		// Create a Dimension with a Unit that has multiple numerators
 		u := NewUnit([]string{"px", "em"}, nil, "px")
 		d, err := NewDimension(5, u)
 		if err != nil {
 			t.Fatalf("Error creating dimension: %v", err)
 		}
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("expected panic for multiple units in strict mode")
-			}
-		}()
 		// Create the correct CSSOutput type for this test case
 		testOut := &testCSSOutput{}
 		cssOut := &CSSOutput{
 			Add:     testOut.Add,
 			IsEmpty: testOut.IsEmpty,
 		}
-		d.GenCSS(map[string]any{ "strictUnits": true }, cssOut) // Pass cssOut
+		d.GenCSS(map[string]any{ "strictUnits": true }, cssOut)
+		
+		// Should output an error comment instead of panicking
+		if !strings.Contains(testOut.output, "Error: Multiple units in dimension") {
+			t.Errorf("Expected error comment in output, got: %s", testOut.output)
+		}
 	})
 
 	t.Run("output zero value with unit in non-compressed mode", func(t *testing.T) {

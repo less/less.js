@@ -36,10 +36,10 @@ func NewQuoted(str string, content string, escaped bool, index int, currentFileI
 		currentFileInfo = make(map[string]any)
 	}
 	
-	// Handle empty quote string to avoid index out of range panic
+	// Handle empty quote string safely
 	var quote string
-	if len(str) > 0 {
-		quote = string(str[0])
+	if char, ok := SafeStringIndex(str, 0); ok {
+		quote = string(char)
 	} else {
 		quote = ""
 	}
@@ -90,8 +90,11 @@ func (q *Quoted) ContainsVariables() bool {
 func (q *Quoted) Eval(context EvalContext) (any, error) {
 	value := q.value
 
-	// Get frames from context
+	// Get frames from context safely
 	frames := context.GetFrames()
+	if frames == nil {
+		frames = make([]Frame, 0) // Provide empty frames if none available
+	}
 
 	// Define iterativeReplace to match JavaScript implementation
 	iterativeReplace := func(value string, regex *regexp.Regexp, replacementFn func(string, string) (string, error)) (string, error) {

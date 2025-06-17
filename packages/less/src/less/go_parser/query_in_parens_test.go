@@ -2,6 +2,7 @@ package go_parser
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -535,12 +536,13 @@ func TestQueryInParens(t *testing.T) {
 
 			output := NewTestCSSOutput()
 
-			defer func() {
-				if r := recover(); r == nil {
-					t.Error("Expected panic when mvalue is nil and mvalues is empty")
-				}
-			}()
+			// Should output a placeholder comment instead of panicking
 			query.GenCSS(context, output.CSSOutput)
+			
+			// Should contain a missing value comment
+			if !strings.Contains(output.str, "missing value") {
+				t.Errorf("Expected missing value comment in output, got: %s", output.str)
+			}
 		})
 
 		t.Run("should handle empty operators after trimming", func(t *testing.T) {

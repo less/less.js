@@ -44,26 +44,30 @@ func (e *Expression) Accept(visitor Visitor) {
 
 // Eval evaluates the expression
 func (e *Expression) Eval(context any) any {
-	if context == nil {
+	if SafeNilCheck(context) {
 		return e
 	}
 
-	ctx, ok := context.(map[string]any)
+	ctx, ok := SafeTypeAssertion[map[string]any](context)
 	if !ok {
 		return e
 	}
 
 	mathOn := false
-	if m, exists := ctx["isMathOn"].(bool); exists {
-		mathOn = m
+	if m, exists := SafeMapAccess(ctx, "isMathOn"); exists {
+		if mathVal, ok := SafeTypeAssertion[bool](m); ok {
+			mathOn = mathVal
+		}
 	}
 
 	inParenthesis := e.Node.Parens
 	doubleParen := false
 
 	if inParenthesis {
-		if inParenFunc, ok := ctx["inParenthesis"].(func()); ok {
-			inParenFunc()
+		if inParenFunc, ok := SafeMapAccess(ctx, "inParenthesis"); ok {
+			if parenthesisFunc, ok := SafeTypeAssertion[func()](inParenFunc); ok {
+				parenthesisFunc()
+			}
 		}
 	}
 
@@ -72,48 +76,43 @@ func (e *Expression) Eval(context any) any {
 	if len(e.Value) > 1 {
 		newValues := make([]any, len(e.Value))
 		for i, val := range e.Value {
-			if val == nil {
+			if SafeNilCheck(val) {
 				newValues[i] = nil
 				continue
 			}
 			
-			if evaluatable, ok := val.(interface{ Eval(any) any }); ok {
-				newValues[i] = evaluatable.Eval(context)
-			} else {
-				newValues[i] = val
-			}
+			newValues[i] = SafeEval(val, context)
 		}
 		expr, _ := NewExpression(newValues, e.NoSpacing)
 		returnValue = expr
 	} else if len(e.Value) == 1 {
-		if e.Value[0] != nil {
-			val0 := e.Value[0]
-			if v0, ok := val0.(interface { Parens() bool }); ok && v0.Parens() {
-				if v0p, ok := val0.(interface { ParensInOp() bool }); ok && !v0p.ParensInOp() {
-					if inCalc, exists := ctx["inCalc"].(bool); !exists || !inCalc {
+		if val0, ok := SafeSliceIndex(e.Value, 0); ok && !SafeNilCheck(val0) {
+			if v0, ok := SafeTypeAssertion[interface { Parens() bool }](val0); ok && v0.Parens() {
+				if v0p, ok := SafeTypeAssertion[interface { ParensInOp() bool }](val0); ok && !v0p.ParensInOp() {
+					if inCalc, exists := SafeMapAccess(ctx, "inCalc"); !exists {
+						doubleParen = true
+					} else if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); !ok || !inCalcVal {
 						doubleParen = true
 					}
 				}
 			}
 			
-			if evaluatable, ok := val0.(interface{ Eval(any) any }); ok {
-				returnValue = evaluatable.Eval(context)
-			} else {
-				returnValue = val0
-			}
+			returnValue = SafeEval(val0, context)
 		}
 	} else {
 		returnValue = e
 	}
 
 	if inParenthesis {
-		if outParenFunc, ok := ctx["outOfParenthesis"].(func()); ok {
-			outParenFunc()
+		if outParenFunc, ok := SafeMapAccess(ctx, "outOfParenthesis"); ok {
+			if parenthesisFunc, ok := SafeTypeAssertion[func()](outParenFunc); ok {
+				parenthesisFunc()
+			}
 		}
 	}
 
 	if e.Node.Parens && e.Node.ParensInOp && !mathOn && !doubleParen {
-		if _, isDimension := returnValue.(*Dimension); !isDimension {
+		if _, isDimension := SafeTypeAssertion[*Dimension](returnValue); !isDimension {
 			returnValue = NewParen(returnValue)
 		}
 	}

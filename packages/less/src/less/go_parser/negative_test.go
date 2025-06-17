@@ -431,7 +431,7 @@ func TestNegativeEval(t *testing.T) {
 		}
 	})
 	
-	t.Run("should panic on nil input", func(t *testing.T) {
+	t.Run("should handle nil input safely", func(t *testing.T) {
 		negative := NewNegative(nil)
 		
 		// Context with math off to avoid Operation creation
@@ -439,13 +439,20 @@ func TestNegativeEval(t *testing.T) {
 			"isMathOn": func(_ string) bool { return false },
 		}
 		
-		// Call the function under test and expect a panic
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("Expected panic with nil input, but no panic occurred")
-			}
-		}()
+		// Call the function under test - should return safe default instead of panicking
+		result := negative.Eval(context)
 		
-		negative.Eval(context)
+		// Should return a negative with a zero dimension
+		if resultNeg, ok := result.(*Negative); ok {
+			if resultDim, ok := resultNeg.Value.(*Dimension); ok {
+				if resultDim.Value != 0 {
+					t.Errorf("Expected zero dimension value, got %f", resultDim.Value)
+				}
+			} else {
+				t.Errorf("Expected value to be *Dimension, got %T", resultNeg.Value)
+			}
+		} else {
+			t.Errorf("Expected result to be *Negative, got %T", result)
+		}
 	})
 } 

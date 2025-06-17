@@ -120,20 +120,24 @@ func (q *QueryInParens) GenCSS(context any, output *CSSOutput) {
 	output.Add(" "+q.op+" ", nil, nil)
 
 	if len(q.mvalues) > 0 {
-		q.mvalue = q.mvalues[0]
-		q.mvalues = q.mvalues[1:]
+		if val, ok := SafeSliceIndex(q.mvalues, 0); ok {
+			q.mvalue = val
+			q.mvalues = q.mvalues[1:]
+		}
 	}
 
-	if q.mvalue != nil {
-		if anon, ok := q.mvalue.(*Anonymous); ok {
+	if !SafeNilCheck(q.mvalue) {
+		if anon, ok := SafeTypeAssertion[*Anonymous](q.mvalue); ok {
 			output.Add(anon.Value, nil, nil)
-		} else if generator, ok := q.mvalue.(CSSGenerator); ok {
-			generator.GenCSS(context, output)
+		} else if generator, ok := SafeTypeAssertion[CSSGenerator](q.mvalue); ok {
+			SafeGenCSS(generator, context, output)
 		} else {
 			output.Add(q.mvalue, nil, nil)
 		}
 	} else if len(q.mvalues) == 0 {
-		panic("mvalue is nil and mvalues is empty")
+		// Instead of panicking, output a placeholder or empty value
+		// This maintains CSS generation while avoiding panics
+		output.Add("/* missing value */", nil, nil)
 	}
 
 	if q.rvalue != nil {

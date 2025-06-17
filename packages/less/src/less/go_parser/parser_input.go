@@ -82,11 +82,15 @@ func (p *ParserInput) skipWhitespace(length int) bool {
 
 	// Loop from the new p.i to skip actual whitespace/comments
 	for ; p.i < endIndex && p.i < len(inp); p.i++ {
-		c = inp[p.i]
+		if char, ok := SafeStringIndex(inp, p.i); ok {
+			c = char
+		} else {
+			break // Exit if we can't safely access the character
+		}
 
 		if p.autoCommentAbsorb && c == charCodeForwardSlash {
-			if p.i+1 < len(inp) {
-				nextChar = inp[p.i+1]
+			if char, ok := SafeStringIndex(inp, p.i+1); ok {
+				nextChar = char
 				if nextChar == '/' { // Line comment
 					comment = inputComment{index: p.i, isLineComment: true}
 					nextNewLine := -1
@@ -188,11 +192,10 @@ func (p *ParserInput) Forget() {
 
 func (p *ParserInput) IsWhitespace(offset int) bool {
 	pos := p.i + offset
-	if pos < 0 || pos >= len(p.input) {
-		return false
+	if code, ok := SafeStringIndex(p.input, pos); ok {
+		return code == charCodeSpace || code == charCodeCR || code == charCodeTab || code == charCodeLF
 	}
-	code := p.input[pos]
-	return code == charCodeSpace || code == charCodeCR || code == charCodeTab || code == charCodeLF
+	return false
 }
 
 func (p *ParserInput) Re(tok *regexp.Regexp) any {
@@ -218,7 +221,7 @@ func (p *ParserInput) Re(tok *regexp.Regexp) any {
 }
 
 func (p *ParserInput) Char(tok byte) any {
-	if p.i >= len(p.input) || p.input[p.i] != tok {
+	if char, ok := SafeStringIndex(p.input, p.i); !ok || char != tok {
 		return nil
 	}
 	p.skipWhitespace(1) // Advance by 1 and skip subsequent whitespace/comments
@@ -227,7 +230,7 @@ func (p *ParserInput) Char(tok byte) any {
 }
 
 func (p *ParserInput) PeekChar(tok byte) any {
-	if p.i >= len(p.input) || p.input[p.i] != tok {
+	if char, ok := SafeStringIndex(p.input, p.i); !ok || char != tok {
 		return nil
 	}
 	return tok
@@ -428,17 +431,17 @@ func (p *ParserInput) Peek(tok any) bool {
 }
 
 func (p *ParserInput) CurrentChar() byte {
-	if p.i >= len(p.input) {
-		return 0
+	if char, ok := SafeStringIndex(p.input, p.i); ok {
+		return char
 	}
-	return p.input[p.i]
+	return 0
 }
 
 func (p *ParserInput) PrevChar() byte {
-	if p.i <= 0 {
-		return 0
+	if char, ok := SafeStringIndex(p.input, p.i-1); ok {
+		return char
 	}
-	return p.input[p.i-1]
+	return 0
 }
 
 func (p *ParserInput) GetInput() string {
@@ -450,11 +453,10 @@ func (p *ParserInput) GetIndex() int {
 }
 
 func (p *ParserInput) PeekNotNumeric() bool {
-	if p.i >= len(p.input) {
-		return true
+	if c, ok := SafeStringIndex(p.input, p.i); ok {
+		return (c > charCode9 || c < charCodePlus) || c == charCodeForwardSlash || c == charCodeComma
 	}
-	c := p.input[p.i]
-	return (c > charCode9 || c < charCodePlus) || c == charCodeForwardSlash || c == charCodeComma
+	return true
 }
 
 func (p *ParserInput) Start(str string, chunkInput bool, failFunction func(string, int)) {

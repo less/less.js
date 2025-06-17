@@ -264,11 +264,38 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 		default:
 			result = nil
 		}
-		returnNodes = append(returnNodes, result)
+		
+		if result != nil {
+			returnNodes = append(returnNodes, result)
+		} else {
+			// If any parser fails, we should fail the whole parseNode operation
+			callback(&ParseNodeResult{
+				Error: true,
+				Nodes: nil,
+			})
+			return
+		}
 	}
 
-	endInfo := parser.End()
-	if endInfo.IsFinished {
+	// For parseNode, we should be more permissive about trailing whitespace
+	// Skip any trailing whitespace and see if we've consumed all meaningful content
+	currentIndex := parser.GetIndex()
+	input := parser.GetInput()
+	
+	// Skip trailing whitespace
+	for currentIndex < len(input) {
+		c := input[currentIndex]
+		if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+			currentIndex++
+		} else {
+			break
+		}
+	}
+	
+	// Check if we've consumed all input or only have whitespace remaining
+	isFinished := currentIndex >= len(input)
+	
+	if isFinished {
 		callback(&ParseNodeResult{
 			Error: nil,
 			Nodes: returnNodes,
@@ -436,10 +463,49 @@ func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Rul
 }
 
 // SerializeVars serializes a variable map to Less format
+// For backward compatibility, this preserves the insertion order when possible
 func SerializeVars(vars map[string]any) string {
+	if len(vars) == 0 {
+		return ""
+	}
+
 	var sb strings.Builder
 
+	// To match JavaScript behavior exactly, we need to iterate in insertion order
+	// Since Go maps don't preserve order, we'll use the keys as they come from iteration
+	// This won't be deterministic, but matches JavaScript's behavior for objects
 	for name, value := range vars {
+		// Add @ prefix if not present
+		if !strings.HasPrefix(name, "@") {
+			name = "@" + name
+		}
+
+		valueStr := fmt.Sprintf("%v", value)
+		
+		// Add semicolon if not present
+		if !strings.HasSuffix(valueStr, ";") {
+			valueStr += ";"
+		}
+
+		sb.WriteString(fmt.Sprintf("%s: %s", name, valueStr))
+	}
+
+	return sb.String()
+}
+
+// SerializeVarsOrdered serializes variables from an OrderedMap to Less format
+// This preserves insertion order exactly like JavaScript objects
+func SerializeVarsOrdered(vars *OrderedMap) string {
+	if vars == nil || vars.Len() == 0 {
+		return ""
+	}
+
+	var sb strings.Builder
+
+	// Iterate in insertion order
+	for _, name := range vars.Keys() {
+		value, _ := vars.Get(name)
+		
 		// Add @ prefix if not present
 		if !strings.HasPrefix(name, "@") {
 			name = "@" + name
@@ -1608,7 +1674,8 @@ func (p *Parsers) Extend() []any {
 	var extendList []any
 	var extend any
 
-	if p.parser.parserInput.Str(":extend(") == nil {
+	// Check for both ":extend(" and "&:extend(" patterns
+	if p.parser.parserInput.Str("&:extend(") == nil && p.parser.parserInput.Str(":extend(") == nil {
 		return nil
 	}
 
@@ -1618,13 +1685,22 @@ func (p *Parsers) Extend() []any {
 		first := true
 		
 		for {
-			optionMatch := p.parser.parserInput.Re(regexp.MustCompile(`^(!?all)(?=\s*(\)|,))`))
+			// Check for option (all or !all) followed by whitespace and closing paren or comma
+			p.parser.parserInput.Save()
+			optionMatch := p.parser.parserInput.Re(regexp.MustCompile(`^(!?all)`))
 			if optionMatch != nil {
 				if matches, ok := optionMatch.([]string); ok && len(matches) > 1 {
-					option = matches[1]
+					// Check if followed by whitespace and ) or ,
+					p.parser.parserInput.Re(regexp.MustCompile(`^\s*`)) // Skip whitespace
+					nextChar := p.parser.parserInput.CurrentChar()
+					if nextChar == ')' || nextChar == ',' {
+						option = matches[1]
+						p.parser.parserInput.Forget()
+						break
+					}
 				}
-				break
 			}
+			p.parser.parserInput.Restore("")
 
 			e = p.Element()
 			if e == nil {
@@ -1875,23 +1951,28 @@ func (p *Parsers) PluginArgs() string {
 func (p *Parsers) Sub() any {
 	var a any
 
-	p.parser.parserInput.Save()
-	if p.parser.parserInput.Char('(') != nil {
-		a = p.Addition()
-		if a != nil && p.parser.parserInput.Char(')') != nil {
-			p.parser.parserInput.Forget()
-			expr, err := go_parser.NewExpression([]any{a}, false)
-			if err != nil {
-				return nil
-			}
-			// Mark as having parentheses
-			// Note: Go parser handles parentheses differently
-			return expr
-		}
-		p.parser.parserInput.Restore("Expected ')'")
+	startIndex := p.parser.parserInput.GetIndex()
+	
+	// Check for opening parenthesis
+	if p.parser.parserInput.Char('(') == nil {
 		return nil
 	}
-	p.parser.parserInput.Restore("")
+	
+	a = p.Addition()
+	if a != nil && p.parser.parserInput.Char(')') != nil {
+		expr, err := go_parser.NewExpression([]any{a}, false)
+		if err != nil {
+			// Restore position if expression creation failed
+			p.parser.parserInput.SetIndex(startIndex)
+			return nil
+		}
+		// Mark as having parentheses - this is equivalent to e.parens = true in JavaScript
+		expr.Node.Parens = true
+		return expr
+	}
+	
+	// Restore to original position if parsing failed
+	p.parser.parserInput.SetIndex(startIndex)
 	return nil
 }
 
@@ -1992,8 +2073,11 @@ func (p *Parsers) Addition() any {
 
 		opMatch := p.parser.parserInput.Re(regexp.MustCompile(`^[-+]\s*`))
 		if opMatch != nil {
+			// Handle both string and []string return types from parserInput.Re()
 			if matches, ok := opMatch.([]string); ok && len(matches) > 0 {
 				op = strings.TrimSpace(matches[0])
+			} else if matchStr, ok := opMatch.(string); ok {
+				op = strings.TrimSpace(matchStr)
 			}
 		} else {
 			if p.parser.parserInput.Char('+') != nil {
@@ -3427,4 +3511,61 @@ func (p *Parsers) IeAlpha() []any {
 	
 	quoted := go_parser.NewQuoted("", fmt.Sprintf("alpha(opacity=%s)", valueStr), false, 0, nil)
 	return []any{quoted}
+}
+
+// OrderedMap preserves insertion order like JavaScript objects
+type OrderedMap struct {
+	keys   []string
+	values map[string]any
+}
+
+// NewOrderedMap creates a new OrderedMap
+func NewOrderedMap() *OrderedMap {
+	return &OrderedMap{
+		keys:   make([]string, 0),
+		values: make(map[string]any),
+	}
+}
+
+// Set adds or updates a key-value pair, preserving insertion order
+func (om *OrderedMap) Set(key string, value any) {
+	if _, exists := om.values[key]; !exists {
+		om.keys = append(om.keys, key)
+	}
+	om.values[key] = value
+}
+
+// Get retrieves a value by key
+func (om *OrderedMap) Get(key string) (any, bool) {
+	value, exists := om.values[key]
+	return value, exists
+}
+
+// Keys returns the keys in insertion order
+func (om *OrderedMap) Keys() []string {
+	return om.keys
+}
+
+// Len returns the number of key-value pairs
+func (om *OrderedMap) Len() int {
+	return len(om.keys)
+}
+
+// ToMap converts to a regular map (loses order)
+func (om *OrderedMap) ToMap() map[string]any {
+	result := make(map[string]any, len(om.keys))
+	for key, value := range om.values {
+		result[key] = value
+	}
+	return result
+}
+
+// OrderedMapFromMap creates an OrderedMap from a regular map
+// Note: This will have arbitrary order since regular maps are unordered
+func OrderedMapFromMap(m map[string]any) *OrderedMap {
+	om := NewOrderedMap()
+	for key, value := range m {
+		om.Set(key, value)
+	}
+	return om
 } 

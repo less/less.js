@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -1830,6 +1831,581 @@ func TestParser_DeclarationCallIntegration(t *testing.T) {
 			t.Error("Expected supports rule to be parsed")
 		}
 	})
+}
+
+func TestParser_ParseNode(t *testing.T) {
+	context := map[string]any{}
+	imports := map[string]any{
+		"contents":             map[string]string{},
+		"contentsIgnoredChars": map[string]int{},
+		"rootFilename":         "_snippet_.less",
+	}
+	fileInfo := map[string]any{"filename": "_snippet_.less"}
+	parser := NewParser(context, imports, fileInfo, 0)
+
+	// Helper function to test parseNode with promise-like callback
+	parseNodeSync := func(snippet string, parseList []string) (*ParseNodeResult, error) {
+		var result *ParseNodeResult
+		var callbackErr error
+		
+		done := make(chan struct{})
+		parser.parseNode(snippet, parseList, func(res *ParseNodeResult) {
+			result = res
+			close(done)
+		})
+		<-done
+		
+		if result.Error != nil {
+			if lessErr, ok := result.Error.(*less.LessError); ok {
+				callbackErr = lessErr
+			} else if result.Error == true {
+				callbackErr = fmt.Errorf("parsing failed - not all input consumed")
+			} else if errMap, ok := result.Error.(map[string]any); ok {
+				callbackErr = fmt.Errorf("parse error: %v at index %v", errMap["message"], errMap["index"])
+			}
+		}
+		
+		return result, callbackErr
+	}
+
+	t.Run("should parse a simple value string", func(t *testing.T) {
+		result, err := parseNodeSync("10px solid red", []string{"value"})
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if result == nil || len(result.Nodes) != 1 {
+			t.Error("Expected 1 node to be parsed")
+		}
+		if result.Nodes[0] == nil {
+			t.Error("Expected non-nil node")
+		}
+	})
+
+	t.Run("should parse an important keyword", func(t *testing.T) {
+		result, err := parseNodeSync("!important", []string{"important"})
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if result == nil || len(result.Nodes) != 1 {
+			t.Error("Expected 1 node to be parsed")
+		}
+		if result.Nodes[0] == nil {
+			t.Error("Expected non-nil node")
+		}
+	})
+
+	t.Run("should handle errors in parseNode", func(t *testing.T) {
+		result, err := parseNodeSync("10px solid ???", []string{"value"})
+		if err == nil {
+			t.Error("Expected error for invalid input")
+		}
+		if result != nil && result.Nodes != nil {
+			t.Error("Expected nodes to be nil on error")
+		}
+	})
+
+	t.Run("should parse a selector", func(t *testing.T) {
+		result, err := parseNodeSync(".my-class ~ .another", []string{"selector"})
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if result == nil || len(result.Nodes) != 1 {
+			t.Error("Expected 1 node to be parsed")
+		}
+		if selector, ok := result.Nodes[0].(*go_parser.Selector); ok {
+			if len(selector.Elements) != 2 {
+				t.Errorf("Expected 2 elements, got %d", len(selector.Elements))
+			}
+		} else {
+			t.Errorf("Expected *Selector, got %T", result.Nodes[0])
+		}
+	})
+
+	t.Run("should parse an expression", func(t *testing.T) {
+		result, err := parseNodeSync("10px * (@var + 5)", []string{"expression"})
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+			return
+		}
+		if result == nil || len(result.Nodes) != 1 {
+			t.Error("Expected 1 node to be parsed")
+			return
+		}
+		if _, ok := result.Nodes[0].(*go_parser.Expression); !ok {
+			t.Errorf("Expected *Expression, got %T", result.Nodes[0])
+		}
+	})
+
+	t.Run("should parse a declaration", func(t *testing.T) {
+		result, err := parseNodeSync("color: red;", []string{"declaration"})
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if result == nil || len(result.Nodes) != 1 {
+			t.Error("Expected 1 node to be parsed")
+		}
+		if _, ok := result.Nodes[0].(*go_parser.Declaration); !ok {
+			t.Errorf("Expected *Declaration, got %T", result.Nodes[0])
+		}
+	})
+}
+
+func TestParser_ExpressionsAndOperations(t *testing.T) {
+	t.Run("should parse addition", func(t *testing.T) {
+		err, root := parseLess("width: 10px + 5px;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+		if decl, ok := root.Rules[0].(*go_parser.Declaration); ok {
+			// Should contain an operation in the value
+			if decl.Value == nil {
+				t.Error("Expected value to be present")
+			}
+		} else {
+			t.Errorf("Expected Declaration, got %T", root.Rules[0])
+		}
+	})
+
+	t.Run("should parse subtraction", func(t *testing.T) {
+		err, root := parseLess("width: 10px - 5px;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+
+	t.Run("should parse multiplication", func(t *testing.T) {
+		err, root := parseLess("width: 10px * 2;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+
+	t.Run("should parse division", func(t *testing.T) {
+		err, root := parseLess("width: 10px / 2;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+
+	t.Run("should respect operation order (multiplication before addition)", func(t *testing.T) {
+		err, root := parseLess("width: 10px + 5px * 2;", nil, nil) // Expected: 10px + (5px * 2)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+		// The parser should create the correct operation tree
+		if decl, ok := root.Rules[0].(*go_parser.Declaration); ok {
+			if decl.Value == nil {
+				t.Error("Expected value to be present")
+			}
+		} else {
+			t.Errorf("Expected Declaration, got %T", root.Rules[0])
+		}
+	})
+
+	t.Run("should handle parentheses in expressions", func(t *testing.T) {
+		err, root := parseLess("width: (10px + 5px) * 2;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if root == nil {
+			t.Error("Expected root to be created, but got nil")
+			return
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+
+	t.Run("should parse negative numbers", func(t *testing.T) {
+		err, root := parseLess("margin: -10px;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+
+	t.Run("should parse comma-separated values", func(t *testing.T) {
+		err, root := parseLess("font-family: Arial, sans-serif;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+
+	t.Run("should parse space-separated values", func(t *testing.T) {
+		err, root := parseLess("border: 1px solid black;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected declaration to be parsed")
+		}
+	})
+}
+
+func TestParser_Extends(t *testing.T) {
+	t.Run("should parse basic :extend()", func(t *testing.T) {
+		err, root := parseLess("a:extend(.b) {}", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Selectors) == 0 {
+				t.Error("Expected selector with extend")
+			}
+			// Cast to *Selector to access ExtendList
+			if selector, ok := ruleset.Selectors[0].(*go_parser.Selector); ok {
+				if len(selector.ExtendList) == 0 {
+					t.Error("Expected extend list to have items")
+				}
+			} else {
+				t.Errorf("Expected *Selector, got %T", ruleset.Selectors[0])
+			}
+		} else {
+			t.Errorf("Expected Ruleset, got %T", root.Rules[0])
+		}
+	})
+
+	t.Run("should parse &:extend()", func(t *testing.T) {
+		err, root := parseLess(".a { &:extend(.b); }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Rules) == 0 {
+				t.Error("Expected extend rule inside ruleset")
+			}
+			if _, ok := ruleset.Rules[0].(*go_parser.Extend); !ok {
+				t.Errorf("Expected Extend, got %T", ruleset.Rules[0])
+			}
+		} else {
+			t.Errorf("Expected Ruleset, got %T", root.Rules[0])
+		}
+	})
+
+	t.Run("should parse extend with 'all'", func(t *testing.T) {
+		err, root := parseLess("a:extend(.b all) {}", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Selectors) == 0 {
+				t.Error("Expected selector with extend")
+			}
+			if selector, ok := ruleset.Selectors[0].(*go_parser.Selector); ok {
+				if len(selector.ExtendList) == 0 {
+					t.Error("Expected extend with 'all' option")
+				}
+				if extend, ok := selector.ExtendList[0].(*go_parser.Extend); ok {
+					if extend.Option != "all" {
+						t.Errorf("Expected option to be 'all', got %s", extend.Option)
+					}
+				}
+			}
+		}
+	})
+
+	t.Run("should parse extend with multiple targets", func(t *testing.T) {
+		err, root := parseLess("a:extend(.b, .c) {}", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Selectors) == 0 {
+				t.Error("Expected selector with extend")
+			}
+			if selector, ok := ruleset.Selectors[0].(*go_parser.Selector); ok {
+				if len(selector.ExtendList) == 0 {
+					t.Error("Expected extend with multiple targets")
+				}
+			}
+		}
+	})
+
+	t.Run("should parse extend with complex selector", func(t *testing.T) {
+		err, root := parseLess("a:extend(div > .b #id) {}", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Selectors) == 0 {
+				t.Error("Expected selector with extend")
+			}
+			if selector, ok := ruleset.Selectors[0].(*go_parser.Selector); ok {
+				if len(selector.ExtendList) == 0 {
+					t.Error("Expected extend with complex selector")
+				}
+				if extend, ok := selector.ExtendList[0].(*go_parser.Extend); ok {
+					if extendSelector, ok := extend.Selector.(*go_parser.Selector); ok {
+						if len(extendSelector.Elements) < 3 {
+							t.Errorf("Expected at least 3 elements in complex selector, got %d", len(extendSelector.Elements))
+						}
+					}
+				}
+			}
+		}
+	})
+}
+
+func TestParser_CSSCustomProperties(t *testing.T) {
+	t.Run("should parse custom property declaration", func(t *testing.T) {
+		err, root := parseLess(".class { --my-custom-prop: 10px; }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Rules) == 0 {
+				t.Error("Expected declaration inside ruleset")
+			}
+			if decl, ok := ruleset.Rules[0].(*go_parser.Declaration); ok {
+				// We can't access the private name field directly, but we can verify it was parsed
+				_ = decl
+			} else {
+				t.Errorf("Expected Declaration, got %T", ruleset.Rules[0])
+			}
+		}
+	})
+
+	t.Run("should parse custom property usage with var()", func(t *testing.T) {
+		err, root := parseLess(".class { color: var(--my-custom-prop); }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Rules) == 0 {
+				t.Error("Expected declaration inside ruleset")
+			}
+			if decl, ok := ruleset.Rules[0].(*go_parser.Declaration); ok {
+				// The value should contain a var() call
+				if decl.Value == nil {
+					t.Error("Expected value to be present")
+				}
+			} else {
+				t.Errorf("Expected Declaration, got %T", ruleset.Rules[0])
+			}
+		}
+	})
+
+	t.Run("should parse custom property usage with var() and fallback", func(t *testing.T) {
+		err, root := parseLess(".class { color: var(--my-custom-prop, blue); }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Rules) == 0 {
+				t.Error("Expected declaration inside ruleset")
+			}
+			if decl, ok := ruleset.Rules[0].(*go_parser.Declaration); ok {
+				// The value should contain a var() call with fallback
+				if decl.Value == nil {
+					t.Error("Expected value to be present")
+				}
+			} else {
+				t.Errorf("Expected Declaration, got %T", ruleset.Rules[0])
+			}
+		}
+	})
+}
+
+func TestParser_MergeFeatures(t *testing.T) {
+	t.Run("should parse property merging with +", func(t *testing.T) {
+		err, root := parseLess(".class { box-shadow+: inset 0 0 10px #555; }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Rules) == 0 {
+				t.Error("Expected declaration inside ruleset")
+			}
+			if decl, ok := ruleset.Rules[0].(*go_parser.Declaration); ok {
+				// We can't access the private merge field directly, but we can verify it was parsed
+				_ = decl
+			} else {
+				t.Errorf("Expected Declaration, got %T", ruleset.Rules[0])
+			}
+		}
+	})
+
+	t.Run("should parse property merging with +_", func(t *testing.T) {
+		err, root := parseLess(".class { transform+_: rotate(5deg); }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if len(root.Rules) == 0 {
+			t.Error("Expected ruleset to be parsed")
+		}
+		if ruleset, ok := root.Rules[0].(*go_parser.Ruleset); ok {
+			if len(ruleset.Rules) == 0 {
+				t.Error("Expected declaration inside ruleset")
+			}
+			if decl, ok := ruleset.Rules[0].(*go_parser.Declaration); ok {
+				// We can't access the private merge field directly, but we can verify it was parsed
+				_ = decl
+			} else {
+				t.Errorf("Expected Declaration, got %T", ruleset.Rules[0])
+			}
+		}
+	})
+}
+
+func TestParser_SerializeVarsComplex(t *testing.T) {
+	tests := []struct {
+		name     string
+		vars     *OrderedMap
+		expected string
+	}{
+		{
+			name:     "empty vars",
+			vars:     NewOrderedMap(),
+			expected: "",
+		},
+		{
+			name: "simple string values",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("color", "red")
+				om.Set("font-size", "12px")
+				return om
+			}(),
+			expected: "@color: red;@font-size: 12px;",
+		},
+		{
+			name: "vars with @ prefix already",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("@color", "blue")
+				return om
+			}(),
+			expected: "@color: blue;",
+		},
+		{
+			name: "numeric values",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("width", 100)
+				om.Set("height", 200.5)
+				return om
+			}(),
+			expected: "@width: 100;@height: 200.5;",
+		},
+		{
+			name: "boolean values",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("enabled", true)
+				om.Set("disabled", false)
+				return om
+			}(),
+			expected: "@enabled: true;@disabled: false;",
+		},
+		{
+			name: "complex expressions",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("calculation", "10px + 5px")
+				om.Set("color-mix", "lighten(#000, 10%)")
+				return om
+			}(),
+			expected: "@calculation: 10px + 5px;@color-mix: lighten(#000, 10%);",
+		},
+		{
+			name: "values with semicolons",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("with-semi", "value;")
+				om.Set("without-semi", "value")
+				return om
+			}(),
+			expected: "@with-semi: value;@without-semi: value;",
+		},
+		{
+			name: "quoted values",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("font-family", `"Arial, sans-serif"`)
+				om.Set("content", `'Hello World'`)
+				return om
+			}(),
+			expected: `@font-family: "Arial, sans-serif";@content: 'Hello World';`,
+		},
+		{
+			name: "URL values",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("background", `url("image.png")`)
+				om.Set("icon", `url('icon.svg')`)
+				return om
+			}(),
+			expected: `@background: url("image.png");@icon: url('icon.svg');`,
+		},
+		{
+			name: "mixed complex values",
+			vars: func() *OrderedMap {
+				om := NewOrderedMap()
+				om.Set("@primary", "#3498db")
+				om.Set("spacing", "1rem 2rem;")
+				om.Set("calculation", 42)
+				om.Set("gradient", "linear-gradient(to right, red, blue)")
+				return om
+			}(),
+			expected: "@primary: #3498db;@spacing: 1rem 2rem;@calculation: 42;@gradient: linear-gradient(to right, red, blue);",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SerializeVarsOrdered(tt.vars)
+			if result != tt.expected {
+				t.Errorf("SerializeVarsOrdered() = %q, want %q", result, tt.expected)
+			}
+		})
+	}
 }
 
  

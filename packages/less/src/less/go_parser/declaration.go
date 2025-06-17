@@ -10,7 +10,7 @@ import (
 type Declaration struct {
 	*Node
 	name      any
-	value     *Value
+	Value     *Value
 	important string
 	merge     bool
 	inline    bool
@@ -41,7 +41,7 @@ func NewDeclaration(name any, value any, important any, merge bool, index int, f
 
 	// Handle value
 	if val, ok := value.(*Value); ok {
-		d.value = val
+		d.Value = val
 	} else {
 		var anonymousValue any
 		if value != nil {
@@ -53,7 +53,7 @@ func NewDeclaration(name any, value any, important any, merge bool, index int, f
 		if err != nil {
 			return nil, err
 		}
-		d.value = newValue
+		d.Value = newValue
 	}
 
 	// Handle variable flag
@@ -72,7 +72,7 @@ func NewDeclaration(name any, value any, important any, merge bool, index int, f
 	if n, ok := interface{}(d.Node).(interface{ SetAllowRoot(bool) }); ok {
 		n.SetAllowRoot(true)
 	}
-	d.SetParent(d.value, d.Node)
+	d.SetParent(d.Value, d.Node)
 
 	return d, nil
 }
@@ -174,7 +174,7 @@ func (d *Declaration) Eval(context any) (any, error) {
 	// Evaluate value
 	var evaldValue any
 	var err error
-	evaldValue, err = d.value.Eval(context)
+	evaldValue, err = d.Value.Eval(context)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,7 @@ func (d *Declaration) GenCSS(context any, output *CSSOutput) {
 	}
 
 	// Add value
-	d.value.GenCSS(context, output)
+	d.Value.GenCSS(context, output)
 
 	// Add important and semicolon
 	if d.important != "" {
@@ -265,6 +265,6 @@ func isLastRule(context any) bool {
 
 // MakeImportant creates a new Declaration with important flag
 func (d *Declaration) MakeImportant() *Declaration {
-	newDecl, _ := NewDeclaration(d.name, d.value, "!important", d.merge, d.GetIndex(), d.FileInfo(), d.inline, d.variable)
+	newDecl, _ := NewDeclaration(d.name, d.Value, "!important", d.merge, d.GetIndex(), d.FileInfo(), d.inline, d.variable)
 	return newDecl
 } 

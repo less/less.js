@@ -1607,4 +1607,178 @@ describe('Parser', () => {
             expect(callNode.args[0].unit.toCSS()).toBe('deg');
         });
     });
+
+    describe('declarationCall functionality', () => {
+        it('should parse declaration calls in @supports', async () => {
+            const less =
+                '@supports supports(display: grid) { .grid { display: grid; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[0].name).toBe('@supports');
+            expect(root.rules[0].value).toBeDefined();
+            expect(root.rules[0].rules.length).toBe(1);
+        });
+
+        it('should parse declaration calls in media features', async () => {
+            const less =
+                '@media supports(display: grid) { .grid { display: grid; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.Media);
+            expect(root.rules[0].features).toBeDefined();
+            expect(root.rules[0].rules.length).toBe(1);
+        });
+
+        it('should parse declaration calls with complex values', async () => {
+            const less =
+                '@supports supports(transform: rotate(45deg)) { .transform { transform: rotate(45deg); } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[0].name).toBe('@supports');
+        });
+
+        it('should parse declaration calls with variables', async () => {
+            const less =
+                '@display: grid; @supports supports(display: @display) { .grid { display: @display; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules.length).toBe(2);
+            expect(root.rules[1]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[1].name).toBe('@supports');
+        });
+
+        it('should parse declaration calls with custom properties', async () => {
+            const less =
+                '@supports supports(--custom-prop: value) { .custom { color: var(--custom-prop); } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[0].name).toBe('@supports');
+        });
+
+        it('should parse declaration calls with calc() functions', async () => {
+            const less =
+                '@supports supports(width: calc(100% - 20px)) { .calc { width: calc(100% - 20px); } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[0].name).toBe('@supports');
+        });
+
+        it('should parse declaration calls in complex media queries', async () => {
+            const less =
+                '@media screen and supports(display: grid) and (min-width: 768px) { .responsive-grid { display: grid; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.Media);
+            expect(root.rules[0].features).toBeDefined();
+            expect(root.rules[0].rules.length).toBe(1);
+        });
+
+        it('should parse declaration calls with quoted values', async () => {
+            const less =
+                '@supports supports(font-family: "Arial") { .arial { font-family: "Arial"; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[0].name).toBe('@supports');
+        });
+
+        it('should handle nested declaration calls', async () => {
+            const less =
+                '@supports supports(transform: supports(display: grid)) { .test { color: red; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            expect(root.rules[0]).toBeInstanceOf(tree.AtRule);
+            expect(root.rules[0].name).toBe('@supports');
+        });
+
+        it('should parse declaration calls in container queries', async () => {
+            const less =
+                '@container supports(display: grid) { .grid { display: grid; } }';
+            const { err, root } = await parseLess(less);
+            expect(err).toBeNull();
+            // Container queries might be parsed as AtRule or specific Container node
+            expect(root.rules[0]).toBeDefined();
+            expect(root.rules[0].rules).toBeDefined();
+            expect(root.rules[0].rules.length).toBe(1);
+        });
+    });
+
+    describe('Parser Options & Context', () => {
+        it('should handle globalVars', async () => {
+            const less = 'p { color: @globalVar; }';
+            const parser = new Parser(
+                {},
+                { contents: {}, contentsIgnoredChars: {} },
+                { filename: 'test.less' }
+            );
+            const promise = new Promise((resolve) => {
+                parser.parse(less, (e, r) => resolve({ e, r }), {
+                    globalVars: { globalVar: 'red' }
+                });
+            });
+            const { e, r } = await promise;
+            expect(e).toBeNull();
+            expect(r.rules[0]).toBeInstanceOf(tree.Declaration);
+            expect(r.rules[1]).toBeInstanceOf(tree.Ruleset);
+        });
+
+        it('should handle modifyVars', async () => {
+            const less = 'p { color: @modVar; }';
+            const parser = new Parser(
+                {},
+                { contents: {}, contentsIgnoredChars: {} },
+                { filename: 'test.less' }
+            );
+            const promise = new Promise((resolve) => {
+                parser.parse(less, (e, r) => resolve({ e, r }), {
+                    modifyVars: { modVar: 'blue' }
+                });
+            });
+            const { e, r } = await promise;
+            expect(e).toBeNull();
+            expect(r.rules[0]).toBeInstanceOf(tree.Ruleset);
+            expect(r.rules[1]).toBeInstanceOf(tree.Declaration);
+            expect(r.rules[1].name).toBe('@modVar');
+        });
+
+        it('should handle banner option', async () => {
+            const lessInput = 'color: red;';
+            const bannerContent = '/* My Banner */\n';
+            const parser = new Parser(
+                {},
+                {
+                    contents: { 'test.less': lessInput },
+                    contentsIgnoredChars: { 'test.less': 0 },
+                    rootFilename: 'test.less'
+                },
+                { filename: 'test.less' }
+            );
+            const promise = new Promise((resolve) => {
+                parser.parse(lessInput, (e, r) => resolve({ e, r }), {
+                    banner: bannerContent
+                });
+            });
+            const { e, r } = await promise;
+
+            expect(e).toBeNull();
+            expect(r.rules[0]).toBeInstanceOf(tree.Comment);
+            expect(r.rules[0].value).toBe('/* My Banner */');
+            expect(r.rules[1]).toBeInstanceOf(tree.Declaration);
+        });
+
+        it('should use dumpLineNumbers from context for debugInfo', async () => {
+            const less = '.class { color: red; }';
+            const { err, root } = await parseLess(less, {
+                dumpLineNumbers: 'comments'
+            });
+            expect(err).toBeNull();
+            const ruleset = root.rules[0];
+            expect(ruleset.debugInfo).toBeDefined();
+            expect(ruleset.debugInfo.lineNumber).toBe(1);
+        });
+    });
 });

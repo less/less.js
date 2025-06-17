@@ -109,7 +109,7 @@ func (n *NestableAtRulePrototype) EvalNested(context any) any {
 
 		var value any
 		if valueNode, ok := pathItem.Features.(*Value); ok {
-			value = valueNode.value
+			value = valueNode.Value
 		} else {
 			value = pathItem.Features
 		}

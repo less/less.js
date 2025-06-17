@@ -22,7 +22,7 @@ type CSSGenerator interface {
 // Value represents a value node in the Less AST
 type Value struct {
 	*Node
-	value []any
+	Value []any
 }
 
 // NewValue creates a new Value instance
@@ -38,10 +38,10 @@ func NewValue(value any) (*Value, error) {
 	// If value is not an array, wrap it in one
 	if arr, ok := value.([]any); ok {
 		// For arrays, use as is but validate elements
-		v.value = arr
+		v.Value = arr
 	} else {
 		// For non-array values, wrap in array
-		v.value = []any{value}
+		v.Value = []any{value}
 	}
 
 	return v, nil
@@ -54,25 +54,25 @@ func (v *Value) GetType() string {
 
 // Accept visits the node with a visitor
 func (v *Value) Accept(visitor any) {
-	if v.value != nil {
+	if v.Value != nil {
 		if arrayVisitor, ok := visitor.(interface{ VisitArray([]any) []any }); ok {
-			v.value = arrayVisitor.VisitArray(v.value)
+			v.Value = arrayVisitor.VisitArray(v.Value)
 		}
 	}
 }
 
 // Eval evaluates the value node
 func (v *Value) Eval(context any) (any, error) {
-	if len(v.value) == 1 {
-		if evalValue, ok := v.value[0].(Evaluator); ok {
+	if len(v.Value) == 1 {
+		if evalValue, ok := v.Value[0].(Evaluator); ok {
 			return evalValue.Eval(context)
 		}
-		return v.value[0], nil
+		return v.Value[0], nil
 	}
 
 	// Evaluate each value in the array
-	evaluatedValues := make([]any, len(v.value))
-	for i, val := range v.value {
+	evaluatedValues := make([]any, len(v.Value))
+	for i, val := range v.Value {
 		if evalValue, ok := val.(Evaluator); ok {
 			evaluated, err := evalValue.Eval(context)
 			if err != nil {
@@ -97,7 +97,7 @@ func (v *Value) GenCSS(context any, output *CSSOutput) {
 		return
 	}
 
-	for i, val := range v.value {
+	for i, val := range v.Value {
 		if cssValue, ok := val.(CSSGenerator); ok {
 			cssValue.GenCSS(context, output)
 		} else if str, ok := val.(string); ok {
@@ -107,7 +107,7 @@ func (v *Value) GenCSS(context any, output *CSSOutput) {
 			output.Add(val, nil, nil)
 		}
 
-		if i+1 < len(v.value) {
+		if i+1 < len(v.Value) {
 			compressed := false
 			if ctx, ok := context.(map[string]any); ok {
 				if compress, ok := ctx["compress"].(bool); ok {

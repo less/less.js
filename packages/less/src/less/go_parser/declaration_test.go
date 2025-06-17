@@ -16,11 +16,11 @@ func TestDeclaration(t *testing.T) {
 			if decl.name != "color" {
 				t.Errorf("expected name to be 'color', got %v", decl.name)
 			}
-			if _, ok := decl.value.value[0].(*Anonymous); !ok {
+			if _, ok := decl.Value.Value[0].(*Anonymous); !ok {
 				t.Error("expected value to be Anonymous")
 			}
-			if decl.value.value[0].(*Anonymous).Value != "red" {
-				t.Errorf("expected value to be 'red', got %v", decl.value.value[0].(*Anonymous).Value)
+			if decl.Value.Value[0].(*Anonymous).Value != "red" {
+				t.Errorf("expected value to be 'red', got %v", decl.Value.Value[0].(*Anonymous).Value)
 			}
 			if decl.important != "" {
 				t.Errorf("expected important to be empty, got %v", decl.important)
@@ -76,7 +76,7 @@ func TestDeclaration(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if decl.value != value {
+			if decl.Value != value {
 				t.Error("expected value to be the provided Value instance")
 			}
 		})
@@ -86,7 +86,7 @@ func TestDeclaration(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if decl.value.value[0] != nil {
+			if decl.Value.Value[0] != nil {
 				t.Error("expected value to be nil")
 			}
 		})
@@ -288,7 +288,7 @@ func TestDeclaration(t *testing.T) {
 
 		t.Run("handles errors in value generation", func(t *testing.T) {
 			badValue := &Value{
-				value: []any{
+				Value: []any{
 					&ErrorGeneratingValue{},
 				},
 			}
@@ -377,7 +377,7 @@ func TestDeclaration(t *testing.T) {
 
 		t.Run("handles detached ruleset errors", func(t *testing.T) {
 			detachedValue := &Value{
-				value: []any{
+				Value: []any{
 					map[string]any{"type": "DetachedRuleset"},
 				},
 			}
@@ -394,7 +394,7 @@ func TestDeclaration(t *testing.T) {
 
 		t.Run("handles errors during evaluation", func(t *testing.T) {
 			badValue := &Value{
-				value: []any{
+				Value: []any{
 					&ErrorEvaluatingValue{},
 				},
 			}
@@ -418,7 +418,7 @@ func TestDeclaration(t *testing.T) {
 			if important.name != "color" {
 				t.Errorf("expected name to be 'color', got %v", important.name)
 			}
-			if important.value != decl.value {
+			if important.Value != decl.Value {
 				t.Error("expected value to be preserved")
 			}
 			if important.important != " !important" {

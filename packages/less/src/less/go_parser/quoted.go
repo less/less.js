@@ -36,11 +36,19 @@ func NewQuoted(str string, content string, escaped bool, index int, currentFileI
 		currentFileInfo = make(map[string]any)
 	}
 	
+	// Handle empty quote string to avoid index out of range panic
+	var quote string
+	if len(str) > 0 {
+		quote = string(str[0])
+	} else {
+		quote = ""
+	}
+	
 	return &Quoted{
 		Node:          NewNode(),
 		escaped:       escaped,
 		value:         content,
-		quote:         string(str[0]),
+		quote:         quote,
 		_index:        index,
 		_fileInfo:     currentFileInfo,
 		allowRoot:     escaped,

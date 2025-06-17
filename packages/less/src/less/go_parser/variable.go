@@ -41,6 +41,11 @@ func (v *Variable) FileInfo() map[string]any {
 	return v._fileInfo
 }
 
+// GetName returns the variable name
+func (v *Variable) GetName() string {
+	return v.name
+}
+
 // Eval evaluates the variable
 func (v *Variable) Eval(context EvalContext) (any, error) {
 	name := v.name

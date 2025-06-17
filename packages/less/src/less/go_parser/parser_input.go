@@ -33,6 +33,21 @@ type inputComment struct {
 	isLineComment bool
 }
 
+// GetIndex returns the comment's index
+func (c *inputComment) GetIndex() int {
+	return c.index
+}
+
+// GetText returns the comment's text
+func (c *inputComment) GetText() string {
+	return c.text
+}
+
+// IsLineComment returns whether this is a line comment
+func (c *inputComment) IsLineComment() bool {
+	return c.isLineComment
+}
+
 const (
 	charCodeSpace        = 32
 	charCodeTab          = 9
@@ -55,7 +70,6 @@ func NewParserInput() *ParserInput {
 
 func (p *ParserInput) skipWhitespace(length int) bool {
 	oldi := p.i
-	oldj := p.j
 	curr := oldi - p.currentPos             // Calculate current position within the chunk *before* advancing
 	endIndex := oldi + len(p.current) - curr // Calculate end index relative to *start* of skipWhitespace
 	mem := oldi + length                 // Target index after initial length advancement
@@ -104,59 +118,46 @@ func (p *ParserInput) skipWhitespace(length int) bool {
 					// We need the outer loop to increment p.i PAST the newline.
 					continue
 				} else if nextChar == '*' { // Block comment
-					nextStarSlash := -1
+					comment = inputComment{index: p.i, isLineComment: false}
+					nextEndComment := -1
 					for k := p.i + 2; k < len(inp)-1; k++ { // Use k
 						if inp[k] == '*' && inp[k+1] == '/' {
-							nextStarSlash = k
+							nextEndComment = k + 2
 							break
 						}
 					}
-					if nextStarSlash >= 0 {
-						comment = inputComment{
-							index:         p.i,
-							text:          inp[p.i : nextStarSlash+2],
-							isLineComment: false,
-						}
-						p.i = nextStarSlash + 1 // Set p.i to the '/' of '*/'
-						p.commentStore = append(p.commentStore, comment)
-						if p.i >= len(inp) { // Check if we are already at or past EOF
-							break // Exit loop if we consumed the rest of input
-						}
-						continue // Outer loop increments p.i
+
+					finalPos := 0
+					if nextEndComment < 0 {
+						finalPos = len(inp) // Comment goes to end of input
+					} else {
+						finalPos = nextEndComment // Comment ends at */
 					}
+
+					comment.text = inp[comment.index:finalPos] // Slice text correctly
+					p.commentStore = append(p.commentStore, comment)
+					p.i = finalPos // Explicitly set p.i to the final position
+
+					if p.i >= len(inp) {
+						// When we reach EOF via a block comment, increment the index
+						// one more time to match JS behavior
+						p.i++
+						break // Exit loop cleanly if we hit EOF
+					}
+					continue
 				}
 			}
-			// Not a comment, break loop normally if '/' is not whitespace
-			if c != charCodeSpace && c != charCodeLF && c != charCodeTab && c != charCodeCR {
-				break
-			}
 		}
 
-		if c != charCodeSpace && c != charCodeLF && c != charCodeTab && c != charCodeCR {
-			break // Break for non-whitespace characters
+		if c != charCodeSpace && c != charCodeCR && c != charCodeTab && c != charCodeLF {
+			break
 		}
 	}
 
-	// Calculate the slice start index based on the final position relative to the original currentPos
-	sliceStart := p.i - oldi + curr
-	if sliceStart < len(p.current) {
-		p.current = p.current[sliceStart:]
-	} else {
-		p.current = ""
-	}
-	p.currentPos = p.i // Update currentPos to the final index
-
-	if len(p.current) == 0 {
-		if p.j < len(p.chunks)-1 {
-			p.current = p.chunks[p.j+1]
-			p.j++
-			p.skipWhitespace(0) // skip space at the beginning of a new chunk
-			return true // things changed
-		}
-		p.finished = true
-	}
-
-	return oldi != p.i || oldj != p.j
+	// Sync current field after advancing
+	p.syncCurrent()
+	
+	return p.i > oldi
 }
 
 func (p *ParserInput) Save() {
@@ -195,8 +196,9 @@ func (p *ParserInput) IsWhitespace(offset int) bool {
 }
 
 func (p *ParserInput) Re(tok *regexp.Regexp) any {
-	if p.i > p.currentPos {
-		p.current = p.current[p.i-p.currentPos:]
+	// Ensure p.current is always synced with the current position
+	if p.i < len(p.input) {
+		p.current = p.input[p.i:]
 		p.currentPos = p.i
 	}
 
@@ -208,6 +210,7 @@ func (p *ParserInput) Re(tok *regexp.Regexp) any {
 	matchLen := len(match[0])
 	p.i += matchLen
 	p.skipWhitespace(0)
+	p.syncCurrent()     // Sync current field
 	if len(match) == 1 {
 		return match[0]
 	}
@@ -219,6 +222,7 @@ func (p *ParserInput) Char(tok byte) any {
 		return nil
 	}
 	p.skipWhitespace(1) // Advance by 1 and skip subsequent whitespace/comments
+	p.syncCurrent()     // Sync current field
 	return tok
 }
 
@@ -243,6 +247,7 @@ func (p *ParserInput) Str(tok string) any {
 
 	p.i += tokLength
 	p.skipWhitespace(0)
+	p.syncCurrent()     // Sync current field
 	return tok
 }
 
@@ -411,6 +416,11 @@ func (p *ParserInput) Peek(tok any) bool {
 		}
 		return true
 	case *regexp.Regexp:
+		// Ensure current is synced with position
+		if p.i < len(p.input) {
+			p.current = p.input[p.i:]
+			p.currentPos = p.i
+		}
 		return t.MatchString(p.current)
 	default:
 		return false
@@ -433,6 +443,10 @@ func (p *ParserInput) PrevChar() byte {
 
 func (p *ParserInput) GetInput() string {
 	return p.input
+}
+
+func (p *ParserInput) GetIndex() int {
+	return p.i
 }
 
 func (p *ParserInput) PeekNotNumeric() bool {
@@ -491,5 +505,46 @@ func (p *ParserInput) End() EndState {
 		FurthestPossibleErrorMessage: message,
 		FurthestReachedEnd:      p.i >= len(p.input)-1,
 		FurthestChar:            furthestChar,
+	}
+}
+
+// GetComments returns the stored comments
+func (p *ParserInput) GetComments() []inputComment {
+	return p.commentStore
+}
+
+// ConsumeComment removes and returns the first comment from the store
+func (p *ParserInput) ConsumeComment() *inputComment {
+	if len(p.commentStore) == 0 {
+		return nil
+	}
+	comment := p.commentStore[0]
+	p.commentStore = p.commentStore[1:]
+	return &comment
+}
+
+// CommentsReset clears the comment store (equivalent to commentStore.length = 0 in JS)
+func (p *ParserInput) CommentsReset() {
+	p.commentStore = p.commentStore[:0]
+}
+
+// SetIndex sets the current index position
+func (p *ParserInput) SetIndex(index int) {
+	p.i = index
+	p.syncCurrent()
+}
+
+// Finished returns whether parsing has finished
+func (p *ParserInput) Finished() bool {
+	return p.i >= len(p.input)
+}
+
+// syncCurrent ensures the current field is synced with the current position
+func (p *ParserInput) syncCurrent() {
+	if p.i < len(p.input) {
+		p.current = p.input[p.i:]
+		p.currentPos = p.i
+	} else {
+		p.current = ""
 	}
 } 

@@ -27,6 +27,11 @@ func (p *Property) GetType() string {
 	return "Property"
 }
 
+// GetName returns the property name
+func (p *Property) GetName() string {
+	return p.name
+}
+
 // Eval evaluates the property in the given context
 func (p *Property) Eval(context any) (any, error) {
 	if p.evaluating {
@@ -106,7 +111,7 @@ func (p *Property) Eval(context any) (any, error) {
 		}
 
 		// Evaluate value
-		return lastDecl.value.Eval(context)
+		return lastDecl.Value.Eval(context)
 	}
 
 	return nil, &Error{

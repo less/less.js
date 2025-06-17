@@ -737,8 +737,8 @@ func (r *Ruleset) ParseValue(toParse any) any {
 func (r *Ruleset) transformDeclaration(decl any) any {
 	if d, ok := decl.(*Declaration); ok {
 		// Match JavaScript logic: if (decl.value instanceof Anonymous && !decl.parsed)
-		if d.value != nil && len(d.value.value) > 0 {
-			if anon, ok := d.value.value[0].(*Anonymous); ok && anon != nil {
+		if d.Value != nil && len(d.Value.Value) > 0 {
+			if anon, ok := d.Value.Value[0].(*Anonymous); ok && anon != nil {
 				// Check if needs parsing - this would normally use Parser
 				if str, ok := anon.Value.(string); ok && str != "" {
 					// JavaScript version would parse using:

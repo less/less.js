@@ -32,7 +32,7 @@ func TestValue(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if !reflect.DeepEqual(value.value, arrayValue) {
+			if !reflect.DeepEqual(value.Value, arrayValue) {
 				t.Error("Expected array with nil values to be preserved")
 			}
 		})
@@ -43,7 +43,7 @@ func TestValue(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if !reflect.DeepEqual(value.value, arrayValue) {
+			if !reflect.DeepEqual(value.Value, arrayValue) {
 				t.Error("Expected array with primitive values to be preserved")
 			}
 		})
@@ -54,7 +54,7 @@ func TestValue(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if len(value.value) != 1 || !reflect.DeepEqual(value.value[0], singleValue) {
+			if len(value.Value) != 1 || !reflect.DeepEqual(value.Value[0], singleValue) {
 				t.Error("Expected single value to be wrapped in array")
 			}
 		})
@@ -68,13 +68,13 @@ func TestValue(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if len(value.value) != 2 {
+			if len(value.Value) != 2 {
 				t.Error("Expected array length to be preserved")
 			}
-			if !reflect.DeepEqual(value.value[0], map[string]string{"type": "test1"}) {
+			if !reflect.DeepEqual(value.Value[0], map[string]string{"type": "test1"}) {
 				t.Error("Expected first value to be preserved")
 			}
-			if !reflect.DeepEqual(value.value[1], map[string]string{"type": "test2"}) {
+			if !reflect.DeepEqual(value.Value[1], map[string]string{"type": "test2"}) {
 				t.Error("Expected second value to be preserved")
 			}
 		})
@@ -84,7 +84,7 @@ func TestValue(t *testing.T) {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if len(value.value) != 0 {
+			if len(value.Value) != 0 {
 				t.Error("Expected empty array to be preserved")
 			}
 		})
@@ -125,7 +125,7 @@ func TestValue(t *testing.T) {
 
 		t.Run("should not call visitArray if value is undefined", func(t *testing.T) {
 			value, _ := NewValue([]any{})
-			value.value = nil
+			value.Value = nil
 			called := false
 			visitor := &valueTestVisitor{
 				visitArrayFn: func(arr []any) []any {
@@ -148,7 +148,7 @@ func TestValue(t *testing.T) {
 				},
 			}
 			value.Accept(visitor)
-			if len(value.value) != 1 || !reflect.DeepEqual(value.value[0], map[string]string{"type": "transformed"}) {
+			if len(value.Value) != 1 || !reflect.DeepEqual(value.Value[0], map[string]string{"type": "transformed"}) {
 				t.Error("Expected value to be transformed")
 			}
 		})
@@ -186,7 +186,7 @@ func TestValue(t *testing.T) {
 			if !ok {
 				t.Error("Expected result to be Value")
 			}
-			if len(resultValue.value) != 0 {
+			if len(resultValue.Value) != 0 {
 				t.Error("Expected result to be empty array")
 			}
 		})
@@ -214,13 +214,13 @@ func TestValue(t *testing.T) {
 			if !ok {
 				t.Error("Expected result to be Value")
 			}
-			if len(resultValue.value) != 2 {
+			if len(resultValue.Value) != 2 {
 				t.Error("Expected result to have two values")
 			}
-			if !reflect.DeepEqual(resultValue.value[0], map[string]string{"type": "eval1"}) {
+			if !reflect.DeepEqual(resultValue.Value[0], map[string]string{"type": "eval1"}) {
 				t.Error("Expected first value to be eval1")
 			}
-			if !reflect.DeepEqual(resultValue.value[1], map[string]string{"type": "eval2"}) {
+			if !reflect.DeepEqual(resultValue.Value[1], map[string]string{"type": "eval2"}) {
 				t.Error("Expected second value to be eval2")
 			}
 		})
@@ -288,7 +288,7 @@ func TestValue(t *testing.T) {
 				t.Error("Expected result to be Value")
 			}
 			expectedValues := []any{123, "string", true}
-			if !reflect.DeepEqual(resultValue.value, expectedValues) {
+			if !reflect.DeepEqual(resultValue.Value, expectedValues) {
 				t.Error("Expected primitive values to be preserved")
 			}
 		})

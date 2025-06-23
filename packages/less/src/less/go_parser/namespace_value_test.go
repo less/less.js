@@ -56,10 +56,10 @@ func (m *MockRuleset) LastDeclaration() any {
 }
 
 type MockVariableDeclaration struct {
-	value     any
-	evalFunc  func(any) (any, error)
-	hasValue  bool
-	ruleset   any
+	value      any
+	evalFunc   func(any) (any, error)
+	hasValue   bool
+	ruleset    any
 	hasRuleset bool
 }
 
@@ -90,9 +90,7 @@ func (m *MockVariableDeclaration) GetRuleset() interface{ Eval(any) (any, error)
 	return nil
 }
 
-type MockContext struct {
-	frames []any
-}
+type MockContext struct{}
 
 func TestNamespaceValueConstructor(t *testing.T) {
 	t.Run("should create a NamespaceValue instance with correct properties", func(t *testing.T) {
@@ -759,7 +757,7 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		intermediateArray := []any{
 			map[string]any{"type": "Declaration", "name": "color", "value": "blue"},
 		}
-		
+
 		// First lookup returns a variable that evaluates to an array
 		mockVariable := &MockVariableDeclaration{
 			value:    "namespaceResult",
@@ -806,4 +804,4 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 			t.Errorf("Expected result to be an array, got %T", result)
 		}
 	})
-} 
+}

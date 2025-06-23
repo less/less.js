@@ -117,8 +117,8 @@ func SafeEval(value any, context any) any {
 		// Add defer/recover to catch any panics in Eval implementations
 		defer func() {
 			if r := recover(); r != nil {
-				// Return original value if eval panics
-				value = value
+				// Log the panic but don't re-panic
+				// Original value will be returned by the fallback at the end
 			}
 		}()
 		return evaluable.Eval(context)

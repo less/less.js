@@ -103,7 +103,7 @@ func TestMixinCall_Accept(t *testing.T) {
 	t.Run("should visit selector when it exists", func(t *testing.T) {
 		elements := []*Element{NewElement(nil, "test", false, 0, make(map[string]any), nil)}
 		mixinCall, _ := NewMixinCall(elements, []any{}, 0, make(map[string]any), false)
-		
+
 		visitor := &mixinCallMockVisitor{}
 		originalSelector := mixinCall.Selector
 
@@ -126,7 +126,7 @@ func TestMixinCall_Accept(t *testing.T) {
 		elements := []*Element{NewElement(nil, "test", false, 0, make(map[string]any), nil)}
 		args := []any{"arg1", "arg2"}
 		mixinCall, _ := NewMixinCall(elements, args, 0, make(map[string]any), false)
-		
+
 		visitor := &mixinCallMockVisitor{}
 
 		mixinCall.Accept(visitor)
@@ -138,7 +138,7 @@ func TestMixinCall_Accept(t *testing.T) {
 	t.Run("should handle empty arguments array", func(t *testing.T) {
 		elements := []*Element{NewElement(nil, "test", false, 0, make(map[string]any), nil)}
 		mixinCall, _ := NewMixinCall(elements, []any{}, 0, make(map[string]any), false)
-		
+
 		visitor := &mixinCallMockVisitor{}
 
 		// Should not panic
@@ -202,17 +202,17 @@ func TestMixinCall_Format(t *testing.T) {
 
 		args := []any{
 			map[string]any{
-				"name": "color",
+				"name":  "color",
 				"value": mixinCallMockValue{cssValue: "red"},
 			},
 			map[string]any{
-				"name": "size", 
+				"name":  "size",
 				"value": mixinCallMockValue{cssValue: "10px"},
 			},
 		}
 
 		result := mixinCall.Format(args)
-		// Note: The selector.ToCSS() returns empty in this test context, 
+		// Note: The selector.ToCSS() returns empty in this test context,
 		// but the argument formatting logic is correct
 		expected := "(color:red, size:10px)"
 		assertEqual(t, expected, result, "Format should match expected pattern")
@@ -242,14 +242,14 @@ func TestMixinCall_Format(t *testing.T) {
 
 		args := []any{
 			map[string]any{
-				"name": "color",
+				"name":  "color",
 				"value": mixinCallMockValue{cssValue: "red"},
 			},
 			map[string]any{
 				"value": mixinCallMockValue{cssValue: "10px"},
 			},
 			map[string]any{
-				"name": "border",
+				"name":  "border",
 				"value": mixinCallMockValue{cssValue: "1px solid"},
 			},
 		}
@@ -265,7 +265,7 @@ func TestMixinCall_Format(t *testing.T) {
 
 		args := []any{
 			map[string]any{
-				"name": "color",
+				"name":  "color",
 				"value": mixinCallMockValue{cssValue: "red"},
 			},
 			map[string]any{
@@ -301,7 +301,7 @@ func TestMixinCall_setVisibilityToReplacement(t *testing.T) {
 	t.Run("should add visibility block to replacement rules when BlocksVisibility is true", func(t *testing.T) {
 		elements := []*Element{NewElement(nil, "test", false, 0, make(map[string]any), nil)}
 		mixinCall, _ := NewMixinCall(elements, []any{}, 0, make(map[string]any), false)
-		
+
 		// Mock BlocksVisibility to return true
 		mixinCall.AddVisibilityBlock() // This will make BlocksVisibility return true
 
@@ -371,8 +371,7 @@ func (mr *mockRule) AddVisibilityBlock() {
 }
 
 type mockEvalFrame struct {
-	findResult      []any
-	originalRuleset any
+	findResult []any
 }
 
 func (mf *mockEvalFrame) Find(selector *Selector, self any, filter func(any) bool) []any {
@@ -431,23 +430,23 @@ func (mvp *mockVisibilityProvider) VisibilityInfo() map[string]any {
 func TestDefaultFunc(t *testing.T) {
 	t.Run("should set and reset value", func(t *testing.T) {
 		df := NewDefaultFunc()
-		
+
 		df.Value("test")
 		assertEqual(t, "test", df.value_, "Value should be set")
-		
+
 		df.Reset()
 		assertEqual(t, nil, df.value_, "Value should be reset to nil")
 	})
 
 	t.Run("should handle different value types", func(t *testing.T) {
 		df := NewDefaultFunc()
-		
+
 		df.Value(42)
 		assertEqual(t, 42, df.value_, "Should handle int values")
-		
+
 		df.Value(true)
 		assertEqual(t, true, df.value_, "Should handle bool values")
-		
+
 		df.Value(map[string]any{"key": "value"})
 		assertEqual(t, map[string]any{"key": "value"}, df.value_, "Should handle map values")
 	})
@@ -461,7 +460,7 @@ func TestMixinCallError(t *testing.T) {
 			Index:    10,
 			Filename: "test.less",
 		}
-		
+
 		assertEqual(t, "Test error", err.Error(), "Error() should return message")
 	})
-} 
+}

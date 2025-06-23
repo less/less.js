@@ -19,6 +19,85 @@ type Parser struct {
 	parsers      *Parsers
 }
 
+// CreateSelectorParseFunc creates a SelectorParseFunc that can be used by selector nodes
+func (p *Parser) CreateSelectorParseFunc() go_parser.SelectorParseFunc {
+	return func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]*go_parser.Element, error) {
+		// Create a new parser instance for parsing the selector string
+		subParser := NewParser(context, imports, fileInfo, index)
+		
+		// Use channel to capture result from callback
+		resultChan := make(chan *ParseNodeResult, 1)
+		
+		// Parse the input as a selector and extract elements
+		subParser.parseNode(input, []string{"selector"}, func(result *ParseNodeResult) {
+			resultChan <- result
+		})
+		
+		// Get result from channel
+		result := <-resultChan
+		if result.Error != nil {
+			return nil, fmt.Errorf("parse error: %v", result.Error)
+		}
+		
+		// Extract elements from the parsed selector
+		if len(result.Nodes) > 0 {
+			if selector, ok := result.Nodes[0].(*go_parser.Selector); ok {
+				return selector.Elements, nil
+			}
+		}
+		
+		return nil, fmt.Errorf("failed to parse selector: %s", input)
+	}
+}
+
+// CreateSelectorsParseFunc creates a SelectorsParseFunc that can be used by ruleset nodes
+func (p *Parser) CreateSelectorsParseFunc() go_parser.SelectorsParseFunc {
+	return func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]any, error) {
+		// Create a new parser instance for parsing the selectors string
+		subParser := NewParser(context, imports, fileInfo, index)
+		
+		// Use channel to capture result from callback
+		resultChan := make(chan *ParseNodeResult, 1)
+		
+		// Parse the input as selectors
+		subParser.parseNode(input, []string{"selectors"}, func(result *ParseNodeResult) {
+			resultChan <- result
+		})
+		
+		// Get result from channel
+		result := <-resultChan
+		if result.Error != nil {
+			return nil, fmt.Errorf("parse error: %v", result.Error)
+		}
+		
+		return result.Nodes, nil
+	}
+}
+
+// CreateValueParseFunc creates a ValueParseFunc that can be used by ruleset nodes
+func (p *Parser) CreateValueParseFunc() go_parser.ValueParseFunc {
+	return func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]any, error) {
+		// Create a new parser instance for parsing the value string
+		subParser := NewParser(context, imports, fileInfo, index)
+		
+		// Use channel to capture result from callback
+		resultChan := make(chan *ParseNodeResult, 1)
+		
+		// Parse the input as value and important
+		subParser.parseNode(input, []string{"value", "important"}, func(result *ParseNodeResult) {
+			resultChan <- result
+		})
+		
+		// Get result from channel
+		result := <-resultChan
+		if result.Error != nil {
+			return nil, fmt.Errorf("parse error: %v", result.Error)
+		}
+		
+		return result.Nodes, nil
+	}
+}
+
 // Parsers contains all the parsing methods
 type Parsers struct {
 	parser *Parser
@@ -308,8 +387,32 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 	}
 }
 
-// Parse parses a Less string and returns the result
-func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Ruleset), additionalData map[string]any) {
+// AdditionalData represents additional data that can be passed to the parser
+type AdditionalData struct {
+	GlobalVars         map[string]any
+	ModifyVars         map[string]any
+	DisablePluginRule  bool
+	Banner             string
+}
+
+
+// NewAdditionalData creates a new AdditionalData with initialized maps
+func NewAdditionalData() *AdditionalData {
+	return &AdditionalData{
+		GlobalVars: make(map[string]any),
+		ModifyVars: make(map[string]any),
+	}
+}
+
+
+// Parse parses a Less string using structured AdditionalData
+func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Ruleset), data *AdditionalData) {
+	p.parseInternal(str, callback, data)
+}
+
+
+// parseInternal is the core parsing implementation that works with AdditionalData directly
+func (p *Parser) parseInternal(str string, callback func(*less.LessError, *go_parser.Ruleset), data *AdditionalData) {
 	var root *go_parser.Ruleset
 	var err *less.LessError
 	var globalVars string
@@ -327,31 +430,30 @@ func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Rul
 		}
 	}()
 
+	// Ensure we have valid data
+	if data == nil {
+		data = &AdditionalData{}
+	}
+
 	// Optionally disable @plugin parsing
-	if additionalData != nil {
-		if disablePluginRule, ok := additionalData["disablePluginRule"].(bool); ok && disablePluginRule {
-			p.parsers.plugin = func() any {
-				dir := p.parserInput.Re(regexp.MustCompile(`^@plugin?\s+`))
-				if dir != nil {
-					p.error("@plugin statements are not allowed when disablePluginRule is set to true", "")
-				}
-				return nil
+	if data.DisablePluginRule {
+		p.parsers.plugin = func() any {
+			dir := p.parserInput.Re(regexp.MustCompile(`^@plugin?\s+`))
+			if dir != nil {
+				p.error("@plugin statements are not allowed when disablePluginRule is set to true", "")
 			}
+			return nil
 		}
 	}
 
-	// Handle global vars
-	if additionalData != nil {
-		if gvars, ok := additionalData["globalVars"].(map[string]any); ok {
-			globalVars = SerializeVars(gvars) + "\n"
-		}
+	// Handle global vars 
+	if data.GlobalVars != nil && len(data.GlobalVars) > 0 {
+		globalVars = SerializeVars(data.GlobalVars) + "\n"
 	}
 
 	// Handle modify vars
-	if additionalData != nil {
-		if mvars, ok := additionalData["modifyVars"].(map[string]any); ok {
-			modifyVars = "\n" + SerializeVars(mvars)
-		}
+	if data.ModifyVars != nil && len(data.ModifyVars) > 0 {
+		modifyVars = "\n" + SerializeVars(data.ModifyVars)
 	}
 
 	// Handle plugin manager preprocessing
@@ -360,12 +462,8 @@ func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Rul
 	}
 
 	// Handle banner and global vars
-	if globalVars != "" || (additionalData != nil && additionalData["banner"] != nil) {
-		banner := ""
-		if additionalData != nil && additionalData["banner"] != nil {
-			banner = additionalData["banner"].(string)
-		}
-		preText = banner + globalVars
+	if globalVars != "" || data.Banner != "" {
+		preText = data.Banner + globalVars
 
 		if p.imports["contentsIgnoredChars"] == nil {
 			p.imports["contentsIgnoredChars"] = make(map[string]int)
@@ -407,7 +505,7 @@ func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Rul
 	// This would be handled differently in Go, probably through interfaces
 
 	// Create root ruleset
-	root = go_parser.NewRuleset(nil, p.parsers.Primary(), false, nil)
+	root = go_parser.NewRuleset(nil, p.parsers.Primary(), false, nil, p.CreateSelectorsParseFunc(), p.CreateValueParseFunc(), p.context, p.imports)
 	root.Root = true
 	root.FirstRoot = true
 	// root.FunctionRegistry = functionRegistry.inherit() // TODO: implement function registry
@@ -462,50 +560,17 @@ func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Rul
 	}
 }
 
-// SerializeVars serializes a variable map to Less format
-// For backward compatibility, this preserves the insertion order when possible
+// SerializeVars serializes variables from a map to Less format
+// Go 1.21+ preserves insertion order for string keys like JavaScript objects
 func SerializeVars(vars map[string]any) string {
-	if len(vars) == 0 {
+	if vars == nil || len(vars) == 0 {
 		return ""
 	}
 
 	var sb strings.Builder
 
-	// To match JavaScript behavior exactly, we need to iterate in insertion order
-	// Since Go maps don't preserve order, we'll use the keys as they come from iteration
-	// This won't be deterministic, but matches JavaScript's behavior for objects
+	// Iterate over map - Go 1.21+ preserves insertion order for string keys
 	for name, value := range vars {
-		// Add @ prefix if not present
-		if !strings.HasPrefix(name, "@") {
-			name = "@" + name
-		}
-
-		valueStr := fmt.Sprintf("%v", value)
-		
-		// Add semicolon if not present
-		if !strings.HasSuffix(valueStr, ";") {
-			valueStr += ";"
-		}
-
-		sb.WriteString(fmt.Sprintf("%s: %s", name, valueStr))
-	}
-
-	return sb.String()
-}
-
-// SerializeVarsOrdered serializes variables from an OrderedMap to Less format
-// This preserves insertion order exactly like JavaScript objects
-func SerializeVarsOrdered(vars *OrderedMap) string {
-	if vars == nil || vars.Len() == 0 {
-		return ""
-	}
-
-	var sb strings.Builder
-
-	// Iterate in insertion order
-	for _, name := range vars.Keys() {
-		value, _ := vars.Get(name)
-		
 		// Add @ prefix if not present
 		if !strings.HasPrefix(name, "@") {
 			name = "@" + name
@@ -687,7 +752,7 @@ func (p *Parsers) Declaration() any {
 
 		if !hasDR {
 			// Handle merge flag for non-variables
-			if !isVariable && name != nil {
+			if !isVariable {
 				if nameSlice, ok := name.([]any); ok && len(nameSlice) > 1 {
 					lastItem := nameSlice[len(nameSlice)-1]
 					if keyword, ok := lastItem.(*go_parser.Keyword); ok {
@@ -732,9 +797,7 @@ func (p *Parsers) Declaration() any {
 				return decl
 			}
 
-			if value == nil {
-				value = p.Value()
-			}
+			value = p.Value()
 			// Handle variable lookups in property values, e.g., @detached[@color]
 			if value == nil {
 				value = p.VariableCall()
@@ -826,7 +889,7 @@ func (p *Parsers) RuleProperty() any {
 
 	// Complex property matching function
 	match := func(re *regexp.Regexp) bool {
-		i := len(p.parser.parserInput.GetInput()) - len(p.parser.parserInput.GetInput()) + p.parser.parserInput.GetIndex()
+		i := p.parser.parserInput.GetIndex()
 		chunk := p.parser.parserInput.Re(re)
 		if chunk != nil {
 			index = append(index, i)
@@ -920,7 +983,7 @@ func (p *Parsers) DetachedRuleset() any {
 func (p *Parsers) BlockRuleset() any {
 	block := p.Block()
 	if block != nil {
-		return go_parser.NewRuleset(nil, block.([]any), false, nil)
+		return go_parser.NewRuleset(nil, block.([]any), false, nil, p.parser.CreateSelectorsParseFunc(), p.parser.CreateValueParseFunc(), p.parser.context, p.parser.imports)
 	}
 	return nil
 }
@@ -1366,7 +1429,7 @@ func (p *Parsers) Ruleset() any {
 			if rulesSlice, ok := blockResult.([]any); ok {
 				rules = rulesSlice
 				p.parser.parserInput.Forget()
-				ruleset := go_parser.NewRuleset(selectors, rules, p.parser.context["strictImports"] == true, nil)
+				ruleset := go_parser.NewRuleset(selectors, rules, p.parser.context["strictImports"] == true, nil, p.parser.CreateSelectorsParseFunc(), p.parser.CreateValueParseFunc(), p.parser.context, p.parser.imports)
 				if debugInfo != nil {
 					ruleset.DebugInfo = debugInfo
 				}
@@ -1651,7 +1714,7 @@ func (p *Parsers) Selector(isLess bool) any {
 	}
 
 	if len(elements) > 0 {
-		selector, err := go_parser.NewSelector(elements, allExtends, condition, index+p.parser.currentIndex, p.parser.fileInfo, nil)
+		selector, err := go_parser.NewSelector(elements, allExtends, condition, index+p.parser.currentIndex, p.parser.fileInfo, nil, p.parser.CreateSelectorParseFunc(), p.parser.context, p.parser.imports)
 		if err != nil {
 			p.parser.error(fmt.Sprintf("Failed to create selector: %v", err), "Parse")
 			return nil
@@ -1734,7 +1797,7 @@ func (p *Parsers) Extend() []any {
 			}
 		}
 		
-		selector, err := go_parser.NewSelector(elementSlice, nil, nil, index+p.parser.currentIndex, p.parser.fileInfo, nil)
+		selector, err := go_parser.NewSelector(elementSlice, nil, nil, index+p.parser.currentIndex, p.parser.fileInfo, nil, p.parser.CreateSelectorParseFunc(), p.parser.context, p.parser.imports)
 		if err != nil {
 			p.parser.error(fmt.Sprintf("Failed to create selector for extend: %v", err), "Parse")
 			return nil
@@ -2186,9 +2249,6 @@ func (p *Parsers) Conditions() any {
 			break
 		}
 		condition = go_parser.NewCondition("or", condition, b, index+p.parser.currentIndex, false)
-		if condition == nil {
-			condition = a
-		}
 	}
 
 	if condition != nil {
@@ -2675,10 +2735,7 @@ func (p *Parsers) Element() any {
 	}
 
 	if e != nil {
-		var combinator *go_parser.Combinator
-		if c != nil {
-			combinator, _ = c.(*go_parser.Combinator)
-		}
+		combinator, _ := c.(*go_parser.Combinator)
 		return go_parser.NewElement(combinator, e, false, index+p.parser.currentIndex, p.parser.fileInfo, nil)
 	}
 	return nil
@@ -2815,8 +2872,7 @@ func (e *EntityParsers) Call() any {
 	}
 
 	function = e.CustomFuncCall(name)
-	if function != nil {
-		funcMap := function.(map[string]any)
+	if funcMap, ok := function.(map[string]any); ok {
 		if parseFunc, ok := funcMap["parse"].(func() []any); ok {
 			args = parseFunc()
 			if args != nil && funcMap["stop"].(bool) {
@@ -3513,59 +3569,5 @@ func (p *Parsers) IeAlpha() []any {
 	return []any{quoted}
 }
 
-// OrderedMap preserves insertion order like JavaScript objects
-type OrderedMap struct {
-	keys   []string
-	values map[string]any
-}
 
-// NewOrderedMap creates a new OrderedMap
-func NewOrderedMap() *OrderedMap {
-	return &OrderedMap{
-		keys:   make([]string, 0),
-		values: make(map[string]any),
-	}
-}
-
-// Set adds or updates a key-value pair, preserving insertion order
-func (om *OrderedMap) Set(key string, value any) {
-	if _, exists := om.values[key]; !exists {
-		om.keys = append(om.keys, key)
-	}
-	om.values[key] = value
-}
-
-// Get retrieves a value by key
-func (om *OrderedMap) Get(key string) (any, bool) {
-	value, exists := om.values[key]
-	return value, exists
-}
-
-// Keys returns the keys in insertion order
-func (om *OrderedMap) Keys() []string {
-	return om.keys
-}
-
-// Len returns the number of key-value pairs
-func (om *OrderedMap) Len() int {
-	return len(om.keys)
-}
-
-// ToMap converts to a regular map (loses order)
-func (om *OrderedMap) ToMap() map[string]any {
-	result := make(map[string]any, len(om.keys))
-	for key, value := range om.values {
-		result[key] = value
-	}
-	return result
-}
-
-// OrderedMapFromMap creates an OrderedMap from a regular map
-// Note: This will have arbitrary order since regular maps are unordered
-func OrderedMapFromMap(m map[string]any) *OrderedMap {
-	om := NewOrderedMap()
-	for key, value := range m {
-		om.Set(key, value)
-	}
-	return om
-} 
+ 

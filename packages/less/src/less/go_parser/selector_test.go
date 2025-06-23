@@ -1,6 +1,7 @@
 package go_parser
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -79,10 +80,10 @@ func TestSelector(t *testing.T) {
 			}
 		})
 
-		t.Run("should error on string input", func(t *testing.T) {
+		t.Run("should error on string input without parse function", func(t *testing.T) {
 			_, err := NewSelector("invalid{", nil, nil, 0, nil, nil)
 			if err == nil {
-				t.Fatal("Expected error for string input, got nil")
+				t.Fatal("Expected error for string input without parse function, got nil")
 			}
 		})
 
@@ -99,6 +100,81 @@ func TestSelector(t *testing.T) {
 			}
 			if sel.Condition != nil {
 				t.Errorf("Expected nil Condition, got %v", sel.Condition)
+			}
+		})
+	})
+
+	// String parsing tests (testing the new parser integration)
+	t.Run("string parsing with parse functions", func(t *testing.T) {
+		mockFileInfo := map[string]any{"filename": "test.less"}
+		mockContext := map[string]any{"strictImports": false}
+		mockImports := map[string]any{}
+
+		// Create a mock parse function that returns test elements
+		var mockParseFunc SelectorParseFunc = func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]*Element, error) {
+			if input == "div.class" {
+				// Return mock elements as if parsed successfully
+				return []*Element{
+					NewElement("", "div", false, index, fileInfo, nil),
+					NewElement("", ".class", false, index, fileInfo, nil),
+				}, nil
+			}
+			if input == "invalid{" {
+				return nil, fmt.Errorf("parse error: unexpected character '{'")
+			}
+			return nil, fmt.Errorf("parse error: unrecognized input")
+		}
+
+		t.Run("should parse string input successfully", func(t *testing.T) {
+			sel, err := NewSelector("div.class", nil, nil, 0, mockFileInfo, nil, mockParseFunc, mockContext, mockImports)
+			
+			// Debug: Check if ParseFunc was set
+			if sel != nil && sel.ParseFunc == nil {
+				t.Errorf("ParseFunc was not set on selector")
+			}
+			
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if len(sel.Elements) != 2 {
+				t.Errorf("Expected 2 elements, got %d", len(sel.Elements))
+			}
+			if sel.Elements[0].Value != "div" {
+				t.Errorf("Expected first element to be 'div', got %v", sel.Elements[0].Value)
+			}
+			if sel.Elements[1].Value != ".class" {
+				t.Errorf("Expected second element to be '.class', got %v", sel.Elements[1].Value)
+			}
+		})
+
+		t.Run("should handle parse errors gracefully", func(t *testing.T) {
+			_, err := NewSelector("invalid{", nil, nil, 0, mockFileInfo, nil, mockParseFunc, mockContext, mockImports)
+			if err == nil {
+				t.Fatal("Expected parse error, got nil")
+			}
+			if !strings.Contains(err.Error(), "unexpected character") {
+				t.Errorf("Expected error to mention unexpected character, got: %v", err)
+			}
+		})
+
+		t.Run("should handle unrecognized input", func(t *testing.T) {
+			_, err := NewSelector("unknown", nil, nil, 0, mockFileInfo, nil, mockParseFunc, mockContext, mockImports)
+			if err == nil {
+				t.Fatal("Expected parse error, got nil")
+			}
+			if !strings.Contains(err.Error(), "unrecognized input") {
+				t.Errorf("Expected error to mention unrecognized input, got: %v", err)
+			}
+		})
+
+		t.Run("should work without parse context", func(t *testing.T) {
+			// Test that the function still works when parse context is nil
+			sel, err := NewSelector("div.class", nil, nil, 0, mockFileInfo, nil, mockParseFunc, nil, nil)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			if len(sel.Elements) != 2 {
+				t.Errorf("Expected 2 elements, got %d", len(sel.Elements))
 			}
 		})
 	})

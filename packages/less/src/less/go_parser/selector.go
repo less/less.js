@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+// SelectorParseFunc is a function type for parsing selector strings
+// This allows dependency injection of parser functionality without circular imports
+type SelectorParseFunc func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]*Element, error)
+
 // Selector represents a CSS selector.
 type Selector struct {
 	*Node
@@ -16,18 +20,23 @@ type Selector struct {
 	EvaldCondition bool
 	MixinElements_ []string // Cached result of MixinElements()
 	MediaEmpty     bool
+	ParseFunc      SelectorParseFunc // Function for parsing selector strings
+	ParseContext   map[string]any    // Context for parser
+	ParseImports   map[string]any    // Imports for parser
 	// _index, _fileInfo are from embedded Node
 }
 
 // NewSelector creates a new Selector instance.
-// elementsInput can be []*Element, *Element, or string (string will be stubbed).
-func NewSelector(elementsInput any, extendList []any, condition any, index int, currentFileInfo map[string]any, visibilityInfo map[string]any) (*Selector, error) {
+// elementsInput can be []*Element, *Element, or string.
+// For backward compatibility, parseFunc, parseContext, and parseImports are optional
+func NewSelector(elementsInput any, extendList []any, condition any, index int, currentFileInfo map[string]any, visibilityInfo map[string]any, parseFunc ...any) (*Selector, error) {
 	s := &Selector{
 		Node:           NewNode(),
 		ExtendList:     extendList,
 		Condition:      condition,
 		EvaldCondition: condition == nil,
 	}
+	
 	s.Index = index
 	if currentFileInfo != nil {
 		s.SetFileInfo(currentFileInfo)
@@ -36,7 +45,24 @@ func NewSelector(elementsInput any, extendList []any, condition any, index int, 
 	}
 	s.CopyVisibilityInfo(visibilityInfo)
 
-	// GetElements needs s.Index and s.FileInfo, so they must be set first.
+	// Handle optional parse parameters BEFORE calling getElements
+	if len(parseFunc) > 0 {
+		if pf, ok := parseFunc[0].(SelectorParseFunc); ok {
+			s.ParseFunc = pf
+		}
+	}
+	if len(parseFunc) > 1 {
+		if ctx, ok := parseFunc[1].(map[string]any); ok {
+			s.ParseContext = ctx
+		}
+	}
+	if len(parseFunc) > 2 {
+		if imp, ok := parseFunc[2].(map[string]any); ok {
+			s.ParseImports = imp
+		}
+	}
+
+	// GetElements needs s.Index, s.FileInfo, and s.ParseFunc to be set first.
 	parsedElements, err := s.getElements(elementsInput)
 	if err != nil {
 		// If getElements itself throws a LessError, it should be returned as is.
@@ -126,17 +152,19 @@ func (s *Selector) getElements(elsInput any) ([]*Element, error) {
 	}
 
 	if elsStr, ok := elsInput.(string); ok {
-		// Stubbed: Parser and parseNode are not yet available.
-		// In JS, this would be:
-		// new Parser(this.parse.context, this.parse.importManager, this._fileInfo, this._index).parseNode(
-		//     elsStr, ['selector'], callback)
-		// The callback would throw LessError on parser error.
-		// For the stub, return a specific error.
-		// To match the test case `should handle parse errors gracefully` which expects a throw:
-		// we'd need to return an error that the test can check for.
-		// The JS test checks `expect(() => { new Selector('invalid{', ...); }).toThrow();`
-		// This implies LessError. For now, a standard Go error.
-		return nil, errors.New("go_parser.Selector.getElements: string parsing via Parser not yet implemented (stubbed for string: '" + elsStr + "')")
+		// Parse string using ParseFunc (equivalent to JS parseNode call)
+		if s.ParseFunc == nil {
+			// Fallback to old stubbed behavior for backward compatibility
+			return nil, errors.New("go_parser.Selector.getElements: string parsing via Parser not yet implemented (stubbed for string: '" + elsStr + "')")
+		}
+		
+		elements, err := s.ParseFunc(elsStr, s.ParseContext, s.ParseImports, s.FileInfo(), s.GetIndex())
+		if err != nil {
+			// Convert to LessError format to match JavaScript behavior
+			return nil, fmt.Errorf("selector parsing error: %w", err)
+		}
+		
+		return elements, nil
 	}
 
 	return nil, fmt.Errorf("go_parser.Selector.getElements: unexpected type for elements: %T", elsInput)

@@ -8,6 +8,12 @@ import (
 	"github.com/toakleaf/less.go/packages/less/src/less"
 )
 
+// SelectorsParseFunc is a function type for parsing selector strings into selectors
+type SelectorsParseFunc func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]any, error)
+
+// ValueParseFunc is a function type for parsing value strings into values
+type ValueParseFunc func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]any, error)
+
 // Ruleset represents a ruleset node in the Less AST
 type Ruleset struct {
 	*Node
@@ -27,6 +33,11 @@ type Ruleset struct {
 	AllowImports    bool
 	Paths           [][]any
 	FunctionRegistry any // Changed from *functions.Registry to avoid import cycle
+	// Parser functions for handling dynamic content
+	SelectorsParseFunc SelectorsParseFunc
+	ValueParseFunc     ValueParseFunc
+	ParseContext       map[string]any
+	ParseImports       map[string]any
 	// Debug info
 	DebugInfo any
 	// Multi-media flag for nested media queries
@@ -34,7 +45,7 @@ type Ruleset struct {
 }
 
 // NewRuleset creates a new Ruleset instance
-func NewRuleset(selectors []any, rules []any, strictImports bool, visibilityInfo map[string]any) *Ruleset {
+func NewRuleset(selectors []any, rules []any, strictImports bool, visibilityInfo map[string]any, parseFuncs ...any) *Ruleset {
 	r := &Ruleset{
 		Node:          NewNode(),
 		Selectors:     selectors,
@@ -50,6 +61,28 @@ func NewRuleset(selectors []any, rules []any, strictImports bool, visibilityInfo
 	r.CopyVisibilityInfo(visibilityInfo)
 	r.SetParent(selectors, r.Node)
 	r.SetParent(rules, r.Node)
+
+	// Handle optional parse functions
+	if len(parseFuncs) > 0 {
+		if selectorsParseFunc, ok := parseFuncs[0].(SelectorsParseFunc); ok {
+			r.SelectorsParseFunc = selectorsParseFunc
+		}
+	}
+	if len(parseFuncs) > 1 {
+		if valueParseFunc, ok := parseFuncs[1].(ValueParseFunc); ok {
+			r.ValueParseFunc = valueParseFunc
+		}
+	}
+	if len(parseFuncs) > 2 {
+		if parseContext, ok := parseFuncs[2].(map[string]any); ok {
+			r.ParseContext = parseContext
+		}
+	}
+	if len(parseFuncs) > 3 {
+		if parseImports, ok := parseFuncs[3].(map[string]any); ok {
+			r.ParseImports = parseImports
+		}
+	}
 
 	return r
 }
@@ -160,11 +193,35 @@ func (r *Ruleset) Eval(context any) (*Ruleset, error) {
 			}
 		}
 
-		// Handle variables in selectors - this would normally use Parser
-		if hasVariable {
-			// In JavaScript version, this parses selectors containing variables
-			// For now, we'll just use the selectors as-is since Parser is stubbed
-			// TODO: Implement proper selector parsing when Parser is available
+		// Handle variables in selectors - parse using SelectorsParseFunc
+		if hasVariable && r.SelectorsParseFunc != nil {
+			// Convert selectors to CSS strings for parsing (like JavaScript toParseSelectors)
+			var toParseSelectors []string
+			var startingIndex int
+			var selectorFileInfo map[string]any
+			
+			for i, sel := range selectors {
+				if selector, ok := sel.(*Selector); ok {
+					// Get CSS representation of selector
+					cssStr := selector.ToCSS(ctx)
+					toParseSelectors = append(toParseSelectors, cssStr)
+					
+					if i == 0 {
+						startingIndex = selector.GetIndex()
+						selectorFileInfo = selector.FileInfo()
+					}
+				}
+			}
+			
+			if len(toParseSelectors) > 0 {
+				// Parse the selectors string (equivalent to JS parseNode call)
+				selectorString := strings.Join(toParseSelectors, ",")
+				parsedSelectors, err := r.SelectorsParseFunc(selectorString, r.ParseContext, r.ParseImports, selectorFileInfo, startingIndex)
+				if err == nil && len(parsedSelectors) > 0 {
+					// Flatten the result (equivalent to utils.flattenArray in JS)
+					selectors = flattenArray(parsedSelectors)
+				}
+			}
 		}
 	} else {
 		hasOnePassingSelector = true
@@ -738,13 +795,38 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 	if d, ok := decl.(*Declaration); ok {
 		// Match JavaScript logic: if (decl.value instanceof Anonymous && !decl.parsed)
 		if d.Value != nil && len(d.Value.Value) > 0 {
-			if anon, ok := d.Value.Value[0].(*Anonymous); ok && anon != nil {
-				// Check if needs parsing - this would normally use Parser
-				if str, ok := anon.Value.(string); ok && str != "" {
-					// JavaScript version would parse using:
-					// new Parser(this.parse.context, this.parse.importManager, decl.fileInfo(), decl.value.getIndex())
-					// TODO: Parse the value using Parser when available
-					// For now, just mark as processed to match JavaScript behavior
+			// Check if not parsed (similar to JS !decl.parsed)
+			parsed := false
+			if d.Parsed != nil {
+				if p, ok := d.Parsed.(bool); ok {
+					parsed = p
+				}
+			}
+			if anon, ok := d.Value.Value[0].(*Anonymous); ok && anon != nil && !parsed {
+				// Check if needs parsing and ValueParseFunc is available
+				if str, ok := anon.Value.(string); ok && str != "" && r.ValueParseFunc != nil {
+					// Parse using ValueParseFunc (equivalent to JS parseNode call)
+					result, err := r.ValueParseFunc(str, r.ParseContext, r.ParseImports, d.FileInfo(), anon.GetIndex())
+					if err != nil {
+						// If parsing fails, mark as parsed to avoid infinite loops
+						d.Parsed = true
+					} else if len(result) > 0 {
+						// Update the declaration with parsed values
+						d.Value.Value[0] = result[0] // New value
+						if len(result) > 1 {
+							// Handle important flag if present (using reflection to access private field)
+							if important, ok := result[1].(string); ok {
+								rv := reflect.ValueOf(d).Elem()
+								if importantField := rv.FieldByName("important"); importantField.IsValid() && importantField.CanSet() {
+									importantField.SetString(important)
+								}
+							}
+						}
+						d.Parsed = true
+					}
+				} else if str != "" {
+					// Mark as parsed even if no parser function available
+					d.Parsed = true
 				}
 			}
 		}
@@ -1327,8 +1409,75 @@ func (r *Ruleset) JoinSelector(paths *[][]any, context [][]any, selector any) {
 
 // GetDebugInfo returns debug information for the ruleset
 func GetDebugInfo(context map[string]any, ruleset *Ruleset, separator string) string {
-	// Stub implementation - would normally generate debug info
-	return ""
+	if context == nil || ruleset == nil {
+		return ""
+	}
+	
+	// Check if dumpLineNumbers is enabled and not compressing
+	dumpLineNumbers, hasDump := context["dumpLineNumbers"]
+	compress, hasCompress := context["compress"]
+	
+	if !hasDump || (hasCompress && compress.(bool)) {
+		return ""
+	}
+	
+	// Create debug context from ruleset
+	debugCtx := createDebugContextFromRuleset(context, ruleset)
+	if debugCtx == nil {
+		return ""
+	}
+	
+	var result string
+	switch dumpLineNumbers {
+	case "comments":
+		result = asComment(debugCtx)
+	case "mediaquery":
+		result = asMediaQuery(debugCtx)
+	case "all":
+		result = asComment(debugCtx)
+		if separator != "" {
+			result += separator
+		}
+		result += asMediaQuery(debugCtx)
+	}
+	
+	return result
+}
+
+// Helper function to create debug context from ruleset
+func createDebugContextFromRuleset(context map[string]any, ruleset *Ruleset) *DebugContext {
+	fileInfo := ruleset.FileInfo()
+	if fileInfo == nil {
+		return nil
+	}
+	
+	var filename string
+	var lineNumber int
+	
+	if fn, ok := fileInfo["filename"]; ok {
+		if fnStr, ok := fn.(string); ok {
+			filename = fnStr
+		}
+	}
+	
+	if ln, ok := fileInfo["lineNumber"]; ok {
+		if lnInt, ok := ln.(int); ok {
+			lineNumber = lnInt
+		}
+	}
+	if lineNumber == 0 {
+		lineNumber = 1 // Default line number
+	}
+	
+	return &DebugContext{
+		DebugInfo: struct {
+			LineNumber any
+			FileName   string
+		}{
+			FileName:   filename,
+			LineNumber: lineNumber,
+		},
+	}
 }
 
 // Helper methods for array manipulation and rule checking
@@ -1384,4 +1533,17 @@ func (r *Ruleset) isVariableDeclaration(rule any) bool {
 	}
 	
 	return false
+}
+
+// flattenArray flattens a nested array structure (equivalent to utils.flattenArray in JavaScript)
+func flattenArray(arr []any) []any {
+	var result []any
+	for _, item := range arr {
+		if slice, ok := item.([]any); ok {
+			result = append(result, flattenArray(slice)...)
+		} else {
+			result = append(result, item)
+		}
+	}
+	return result
 } 

@@ -459,25 +459,21 @@ func (im *ImportManager) handlePromise(promise any, loadFileCallback func(*Loade
 	case <-chan *LoadedFile:
 		// Channel-based promise
 		go func() {
-			select {
-			case result := <-p:
-				if result != nil {
-					loadFileCallback(result)
-				} else {
-					fileParsedFunc(fmt.Errorf("channel closed unexpectedly"), nil, "")
-				}
+			result := <-p
+			if result != nil {
+				loadFileCallback(result)
+			} else {
+				fileParsedFunc(fmt.Errorf("channel closed unexpectedly"), nil, "")
 			}
 		}()
 	case <-chan PromiseResult:
 		// Channel with result/error
 		go func() {
-			select {
-			case result := <-p:
-				if result.Error != nil {
-					fileParsedFunc(result.Error, nil, "")
-				} else {
-					loadFileCallback(result.File)
-				}
+			result := <-p
+			if result.Error != nil {
+				fileParsedFunc(result.Error, nil, "")
+			} else {
+				loadFileCallback(result.File)
 			}
 		}()
 	case func() (*LoadedFile, error):

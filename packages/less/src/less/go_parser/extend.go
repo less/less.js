@@ -15,7 +15,11 @@ type Extend struct {
     AllowRoot bool
     AllowBefore bool
     AllowAfter bool
-    SelfSelectors []*Selector
+    SelfSelectors []any
+    // Fields added for visitor support
+    Ruleset *Ruleset
+    FirstExtendOnThisSelectorPath bool
+    HasFoundMatches bool
 }
 
 // extendNextID is a package-level counter for unique object IDs.
@@ -102,20 +106,28 @@ func (e *Extend) Clone(context any) *Extend {
 
 // FindSelfSelectors concatenates the provided selectors into a single self selector.
 // Panics on error creating the underlying Selector.
-func (e *Extend) FindSelfSelectors(selectors []*Selector) {
+func (e *Extend) FindSelfSelectors(selectors []any) {
     var selfElements []*Element
-    for i, sel := range selectors {
-        elements := sel.Elements
-        if i > 0 && len(elements) > 0 && elements[0].Combinator.Value == "" {
-            elements[0].Combinator.Value = " "
+    for i, selNode := range selectors {
+        if sel, ok := selNode.(*Selector); ok {
+            elements := sel.Elements
+            if i > 0 && len(elements) > 0 && elements[0].Combinator.Value == "" {
+                elements[0].Combinator.Value = " "
+            }
+            selfElements = append(selfElements, elements...)
         }
-        selfElements = append(selfElements, elements...)
     }
     newSel, err := NewSelector(selfElements, nil, nil, e.GetIndex(), e.FileInfo(), e.VisibilityInfo())
     if err != nil {
         panic(fmt.Sprintf("Extend.FindSelfSelectors: %v", err))
     }
-    e.SelfSelectors = []*Selector{newSel}
+    e.SelfSelectors = []any{newSel}
     // Copy visibility info to the new self selector
-    e.SelfSelectors[0].CopyVisibilityInfo(e.VisibilityInfo())
+    newSel.CopyVisibilityInfo(e.VisibilityInfo())
+}
+
+// IsVisible returns whether the extend is visible (compatibility method for JS API)
+func (e *Extend) IsVisible() bool {
+    visible := e.Node.IsVisible()
+    return visible != nil && *visible
 } 

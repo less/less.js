@@ -24,28 +24,28 @@ func (p *Parser) CreateSelectorParseFunc() go_parser.SelectorParseFunc {
 	return func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]*go_parser.Element, error) {
 		// Create a new parser instance for parsing the selector string
 		subParser := NewParser(context, imports, fileInfo, index)
-		
+
 		// Use channel to capture result from callback
 		resultChan := make(chan *ParseNodeResult, 1)
-		
+
 		// Parse the input as a selector and extract elements
 		subParser.parseNode(input, []string{"selector"}, func(result *ParseNodeResult) {
 			resultChan <- result
 		})
-		
+
 		// Get result from channel
 		result := <-resultChan
 		if result.Error != nil {
 			return nil, fmt.Errorf("parse error: %v", result.Error)
 		}
-		
+
 		// Extract elements from the parsed selector
 		if len(result.Nodes) > 0 {
 			if selector, ok := result.Nodes[0].(*go_parser.Selector); ok {
 				return selector.Elements, nil
 			}
 		}
-		
+
 		return nil, fmt.Errorf("failed to parse selector: %s", input)
 	}
 }
@@ -55,21 +55,21 @@ func (p *Parser) CreateSelectorsParseFunc() go_parser.SelectorsParseFunc {
 	return func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]any, error) {
 		// Create a new parser instance for parsing the selectors string
 		subParser := NewParser(context, imports, fileInfo, index)
-		
+
 		// Use channel to capture result from callback
 		resultChan := make(chan *ParseNodeResult, 1)
-		
+
 		// Parse the input as selectors
 		subParser.parseNode(input, []string{"selectors"}, func(result *ParseNodeResult) {
 			resultChan <- result
 		})
-		
+
 		// Get result from channel
 		result := <-resultChan
 		if result.Error != nil {
 			return nil, fmt.Errorf("parse error: %v", result.Error)
 		}
-		
+
 		return result.Nodes, nil
 	}
 }
@@ -79,31 +79,31 @@ func (p *Parser) CreateValueParseFunc() go_parser.ValueParseFunc {
 	return func(input string, context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ([]any, error) {
 		// Create a new parser instance for parsing the value string
 		subParser := NewParser(context, imports, fileInfo, index)
-		
+
 		// Use channel to capture result from callback
 		resultChan := make(chan *ParseNodeResult, 1)
-		
+
 		// Parse the input as value and important
 		subParser.parseNode(input, []string{"value", "important"}, func(result *ParseNodeResult) {
 			resultChan <- result
 		})
-		
+
 		// Get result from channel
 		result := <-resultChan
 		if result.Error != nil {
 			return nil, fmt.Errorf("parse error: %v", result.Error)
 		}
-		
+
 		return result.Nodes, nil
 	}
 }
 
 // Parsers contains all the parsing methods
 type Parsers struct {
-	parser *Parser
-	mixin  *MixinParsers
+	parser   *Parser
+	mixin    *MixinParsers
 	entities *EntityParsers
-	plugin func() any // Make this a field that can be overridden
+	plugin   func() any // Make this a field that can be overridden
 }
 
 // MixinParsers contains mixin-related parsing methods
@@ -161,10 +161,10 @@ func NewParsers(parser *Parser) *Parsers {
 	}
 	p.mixin = &MixinParsers{parsers: p}
 	p.entities = &EntityParsers{parsers: p}
-	
+
 	// Initialize plugin parser
 	p.plugin = p.Plugin
-	
+
 	return p
 }
 
@@ -211,7 +211,7 @@ func (p *Parser) warn(msg string, index any, warnType string) {
 	}
 
 	filename, _ := p.fileInfo["filename"].(string)
-	
+
 	if index == nil {
 		index = p.parserInput.GetIndex()
 	}
@@ -280,7 +280,7 @@ func (p *Parser) expectChar(char byte, msg string) byte {
 func (p *Parser) getDebugInfo(index int) map[string]any {
 	filename, _ := p.fileInfo["filename"].(string)
 	location := less.GetLocation(index, p.parserInput.GetInput())
-	
+
 	lineNumber := 1
 	if location.Line != nil {
 		lineNumber = *location.Line + 1
@@ -343,7 +343,7 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 		default:
 			result = nil
 		}
-		
+
 		if result != nil {
 			returnNodes = append(returnNodes, result)
 		} else {
@@ -360,7 +360,7 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 	// Skip any trailing whitespace and see if we've consumed all meaningful content
 	currentIndex := parser.GetIndex()
 	input := parser.GetInput()
-	
+
 	// Skip trailing whitespace
 	for currentIndex < len(input) {
 		c := input[currentIndex]
@@ -370,10 +370,10 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 			break
 		}
 	}
-	
+
 	// Check if we've consumed all input or only have whitespace remaining
 	isFinished := currentIndex >= len(input)
-	
+
 	if isFinished {
 		callback(&ParseNodeResult{
 			Error: nil,
@@ -389,12 +389,11 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 
 // AdditionalData represents additional data that can be passed to the parser
 type AdditionalData struct {
-	GlobalVars         map[string]any
-	ModifyVars         map[string]any
-	DisablePluginRule  bool
-	Banner             string
+	GlobalVars        map[string]any
+	ModifyVars        map[string]any
+	DisablePluginRule bool
+	Banner            string
 }
-
 
 // NewAdditionalData creates a new AdditionalData with initialized maps
 func NewAdditionalData() *AdditionalData {
@@ -404,12 +403,10 @@ func NewAdditionalData() *AdditionalData {
 	}
 }
 
-
 // Parse parses a Less string using structured AdditionalData
 func (p *Parser) Parse(str string, callback func(*less.LessError, *go_parser.Ruleset), data *AdditionalData) {
 	p.parseInternal(str, callback, data)
 }
-
 
 // parseInternal is the core parsing implementation that works with AdditionalData directly
 func (p *Parser) parseInternal(str string, callback func(*less.LessError, *go_parser.Ruleset), data *AdditionalData) {
@@ -446,20 +443,19 @@ func (p *Parser) parseInternal(str string, callback func(*less.LessError, *go_pa
 		}
 	}
 
-	// Handle global vars 
-	if data.GlobalVars != nil && len(data.GlobalVars) > 0 {
+	// Handle global vars
+	if len(data.GlobalVars) > 0 {
 		globalVars = SerializeVars(data.GlobalVars) + "\n"
 	}
 
 	// Handle modify vars
-	if data.ModifyVars != nil && len(data.ModifyVars) > 0 {
+	if len(data.ModifyVars) > 0 {
 		modifyVars = "\n" + SerializeVars(data.ModifyVars)
 	}
 
 	// Handle plugin manager preprocessing
-	if pluginManager, ok := p.context["pluginManager"]; ok && pluginManager != nil {
-		// TODO: Implement plugin manager preprocessing when available
-	}
+	// TODO: Implement plugin manager preprocessing when available
+	// Currently checking for pluginManager in context but not yet implemented
 
 	// Handle banner and global vars
 	if globalVars != "" || data.Banner != "" {
@@ -563,7 +559,7 @@ func (p *Parser) parseInternal(str string, callback func(*less.LessError, *go_pa
 // SerializeVars serializes variables from a map to Less format
 // Go 1.21+ preserves insertion order for string keys like JavaScript objects
 func SerializeVars(vars map[string]any) string {
-	if vars == nil || len(vars) == 0 {
+	if len(vars) == 0 {
 		return ""
 	}
 
@@ -577,7 +573,7 @@ func SerializeVars(vars map[string]any) string {
 		}
 
 		valueStr := fmt.Sprintf("%v", value)
-		
+
 		// Add semicolon if not present
 		if !strings.HasSuffix(valueStr, ";") {
 			valueStr += ";"
@@ -598,18 +594,18 @@ func (p *Parsers) Primary() []any {
 
 	for iterations < maxIterations {
 		iterations++
-		
+
 		// Check termination conditions first
 		if p.parser.parserInput.Finished() {
 			break
 		}
-		
+
 		// Check for closing brace - this is the key termination condition
 		currentChar := p.parser.parserInput.CurrentChar()
 		if currentChar == '}' {
 			break
 		}
-		
+
 		// Additional safety check: if we're at the end of input, break
 		if p.parser.parserInput.GetIndex() >= len(p.parser.parserInput.GetInput()) {
 			break
@@ -622,7 +618,7 @@ func (p *Parsers) Primary() []any {
 			if node == nil {
 				break
 			}
-			
+
 			root = append(root, node)
 			commentCount++
 			// Safety check: prevent infinite comment loops
@@ -710,7 +706,7 @@ func (p *Parsers) Comment() any {
 	if comments := p.parser.parserInput.GetComments(); len(comments) > 0 {
 		comment := p.parser.parserInput.ConsumeComment()
 		if comment != nil {
-			return go_parser.NewComment(comment.GetText(), comment.IsLineComment(), comment.GetIndex() + p.parser.currentIndex, p.parser.fileInfo)
+			return go_parser.NewComment(comment.GetText(), comment.IsLineComment(), comment.GetIndex()+p.parser.currentIndex, p.parser.fileInfo)
 		}
 	}
 	return nil
@@ -813,7 +809,7 @@ func (p *Parsers) Declaration() any {
 		if value != nil && (p.End() || hasDR) {
 			p.parser.parserInput.Forget()
 			mergeFlag := merge == "+"
-			
+
 			decl, err := go_parser.NewDeclaration(name, value, important, mergeFlag, index+p.parser.currentIndex, p.parser.fileInfo, false, isVariable)
 			if err != nil {
 				return nil
@@ -1230,7 +1226,7 @@ func (e *EntityParsers) Keyword() any {
 	if k == nil {
 		k = e.parsers.parser.parserInput.Re(regexp.MustCompile(`^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?`))
 	}
-	
+
 	if k != nil {
 		kStr := ""
 		if kByte, ok := k.(byte); ok {
@@ -1240,7 +1236,7 @@ func (e *EntityParsers) Keyword() any {
 		} else if kSlice, ok := k.([]string); ok && len(kSlice) > 0 {
 			kStr = kSlice[0]
 		}
-		
+
 		// Try to create a color from keyword first
 		if color := go_parser.FromKeyword(kStr); color != nil {
 			return color
@@ -1253,7 +1249,7 @@ func (e *EntityParsers) Keyword() any {
 // VariableCurly parses variable entity using protective {} e.g. @{var}
 func (e *EntityParsers) VariableCurly() any {
 	index := e.parsers.parser.parserInput.GetIndex()
-	
+
 	if e.parsers.parser.parserInput.CurrentChar() == '@' {
 		curly := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^@\{([\w-]+)\}`))
 		if curly != nil {
@@ -1269,7 +1265,7 @@ func (e *EntityParsers) VariableCurly() any {
 // Property parses property accessors - $color
 func (e *EntityParsers) Property() any {
 	index := e.parsers.parser.parserInput.GetIndex()
-	
+
 	if e.parsers.parser.parserInput.CurrentChar() == '$' {
 		name := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^\$[\w-]+`))
 		if name != nil {
@@ -1288,7 +1284,7 @@ func (e *EntityParsers) Property() any {
 // PropertyCurly parses property entity using protective {} e.g. ${prop}
 func (e *EntityParsers) PropertyCurly() any {
 	index := e.parsers.parser.parserInput.GetIndex()
-	
+
 	if e.parsers.parser.parserInput.CurrentChar() == '$' {
 		curly := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^\$\{([\w-]+)\}`))
 		if curly != nil {
@@ -1324,20 +1320,20 @@ func (e *EntityParsers) ColorKeyword() any {
 	e.parsers.parser.parserInput.Save()
 	// Note: autoCommentAbsorb access would need to be implemented in ParserInput
 	k := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^[_A-Za-z-][_A-Za-z0-9-]+`))
-	
+
 	if k == nil {
 		e.parsers.parser.parserInput.Forget()
 		return nil
 	}
 	e.parsers.parser.parserInput.Restore("")
-	
+
 	var kStr string
 	if matches, ok := k.([]string); ok {
 		kStr = matches[0]
 	} else if match, ok := k.(string); ok {
 		kStr = match
 	}
-	
+
 	color := go_parser.FromKeyword(kStr)
 	if color != nil {
 		e.parsers.parser.parserInput.Str(kStr)
@@ -1429,7 +1425,11 @@ func (p *Parsers) Ruleset() any {
 			if rulesSlice, ok := blockResult.([]any); ok {
 				rules = rulesSlice
 				p.parser.parserInput.Forget()
-				ruleset := go_parser.NewRuleset(selectors, rules, p.parser.context["strictImports"] == true, nil, p.parser.CreateSelectorsParseFunc(), p.parser.CreateValueParseFunc(), p.parser.context, p.parser.imports)
+				strictImports := false
+				if val, ok := p.parser.context["strictImports"].(bool); ok {
+					strictImports = val
+				}
+				ruleset := go_parser.NewRuleset(selectors, rules, strictImports, nil, p.parser.CreateSelectorsParseFunc(), p.parser.CreateValueParseFunc(), p.parser.context, p.parser.imports)
 				if debugInfo != nil {
 					ruleset.DebugInfo = debugInfo
 				}
@@ -1437,7 +1437,7 @@ func (p *Parsers) Ruleset() any {
 			}
 		}
 	}
-	
+
 	p.parser.parserInput.Restore("")
 	return nil
 }
@@ -1445,12 +1445,12 @@ func (p *Parsers) Ruleset() any {
 // ExtendRule parses extend rules
 func (p *Parsers) ExtendRule() any {
 	result := p.Extend()
-	
+
 	// Fix: If Extend() returns an empty slice, convert it to nil to prevent infinite loop
 	if result != nil && len(result) == 0 {
 		return nil
 	}
-	
+
 	return result
 }
 
@@ -1513,7 +1513,7 @@ func (p *Parsers) AtRule() any {
 	if value != nil {
 		return value
 	}
-	
+
 	value = p.Plugin()
 	if value != nil {
 		return value
@@ -1580,10 +1580,8 @@ func (p *Parsers) AtRule() any {
 			if !hasBlock && p.parser.parserInput.CurrentChar() != ';' {
 				p.parser.error(fmt.Sprintf("%s rule is missing block or ending semi-colon", name), "")
 			}
-		} else {
-			// Check if value has actual content - simplified for now
-			// TODO: Implement proper value content checking
 		}
+		// TODO: Implement proper value content checking when value is not nil
 	}
 
 	if hasBlock {
@@ -1622,7 +1620,7 @@ func (p *Parsers) Important() any {
 func (p *Parsers) Selectors() []any {
 	var s any
 	var selectors []any
-	
+
 	for {
 		s = p.Selector(true)
 		if s == nil {
@@ -1659,7 +1657,7 @@ func (p *Parsers) Selector(isLess bool) any {
 	var allExtends []any
 	var when bool
 	var condition any
-	
+
 	// Fix: Handle isLess parameter properly like JavaScript version
 	// In JavaScript: isLess = isLess !== false means isLess defaults to true unless explicitly false
 	// Since Go bool defaults to false, we need to handle the case where it wasn't explicitly set to false
@@ -1677,34 +1675,34 @@ func (p *Parsers) Selector(isLess bool) any {
 				}
 				continue
 			}
-			
+
 			if p.parser.parserInput.Str("when") != nil {
 				when = true
 				break
 			}
 		}
-		
+
 		e = p.Element()
 		if e == nil {
 			break
 		}
-		
+
 		if when {
 			p.parser.error("CSS guard can only be used at the end of selector", "")
 		} else if allExtends != nil {
 			p.parser.error("Extend can only be used at the end of selector", "")
 		}
-		
+
 		if element, ok := e.(*go_parser.Element); ok {
 			elements = append(elements, element)
 		}
-		
+
 		// Check if we should continue parsing more elements
 		cByte := p.parser.parserInput.CurrentChar()
 		if cByte == '{' || cByte == '}' || cByte == ';' || cByte == ',' || cByte == ')' {
 			break
 		}
-		
+
 		// Continue if there might be more elements (whitespace or combinators ahead)
 		// This allows parsing sequences like "div > p" or "a b c"
 	}
@@ -1724,11 +1722,11 @@ func (p *Parsers) Selector(isLess bool) any {
 	if allExtends != nil {
 		p.parser.error("Extend must be used to extend a selector, it cannot be used on its own", "")
 	}
-	
+
 	return nil
 }
 
-// Extend parses extend rules  
+// Extend parses extend rules
 func (p *Parsers) Extend() []any {
 	var elements []any
 	var e any
@@ -1746,7 +1744,7 @@ func (p *Parsers) Extend() []any {
 		option = ""
 		elements = nil
 		first := true
-		
+
 		for {
 			// Check for option (all or !all) followed by whitespace and closing paren or comma
 			p.parser.parserInput.Save()
@@ -1796,14 +1794,14 @@ func (p *Parsers) Extend() []any {
 				elementSlice = append(elementSlice, element)
 			}
 		}
-		
+
 		selector, err := go_parser.NewSelector(elementSlice, nil, nil, index+p.parser.currentIndex, p.parser.fileInfo, nil, p.parser.CreateSelectorParseFunc(), p.parser.context, p.parser.imports)
 		if err != nil {
 			p.parser.error(fmt.Sprintf("Failed to create selector for extend: %v", err), "Parse")
 			return nil
 		}
 		extend = go_parser.NewExtend(selector, option, index+p.parser.currentIndex, p.parser.fileInfo, nil)
-		
+
 		if extendList != nil {
 			extendList = append(extendList, extend)
 		} else {
@@ -1828,7 +1826,7 @@ func (p *Parsers) MediaFeature(syntaxOptions map[string]any) any {
 	var rangeProp any
 
 	p.parser.parserInput.Save()
-	
+
 	for {
 		e = entities.DeclarationCall()
 		if e == nil {
@@ -1840,19 +1838,19 @@ func (p *Parsers) MediaFeature(syntaxOptions map[string]any) any {
 		if e == nil {
 			e = entities.MixinLookup()
 		}
-		
+
 		if e != nil {
 			nodes = append(nodes, e)
 		} else if p.parser.parserInput.Char('(') != nil {
 			prop = p.Property()
 			p.parser.parserInput.Save()
-			
+
 			if prop == nil && syntaxOptions != nil {
 				if queryInParens, ok := syntaxOptions["queryInParens"].(bool); ok && queryInParens {
 					if p.parser.parserInput.Re(regexp.MustCompile(`^[0-9a-z-]*\s*([<>]=|<=|>=|[<>]|=)`)) != nil {
 						p.parser.parserInput.Restore("")
 						prop = p.Condition(false)
-						
+
 						p.parser.parserInput.Save()
 						if prop != nil {
 							if condition, ok := prop.(*go_parser.Condition); ok {
@@ -1868,7 +1866,7 @@ func (p *Parsers) MediaFeature(syntaxOptions map[string]any) any {
 				p.parser.parserInput.Restore("")
 				e = p.Value()
 			}
-			
+
 			if p.parser.parserInput.Char(')') != nil {
 				if prop != nil && e == nil {
 					// Create QueryInParens node
@@ -1898,7 +1896,7 @@ func (p *Parsers) MediaFeature(syntaxOptions map[string]any) any {
 				p.parser.error("Missing closing ')'", "Parse")
 			}
 		}
-		
+
 		if e == nil {
 			break
 		}
@@ -2015,12 +2013,12 @@ func (p *Parsers) Sub() any {
 	var a any
 
 	startIndex := p.parser.parserInput.GetIndex()
-	
+
 	// Check for opening parenthesis
 	if p.parser.parserInput.Char('(') == nil {
 		return nil
 	}
-	
+
 	a = p.Addition()
 	if a != nil && p.parser.parserInput.Char(')') != nil {
 		expr, err := go_parser.NewExpression([]any{a}, false)
@@ -2033,7 +2031,7 @@ func (p *Parsers) Sub() any {
 		expr.Node.Parens = true
 		return expr
 	}
-	
+
 	// Restore to original position if parsing failed
 	p.parser.parserInput.SetIndex(startIndex)
 	return nil
@@ -2479,10 +2477,10 @@ func (m *MixinParsers) Call(inValue bool, getLookup bool) any {
 		parensIndex = m.parsers.parser.parserInput.GetIndex()
 		if m.parsers.parser.parserInput.Char('(') != nil {
 			parensWS = m.parsers.parser.parserInput.IsWhitespace(-2)
-					argInfo := m.Args(true)
-		if argsSlice, ok := argInfo["args"].([]any); ok {
-			args = argsSlice
-		}
+			argInfo := m.Args(true)
+			if argsSlice, ok := argInfo["args"].([]any); ok {
+				args = argsSlice
+			}
 			m.parsers.parser.expectChar(')', "")
 			hasParens = true
 			if parensWS {
@@ -2490,10 +2488,10 @@ func (m *MixinParsers) Call(inValue bool, getLookup bool) any {
 			}
 		}
 
-		if getLookup != false {
+		if getLookup {
 			lookups = m.RuleLookups()
 		}
-		if getLookup == true && len(lookups) == 0 {
+		if getLookup && len(lookups) == 0 {
 			m.parsers.parser.parserInput.Restore("")
 			return nil
 		}
@@ -2558,19 +2556,19 @@ func (m *MixinParsers) Elements() []*go_parser.Element {
 			combinator = go_parser.NewCombinator(string(c))
 		}
 		elem = go_parser.NewElement(combinator, e, false, elemIndex+m.parsers.parser.currentIndex, m.parsers.parser.fileInfo, nil)
-		
+
 		if elements != nil {
 			elements = append(elements, elem)
 		} else {
 			elements = []*go_parser.Element{elem}
 		}
-		
+
 		c = 0
 		if m.parsers.parser.parserInput.Char('>') != nil {
 			c = '>'
 		}
 	}
-	
+
 	return elements
 }
 
@@ -2600,7 +2598,7 @@ func (p *Parsers) Expression() any {
 
 		if e != nil {
 			entities = append(entities, e)
-			
+
 			// Check for slash delimiter (for operations like font: 12px/1.5)
 			if !p.parser.parserInput.Peek(regexp.MustCompile(`^\/[*/]`)) {
 				if p.parser.parserInput.Char('/') != nil {
@@ -2618,7 +2616,7 @@ func (p *Parsers) Expression() any {
 			return expr
 		}
 	}
-	
+
 	return nil
 }
 
@@ -2663,7 +2661,7 @@ func (p *Parsers) Import() any {
 			p.parser.parserInput.SetIndex(index)
 			p.parser.error("missing semi-colon or unrecognised media features on import", "")
 		}
-		
+
 		var featuresValue any
 		if features != nil {
 			featuresValue, _ = go_parser.NewValue(features.([]any))
@@ -2684,7 +2682,7 @@ func (p *Parsers) NestableAtRule() any {
 	if p.parser.context["dumpLineNumbers"] != nil {
 		debugInfo = p.parser.getDebugInfo(index)
 	}
-	
+
 	p.parser.parserInput.Save()
 
 	if p.parser.parserInput.PeekChar('@') != 0 {
@@ -2751,7 +2749,7 @@ func (m *MixinParsers) Definition() any {
 	var ruleset any
 	var cond any
 	variadic := false
-	
+
 	if (m.parsers.parser.parserInput.CurrentChar() != '.' && m.parsers.parser.parserInput.CurrentChar() != '#') ||
 		m.parsers.parser.parserInput.Peek(regexp.MustCompile(`^[^{]*\}`)) {
 		return nil
@@ -2799,7 +2797,7 @@ func (m *MixinParsers) Definition() any {
 	} else {
 		m.parsers.parser.parserInput.Restore("")
 	}
-	
+
 	return nil
 }
 
@@ -3002,7 +3000,7 @@ func (p *Parsers) ImportOptions() map[string]any {
 	}
 
 	options := make(map[string]any)
-	
+
 	for {
 		opt := p.parser.parserInput.Re(regexp.MustCompile(`^(less|css|multiple|once|inline|reference|optional)`))
 		if opt != nil {
@@ -3011,7 +3009,7 @@ func (p *Parsers) ImportOptions() map[string]any {
 			if matches, ok := opt.([]string); ok && len(matches) > 1 {
 				optionName = matches[1]
 			}
-			
+
 			switch optionName {
 			case "css":
 				optionName = "less"
@@ -3021,7 +3019,7 @@ func (p *Parsers) ImportOptions() map[string]any {
 				value = false
 			}
 			options[optionName] = value
-			
+
 			if p.parser.parserInput.Char(',') == nil {
 				break
 			}
@@ -3029,7 +3027,7 @@ func (p *Parsers) ImportOptions() map[string]any {
 			break
 		}
 	}
-	
+
 	p.parser.expectChar(')', "")
 	return options
 }
@@ -3185,7 +3183,7 @@ func (m *MixinParsers) Args(isCall bool) map[string]any {
 		"args":     make([]any, 0),
 		"variadic": false,
 	}
-	
+
 	expressions := make([]any, 0)
 	argsSemiColon := make([]any, 0)
 	argsComma := make([]any, 0)
@@ -3357,7 +3355,7 @@ func (m *MixinParsers) Args(isCall bool) map[string]any {
 			hasSep = true
 			continue
 		}
-		
+
 		hasSepChar := m.parsers.parser.parserInput.Char(';')
 		hasSep = hasSepChar != nil
 
@@ -3422,7 +3420,7 @@ func (m *MixinParsers) LookupValue() *string {
 // CustomFuncCall handles custom function calls
 func (e *EntityParsers) CustomFuncCall(name string) map[string]any {
 	lowerName := strings.ToLower(name)
-	
+
 	switch lowerName {
 	case "alpha":
 		return map[string]any{
@@ -3513,21 +3511,21 @@ func (e *EntityParsers) Arguments(prevArgs []any) []any {
 // Assignment parses assignments
 func (e *EntityParsers) Assignment() any {
 	e.parsers.parser.parserInput.Save()
-	
+
 	// Instead of using positive lookahead (?=\s?=), parse the word and check for = separately
 	key := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^\w+`))
 	if key == nil {
 		e.parsers.parser.parserInput.Restore("")
 		return nil
 	}
-	
+
 	// Skip optional whitespace and check for equals sign
 	e.parsers.parser.parserInput.Re(regexp.MustCompile(`^\s*`)) // Skip whitespace
 	if e.parsers.parser.parserInput.Char('=') == nil {
 		e.parsers.parser.parserInput.Restore("")
 		return nil
 	}
-	
+
 	value := e.parsers.Entity()
 	if value != nil {
 		e.parsers.parser.parserInput.Forget()
@@ -3557,17 +3555,14 @@ func (p *Parsers) IeAlpha() []any {
 		}
 	}
 	p.parser.expectChar(')', "")
-	
+
 	var valueStr string
 	if matches, ok := value.([]string); ok && len(matches) > 0 {
 		valueStr = matches[0]
 	} else if str, ok := value.(string); ok {
 		valueStr = str
 	}
-	
+
 	quoted := go_parser.NewQuoted("", fmt.Sprintf("alpha(opacity=%s)", valueStr), false, 0, nil)
 	return []any{quoted}
 }
-
-
- 

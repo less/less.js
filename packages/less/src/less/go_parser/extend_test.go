@@ -173,23 +173,31 @@ func TestExtendFindSelfSelectors(t *testing.T) {
     ext := NewExtend(sel, "all", 0, mockFileInfo, nil)
 
     // Empty selectors
-    ext.FindSelfSelectors([]*Selector{})
+    ext.FindSelfSelectors([]any{})
     if len(ext.SelfSelectors) != 1 {
         t.Errorf("Expected 1 self selector, got %d", len(ext.SelfSelectors))
     }
-    if len(ext.SelfSelectors[0].Elements) != 0 {
-        t.Errorf("Expected 0 elements in self selector, got %d", len(ext.SelfSelectors[0].Elements))
+    if selfSel, ok := ext.SelfSelectors[0].(*Selector); ok {
+        if len(selfSel.Elements) != 0 {
+            t.Errorf("Expected 0 elements in self selector, got %d", len(selfSel.Elements))
+        }
+    } else {
+        t.Error("Expected SelfSelectors[0] to be a *Selector")
     }
 
     // Single selector
     elem := NewElement(nil, "x", false, 0, mockFileInfo, nil)
     sel2, _ := NewSelector([]*Element{elem}, nil, nil, 0, mockFileInfo, nil)
-    ext.FindSelfSelectors([]*Selector{sel2})
-    if len(ext.SelfSelectors[0].Elements) != 1 {
-        t.Errorf("Expected 1 element, got %d", len(ext.SelfSelectors[0].Elements))
-    }
-    if ext.SelfSelectors[0].Elements[0].Value != elem.Value {
-        t.Errorf("Expected element Value %v, got %v", elem.Value, ext.SelfSelectors[0].Elements[0].Value)
+    ext.FindSelfSelectors([]any{sel2})
+    if selfSel, ok := ext.SelfSelectors[0].(*Selector); ok {
+        if len(selfSel.Elements) != 1 {
+            t.Errorf("Expected 1 element, got %d", len(selfSel.Elements))
+        }
+        if selfSel.Elements[0].Value != elem.Value {
+            t.Errorf("Expected element Value %v, got %v", elem.Value, selfSel.Elements[0].Value)
+        }
+    } else {
+        t.Error("Expected SelfSelectors[0] to be a *Selector")
     }
 
     // Concatenation with space
@@ -199,12 +207,16 @@ func TestExtendFindSelfSelectors(t *testing.T) {
     selB, _ := NewSelector([]*Element{elemB}, nil, nil, 0, mockFileInfo, nil)
     // Reset combinator of second to empty string to simulate join
     selB.Elements[0].Combinator.Value = ""
-    ext.FindSelfSelectors([]*Selector{selA, selB})
-    if len(ext.SelfSelectors[0].Elements) != 2 {
-        t.Errorf("Expected 2 elements after concatenation, got %d", len(ext.SelfSelectors[0].Elements))
-    }
-    if ext.SelfSelectors[0].Elements[1].Combinator.Value != " " {
-        t.Errorf("Expected space combinator on second element, got '%s'", ext.SelfSelectors[0].Elements[1].Combinator.Value)
+    ext.FindSelfSelectors([]any{selA, selB})
+    if selfSel, ok := ext.SelfSelectors[0].(*Selector); ok {
+        if len(selfSel.Elements) != 2 {
+            t.Errorf("Expected 2 elements after concatenation, got %d", len(selfSel.Elements))
+        }
+        if selfSel.Elements[1].Combinator.Value != " " {
+            t.Errorf("Expected space combinator on second element, got '%s'", selfSel.Elements[1].Combinator.Value)
+        }
+    } else {
+        t.Error("Expected SelfSelectors[0] to be a *Selector")
     }
 }
 

@@ -29,9 +29,11 @@ type Ruleset struct {
 	// Original ruleset reference for eval
 	OriginalRuleset *Ruleset
 	Root            bool
+	// Extend support
+	ExtendOnEveryPath bool
+	Paths            [][]any
 	FirstRoot       bool
 	AllowImports    bool
-	Paths           [][]any
 	FunctionRegistry any // Changed from *functions.Registry to avoid import cycle
 	// Parser functions for handling dynamic content
 	SelectorsParseFunc SelectorsParseFunc

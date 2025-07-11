@@ -547,3 +547,20 @@ func (im *ImportManager) tryReflectionPromise(promise any, loadFileCallback func
 	
 	return false
 }
+
+// Getter methods for private fields needed by parse_tree in go_parser package
+
+// Contents returns the contents map
+func (im *ImportManager) Contents() map[string]string {
+	return im.contents
+}
+
+// RootFilename returns the root filename
+func (im *ImportManager) RootFilename() string {
+	return im.rootFilename
+}
+
+// Files returns the files map
+func (im *ImportManager) Files() map[string]*FileCache {
+	return im.files
+}

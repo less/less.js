@@ -451,8 +451,19 @@ func (p *Parser) parseInternal(str string, callback func(*LessError, *Ruleset), 
 	}
 
 	// Handle plugin manager preprocessing
-	// TODO: Implement plugin manager preprocessing when available
-	// Currently checking for pluginManager in context but not yet implemented
+	if pluginManager, ok := p.context["pluginManager"].(*PluginManager); ok && pluginManager != nil {
+		preProcessors := pluginManager.GetPreProcessors()
+		for _, processor := range preProcessors {
+			// Check if processor has Process method
+			if proc, ok := processor.(interface{ Process(string, map[string]any) string }); ok {
+				str = proc.Process(str, map[string]any{
+					"context":  p.context,
+					"imports":  p.imports,
+					"fileInfo": p.fileInfo,
+				})
+			}
+		}
+	}
 
 	// Handle banner and global vars
 	if globalVars != "" || data.Banner != "" {
@@ -501,7 +512,15 @@ func (p *Parser) parseInternal(str string, callback func(*LessError, *Ruleset), 
 	root = NewRuleset(nil, p.parsers.Primary(), false, nil, p.CreateSelectorsParseFunc(), p.CreateValueParseFunc(), p.context, p.imports)
 	root.Root = true
 	root.FirstRoot = true
-	// root.FunctionRegistry = functionRegistry.inherit() // TODO: implement function registry
+	
+	// Set up function registry for the root
+	if funcRegistry, ok := p.context["functionRegistry"].(*Registry); ok && funcRegistry != nil {
+		// Create an inherited registry for this parse tree
+		root.FunctionRegistry = funcRegistry.Inherit()
+	} else {
+		// Use the default registry if none provided
+		root.FunctionRegistry = DefaultRegistry.Inherit()
+	}
 
 	// Check if parsing completed
 	endInfo := p.parserInput.End()

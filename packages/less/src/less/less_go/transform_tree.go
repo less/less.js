@@ -128,10 +128,34 @@ func TransformTree(root any, options map[string]any) any {
 		}
 	}
 
+	// Check if imports should be processed
+	processImports := false
+	if val, ok := options["processImports"]; ok {
+		if flag, ok := val.(bool); ok {
+			processImports = flag
+		}
+	}
+	
+	// Process imports if enabled (before evaluation)
+	var processedRoot any = root
+	if processImports {
+		if importer, ok := options["importManager"]; ok {
+			importVisitor := NewImportVisitor(importer, func(err error) {
+				if err != nil {
+					panic(err)
+				}
+			})
+			importVisitor.Run(root)
+			// ImportVisitor typically modifies the tree in place,
+			// so we continue with the original root
+		}
+	}
+	processedRoot = root
+
 	// Evaluate the root exactly like JavaScript: evaldRoot = root.eval(evalEnv)
-	if evaluator, ok := root.(interface{ Eval(any) any }); ok {
+	if evaluator, ok := processedRoot.(interface{ Eval(any) any }); ok {
 		evaldRoot = evaluator.Eval(evalEnv)
-	} else if evaluatorWithError, ok := root.(interface{ Eval(any) (any, error) }); ok {
+	} else if evaluatorWithError, ok := processedRoot.(interface{ Eval(any) (any, error) }); ok {
 		// Handle evaluators that return errors - convert to panic like JavaScript throws
 		result, err := evaluatorWithError.Eval(evalEnv)
 		if err != nil {
@@ -139,7 +163,7 @@ func TransformTree(root any, options map[string]any) any {
 		}
 		evaldRoot = result
 	} else {
-		evaldRoot = root
+		evaldRoot = processedRoot
 	}
 
 	// Run all visitors exactly like JavaScript

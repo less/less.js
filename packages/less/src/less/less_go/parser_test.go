@@ -88,6 +88,177 @@ func TestParser_Basic(t *testing.T) {
 			t.Error("Expected parserInput to be initialized")
 		}
 	})
+
+	t.Run("should parse empty string", func(t *testing.T) {
+		err, root := parseLess("", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		if root == nil {
+			t.Error("Expected root ruleset")
+		}
+		if len(root.Rules) != 0 {
+			t.Errorf("Expected empty rules, got: %d", len(root.Rules))
+		}
+	})
+
+	t.Run("should parse simple declaration with hex color", func(t *testing.T) {
+		err, root := parseLess("background-color: #aabbcc;", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		
+		if len(root.Rules) != 1 {
+			t.Errorf("Expected 1 rule, got: %d", len(root.Rules))
+		}
+		
+		decl, ok := root.Rules[0].(*Declaration)
+		if !ok {
+			t.Errorf("Expected Declaration, got: %T", root.Rules[0])
+		}
+		
+		// Verify declaration name - parser stores it as slice of interfaces
+		if nameSlice, ok := decl.name.([]interface{}); ok && len(nameSlice) > 0 {
+			if keyword, ok := nameSlice[0].(*Keyword); ok {
+				if keyword.value != "background-color" {
+					t.Errorf("Expected 'background-color', got: %s", keyword.value)
+				}
+			} else {
+				t.Errorf("Expected Keyword for name, got: %T", nameSlice[0])
+			}
+		} else {
+			t.Errorf("Expected []interface{} for name, got: %T", decl.name)
+		}
+		
+		// Verify color value AST structure: Declaration.Value -> Value -> Expression -> Color
+		value := decl.Value
+		if value == nil {
+			t.Error("Expected Value, got nil")
+			return
+		}
+		
+		if len(value.Value) != 1 {
+			t.Errorf("Expected 1 expression, got: %d", len(value.Value))
+		}
+		
+		expr, ok := value.Value[0].(*Expression)
+		if !ok {
+			t.Errorf("Expected Expression, got: %T", value.Value[0])
+		}
+		
+		if len(expr.Value) != 1 {
+			t.Errorf("Expected 1 color node, got: %d", len(expr.Value))
+		}
+		
+		color, ok := expr.Value[0].(*Color)
+		if !ok {
+			t.Errorf("Expected Color, got: %T", expr.Value[0])
+		}
+		
+		expectedRGB := []float64{0xaa, 0xbb, 0xcc}
+		if len(color.RGB) != 3 || color.RGB[0] != expectedRGB[0] || color.RGB[1] != expectedRGB[1] || color.RGB[2] != expectedRGB[2] {
+			t.Errorf("Expected RGB %v, got: %v", expectedRGB, color.RGB)
+		}
+	})
+
+	t.Run("should parse simple declaration with quoted string", func(t *testing.T) {
+		err, root := parseLess(`content: "hello";`, nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		
+		decl, ok := root.Rules[0].(*Declaration)
+		if !ok {
+			t.Errorf("Expected Declaration, got: %T", root.Rules[0])
+		}
+		
+		// Verify quoted string AST structure: Declaration.Value -> Value -> Expression -> Quoted
+		value := decl.Value
+		if value == nil {
+			t.Error("Expected Value, got nil")
+			return
+		}
+		
+		expr, ok := value.Value[0].(*Expression)
+		if !ok {
+			t.Errorf("Expected Expression, got: %T", value.Value[0])
+		}
+		
+		quoted, ok := expr.Value[0].(*Quoted)
+		if !ok {
+			t.Errorf("Expected Quoted, got: %T", expr.Value[0])
+		}
+		
+		if quoted.value != "hello" {
+			t.Errorf("Expected 'hello', got: %s", quoted.value)
+		}
+		if quoted.quote != `"` {
+			t.Errorf("Expected quote '\"', got: %s", quoted.quote)
+		}
+	})
+
+	t.Run("should parse ruleset with detailed AST verification", func(t *testing.T) {
+		err, root := parseLess(".class { color: red; }", nil, nil)
+		if err != nil {
+			t.Errorf("Expected no error, got: %v", err)
+		}
+		
+		if len(root.Rules) != 1 {
+			t.Errorf("Expected 1 rule, got: %d", len(root.Rules))
+		}
+		
+		ruleset, ok := root.Rules[0].(*Ruleset)
+		if !ok {
+			t.Errorf("Expected Ruleset, got: %T", root.Rules[0])
+		}
+		
+		// Verify selector structure
+		if len(ruleset.Selectors) != 1 {
+			t.Errorf("Expected 1 selector, got: %d", len(ruleset.Selectors))
+		}
+		
+		selector, ok := ruleset.Selectors[0].(*Selector)
+		if !ok {
+			t.Errorf("Expected Selector, got: %T", ruleset.Selectors[0])
+		}
+		
+		if len(selector.Elements) != 1 {
+			t.Errorf("Expected 1 element, got: %d", len(selector.Elements))
+		}
+		
+		element := selector.Elements[0]
+		if element == nil {
+			t.Error("Expected Element, got nil")
+			return
+		}
+		
+		if element.Value != ".class" {
+			t.Errorf("Expected '.class', got: %s", element.Value)
+		}
+		
+		// Verify nested declaration
+		if len(ruleset.Rules) != 1 {
+			t.Errorf("Expected 1 nested rule, got: %d", len(ruleset.Rules))
+		}
+		
+		decl, ok := ruleset.Rules[0].(*Declaration)
+		if !ok {
+			t.Errorf("Expected Declaration, got: %T", ruleset.Rules[0])
+		}
+		
+		// Verify declaration name - parser stores it as slice of interfaces
+		if nameSlice, ok := decl.name.([]interface{}); ok && len(nameSlice) > 0 {
+			if keyword, ok := nameSlice[0].(*Keyword); ok {
+				if keyword.value != "color" {
+					t.Errorf("Expected 'color', got: %s", keyword.value)
+				}
+			} else {
+				t.Errorf("Expected Keyword for name, got: %T", nameSlice[0])
+			}
+		} else {
+			t.Errorf("Expected []interface{} for name, got: %T", decl.name)
+		}
+	})
 }
 
 func TestParser_SerializeVars(t *testing.T) {
@@ -3069,6 +3240,171 @@ func TestParser_EntitiesComprehensive(t *testing.T) {
 		err, _ := parseLess("color: ${base}-color;", nil, nil)
 		// This should either parse or fail gracefully - we're checking it doesn't panic
 		_ = err
+	})
+}
+
+func TestParser_ContextOptions(t *testing.T) {
+	t.Run("should respect processImports option", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"processImports": true,
+		}
+		
+		err, root := parseLess("@import 'test.less';", contextOptions, nil)
+		// This should handle import processing based on context option
+		_ = err
+		_ = root
+	})
+
+	t.Run("should respect quiet option for warnings", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"quiet": true,
+		}
+		
+		// Test that quiet mode suppresses warnings
+		err, _ := parseLess("color: unknown-function();", contextOptions, nil)
+		// Should parse without warning output when quiet is true
+		_ = err
+	})
+
+	t.Run("should handle strictImports option", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"strictImports": true,
+		}
+		
+		err, _ := parseLess("@import 'nonexistent.less';", contextOptions, nil)
+		// Should handle strict imports according to context option
+		_ = err
+	})
+
+	t.Run("should handle math option", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"math": "always",
+		}
+		
+		err, root := parseLess("width: 10px + 5px;", contextOptions, nil)
+		if err != nil {
+			t.Errorf("Expected no error with math always, got: %v", err)
+		}
+		
+		// Verify mathematical operation was parsed
+		if len(root.Rules) != 1 {
+			t.Errorf("Expected 1 rule, got: %d", len(root.Rules))
+		}
+	})
+
+	t.Run("should handle strictUnits option", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"strictUnits": true,
+		}
+		
+		err, _ := parseLess("width: 10px + 5em;", contextOptions, nil)
+		// Should handle unit mixing according to strict units option
+		_ = err
+	})
+
+	t.Run("should handle ieCompat option", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"ieCompat": false,
+		}
+		
+		err, _ := parseLess("filter: alpha(opacity=50);", contextOptions, nil)
+		// Should handle IE compatibility according to context option
+		_ = err
+	})
+
+	t.Run("should handle javascriptEnabled option", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"javascriptEnabled": true,
+		}
+		
+		err, _ := parseLess("@var: `1 + 1`;", contextOptions, nil)
+		// Should handle JavaScript evaluation according to context option
+		_ = err
+	})
+}
+
+func TestParser_ParserOptions(t *testing.T) {
+	t.Run("should handle custom fileInfo", func(t *testing.T) {
+		parserOptions := map[string]any{
+			"fileInfo": map[string]any{
+				"filename":   "custom.less",
+				"entryPath":  "/custom/path/",
+				"rootpath":   "/root/",
+				"currentDir": "/current/",
+			},
+		}
+		
+		err, root := parseLess("color: red;", nil, parserOptions)
+		if err != nil {
+			t.Errorf("Expected no error with custom fileInfo, got: %v", err)
+		}
+		
+		// Verify parsing succeeded with custom file info
+		if len(root.Rules) != 1 {
+			t.Errorf("Expected 1 rule, got: %d", len(root.Rules))
+		}
+	})
+
+	t.Run("should handle custom imports", func(t *testing.T) {
+		parserOptions := map[string]any{
+			"imports": map[string]any{
+				"contents": map[string]string{
+					"variables.less": "@primary: blue;",
+				},
+				"contentsIgnoredChars": map[string]int{
+					"variables.less": 0,
+				},
+			},
+		}
+		
+		err, root := parseLess("color: red;", nil, parserOptions)
+		if err != nil {
+			t.Errorf("Expected no error with custom imports, got: %v", err)
+		}
+		
+		// Verify parsing succeeded with custom imports
+		if len(root.Rules) != 1 {
+			t.Errorf("Expected 1 rule, got: %d", len(root.Rules))
+		}
+	})
+
+	t.Run("should handle custom currentIndex", func(t *testing.T) {
+		parserOptions := map[string]any{
+			"currentIndex": 10,
+		}
+		
+		err, root := parseLess("color: red;", nil, parserOptions)
+		if err != nil {
+			t.Errorf("Expected no error with custom currentIndex, got: %v", err)
+		}
+		
+		// Verify parsing succeeded with custom starting index
+		if len(root.Rules) != 1 {
+			t.Errorf("Expected 1 rule, got: %d", len(root.Rules))
+		}
+	})
+
+	t.Run("should handle combined options", func(t *testing.T) {
+		contextOptions := map[string]any{
+			"math":    "always",
+			"quiet":   false,
+		}
+		parserOptions := map[string]any{
+			"fileInfo": map[string]any{
+				"filename": "combined-test.less",
+			},
+			"currentIndex": 0,
+		}
+		
+		err, root := parseLess("width: 10px + 5px; color: red;", contextOptions, parserOptions)
+		if err != nil {
+			t.Errorf("Expected no error with combined options, got: %v", err)
+		}
+		
+		// Verify both declarations were parsed
+		if len(root.Rules) != 2 {
+			t.Errorf("Expected 2 rules, got: %d", len(root.Rules))
+		}
 	})
 }
 

@@ -5330,6 +5330,15 @@
                     }
                     parserInput.restore();
                 },
+                colorOperand: function () {
+                    parserInput.save();
+                    // hsl or rgb or lch operand
+                    var match = parserInput.$re(/^[lchrgbs]\s+/);
+                    if (match) {
+                        return new tree.Keyword(match[0]);
+                    }
+                    parserInput.restore();
+                },
                 multiplication: function () {
                     var m;
                     var a;
@@ -5591,7 +5600,7 @@
                         entities.color() || entities.variable() ||
                         entities.property() || entities.call() ||
                         entities.quoted(true) || entities.colorKeyword() ||
-                        entities.mixinLookup();
+                        this.colorOperand() || entities.mixinLookup();
                     if (negate) {
                         o.parensInOp = true;
                         o = new (tree.Negative)(o);

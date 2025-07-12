@@ -2231,6 +2231,17 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
                 parserInput.restore();
             },
+            colorOperand: function () {
+                parserInput.save();
+                         
+                // hsl or rgb or lch operand
+                const match = parserInput.$re(/^[lchrgbs]\s+/);
+                if (match) {
+                    return new tree.Keyword(match[0]);
+                }
+
+                parserInput.restore();
+            },
             multiplication: function () {
                 let m;
                 let a;
@@ -2495,7 +2506,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         entities.color() || entities.variable() ||
                         entities.property() || entities.call() ||
                         entities.quoted(true) || entities.colorKeyword() ||
-                        entities.mixinLookup();
+                        this.colorOperand() || entities.mixinLookup();
 
                 if (negate) {
                     o.parensInOp = true;

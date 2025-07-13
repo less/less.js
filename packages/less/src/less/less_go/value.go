@@ -1,5 +1,7 @@
 package less_go
 
+import "fmt"
+
 // ValueError represents a Less value error
 type ValueError struct {
 	Message string
@@ -103,8 +105,36 @@ func (v *Value) GenCSS(context any, output *CSSOutput) {
 		} else if str, ok := val.(string); ok {
 			output.Add(str, nil, nil)
 		} else {
-			// Handle non-string, non-CSSGenerator values
-			output.Add(val, nil, nil)
+			// Convert Go objects to appropriate CSS strings
+			switch v := val.(type) {
+			case *Keyword:
+				if keywordGen, ok := val.(CSSGenerator); ok {
+					keywordGen.GenCSS(context, output)
+				} else {
+					output.Add(v.value, nil, nil)
+				}
+			case *Anonymous:
+				if anonGen, ok := val.(CSSGenerator); ok {
+					anonGen.GenCSS(context, output)
+				} else {
+					output.Add(fmt.Sprintf("%v", v.Value), nil, nil)
+				}
+			case *Dimension:
+				if dimGen, ok := val.(CSSGenerator); ok {
+					dimGen.GenCSS(context, output)
+				} else {
+					output.Add(fmt.Sprintf("%v", val), nil, nil)
+				}
+			case *Color:
+				if colorGen, ok := val.(CSSGenerator); ok {
+					colorGen.GenCSS(context, output)
+				} else {
+					output.Add(fmt.Sprintf("%v", val), nil, nil)
+				}
+			default:
+				// For other types, convert to string representation
+				output.Add(fmt.Sprintf("%v", val), nil, nil)
+			}
 		}
 
 		if i+1 < len(v.Value) {

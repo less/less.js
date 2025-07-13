@@ -169,7 +169,7 @@ func TransformTree(root any, options map[string]any) any {
 	// Run all visitors exactly like JavaScript
 	for _, visitor := range visitorList {
 		if runner, ok := visitor.(interface{ Run(any) any }); ok {
-			runner.Run(evaldRoot)
+			evaldRoot = runner.Run(evaldRoot)
 		} else if runner, ok := visitor.(interface{ Run(any) }); ok {
 			runner.Run(evaldRoot)
 		}

@@ -253,9 +253,87 @@ func createParseTree(sourceMapBuilder any) any {
 }
 
 func createRender(env any, parseTree any, importManager any) func(string, ...any) any {
-	// This should return the actual Render function
+	// Create a simple render function that uses the parse function directly
 	return func(input string, args ...any) any {
-		return map[string]any{"type": "Render", "input": input}
+		// Extract options from args
+		var options map[string]any
+		if len(args) > 0 {
+			if opts, ok := args[0].(map[string]any); ok {
+				options = opts
+			}
+		}
+		if options == nil {
+			options = make(map[string]any)
+		}
+		
+		// Create the parse function
+		parseFunc := CreateParse(env, parseTree, func(environment any, context *Parse, rootFileInfo map[string]any) *ImportManager {
+			// Create a simple import manager factory
+			factory := NewImportManager(&SimpleImportManagerEnvironment{})
+			
+			// Convert rootFileInfo to FileInfo
+			fileInfo := &FileInfo{
+				Filename: "input",
+			}
+			if rootFileInfo != nil {
+				if fn, ok := rootFileInfo["filename"].(string); ok {
+					fileInfo.Filename = fn
+				}
+			}
+			
+			// Create context map
+			contextMap := map[string]any{
+				"paths": []string{},
+			}
+			
+			return factory(environment, contextMap, fileInfo)
+		})
+		
+		// Use a channel to capture the result synchronously
+		resultChan := make(chan any, 1)
+		errorChan := make(chan error, 1)
+		
+		// Call parse with callback
+		parseFunc(input, options, func(err error, root any, imports *ImportManager, opts map[string]any) {
+			if err != nil {
+				errorChan <- err
+			} else {
+				// Create ParseTree and call ToCSS like the proper render function
+				parseTreeFactory := DefaultParseTreeFactory(nil)
+				parseTreeInstance := parseTreeFactory.NewParseTree(root, imports)
+				
+				// Convert options to ToCSSOptions
+				toCSSOptions := &ToCSSOptions{
+					Compress:     false,
+					StrictUnits:  false,
+					NumPrecision: 8,
+				}
+				if opts != nil {
+					if compress, ok := opts["compress"].(bool); ok {
+						toCSSOptions.Compress = compress
+					}
+					if strictUnits, ok := opts["strictUnits"].(bool); ok {
+						toCSSOptions.StrictUnits = strictUnits
+					}
+				}
+				
+				// Call ToCSS which will run TransformTree and visitors
+				cssResult, err := parseTreeInstance.ToCSS(toCSSOptions)
+				if err != nil {
+					errorChan <- err
+				} else {
+					resultChan <- cssResult.CSS
+				}
+			}
+		})
+		
+		// Wait for result
+		select {
+		case err := <-errorChan:
+			return map[string]any{"error": err.Error()}
+		case result := <-resultChan:
+			return result
+		}
 	}
 }
 
@@ -402,4 +480,49 @@ func mergeDefaults(target, source map[string]any) map[string]any {
 	}
 	
 	return result
+}
+
+// SimpleImportManagerEnvironment provides a basic implementation for testing
+type SimpleImportManagerEnvironment struct{}
+
+func (s *SimpleImportManagerEnvironment) GetFileManager(path, currentDirectory string, context map[string]any, environment ImportManagerEnvironment) FileManager {
+	return &SimpleFileManager{}
+}
+
+// SimpleFileManager provides a basic implementation for testing
+type SimpleFileManager struct{}
+
+func (s *SimpleFileManager) LoadFileSync(path, currentDirectory string, context map[string]any, environment ImportManagerEnvironment) *LoadedFile {
+	return &LoadedFile{
+		Filename: path,
+		Contents: "",
+	}
+}
+
+func (s *SimpleFileManager) LoadFile(path, currentDirectory string, context map[string]any, environment ImportManagerEnvironment, callback func(error, *LoadedFile)) any {
+	callback(nil, &LoadedFile{
+		Filename: path,
+		Contents: "",
+	})
+	return nil
+}
+
+func (s *SimpleFileManager) GetPath(filename string) string {
+	return filename
+}
+
+func (s *SimpleFileManager) Join(path1, path2 string) string {
+	return path1 + "/" + path2
+}
+
+func (s *SimpleFileManager) PathDiff(currentDirectory, entryPath string) string {
+	return ""
+}
+
+func (s *SimpleFileManager) IsPathAbsolute(path string) bool {
+	return path[0] == '/'
+}
+
+func (s *SimpleFileManager) AlwaysMakePathsAbsolute() bool {
+	return false
 }

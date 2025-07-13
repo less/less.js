@@ -253,7 +253,7 @@ func (v *ToCSSVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) any {
 		return nil
 	}
 	
-	if acceptor, ok := mediaNode.(interface{ Accept(*Visitor) }); ok {
+	if acceptor, ok := mediaNode.(interface{ Accept(any) }); ok {
 		acceptor.Accept(v.visitor)
 	}
 	visitArgs.VisitDeeper = false
@@ -300,14 +300,14 @@ func (v *ToCSSVisitor) VisitAnonymous(anonymousNode any, visitArgs *VisitArgs) a
 	
 	if blockedNode, hasBlocked := anonymousNode.(interface{ BlocksVisibility() bool }); hasBlocked {
 		if !blockedNode.BlocksVisibility() {
-			if acceptor, ok := anonymousNode.(interface{ Accept(*Visitor) }); ok {
+			if acceptor, ok := anonymousNode.(interface{ Accept(any) }); ok {
 				acceptor.Accept(v.visitor)
 			}
 			return anonymousNode
 		}
 	} else {
 		// If node doesn't have BlocksVisibility method, treat as not blocked
-		if acceptor, ok := anonymousNode.(interface{ Accept(*Visitor) }); ok {
+		if acceptor, ok := anonymousNode.(interface{ Accept(any) }); ok {
 			acceptor.Accept(v.visitor)
 		}
 		return anonymousNode
@@ -325,7 +325,7 @@ func (v *ToCSSVisitor) VisitAtRuleWithBody(atRuleNode any, visitArgs *VisitArgs)
 	
 	
 	// Process children
-	if acceptor, ok := atRuleNode.(interface{ Accept(*Visitor) }); ok {
+	if acceptor, ok := atRuleNode.(interface{ Accept(any) }); ok {
 		acceptor.Accept(v.visitor)
 	}
 	visitArgs.VisitDeeper = false
@@ -506,7 +506,7 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 					// compile body
 					if nodeRuleCnt > 0 {
 						nodeWithRules.SetRules(nodeRules)
-						if acceptor, ok := rulesetNode.(interface{ Accept(*Visitor) }); ok {
+						if acceptor, ok := rulesetNode.(interface{ Accept(any) }); ok {
 							acceptor.Accept(v.visitor)
 						}
 					} else {
@@ -517,7 +517,7 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 			visitArgs.VisitDeeper = false
 		} else {
 			// if (! rulesetNode.root) {
-			if acceptor, ok := rulesetNode.(interface{ Accept(*Visitor) }); ok {
+			if acceptor, ok := rulesetNode.(interface{ Accept(any) }); ok {
 				acceptor.Accept(v.visitor)
 			}
 			visitArgs.VisitDeeper = false

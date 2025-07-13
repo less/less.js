@@ -2,7 +2,7 @@ package less_go
 
 import (
 	"fmt"
-
+	"strings"
 )
 
 
@@ -124,20 +124,64 @@ func (pt *ParseTree) ToCSS(options *ToCSSOptions) (*ToCSSResult, error) {
 			if builder, ok := sourceMapBuilder.(interface {
 				ToCSS(any, map[string]any, *ImportManager) (string, error)
 			}); ok {
-				generatedCSS, err := builder.ToCSS(evaldRoot, toCSSOptions, pt.Imports)
-				if err != nil {
-					return nil, NewLessError(ErrorDetails{
-						Message: err.Error(),
-					}, pt.Imports.Contents(), pt.Imports.RootFilename())
+				// Handle case where ToCSSVisitor returns multiple rulesets as array for source map generation
+				if rulesetArray, ok := evaldRoot.([]any); ok {
+					// Multiple rulesets - generate CSS for each separately with source map
+					var cssBuilder strings.Builder
+					for i, ruleset := range rulesetArray {
+						generatedCSS, err := builder.ToCSS(ruleset, toCSSOptions, pt.Imports)
+						if err != nil {
+							return nil, NewLessError(ErrorDetails{
+								Message: err.Error(),
+							}, pt.Imports.Contents(), pt.Imports.RootFilename())
+						}
+						cssBuilder.WriteString(generatedCSS)
+						// Add separator between rulesets (except for the last one)
+						if i < len(rulesetArray)-1 && !compress {
+							cssBuilder.WriteString("\n")
+						}
+					}
+					css = cssBuilder.String()
+				} else {
+					// Single ruleset
+					generatedCSS, err := builder.ToCSS(evaldRoot, toCSSOptions, pt.Imports)
+					if err != nil {
+						return nil, NewLessError(ErrorDetails{
+							Message: err.Error(),
+						}, pt.Imports.Contents(), pt.Imports.RootFilename())
+					}
+					css = generatedCSS
 				}
-				css = generatedCSS
 			}
 		}
 	} else {
 		// Generate CSS without source map
-		if cssGenerator, ok := evaldRoot.(interface {
+		// Handle case where ToCSSVisitor returns multiple rulesets as array
+		if rulesetArray, ok := evaldRoot.([]any); ok {
+			// Multiple rulesets returned by ToCSSVisitor - generate CSS for each separately
+			var cssBuilder strings.Builder
+			for i, ruleset := range rulesetArray {
+				if cssGenerator, ok := ruleset.(interface {
+					ToCSS(map[string]any) (string, error)
+				}); ok {
+					generatedCSS, err := cssGenerator.ToCSS(toCSSOptions)
+					if err != nil {
+						return nil, NewLessError(ErrorDetails{
+							Message: err.Error(),
+						}, pt.Imports.Contents(), pt.Imports.RootFilename())
+					}
+					cssBuilder.WriteString(generatedCSS)
+					// Add separator between rulesets (except for the last one)
+					if i < len(rulesetArray)-1 && !compress {
+						cssBuilder.WriteString("\n")
+					}
+				}
+			}
+			css = cssBuilder.String()
+		} else if cssGenerator, ok := evaldRoot.(interface {
 			ToCSS(map[string]any) (string, error)
 		}); ok {
+			// Single ruleset
 			generatedCSS, err := cssGenerator.ToCSS(toCSSOptions)
 			if err != nil {
 				return nil, NewLessError(ErrorDetails{

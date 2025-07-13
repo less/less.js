@@ -205,15 +205,72 @@ func performParse(lessContext *LessContext, input string, options map[string]any
 	}
 	
 	// Create parser and parse (equivalent to: new Parser(context, imports, rootFileInfo).parse(input, function (e, root) { ... }, options))
-	// For now, we'll use a simple mock implementation since the full parser might not be available
 	// This mirrors parse.js lines 79-83
 	go func() {
-		// Simulate parsing - in real implementation this would call the actual parser
-		root := map[string]any{
-			"type":  "Ruleset",
-			"rules": []any{},
+		// Convert Parse context to map for NewParser
+		contextMap := map[string]any{
+			"paths":            context.Paths,
+			"rewriteUrls":      context.RewriteUrls,
+			"rootpath":         context.Rootpath,
+			"strictImports":    context.StrictImports,
+			"insecure":         context.Insecure,
+			"dumpLineNumbers":  context.DumpLineNumbers,
+			"compress":         context.Compress,
+			"syncImport":       context.SyncImport,
+			"chunkInput":       context.ChunkInput,
+			"mime":             context.Mime,
+			"useFileCache":     context.UseFileCache,
+			"processImports":   context.ProcessImports,
+			"pluginManager":    context.PluginManager,
+			"quiet":            context.Quiet,
 		}
-		actualCallback(nil, root, imports, actualOptions)
+		
+		// Create imports map for NewParser (basic structure to match JavaScript)
+		importsMap := map[string]any{
+			"contents":             make(map[string]string),
+			"contentsIgnoredChars": make(map[string]string),
+			"rootFilename":         rootFileInfo["filename"],
+		}
+		
+		// Create parser instance
+		parser := NewParser(contextMap, importsMap, rootFileInfo, 0)
+		
+		// Prepare additional data for parsing
+		additionalData := &AdditionalData{}
+		
+		// Set options from actualOptions if they exist
+		if globalVarsVal, ok := actualOptions["globalVars"]; ok {
+			if globalVars, ok := globalVarsVal.(map[string]any); ok {
+				additionalData.GlobalVars = globalVars
+			}
+		}
+		
+		if modifyVarsVal, ok := actualOptions["modifyVars"]; ok {
+			if modifyVars, ok := modifyVarsVal.(map[string]any); ok {
+				additionalData.ModifyVars = modifyVars
+			}
+		}
+		
+		if bannerVal, ok := actualOptions["banner"]; ok {
+			if banner, ok := bannerVal.(string); ok {
+				additionalData.Banner = banner
+			}
+		}
+		
+		if disablePluginRuleVal, ok := actualOptions["disablePluginRule"]; ok {
+			if disablePluginRule, ok := disablePluginRuleVal.(bool); ok {
+				additionalData.DisablePluginRule = disablePluginRule
+			}
+		}
+		
+		// Call the actual parser
+		parser.Parse(input, func(err *LessError, root *Ruleset) {
+			if err != nil {
+				actualCallback(err, nil, imports, actualOptions)
+			} else {
+				actualCallback(nil, root, imports, actualOptions)
+			}
+		}, additionalData)
 	}()
 	
 	return nil

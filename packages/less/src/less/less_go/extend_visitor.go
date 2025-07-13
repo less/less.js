@@ -79,6 +79,9 @@ func (efv *ExtendFinderVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 	paths := ruleset.Paths
 	for i = 0; i < len(paths); i++ {
 		selectorPath := paths[i]
+		if len(selectorPath) == 0 {
+			continue // Skip empty selector paths
+		}
 		selector := selectorPath[len(selectorPath)-1]
 		var selExtendList []*Extend
 		

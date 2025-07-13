@@ -103,6 +103,66 @@ func (r *Ruleset) IsRulesetLike() bool {
 	return true
 }
 
+// Interface methods required by JoinSelectorVisitor and ToCSSVisitor
+
+// GetRoot returns whether this is a root ruleset
+func (r *Ruleset) GetRoot() bool {
+	return r.Root
+}
+
+// GetSelectors returns the selectors array
+func (r *Ruleset) GetSelectors() []any {
+	return r.Selectors
+}
+
+// SetSelectors sets the selectors array (required by JoinSelectorVisitor)
+func (r *Ruleset) SetSelectors(selectors []any) {
+	r.Selectors = selectors
+}
+
+// GetPaths returns the paths array
+func (r *Ruleset) GetPaths() []any {
+	// Convert [][]any to []any for interface compatibility
+	if r.Paths == nil {
+		return nil
+	}
+	result := make([]any, len(r.Paths))
+	for i, path := range r.Paths {
+		result[i] = path
+	}
+	return result
+}
+
+// SetPaths sets the paths array
+func (r *Ruleset) SetPaths(paths []any) {
+	// Convert []any to [][]any
+	if paths == nil {
+		r.Paths = nil
+		return
+	}
+	r.Paths = make([][]any, len(paths))
+	for i, path := range paths {
+		if pathSlice, ok := path.([]any); ok {
+			r.Paths[i] = pathSlice
+		}
+	}
+}
+
+// GetRules returns the rules array (required by ToCSSVisitor)
+func (r *Ruleset) GetRules() []any {
+	return r.Rules
+}
+
+// SetRules sets the rules array (required by ToCSSVisitor)
+func (r *Ruleset) SetRules(rules []any) {
+	r.Rules = rules
+}
+
+// GetFirstRoot returns whether this is the first root
+func (r *Ruleset) GetFirstRoot() bool {
+	return r.FirstRoot
+}
+
 // Accept visits the ruleset with a visitor
 func (r *Ruleset) Accept(visitor any) {
 	// Try the variadic bool version first (for the mock visitor)

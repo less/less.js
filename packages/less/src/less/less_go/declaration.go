@@ -228,12 +228,27 @@ func (d *Declaration) GenCSS(context any, output *CSSOutput) {
 		}
 	}
 
+	// Format name as string for CSS output
+	nameStr := ""
+	switch n := d.name.(type) {
+	case string:
+		nameStr = n
+	case *Keyword:
+		nameStr = n.value
+	case *Anonymous:
+		nameStr = fmt.Sprintf("%v", n.Value)
+	case []any:
+		nameStr = evalName(context, n)
+	default:
+		nameStr = fmt.Sprintf("%v", n)
+	}
+
 	// Add name
 	if compress {
-		output.Add(d.name, d.FileInfo(), d.GetIndex())
+		output.Add(nameStr, d.FileInfo(), d.GetIndex())
 		output.Add(":", d.FileInfo(), d.GetIndex())
 	} else {
-		output.Add(d.name, d.FileInfo(), d.GetIndex())
+		output.Add(nameStr, d.FileInfo(), d.GetIndex())
 		output.Add(": ", d.FileInfo(), d.GetIndex())
 	}
 

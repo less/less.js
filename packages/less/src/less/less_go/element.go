@@ -191,7 +191,18 @@ func (e *Element) ToCSS(context any) string {
 				valueCSS = fmt.Sprintf("%v", e.Value)
 			}
 		}()
-		valueCSS = fmt.Sprintf("%v", e.Value)
+		
+		// Handle rune values (like & character) properly
+		if runeVal, ok := e.Value.(rune); ok {
+			valueCSS = string(runeVal)
+		} else if stringVal, ok := e.Value.(string); ok {
+			valueCSS = stringVal
+		} else if uint8Val, ok := e.Value.(uint8); ok {
+			// Handle uint8 values (like ASCII codes for characters)
+			valueCSS = string(rune(uint8Val))
+		} else {
+			valueCSS = fmt.Sprintf("%v", e.Value)
+		}
 	}
 
 	if valueCSS == "" && e.Combinator != nil && len(e.Combinator.Value) > 0 && e.Combinator.Value[0] == '&' {

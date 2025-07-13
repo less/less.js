@@ -91,7 +91,13 @@ func (a *Anonymous) GenCSS(context any, output *CSSOutput) {
 		a.NodeVisible = &visible
 		
 		if a.NodeVisible != nil && *a.NodeVisible {
-			output.Add(a.Value, a.FileInfo, a.Index)
+			// Check if the value implements CSSGenerator
+			if generator, ok := a.Value.(CSSGenerator); ok {
+				generator.GenCSS(context, output)
+			} else {
+				// For simple values like strings, add directly
+				output.Add(a.Value, a.FileInfo, a.Index)
+			}
 		}
 	}
 }

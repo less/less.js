@@ -460,4 +460,16 @@ func (s *Selector) GenCSS(context any, output *CSSOutput) { // CSSOutput from go
 // GetIsOutput determines if the selector should be part of the output.
 func (s *Selector) GetIsOutput() bool {
 	return s.EvaldCondition
+}
+
+// IsVisible returns whether the selector is visible (for path filtering)
+func (s *Selector) IsVisible() bool {
+	if s.Node != nil {
+		visible := s.Node.IsVisible()
+		if visible != nil {
+			return *visible
+		}
+	}
+	// Default to true for selectors - they should be visible unless explicitly marked otherwise
+	return true
 } 

@@ -341,8 +341,9 @@ func TestSelector(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if len(res.Elements) != 2 {
-				t.Errorf("Expected 2 elements, got %d", len(res.Elements))
+			selector := res.(*Selector)
+			if len(selector.Elements) != 2 {
+				t.Errorf("Expected 2 elements, got %d", len(selector.Elements))
 			}
 		})
 
@@ -353,7 +354,8 @@ func TestSelector(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if !res.EvaldCondition {
+			selector := res.(*Selector)
+			if !selector.EvaldCondition {
 				t.Error("Expected EvaldCondition true")
 			}
 		})
@@ -365,8 +367,9 @@ func TestSelector(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if m, ok := res.ExtendList[0].(map[string]any); !ok || m["evaluated"] != true || m["value"] != "extended" {
-				t.Errorf("Expected evaluated extendList item, got %v", res.ExtendList[0])
+			selector := res.(*Selector)
+			if m, ok := selector.ExtendList[0].(map[string]any); !ok || m["evaluated"] != true || m["value"] != "extended" {
+				t.Errorf("Expected evaluated extendList item, got %v", selector.ExtendList[0])
 			}
 		})
 
@@ -376,8 +379,9 @@ func TestSelector(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if res.ExtendList != nil {
-				t.Errorf("Expected nil ExtendList, got %v", res.ExtendList)
+			selector := res.(*Selector)
+			if selector.ExtendList != nil {
+				t.Errorf("Expected nil ExtendList, got %v", selector.ExtendList)
 			}
 		})
 
@@ -387,8 +391,9 @@ func TestSelector(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if res.Elements[0].Value != "div" || res.Elements[1].Value != "hover" {
-				t.Errorf("Expected ['div','hover'], got ['%v','%v']", res.Elements[0].Value, res.Elements[1].Value)
+			selector := res.(*Selector)
+			if selector.Elements[0].Value != "div" || selector.Elements[1].Value != "hover" {
+				t.Errorf("Expected ['div','hover'], got ['%v','%v']", selector.Elements[0].Value, selector.Elements[1].Value)
 			}
 		})
 	})

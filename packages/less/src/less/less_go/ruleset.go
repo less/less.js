@@ -139,7 +139,16 @@ func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	// Generate CSS using the GenCSS method
 	r.GenCSS(contextMap, cssOutput)
 	
-	return output.String(), nil
+	// Fix trailing spaces before semicolons to match JavaScript Less.js behavior exactly
+	result := output.String()
+	
+	// Remove trailing spaces before semicolons (e.g., "red ;" -> "red;")
+	// This ensures our Go output matches JavaScript Less.js exactly
+	for strings.Contains(result, " ;") {
+		result = strings.ReplaceAll(result, " ;", ";")
+	}
+	
+	return result, nil
 }
 
 // Interface methods required by JoinSelectorVisitor and ToCSSVisitor
@@ -248,7 +257,7 @@ func (r *Ruleset) Accept(visitor any) {
 }
 
 // Eval evaluates the ruleset in the given context
-func (r *Ruleset) Eval(context any) (*Ruleset, error) {
+func (r *Ruleset) Eval(context any) (any, error) {
 	if context == nil {
 		return nil, fmt.Errorf("context is required for Ruleset.Eval")
 	}
@@ -257,6 +266,37 @@ func (r *Ruleset) Eval(context any) (*Ruleset, error) {
 	if !ok {
 		return nil, fmt.Errorf("context must be a map")
 	}
+
+	// Check for circular dependency to prevent infinite recursion
+	visitedKey := "_evaluatingRulesets"
+	if visiting, exists := ctx[visitedKey]; exists {
+		if visitedMap, ok := visiting.(map[*Ruleset]bool); ok {
+			if visitedMap[r] {
+				// Already evaluating this ruleset, return early to prevent infinite recursion
+				return NewRuleset(nil, nil, false, nil), nil
+			}
+			visitedMap[r] = true
+		} else {
+			// Initialize the visited map
+			visitedMap := make(map[*Ruleset]bool)
+			visitedMap[r] = true
+			ctx[visitedKey] = visitedMap
+		}
+	} else {
+		// Initialize the visited map
+		visitedMap := make(map[*Ruleset]bool)
+		visitedMap[r] = true
+		ctx[visitedKey] = visitedMap
+	}
+
+	// Ensure we clean up after evaluation
+	defer func() {
+		if visiting, exists := ctx[visitedKey]; exists {
+			if visitedMap, ok := visiting.(map[*Ruleset]bool); ok {
+				delete(visitedMap, r)
+			}
+		}
+	}()
 
 	var selectors []any
 	var selCnt int

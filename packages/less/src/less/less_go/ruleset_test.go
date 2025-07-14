@@ -381,12 +381,17 @@ func TestEval(t *testing.T) {
 		ruleset := NewRuleset(nil, nil, false, nil)
 		context := make(map[string]any)
 		
-		result, err := ruleset.Eval(context)
+		evaluated, err := ruleset.Eval(context)
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
-		if result == nil {
+		if evaluated == nil {
 			t.Errorf("Expected result to not be nil")
+		}
+		
+		result, ok := evaluated.(*Ruleset)
+		if !ok {
+			t.Errorf("Expected result to be a *Ruleset, got %T", evaluated)
 		}
 		if result.GetType() != "Ruleset" {
 			t.Errorf("Expected result to be a Ruleset")
@@ -411,7 +416,8 @@ func TestEval(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
-		if len(result.Selectors) != 1 {
+		resultRuleset := result.(*Ruleset)
+		if len(resultRuleset.Selectors) != 1 {
 			t.Errorf("Expected 1 selector in result")
 		}
 	})
@@ -467,8 +473,9 @@ func TestEval(t *testing.T) {
 		}
 		
 		// The key test: rules should be cleared when no selectors pass
-		if len(result.Rules) != 0 {
-			t.Errorf("Expected rules to be cleared when no selectors pass, got %d rules", len(result.Rules))
+		resultRuleset := result.(*Ruleset)
+		if len(resultRuleset.Rules) != 0 {
+			t.Errorf("Expected rules to be cleared when no selectors pass, got %d rules", len(resultRuleset.Rules))
 		}
 	})
 
@@ -485,19 +492,20 @@ func TestEval(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		if result.OriginalRuleset != ruleset {
+		resultRuleset := result.(*Ruleset)
+		if resultRuleset.OriginalRuleset != ruleset {
 			t.Errorf("Expected OriginalRuleset to be set")
 		}
-		if !result.Root {
+		if !resultRuleset.Root {
 			t.Errorf("Expected Root to be copied")
 		}
-		if !result.FirstRoot {
+		if !resultRuleset.FirstRoot {
 			t.Errorf("Expected FirstRoot to be copied")
 		}
-		if !result.AllowImports {
+		if !resultRuleset.AllowImports {
 			t.Errorf("Expected AllowImports to be copied")
 		}
-		if result.DebugInfo == nil {
+		if resultRuleset.DebugInfo == nil {
 			t.Errorf("Expected DebugInfo to be copied")
 		}
 	})
@@ -513,7 +521,8 @@ func TestEval(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		if result.FunctionRegistry == nil {
+		resultRuleset := result.(*Ruleset)
+		if resultRuleset.FunctionRegistry == nil {
 			t.Errorf("Expected FunctionRegistry to be set")
 		}
 	})
@@ -530,7 +539,8 @@ func TestEval(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
-		if len(result.Rules) != 1 {
+		resultRuleset := result.(*Ruleset)
+		if len(resultRuleset.Rules) != 1 {
 			t.Errorf("Expected 1 rule in result")
 		}
 	})
@@ -547,7 +557,8 @@ func TestEval(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
-		if len(result.Rules) != 1 {
+		resultRuleset := result.(*Ruleset)
+		if len(resultRuleset.Rules) != 1 {
 			t.Errorf("Expected 1 rule in result")
 		}
 	})
@@ -575,7 +586,8 @@ func TestEval(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 		// Should fold the parent selector and include the nested rules
-		if len(result.Rules) != 1 {
+		resultRuleset := result.(*Ruleset)
+		if len(resultRuleset.Rules) != 1 {
 			t.Errorf("Expected rules to be folded")
 		}
 	})
@@ -1340,12 +1352,13 @@ func TestRulesetErrorConditions(t *testing.T) {
 		}
 		
 		// The conflicting variable should be filtered out to prevent scope pollution
-		variables := result.Variables()
+		resultRuleset := result.(*Ruleset)
+		variables := resultRuleset.Variables()
 		if existingDecl, exists := variables["@existing"]; exists {
 			if _, ok := existingDecl.(*Declaration); ok {
 				// Check that there's only one rule with this variable (no pollution)
 				variableRuleCount := 0
-				for _, rule := range result.Rules {
+				for _, rule := range resultRuleset.Rules {
 					if r, ok := rule.(*Declaration); ok && r.variable {
 						if name, ok := r.name.(string); ok && name == "@existing" {
 							variableRuleCount++
@@ -1485,8 +1498,9 @@ func TestRulesetPerformance(t *testing.T) {
 			t.Errorf("Expected result to not be nil")
 			return
 		}
-		if len(result.Rules) != numRules {
-			t.Errorf("Expected %d rules, got %d", numRules, len(result.Rules))
+		resultRuleset := result.(*Ruleset)
+		if len(resultRuleset.Rules) != numRules {
+			t.Errorf("Expected %d rules, got %d", numRules, len(resultRuleset.Rules))
 		}
 		
 		// Should complete in reasonable time (adjust threshold as needed)

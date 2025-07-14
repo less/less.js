@@ -92,7 +92,15 @@ func TestElement(t *testing.T) {
 		t.Run("should create new Element with same properties", func(t *testing.T) {
 			fileInfo := map[string]any{"filename": "test.less"}
 			element := NewElement(">", "div", false, 1, fileInfo, nil)
-			result := element.Eval(map[string]any{})
+			resultAny, err := element.Eval(map[string]any{})
+			if err != nil {
+				t.Fatalf("Expected no error, got: %v", err)
+			}
+			
+			result, ok := resultAny.(*Element)
+			if !ok {
+				t.Fatalf("Expected result to be *Element, got: %T", resultAny)
+			}
 
 			if result == element {
 				t.Error("Expected result to be a new instance")
@@ -111,7 +119,16 @@ func TestElement(t *testing.T) {
 		t.Run("should eval value if it has eval method", func(t *testing.T) {
 			value := &testEvaluator{returnValue: "evaluated"}
 			element := NewElement(">", value, false, 0, nil, nil)
-			result := element.Eval(map[string]any{})
+			resultAny, err := element.Eval(map[string]any{})
+			if err != nil {
+				t.Fatalf("Expected no error, got: %v", err)
+			}
+			
+			result, ok := resultAny.(*Element)
+			if !ok {
+				t.Fatalf("Expected result to be *Element, got: %T", resultAny)
+			}
+			
 			if result.Value != "evaluated" {
 				t.Error("Expected value to be evaluated")
 			}
@@ -276,8 +293,8 @@ type testEvaluator struct {
 	returnValue any
 }
 
-func (e *testEvaluator) Eval(context any) any {
-	return e.returnValue
+func (e *testEvaluator) Eval(context any) (any, error) {
+	return e.returnValue, nil
 }
 
 type testCSSGenerator struct {

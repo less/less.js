@@ -89,25 +89,47 @@ func (e *Element) Accept(visitor any) {
 }
 
 // Eval evaluates the element and returns a new Element with evaluated values
-func (e *Element) Eval(context any) *Element {
+func (e *Element) Eval(context any) (any, error) {
 	var evaluatedValue any = e.Value
 
 	if e.Value != nil {
-		if evalValue, ok := e.Value.(interface{ Eval(any) any }); ok {
-			if evaluated := evalValue.Eval(context); evaluated != nil {
+		if evalValue, ok := e.Value.(interface{ Eval(any) (any, error) }); ok {
+			evaluated, err := evalValue.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+			if evaluated != nil {
 				evaluatedValue = evaluated
 			}
 		}
 	}
 
-	return NewElement(
+	// Handle potential nil Node
+	index := 0
+	if e.Node != nil {
+		index = e.GetIndex()
+	}
+
+	fileInfo := make(map[string]any)
+	if e.Node != nil {
+		fileInfo = e.FileInfo()
+	}
+
+	visibilityInfo := make(map[string]any)
+	if e.Node != nil {
+		visibilityInfo = e.VisibilityInfo()
+	}
+
+	newElement := NewElement(
 		e.Combinator,
 		evaluatedValue,
 		e.IsVariable,
-		e.GetIndex(),
-		e.FileInfo(),
-		e.VisibilityInfo(),
+		index,
+		fileInfo,
+		visibilityInfo,
 	)
+
+	return newElement, nil
 }
 
 // Clone creates a copy of the Element

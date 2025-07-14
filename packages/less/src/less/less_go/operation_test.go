@@ -38,7 +38,11 @@ func TestOperationEval(t *testing.T) {
 		
 		// Test addition
 		add := NewOperation("+", []any{dim1, dim2}, false)
-		result := add.Eval(context).(*Dimension)
+		resultAny, err := add.Eval(context)
+		if err != nil {
+			t.Fatalf("Addition eval failed: %v", err)
+		}
+		result := resultAny.(*Dimension)
 		if result.Value != 15 {
 			t.Errorf("Expected value to be 15, got %v", result.Value)
 		}
@@ -48,21 +52,33 @@ func TestOperationEval(t *testing.T) {
 		
 		// Test subtraction
 		sub := NewOperation("-", []any{dim1, dim2}, false)
-		resultSub := sub.Eval(context).(*Dimension)
+		resultSubAny, err := sub.Eval(context)
+		if err != nil {
+			t.Fatalf("Subtraction eval failed: %v", err)
+		}
+		resultSub := resultSubAny.(*Dimension)
 		if resultSub.Value != 5 {
 			t.Errorf("Expected value to be 5, got %v", resultSub.Value)
 		}
 		
 		// Test multiplication
 		mul := NewOperation("*", []any{dim1, dim2}, false)
-		resultMul := mul.Eval(context).(*Dimension)
+		resultMulAny, err := mul.Eval(context)
+		if err != nil {
+			t.Fatalf("Multiplication eval failed: %v", err)
+		}
+		resultMul := resultMulAny.(*Dimension)
 		if resultMul.Value != 50 {
 			t.Errorf("Expected value to be 50, got %v", resultMul.Value)
 		}
 		
 		// Test division
 		div := NewOperation("/", []any{dim1, dim2}, false)
-		resultDiv := div.Eval(context).(*Dimension)
+		resultDivAny, err := div.Eval(context)
+		if err != nil {
+			t.Fatalf("Division eval failed: %v", err)
+		}
+		resultDiv := resultDivAny.(*Dimension)
 		if resultDiv.Value != 2 {
 			t.Errorf("Expected value to be 2, got %v", resultDiv.Value)
 		}
@@ -81,7 +97,11 @@ func TestOperationEval(t *testing.T) {
 		
 		// Test addition
 		add := NewOperation("+", []any{color1, color2}, false)
-		result := add.Eval(context).(*Color)
+		resultAny, err := add.Eval(context)
+		if err != nil {
+			t.Fatalf("Color addition eval failed: %v", err)
+		}
+		result := resultAny.(*Color)
 		
 		// Check RGB values
 		expectedRGB := []float64{150, 150, 150}
@@ -93,7 +113,11 @@ func TestOperationEval(t *testing.T) {
 		
 		// Test subtraction
 		sub := NewOperation("-", []any{color1, color2}, false)
-		resultSub := sub.Eval(context).(*Color)
+		resultSubAny, err := sub.Eval(context)
+		if err != nil {
+			t.Fatalf("Color subtraction eval failed: %v", err)
+		}
+		resultSub := resultSubAny.(*Color)
 		expectedRGBSub := []float64{50, 50, 50}
 		for i := 0; i < 3; i++ {
 			if resultSub.RGB[i] != expectedRGBSub[i] {
@@ -112,7 +136,11 @@ func TestOperationEval(t *testing.T) {
 		
 		// Test dimension + color
 		add := NewOperation("+", []any{color, dim}, false)
-		result := add.Eval(context).(*Color)
+		resultAny, err := add.Eval(context)
+		if err != nil {
+			t.Fatalf("Color addition eval failed: %v", err)
+		}
+		result := resultAny.(*Color)
 		
 		// Check RGB values
 		expectedRGB := []float64{150, 150, 150}
@@ -124,7 +152,11 @@ func TestOperationEval(t *testing.T) {
 		
 		// Test color + dimension
 		add2 := NewOperation("+", []any{dim, color}, false)
-		result2 := add2.Eval(context).(*Color)
+		result2Any, err := add2.Eval(context)
+		if err != nil {
+			t.Fatalf("Color addition 2 eval failed: %v", err)
+		}
+		result2 := result2Any.(*Color)
 		for i := 0; i < 3; i++ {
 			if result2.RGB[i] != expectedRGB[i] {
 				t.Errorf("Expected RGB[%d] to be %v, got %v", i, expectedRGB[i], result2.RGB[i])
@@ -141,7 +173,11 @@ func TestOperationEval(t *testing.T) {
 		}
 		
 		op := NewOperation("+", []any{dim1, dim2}, false)
-		result := op.Eval(context).(*Operation)
+		resultAny, err := op.Eval(context)
+		if err != nil {
+			t.Fatalf("Operation eval failed: %v", err)
+		}
+		result := resultAny.(*Operation)
 		
 		if result.Op != "+" {
 			t.Errorf("Expected op to be '+', got '%s'", result.Op)
@@ -166,7 +202,11 @@ func TestOperationEval(t *testing.T) {
 		}
 		
 		div := NewOperation("/", []any{dim1, dim2}, false)
-		result := div.Eval(context).(*Dimension)
+		resultAny, err := div.Eval(context)
+		if err != nil {
+			t.Fatalf("Division eval failed: %v", err)
+		}
+		result := resultAny.(*Dimension)
 		
 		if result.Value != 2 {
 			t.Errorf("Expected value to be 2, got %v", result.Value)
@@ -189,7 +229,10 @@ func TestOperationEval(t *testing.T) {
 		}
 		
 		op := NewOperation("+", []any{invalid, invalid}, false)
-		op.Eval(context)
+		_, err := op.Eval(context)
+		if err == nil {
+			t.Error("Expected error but got none")
+		}
 	})
 	
 	t.Run("should handle special ./ operator", func(t *testing.T) {
@@ -201,7 +244,11 @@ func TestOperationEval(t *testing.T) {
 		}
 		
 		op := NewOperation("./", []any{dim1, dim2}, false)
-		result := op.Eval(context).(*Dimension)
+		resultAny, err := op.Eval(context)
+		if err != nil {
+			t.Fatalf("Special operator eval failed: %v", err)
+		}
+		result := resultAny.(*Dimension)
 		
 		if result.Value != 2 {
 			t.Errorf("Expected value to be 2, got %v", result.Value)

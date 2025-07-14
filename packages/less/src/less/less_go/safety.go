@@ -114,15 +114,23 @@ func SafeEval(value any, context any) any {
 		return value
 	}
 	
-	// Check for Variable specifically and handle its error-returning Eval
-	if variable, ok := SafeTypeAssertion[*Variable](value); ok {
-		result, err := variable.Eval(context)
+	// Check for the new (any, error) signature first (used by Variable, Expression, Operation)
+	if evaluable, ok := SafeTypeAssertion[interface{ Eval(any) (any, error) }](value); ok {
+		// Add defer/recover to catch any panics in Eval implementations
+		defer func() {
+			if r := recover(); r != nil {
+				// Log the panic but don't re-panic
+				// Original value will be returned by the fallback at the end
+			}
+		}()
+		result, err := evaluable.Eval(context)
 		if err != nil {
 			return value // Return original value on error
 		}
 		return result
 	}
 	
+	// Check for the old (any) signature for backward compatibility
 	if evaluable, ok := SafeTypeAssertion[interface{ Eval(any) any }](value); ok {
 		// Add defer/recover to catch any panics in Eval implementations
 		defer func() {

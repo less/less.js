@@ -38,13 +38,19 @@ func NewDeclaration(name any, value any, important any, merge bool, index int, f
 		}
 	}
 
-	// Handle value
+	// Handle value - match JavaScript logic: (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null])
 	if val, ok := value.(*Value); ok {
 		d.Value = val
 	} else {
 		var anonymousValue any
 		if value != nil {
-			anonymousValue = NewAnonymous(value, 0, nil, false, false, nil)
+			// Check if value is already a Node (like Anonymous) - if so, use it directly
+			// This matches JavaScript: (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null])
+			if _, ok := value.(*Anonymous); ok {
+				anonymousValue = value
+			} else {
+				anonymousValue = NewAnonymous(value, 0, nil, false, false, nil)
+			}
 		} else {
 			anonymousValue = nil
 		}

@@ -45,14 +45,14 @@ func (e *Expression) Accept(visitor any) {
 }
 
 // Eval evaluates the expression
-func (e *Expression) Eval(context any) any {
+func (e *Expression) Eval(context any) (any, error) {
 	if SafeNilCheck(context) {
-		return e
+		return e, nil
 	}
 
 	ctx, ok := SafeTypeAssertion[map[string]any](context)
 	if !ok {
-		return e
+		return e, nil
 	}
 
 	mathOn := false
@@ -85,6 +85,7 @@ func (e *Expression) Eval(context any) any {
 			
 			newValues[i] = SafeEval(val, context)
 		}
+		
 		expr, _ := NewExpression(newValues, e.NoSpacing)
 		returnValue = expr
 	} else if len(e.Value) == 1 {
@@ -119,7 +120,7 @@ func (e *Expression) Eval(context any) any {
 		}
 	}
 
-	return returnValue
+	return returnValue, nil
 }
 
 // GenCSS generates CSS representation
@@ -138,25 +139,12 @@ func (e *Expression) GenCSS(context any, output *CSSOutput) {
 		}
 
 		if !e.NoSpacing && i+1 < len(e.Value) {
-			if i+1 < len(e.Value) {
-				nextValue := e.Value[i+1]
-				if nextValue == nil {
-					continue
-				}
-
-				isNextAnonymous := false
-				nextAnon, ok := nextValue.(*Anonymous)
-				if ok {
-					isNextAnonymous = true
-					if strVal, ok := nextAnon.Value.(string); ok && strVal == "," {
-						continue
-					}
-				}
-
-				// Corrected spacing logic:
-				// Add space unless the next item is an Anonymous node with the value ","
+			nextValue := e.Value[i+1]
+			if nextValue != nil {
+				// Match JavaScript logic exactly:
+				// Add space unless next value is Anonymous with value ','
 				shouldAddSpace := true
-				if isNextAnonymous {
+				if nextAnon, ok := nextValue.(*Anonymous); ok {
 					if strVal, ok := nextAnon.Value.(string); ok && strVal == "," {
 						shouldAddSpace = false
 					}
@@ -192,4 +180,6 @@ func (e *Expression) GetParens() bool {
 // GetParensInOp returns the ParensInOp flag from the embedded Node
 func (e *Expression) GetParensInOp() bool {
 	return e.Node.ParensInOp
-} 
+}
+
+ 

@@ -92,8 +92,8 @@ func (d *Dimension) Accept(visitor Visitor) {
 }
 
 // Eval returns the dimension itself.
-func (d *Dimension) Eval(context any) *Dimension {
-	return d
+func (d *Dimension) Eval(context any) (any, error) {
+	return d, nil
 }
 
 // ToColor converts the Dimension to a grayscale Color.

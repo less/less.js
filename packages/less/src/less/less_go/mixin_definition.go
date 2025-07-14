@@ -231,7 +231,10 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 					if err != nil {
 						return nil, err
 					}
-					evalExpr := expr.Eval(evalContext)
+					evalExpr, err := expr.Eval(evalContext)
+					if err != nil {
+						return nil, err
+					}
 					decl, err := NewDeclaration(name, evalExpr, nil, false, 0, make(map[string]any), false, true)
 					if err != nil {
 						return nil, err
@@ -373,7 +376,10 @@ func (md *MixinDefinition) EvalCall(context any, args []any, important bool) (*R
 	if err != nil {
 		return nil, err
 	}
-	evalExpr := expr.Eval(context)
+	evalExpr, err := expr.Eval(context)
+	if err != nil {
+		return nil, err
+	}
 	argDecl, err := NewDeclaration("@arguments", evalExpr, nil, false, 0, make(map[string]any), false, true)
 	if err != nil {
 		return nil, err
@@ -402,9 +408,14 @@ func (md *MixinDefinition) EvalCall(context any, args []any, important bool) (*R
 		}
 	}
 
-	evaluatedRuleset, err := ruleset.Eval(evalContext)
+	evaluated, err := ruleset.Eval(evalContext)
 	if err != nil {
 		return nil, err
+	}
+	
+	evaluatedRuleset, ok := evaluated.(*Ruleset)
+	if !ok {
+		return nil, fmt.Errorf("expected *Ruleset from Eval, got %T", evaluated)
 	}
 
 	if important {

@@ -215,7 +215,24 @@ func (s *Selector) CreateDerived(elementsInput any, extendList []any, evaldCondi
 	// In JS: const newSelector = new Selector(elements, extendList || this.extendList, null, ...);
 	// The 'null' for condition means the new selector's .condition is nil, and its .evaldCondition
 	// will be based on the evaldConditionFromEval parameter or the original s.evaldCondition.
-	newSel, err := NewSelector(parsedElements, finalExtendList, nil, s.GetIndex(), s.FileInfo(), s.VisibilityInfo())
+	
+	// Handle potential nil Node
+	index := 0
+	if s.Node != nil {
+		index = s.GetIndex()
+	}
+	
+	fileInfo := make(map[string]any)
+	if s.Node != nil {
+		fileInfo = s.FileInfo()
+	}
+	
+	visibilityInfo := make(map[string]any)
+	if s.Node != nil {
+		visibilityInfo = s.VisibilityInfo()
+	}
+	
+	newSel, err := NewSelector(parsedElements, finalExtendList, nil, index, fileInfo, visibilityInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +406,7 @@ func (s *Selector) IsJustParentSelector() bool {
 }
 
 // Eval evaluates the selector.
-func (s *Selector) Eval(context any) (*Selector, error) {
+func (s *Selector) Eval(context any) (any, error) {
 	var evaluatedConditionBoolean *bool // This is the *boolean* outcome of the condition
 
 	if s.Condition != nil {
@@ -419,8 +436,15 @@ func (s *Selector) Eval(context any) (*Selector, error) {
 	if s.Elements != nil {
 		evaluatedElements = make([]*Element, len(s.Elements))
 		for i, e := range s.Elements {
-			evaledE := e.Eval(context) // Element.Eval returns *Element
-			evaluatedElements[i] = evaledE
+			evaledE, err := e.Eval(context) // Element.Eval returns (any, error)
+			if err != nil {
+				return nil, err
+			}
+			if element, ok := evaledE.(*Element); ok {
+				evaluatedElements[i] = element
+			} else {
+				evaluatedElements[i] = e // fallback to original
+			}
 		}
 	}
 

@@ -62,7 +62,10 @@ func TestNewExpression(t *testing.T) {
 func TestExpressionEval(t *testing.T) {
 	t.Run("should return same expression when empty", func(t *testing.T) {
 		expr, _ := NewExpression([]any{}, false)
-		result := expr.Eval(createTestContext(false))
+		result, err := expr.Eval(createTestContext(false))
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 		if result != expr {
 			t.Error("Expected same expression to be returned")
 		}
@@ -71,7 +74,10 @@ func TestExpressionEval(t *testing.T) {
 	t.Run("should eval single value without parens", func(t *testing.T) {
 		anon := NewAnonymous("test", 0, nil, false, false, nil)
 		expr, _ := NewExpression([]any{anon}, false)
-		result := expr.Eval(createTestContext(false))
+		result, err := expr.Eval(createTestContext(false))
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 		if anonResult, ok := result.(*Anonymous); !ok {
 			t.Errorf("Expected result to be *Anonymous, got %T", result)
 		} else if anonResult.Value != "test" {
@@ -84,7 +90,10 @@ func TestExpressionEval(t *testing.T) {
 		expr, _ := NewExpression([]any{anon}, false)
 		expr.Node.Parens = true
 		expr.Node.ParensInOp = true
-		result := expr.Eval(createTestContext(false))
+		result, err := expr.Eval(createTestContext(false))
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 		if _, ok := result.(*Paren); !ok {
 			t.Error("Expected result to be wrapped in Paren")
 		}
@@ -95,7 +104,10 @@ func TestExpressionEval(t *testing.T) {
 		expr, _ := NewExpression([]any{anon}, false)
 		expr.Node.Parens = true
 		expr.Node.ParensInOp = true
-		result := expr.Eval(createTestContext(true))
+		result, err := expr.Eval(createTestContext(true))
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 		if _, ok := result.(*Paren); ok {
 			t.Error("Expected result not to be wrapped in Paren")
 		}
@@ -106,7 +118,10 @@ func TestExpressionEval(t *testing.T) {
 		expr, _ := NewExpression([]any{dim}, false)
 		expr.Node.Parens = true
 		expr.Node.ParensInOp = true
-		result := expr.Eval(createTestContext(false))
+		result, err := expr.Eval(createTestContext(false))
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 		if _, ok := result.(*Paren); ok {
 			t.Error("Expected Dimension not to be wrapped in Paren")
 		}
@@ -217,7 +232,10 @@ func TestExpressionParenthesisContext(t *testing.T) {
 		expr, _ := NewExpression([]any{dim}, false)
 		expr.Node.Parens = true
 		
-		expr.Eval(context)
+		_, err := expr.Eval(context)
+		if err != nil {
+			t.Errorf("Expression eval failed: %v", err)
+		}
 		
 		if inParenCount != 1 {
 			t.Error("Expected inParenthesis to be called once")
@@ -241,7 +259,10 @@ func TestExpressionParenthesisContext(t *testing.T) {
 
 		// Create outer expression containing inner expression
 		expr, _ := NewExpression([]any{innerExpr}, false)
-		result := expr.Eval(context)
+		result, err := expr.Eval(context)
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 
 		// In calc context, should evaluate to the inner anonymous value
 		if anon, ok := result.(*Anonymous); !ok || anon.Value != "test" {
@@ -261,7 +282,10 @@ func TestExpressionParenthesisContext(t *testing.T) {
 		innerExpr.Node.ParensInOp = true
 
 		expr, _ := NewExpression([]any{innerExpr}, false)
-		result := expr.Eval(context)
+		result, err := expr.Eval(context)
+		if err != nil {
+			t.Fatalf("Expression eval failed: %v", err)
+		}
 
 		// With mathOn=true, should evaluate to the inner anonymous value without Paren wrapping
 		if anon, ok := result.(*Anonymous); !ok || anon.Value != "test" {

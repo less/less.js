@@ -39,6 +39,16 @@ func NewAnonymous(value any, index int, fileInfo map[string]any, mapLines bool, 
 
 // Eval evaluates the anonymous value
 func (a *Anonymous) Eval(context any) (any, error) {
+	// Evaluate the contained value if it's evaluable
+	evaluatedValue := a.Value
+	if evaluator, ok := a.Value.(interface{ Eval(any) (any, error) }); ok {
+		result, err := evaluator.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+		evaluatedValue = result
+	}
+	
 	// Create a new Anonymous instance like JavaScript version
 	visibilityInfo := map[string]any{}
 	if a.VisibilityBlocks != nil {
@@ -47,7 +57,7 @@ func (a *Anonymous) Eval(context any) (any, error) {
 	if a.NodeVisible != nil {
 		visibilityInfo["nodeVisible"] = *a.NodeVisible
 	}
-	return NewAnonymous(a.Value, a.Index, a.FileInfo, a.MapLines, a.RulesetLike, visibilityInfo), nil
+	return NewAnonymous(evaluatedValue, a.Index, a.FileInfo, a.MapLines, a.RulesetLike, visibilityInfo), nil
 }
 
 // Compare compares two nodes
@@ -89,6 +99,47 @@ func (a *Anonymous) Compare(other any) any {
 // IsRulesetLike returns whether the node is ruleset-like
 func (a *Anonymous) IsRulesetLike() bool {
 	return a.RulesetLike
+}
+
+// Operate performs mathematical operations on Anonymous values
+// This allows variables like @z: 11; to participate in mathematical expressions
+func (a *Anonymous) Operate(context any, op string, other any) any {
+	// Try to convert this Anonymous to a Dimension for mathematical operations
+	if a.Value != nil {
+		if str, ok := a.Value.(string); ok {
+			// Try to parse as a number
+			if dim, err := NewDimension(str, ""); err == nil {
+				// Successfully parsed as dimension, delegate to dimension's operate method
+				if otherDim, ok := other.(*Dimension); ok {
+					return dim.Operate(context, op, otherDim)
+				}
+				// If other is also Anonymous, try to convert it too
+				if otherAnon, ok := other.(*Anonymous); ok {
+					if otherStr, ok := otherAnon.Value.(string); ok {
+						if otherDimension, err := NewDimension(otherStr, ""); err == nil {
+							return dim.Operate(context, op, otherDimension)
+						}
+					}
+				}
+			}
+		}
+		// If this anonymous represents a number value
+		if num, ok := a.Value.(float64); ok {
+			dim, _ := NewDimension(num, "")
+			if otherDim, ok := other.(*Dimension); ok {
+				return dim.Operate(context, op, otherDim)
+			}
+		}
+		if num, ok := a.Value.(int); ok {
+			dim, _ := NewDimension(float64(num), "")
+			if otherDim, ok := other.(*Dimension); ok {
+				return dim.Operate(context, op, otherDim)
+			}
+		}
+	}
+	
+	// If we can't convert to dimension, return a new operation node
+	return NewOperation(op, []any{a, other}, false)
 }
 
 // GenCSS generates CSS representation

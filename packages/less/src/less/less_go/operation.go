@@ -53,17 +53,31 @@ func (o *Operation) Accept(visitor any) {
 }
 
 // Eval evaluates the operation
-func (o *Operation) Eval(context any) any {
+func (o *Operation) Eval(context any) (any, error) {
 	// Get the evaluated operands
 	var a, b any
 	
-	if aNode, ok := o.Operands[0].(interface{ Eval(any) any }); ok {
+	// Try to evaluate operand A - handle both (any, error) and (any) return signatures
+	if aNode, ok := o.Operands[0].(interface{ Eval(any) (any, error) }); ok {
+		var err error
+		a, err = aNode.Eval(context)
+		if err != nil {
+			a = o.Operands[0] // Fall back to original
+		}
+	} else if aNode, ok := o.Operands[0].(interface{ Eval(any) any }); ok {
 		a = aNode.Eval(context)
 	} else {
 		a = o.Operands[0]
 	}
 	
-	if bNode, ok := o.Operands[1].(interface{ Eval(any) any }); ok {
+	// Try to evaluate operand B - handle both (any, error) and (any) return signatures
+	if bNode, ok := o.Operands[1].(interface{ Eval(any) (any, error) }); ok {
+		var err error
+		b, err = bNode.Eval(context)
+		if err != nil {
+			b = o.Operands[1] // Fall back to original
+		}
+	} else if bNode, ok := o.Operands[1].(interface{ Eval(any) any }); ok {
 		b = bNode.Eval(context)
 	} else {
 		b = o.Operands[1]
@@ -99,24 +113,24 @@ func (o *Operation) Eval(context any) any {
 		// Handle dimension operations
 		if aDim, aOk := a.(*Dimension); aOk {
 			if bDim, bOk := b.(*Dimension); bOk {
-				return aDim.Operate(context, op, bDim)
+				return aDim.Operate(context, op, bDim), nil
 			}
 		}
 		
 		// Handle color operations
 		if aColor, aOk := a.(*Color); aOk {
 			if bColor, bOk := b.(*Color); bOk {
-				return aColor.OperateColor(context, op, bColor)
+				return aColor.OperateColor(context, op, bColor), nil
 			}
 			if bDim, bOk := b.(*Dimension); bOk {
-				return aColor.OperateColor(context, op, bDim.ToColor())
+				return aColor.OperateColor(context, op, bDim.ToColor()), nil
 			}
 		}
 
 		// Handle color operations with dimension first
 		if aDim, aOk := a.(*Dimension); aOk {
 			if bColor, bOk := b.(*Color); bOk {
-				return aDim.ToColor().OperateColor(context, op, bColor)
+				return aDim.ToColor().OperateColor(context, op, bColor), nil
 			}
 		}
 		
@@ -125,12 +139,12 @@ func (o *Operation) Eval(context any) any {
 		_, bIsOp := b.(*Operation)
 		
 		if (aIsOp || bIsOp) && aIsOp && aOp.Op == "/" && IsMathParensDivision(context) {
-			return NewOperation(o.Op, []any{a, b}, o.IsSpaced)
+			return NewOperation(o.Op, []any{a, b}, o.IsSpaced), nil
 		}
 			
 		// For other operable types, try to use their Operate method
 		if aOperable, ok := a.(interface{ Operate(any, string, any) any }); ok {
-			return aOperable.Operate(context, op, b)
+			return aOperable.Operate(context, op, b), nil
 		}
 		
 		// If we get here, operation is not supported
@@ -141,7 +155,7 @@ func (o *Operation) Eval(context any) any {
 	}
 
 	// If math is off, return a new operation
-	return NewOperation(o.Op, []any{a, b}, o.IsSpaced)
+	return NewOperation(o.Op, []any{a, b}, o.IsSpaced), nil
 }
 
 // GenCSS generates CSS representation

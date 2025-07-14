@@ -206,9 +206,13 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	defaultFunc := NewDefaultFunc()
 
 	// Evaluate selector
-	if evaluatedSelector, err := mc.Selector.Eval(context); err != nil {
+	if evaluated, err := mc.Selector.Eval(context); err != nil {
 		return nil, err
 	} else {
+		evaluatedSelector, ok := evaluated.(*Selector)
+		if !ok {
+			return nil, fmt.Errorf("expected *Selector from Eval, got %T", evaluated)
+		}
 		mc.Selector = evaluatedSelector
 	}
 

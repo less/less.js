@@ -59,10 +59,37 @@ func (v *Variable) Eval(context any) (any, error) {
 		}
 		
 		// Convert innerResult to string and prepend "@"
+		// Handle different types of results to extract the actual value
+		var valueStr string
 		if innerResultMap, ok := innerResult.(map[string]any); ok {
 			if value, exists := innerResultMap["value"]; exists {
-				name = "@" + fmt.Sprintf("%v", value)
+				valueStr = fmt.Sprintf("%v", value)
 			}
+		} else if quoted, ok := innerResult.(*Quoted); ok {
+			// Handle Quoted objects directly
+			valueStr = quoted.value
+		} else if anon, ok := innerResult.(*Anonymous); ok {
+			// Handle Anonymous objects - the Value might itself be a complex object
+			if quoted, ok := anon.Value.(*Quoted); ok {
+				valueStr = quoted.value
+			} else if cssObj, ok := anon.Value.(interface{ ToCSS(any) string }); ok {
+				valueStr = cssObj.ToCSS(nil)
+			} else {
+				valueStr = fmt.Sprintf("%v", anon.Value)
+			}
+		} else if valueObj, ok := innerResult.(interface{ GetValue() any }); ok {
+			// Handle objects with GetValue method
+			valueStr = fmt.Sprintf("%v", valueObj.GetValue())
+		} else if cssObj, ok := innerResult.(interface{ ToCSS(any) string }); ok {
+			// Handle objects with ToCSS method
+			valueStr = cssObj.ToCSS(nil)
+		} else {
+			// Fallback: use string representation
+			valueStr = fmt.Sprintf("%v", innerResult)
+		}
+		
+		if valueStr != "" {
+			name = "@" + valueStr
 		}
 	}
 

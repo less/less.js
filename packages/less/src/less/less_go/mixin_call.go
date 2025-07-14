@@ -430,9 +430,13 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 			Filename: getFilename(mc.FileInfo()),
 		}
 	} else {
+		selectorCSS := strings.TrimSpace(mc.Selector.ToCSS(context))
+		if selectorCSS == "" {
+			selectorCSS = "<empty selector>"
+		}
 		return nil, &MixinCallError{
 			Type:     "Name",
-			Message:  fmt.Sprintf("%s is undefined", strings.TrimSpace(mc.Selector.ToCSS(context))),
+			Message:  fmt.Sprintf("%s is undefined", selectorCSS),
 			Index:    mc.GetIndex(),
 			Filename: getFilename(mc.FileInfo()),
 		}

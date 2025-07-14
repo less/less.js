@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-// TestBasicIntegration tests the Go port against actual .less files
-func TestBasicIntegration(t *testing.T) {
+// TestSimpleIntegration tests the Go port against actual .less files
+func TestSimpleIntegration(t *testing.T) {
 	// Start with the simplest test cases
 	testCases := []struct {
 		name     string

@@ -872,7 +872,19 @@ func (e *EntityParsers) Variable() any {
 				e.parsers.parser.parserInput.Restore("")
 				e.parsers.parser.parserInput.Save()
 				// Re-parse the variable name
-				e.parsers.parser.parserInput.Re(regexp.MustCompile(`^@@?[\w-]+`))
+				nameMatch = e.parsers.parser.parserInput.Re(regexp.MustCompile(`^@@?[\w-]+`))
+				if nameMatch != nil {
+					// Handle both string and []string cases
+					if matches, ok := nameMatch.([]string); ok {
+						name = matches[0]
+					} else if match, ok := nameMatch.(string); ok {
+						name = match
+					}
+				} else {
+					// If re-parsing failed, we can't create a variable
+					e.parsers.parser.parserInput.Restore("")
+					return nil
+				}
 			}
 			e.parsers.parser.parserInput.Forget()
 			variable := NewVariable(name, index+e.parsers.parser.currentIndex, e.parsers.parser.fileInfo)

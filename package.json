@@ -8,6 +8,10 @@
     "publish": "lerna publish from-package --no-private",
     "changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
     "test": "cd packages/less && npm test",
+    "test:go": "go run scripts/test.go integration",
+    "test:go:unit": "go run scripts/test.go unit",
+    "test:go:full": "go run scripts/test.go integration",
+    "test:go:summary": "go run scripts/test.go summary",
     "postinstall": "npx only-allow pnpm"
   },
   "author": "Alexis Sellier <self@cloudhead.net>",

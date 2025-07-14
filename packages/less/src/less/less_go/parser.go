@@ -875,7 +875,8 @@ func (e *EntityParsers) Variable() any {
 				e.parsers.parser.parserInput.Re(regexp.MustCompile(`^@@?[\w-]+`))
 			}
 			e.parsers.parser.parserInput.Forget()
-			return NewVariable(name, index+e.parsers.parser.currentIndex, e.parsers.parser.fileInfo)
+			variable := NewVariable(name, index+e.parsers.parser.currentIndex, e.parsers.parser.fileInfo)
+			return variable
 		}
 	}
 	e.parsers.parser.parserInput.Restore("")

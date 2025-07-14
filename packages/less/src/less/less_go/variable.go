@@ -47,7 +47,8 @@ func (v *Variable) GetName() string {
 }
 
 // Eval evaluates the variable
-func (v *Variable) Eval(context EvalContext) (any, error) {
+func (v *Variable) Eval(context any) (any, error) {
+	
 	name := v.name
 
 	if len(name) >= 2 && name[:2] == "@@" {
@@ -58,7 +59,11 @@ func (v *Variable) Eval(context EvalContext) (any, error) {
 		}
 		
 		// Convert innerResult to string and prepend "@"
-		name = "@" + fmt.Sprintf("%v", innerResult.(map[string]any)["value"])
+		if innerResultMap, ok := innerResult.(map[string]any); ok {
+			if value, exists := innerResultMap["value"]; exists {
+				name = "@" + fmt.Sprintf("%v", value)
+			}
+		}
 	}
 
 	if v.evaluating {
@@ -67,47 +72,111 @@ func (v *Variable) Eval(context EvalContext) (any, error) {
 	}
 
 	v.evaluating = true
+	defer func() { v.evaluating = false }()
 
-	// Get frames from context
-	frames, ok := context.(interface{ GetFrames() []ParserFrame })
-	if !ok {
-		return nil, fmt.Errorf("context does not implement GetFrames")
-	}
+	// Handle different context types - interface-based (tests) or map-based (runtime)
+	if interfaceContext, ok := context.(interface{ GetFrames() []ParserFrame }); ok {
+		// Interface-based context (for tests)
+		frames := interfaceContext.GetFrames()
+		
+		for _, frame := range frames {
+			if varResult := frame.Variable(name); varResult != nil {
+				
+				// Handle important flag if present
+				if importantVal, ok := varResult["important"].(bool); ok && importantVal {
+					if importantScopes, ok := context.(interface{ GetImportantScope() []map[string]bool }); ok {
+						scope := importantScopes.GetImportantScope()
+						if len(scope) > 0 {
+							scope[len(scope)-1]["important"] = true
+						}
+					}
+				}
 
-	// Find variable in frames
-	for _, frame := range frames.GetFrames() {
-		if varResult := frame.Variable(name); varResult != nil {
-			// Handle important flag if present
-			if importantVal, ok := varResult["important"].(bool); ok && importantVal {
-				importantScopes, ok := context.(interface{ GetImportantScope() []map[string]bool })
-				if ok && len(importantScopes.GetImportantScope()) > 0 {
-					lastScope := importantScopes.GetImportantScope()[len(importantScopes.GetImportantScope())-1]
-					lastScope["important"] = true
+				// Get value from result
+				val, ok := varResult["value"]
+				if !ok {
+					continue
+				}
+
+				// If in calc context, wrap vars in a function call to cascade evaluate args first
+				if isInCalc, ok := context.(interface{ IsInCalc() bool }); ok && isInCalc.IsInCalc() {
+					selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
+					return selfCall, nil
+				}
+
+				// Evaluate value - check both interface types
+				if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
+					result, err := evalable.Eval(context)
+					return result, err
+				} else if evalCtx, ok := val.(interface{ Eval(EvalContext) (any, error) }); ok {
+					if ctx, ok := context.(EvalContext); ok {
+						result, err := evalCtx.Eval(ctx)
+						return result, err
+					} else {
+						return val, nil
+					}
+				} else {
+					return val, nil
 				}
 			}
+		}
+	} else if ctx, ok := context.(map[string]any); ok {
+		// Map-based context (for runtime)
+		framesAny, exists := ctx["frames"]
+		if !exists {
+			return nil, fmt.Errorf("no frames in evaluation context")
+		}
+		
+		frames, ok := framesAny.([]any)
+		if !ok {
+			return nil, fmt.Errorf("frames is not []any")
+		}
 
-			// Get value from result
-			val, ok := varResult["value"]
-			if !ok {
-				continue
-			}
+		// Find variable in frames
+		for _, frameAny := range frames {
+			// Frames can be Rulesets that have Variable lookup methods
+			if frame, ok := frameAny.(interface{ Variable(string) map[string]any }); ok {
+				if varResult := frame.Variable(name); varResult != nil {
+					
+					// Handle important flag if present
+					if importantVal, ok := varResult["important"].(bool); ok && importantVal {
+						if importantScopeAny, exists := ctx["importantScope"]; exists {
+							if importantScope, ok := importantScopeAny.([]map[string]bool); ok && len(importantScope) > 0 {
+								lastScope := importantScope[len(importantScope)-1]
+								lastScope["important"] = true
+							}
+						}
+					}
 
-			// If in calc, wrap vars in a function call to cascade evaluate args first
-			if isInCalc, ok := context.(interface{ IsInCalc() bool }); ok && isInCalc.IsInCalc() {
-				selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
-				v.evaluating = false
-				return selfCall, nil
-			}
+					// Get value from result
+					val, ok := varResult["value"]
+					if !ok {
+						continue
+					}
 
-			// Evaluate value
-			if evalable, ok := val.(interface{ Eval(EvalContext) (any, error) }); ok {
-				v.evaluating = false
-				return evalable.Eval(context)
+					// If in calc context, wrap vars in a function call to cascade evaluate args first
+					if isInCalc, exists := ctx["inCalc"]; exists && isInCalc == true {
+						selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
+						return selfCall, nil
+					}
+
+					// Evaluate value - check both interface types
+					if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
+						result, err := evalable.Eval(context)
+						return result, err
+					} else if _, ok := val.(interface{ Eval(EvalContext) (any, error) }); ok {
+						// For map context, we can't pass EvalContext, so return value as-is
+						return val, nil
+					} else {
+						return val, nil
+					}
+				}
 			}
 		}
+	} else {
+		return nil, fmt.Errorf("context is neither map[string]any nor interface context")
 	}
 
-	v.evaluating = false
 	return nil, fmt.Errorf("name: variable %s is undefined (index: %d, filename: %s)", 
 		name, v.GetIndex(), v.FileInfo()["filename"])
 } 

@@ -113,6 +113,16 @@ func SafeEval(value any, context any) any {
 	if SafeNilCheck(value) {
 		return value
 	}
+	
+	// Check for Variable specifically and handle its error-returning Eval
+	if variable, ok := SafeTypeAssertion[*Variable](value); ok {
+		result, err := variable.Eval(context)
+		if err != nil {
+			return value // Return original value on error
+		}
+		return result
+	}
+	
 	if evaluable, ok := SafeTypeAssertion[interface{ Eval(any) any }](value); ok {
 		// Add defer/recover to catch any panics in Eval implementations
 		defer func() {

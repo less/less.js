@@ -49,7 +49,7 @@ func (mr *MockJoinRuleset) SetPaths(paths []any) {
 	mr.paths = paths
 }
 
-func (mr *MockJoinRuleset) JoinSelectors(paths []any, context []any, selectors []Selector) {
+func (mr *MockJoinRuleset) JoinSelectors(paths *[][]any, context [][]any, selectors []any) {
 	mr.joinCalled = true
 	mr.joinArgs = []any{paths, context, selectors}
 }

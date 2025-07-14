@@ -39,7 +39,15 @@ func NewAnonymous(value any, index int, fileInfo map[string]any, mapLines bool, 
 
 // Eval evaluates the anonymous value
 func (a *Anonymous) Eval(context any) (any, error) {
-	return a, nil
+	// Create a new Anonymous instance like JavaScript version
+	visibilityInfo := map[string]any{}
+	if a.VisibilityBlocks != nil {
+		visibilityInfo["visibilityBlocks"] = *a.VisibilityBlocks
+	}
+	if a.NodeVisible != nil {
+		visibilityInfo["nodeVisible"] = *a.NodeVisible
+	}
+	return NewAnonymous(a.Value, a.Index, a.FileInfo, a.MapLines, a.RulesetLike, visibilityInfo), nil
 }
 
 // Compare compares two nodes
@@ -101,6 +109,7 @@ func (a *Anonymous) GenCSS(context any, output *CSSOutput) {
 		}
 	}
 }
+
 
 // CopyVisibilityInfo copies visibility information from another node
 func (a *Anonymous) CopyVisibilityInfo(info map[string]any) {

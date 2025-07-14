@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"reflect"
-
 )
 
 
@@ -15,7 +14,59 @@ func TransformTree(root any, options map[string]any) any {
 
 	var evaldRoot any
 	variables := options["variables"]
-	evalEnv := NewEval(options, nil)
+	
+	// Create evaluation context as a map, matching JavaScript's plain object approach
+	evalEnv := make(map[string]any)
+	// Copy options to evalEnv
+	for k, v := range options {
+		evalEnv[k] = v
+	}
+	// Initialize required fields
+	evalEnv["frames"] = []any{}
+	evalEnv["importantScope"] = []map[string]bool{}
+	evalEnv["mathOn"] = true
+	// Set default math mode to ALWAYS for now (can be overridden by options)
+	if _, exists := evalEnv["math"]; !exists {
+		evalEnv["math"] = Math.Always
+	}
+	// Add isMathOn function that matches JavaScript contexts.js implementation
+	evalEnv["isMathOn"] = func(op string) bool {
+		mathOn, exists := evalEnv["mathOn"]
+		if !exists || !mathOn.(bool) {
+			return false
+		}
+		
+		// Check for division operator with math mode restrictions
+		if op == "/" {
+			math, mathExists := evalEnv["math"]
+			if mathExists && math != Math.Always {
+				// Check if we're in parentheses
+				parensStack, parensExists := evalEnv["parensStack"]
+				if !parensExists {
+					return false
+				}
+				if stack, ok := parensStack.([]bool); ok && len(stack) == 0 {
+					return false
+				}
+			}
+		}
+		
+		// Check if math is disabled for everything except in parentheses
+		if math, mathExists := evalEnv["math"]; mathExists {
+			if mathType, ok := math.(MathType); ok && mathType > Math.ParensDivision {
+				parensStack, parensExists := evalEnv["parensStack"]
+				if !parensExists {
+					return false
+				}
+				if stack, ok := parensStack.([]bool); ok {
+					return len(stack) > 0
+				}
+				return false
+			}
+		}
+		
+		return true
+	}
 
 	//
 	// Allows setting variables with a hash, so:
@@ -67,7 +118,7 @@ func TransformTree(root any, options map[string]any) any {
 			}
 			declarations = append(declarations, decl)
 		}
-		evalEnv.Frames = []any{NewRuleset(nil, declarations, false, nil)}
+		evalEnv["frames"] = []any{NewRuleset(nil, declarations, false, nil)}
 	}
 
 	// Create visitors exactly like JavaScript
@@ -155,6 +206,13 @@ func TransformTree(root any, options map[string]any) any {
 	// Evaluate the root exactly like JavaScript: evaldRoot = root.eval(evalEnv)
 	if evaluator, ok := processedRoot.(interface{ Eval(any) any }); ok {
 		evaldRoot = evaluator.Eval(evalEnv)
+	} else if ruleset, ok := processedRoot.(*Ruleset); ok {
+		// Ruleset.Eval returns (*Ruleset, error)
+		result, err := ruleset.Eval(evalEnv)
+		if err != nil {
+			panic(err)
+		}
+		evaldRoot = result
 	} else if evaluatorWithError, ok := processedRoot.(interface{ Eval(any) (any, error) }); ok {
 		// Handle evaluators that return errors - convert to panic like JavaScript throws
 		result, err := evaluatorWithError.Eval(evalEnv)

@@ -861,7 +861,11 @@ func TestRulesetVariable(t *testing.T) {
 
 		result := ruleset.Variable("@var1")
 
-		if result != mockDecl {
+		if result == nil {
+			t.Errorf("Expected non-nil result for existing variable")
+		} else if value, ok := result["value"]; !ok {
+			t.Errorf("Expected result to have 'value' key")
+		} else if value != mockDecl {
 			t.Errorf("Expected parsed variable value")
 		}
 	})

@@ -93,6 +93,11 @@ func (r *Ruleset) GetType() string {
 	return "Ruleset"
 }
 
+// GetTypeIndex returns the type index for visitor pattern
+func (r *Ruleset) GetTypeIndex() int {
+	return 1 // Non-zero value to enable visitor pattern
+}
+
 // IsRuleset returns true (this is a ruleset)
 func (r *Ruleset) IsRuleset() bool {
 	return true
@@ -101,6 +106,40 @@ func (r *Ruleset) IsRuleset() bool {
 // IsRulesetLike returns true (this is ruleset-like)
 func (r *Ruleset) IsRulesetLike() bool {
 	return true
+}
+
+// ToCSS converts the ruleset to CSS output
+func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
+	var output strings.Builder
+	
+	// Create context map with default values
+	contextMap := map[string]any{
+		"compress": false,
+	}
+	
+	// Apply options if provided
+	if options != nil {
+		if compress, ok := options["compress"].(bool); ok {
+			contextMap["compress"] = compress
+		}
+	}
+	
+	// Create CSS output implementation
+	cssOutput := &CSSOutput{
+		Add: func(chunk, fileInfo, index any) {
+			if chunk != nil {
+				output.WriteString(fmt.Sprintf("%v", chunk))
+			}
+		},
+		IsEmpty: func() bool {
+			return output.Len() == 0
+		},
+	}
+	
+	// Generate CSS using the GenCSS method
+	r.GenCSS(contextMap, cssOutput)
+	
+	return output.String(), nil
 }
 
 // Interface methods required by JoinSelectorVisitor and ToCSSVisitor
@@ -774,10 +813,36 @@ func (r *Ruleset) Properties() map[string][]any {
 }
 
 // Variable returns a specific variable by name
-func (r *Ruleset) Variable(name string) any {
+func (r *Ruleset) Variable(name string) map[string]any {
 	vars := r.Variables()
 	if decl, exists := vars[name]; exists {
-		return r.ParseValue(decl)
+		if d, ok := decl.(*Declaration); ok {
+			// Return the expected format with value and important fields
+			result := map[string]any{
+				"value": d.Value, // Return the Declaration's Value directly, not the Declaration itself
+			}
+			
+			// Check if the declaration has important flag
+			if d.GetImportant() {
+				result["important"] = true
+			}
+			
+			return result
+		} else {
+			// Handle other types (like mock declarations in tests)
+			result := map[string]any{
+				"value": r.ParseValue(decl),
+			}
+			
+			// Check if the declaration has important flag
+			if declMap, ok := decl.(map[string]any); ok {
+				if important, hasImportant := declMap["important"]; hasImportant {
+					result["important"] = important
+				}
+			}
+			
+			return result
+		}
 	}
 	return nil
 }

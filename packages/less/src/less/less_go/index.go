@@ -345,9 +345,65 @@ func createTransformTree() any {
 }
 
 func createParse(env any, parseTree any, importManager any) func(string, ...any) any {
-	// This should return the actual Parse function
+	// Create the actual parse function using the real CreateParse
+	importManagerFactory := func(environment any, context *Parse, rootFileInfo map[string]any) *ImportManager {
+		// Create a simple import manager factory
+		factory := NewImportManager(&SimpleImportManagerEnvironment{})
+		
+		// Convert rootFileInfo to FileInfo
+		fileInfo := &FileInfo{
+			Filename: "input",
+		}
+		if rootFileInfo != nil {
+			if fn, ok := rootFileInfo["filename"].(string); ok {
+				fileInfo.Filename = fn
+			}
+		}
+		
+		// Create context map
+		contextMap := map[string]any{
+			"paths": []string{},
+		}
+		
+		return factory(environment, contextMap, fileInfo)
+	}
+	
+	// Use the real CreateParse function
+	realParseFunc := CreateParse(env, parseTree, importManagerFactory)
+	
+	// Wrap it to match the expected signature func(string, ...any) any
 	return func(input string, args ...any) any {
-		return map[string]any{"type": "Parse", "input": input}
+		// Extract options from args
+		var options map[string]any
+		if len(args) > 0 {
+			if opts, ok := args[0].(map[string]any); ok {
+				options = opts
+			}
+		}
+		if options == nil {
+			options = make(map[string]any)
+		}
+		
+		// Use a channel to capture the result synchronously
+		resultChan := make(chan any, 1)
+		errorChan := make(chan error, 1)
+		
+		// Call the real parse function with callback
+		realParseFunc(input, options, func(err error, root any, imports *ImportManager, opts map[string]any) {
+			if err != nil {
+				errorChan <- err
+			} else {
+				resultChan <- root
+			}
+		})
+		
+		// Wait for result
+		select {
+		case err := <-errorChan:
+			return map[string]any{"error": err.Error()}
+		case result := <-resultChan:
+			return result
+		}
 	}
 }
 

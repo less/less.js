@@ -561,4 +561,78 @@ func TestParserInput(t *testing.T) {
 			t.Error("should handle non-breaking space")
 		}
 	})
+
+	// Additional integration-focused tests
+	t.Run("css tokenization patterns", func(t *testing.T) {
+		// Test patterns common in CSS parsing
+		pi := NewParserInput()
+		pi.Start("body { color: red; }", false, nil)
+		
+		// Test identifier matching
+		result := pi.Str("body")
+		if result != "body" {
+			t.Error("should match CSS selector")
+		}
+		
+		// Test brace matching
+		result = pi.Char('{')
+		if char, ok := result.(byte); !ok || char != '{' {
+			t.Error("should match opening brace")
+		}
+		
+		// Test property name
+		identRegex := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]*`)
+		result = pi.Re(identRegex)
+		if result != "color" {
+			t.Error("should match CSS property name")
+		}
+		
+		// Test colon
+		result = pi.Char(':')
+		if char, ok := result.(byte); !ok || char != ':' {
+			t.Error("should match property separator")
+		}
+		
+		// Test value
+		result = pi.Re(identRegex)
+		if result != "red" {
+			t.Error("should match CSS property value")
+		}
+		
+		t.Logf("✓ CSS tokenization patterns work correctly")
+	})
+
+	t.Run("less syntax patterns", func(t *testing.T) {
+		// Test Less-specific syntax
+		pi := NewParserInput()
+		pi.Start("@color: #ff0000;", false, nil)
+		
+		// Test variable declaration
+		result := pi.Char('@')
+		if char, ok := result.(byte); !ok || char != '@' {
+			t.Error("should match Less variable prefix")
+		}
+		
+		// Test variable name
+		identRegex := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9-]*`)
+		result = pi.Re(identRegex)
+		if result != "color" {
+			t.Error("should match Less variable name")
+		}
+		
+		// Test colon
+		result = pi.Char(':')
+		if char, ok := result.(byte); !ok || char != ':' {
+			t.Error("should match assignment operator")
+		}
+		
+		// Test hex color
+		hexRegex := regexp.MustCompile(`^#[0-9a-fA-F]+`)
+		result = pi.Re(hexRegex)
+		if result != "#ff0000" {
+			t.Error("should match hex color value")
+		}
+		
+		t.Logf("✓ Less syntax patterns work correctly")
+	})
 } 

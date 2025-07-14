@@ -68,15 +68,19 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 				if len(filteredSelectors) > 0 {
 					rulesetInterface.SetSelectors(filteredSelectors)
 					// Call JoinSelectors if it exists on the ruleset
-					if jsInterface, ok := rulesetNode.(interface{ JoinSelectors([]any, []any, []Selector) }); ok {
-						// Convert to Selector slice - this is an approximation
-						selectors := make([]Selector, len(filteredSelectors))
-						for i, sel := range filteredSelectors {
-							if selector, ok := sel.(Selector); ok {
-								selectors[i] = selector
-							}
+					if jsInterface, ok := rulesetNode.(interface{ JoinSelectors(*[][]any, [][]any, []any) }); ok {
+						// Convert paths and context to the expected types
+						pathsSlice := make([][]any, 0)
+						contextSlice := make([][]any, 1)
+						contextSlice[0] = context
+						
+						jsInterface.JoinSelectors(&pathsSlice, contextSlice, filteredSelectors)
+						
+						// Convert [][]any to []any for paths variable
+						paths = make([]any, len(pathsSlice))
+						for i, path := range pathsSlice {
+							paths[i] = path
 						}
-						jsInterface.JoinSelectors(paths, context, selectors)
 					}
 				} else {
 					rulesetInterface.SetSelectors(nil)
@@ -107,7 +111,12 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 					ruleset.Selectors = filteredSelectors
 					// Call JoinSelectors if it exists on the ruleset
 					if hasJoinSelectors(ruleset) {
-						callJoinSelectors(ruleset, [][]any{paths}, context, filteredSelectors)
+						pathsSlice := make([][]any, 0)
+						pathsPtr := &pathsSlice
+						contextSlice := make([][]any, 1)
+						contextSlice[0] = context
+						ruleset.JoinSelectors(pathsPtr, contextSlice, filteredSelectors)
+						ruleset.Paths = *pathsPtr
 					}
 				} else {
 					ruleset.Selectors = nil
@@ -117,7 +126,6 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 			if ruleset.Selectors == nil {
 				ruleset.Rules = nil
 			}
-			ruleset.Paths = [][]any{paths}
 		}
 	}
 	
@@ -236,10 +244,6 @@ func hasJoinSelectors(ruleset *Ruleset) bool {
 	return true
 }
 
-func callJoinSelectors(ruleset *Ruleset, paths [][]any, context []any, selectors []any) {
-	// This would call the JoinSelectors method if it exists
-	// For now, this is a stub - the actual implementation would need to be added to Ruleset
-}
 
 func hasIsRooted(atRule *AtRule) bool {
 	// Check if atRule has IsRooted method

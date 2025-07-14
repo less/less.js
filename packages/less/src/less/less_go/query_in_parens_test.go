@@ -194,14 +194,15 @@ func TestQueryInParens(t *testing.T) {
 			if result != query {
 				t.Error("Expected result to be the same instance")
 			}
-			if result.(*QueryInParens).lvalue != l {
-				t.Error("Expected lvalue to match input")
+			// After evaluation, the values should be different instances (evaluated)
+			if result.(*QueryInParens).lvalue == l {
+				t.Error("Expected lvalue to be evaluated (different instance)")
 			}
-			if result.(*QueryInParens).mvalue != m {
-				t.Error("Expected mvalue to match input")
+			if result.(*QueryInParens).mvalue == m {
+				t.Error("Expected mvalue to be evaluated (different instance)")
 			}
-			if result.(*QueryInParens).rvalue != r {
-				t.Error("Expected rvalue to match input")
+			if result.(*QueryInParens).rvalue == r {
+				t.Error("Expected rvalue to be evaluated (different instance)")
 			}
 		})
 

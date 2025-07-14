@@ -110,8 +110,13 @@ func (e *Eval) OutOfParenthesis() {
 	}
 }
 
-// IsMathOn determines if math operations are enabled for the given operator
-func (e *Eval) IsMathOn(op string) bool {
+// IsMathOn determines if math operations are enabled (EvalContext interface)
+func (e *Eval) IsMathOn() bool {
+	return e.MathOn
+}
+
+// IsMathOnWithOp determines if math operations are enabled for the given operator
+func (e *Eval) IsMathOnWithOp(op string) bool {
 	if !e.MathOn {
 		return false
 	}
@@ -122,6 +127,34 @@ func (e *Eval) IsMathOn(op string) bool {
 		return len(e.ParensStack) > 0
 	}
 	return true
+}
+
+// SetMathOn sets the math operation state (EvalContext interface)
+func (e *Eval) SetMathOn(mathOn bool) {
+	e.MathOn = mathOn
+}
+
+// IsInCalc returns whether we're in a calc context (EvalContext interface)
+func (e *Eval) IsInCalc() bool {
+	return e.InCalc
+}
+
+// GetFrames returns the evaluation frames (EvalContext interface)
+func (e *Eval) GetFrames() []ParserFrame {
+	frames := make([]ParserFrame, 0, len(e.Frames))
+	for _, frame := range e.Frames {
+		if parserFrame, ok := frame.(ParserFrame); ok {
+			frames = append(frames, parserFrame)
+		}
+	}
+	return frames
+}
+
+// GetImportantScope returns the important scope stack (EvalContext interface)
+func (e *Eval) GetImportantScope() []map[string]bool {
+	// Convert ImportantScope to the expected format
+	// For now, return empty as this is used for !important handling
+	return []map[string]bool{}
 }
 
 // PathRequiresRewrite determines if a path needs to be rewritten

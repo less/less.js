@@ -237,51 +237,51 @@ func TestContexts(t *testing.T) {
 					"math": MathAlways,
 				}, nil)
 
-				if !evalContext.IsMathOn("+") {
+				if !evalContext.IsMathOnWithOp("+") {
 					t.Error("Math should be on for + with MathAlways")
 				}
-				if !evalContext.IsMathOn("/") {
+				if !evalContext.IsMathOnWithOp("/") {
 					t.Error("Math should be on for / with MathAlways")
 				}
 
 				evalContext.Math = MathParensDivision
-				if !evalContext.IsMathOn("+") {
+				if !evalContext.IsMathOnWithOp("+") {
 					t.Error("Math should be on for + with MathParensDivision")
 				}
-				if evalContext.IsMathOn("/") {
+				if evalContext.IsMathOnWithOp("/") {
 					t.Error("Math should be off for / with MathParensDivision")
 				}
 
 				evalContext.InParenthesis()
-				if !evalContext.IsMathOn("/") {
+				if !evalContext.IsMathOnWithOp("/") {
 					t.Error("Math should be on for / inside parentheses with MathParensDivision")
 				}
 
 				evalContext.OutOfParenthesis()
 				evalContext.Math = MathParens
 
-				if evalContext.IsMathOn("+") {
+				if evalContext.IsMathOnWithOp("+") {
 					t.Error("Math should be off for + with MathParens")
 				}
-				if evalContext.IsMathOn("/") {
+				if evalContext.IsMathOnWithOp("/") {
 					t.Error("Math should be off for / with MathParens")
 				}
 
 				evalContext.InParenthesis()
-				if !evalContext.IsMathOn("+") {
+				if !evalContext.IsMathOnWithOp("+") {
 					t.Error("Math should be on for + inside parentheses with MathParens")
 				}
-				if !evalContext.IsMathOn("/") {
+				if !evalContext.IsMathOnWithOp("/") {
 					t.Error("Math should be on for / inside parentheses with MathParens")
 				}
 			})
 
 			t.Run("should handle invalid operators when mathOn is true", func(t *testing.T) {
 				evalContext := NewEval(map[string]any{}, nil)
-				if !evalContext.IsMathOn("invalid") {
+				if !evalContext.IsMathOnWithOp("invalid") {
 					t.Error("Math should be on for invalid operator")
 				}
-				if !evalContext.IsMathOn("") {
+				if !evalContext.IsMathOnWithOp("") {
 					t.Error("Math should be on for empty operator")
 				}
 			})
@@ -289,13 +289,13 @@ func TestContexts(t *testing.T) {
 			t.Run("should respect mathOn setting", func(t *testing.T) {
 				evalContext := NewEval(map[string]any{}, nil)
 				evalContext.MathOn = false
-				if evalContext.IsMathOn("+") {
+				if evalContext.IsMathOnWithOp("+") {
 					t.Error("Math should be off when mathOn is false")
 				}
-				if evalContext.IsMathOn("/") {
+				if evalContext.IsMathOnWithOp("/") {
 					t.Error("Math should be off when mathOn is false")
 				}
-				if evalContext.IsMathOn("invalid") {
+				if evalContext.IsMathOnWithOp("invalid") {
 					t.Error("Math should be off for invalid operator when mathOn is false")
 				}
 			})

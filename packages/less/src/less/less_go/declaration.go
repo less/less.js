@@ -81,6 +81,34 @@ func (d *Declaration) GetType() string {
 	return "Declaration"
 }
 
+// GetTypeIndex returns the type index for visitor pattern
+func (d *Declaration) GetTypeIndex() int {
+	return 2 // Non-zero value to enable visitor pattern (different from Ruleset's 1)
+}
+
+// GetVariable returns whether this is a variable declaration
+func (d *Declaration) GetVariable() bool {
+	return d.variable
+}
+
+// GetName returns the declaration name
+func (d *Declaration) GetName() string {
+	if nameStr, ok := d.name.(string); ok {
+		return nameStr
+	}
+	return fmt.Sprintf("%v", d.name)
+}
+
+// GetMerge returns the merge flag
+func (d *Declaration) GetMerge() any {
+	return d.merge
+}
+
+// GetImportant returns whether this declaration is important
+func (d *Declaration) GetImportant() bool {
+	return d.important != ""
+}
+
 // evalName evaluates the name of the declaration
 func evalName(context any, name []any) string {
 	value := ""

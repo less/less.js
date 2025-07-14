@@ -66,8 +66,15 @@ func (v *Value) Accept(visitor any) {
 // Eval evaluates the value node
 func (v *Value) Eval(context any) (any, error) {
 	if len(v.Value) == 1 {
+		// Check for Variable specifically first
+		if variable, ok := v.Value[0].(*Variable); ok {
+			result, err := variable.Eval(context)
+			return result, err
+		}
+		
 		if evalValue, ok := v.Value[0].(Evaluator); ok {
-			return evalValue.Eval(context)
+			result, err := evalValue.Eval(context)
+			return result, err
 		}
 		return v.Value[0], nil
 	}
@@ -75,7 +82,14 @@ func (v *Value) Eval(context any) (any, error) {
 	// Evaluate each value in the array
 	evaluatedValues := make([]any, len(v.Value))
 	for i, val := range v.Value {
-		if evalValue, ok := val.(Evaluator); ok {
+		// Check for Variable specifically first
+		if variable, ok := val.(*Variable); ok {
+			evaluated, err := variable.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+			evaluatedValues[i] = evaluated
+		} else if evalValue, ok := val.(Evaluator); ok {
 			evaluated, err := evalValue.Eval(context)
 			if err != nil {
 				return nil, err

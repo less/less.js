@@ -86,12 +86,27 @@ func (q *Quoted) ContainsVariables() bool {
 	return variableRegex.MatchString(q.value)
 }
 
-// Eval evaluates the quoted string, replacing variables and properties
-func (q *Quoted) Eval(context EvalContext) (any, error) {
+// Eval evaluates the quoted string, replacing variables and properties  
+func (q *Quoted) Eval(context any) (any, error) {
 	value := q.value
 
-	// Get frames from context safely
-	frames := context.GetFrames()
+	// Get frames from context safely - handle both EvalContext and map[string]any
+	var frames []ParserFrame
+	if evalCtx, ok := context.(interface{ GetFrames() []ParserFrame }); ok {
+		frames = evalCtx.GetFrames()
+	} else if ctx, ok := context.(map[string]any); ok {
+		// Extract frames from map context
+		if framesAny, exists := ctx["frames"]; exists {
+			if frameSlice, ok := framesAny.([]any); ok {
+				frames = make([]ParserFrame, 0, len(frameSlice))
+				for _, f := range frameSlice {
+					if frame, ok := f.(ParserFrame); ok {
+						frames = append(frames, frame)
+					}
+				}
+			}
+		}
+	}
 	if frames == nil {
 		frames = make([]ParserFrame, 0) // Provide empty frames if none available
 	}
@@ -127,18 +142,48 @@ func (q *Quoted) Eval(context EvalContext) (any, error) {
 	}
 
 	// variableReplacement handles @{name} syntax
-	variableReplacement := func(_ string, name string) (string, error) {
+	variableReplacement := func(match string, name string) (string, error) {
 		// First try direct frame access for the test case
 		for _, frame := range frames {
 			if varResult := frame.Variable("@" + name); varResult != nil {
 				if val, ok := varResult["value"]; ok {
+					var result string
 					if quoted, ok := val.(*Quoted); ok {
-						return quoted.value, nil
+						result = quoted.value
+					} else if anon, ok := val.(*Anonymous); ok {
+						// Handle Anonymous objects by getting their value
+						if str, ok := anon.Value.(string); ok {
+							result = str
+						} else if cssable, ok := anon.Value.(interface{ ToCSS(any) string }); ok {
+							result = cssable.ToCSS(nil)
+						} else {
+							result = fmt.Sprintf("%v", anon.Value)
+						}
+					} else if value, ok := val.(*Value); ok {
+						// Handle Value objects by evaluating them
+						evaluated, err := value.Eval(context)
+						if err != nil {
+							result = fmt.Sprintf("%v", val)
+						} else if anon, ok := evaluated.(*Anonymous); ok {
+							// Handle Anonymous results from Value eval
+							if str, ok := anon.Value.(string); ok {
+								result = str
+							} else if cssable, ok := anon.Value.(interface{ ToCSS(any) string }); ok {
+								result = cssable.ToCSS(nil)
+							} else {
+								result = fmt.Sprintf("%v", anon.Value)
+							}
+						} else if cssable, ok := evaluated.(interface{ ToCSS(any) string }); ok {
+							result = cssable.ToCSS(nil)
+						} else {
+							result = fmt.Sprintf("%v", evaluated)
+						}
 					} else if cssable, ok := val.(interface{ ToCSS(any) string }); ok {
-						return cssable.ToCSS(nil), nil
+						result = cssable.ToCSS(nil)
 					} else {
-						return fmt.Sprintf("%v", val), nil
+						result = fmt.Sprintf("%v", val)
 					}
+					return result, nil
 				}
 			}
 		}

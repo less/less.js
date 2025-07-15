@@ -206,4 +206,22 @@ func (v *Variable) Eval(context any) (any, error) {
 
 	return nil, fmt.Errorf("name: variable %s is undefined (index: %d, filename: %s)", 
 		name, v.GetIndex(), v.FileInfo()["filename"])
+}
+
+// ToCSS converts the variable to CSS by evaluating it first
+func (v *Variable) ToCSS(context any) string {
+	result, err := v.Eval(context)
+	if err != nil {
+		// Return the variable name as fallback, similar to how failed evaluation might be handled
+		return v.name
+	}
+	
+	// Convert result to CSS string
+	if cssObj, ok := result.(interface{ ToCSS(any) string }); ok {
+		return cssObj.ToCSS(context)
+	} else if str, ok := result.(string); ok {
+		return str
+	} else {
+		return fmt.Sprintf("%v", result)
+	}
 } 

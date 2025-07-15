@@ -322,8 +322,13 @@ func (d *DefaultPluginLoader) LoadPlugin(path, currentDirectory string, context 
 }
 
 // DefaultFunctions provides a basic implementation of Functions
-type DefaultFunctions struct{}
+type DefaultFunctions struct{
+	registry *Registry
+}
 
 func (d *DefaultFunctions) GetFunctionRegistry() any {
+	if d.registry != nil {
+		return d.registry
+	}
 	return map[string]any{}
 }

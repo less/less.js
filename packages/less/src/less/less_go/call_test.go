@@ -92,7 +92,7 @@ type mockEvalNode struct {
 	err   error
 }
 
-func (n *mockEvalNode) Eval(context EvalContext) (any, error) {
+func (n *mockEvalNode) Eval(context any) (any, error) {
 	if n.err != nil {
 		return nil, n.err
 	}

@@ -45,6 +45,7 @@ type ToCSSOptions struct {
 	NumPrecision     int
 	SourceMap        any
 	PluginManager    any
+	Functions        any
 }
 
 // ToCSS converts the parse tree to CSS
@@ -64,6 +65,7 @@ func (pt *ParseTree) ToCSS(options *ToCSSOptions) (*ToCSSResult, error) {
 			"numPrecision":     options.NumPrecision,
 			"sourceMap":        options.SourceMap,
 			"pluginManager":    options.PluginManager,
+			"functions":        options.Functions,
 		}
 	} else {
 		optionsMap = make(map[string]any)

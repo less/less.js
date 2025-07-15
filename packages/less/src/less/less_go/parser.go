@@ -564,9 +564,27 @@ func (p *Parser) parseInternal(str string, callback func(*LessError, *Ruleset), 
 
 	// Handle imports
 	if processImports, ok := p.context["processImports"].(bool); !ok || processImports {
-		// TODO: Implement ImportVisitor when available
-		// new visitors.ImportVisitor(imports, finish).run(root)
-		finish(nil)
+		// Create adapter function to match expected signature
+		finishAdapter := func(err error) {
+			if err != nil {
+				if lessErr, ok := err.(*LessError); ok {
+					finish(lessErr)
+				} else {
+					// Convert regular error to LessError
+					finish(NewLessError(ErrorDetails{
+						Type:     "Import",
+						Message:  err.Error(),
+						Index:    0,
+						Filename: filename,
+					}, contents, filename))
+				}
+			} else {
+				finish(nil)
+			}
+		}
+		// Create and run ImportVisitor
+		importVisitor := NewImportVisitor(p.imports, finishAdapter)
+		importVisitor.Run(root)
 	} else {
 		finish(nil)
 	}
@@ -751,7 +769,7 @@ func (p *Parsers) Declaration() any {
 	}
 
 	if name != nil {
-		isVariable = false
+		// Determine if this is a variable declaration
 		if nameStr, ok := name.(string); ok {
 			isVariable = true
 			if nameStr != "" {
@@ -760,6 +778,8 @@ func (p *Parsers) Declaration() any {
 					hasDR = true
 				}
 			}
+		} else {
+			isVariable = false
 		}
 
 		if !hasDR {

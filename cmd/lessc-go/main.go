@@ -80,15 +80,24 @@ func compileLess(factory map[string]any, input string, options map[string]any) (
 	// Try to use the render function
 	if renderFunc, ok := factory["render"].(func(string, ...any) any); ok {
 		result := renderFunc(input, options)
-		
+
+		// Handle RenderPromise results
+		if promise, ok := result.(*less_go.RenderPromise); ok {
+			promiseResult, err := promise.Await()
+			if err != nil {
+				return "", fmt.Errorf("render promise failed: %v", err)
+			}
+			result = promiseResult
+		}
+
 		// Check if we got a CSS string directly from ToCSS
 		if css, ok := result.(string); ok {
 			return fmt.Sprintf("/* Go Less Compiler v%s - Success! */\n%s", version, css), nil
 		}
-		
+
 		// Check if we got a Ruleset that can generate CSS (fallback for old path)
 		if ruleset, ok := result.(*less_go.Ruleset); ok {
-			
+
 			// Create a CSS output collector
 			var cssOutput strings.Builder
 			output := &less_go.CSSOutput{
@@ -101,38 +110,38 @@ func compileLess(factory map[string]any, input string, options map[string]any) (
 					return cssOutput.Len() == 0
 				},
 			}
-			
+
 			// Generate CSS
 			context := map[string]any{
 				"compress": false,
 			}
 			ruleset.GenCSS(context, output)
-			
+
 			css := cssOutput.String()
 			return fmt.Sprintf("/* Go Less Compiler v%s - Success! */\n%s", version, css), nil
 		}
-		
+
 		if resultMap, ok := result.(map[string]any); ok {
 			if resultMap["type"] == "Render" {
 				// Current implementation is still stubbed
-				return fmt.Sprintf("/* Go Less Compiler v%s - Stub Implementation */\n/* Input was: %s */\n/* TODO: Implement actual CSS generation */\n%s\n", 
-					version, 
-					options["filename"], 
+				return fmt.Sprintf("/* Go Less Compiler v%s - Stub Implementation */\n/* Input was: %s */\n/* TODO: Implement actual CSS generation */\n%s\n",
+					version,
+					options["filename"],
 					input), nil
 			}
-			
+
 			// Check if it's a parsed result (Ruleset)
 			if resultMap["type"] == "Ruleset" {
 				// We got parsed AST! Now we need CSS generation
-				return fmt.Sprintf("/* Go Less Compiler v%s - Parsed Successfully! */\n/* Got AST: %+v */\n/* TODO: Implement CSS generation from AST */\n", 
-					version, 
+				return fmt.Sprintf("/* Go Less Compiler v%s - Parsed Successfully! */\n/* Got AST: %+v */\n/* TODO: Implement CSS generation from AST */\n",
+					version,
 					resultMap), nil
 			}
 		}
-		
-		return fmt.Sprintf("/* Go Less Compiler v%s - Error */\n/* Unexpected result type: %T */", version, result), nil
+
+		return fmt.Sprintf("/* Go Less Compiler v%s - Error */\n/* Unexpected result type: %T */\n/* Result: %+v */", version, result, result), nil
 	}
-	
+
 	return "", fmt.Errorf("render function not found or not callable")
 }
 

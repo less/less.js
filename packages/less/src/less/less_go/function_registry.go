@@ -26,7 +26,8 @@ func (r *Registry) Add(name string, fn any) {
 
 	// Check if the key already exists (equivalent to hasOwnProperty check)
 	if _, exists := r.data[name]; exists {
-		// TODO warn
+		// TODO: Implement warning when function already exists
+		_ = exists // Suppress unused variable warning
 	}
 	r.data[name] = fn
 }
@@ -65,4 +66,26 @@ func (r *Registry) Create(base *Registry) *Registry {
 }
 
 // DefaultRegistry is the default registry instance (equivalent to the default export in JS)
-var DefaultRegistry = makeRegistry(nil) 
+var DefaultRegistry = makeRegistry(nil)
+
+// RegistryFunctionAdapter adapts the Registry to work with function_caller.FunctionRegistry interface
+type RegistryFunctionAdapter struct {
+	registry *Registry
+}
+
+// NewRegistryFunctionAdapter creates a new adapter
+func NewRegistryFunctionAdapter(registry *Registry) *RegistryFunctionAdapter {
+	return &RegistryFunctionAdapter{registry: registry}
+}
+
+// Get implements the FunctionRegistry interface used by function_caller
+func (r *RegistryFunctionAdapter) Get(name string) FunctionDefinition {
+	fn := r.registry.Get(name)
+	if fn == nil {
+		return nil
+	}
+	if funcDef, ok := fn.(FunctionDefinition); ok {
+		return funcDef
+	}
+	return nil
+}

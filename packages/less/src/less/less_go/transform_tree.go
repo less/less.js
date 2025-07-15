@@ -25,6 +25,30 @@ func TransformTree(root any, options map[string]any) any {
 	evalEnv["frames"] = []any{}
 	evalEnv["importantScope"] = []map[string]bool{}
 	evalEnv["mathOn"] = true
+	
+	// Add function registry support - check if functions are provided in options
+	var functionRegistry *Registry
+	if functionsObj, ok := options["functions"]; ok {
+		if defaultFuncs, ok := functionsObj.(*DefaultFunctions); ok && defaultFuncs.registry != nil {
+			functionRegistry = defaultFuncs.registry.Inherit()
+		}
+	}
+	if functionRegistry == nil {
+		// Fallback to global registry with list functions
+		functionRegistry = DefaultRegistry.Inherit()
+		// Add list functions to the registry
+		listFunctions := GetListFunctions()
+		for name, fn := range listFunctions {
+			if functionImpl, ok := fn.(func(any, any) any); ok {
+				// Wrap simple Go functions to match FunctionDefinition interface
+				functionRegistry.Add(name, &SimpleFunctionDef{
+					name: name,
+					fn:   functionImpl,
+				})
+			}
+		}
+	}
+	evalEnv["functionRegistry"] = functionRegistry
 	// Set default math mode to ALWAYS for now (can be overridden by options)
 	if _, exists := evalEnv["math"]; !exists {
 		evalEnv["math"] = Math.Always

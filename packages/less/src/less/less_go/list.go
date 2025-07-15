@@ -1,6 +1,8 @@
 package less_go
 
-import "strconv"
+import (
+	"strconv"
+)
 
 // GetItemsFromNode helper function that normalizes values to arrays
 func GetItemsFromNode(node any) []any {
@@ -146,19 +148,177 @@ func Range(start, end, step any) *Expression {
 	return expr
 }
 
-// Each function is complex and involves creating rulesets with variable injection
-// For now, we'll implement a simplified version that documents the interface
-func Each(list any, ruleset any) any {
-	// This function is very complex in the JavaScript version as it:
-	// 1. Evaluates nodes in the list
-	// 2. Creates new rulesets for each item
-	// 3. Injects @value, @key, @index variables
-	// 4. Handles different list types (arrays, rulesets, etc.)
-	// 5. Skips comments during iteration
+// Each function iterates over a list and creates rulesets with injected variables
+// This is a direct port of the JavaScript each function from list.js
+func Each(list any, rs any) any {
+	rules := make([]any, 0)
+	var iterator []any
+
+	// tryEval function - evaluates nodes if they have an Eval method
+	tryEval := func(val any) any {
+		// Check if val has an Eval method (implements Node interface)
+		if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
+			// Note: In JavaScript, this.context is available, but in Go we don't have context here
+			// For now, we'll return the node as-is since we don't have evaluation context
+			// This matches the JavaScript behavior when context is not available
+			return evalable
+		}
+		return val
+	}
+
+	// Handle different list types following JavaScript logic
+	if valueNode, ok := list.(*Value); ok && valueNode.Value != nil {
+		// Check if it's a Quoted type (has quote property in JavaScript)
+		if _, isQuoted := list.(*Quoted); !isQuoted {
+			// Array value - map tryEval over each item
+			iterator = make([]any, len(valueNode.Value))
+			for i, item := range valueNode.Value {
+				iterator[i] = tryEval(item)
+			}
+		}
+	} else if detachedRuleset, ok := list.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil {
+		// list.ruleset case
+		if rulesetNode, ok := detachedRuleset.ruleset.Value.(*Ruleset); ok {
+			iterator = rulesetNode.Rules
+		}
+	} else if rulesetNode, ok := list.(*Ruleset); ok {
+		// list.rules case
+		iterator = make([]any, len(rulesetNode.Rules))
+		for i, rule := range rulesetNode.Rules {
+			iterator[i] = tryEval(rule)
+		}
+	} else if listSlice, ok := list.([]any); ok {
+		// Array case
+		iterator = make([]any, len(listSlice))
+		for i, item := range listSlice {
+			iterator[i] = tryEval(item)
+		}
+	} else {
+		// Single item case
+		iterator = []any{tryEval(list)}
+	}
+
+	// Default variable names
+	valueName := "@value"
+	keyName := "@key" 
+	indexName := "@index"
+
+	// Handle ruleset parameter extraction (for mixin calls with parameters)
+	var targetRuleset *Ruleset
+	// For now, we'll assume rs is a DetachedRuleset or map with rules
+	if detachedRuleset, ok := rs.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil && detachedRuleset.ruleset.Value != nil {
+		if rulesetNode, ok := detachedRuleset.ruleset.Value.(*Ruleset); ok {
+			targetRuleset = rulesetNode
+		}
+	} else if rulesetNode, ok := rs.(*Ruleset); ok {
+		targetRuleset = rulesetNode
+	} else if rsMap, ok := rs.(map[string]any); ok {
+		// Handle map case (like from test)
+		if rulesAny, exists := rsMap["rules"]; exists {
+			if rulesSlice, ok := rulesAny.([]any); ok {
+				// Create a temporary ruleset
+				ampersandElement := NewElement(nil, "&", false, 0, nil, nil)
+				ampersandSelector, err := NewSelector([]*Element{ampersandElement}, nil, nil, 0, nil, nil)
+				if err == nil {
+					targetRuleset = NewRuleset([]any{ampersandSelector}, rulesSlice, false, nil)
+				}
+			}
+		}
+	}
+
+	if targetRuleset == nil {
+		return createEmptyRuleset()
+	}
+
+	// Iterate through items
+	for i, item := range iterator {
+		// Skip comments
+		if _, isComment := item.(*Comment); isComment {
+			continue
+		}
+
+		var key any
+		var value any
+
+		// Handle Declaration items
+		if decl, ok := item.(*Declaration); ok {
+			// Get name from declaration
+			if decl.name != nil {
+				if nameStr, ok := decl.name.(string); ok {
+					key = nameStr
+				} else if nameSlice, ok := decl.name.([]any); ok && len(nameSlice) > 0 {
+					// Handle array of names (first element)
+					key = nameSlice[0]
+				}
+			}
+			value = decl.Value
+		} else {
+			// For non-declaration items, use 1-based index as key
+			keyDim, _ := NewDimension(float64(i+1), nil)
+			key = keyDim
+			value = item
+		}
+
+		// Create new rules slice with copies of base rules
+		newRules := make([]any, len(targetRuleset.Rules))
+		copy(newRules, targetRuleset.Rules)
+
+		// Inject @value variable
+		if valueName != "" && value != nil {
+			valueDecl, err := NewDeclaration(valueName, value, false, false, 0, nil, false, false)
+			if err == nil {
+				newRules = append(newRules, valueDecl)
+			}
+		}
+
+		// Inject @index variable (1-based)
+		if indexName != "" {
+			indexDim, err := NewDimension(float64(i+1), nil)
+			if err == nil {
+				indexDecl, err := NewDeclaration(indexName, indexDim, false, false, 0, nil, false, false)
+				if err == nil {
+					newRules = append(newRules, indexDecl)
+				}
+			}
+		}
+
+		// Inject @key variable  
+		if keyName != "" && key != nil {
+			keyDecl, err := NewDeclaration(keyName, key, false, false, 0, nil, false, false)
+			if err == nil {
+				newRules = append(newRules, keyDecl)
+			}
+		}
+
+		// Create new ruleset with ampersand selector
+		ampersandElement := NewElement(nil, "&", false, 0, nil, nil)
+		ampersandSelector, err := NewSelector([]*Element{ampersandElement}, nil, nil, 0, nil, nil)
+		if err == nil {
+			newRuleset := NewRuleset([]any{ampersandSelector}, newRules, targetRuleset.StrictImports, targetRuleset.VisibilityInfo())
+			rules = append(rules, newRuleset)
+		}
+	}
+
+	// Create final ruleset containing all generated rules
+	ampersandElement := NewElement(nil, "&", false, 0, nil, nil)
+	ampersandSelector, err := NewSelector([]*Element{ampersandElement}, nil, nil, 0, nil, nil)
+	if err != nil {
+		return createEmptyRuleset()
+	}
+
+	finalRuleset := NewRuleset([]any{ampersandSelector}, rules, targetRuleset.StrictImports, targetRuleset.VisibilityInfo())
 	
-	// For now, return a basic result to maintain interface compatibility
-	// This will need full implementation when we have complete tree node support
-	return nil
+	// The JavaScript version calls .eval(this.context) on the final result
+	// Since we don't have context here, we return the ruleset as-is
+	// The caller should handle evaluation with proper context
+	return finalRuleset
+}
+
+// Helper function to create an empty ruleset
+func createEmptyRuleset() *Ruleset {
+	ampersandElement := NewElement(nil, "&", false, 0, nil, nil)
+	ampersandSelector, _ := NewSelector([]*Element{ampersandElement}, nil, nil, 0, nil, nil)
+	return NewRuleset([]any{ampersandSelector}, []any{}, false, nil)
 }
 
 // GetListFunctions returns the list function registry

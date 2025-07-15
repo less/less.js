@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -53,7 +54,7 @@ func E(str interface{}) (*Quoted, error) {
 	return NewQuoted("\"", value, true, 0, nil), nil
 }
 
-// Escape URI-encodes a string and replaces specific characters
+// Escape URI-encodes a string and replaces specific characters (matches JS encodeURI + specific replacements)
 func Escape(str interface{}) (*Anonymous, error) {
 	var value string
 	
@@ -70,9 +71,23 @@ func Escape(str interface{}) (*Anonymous, error) {
 		value = ""
 	}
 	
-	// URI encode specific characters as in the JavaScript version
+	// Match JavaScript behavior exactly: encodeURI(...).replace(/=/g, '%3D').replace(/:/g, '%3A')...
+	// JavaScript encodeURI doesn't encode :/?=#[]@ but does encode spaces and special chars
 	encoded := value
+	
+	// Only encode characters that encodeURI actually encodes
 	encoded = strings.ReplaceAll(encoded, " ", "%20")
+	encoded = strings.ReplaceAll(encoded, "\"", "%22")
+	encoded = strings.ReplaceAll(encoded, "<", "%3C")
+	encoded = strings.ReplaceAll(encoded, ">", "%3E")
+	encoded = strings.ReplaceAll(encoded, "`", "%60")
+	encoded = strings.ReplaceAll(encoded, "\\", "%5C")
+	encoded = strings.ReplaceAll(encoded, "^", "%5E")
+	encoded = strings.ReplaceAll(encoded, "{", "%7B")
+	encoded = strings.ReplaceAll(encoded, "|", "%7C")
+	encoded = strings.ReplaceAll(encoded, "}", "%7D")
+	
+	// Then do the specific replacements from the JavaScript version  
 	encoded = strings.ReplaceAll(encoded, "=", "%3D")
 	encoded = strings.ReplaceAll(encoded, ":", "%3A")
 	encoded = strings.ReplaceAll(encoded, "#", "%23")
@@ -80,7 +95,6 @@ func Escape(str interface{}) (*Anonymous, error) {
 	encoded = strings.ReplaceAll(encoded, "(", "%28")
 	encoded = strings.ReplaceAll(encoded, ")", "%29")
 	encoded = strings.ReplaceAll(encoded, "?", "%3F")
-	encoded = strings.ReplaceAll(encoded, "&", "%26")
 	
 	return NewAnonymous(encoded, 0, nil, false, false, nil), nil
 }
@@ -181,26 +195,25 @@ func Format(stringArg interface{}, args ...interface{}) (*Quoted, error) {
 	
 	result := stringVal
 	
-	// Replace placeholders
-	for i, arg := range args {
-		if i >= len(args) {
-			break
+	// Replace placeholders sequentially, matching JavaScript behavior exactly
+	re := regexp.MustCompile(`%[sdaSDA]`)
+	argIndex := 0
+	
+	result = re.ReplaceAllStringFunc(result, func(match string) string {
+		if argIndex >= len(args) {
+			return match // Return the placeholder unchanged if no more args
 		}
 		
-		// Find the next placeholder (both upper and lowercase)
-		re := regexp.MustCompile(`%[sdaSDA]`)
-		match := re.FindString(result)
-		if match == "" {
-			break
-		}
+		arg := args[argIndex]
+		argIndex++
 		
 		var value string
 		placeholder := strings.ToLower(match)
 		isUppercase := match != placeholder
 		
-		// Get the value based on placeholder type
-		if placeholder == "%s" {
-			// String value - use .value for Quoted types
+		// Get the value based on placeholder type - matches JS exactly
+		if strings.Contains(placeholder, "s") {
+			// String value - use .value for Quoted types (matches JS: args[i].value)
 			if quotedArg, ok := arg.(*Quoted); ok {
 				value = quotedArg.value
 			} else if valuer, ok := arg.(interface{ GetValue() interface{} }); ok {
@@ -213,7 +226,7 @@ func Format(stringArg interface{}, args ...interface{}) (*Quoted, error) {
 				value = ""
 			}
 		} else {
-			// %d or %a - use toCSS
+			// %d or %a - use toCSS (matches JS: args[i].toCSS())
 			if cssable, ok := arg.(interface{ ToCSS(interface{}) string }); ok {
 				value = cssable.ToCSS(nil)
 			} else if valuer, ok := arg.(interface{ GetValue() interface{} }); ok {
@@ -227,28 +240,19 @@ func Format(stringArg interface{}, args ...interface{}) (*Quoted, error) {
 			}
 		}
 		
-		// Apply URL encoding for uppercase placeholders
+		// Apply URL encoding for uppercase placeholders (matches JS: encodeURIComponent)
 		if isUppercase {
-			// Use the same encoding as the Escape function
-			value = strings.ReplaceAll(value, " ", "%20")
-			value = strings.ReplaceAll(value, "=", "%3D")
-			value = strings.ReplaceAll(value, ":", "%3A")
-			value = strings.ReplaceAll(value, "#", "%23")
-			value = strings.ReplaceAll(value, ";", "%3B")
-			value = strings.ReplaceAll(value, "(", "%28")
-			value = strings.ReplaceAll(value, ")", "%29")
-			value = strings.ReplaceAll(value, "?", "%3F")
-			value = strings.ReplaceAll(value, "&", "%26")
+			// JavaScript uses encodeURIComponent which does full URI encoding
+			// url.QueryEscape uses + for spaces but encodeURIComponent uses %20
+			encoded := url.QueryEscape(value)
+			encoded = strings.ReplaceAll(encoded, "+", "%20")
+			return encoded
 		}
 		
-		// Replace the first occurrence
-		re = regexp.MustCompile(`%[sdaSDA]`)
-		if loc := re.FindStringIndex(result); loc != nil {
-			result = result[:loc[0]] + value + result[loc[1]:]
-		}
-	}
+		return value
+	})
 	
-	// Replace %% with %
+	// Replace %% with % (matches JavaScript behavior)
 	result = strings.ReplaceAll(result, "%%", "%")
 	
 	return NewQuoted(quote, result, escaped, 0, nil), nil

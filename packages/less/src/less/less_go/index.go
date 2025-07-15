@@ -6,6 +6,30 @@ import (
 	"strings"
 )
 
+// SimpleFunctionDef wraps a simple Go function to implement FunctionDefinition
+type SimpleFunctionDef struct {
+	name string
+	fn   func(any, any) any
+}
+
+func (s *SimpleFunctionDef) Call(args ...any) (any, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("function %s expects 2 arguments, got %d", s.name, len(args))
+	}
+	result := s.fn(args[0], args[1])
+	return result, nil
+}
+
+func (s *SimpleFunctionDef) CallCtx(ctx *Context, args ...any) (any, error) {
+	// For these simple functions, we don't need context
+	return s.Call(args...)
+}
+
+func (s *SimpleFunctionDef) NeedsEvalArgs() bool {
+	// Most list functions like 'each' need unevaluated args
+	return s.name != "each"
+}
+
 // Factory creates a new Less instance
 func Factory(environment map[string]any, fileManagers []any) map[string]any {
 	var sourceMapOutput any
@@ -302,11 +326,15 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 				parseTreeFactory := DefaultParseTreeFactory(nil)
 				parseTreeInstance := parseTreeFactory.NewParseTree(root, imports)
 				
+				// Get functions from environment 
+				functionsObj := createFunctions(env)
+				
 				// Convert options to ToCSSOptions
 				toCSSOptions := &ToCSSOptions{
 					Compress:     false,
 					StrictUnits:  false,
 					NumPrecision: 8,
+					Functions:    functionsObj,
 				}
 				if opts != nil {
 					if compress, ok := opts["compress"].(bool); ok {
@@ -460,7 +488,25 @@ func createParser() any {
 }
 
 func createFunctions(env any) any {
-	return map[string]any{"type": "Functions"}
+	// Create a function registry and populate it with all functions
+	registry := DefaultRegistry.Inherit()
+	
+	// Add all list functions
+	listFunctions := GetListFunctions()
+	for name, fn := range listFunctions {
+		if functionImpl, ok := fn.(func(any, any) any); ok {
+			// Wrap simple Go functions to match FunctionDefinition interface
+			registry.Add(name, &SimpleFunctionDef{
+				name: name,
+				fn:   functionImpl,
+			})
+		}
+	}
+	
+	// Add other built-in functions here as needed
+	// TODO: Add math functions, color functions, etc.
+	
+	return &DefaultFunctions{registry: registry}
 }
 
 func createContexts() any {

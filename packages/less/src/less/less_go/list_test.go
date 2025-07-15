@@ -722,14 +722,63 @@ func TestRange(t *testing.T) {
 }
 
 func TestEach(t *testing.T) {
-	t.Run("should return nil for now (placeholder)", func(t *testing.T) {
+	t.Run("should return a ruleset with injected variables", func(t *testing.T) {
 		list := createValue([]any{createDim(10, nil), createDim(20, nil)})
 		ruleset := map[string]any{"rules": []any{}}
 
 		result := Each(list, ruleset)
 
-		if result != nil {
-			t.Errorf("Expected nil (placeholder implementation), got %v", result)
+		if result == nil {
+			t.Errorf("Expected a Ruleset result, got nil")
+		}
+
+		if resultRuleset, ok := result.(*Ruleset); ok {
+			// Should have 2 rules (one for each item in the list)
+			if len(resultRuleset.Rules) != 2 {
+				t.Errorf("Expected 2 rules, got %d", len(resultRuleset.Rules))
+			}
+		} else {
+			t.Errorf("Expected *Ruleset, got %T", result)
+		}
+	})
+
+	t.Run("should handle empty list", func(t *testing.T) {
+		list := createValue([]any{})
+		ruleset := map[string]any{"rules": []any{}}
+
+		result := Each(list, ruleset)
+
+		if result == nil {
+			t.Errorf("Expected a Ruleset result, got nil")
+		}
+
+		if resultRuleset, ok := result.(*Ruleset); ok {
+			// Should have 0 rules for empty list
+			if len(resultRuleset.Rules) != 0 {
+				t.Errorf("Expected 0 rules for empty list, got %d", len(resultRuleset.Rules))
+			}
+		} else {
+			t.Errorf("Expected *Ruleset, got %T", result)
+		}
+	})
+
+	t.Run("should handle single item", func(t *testing.T) {
+		singleItem := createDim(42, nil)
+		ruleset := map[string]any{"rules": []any{}}
+
+		result := Each(singleItem, ruleset)
+
+		if result == nil {
+			t.Errorf("Expected a Ruleset result, got nil")
+		}
+
+		if resultRuleset, ok := result.(*Ruleset); ok {
+			// Should have 1 rule for single item
+			if len(resultRuleset.Rules) != 1 {
+				t.Errorf("Expected 1 rule for single item, got %d", len(resultRuleset.Rules))
+			}
+		} else {
+			t.Errorf("Expected *Ruleset, got %T", result)
 		}
 	})
 }

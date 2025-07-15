@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Anonymous represents an anonymous node in the Less AST
@@ -161,6 +162,24 @@ func (a *Anonymous) GenCSS(context any, output *CSSOutput) {
 	}
 }
 
+// ToCSS generates CSS string representation
+func (a *Anonymous) ToCSS(context any) string {
+	// Use GenCSS internally
+	var chunks []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			if chunk != nil {
+				chunks = append(chunks, fmt.Sprintf("%v", chunk))
+			}
+		},
+		IsEmpty: func() bool {
+			return len(chunks) == 0
+		},
+	}
+	a.GenCSS(context, output)
+	result := strings.Join(chunks, "")
+	return result
+}
 
 // CopyVisibilityInfo copies visibility information from another node
 func (a *Anonymous) CopyVisibilityInfo(info map[string]any) {

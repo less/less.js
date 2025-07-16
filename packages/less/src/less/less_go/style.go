@@ -9,6 +9,11 @@ var StyleFunctions = map[string]interface{}{
 	"style": Style,
 }
 
+// GetWrappedStyleFunctions returns style functions for registry
+func GetWrappedStyleFunctions() map[string]interface{} {
+	return StyleFunctions
+}
+
 // StyleContext represents the context needed for style function execution
 type StyleContext struct {
 	Index           int

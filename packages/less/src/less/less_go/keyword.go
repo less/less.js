@@ -1,5 +1,10 @@
 package less_go
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Keyword represents a keyword node in the Less AST
 type Keyword struct {
 	*Node
@@ -32,6 +37,21 @@ func (k *Keyword) GenCSS(context any, output *CSSOutput) {
 		})
 	}
 	output.Add(k.value, nil, nil)
+}
+
+// ToCSS generates CSS string representation
+func (k *Keyword) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	k.GenCSS(context, output)
+	return strings.Join(strs, "")
 }
 
 // Predefined keywords

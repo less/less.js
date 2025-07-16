@@ -30,6 +30,12 @@ func (tf *TypesFunctions) GetFunctions() map[string]any {
 	}
 }
 
+// GetWrappedTypesFunctions returns type functions for registry
+func GetWrappedTypesFunctions() map[string]interface{} {
+	tf := &TypesFunctions{}
+	return tf.GetFunctions()
+}
+
 // isa is a helper function that checks if a value is of a specific type
 func (tf *TypesFunctions) isa(n any, typeName string) (*Keyword, error) {
 	switch typeName {

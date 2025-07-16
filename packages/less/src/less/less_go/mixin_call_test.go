@@ -199,9 +199,8 @@ func TestMixinCall_Format(t *testing.T) {
 		}
 
 		result := mixinCall.Format(args)
-		// Note: The selector.ToCSS() returns empty in this test context,
-		// but the argument formatting logic is correct
-		expected := "(color:red, size:10px)"
+		// Format should return selector name + arguments like JavaScript version
+		expected := "test(color:red, size:10px)"
 		assertEqual(t, expected, result, "Format should match expected pattern")
 	})
 
@@ -219,7 +218,7 @@ func TestMixinCall_Format(t *testing.T) {
 		}
 
 		result := mixinCall.Format(args)
-		expected := "(red, 10px)"
+		expected := "test(red, 10px)"
 		assertEqual(t, expected, result, "Format should match expected pattern")
 	})
 
@@ -242,7 +241,7 @@ func TestMixinCall_Format(t *testing.T) {
 		}
 
 		result := mixinCall.Format(args)
-		expected := "(color:red, 10px, border:1px solid)"
+		expected := "test(color:red, 10px, border:1px solid)"
 		assertEqual(t, expected, result, "Format should match expected pattern")
 	})
 
@@ -261,7 +260,7 @@ func TestMixinCall_Format(t *testing.T) {
 		}
 
 		result := mixinCall.Format(args)
-		expected := "(color:red, ???)"
+		expected := "test(color:red, ???)"
 		assertEqual(t, expected, result, "Format should use ??? for non-ToCSS values")
 	})
 
@@ -270,7 +269,7 @@ func TestMixinCall_Format(t *testing.T) {
 		mixinCall, _ := NewMixinCall(elements, []any{}, 0, make(map[string]any), false)
 
 		result := mixinCall.Format(nil)
-		expected := "()"
+		expected := "test()"
 		assertEqual(t, expected, result, "Format should show empty parentheses")
 	})
 
@@ -279,7 +278,7 @@ func TestMixinCall_Format(t *testing.T) {
 		mixinCall, _ := NewMixinCall(elements, []any{}, 0, make(map[string]any), false)
 
 		result := mixinCall.Format([]any{})
-		expected := "()"
+		expected := "test()"
 		assertEqual(t, expected, result, "Format should show empty parentheses")
 	})
 }
@@ -361,7 +360,7 @@ type mockEvalFrame struct {
 	findResult []any
 }
 
-func (mf *mockEvalFrame) Find(selector *Selector, self any, filter func(any) bool) []any {
+func (mf *mockEvalFrame) Find(selector any, self any, filter func(any) bool) []any {
 	return mf.findResult
 }
 

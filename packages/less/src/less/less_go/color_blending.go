@@ -169,3 +169,8 @@ func GetColorBlendingFunctions() map[string]any {
 		"negation":   ColorBlendNegation,
 	}
 }
+
+// GetWrappedColorBlendingFunctions returns color blending functions for registry
+func GetWrappedColorBlendingFunctions() map[string]interface{} {
+	return GetColorBlendingFunctions()
+}

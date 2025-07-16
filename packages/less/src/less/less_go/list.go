@@ -332,3 +332,8 @@ func GetListFunctions() map[string]any {
 		"each":    Each,
 	}
 }
+
+// GetWrappedListFunctions returns list functions for registry
+func GetWrappedListFunctions() map[string]interface{} {
+	return GetListFunctions()
+}

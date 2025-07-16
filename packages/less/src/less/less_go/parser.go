@@ -495,7 +495,10 @@ func (p *Parser) parseInternal(str string, callback func(*LessError, *Ruleset), 
 	contents[filename] = str
 
 	// Start parsing
-	chunkInput, _ := p.context["chunkInput"].(bool)
+	chunkInput := true // Default to true for main parsing (comments should be stripped)
+	if val, ok := p.context["chunkInput"].(bool); ok {
+		chunkInput = val
+	}
 	p.parserInput.Start(str, chunkInput, func(msg string, index int) {
 		panic(NewLessError(ErrorDetails{
 			Index:    index,
@@ -2752,14 +2755,16 @@ func (p *Parsers) NestableAtRule() any {
 func (p *Parsers) Element() any {
 	var e any
 	var c any
+	var v any
 	index := p.parser.parserInput.GetIndex()
 
 	c = p.Combinator()
 
-	// Parse element value - simplified for now
+	// Parse element value using patterns from JavaScript parser
 	e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:\d+\.\d+|\d+)%`))
 	if e == nil {
-		e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+`))
+		// Match the JavaScript regex pattern more closely, but also allow @{} for variable interpolation
+		e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:[.#]?|:*)(?:[\w-]|@\{[\w-]+\}|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+`))
 	}
 	if e == nil {
 		e = p.parser.parserInput.Char('*')
@@ -2774,11 +2779,54 @@ func (p *Parsers) Element() any {
 		e = p.parser.parserInput.Re(regexp.MustCompile(`^\([^&()@]+\)`))
 	}
 	if e == nil {
-		// Fix: Remove the unsupported positive lookahead
-		e = p.parser.parserInput.Re(regexp.MustCompile(`^[.#:]`))
+		// Handle [.#:] followed by @ (for variable interpolation)
+		// Note: Go regexp doesn't support lookaheads, so we'll check manually
+		if p.parser.parserInput.CurrentChar() == '.' || p.parser.parserInput.CurrentChar() == '#' || p.parser.parserInput.CurrentChar() == ':' {
+			nextChar := p.parser.parserInput.PeekChar(1)
+			if nextChar == '@' {
+				e = p.parser.parserInput.Re(regexp.MustCompile(`^[.#:]`))
+			}
+		}
 	}
 	if e == nil {
 		e = p.entities.VariableCurly()
+	}
+
+	// If no simple element found, try parenthesized selectors (simplified version)
+	if e == nil {
+		p.parser.parserInput.Save()
+		if p.parser.parserInput.Char('(') != nil {
+			if v = p.Selector(false); v != nil {
+				var selectors []any
+				selectors = append(selectors, v)
+				
+				// Handle comma-separated selectors in parentheses
+				for p.parser.parserInput.Char(',') != nil {
+					selectors = append(selectors, NewAnonymous(",", index+p.parser.currentIndex, p.parser.fileInfo, false, false, nil))
+					if v = p.Selector(false); v != nil {
+						selectors = append(selectors, v)
+					}
+				}
+				
+				if p.parser.parserInput.Char(')') != nil {
+					if len(selectors) > 1 {
+						// Create a selector with multiple elements
+						if selector, err := NewSelector(selectors, []any{}, nil, index+p.parser.currentIndex, p.parser.fileInfo, nil); err == nil {
+							e = NewParen(selector)
+						}
+					} else {
+						e = NewParen(selectors[0])
+					}
+					p.parser.parserInput.Forget()
+				} else {
+					p.parser.parserInput.Restore("")
+				}
+			} else {
+				p.parser.parserInput.Restore("")
+			}
+		} else {
+			p.parser.parserInput.Forget()
+		}
 	}
 
 	if e != nil {
@@ -3471,14 +3519,6 @@ func (e *EntityParsers) CustomFuncCall(name string) map[string]any {
 	lowerName := strings.ToLower(name)
 
 	switch lowerName {
-	case "alpha":
-		return map[string]any{
-			"parse": func() []any {
-				result := e.parsers.IeAlpha()
-				return []any{result}
-			},
-			"stop": true,
-		}
 	case "boolean":
 		return map[string]any{
 			"parse": func() []any {

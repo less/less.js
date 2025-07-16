@@ -311,6 +311,15 @@ func isLastRule(context any) bool {
 	return false
 }
 
+// IsVisible returns whether this declaration should be visible in CSS output
+// Following JavaScript implementation: declarations are visible by default
+func (d *Declaration) IsVisible() bool {
+	// In JavaScript, nodeVisible is undefined for declarations, meaning they inherit
+	// parent visibility. For practical purposes, declarations are visible unless
+	// explicitly hidden, so we return true by default.
+	return true
+}
+
 // MakeImportant creates a new Declaration with important flag
 func (d *Declaration) MakeImportant() *Declaration {
 	newDecl, _ := NewDeclaration(d.name, d.Value, "!important", d.merge, d.GetIndex(), d.FileInfo(), d.inline, d.variable)

@@ -492,7 +492,7 @@ func createFunctions(env any) any {
 	registry := DefaultRegistry.Inherit()
 	
 	// Add all list functions
-	listFunctions := GetListFunctions()
+	listFunctions := GetWrappedListFunctions()
 	for name, fn := range listFunctions {
 		if functionImpl, ok := fn.(func(any, any) any); ok {
 			// Wrap simple Go functions to match FunctionDefinition interface
@@ -503,8 +503,35 @@ func createFunctions(env any) any {
 		}
 	}
 	
-	// Add other built-in functions here as needed
-	// TODO: Add math functions, color functions, etc.
+	// Add string functions
+	registry.AddMultiple(GetWrappedStringFunctions())
+	
+	// Add math functions
+	registry.AddMultiple(GetWrappedMathFunctions())
+	
+	// Add number functions
+	registry.AddMultiple(GetWrappedNumberFunctions())
+	
+	// Add boolean functions
+	registry.AddMultiple(GetWrappedBooleanFunctions())
+	
+	// Add svg functions
+	registry.AddMultiple(GetWrappedSvgFunctions())
+	
+	// Add style functions
+	registry.AddMultiple(GetWrappedStyleFunctions())
+	
+	// Add data-uri functions
+	registry.AddMultiple(GetWrappedDataURIFunctions())
+	
+	// Add color blending functions
+	registry.AddMultiple(GetWrappedColorBlendingFunctions())
+	
+	// Add color functions
+	registry.AddMultiple(GetWrappedColorFunctions())
+	
+	// Add type functions
+	registry.AddMultiple(GetWrappedTypesFunctions())
 	
 	return &DefaultFunctions{registry: registry}
 }

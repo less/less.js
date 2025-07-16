@@ -228,7 +228,7 @@ func performParse(lessContext *LessContext, input string, options map[string]any
 		// Create imports map for NewParser (basic structure to match JavaScript)
 		importsMap := map[string]any{
 			"contents":             make(map[string]string),
-			"contentsIgnoredChars": make(map[string]string),
+			"contentsIgnoredChars": make(map[string]int),
 			"rootFilename":         rootFileInfo["filename"],
 		}
 		

@@ -32,12 +32,29 @@ func (c *Comment) GenCSS(context any, output *CSSOutput) {
 
 // IsSilent determines if the comment should be silent based on context
 func (c *Comment) IsSilent(context any) bool {
-	ctx, ok := context.(*ParserContext)
-	if !ok {
-		return false
+	// Line comments are always silent
+	if c.IsLineComment {
+		return true
 	}
-	isCompressed := ctx.Compress && len(c.Value) > 2 && c.Value[2] != '!'
-	return c.IsLineComment || isCompressed
+	
+	// For block comments, check if we're in compress mode
+	var compress bool
+	
+	// Try different context types
+	if ctx, ok := context.(*ParserContext); ok {
+		compress = ctx.Compress
+	} else if ctxMap, ok := context.(map[string]any); ok {
+		if compressVal, exists := ctxMap["compress"]; exists {
+			compress, _ = compressVal.(bool)
+		}
+	}
+	
+	// In compress mode, only keep comments starting with /*!
+	if compress && len(c.Value) > 2 && c.Value[2] != '!' {
+		return true
+	}
+	
+	return false
 }
 
 // SetParent sets the parent for the comment node

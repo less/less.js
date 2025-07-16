@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 // Compile regex patterns once at package level
@@ -79,6 +80,21 @@ func (q *Quoted) GenCSS(context any, output *CSSOutput) {
 	if !q.escaped {
 		output.Add(q.quote, q.FileInfo(), q.GetIndex())
 	}
+}
+
+// ToCSS generates CSS string representation
+func (q *Quoted) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	q.GenCSS(context, output)
+	return strings.Join(strs, "")
 }
 
 // ContainsVariables checks if the quoted string contains variable interpolations
@@ -317,10 +333,10 @@ func (q *Quoted) Compare(other *Node) (int, error) {
 		return 0, nil
 	}
 
-	// For other cases (both escaped or one escaped one unescaped with same value), compare CSS output
-	qCSS := q.ToCSS(nil)
-	otherCSS := otherQuoted.ToCSS(nil)
-	if qCSS == otherCSS {
+	// For other cases (both escaped or one escaped one unescaped with same value)
+	// If values are the same, they should be considered equal regardless of escape status
+	// This matches JavaScript behavior where escaped and unescaped quotes with same values are equal
+	if q.value == otherQuoted.value {
 		return 0, nil
 	}
 	

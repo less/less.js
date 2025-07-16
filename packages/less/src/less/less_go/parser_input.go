@@ -110,16 +110,15 @@ func (p *ParserInput) skipWhitespace(length int) bool {
 
 					comment.text = inp[comment.index:finalPos] // Slice text correctly
 					p.commentStore = append(p.commentStore, comment)
-					p.i = finalPos // Explicitly set p.i to the final position
+					p.i = finalPos - 1 // Set to one before final position because loop will increment
 
-					if p.i >= len(inp) {
-						// When we reach EOF via a line comment, increment the index
-						// one more time to match JS behavior
-						p.i++
+					if finalPos >= len(inp) {
+						// When we reach EOF via a line comment, set to one past end
+						p.i = len(inp) + 1
 						break // Exit loop cleanly if we hit EOF
 					}
 					// If we didn't break, it means we stopped at a newline.
-					// We need the outer loop to increment p.i PAST the newline.
+					// The loop will increment p.i to skip past the newline.
 					continue
 				} else if nextChar == '*' { // Block comment
 					comment = inputComment{index: p.i, isLineComment: false}
@@ -140,12 +139,11 @@ func (p *ParserInput) skipWhitespace(length int) bool {
 
 					comment.text = inp[comment.index:finalPos] // Slice text correctly
 					p.commentStore = append(p.commentStore, comment)
-					p.i = finalPos // Explicitly set p.i to the final position
+					p.i = finalPos - 1 // Set to one before final position because loop will increment
 
-					if p.i >= len(inp) {
-						// When we reach EOF via a block comment, increment the index
-						// one more time to match JS behavior
-						p.i++
+					if p.i >= len(inp)-1 {
+						// When we reach EOF via a block comment, set to one past end
+						p.i = len(inp) + 1
 						break // Exit loop cleanly if we hit EOF
 					}
 					continue
@@ -471,6 +469,9 @@ func (p *ParserInput) Start(str string, chunkInput bool, failFunction func(strin
 
 	if chunkInput {
 		p.chunks = Chunker(str, failFunction)
+		if p.chunks == nil || len(p.chunks) == 0 {
+			p.chunks = []string{""} // Ensure at least one empty chunk
+		}
 	} else {
 		p.chunks = []string{str}
 	}

@@ -18,6 +18,15 @@ var MathFunctions = map[string]func(*Dimension) (*Dimension, error){
 	"acos":  Acos,
 }
 
+// GetWrappedMathFunctions returns math functions wrapped for registry
+func GetWrappedMathFunctions() map[string]interface{} {
+	mathFunctionsInterface := make(map[string]interface{})
+	for name, fn := range MathFunctions {
+		mathFunctionsInterface[name] = fn
+	}
+	return mathFunctionsInterface
+}
+
 // Ceil rounds up to the nearest integer
 func Ceil(n *Dimension) (*Dimension, error) {
 	return MathHelper(math.Ceil, nil, n)

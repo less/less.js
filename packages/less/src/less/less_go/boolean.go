@@ -69,3 +69,8 @@ func GetBooleanFunctions() map[string]any {
 		"isdefined": IsDefined,
 	}
 }
+
+// GetWrappedBooleanFunctions returns boolean functions for registry  
+func GetWrappedBooleanFunctions() map[string]interface{} {
+	return GetBooleanFunctions()
+}

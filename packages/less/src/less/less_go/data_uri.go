@@ -192,3 +192,8 @@ func GetDataURIFunctions() map[string]any {
 		"data-uri": DataURI,
 	}
 }
+
+// GetWrappedDataURIFunctions returns data-uri functions for registry
+func GetWrappedDataURIFunctions() map[string]interface{} {
+	return GetDataURIFunctions()
+}

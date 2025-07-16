@@ -406,6 +406,14 @@ func (c *Call) Eval(context any) (any, error) {
 
 // GenCSS generates CSS representation of the function call.
 func (c *Call) GenCSS(context any, output *CSSOutput) {
+	// Special case: _SELF should output its argument directly, not as a function call
+	if c.Name == "_SELF" && len(c.Args) > 0 {
+		if genCSSable, ok := c.Args[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
+			genCSSable.GenCSS(context, output)
+			return
+		}
+	}
+	
 	output.Add(c.Name+"(", c.FileInfo(), c.GetIndex())
 
 	for i, arg := range c.Args {

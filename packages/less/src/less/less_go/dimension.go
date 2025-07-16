@@ -143,6 +143,21 @@ func (d *Dimension) GenCSS(context any, output *CSSOutput) {
 	d.Unit.GenCSS(context, output)
 }
 
+// ToCSS generates CSS string representation
+func (d *Dimension) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	d.GenCSS(context, output)
+	return strings.Join(strs, "")
+}
+
 // Operate performs an arithmetic operation between two Dimensions and returns a new Dimension.
 func (d *Dimension) Operate(context any, op string, other *Dimension) *Dimension {
 	value := d.OperateArithmetic(context, op, d.Value, other.Value)

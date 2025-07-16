@@ -11,6 +11,11 @@ var SvgFunctions = map[string]interface{}{
 	"svg-gradient": SvgGradient,
 }
 
+// GetWrappedSvgFunctions returns svg functions for registry
+func GetWrappedSvgFunctions() map[string]interface{} {
+	return SvgFunctions
+}
+
 // SvgContext represents the context needed for svg function execution
 type SvgContext struct {
 	Index           int

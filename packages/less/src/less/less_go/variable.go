@@ -128,7 +128,8 @@ func (v *Variable) Eval(context any) (any, error) {
 				// If in calc context, wrap vars in a function call to cascade evaluate args first
 				if isInCalc, ok := context.(interface{ IsInCalc() bool }); ok && isInCalc.IsInCalc() {
 					selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
-					return selfCall, nil
+					// Evaluate the _SELF call like JavaScript does
+					return selfCall.Eval(context)
 				}
 
 				// Evaluate value - check both interface types
@@ -184,7 +185,8 @@ func (v *Variable) Eval(context any) (any, error) {
 					// If in calc context, wrap vars in a function call to cascade evaluate args first
 					if isInCalc, exists := ctx["inCalc"]; exists && isInCalc == true {
 						selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
-						return selfCall, nil
+						// Evaluate the _SELF call like JavaScript does
+						return selfCall.Eval(context)
 					}
 
 					// Evaluate value - check both interface types

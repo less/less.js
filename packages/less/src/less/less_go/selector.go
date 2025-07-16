@@ -463,6 +463,21 @@ func (s *Selector) Eval(context any) (any, error) {
 	return s.CreateDerived(evaluatedElements, evaluatedExtendList, evaluatedConditionBoolean)
 }
 
+// ToCSS generates CSS string representation (overrides Node ToCSS)
+func (s *Selector) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	s.GenCSS(context, output)
+	return strings.Join(strs, "")
+}
+
 // GenCSS generates the CSS representation of the selector.
 func (s *Selector) GenCSS(context any, output *CSSOutput) { // CSSOutput from go_parser
 	firstSelector := false

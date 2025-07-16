@@ -108,7 +108,7 @@ func (r *Ruleset) IsRulesetLike() bool {
 	return true
 }
 
-// ToCSS converts the ruleset to CSS output
+// ToCSS converts the ruleset to CSS output (original signature)
 func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	var output strings.Builder
 	
@@ -149,6 +149,18 @@ func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	}
 	
 	return result, nil
+}
+
+// ToCSSString converts the ruleset to CSS output (Node interface version)
+func (r *Ruleset) ToCSSString(context any) string {
+	// Convert context to options map if possible
+	var options map[string]any
+	if ctx, ok := context.(map[string]any); ok {
+		options = ctx
+	}
+	
+	result, _ := r.ToCSS(options)
+	return result
 }
 
 // Interface methods required by JoinSelectorVisitor and ToCSSVisitor
@@ -571,12 +583,26 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		if r, ok := rule.(interface{ EvalFirst() bool }); ok && r.EvalFirst() {
 			continue // Already evaluated
 		}
-		if eval, ok := rule.(interface{ Eval(any) (any, error) }); ok {
-			evaluated, err := eval.Eval(context)
+		
+		// Try different Eval signatures
+		switch evalRule := rule.(type) {
+		case interface{ Eval(any) (*MixinDefinition, error) }:
+			// Handle MixinDefinition
+			evaluated, err := evalRule.Eval(context)
 			if err != nil {
 				return nil, err
 			}
 			rsRules[i] = evaluated
+		case interface{ Eval(any) (any, error) }:
+			// Handle generic Eval
+			evaluated, err := evalRule.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+			rsRules[i] = evaluated
+		case interface{ Eval(any) any }:
+			// Handle Eval without error return
+			rsRules[i] = evalRule.Eval(context)
 		}
 	}
 
@@ -1008,6 +1034,10 @@ func (r *Ruleset) Rulesets() []any {
 	
 	var filtered []any
 	for _, rule := range r.Rules {
+		// Debug: Check for MixinDefinition
+		if _, isMixinDef := rule.(*MixinDefinition); isMixinDef {
+			// fmt.Printf("DEBUG Rulesets: Found MixinDefinition in rules\n")
+		}
 		if rs, ok := rule.(interface{ IsRuleset() bool }); ok && rs.IsRuleset() {
 			filtered = append(filtered, rule)
 		}
@@ -1052,8 +1082,12 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 	var match int
 	var foundMixins []any
 	
+	// Debug
+	// fmt.Printf("DEBUG Find: Looking for '%s' in ruleset with %d rules\n", key, len(r.Rules))
+	
 	// this.rulesets().forEach(function (rule) { ... }) pattern
 	rulesets := r.Rulesets()
+	// fmt.Printf("DEBUG Find: Rulesets() returned %d rulesets\n", len(rulesets))
 	for _, rule := range rulesets {
 		if rule == self {
 			continue
@@ -1146,8 +1180,14 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		tabRuleStr = ""
 		tabSetStr = ""
 	} else {
-		tabRuleStr = strings.Repeat("  ", tabLevel+1)
-		tabSetStr = strings.Repeat("  ", tabLevel)
+		// JavaScript: Array(tabLevel + 1).join('  ') produces (tabLevel) * 2 spaces
+		// JavaScript: Array(tabLevel).join('  ') produces (tabLevel - 1) * 2 spaces (minimum 0)
+		tabRuleStr = strings.Repeat("  ", tabLevel)
+		if tabLevel > 0 {
+			tabSetStr = strings.Repeat("  ", tabLevel-1)
+		} else {
+			tabSetStr = ""
+		}
 	}
 	
 	// Organize rules by type like JavaScript version
@@ -1251,7 +1291,10 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 			ctx["lastRule"] = false
 		}
 		
-		if gen, ok := rule.(interface{ GenCSS(any, *CSSOutput) }); ok {
+		// Check if this is a silent comment
+		if comment, isComment := rule.(*Comment); isComment && comment.IsSilent(ctx) {
+			// Skip silent comments
+		} else if gen, ok := rule.(interface{ GenCSS(any, *CSSOutput) }); ok {
 			gen.GenCSS(ctx, output)
 		} else if val, ok := rule.(interface{ GetValue() any }); ok {
 			output.Add(fmt.Sprintf("%v", val.GetValue()), nil, nil)

@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
@@ -12,6 +13,61 @@ var StringFunctions = map[string]interface{}{
 	"escape":  Escape,
 	"replace": Replace,
 	"%":       Format,
+}
+
+// StringFunctionWrapper wraps string functions to implement FunctionDefinition interface
+type StringFunctionWrapper struct {
+	name string
+	fn   interface{}
+}
+
+func (w *StringFunctionWrapper) Call(args ...any) (any, error) {
+	switch w.name {
+	case "e":
+		if len(args) != 1 {
+			return nil, fmt.Errorf("function e expects 1 argument, got %d", len(args))
+		}
+		return E(args[0])
+	case "escape":
+		if len(args) != 1 {
+			return nil, fmt.Errorf("function escape expects 1 argument, got %d", len(args))
+		}
+		return Escape(args[0])
+	case "replace":
+		if len(args) < 3 {
+			return nil, fmt.Errorf("function replace expects at least 3 arguments, got %d", len(args))
+		}
+		if len(args) == 3 {
+			return Replace(args[0], args[1], args[2])
+		}
+		return Replace(args[0], args[1], args[2], args[3:]...)
+	case "%":
+		if len(args) < 1 {
+			return nil, fmt.Errorf("function %% expects at least 1 argument, got %d", len(args))
+		}
+		return Format(args[0], args[1:]...)
+	default:
+		return nil, fmt.Errorf("unknown string function: %s", w.name)
+	}
+}
+
+func (w *StringFunctionWrapper) CallCtx(ctx *Context, args ...any) (any, error) {
+	// String functions don't need context evaluation
+	return w.Call(args...)
+}
+
+func (w *StringFunctionWrapper) NeedsEvalArgs() bool {
+	// String functions need evaluated arguments
+	return true
+}
+
+// GetWrappedStringFunctions returns string functions wrapped with FunctionDefinition interface
+func GetWrappedStringFunctions() map[string]interface{} {
+	wrappedFunctions := make(map[string]interface{})
+	for name := range StringFunctions {
+		wrappedFunctions[name] = &StringFunctionWrapper{name: name, fn: StringFunctions[name]}
+	}
+	return wrappedFunctions
 }
 
 // E escapes a string value, creating a Quoted with escaped=true

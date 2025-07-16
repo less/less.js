@@ -16,6 +16,103 @@ var NumberFunctions = map[string]interface{}{
 	"percentage": Percentage,
 }
 
+// NumberFunctionWrapper wraps number functions to implement FunctionDefinition interface
+type NumberFunctionWrapper struct {
+	name string
+	fn   func(args ...interface{}) (interface{}, error)
+}
+
+func (w *NumberFunctionWrapper) Call(args ...any) (any, error) {
+	return w.fn(args...)
+}
+
+func (w *NumberFunctionWrapper) CallCtx(ctx *Context, args ...any) (any, error) {
+	// Number functions don't need context evaluation
+	return w.Call(args...)
+}
+
+func (w *NumberFunctionWrapper) NeedsEvalArgs() bool {
+	// Number functions need evaluated arguments
+	return true
+}
+
+// NumberFunctionAdapters create specific adapters for each function type
+func wrapMinMax(fn func(args ...interface{}) (interface{}, error)) func(args ...interface{}) (interface{}, error) {
+	return fn
+}
+
+func wrapConvert(fn func(val *Dimension, unit *Dimension) (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, fmt.Errorf("convert expects 2 arguments, got %d", len(args))
+		}
+		val, ok1 := args[0].(*Dimension)
+		unit, ok2 := args[1].(*Dimension)
+		if !ok1 || !ok2 {
+			return nil, fmt.Errorf("convert expects dimension arguments")
+		}
+		return fn(val, unit)
+	}
+}
+
+func wrapPi(fn func() (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		return fn()
+	}
+}
+
+func wrapMod(fn func(a *Dimension, b *Dimension) (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, fmt.Errorf("mod expects 2 arguments, got %d", len(args))
+		}
+		a, ok1 := args[0].(*Dimension)
+		b, ok2 := args[1].(*Dimension)
+		if !ok1 || !ok2 {
+			return nil, fmt.Errorf("mod expects dimension arguments")
+		}
+		return fn(a, b)
+	}
+}
+
+func wrapPow(fn func(x interface{}, y interface{}) (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, fmt.Errorf("pow expects 2 arguments, got %d", len(args))
+		}
+		return fn(args[0], args[1])
+	}
+}
+
+func wrapPercentage(fn func(n *Dimension) (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, fmt.Errorf("percentage expects 1 argument, got %d", len(args))
+		}
+		dim, ok := args[0].(*Dimension)
+		if !ok {
+			return nil, fmt.Errorf("percentage expects dimension argument")
+		}
+		return fn(dim)
+	}
+}
+
+// GetWrappedNumberFunctions returns number functions wrapped with FunctionDefinition interface
+func GetWrappedNumberFunctions() map[string]interface{} {
+	wrappedFunctions := make(map[string]interface{})
+	
+	// Wrap each function with proper interface
+	wrappedFunctions["min"] = &NumberFunctionWrapper{name: "min", fn: wrapMinMax(Min)}
+	wrappedFunctions["max"] = &NumberFunctionWrapper{name: "max", fn: wrapMinMax(Max)}
+	wrappedFunctions["convert"] = &NumberFunctionWrapper{name: "convert", fn: wrapConvert(Convert)}
+	wrappedFunctions["pi"] = &NumberFunctionWrapper{name: "pi", fn: wrapPi(Pi)}
+	wrappedFunctions["mod"] = &NumberFunctionWrapper{name: "mod", fn: wrapMod(Mod)}
+	wrappedFunctions["pow"] = &NumberFunctionWrapper{name: "pow", fn: wrapPow(Pow)}
+	wrappedFunctions["percentage"] = &NumberFunctionWrapper{name: "percentage", fn: wrapPercentage(Percentage)}
+	
+	return wrappedFunctions
+}
+
 // minMax is the helper function for min and max operations
 func minMax(isMin bool, args []interface{}) (interface{}, error) {
 	if len(args) == 0 {

@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v4.3.0
+ * Less - Leaner CSS v4.4.0
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2025, Alexis Sellier <self@cloudhead.net>
@@ -5179,6 +5179,7 @@
                     var hasUnknown;
                     var hasBlock = true;
                     var isRooted = true;
+                    var isKeywordList = false;
                     if (parserInput.currentChar() !== '@') {
                         return;
                     }
@@ -5216,6 +5217,9 @@
                         case '@starting-style':
                             isRooted = false;
                             break;
+                        case '@layer':
+                            isRooted = false;
+                            break;
                         default:
                             hasUnknown = true;
                             break;
@@ -5247,8 +5251,33 @@
                     }
                     if (hasBlock) {
                         rules = this.blockRuleset();
+                        parserInput.save();
+                        if (!rules && !isRooted) {
+                            value = this.entity();
+                            rules = this.blockRuleset();
+                        }
+                        if (!rules && !isRooted) {
+                            parserInput.restore();
+                            var e = [];
+                            value = this.entity();
+                            while (parserInput.$char(',')) {
+                                e.push(value);
+                                value = this.entity();
+                            }
+                            if (value && e.length > 0) {
+                                e.push(value);
+                                value = e;
+                                isKeywordList = true;
+                            }
+                            else {
+                                rules = this.blockRuleset();
+                            }
+                        }
+                        else {
+                            parserInput.forget();
+                        }
                     }
-                    if (rules || (!hasBlock && value && parserInput.$char(';'))) {
+                    if (rules || isKeywordList || (!hasBlock && value && parserInput.$char(';'))) {
                         parserInput.forget();
                         return new (tree.AtRule)(name, value, rules, index + currentIndex, fileInfo, context.dumpLineNumbers ? getDebugInfo(index) : null, isRooted);
                     }
@@ -5298,6 +5327,15 @@
                         }
                         parserInput.restore('Expected \')\'');
                         return;
+                    }
+                    parserInput.restore();
+                },
+                colorOperand: function () {
+                    parserInput.save();
+                    // hsl or rgb or lch operand
+                    var match = parserInput.$re(/^[lchrgbs]\s+/);
+                    if (match) {
+                        return new tree.Keyword(match[0]);
                     }
                     parserInput.restore();
                 },
@@ -5562,7 +5600,7 @@
                         entities.color() || entities.variable() ||
                         entities.property() || entities.call() ||
                         entities.quoted(true) || entities.colorKeyword() ||
-                        entities.mixinLookup();
+                        this.colorOperand() || entities.mixinLookup();
                     if (negate) {
                         o.parensInOp = true;
                         o = new (tree.Negative)(o);
@@ -7016,6 +7054,7 @@
             this.value = visitor.visitArray(this.value);
         },
         eval: function (context) {
+            var noSpacing = this.noSpacing;
             var returnValue;
             var mathOn = context.isMathOn();
             var inParenthesis = this.parens;
@@ -7047,6 +7086,7 @@
                 && (!(returnValue instanceof Dimension))) {
                 returnValue = new Paren(returnValue);
             }
+            returnValue.noSpacing = returnValue.noSpacing || noSpacing;
             return returnValue;
         },
         genCSS: function (context, output) {
@@ -7212,6 +7252,13 @@
             else {
                 return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules.length;
             }
+        }, keywordList: function (rules) {
+            if (!Array.isArray(rules)) {
+                return false;
+            }
+            else {
+                return rules.filter(function (node) { return (node.type === 'Keyword' || node.type === 'Comment'); }).length === rules.length;
+            }
         }, accept: function (visitor) {
             var value = this.value, rules = this.rules, declarations = this.declarations;
             if (rules) {
@@ -7254,6 +7301,9 @@
             context.mediaBlocks = [];
             if (value) {
                 value = value.eval(context);
+                if (value.value && this.keywordList(value.value)) {
+                    value = new Anonymous(value.value.map(function (keyword) { return keyword.value; }).join(', '), this.getIndex(), this.fileInfo());
+                }
             }
             if (rules) {
                 rules = this.evalRoot(context, rules);
@@ -8008,6 +8058,20 @@
                     return [];
                 }
             }
+            if (this.features) {
+                var featureValue = this.features.value;
+                if (Array.isArray(featureValue) && featureValue.length >= 1) {
+                    var expr = featureValue[0];
+                    if (expr.type === 'Expression' && Array.isArray(expr.value) && expr.value.length >= 2) {
+                        featureValue = expr.value;
+                        var isLayer = featureValue[0].type === 'Keyword' && featureValue[0].value === 'layer'
+                            && featureValue[1].type === 'Paren';
+                        if (isLayer) {
+                            this.css = false;
+                        }
+                    }
+                }
+            }
             if (this.options.inline) {
                 var contents = new Anonymous(this.root, 0, {
                     filename: this.importedFilename,
@@ -8015,19 +8079,58 @@
                 }, true, true);
                 return this.features ? new Media([contents], this.features.value) : [contents];
             }
-            else if (this.css) {
+            else if (this.css || this.layerCss) {
                 var newImport = new Import(this.evalPath(context), features, this.options, this._index);
+                if (this.layerCss) {
+                    newImport.css = this.layerCss;
+                    newImport.path._fileInfo = this._fileInfo;
+                }
                 if (!newImport.css && this.error) {
                     throw this.error;
                 }
                 return newImport;
             }
             else if (this.root) {
+                if (this.features) {
+                    var featureValue = this.features.value;
+                    if (Array.isArray(featureValue) && featureValue.length === 1) {
+                        var expr = featureValue[0];
+                        if (expr.type === 'Expression' && Array.isArray(expr.value) && expr.value.length >= 2) {
+                            featureValue = expr.value;
+                            var isLayer = featureValue[0].type === 'Keyword' && featureValue[0].value === 'layer'
+                                && featureValue[1].type === 'Paren';
+                            if (isLayer) {
+                                this.layerCss = true;
+                                featureValue[0] = new Expression(featureValue.slice(0, 2));
+                                featureValue.splice(1, 1);
+                                featureValue[0].noSpacing = true;
+                                return this;
+                            }
+                        }
+                    }
+                }
                 ruleset = new Ruleset(null, copyArray(this.root.rules));
                 ruleset.evalImports(context);
                 return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
             }
             else {
+                if (this.features) {
+                    var featureValue = this.features.value;
+                    if (Array.isArray(featureValue) && featureValue.length >= 1) {
+                        featureValue = featureValue[0].value;
+                        if (Array.isArray(featureValue) && featureValue.length >= 2) {
+                            var isLayer = featureValue[0].type === 'Keyword' && featureValue[0].value === 'layer'
+                                && featureValue[1].type === 'Paren';
+                            if (isLayer) {
+                                this.css = true;
+                                featureValue[0] = new Expression(featureValue.slice(0, 2));
+                                featureValue.splice(1, 1);
+                                featureValue[0].noSpacing = true;
+                                return this;
+                            }
+                        }
+                    }
+                }
                 return [];
             }
         }
@@ -11025,7 +11128,7 @@
         return render;
     }
 
-    var version = "4.3.0";
+    var version = "4.4.0";
 
     function parseNodeVersion(version) {
       var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

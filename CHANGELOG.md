@@ -1,5 +1,11 @@
 ## Change Log
 
+### v4.4.0 (2025-05-31)
+
+- [#4337](https://github.com/less/less.js/pull/4337) Add support for layer at-rule (@puckowski)
+- [#4340](https://github.com/less/less.js/pull/4340) Add support for import at-rule layer functionality (@puckowski)
+- [#4346](https://github.com/less/less.js/pull/4346) Fix [#4343](https://github.com/less/less.js/issues/4343) add color operands (@puckowski)
+
 ### v4.3.0 (2025-04-04)
 
 - [#4319](https://github.com/less/less.js/pull/4319) Add deprecation warnings to Less output during parsing and new quiet flag (@matthew-dean)

@@ -59,7 +59,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -79,7 +79,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -100,7 +100,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -120,7 +120,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -140,7 +140,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -161,7 +161,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -181,7 +181,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -201,7 +201,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{}
+			context := map[string]any{}
 
 			comment.GenCSS(context, outputter)
 
@@ -212,14 +212,9 @@ func TestComment(t *testing.T) {
 
 		t.Run("should include debug info when debugInfo is present", func(t *testing.T) {
 			comment := NewComment("/* test */", false, 0, nil)
-			comment.DebugInfo = &DebugContext{
-				DebugInfo: struct {
-					LineNumber any
-					FileName   string
-				}{
-					LineNumber: 1,
-					FileName:   "test.less",
-				},
+			comment.DebugInfo = map[string]any{
+				"lineNumber": 1,
+				"fileName":   "test.less",
 			}
 			var output []string
 			outputter := &CSSOutput{
@@ -230,7 +225,7 @@ func TestComment(t *testing.T) {
 					return len(output) == 0
 				},
 			}
-			context := &ParserContext{DumpLineNumbers: "comments"}
+			context := map[string]any{"dumpLineNumbers": "comments"}
 
 			comment.GenCSS(context, outputter)
 
@@ -249,7 +244,7 @@ func TestComment(t *testing.T) {
 	t.Run("isSilent", func(t *testing.T) {
 		t.Run("should return true for line comments", func(t *testing.T) {
 			comment := NewComment("// test", true, 0, nil)
-			context := &ParserContext{Compress: false}
+			context := map[string]any{"compress": false}
 
 			if !comment.IsSilent(context) {
 				t.Error("Expected IsSilent to return true for line comments")
@@ -258,7 +253,7 @@ func TestComment(t *testing.T) {
 
 		t.Run("should return true for compressed comments without !", func(t *testing.T) {
 			comment := NewComment("/* test */", false, 0, nil)
-			context := &ParserContext{Compress: true}
+			context := map[string]any{"compress": true}
 
 			if !comment.IsSilent(context) {
 				t.Error("Expected IsSilent to return true for compressed comments without !")
@@ -267,7 +262,7 @@ func TestComment(t *testing.T) {
 
 		t.Run("should return false for compressed comments with !", func(t *testing.T) {
 			comment := NewComment("/*! test */", false, 0, nil)
-			context := &ParserContext{Compress: true}
+			context := map[string]any{"compress": true}
 
 			if comment.IsSilent(context) {
 				t.Error("Expected IsSilent to return false for compressed comments with !")
@@ -276,7 +271,7 @@ func TestComment(t *testing.T) {
 
 		t.Run("should return false for block comments when not compressed", func(t *testing.T) {
 			comment := NewComment("/* test */", false, 0, nil)
-			context := &ParserContext{Compress: false}
+			context := map[string]any{"compress": false}
 
 			if comment.IsSilent(context) {
 				t.Error("Expected IsSilent to return false for block comments when not compressed")

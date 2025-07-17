@@ -42,23 +42,37 @@ func NewDeclaration(name any, value any, important any, merge bool, index int, f
 	if val, ok := value.(*Value); ok {
 		d.Value = val
 	} else {
-		var anonymousValue any
-		if value != nil {
-			// Check if value is already a Node (like Anonymous) - if so, use it directly
-			// This matches JavaScript: (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null])
-			if _, ok := value.(*Anonymous); ok {
-				anonymousValue = value
-			} else {
-				anonymousValue = NewAnonymous(value, 0, nil, false, false, nil)
+		// Check if value is already a Node type (matches JavaScript: value instanceof Node)
+		isNode := false
+		switch value.(type) {
+		case *Node, *Color, *Dimension, *Quoted, *Anonymous, *Keyword, *Expression, *Call, *Ruleset, *Declaration:
+			isNode = true
+		case interface{ GetType() string }:
+			// Has GetType method, likely a node
+			isNode = true
+		}
+		
+		if isNode {
+			// Value is already a Node, wrap it in Value([node])
+			newValue, err := NewValue([]any{value})
+			if err != nil {
+				return nil, err
 			}
+			d.Value = newValue
 		} else {
-			anonymousValue = nil
+			// Value is not a Node, wrap in Value([Anonymous(value)])
+			var anonymousValue any
+			if value != nil {
+				anonymousValue = NewAnonymous(value, 0, nil, false, false, nil)
+			} else {
+				anonymousValue = nil
+			}
+			newValue, err := NewValue([]any{anonymousValue})
+			if err != nil {
+				return nil, err
+			}
+			d.Value = newValue
 		}
-		newValue, err := NewValue([]any{anonymousValue})
-		if err != nil {
-			return nil, err
-		}
-		d.Value = newValue
 	}
 
 	// Handle variable flag

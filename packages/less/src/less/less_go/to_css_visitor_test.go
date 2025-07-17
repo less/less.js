@@ -26,7 +26,15 @@ func (m *mockDeclaration) GetType() string       { return m.typeStr }
 func (m *mockDeclaration) BlocksVisibility() bool { return m.blocksVis }
 func (m *mockDeclaration) IsVisible() bool       { return m.isVisible }
 func (m *mockDeclaration) GetIndex() int         { return m.index }
-func (m *mockDeclaration) FileInfo() any         { return m.fileInfo }
+func (m *mockDeclaration) FileInfo() map[string]any {
+	if m.fileInfo == nil {
+		return nil
+	}
+	if fi, ok := m.fileInfo.(*mockFileInfo); ok {
+		return map[string]any{"filename": fi.filename}
+	}
+	return nil
+}
 func (m *mockDeclaration) GetAllowRoot() bool    { return m.allowRoot }
 func (m *mockDeclaration) ToCSS(ctx any) string  { return m.cssOutput }
 
@@ -114,7 +122,15 @@ type toCssMockCall struct {
 func (m *toCssMockCall) GetType() string   { return m.typeStr }
 func (m *toCssMockCall) GetName() string   { return m.name }
 func (m *toCssMockCall) GetIndex() int     { return m.index }
-func (m *toCssMockCall) FileInfo() any     { return m.fileInfo }
+func (m *toCssMockCall) FileInfo() map[string]any {
+	if m.fileInfo == nil {
+		return nil
+	}
+	if fi, ok := m.fileInfo.(*mockFileInfo); ok {
+		return map[string]any{"filename": fi.filename}
+	}
+	return nil
+}
 
 // Mock file info for testing
 type mockFileInfo struct {
@@ -1344,7 +1360,15 @@ type mockNodeWithType struct {
 func (m *mockNodeWithType) GetType() string     { return m.typeStr }
 func (m *mockNodeWithType) GetAllowRoot() bool  { return m.allowRoot }
 func (m *mockNodeWithType) GetIndex() int       { return m.index }
-func (m *mockNodeWithType) FileInfo() any       { return m.fileInfo }
+func (m *mockNodeWithType) FileInfo() map[string]any {
+	if m.fileInfo == nil {
+		return nil
+	}
+	if fi, ok := m.fileInfo.(*mockFileInfo); ok {
+		return map[string]any{"filename": fi.filename}
+	}
+	return nil
+}
 
 // Test multiple rulesets return handling
 func TestVisitRulesetMultipleReturn(t *testing.T) {

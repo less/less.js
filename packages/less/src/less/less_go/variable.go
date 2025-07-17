@@ -50,6 +50,7 @@ func (v *Variable) GetName() string {
 func (v *Variable) Eval(context any) (any, error) {
 	
 	name := v.name
+	
 
 	if len(name) >= 2 && name[:2] == "@@" {
 		innerVar := NewVariable(name[1:], v.GetIndex(), v.FileInfo())
@@ -226,4 +227,6 @@ func (v *Variable) ToCSS(context any) string {
 	} else {
 		return fmt.Sprintf("%v", result)
 	}
-} 
+}
+
+ 

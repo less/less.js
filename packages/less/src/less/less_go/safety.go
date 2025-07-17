@@ -114,6 +114,7 @@ func SafeEval(value any, context any) any {
 		return value
 	}
 	
+	
 	// Check for the new (any, error) signature first (used by Variable, Expression, Operation)
 	if evaluable, ok := SafeTypeAssertion[interface{ Eval(any) (any, error) }](value); ok {
 		// Add defer/recover to catch any panics in Eval implementations

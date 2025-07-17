@@ -414,8 +414,8 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		}
 	}
 	if ruleset.FunctionRegistry == nil {
-		// Would normally inherit from globalFunctionRegistry
-		ruleset.FunctionRegistry = nil
+		// Use the global default registry
+		ruleset.FunctionRegistry = DefaultRegistry
 	}
 
 	// Push current ruleset to frames stack
@@ -436,6 +436,11 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		newSelectors[0] = r.Selectors
 		copy(newSelectors[1:], sels)
 		ctx["selectors"] = newSelectors
+	}
+	
+	// Ensure function registry is available in context
+	if _, exists := ctx["functionRegistry"]; !exists && ruleset.FunctionRegistry != nil {
+		ctx["functionRegistry"] = ruleset.FunctionRegistry
 	}
 
 	// Evaluate imports
@@ -1324,6 +1329,19 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		}
 		tabLevel--
 		ctx["tabLevel"] = tabLevel
+		
+		// Add newline after ruleset to separate from next ruleset
+		// Check if we're not the last rule and not in compressed mode
+		if !compress {
+			// Check if this is part of a parent's rules and not the last one
+			isLastRule := false
+			if lr, ok := ctx["lastRule"].(bool); ok {
+				isLastRule = lr
+			}
+			if !isLastRule {
+				output.Add("\n", nil, nil)
+			}
+		}
 	}
 	
 	// Add final newline for first root
@@ -1636,25 +1654,40 @@ func GetDebugInfo(context map[string]any, ruleset *Ruleset, separator string) st
 		return ""
 	}
 	
+	// Get line number and filename from debug context
+	lineNumber := 0
+	fileName := ""
+	
+	if ln, ok := debugCtx["lineNumber"].(int); ok {
+		lineNumber = ln
+	}
+	if fn, ok := debugCtx["fileName"].(string); ok {
+		fileName = fn
+	}
+	
+	if lineNumber == 0 || fileName == "" {
+		return ""
+	}
+	
 	var result string
 	switch dumpLineNumbers {
 	case "comments":
-		result = asComment(debugCtx)
+		result = asComment(lineNumber, fileName)
 	case "mediaquery":
-		result = asMediaQuery(debugCtx)
+		result = asMediaQuery(lineNumber, fileName)
 	case "all":
-		result = asComment(debugCtx)
+		result = asComment(lineNumber, fileName)
 		if separator != "" {
 			result += separator
 		}
-		result += asMediaQuery(debugCtx)
+		result += asMediaQuery(lineNumber, fileName)
 	}
 	
 	return result
 }
 
 // Helper function to create debug context from ruleset
-func createDebugContextFromRuleset(context map[string]any, ruleset *Ruleset) *DebugContext {
+func createDebugContextFromRuleset(context map[string]any, ruleset *Ruleset) map[string]any {
 	fileInfo := ruleset.FileInfo()
 	if fileInfo == nil {
 		return nil
@@ -1678,14 +1711,9 @@ func createDebugContextFromRuleset(context map[string]any, ruleset *Ruleset) *De
 		lineNumber = 1 // Default line number
 	}
 	
-	return &DebugContext{
-		DebugInfo: struct {
-			LineNumber any
-			FileName   string
-		}{
-			FileName:   filename,
-			LineNumber: lineNumber,
-		},
+	return map[string]any{
+		"fileName":   filename,
+		"lineNumber": lineNumber,
 	}
 }
 

@@ -377,9 +377,8 @@ func (v *ToCSSVisitor) VisitAtRuleWithoutBody(atRuleNode any, visitArgs *VisitAr
 							commentValue += " */\n"
 							
 							comment := NewComment(commentValue, false, 0, nil)
-							if debugInfo, ok := debugNode.GetDebugInfo().(*DebugContext); ok {
-								comment.DebugInfo = debugInfo
-							}
+							// Try to get debug info from the node
+							// Skip type assertion and just pass the node to DebugInfo function
 							return v.visitor.Visit(comment)
 						}
 					}
@@ -401,12 +400,14 @@ func (v *ToCSSVisitor) CheckValidNodes(rules []any, isRoot bool) error {
 	
 	for _, ruleNode := range rules {
 		if isRoot {
-			if declNode, ok := ruleNode.(interface{ GetType() string; GetVariable() bool; GetIndex() int; FileInfo() any }); ok {
+			if declNode, ok := ruleNode.(interface{ GetType() string; GetVariable() bool; GetIndex() int; FileInfo() map[string]any }); ok {
 				if declNode.GetType() == "Declaration" && !declNode.GetVariable() {
 					var filename string
 					if fileInfo := declNode.FileInfo(); fileInfo != nil {
-						if fileWithName, ok := fileInfo.(interface{ GetFilename() string }); ok {
-							filename = fileWithName.GetFilename()
+						if fileNameValue, ok := fileInfo["filename"]; ok {
+							if fileNameStr, ok := fileNameValue.(string); ok {
+								filename = fileNameStr
+							}
 						}
 					}
 					return &LessError{
@@ -418,12 +419,14 @@ func (v *ToCSSVisitor) CheckValidNodes(rules []any, isRoot bool) error {
 			}
 		}
 		
-		if callNode, ok := ruleNode.(interface{ GetType() string; GetName() string; GetIndex() int; FileInfo() any }); ok {
+		if callNode, ok := ruleNode.(interface{ GetType() string; GetName() string; GetIndex() int; FileInfo() map[string]any }); ok {
 			if callNode.GetType() == "Call" {
 				var filename string
 				if fileInfo := callNode.FileInfo(); fileInfo != nil {
-					if fileWithName, ok := fileInfo.(interface{ GetFilename() string }); ok {
-						filename = fileWithName.GetFilename()
+					if fileNameValue, ok := fileInfo["filename"]; ok {
+						if fileNameStr, ok := fileNameValue.(string); ok {
+							filename = fileNameStr
+						}
 					}
 				}
 				return &LessError{
@@ -434,12 +437,14 @@ func (v *ToCSSVisitor) CheckValidNodes(rules []any, isRoot bool) error {
 			}
 		}
 		
-		if typeNode, ok := ruleNode.(interface{ GetType() string; GetAllowRoot() bool; GetIndex() int; FileInfo() any }); ok {
+		if typeNode, ok := ruleNode.(interface{ GetType() string; GetAllowRoot() bool; GetIndex() int; FileInfo() map[string]any }); ok {
 			if typeNode.GetType() != "" && !typeNode.GetAllowRoot() {
 				var filename string
 				if fileInfo := typeNode.FileInfo(); fileInfo != nil {
-					if fileWithName, ok := fileInfo.(interface{ GetFilename() string }); ok {
-						filename = fileWithName.GetFilename()
+					if fileNameValue, ok := fileInfo["filename"]; ok {
+						if fileNameStr, ok := fileNameValue.(string); ok {
+							filename = fileNameStr
+						}
 					}
 				}
 				return &LessError{

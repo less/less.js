@@ -29,21 +29,21 @@ type FunctionCallerFactory interface {
 
 // DefaultFunctionCallerFactory implements FunctionCallerFactory using a registry
 type DefaultFunctionCallerFactory struct {
-	registry *Registry
+	adapter *RegistryFunctionAdapter
 }
 
 // NewDefaultFunctionCallerFactory creates a new DefaultFunctionCallerFactory
 func NewDefaultFunctionCallerFactory(registry *Registry) *DefaultFunctionCallerFactory {
 	return &DefaultFunctionCallerFactory{
-		registry: registry,
+		adapter: NewRegistryFunctionAdapter(registry),
 	}
 }
 
 // NewFunctionCaller creates a ParserFunctionCaller
 func (f *DefaultFunctionCallerFactory) NewFunctionCaller(name string, context EvalContext, index int, fileInfo map[string]any) (ParserFunctionCaller, error) {
-	// Get function definition from registry
+	// Get function definition from registry via adapter
 	lowerName := strings.ToLower(name)
-	funcDef := f.registry.Get(lowerName)
+	funcDef := f.adapter.Get(lowerName)
 
 	if funcDef == nil {
 		// Return an invalid caller - this matches JavaScript behavior where unknown functions are not called
@@ -57,13 +57,8 @@ func (f *DefaultFunctionCallerFactory) NewFunctionCaller(name string, context Ev
 		}, nil
 	}
 
-	// Convert to FunctionDefinition interface
-	var definition FunctionDefinition
-	if def, ok := funcDef.(FunctionDefinition); ok {
-		definition = def
-	} else {
-		return nil, fmt.Errorf("function %s is not a valid FunctionDefinition", name)
-	}
+	// funcDef is already a FunctionDefinition from the adapter
+	definition := funcDef
 
 	return &DefaultParserFunctionCaller{
 		name:     lowerName,
@@ -119,9 +114,19 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 	// For functions that need evaluated args, evaluate them first
 	evaluatedArgs := make([]any, len(args))
 	for i, arg := range args {
+		// First try the EvalContext interface
 		if evalable, ok := arg.(interface {
 			Eval(EvalContext) (any, error)
 		}); ok {
+			evalResult, err := evalable.Eval(c.context)
+			if err != nil {
+				return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
+			}
+			evaluatedArgs[i] = evalResult
+		} else if evalable, ok := arg.(interface {
+			Eval(any) (any, error)
+		}); ok {
+			// Fallback to the more generic Eval(any) signature
 			evalResult, err := evalable.Eval(c.context)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
@@ -276,11 +281,30 @@ func (c *Call) Eval(context any) (any, error) {
 	// Set up CallerFactory from context if not already set
 	if c.CallerFactory == nil {
 		if ctxMap, ok := context.(map[string]any); ok {
+			// Try to get function registry from context
 			if funcRegistry, exists := ctxMap["functionRegistry"]; exists {
 				if registry, ok := funcRegistry.(*Registry); ok {
 					c.CallerFactory = NewDefaultFunctionCallerFactory(registry)
 				}
+			} else {
+				// Try to get from frames
+				if frames, exists := ctxMap["frames"]; exists {
+					if frameList, ok := frames.([]any); ok {
+						for _, frame := range frameList {
+							if ruleset, ok := frame.(*Ruleset); ok && ruleset.FunctionRegistry != nil {
+								if registry, ok := ruleset.FunctionRegistry.(*Registry); ok {
+									c.CallerFactory = NewDefaultFunctionCallerFactory(registry)
+									break
+								}
+							}
+						}
+					}
+				}
 			}
+		}
+		// If still nil, use default registry
+		if c.CallerFactory == nil {
+			c.CallerFactory = NewDefaultFunctionCallerFactory(DefaultRegistry)
 		}
 	}
 	// Turn off math for calc(), and switch back on for evaluating nested functions
@@ -364,7 +388,17 @@ func (c *Call) Eval(context any) (any, error) {
 	if result != nil {
 		// Results that are not nodes are cast as Anonymous nodes
 		// Falsy values or booleans are returned as empty nodes
-		if _, isNode := result.(*Node); !isNode {
+		// Check if result implements common node interfaces or is a known node type
+		isNodeType := false
+		switch result.(type) {
+		case *Node, *Color, *Dimension, *Quoted, *Anonymous, *Keyword, *Value, *Expression, *Call, *Ruleset, *Declaration:
+			isNodeType = true
+		case interface{ GetType() string }:
+			// Has GetType method, likely a node
+			isNodeType = true
+		}
+		
+		if !isNodeType {
 			if _, isBool := result.(bool); isBool {
 				// For any boolean value, return an empty Anonymous node
 				result = NewAnonymous(nil, 0, nil, false, false, nil)

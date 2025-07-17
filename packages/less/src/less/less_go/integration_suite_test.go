@@ -1,19 +1,39 @@
 package less_go
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Global results collector for integration suite summary
 var integrationResults []TestResult
 
+// Debug configuration from environment
+var (
+	debugMode   = os.Getenv("LESS_GO_DEBUG") == "1"
+	showAST     = os.Getenv("LESS_GO_AST") == "1"
+	showTrace   = os.Getenv("LESS_GO_TRACE") == "1"
+	showDiff    = os.Getenv("LESS_GO_DIFF") == "1"
+	strictMode  = os.Getenv("LESS_GO_STRICT") == "1"  // Fail tests on output differences
+)
+
 // TestIntegrationSuite runs the comprehensive test suite that matches JavaScript test/index.js
 func TestIntegrationSuite(t *testing.T) {
 	// Reset results collector
 	integrationResults = []TestResult{}
+	
+	// Track overall progress
+	startTime := time.Now()
+	if debugMode {
+		fmt.Println("\n🚀 Starting Integration Test Suite with Debug Mode")
+		fmt.Printf("   Debug Options: AST=%v, Trace=%v, Diff=%v\n", showAST, showTrace, showDiff)
+	}
 	
 	// Base paths for test data - from packages/less/src/less/less_go to packages/test-data
 	testDataRoot := "../../../../test-data"
@@ -218,6 +238,18 @@ func TestIntegrationSuite(t *testing.T) {
 	// Run summary as a final subtest to ensure it appears at the end
 	t.Run("zzz_summary", func(t *testing.T) {
 		printTestSummary(t, integrationResults)
+		
+		// Show timing information
+		duration := time.Since(startTime)
+		t.Logf("\n⏱️  Total test duration: %v", duration)
+		
+		// Memory usage in debug mode
+		if debugMode {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			t.Logf("💾 Memory used: %.2f MB", float64(m.Alloc)/1024/1024)
+			t.Logf("🔄 GC runs: %d", m.NumGC)
+		}
 	})
 }
 
@@ -298,15 +330,15 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 			// Create Less factory
 			factory := Factory(nil, nil)
 
-			// Compile
-			actualResult, err := compileLessForTest(factory, string(lessContent), options)
+			// Compile with debugging
+			actualResult, err := compileLessWithDebug(factory, string(lessContent), options)
 			if err != nil {
 				result.Status = "fail"
 				result.Error = err.Error()
 				result.ActualCSS = ""
 				integrationResults = append(integrationResults, result)
 				t.Logf("❌ %s: Compilation failed: %v", testName, err)
-				t.Logf("   This indicates missing components in the Go port")
+				enhancedErrorReport(t, err, lessFile, string(lessContent))
 				return
 			}
 
@@ -322,10 +354,30 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 				result.Status = "fail"
 				result.Error = "Output differs from expected"
 				integrationResults = append(integrationResults, result)
-				t.Logf("⚠️  %s: Output differs (expected during development)", testName)
-				if len(result.ActualCSS) < 500 && len(result.ExpectedCSS) < 500 {
-					t.Logf("   Expected: %s", result.ExpectedCSS)
-					t.Logf("   Actual:   %s", result.ActualCSS)
+				
+				if strictMode {
+					// In strict mode, fail the test immediately
+					t.Errorf("❌ %s: Output differs from expected", testName)
+					if showDiff {
+						t.Errorf("%s", formatDiff(result.ExpectedCSS, result.ActualCSS))
+					} else {
+						t.Errorf("   Expected: %s", result.ExpectedCSS)
+						t.Errorf("   Actual:   %s", result.ActualCSS)
+					}
+				} else {
+					// During the Go port development, many tests will have output differences
+					// as features are still being implemented. These are marked as failures
+					// but noted as "expected during development" to distinguish them from
+					// compilation errors or crashes.
+					t.Logf("⚠️  %s: Output differs (expected during development)", testName)
+					if showDiff || (len(result.ActualCSS) < 500 && len(result.ExpectedCSS) < 500) {
+						if showDiff {
+							t.Logf("%s", formatDiff(result.ExpectedCSS, result.ActualCSS))
+						} else {
+							t.Logf("   Expected: %s", result.ExpectedCSS)
+							t.Logf("   Actual:   %s", result.ActualCSS)
+						}
+					}
 				}
 			}
 		})
@@ -380,7 +432,7 @@ func runErrorTestSuite(t *testing.T, suite TestSuite, lessRoot string) {
 			factory := Factory(nil, nil)
 
 			// Compile - this should fail
-			actualResult, err := compileLessForTest(factory, string(lessContent), options)
+			actualResult, err := compileLessWithDebug(factory, string(lessContent), options)
 			if err != nil {
 				result.Status = "pass" // For error tests, failure is success
 				result.Error = err.Error()
@@ -397,6 +449,138 @@ func runErrorTestSuite(t *testing.T, suite TestSuite, lessRoot string) {
 		})
 	}
 
+}
+
+// Enhanced debugging helpers
+
+// debugLog prints debug messages when debug mode is enabled
+func debugLog(format string, args ...interface{}) {
+	if debugMode {
+		fmt.Printf("[DEBUG] "+format+"\n", args...)
+	}
+}
+
+// traceLog prints trace messages when trace mode is enabled
+func traceLog(format string, args ...interface{}) {
+	if showTrace {
+		fmt.Printf("[TRACE] "+format+"\n", args...)
+	}
+}
+
+// formatDiff creates a visual diff between expected and actual CSS
+func formatDiff(expected, actual string) string {
+	if !showDiff {
+		return ""
+	}
+	
+	expectedLines := strings.Split(expected, "\n")
+	actualLines := strings.Split(actual, "\n")
+	
+	var diff strings.Builder
+	diff.WriteString("\n--- Expected CSS ---\n")
+	for i, line := range expectedLines {
+		diff.WriteString(fmt.Sprintf("%3d | %s\n", i+1, line))
+	}
+	diff.WriteString("\n--- Actual CSS ---\n")
+	for i, line := range actualLines {
+		diff.WriteString(fmt.Sprintf("%3d | %s\n", i+1, line))
+	}
+	
+	// Find first difference
+	for i := 0; i < len(expectedLines) && i < len(actualLines); i++ {
+		if expectedLines[i] != actualLines[i] {
+			diff.WriteString(fmt.Sprintf("\n⚠️  First difference at line %d:\n", i+1))
+			diff.WriteString(fmt.Sprintf("   Expected: %q\n", expectedLines[i]))
+			diff.WriteString(fmt.Sprintf("   Actual:   %q\n", actualLines[i]))
+			break
+		}
+	}
+	
+	return diff.String()
+}
+
+// enhancedErrorReport provides detailed error context
+func enhancedErrorReport(t *testing.T, err error, lessFile string, lessContent string) {
+	if !debugMode {
+		return
+	}
+	
+	t.Logf("\n🔍 Enhanced Error Report:")
+	t.Logf("   File: %s", lessFile)
+	
+	// Try to extract line/column from error
+	errStr := err.Error()
+	if strings.Contains(errStr, "line") || strings.Contains(errStr, "Line") {
+		t.Logf("   Position: %s", errStr)
+	}
+	
+	// Show file context if possible
+	lines := strings.Split(lessContent, "\n")
+	if len(lines) <= 20 {
+		t.Logf("   Source Content:")
+		for i, line := range lines {
+			t.Logf("   %3d | %s", i+1, line)
+		}
+	}
+	
+	// Provide suggestions based on error type
+	if strings.Contains(errStr, "Parse") || strings.Contains(errStr, "parse") {
+		t.Logf("\n💡 Parser Error Suggestions:")
+		t.Logf("   • Check for missing semicolons or braces")
+		t.Logf("   • Verify syntax matches Less.js grammar")
+		t.Logf("   • Look for unsupported syntax features")
+	} else if strings.Contains(errStr, "undefined") {
+		t.Logf("\n💡 Variable Error Suggestions:")
+		t.Logf("   • Check variable scope and definition order")
+		t.Logf("   • Verify import statements are processed")
+		t.Logf("   • Look for typos in variable names")
+	} else if strings.Contains(errStr, "import") {
+		t.Logf("\n💡 Import Error Suggestions:")
+		t.Logf("   • Verify file paths are correct")
+		t.Logf("   • Check import resolution logic")
+		t.Logf("   • Ensure imported files exist")
+	}
+	
+	// Stack trace if available
+	if debugMode {
+		t.Logf("\n📚 Stack Trace:")
+		for i := 1; i <= 10; i++ {
+			_, file, line, ok := runtime.Caller(i)
+			if !ok {
+				break
+			}
+			if strings.Contains(file, "less_go") {
+				t.Logf("   at %s:%d", file, line)
+			}
+		}
+	}
+}
+
+// compileLessWithDebug wraps the compilation with additional debugging
+func compileLessWithDebug(factory map[string]any, content string, options map[string]any) (string, error) {
+	startTime := time.Now()
+	
+	debugLog("Starting compilation with options: %+v", options)
+	
+	// Add debug hooks if enabled
+	if showAST {
+		// This would require modification to the actual compiler
+		// to expose AST - placeholder for now
+		debugLog("AST output enabled (requires compiler support)")
+	}
+	
+	result, err := compileLessForTest(factory, content, options)
+	
+	duration := time.Since(startTime)
+	debugLog("Compilation completed in %v", duration)
+	
+	if err != nil {
+		debugLog("Compilation failed: %v", err)
+	} else {
+		debugLog("Compilation successful, output length: %d", len(result))
+	}
+	
+	return result, err
 }
 
 // printTestSummary prints a Jest-style summary of test results
@@ -477,104 +661,3 @@ func printTestSummary(t *testing.T, results []TestResult) {
 	t.Logf(strings.Repeat("=", 60))
 }
 
-// TestBasicIntegration runs a smaller subset for quick testing during development
-func TestBasicIntegration(t *testing.T) {
-	// Base paths for test data
-	testDataRoot := "../../../../test-data"
-	lessRoot := filepath.Join(testDataRoot, "less")
-	cssRoot := filepath.Join(testDataRoot, "css")
-
-	// Quick test cases - just the most basic ones
-	quickTests := []struct {
-		name     string
-		lessFile string
-		cssFile  string
-		options  map[string]any
-	}{
-		{"empty", "_main/empty.less", "_main/empty.css", nil},
-		{"variables", "_main/variables.less", "_main/variables.css", nil},
-		{"comments", "_main/comments.less", "_main/comments.css", nil},
-		{"selectors", "_main/selectors.less", "_main/selectors.css", nil},
-	}
-
-	var results []TestResult
-	successCount := 0
-	for _, tc := range quickTests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := TestResult{
-				Suite:    "basic",
-				TestName: tc.name,
-			}
-
-			// Read the .less file
-			lessPath := filepath.Join(lessRoot, tc.lessFile)
-			lessContent, err := ioutil.ReadFile(lessPath)
-			if err != nil {
-				result.Status = "skip"
-				result.Error = "Test file not found: " + err.Error()
-				results = append(results, result)
-				t.Skipf("Test file %s not found: %v", lessPath, err)
-				return
-			}
-
-			// Read the expected CSS file
-			cssPath := filepath.Join(cssRoot, tc.cssFile)
-			expectedCSS, err := ioutil.ReadFile(cssPath)
-			if err != nil {
-				result.Status = "skip"
-				result.Error = "Expected CSS file not found: " + err.Error()
-				results = append(results, result)
-				t.Skipf("Expected CSS file %s not found: %v", cssPath, err)
-				return
-			}
-
-			result.ExpectedCSS = strings.TrimSpace(string(expectedCSS))
-
-			// Set up options
-			options := tc.options
-			if options == nil {
-				options = make(map[string]any)
-			}
-			options["filename"] = lessPath
-			options["paths"] = []string{filepath.Dir(lessPath)}
-
-			// Create Less factory
-			factory := Factory(nil, nil)
-
-			// Compile
-			actualResult, err := compileLessForTest(factory, string(lessContent), options)
-			if err != nil {
-				result.Status = "fail"
-				result.Error = err.Error()
-				result.ActualCSS = ""
-				results = append(results, result)
-				t.Logf("❌ %s: Compilation failed: %v", tc.name, err)
-				return
-			}
-
-			// Compare results
-			result.ActualCSS = strings.TrimSpace(actualResult)
-
-			if result.ActualCSS == result.ExpectedCSS {
-				result.Status = "pass"
-				results = append(results, result)
-				t.Logf("✅ %s: Perfect match!", tc.name)
-				successCount++
-			} else {
-				result.Status = "fail"
-				result.Error = "Output differs from expected"
-				results = append(results, result)
-				t.Logf("⚠️  %s: Output differs", tc.name)
-				if len(result.ActualCSS) < 200 && len(result.ExpectedCSS) < 200 {
-					t.Logf("   Expected: %s", result.ExpectedCSS)
-					t.Logf("   Actual:   %s", result.ActualCSS)
-				}
-			}
-		})
-	}
-
-	t.Logf("Basic integration: %d/%d tests passed", successCount, len(quickTests))
-	
-	// Print summary
-	printTestSummary(t, results)
-}

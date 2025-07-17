@@ -7,6 +7,23 @@ import (
 	"strings"
 )
 
+// formatNumber formats a number to remove unnecessary decimal places
+func formatNumber(n float64) string {
+	// Round to 8 decimal places to avoid floating point precision issues
+	rounded := math.Round(n*100000000) / 100000000
+	
+	// If the number is effectively an integer, return it without decimals
+	if rounded == math.Floor(rounded) {
+		return fmt.Sprintf("%.0f", rounded)
+	}
+	
+	// Otherwise, format with up to 8 decimal places, trimming trailing zeros
+	s := fmt.Sprintf("%.8f", rounded)
+	s = strings.TrimRight(s, "0")
+	s = strings.TrimRight(s, ".")
+	return s
+}
+
 // Color represents a color node in the Less AST
 type Color struct {
 	*Node
@@ -33,7 +50,9 @@ func NewColor(rgb any, alpha float64, originalForm string) *Color {
 	switch v := rgb.(type) {
 	case []float64:
 		if len(v) > 0 {
-			c.RGB = v
+			// Create a copy to avoid shared slice references
+			c.RGB = make([]float64, len(v))
+			copy(c.RGB, v)
 		}
 	case string:
 		if v == "" {
@@ -190,6 +209,8 @@ func (c *Color) ToCSS(context any) string {
 		if strings.HasPrefix(c.Value, "rgb") {
 			if alpha < 1 {
 				colorFunction = "rgba"
+			} else {
+				colorFunction = "rgb"
 			}
 		} else if strings.HasPrefix(c.Value, "hsl") {
 			if alpha < 1 {
@@ -210,16 +231,26 @@ func (c *Color) ToCSS(context any) string {
 			args = append(args, clamp(math.Round(v), 255))
 		}
 		args = append(args, clamp(alpha, 1))
+	case "rgb":
+		for _, v := range c.RGB {
+			args = append(args, clamp(math.Round(v), 255))
+		}
 	case "hsla":
 		args = append(args, clamp(alpha, 1))
 		fallthrough
 	case "hsl":
 		hsl := c.ToHSL()
-		args = append([]any{
-			c.Fround(context, hsl.H),
-			fmt.Sprintf("%v%%", c.Fround(context, hsl.S*100)),
-			fmt.Sprintf("%v%%", c.Fround(context, hsl.L*100)),
-		}, args...)
+		// Format HSL values with proper precision
+		h := c.Fround(context, hsl.H)
+		s := c.Fround(context, hsl.S*100)
+		l := c.Fround(context, hsl.L*100)
+		
+		// Format numbers to remove unnecessary decimals
+		hStr := formatNumber(h)
+		sStr := formatNumber(s) + "%"
+		lStr := formatNumber(l) + "%"
+		
+		args = append([]any{hStr, sStr, lStr}, args...)
 	}
 
 	if colorFunction != "" {
@@ -474,6 +505,16 @@ func FromKeyword(keyword string) *Color {
 		return c
 	}
 	return nil
+}
+
+// GetType returns the node type
+func (c *Color) GetType() string {
+	return "Color"
+}
+
+// GetAllowRoot returns whether color nodes are allowed at root level
+func (c *Color) GetAllowRoot() bool {
+	return false
 }
 
 // Helper functions

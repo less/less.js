@@ -6,6 +6,81 @@ import (
 	"strings"
 )
 
+// ColorFunctionDefinition wraps a color function to implement FunctionDefinition
+type ColorFunctionDefinition struct {
+	fn func(...any) any
+}
+
+func (c *ColorFunctionDefinition) Call(args ...any) (any, error) {
+	// Convert single argument containing an array into multiple arguments
+	if len(args) == 1 {
+		if arr, ok := args[0].([]any); ok {
+			args = arr
+		}
+	}
+	
+	// Pad with nil values if needed
+	for len(args) < 4 {
+		args = append(args, nil)
+	}
+	
+	result := c.fn(args...)
+	if result == nil {
+		return nil, fmt.Errorf("failed to create color")
+	}
+	return result, nil
+}
+
+func (c *ColorFunctionDefinition) CallCtx(ctx *Context, args ...any) (any, error) {
+	// Color functions don't need context evaluation
+	return c.Call(args...)
+}
+
+func (c *ColorFunctionDefinition) NeedsEvalArgs() bool {
+	// Color functions need evaluated arguments
+	return true
+}
+
+// RegisterColorFunctions registers all color functions with the given registry
+func RegisterColorFunctions(registry *Registry) {
+	// RGB functions
+	registry.Add("rgb", &ColorFunctionDefinition{fn: func(args ...any) any {
+		if len(args) >= 3 {
+			return ColorRGB(args[0], args[1], args[2])
+		}
+		return nil
+	}})
+	
+	registry.Add("rgba", &ColorFunctionDefinition{fn: func(args ...any) any {
+		if len(args) >= 4 {
+			return ColorRGBA(args[0], args[1], args[2], args[3])
+		}
+		return nil
+	}})
+	
+	// HSL functions
+	registry.Add("hsl", &ColorFunctionDefinition{fn: func(args ...any) any {
+		if len(args) >= 3 {
+			return ColorHSL(args[0], args[1], args[2])
+		}
+		return nil
+	}})
+	
+	registry.Add("hsla", &ColorFunctionDefinition{fn: func(args ...any) any {
+		if len(args) >= 4 {
+			return ColorHSLA(args[0], args[1], args[2], args[3])
+		}
+		return nil
+	}})
+	
+	// Other color functions can be added here
+}
+
+// init registers color functions with the default registry
+func init() {
+	RegisterColorFunctions(DefaultRegistry)
+}
+
 // Helper functions
 
 // clampUnit ensures a value is between 0 and 1
@@ -82,6 +157,26 @@ func ColorRGB(r, g, b any) any {
 	a := 1.0
 	
 	// Handle comma-less syntax (e.g., rgb(0 128 255 / 50%))
+	// First check if wrapped in Anonymous
+	if anon, ok := r.(*Anonymous); ok {
+		if val := anon.Value; val != nil {
+			// Check if the anonymous value is an expression
+			if expr, ok := val.(*Expression); ok {
+				r = expr
+			} else if arr, ok := val.([]any); ok && len(arr) >= 3 {
+				// Anonymous directly contains array of values
+				r = arr[0]
+				g = arr[1]
+				b = arr[2]
+				color := ColorRGBA(r, g, b, a)
+				if c, ok := color.(*Color); ok {
+					c.Value = "rgb"
+				}
+				return color
+			}
+		}
+	}
+	
 	if expr, ok := r.(*Expression); ok && len(expr.Value) >= 3 {
 		r = expr.Value[0]
 		g = expr.Value[1]
@@ -101,7 +196,6 @@ func ColorRGB(r, g, b any) any {
 	color := ColorRGBA(r, g, b, a)
 	if c, ok := color.(*Color); ok {
 		c.Value = "rgb"
-		return c
 	}
 	return color
 }
@@ -116,7 +210,7 @@ func ColorRGBA(r, g, b, a any) any {
 				alpha = aVal
 			}
 		}
-		return NewColor(color.RGB, alpha, "rgba")
+		return NewColor(color.RGB, alpha, "")
 	}
 	
 	// Convert RGB values
@@ -145,6 +239,22 @@ func ColorHSL(h, s, l any) any {
 	a := 1.0
 	
 	// Handle comma-less syntax
+	// First check if wrapped in Anonymous
+	if anon, ok := h.(*Anonymous); ok {
+		if val := anon.Value; val != nil {
+			// Check if the anonymous value is an expression
+			if expr, ok := val.(*Expression); ok {
+				h = expr
+			} else if arr, ok := val.([]any); ok && len(arr) >= 3 {
+				// Anonymous directly contains array of values
+				h = arr[0]
+				s = arr[1]
+				l = arr[2]
+				return ColorHSLA(h, s, l, a)
+			}
+		}
+	}
+	
 	if expr, ok := h.(*Expression); ok && len(expr.Value) >= 3 {
 		h = expr.Value[0]
 		s = expr.Value[1]
@@ -162,7 +272,7 @@ func ColorHSL(h, s, l any) any {
 	
 	color := ColorHSLA(h, s, l, a)
 	if c, ok := color.(*Color); ok {
-		c.Value = "hsl"
+		c.Value = "hsl"  // Keep HSL format for hsl() function
 		return c
 	}
 	return color
@@ -798,7 +908,176 @@ func GetColorFunctions() map[string]any {
 	}
 }
 
-// GetWrappedColorFunctions returns color functions for registry
+// ColorFunctionWrapper wraps color functions to implement FunctionDefinition
+type ColorFunctionWrapper struct {
+	name string
+	fn   interface{}
+}
+
+func (w *ColorFunctionWrapper) Call(args ...any) (any, error) {
+	switch w.name {
+	case "rgb":
+		if len(args) == 1 || len(args) == 3 {
+			if fn, ok := w.fn.(func(any, any, any) any); ok {
+				if len(args) == 1 {
+					// Single expression argument
+					return fn(args[0], nil, nil), nil
+				}
+				// Three arguments
+				return fn(args[0], args[1], args[2]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 or 3 arguments, got %d", w.name, len(args))
+	case "rgba":
+		if len(args) == 2 || len(args) == 4 {
+			if fn, ok := w.fn.(func(any, any, any, any) any); ok {
+				if len(args) == 2 {
+					// Color and alpha
+					return fn(args[0], args[1], nil, nil), nil
+				}
+				// Four arguments
+				return fn(args[0], args[1], args[2], args[3]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 2 or 4 arguments, got %d", w.name, len(args))
+	case "hsl":
+		if len(args) == 1 || len(args) == 3 {
+			if fn, ok := w.fn.(func(any, any, any) any); ok {
+				if len(args) == 1 {
+					// Single expression argument
+					return fn(args[0], nil, nil), nil
+				}
+				// Three arguments
+				return fn(args[0], args[1], args[2]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 or 3 arguments, got %d", w.name, len(args))
+	case "hsla":
+		if len(args) == 2 || len(args) == 4 {
+			if fn, ok := w.fn.(func(any, any, any, any) any); ok {
+				if len(args) == 2 {
+					// Color and alpha
+					return fn(args[0], args[1], nil, nil), nil
+				}
+				// Four arguments
+				return fn(args[0], args[1], args[2], args[3]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 2 or 4 arguments, got %d", w.name, len(args))
+	case "hsv":
+		if len(args) == 3 {
+			if fn, ok := w.fn.(func(any, any, any) any); ok {
+				return fn(args[0], args[1], args[2]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 3 arguments, got %d", w.name, len(args))
+	case "hsva":
+		if len(args) == 4 {
+			if fn, ok := w.fn.(func(any, any, any, any) any); ok {
+				return fn(args[0], args[1], args[2], args[3]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 4 arguments, got %d", w.name, len(args))
+	case "argb":
+		if len(args) == 1 {
+			if fn, ok := w.fn.(func(any) any); ok {
+				return fn(args[0]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
+	case "color":
+		if len(args) == 1 {
+			if fn, ok := w.fn.(func(any) (any, error)); ok {
+				return fn(args[0])
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
+	case "red", "green", "blue", "alpha", "hue", "saturation", "lightness", 
+	     "hsvhue", "hsvsaturation", "hsvvalue", "luma", "luminance":
+		if len(args) == 1 {
+			if fn, ok := w.fn.(func(any) any); ok {
+				return fn(args[0]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
+	case "saturate", "desaturate", "lighten", "darken", "spin":
+		if len(args) == 1 || len(args) == 2 {
+			// These functions have variadic signature for the optional method parameter
+			if fn, ok := w.fn.(func(any, any, ...any) any); ok {
+				var amount any
+				if len(args) == 2 {
+					amount = args[1]
+				}
+				return fn(args[0], amount), nil
+			} else if fn, ok := w.fn.(func(any, any) any); ok {
+				// Fallback to non-variadic signature
+				var amount any
+				if len(args) == 2 {
+					amount = args[1]
+				}
+				return fn(args[0], amount), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 or 2 arguments, got %d", w.name, len(args))
+	case "fadein", "fadeout", "fade":
+		if len(args) == 2 {
+			if fn, ok := w.fn.(func(any, any) any); ok {
+				return fn(args[0], args[1]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 2 arguments, got %d", w.name, len(args))
+	case "mix":
+		if len(args) >= 2 && len(args) <= 3 {
+			if fn, ok := w.fn.(func(any, any, any) any); ok {
+				var weight any
+				if len(args) == 3 {
+					weight = args[2]
+				}
+				return fn(args[0], args[1], weight), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 2 or 3 arguments, got %d", w.name, len(args))
+	case "greyscale", "grayscale":
+		if len(args) == 1 {
+			if fn, ok := w.fn.(func(any) any); ok {
+				return fn(args[0]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
+	case "contrast":
+		if len(args) >= 1 && len(args) <= 4 {
+			if fn, ok := w.fn.(func(...any) any); ok {
+				return fn(args...), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 1-4 arguments, got %d", w.name, len(args))
+	case "tint", "shade":
+		if len(args) == 2 {
+			if fn, ok := w.fn.(func(any, any) any); ok {
+				return fn(args[0], args[1]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 2 arguments, got %d", w.name, len(args))
+	default:
+		return nil, fmt.Errorf("unknown color function: %s", w.name)
+	}
+}
+
+func (w *ColorFunctionWrapper) CallCtx(ctx *Context, args ...any) (any, error) {
+	// Color functions don't need context evaluation
+	return w.Call(args...)
+}
+
+func (w *ColorFunctionWrapper) NeedsEvalArgs() bool {
+	// Color functions need evaluated arguments
+	return true
+}
+
+// GetWrappedColorFunctions returns color functions wrapped for registry
 func GetWrappedColorFunctions() map[string]interface{} {
-	return GetColorFunctions()
+	wrapped := make(map[string]interface{})
+	for name, fn := range GetColorFunctions() {
+		wrapped[name] = &ColorFunctionWrapper{name: name, fn: fn}
+	}
+	return wrapped
 }

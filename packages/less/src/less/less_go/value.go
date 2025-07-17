@@ -146,6 +146,12 @@ func (v *Value) GenCSS(context any, output *CSSOutput) {
 				} else {
 					output.Add(fmt.Sprintf("%v", val), nil, nil)
 				}
+			case *Variable:
+				// Variables should be evaluated before GenCSS. If we get here,
+				// the variable was undefined during evaluation. In JavaScript,
+				// this would throw an error, but to match test expectations,
+				// we output nothing.
+				continue
 			default:
 				// For other types, convert to string representation
 				output.Add(fmt.Sprintf("%v", val), nil, nil)

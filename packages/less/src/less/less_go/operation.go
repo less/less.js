@@ -3,7 +3,6 @@ package less_go
 import (
 	"reflect"
 	"strings"
-
 )
 
 // Operation represents an operation node in the Less AST

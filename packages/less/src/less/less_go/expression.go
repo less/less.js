@@ -54,10 +54,33 @@ func (e *Expression) Eval(context any) (any, error) {
 	if !ok {
 		return e, nil
 	}
+	
 
 	mathOn := false
 	if m, exists := SafeMapAccess(ctx, "isMathOn"); exists {
-		if mathVal, ok := SafeTypeAssertion[bool](m); ok {
+		if mathFunc, ok := SafeTypeAssertion[func(string) bool](m); ok {
+			// Check if any operation in this expression would have math on
+			// This is needed because we need to know if math will be on
+			// before we create Operations
+			hasOp := false
+			for _, val := range e.Value {
+				if anon, ok := val.(*Anonymous); ok {
+					if op, ok := anon.Value.(string); ok {
+						if op == "+" || op == "-" || op == "*" || op == "/" {
+							hasOp = true
+							if mathFunc(op) {
+								mathOn = true
+								break
+							}
+						}
+					}
+				}
+			}
+			// If we don't have operations, still check for general math mode
+			if !hasOp {
+				mathOn = mathFunc("")
+			}
+		} else if mathVal, ok := SafeTypeAssertion[bool](m); ok {
 			mathOn = mathVal
 		}
 	}
@@ -83,6 +106,7 @@ func (e *Expression) Eval(context any) (any, error) {
 				continue
 			}
 			
+			
 			newValues[i] = SafeEval(val, context)
 		}
 		
@@ -90,6 +114,7 @@ func (e *Expression) Eval(context any) (any, error) {
 		returnValue = expr
 	} else if len(e.Value) == 1 {
 		if val0, ok := SafeSliceIndex(e.Value, 0); ok && !SafeNilCheck(val0) {
+			
 			if v0, ok := SafeTypeAssertion[interface { Parens() bool }](val0); ok && v0.Parens() {
 				if v0p, ok := SafeTypeAssertion[interface { ParensInOp() bool }](val0); ok && !v0p.ParensInOp() {
 					if inCalc, exists := SafeMapAccess(ctx, "inCalc"); !exists {

@@ -45,9 +45,20 @@ func TestRegistryFactoryFunction(t *testing.T) {
 		}
 	})
 
-	t.Run("should have default registry with nil base", func(t *testing.T) {
-		if len(DefaultRegistry.data) != 0 {
-			t.Errorf("Expected default registry to have empty data, got %v", DefaultRegistry.data)
+	t.Run("should have default registry with color functions", func(t *testing.T) {
+		// DefaultRegistry should contain the built-in color functions
+		expectedFunctions := []string{"rgb", "rgba", "hsl", "hsla"}
+		for _, funcName := range expectedFunctions {
+			if DefaultRegistry.Get(funcName) == nil {
+				t.Errorf("Expected default registry to contain %s function", funcName)
+			}
+		}
+		
+		// Should also verify they are ColorFunctionDefinition types
+		if rgbFunc := DefaultRegistry.Get("rgb"); rgbFunc != nil {
+			if _, ok := rgbFunc.(*ColorFunctionDefinition); !ok {
+				t.Errorf("Expected rgb function to be ColorFunctionDefinition, got %T", rgbFunc)
+			}
 		}
 	})
 }

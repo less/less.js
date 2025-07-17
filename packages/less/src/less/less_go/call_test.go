@@ -247,7 +247,7 @@ func TestCallEval(t *testing.T) {
 	})
 
 	t.Run("should enter calc mode when context.inCalc is true", func(t *testing.T) {
-		call := NewCall("rgb", []any{}, mockIndex, mockFileInfo)
+		call := NewCall("unknownfunction", []any{}, mockIndex, mockFileInfo)
 		mockContext := newMockEvalContext()
 		mockContext.inCalc = true
 
@@ -265,7 +265,7 @@ func TestCallEval(t *testing.T) {
 	})
 
 	t.Run("should temporarily toggle mathOn for non-calc functions", func(t *testing.T) {
-		call := NewCall("rgb", []any{}, mockIndex, mockFileInfo)
+		call := NewCall("unknownfunction", []any{}, mockIndex, mockFileInfo)
 		mockContext := newMockEvalContext()
 		
 		var mathOnDuringExecution bool

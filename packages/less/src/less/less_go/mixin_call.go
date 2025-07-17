@@ -282,7 +282,7 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 
 	// No arguments filter
 	noArgumentsFilter = func(rule any) bool {
-		if matcher, ok := rule.(interface{ MatchArgs(any, any) bool }); ok {
+		if matcher, ok := rule.(interface{ MatchArgs([]any, any) bool }); ok {
 			return matcher.MatchArgs(nil, context)
 		}
 		return false
@@ -291,13 +291,9 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	// Find mixins in context frames
 	if ctx, ok := context.(map[string]any); ok {
 		if frames, ok := ctx["frames"].([]any); ok {
-			// Debug: print frame count
-			// fmt.Printf("DEBUG: Looking for mixin %s in %d frames\n", mc.Selector.ToCSS(context), len(frames))
 			for i = 0; i < len(frames); i++ {
-				// fmt.Printf("DEBUG: Frame %d type: %T\n", i, frames[i])
 				if frame, ok := frames[i].(interface{ Find(any, any, func(any) bool) []any }); ok {
 					foundMixins := frame.Find(mc.Selector, nil, noArgumentsFilter)
-					// fmt.Printf("DEBUG: Frame %d found %d mixins\n", i, len(foundMixins))
 					if len(foundMixins) > 0 {
 						mixins = foundMixins
 						isOneFound = true
@@ -421,8 +417,6 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 							return rules, nil
 						}
 					}
-				} else {
-					// fmt.Printf("DEBUG: Frame %d does not implement Find interface\n", i)
 				}
 			}
 		}

@@ -20,8 +20,6 @@ func main() {
 		runUnitTests()
 	case "integration":
 		runIntegrationTests()
-	case "basic":
-		runBasicTests()
 	case "summary":
 		runSummaryOnly()
 	case "all":
@@ -45,7 +43,6 @@ Usage: go run scripts/test.go <command>
 Commands:
   unit         Run unit tests (equivalent to pnpm test:unit)
   integration  Run full integration tests (equivalent to pnpm test)
-  basic        Run basic integration tests for development
   summary      Show only the integration test summary
   all          Run all tests (unit + integration)
   build        Build lessc-go CLI tool
@@ -75,12 +72,6 @@ func runIntegrationTests() {
 	runCommand(cmd)
 }
 
-func runBasicTests() {
-	fmt.Println("⚡ Running basic integration tests...")
-	cmd := exec.Command("go", "test", "./src/less/less_go", "-v", "-run", "TestBasicIntegration", "-timeout", "1m")
-	cmd.Dir = "packages/less"
-	runCommand(cmd)
-}
 
 func runAllTests() {
 	fmt.Println("🔄 Running all tests...")

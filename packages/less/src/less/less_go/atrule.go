@@ -13,6 +13,7 @@ type AtRule struct {
 	IsRooted    bool
 	AllowRoot   bool
 	DebugInfo   any
+	AllExtends  []*Extend // For storing extends found by ExtendFinderVisitor
 }
 
 // NewAtRule creates a new AtRule instance
@@ -244,6 +245,7 @@ func (a *AtRule) OutputRuleset(context any, output *CSSOutput, rules []any) {
 	}
 
 	// Non-compressed
+	// JavaScript: Array(context.tabLevel).join('  ') creates (tabLevel-1) pairs of spaces
 	tabSetStr := "\n" + strings.Repeat("  ", tabLevel-1)
 	tabRuleStr := tabSetStr + "  "
 	
@@ -264,4 +266,14 @@ func (a *AtRule) OutputRuleset(context any, output *CSSOutput, rules []any) {
 	}
 
 	ctx["tabLevel"] = tabLevel - 1
+}
+
+// SetAllExtends sets the AllExtends field (used by ExtendFinderVisitor)
+func (a *AtRule) SetAllExtends(extends []*Extend) {
+	a.AllExtends = extends
+}
+
+// GetAllExtends returns the AllExtends field (used by ProcessExtendsVisitor)
+func (a *AtRule) GetAllExtends() []*Extend {
+	return a.AllExtends
 } 

@@ -29,12 +29,9 @@ func newMockRuleset() *Node {
 	return node
 }
 
-func (m *detachedMockRuleset) SetContext(context any) {
-	m.context = context
-}
-
-func (m *detachedMockRuleset) Eval() *Node {
+func (m *detachedMockRuleset) Eval(context any) any {
 	m.evalCalled = true
+	m.context = context
 	return m.Node
 }
 
@@ -95,11 +92,15 @@ func TestDetachedRuleset(t *testing.T) {
 				Frames: []any{"frame1", "frame2"},
 			}
 			result := dr.Eval(context)
-			if result.ruleset != ruleset {
-				t.Errorf("Expected ruleset to be %v, got %v", ruleset, result.ruleset)
+			resultDR, ok := result.(*DetachedRuleset)
+			if !ok {
+				t.Fatalf("Expected result to be *DetachedRuleset, got %T", result)
 			}
-			if len(result.frames) != len(context.Frames) {
-				t.Errorf("Expected frames length to be %d, got %d", len(context.Frames), len(result.frames))
+			if resultDR.ruleset != ruleset {
+				t.Errorf("Expected ruleset to be %v, got %v", ruleset, resultDR.ruleset)
+			}
+			if len(resultDR.frames) != len(context.Frames) {
+				t.Errorf("Expected frames length to be %d, got %d", len(context.Frames), len(resultDR.frames))
 			}
 		})
 
@@ -111,11 +112,15 @@ func TestDetachedRuleset(t *testing.T) {
 				Frames: []any{"frame3", "frame4"},
 			}
 			result := dr.Eval(context)
-			if result.ruleset != ruleset {
-				t.Errorf("Expected ruleset to be %v, got %v", ruleset, result.ruleset)
+			resultDR, ok := result.(*DetachedRuleset)
+			if !ok {
+				t.Fatalf("Expected result to be *DetachedRuleset, got %T", result)
 			}
-			if len(result.frames) != len(frames) {
-				t.Errorf("Expected frames length to be %d, got %d", len(frames), len(result.frames))
+			if resultDR.ruleset != ruleset {
+				t.Errorf("Expected ruleset to be %v, got %v", ruleset, resultDR.ruleset)
+			}
+			if len(resultDR.frames) != len(frames) {
+				t.Errorf("Expected frames length to be %d, got %d", len(frames), len(resultDR.frames))
 			}
 		})
 
@@ -126,11 +131,15 @@ func TestDetachedRuleset(t *testing.T) {
 				Frames: []any{},
 			}
 			result := dr.Eval(context)
-			if result.ruleset != ruleset {
-				t.Errorf("Expected ruleset to be %v, got %v", ruleset, result.ruleset)
+			resultDR, ok := result.(*DetachedRuleset)
+			if !ok {
+				t.Fatalf("Expected result to be *DetachedRuleset, got %T", result)
 			}
-			if len(result.frames) != 0 {
-				t.Errorf("Expected frames length to be 0, got %d", len(result.frames))
+			if resultDR.ruleset != ruleset {
+				t.Errorf("Expected ruleset to be %v, got %v", ruleset, resultDR.ruleset)
+			}
+			if len(resultDR.frames) != 0 {
+				t.Errorf("Expected frames length to be 0, got %d", len(resultDR.frames))
 			}
 		})
 	})

@@ -67,33 +67,14 @@ func (a *Anonymous) Compare(other any) any {
 		return nil
 	}
 
-	// If other is not an Anonymous node, return nil
-	otherAnon, ok := other.(*Anonymous)
-	if !ok {
-		return nil
+	// Check if other has a ToCSS method (like JavaScript version checks other.toCSS)
+	// JavaScript: return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
+	if cssable, ok := other.(interface{ ToCSS(any) string }); ok {
+		if a.ToCSS(nil) == cssable.ToCSS(nil) {
+			return 0
+		}
 	}
-
-	// Compare CSS output like the JavaScript version
-	var output1, output2 string
-	a.GenCSS(nil, &CSSOutput{
-		Add: func(chunk any, fileInfo any, index any) {
-			if chunk != nil {
-				output1 += fmt.Sprintf("%v", chunk)
-			}
-		},
-	})
-	otherAnon.GenCSS(nil, &CSSOutput{
-		Add: func(chunk any, fileInfo any, index any) {
-			if chunk != nil {
-				output2 += fmt.Sprintf("%v", chunk)
-			}
-		},
-	})
-
-	// Compare the CSS outputs
-	if output1 == output2 {
-		return 0
-	}
+	
 	return nil
 }
 
@@ -145,19 +126,30 @@ func (a *Anonymous) Operate(context any, op string, other any) any {
 
 // GenCSS generates CSS representation
 func (a *Anonymous) GenCSS(context any, output *CSSOutput) {
+	// Set visibility based on value's truthiness like JavaScript version
+	// In JS: this.nodeVisible = Boolean(this.value);
+	visible := false
 	if a.Value != nil {
-		// Always set visibility based on value like JavaScript version
-		visible := a.Value != nil && a.Value != ""
-		a.NodeVisible = &visible
-		
-		if a.NodeVisible != nil && *a.NodeVisible {
-			// Check if the value implements CSSGenerator
-			if generator, ok := a.Value.(CSSGenerator); ok {
-				generator.GenCSS(context, output)
-			} else {
-				// For simple values like strings, add directly
-				output.Add(a.Value, a.FileInfo, a.Index)
-			}
+		switch v := a.Value.(type) {
+		case string:
+			visible = v != ""
+		case bool:
+			visible = v
+		case int, int64, float64:
+			visible = true
+		default:
+			visible = true
+		}
+	}
+	a.NodeVisible = &visible
+	
+	if *a.NodeVisible {
+		// Check if the value implements CSSGenerator
+		if generator, ok := a.Value.(CSSGenerator); ok {
+			generator.GenCSS(context, output)
+		} else if a.Value != nil {
+			// For simple values like strings, add directly
+			output.Add(a.Value, a.FileInfo, a.Index)
 		}
 	}
 }

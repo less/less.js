@@ -33,6 +33,7 @@ type Ruleset struct {
 	Paths            [][]any
 	FirstRoot       bool
 	AllowImports    bool
+	AllExtends      []*Extend // For storing extends found by ExtendFinderVisitor
 	FunctionRegistry any // Changed from *functions.Registry to avoid import cycle
 	// Parser functions for handling dynamic content
 	SelectorsParseFunc SelectorsParseFunc
@@ -319,6 +320,14 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		selCnt = len(r.Selectors)
 		selectors = make([]any, selCnt)
 		
+		// Match JavaScript: defaultFunc.error({type: 'Syntax', message: 'it is currently only allowed in parametric mixin guards,'});
+		if defaultFunc, ok := ctx["defaultFunc"].(interface{ Error(map[string]any) }); ok {
+			defaultFunc.Error(map[string]any{
+				"type":    "Syntax", 
+				"message": "it is currently only allowed in parametric mixin guards,",
+			})
+		}
+		
 		// Evaluate selectors
 		for i := 0; i < selCnt; i++ {
 			if sel, ok := r.Selectors[i].(interface{ Eval(any) (any, error) }); ok {
@@ -375,6 +384,11 @@ func (r *Ruleset) Eval(context any) (any, error) {
 				}
 			}
 		}
+		
+		// Match JavaScript: defaultFunc.reset();
+		if defaultFunc, ok := ctx["defaultFunc"].(interface{ Reset() }); ok {
+			defaultFunc.Reset()
+		}
 	} else {
 		hasOnePassingSelector = true
 	}
@@ -402,21 +416,31 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		}
 	}
 
-	// Inherit function registry from frames or use global
+	// inherit a function registry from the frames stack when possible;
+	// otherwise from the global registry
+	// Match JavaScript: ruleset.functionRegistry = (function (frames) {...}(context.frames)).inherit();
+	var functionRegistry any
 	if frames, ok := ctx["frames"].([]any); ok {
 		for _, frame := range frames {
 			if f, ok := frame.(*Ruleset); ok {
 				if f.FunctionRegistry != nil {
-					ruleset.FunctionRegistry = f.FunctionRegistry
+					functionRegistry = f.FunctionRegistry
 					break
 				}
 			}
 		}
 	}
-	if ruleset.FunctionRegistry == nil {
-		// Use the global default registry
-		ruleset.FunctionRegistry = DefaultRegistry
+	
+	// Apply .inherit() pattern like JavaScript  
+	if functionRegistry != nil {
+		if inheritRegistry, ok := functionRegistry.(interface{ Inherit() any }); ok {
+			ruleset.FunctionRegistry = inheritRegistry.Inherit()
+		} else {
+			// Fallback if Inherit method not available
+			ruleset.FunctionRegistry = functionRegistry
+		}
 	}
+	// If no function registry found in frames, leave it nil for now
 
 	// Push current ruleset to frames stack
 	if frames, ok := ctx["frames"].([]any); ok {
@@ -471,7 +495,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		mediaBlockCount = len(mediaBlocks)
 	}
 
-	// Evaluate mixin calls and variable calls
+	// Evaluate mixin calls and variable calls - match JavaScript logic closely
 	if rsRules != nil {
 		i := 0
 		for i < len(rsRules) {
@@ -479,62 +503,25 @@ func (r *Ruleset) Eval(context any) (any, error) {
 			if r, ok := rule.(interface{ GetType() string }); ok {
 				switch r.GetType() {
 				case "MixinCall":
-					// Capture existing variables before processing mixin to prevent pollution
-					existingVars := ruleset.Variables()
-					
 					if eval, ok := rule.(interface{ Eval(any) ([]any, error) }); ok {
 						rules, err := eval.Eval(context)
 						if err != nil {
 							return nil, err
 						}
-						// Filter results to avoid polluting scope like JavaScript version
+						// Match JavaScript filter logic: !(ruleset.variable(r.name))
 						filtered := make([]any, 0)
 						for _, r := range rules {
-							shouldInclude := true
-							
-							// Check if this is a variable declaration that already exists
 							if decl, ok := r.(*Declaration); ok && decl.variable {
+								// Match JavaScript: return !(ruleset.variable(r.name))
 								if nameStr, ok := decl.name.(string); ok {
-									// Check if variable already exists in the existing variables
-									if _, exists := existingVars[nameStr]; exists {
-										shouldInclude = false // Filter out existing variables
+									if ruleset.Variable(nameStr) == nil {
+										filtered = append(filtered, r) // Include if variable doesn't exist
 									}
+									// Skip if variable already exists (don't pollute scope)
+								} else {
+									filtered = append(filtered, r)
 								}
 							} else {
-								// Check for other variable-like types using duck typing
-								// Look for types that have both 'variable' and 'name' fields
-								if v := reflect.ValueOf(r); v.Kind() == reflect.Ptr && !v.IsNil() {
-									if elem := v.Elem(); elem.Kind() == reflect.Struct {
-										varField := elem.FieldByName("variable")
-										nameField := elem.FieldByName("name")
-										
-										if varField.IsValid() && varField.Kind() == reflect.Bool && 
-										   nameField.IsValid() && varField.Bool() {
-											// This looks like a variable declaration
-											var variableName string
-											if nameField.CanInterface() {
-												if nameStr, ok := nameField.Interface().(string); ok {
-													variableName = nameStr
-												}
-											} else {
-												// Try to get the value even if unexported
-												if nameField.Kind() == reflect.String {
-													variableName = nameField.String()
-												}
-											}
-											
-											if variableName != "" {
-												// Check if variable already exists
-												if _, exists := existingVars[variableName]; exists {
-													shouldInclude = false // Filter out existing variables
-												}
-											}
-										}
-									}
-								}
-							}
-							
-							if shouldInclude {
 								filtered = append(filtered, r)
 							}
 						}
@@ -550,13 +537,23 @@ func (r *Ruleset) Eval(context any) (any, error) {
 						ruleset.ResetCache()
 					}
 				case "VariableCall":
-					if eval, ok := rule.(interface{ Eval(any) (map[string]any, error) }); ok {
+					if eval, ok := rule.(interface{ Eval(any) (any, error) }); ok {
 						evaluated, err := eval.Eval(context)
 						if err != nil {
 							return nil, err
 						}
-						if evalRules, ok := evaluated["rules"].([]any); ok {
-							// Filter to exclude variable declarations to avoid scope pollution like JavaScript
+						// Handle the result - it could be a map with "rules" key or a Ruleset
+						var evalRules []any
+						if evalMap, ok := evaluated.(map[string]any); ok {
+							if rules, hasRules := evalMap["rules"].([]any); hasRules {
+								evalRules = rules
+							}
+						} else if rs, ok := evaluated.(*Ruleset); ok {
+							evalRules = rs.Rules
+						}
+						
+						if evalRules != nil {
+							// Match JavaScript: filter out all variable declarations
 							rules := make([]any, 0)
 							for _, r := range evalRules {
 								if decl, ok := r.(*Declaration); ok && decl.variable {
@@ -1783,4 +1780,14 @@ func flattenArray(arr []any) []any {
 		}
 	}
 	return result
+}
+
+// SetAllExtends sets the AllExtends field (used by ExtendFinderVisitor)
+func (r *Ruleset) SetAllExtends(extends []*Extend) {
+	r.AllExtends = extends
+}
+
+// GetAllExtends returns the AllExtends field (used by ProcessExtendsVisitor)
+func (r *Ruleset) GetAllExtends() []*Extend {
+	return r.AllExtends
 } 

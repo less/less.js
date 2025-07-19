@@ -191,7 +191,7 @@ func (m *MockVariableCall) GetType() string {
 	return "VariableCall"
 }
 
-func (m *MockVariableCall) Eval(context any) (map[string]any, error) {
+func (m *MockVariableCall) Eval(context any) (any, error) {
 	return map[string]any{
 		"rules": m.rules,
 	}, nil

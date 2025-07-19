@@ -41,9 +41,9 @@ func (m *ConditionMockNode) Compare(other *Node) int {
 		return 0 // Different value types
 	}
 	
-	// Different node types should return 0 (incomparable)
+	// Different node types should return 999 (incomparable) like JavaScript's undefined
 	if otherMock.Type != m.Type {
-		return 0
+		return 999
 	}
 
 	switch v := m.Value.(type) {

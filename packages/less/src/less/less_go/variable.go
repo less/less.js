@@ -2,9 +2,10 @@ package less_go
 
 import "fmt"
 
-// ParserFrame represents a scope frame that can look up variables
+// ParserFrame represents a scope frame that can look up variables and properties
 type ParserFrame interface {
 	Variable(name string) map[string]any
+	Property(name string) []any
 }
 
 // Variable represents a variable node in the Less AST

@@ -14,28 +14,9 @@ type Media struct {
 
 // NewMedia creates a new Media instance
 func NewMedia(value any, features any, index int, currentFileInfo map[string]any, visibilityInfo map[string]any) *Media {
-	// Create empty selectors like JavaScript version
-	selector, err := NewSelector([]any{}, nil, nil, index, currentFileInfo, nil)
-	if err != nil {
-		// If selector creation fails, create a basic one
-		selector = &Selector{
-			Node:           NewNode(),
-			Elements:       []*Element{},
-			ExtendList:     nil,
-			Condition:      nil,
-			EvaldCondition: true,
-		}
-		selector.Index = index
-		if currentFileInfo != nil {
-			selector.SetFileInfo(currentFileInfo)
-		}
-	}
-	
-	emptySelectors, err := selector.CreateEmptySelectors()
-	if err != nil {
-		// Fallback to basic empty selectors
-		emptySelectors = []*Selector{selector}
-	}
+	// Match JavaScript: (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors()
+	selector, _ := NewSelector([]any{}, nil, nil, index, currentFileInfo, nil)
+	emptySelectors, _ := selector.CreateEmptySelectors()
 	
 	// Convert selectors to []any for Ruleset
 	selectors := make([]any, len(emptySelectors))
@@ -43,21 +24,11 @@ func NewMedia(value any, features any, index int, currentFileInfo map[string]any
 		selectors[i] = sel
 	}
 
-	// Create Value from features
-	var featuresValue any
-	if features != nil {
-		if val, err := NewValue(features); err == nil {
-			featuresValue = val
-		} else {
-			featuresValue = features
-		}
-	} else {
-		if val, err := NewValue([]any{}); err == nil {
-			featuresValue = val
-		}
-	}
+	// Match JavaScript: this.features = new Value(features)
+	featuresValue, _ := NewValue(features)
 
-	// Create Ruleset from selectors and value
+	// Match JavaScript: this.rules = [new Ruleset(selectors, value)]
+	// Convert value to []any for Ruleset
 	var rules []any
 	if value != nil {
 		if valueSlice, ok := value.([]any); ok {
@@ -71,15 +42,16 @@ func NewMedia(value any, features any, index int, currentFileInfo map[string]any
 
 	// Create Media instance
 	media := &Media{
-		AtRule:    NewAtRule("@media", nil, nil, index, currentFileInfo, nil, false, visibilityInfo),
-		Features:  featuresValue,
-		Rules:     []any{ruleset},
+		AtRule:   NewAtRule("@media", nil, nil, index, currentFileInfo, nil, false, visibilityInfo),
+		Features: featuresValue,
+		Rules:    []any{ruleset},
 	}
 
-	// Set allowRoot like JavaScript version
+	// Match JavaScript: this.allowRoot = true
 	media.AllowRoot = true
+	media.CopyVisibilityInfo(visibilityInfo)
 
-	// Set parent relationships
+	// Match JavaScript: this.setParent calls
 	media.SetParent(selectors, media.AtRule.Node)
 	media.SetParent(media.Features, media.AtRule.Node)
 	media.SetParent(media.Rules, media.AtRule.Node)
@@ -150,23 +122,23 @@ func (m *Media) GenCSS(context any, output *CSSOutput) {
 	m.OutputRuleset(context, output, m.Rules)
 }
 
-// Eval evaluates the media rule
+// Eval evaluates the media rule - matching JavaScript implementation closely
 func (m *Media) Eval(context any) (any, error) {
 	ctx, ok := context.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("context must be a map")
 	}
 
-	// Initialize mediaBlocks and mediaPath if not present
+	// Match JavaScript: if (!context.mediaBlocks) { context.mediaBlocks = []; context.mediaPath = []; }
 	if ctx["mediaBlocks"] == nil {
 		ctx["mediaBlocks"] = []any{}
 		ctx["mediaPath"] = []any{}
 	}
 
-	// Create new media instance
+	// Match JavaScript: const media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo())
 	media := NewMedia(nil, []any{}, m.GetIndex(), m.FileInfo(), m.VisibilityInfo())
 	
-	// Copy debug info if present
+	// Match JavaScript: if (this.debugInfo) { this.rules[0].debugInfo = this.debugInfo; media.debugInfo = this.debugInfo; }
 	if m.DebugInfo != nil {
 		if len(m.Rules) > 0 {
 			if ruleset, ok := m.Rules[0].(*Ruleset); ok {
@@ -176,7 +148,7 @@ func (m *Media) Eval(context any) (any, error) {
 		media.DebugInfo = m.DebugInfo
 	}
 
-	// Evaluate features
+	// Match JavaScript: media.features = this.features.eval(context)
 	if m.Features != nil {
 		if eval, ok := m.Features.(interface{ Eval(any) (any, error) }); ok {
 			evaluated, err := eval.Eval(context)
@@ -184,10 +156,12 @@ func (m *Media) Eval(context any) (any, error) {
 				return nil, err
 			}
 			media.Features = evaluated
+		} else if eval, ok := m.Features.(interface{ Eval(any) any }); ok {
+			media.Features = eval.Eval(context)
 		}
 	}
 
-	// Add to media path and blocks
+	// Match JavaScript: context.mediaPath.push(media); context.mediaBlocks.push(media);
 	if mediaPath, ok := ctx["mediaPath"].([]any); ok {
 		ctx["mediaPath"] = append(mediaPath, media)
 	}
@@ -195,50 +169,49 @@ func (m *Media) Eval(context any) (any, error) {
 		ctx["mediaBlocks"] = append(mediaBlocks, media)
 	}
 
-	// Handle function registry inheritance - match JavaScript behavior
+	// Match JavaScript: this.rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
 	if len(m.Rules) > 0 {
 		if ruleset, ok := m.Rules[0].(*Ruleset); ok {
-			// JavaScript version accesses context.frames[0].functionRegistry.inherit() directly
-			// This will error if frames is missing, but handles empty array gracefully
 			frames, framesOk := ctx["frames"].([]any)
 			if !framesOk {
+				// JavaScript would throw here - frames key must exist
 				return nil, fmt.Errorf("frames is required for media evaluation")
 			}
 			
-			// Only access frames[0] if frames is not empty
+			// Handle function registry inheritance if frames exist
 			if len(frames) > 0 {
 				if frameRuleset, ok := frames[0].(*Ruleset); ok && frameRuleset.FunctionRegistry != nil {
-					// Create inherited function registry (stubbed for now)
+					// Stub: ruleset.FunctionRegistry = frameRuleset.FunctionRegistry.Inherit()
 					ruleset.FunctionRegistry = frameRuleset.FunctionRegistry
 				}
 			}
 
-			// Push ruleset to frames
+			// Match JavaScript: context.frames.unshift(this.rules[0]);
 			newFrames := make([]any, len(frames)+1)
 			newFrames[0] = ruleset
 			copy(newFrames[1:], frames)
 			ctx["frames"] = newFrames
 
-			// Evaluate the ruleset
+			// Match JavaScript: media.rules = [this.rules[0].eval(context)];
 			evaluated, err := ruleset.Eval(context)
 			if err != nil {
 				return nil, err
 			}
 			media.Rules = []any{evaluated}
 
-			// Pop frames
+			// Match JavaScript: context.frames.shift();
 			if currentFrames, ok := ctx["frames"].([]any); ok && len(currentFrames) > 0 {
 				ctx["frames"] = currentFrames[1:]
 			}
 		}
 	}
 
-	// Pop media path
+	// Match JavaScript: context.mediaPath.pop();
 	if mediaPath, ok := ctx["mediaPath"].([]any); ok && len(mediaPath) > 0 {
 		ctx["mediaPath"] = mediaPath[:len(mediaPath)-1]
 	}
 
-	// Return evalTop or evalNested based on media path length
+	// Match JavaScript: return context.mediaPath.length === 0 ? media.evalTop(context) : media.evalNested(context);
 	if mediaPath, ok := ctx["mediaPath"].([]any); ok {
 		if len(mediaPath) == 0 {
 			return media.EvalTop(context), nil

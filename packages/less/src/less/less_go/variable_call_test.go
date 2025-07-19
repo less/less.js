@@ -22,6 +22,11 @@ func (m *mockVariableCallFrame) Variable(name string) map[string]any {
 	return m.vars[name]
 }
 
+func (m *mockVariableCallFrame) Property(name string) []any {
+	// Return empty array for now - tests don't use properties
+	return nil
+}
+
 // Mock EvalContext for testing
 type mockVariableCallContext struct {
 	frames         []ParserFrame

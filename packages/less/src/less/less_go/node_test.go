@@ -169,8 +169,8 @@ func TestNode(t *testing.T) {
 		// Test array comparison with different lengths
 		arrNode3 := NewNode()
 		arrNode3.Value = []any{1, 2}
-		if Compare(arrNode1, arrNode3) != 0 {
-			t.Error("Compare should return 0 for arrays of different lengths")
+		if Compare(arrNode1, arrNode3) != 999 {
+			t.Error("Compare should return 999 for arrays of different lengths")
 		}
 
 		// Test type mismatch
@@ -178,8 +178,8 @@ func TestNode(t *testing.T) {
 		numNode.Value = 42
 		strNode := NewNode()
 		strNode.Value = "42"
-		if Compare(numNode, strNode) != 0 {
-			t.Error("Compare should return 0 for different types")
+		if Compare(numNode, strNode) != 999 {
+			t.Error("Compare should return 999 for different types")
 		}
 
 		// Test Compareable interface

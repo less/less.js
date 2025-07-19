@@ -143,8 +143,11 @@ func TestExtendEvalNilSelector(t *testing.T) {
     if err != nil {
         t.Fatalf("Unexpected error: %v", err)
     }
+    // Check for typed nil - result.Selector could be (*Selector)(nil)
     if result.Selector != nil {
-        t.Errorf("Expected nil selector, got %v", result.Selector)
+        if sel, ok := result.Selector.(*Selector); !ok || sel != nil {
+            t.Errorf("Expected nil selector, got %v (type: %T)", result.Selector, result.Selector)
+        }
     }
 }
 

@@ -433,50 +433,47 @@ func TestQuoted_Compare(t *testing.T) {
 	t.Run("should compare values when both are unescaped quoted strings", func(t *testing.T) {
 		quoted1 := NewQuoted("\"", "test", false, 0, nil)
 		quoted2 := NewQuoted("'", "test", false, 0, nil)
-		result, err := quoted1.Compare(&Node{Value: quoted2})
-		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
-		}
-		if result != 0 {
-			t.Errorf("Expected comparison result to be 0, got %d", result)
+		result := quoted1.Compare(quoted2)
+		if result == nil {
+			t.Errorf("Expected non-nil result")
+		} else if *result != 0 {
+			t.Errorf("Expected comparison result to be 0, got %d", *result)
 		}
 	})
 
 	t.Run("should return error when comparing with non-quoted type", func(t *testing.T) {
 		quoted := NewQuoted("\"", "test", true, 0, nil)
-		other := &Node{Value: "Other"}
-		_, err := quoted.Compare(other)
-		if err == nil {
-			t.Errorf("Expected error for non-quoted type")
+		other := "Other"
+		result := quoted.Compare(other)
+		if result != nil {
+			t.Errorf("Expected nil result for non-quoted type")
 		}
 	})
 
 	t.Run("should return error when comparing escaped and unescaped quotes with different values", func(t *testing.T) {
 		quoted1 := NewQuoted("\"", "test1", true, 0, nil)
 		quoted2 := NewQuoted("\"", "test2", false, 0, nil)
-		_, err := quoted1.Compare(&Node{Value: quoted2})
-		if err == nil {
-			t.Errorf("Expected error for different values")
+		result := quoted1.Compare(quoted2)
+		if result != nil && *result == 0 {
+			t.Errorf("Expected non-zero result for different values")
 		}
 	})
 
-	t.Run("should return 0 when comparing escaped and unescaped quotes with same values", func(t *testing.T) {
+	t.Run("should return nil when comparing escaped and unescaped quotes", func(t *testing.T) {
 		quoted1 := NewQuoted("\"", "test", true, 0, nil)
 		quoted2 := NewQuoted("\"", "test", false, 0, nil)
-		result, err := quoted1.Compare(&Node{Value: quoted2})
-		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
-		}
-		if result != 0 {
-			t.Errorf("Expected comparison result to be 0, got %d", result)
+		result := quoted1.Compare(quoted2)
+		// Escaped and unescaped quotes have different CSS output, so they should not be comparable
+		if result != nil {
+			t.Errorf("Expected nil result for escaped vs unescaped comparison, got %v", *result)
 		}
 	})
 
 	t.Run("should return error when comparing with nil", func(t *testing.T) {
 		quoted := NewQuoted("\"", "test", true, 0, nil)
-		_, err := quoted.Compare(nil)
-		if err == nil {
-			t.Errorf("Expected error for nil comparison")
+		result := quoted.Compare(nil)
+		if result != nil {
+			t.Errorf("Expected nil result for nil comparison")
 		}
 	})
 }

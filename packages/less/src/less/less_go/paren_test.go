@@ -152,8 +152,12 @@ func TestParenEval(t *testing.T) {
 		}
 
 		// Check result.value is the evaluated node
-		if !reflect.DeepEqual(result.Value, evaluatedNode) {
-			t.Errorf("Expected result.Value to be evaluatedNode, got %v", result.Value)
+		if parenResult, ok := result.(*Paren); ok {
+			if !reflect.DeepEqual(parenResult.Value, evaluatedNode) {
+				t.Errorf("Expected result.Value to be evaluatedNode, got %v", parenResult.Value)
+			}
+		} else {
+			t.Errorf("Expected result to be *Paren, got %T", result)
 		}
 
 		// Check it's a new instance, not the same
@@ -199,8 +203,12 @@ func TestParenEval(t *testing.T) {
 		
 		// Since we can't directly call GenCSS on mockEvaluated through evalResult.Value,
 		// we'll test that evalResult.Value is mockEvaluated
-		if evalResult.Value != mockEvaluated {
-			t.Errorf("Expected evalResult.Value to be mockEvaluated, got %v", evalResult.Value)
+		if parenResult, ok := evalResult.(*Paren); ok {
+			if parenResult.Value != mockEvaluated {
+				t.Errorf("Expected evalResult.Value to be mockEvaluated, got %v", parenResult.Value)
+			}
+		} else {
+			t.Errorf("Expected evalResult to be *Paren, got %T", evalResult)
 		}
 		
 		// Test the GenCSS of the evaluated structure
@@ -212,7 +220,11 @@ func TestParenEval(t *testing.T) {
 			IsEmpty: func() bool { return evaluatedCSSResult == "" },
 		}
 
-		evalResult.GenCSS(map[string]any{}, mockEvaluatedOutput)
+		if parenEvalResult, ok := evalResult.(*Paren); ok {
+			parenEvalResult.GenCSS(map[string]any{}, mockEvaluatedOutput)
+		} else {
+			t.Fatalf("Expected evalResult to be *Paren, got %T", evalResult)
+		}
 		expectedEvaluatedCSSResult := "(3)"
 		if evaluatedCSSResult != expectedEvaluatedCSSResult {
 			t.Errorf("Expected evaluatedCSSResult to be %s, got %s", expectedEvaluatedCSSResult, evaluatedCSSResult)
@@ -271,9 +283,13 @@ func TestParenNestedStructures(t *testing.T) {
 		}
 
 		// Check that evalResult.Value is also a Paren
-		_, isParenType := evalResult.Value.(*Paren)
-		if !isParenType {
-			t.Errorf("Expected evalResult.Value to be *Paren, got %T", evalResult.Value)
+		if parenEvalResult, ok := evalResult.(*Paren); ok {
+			_, isParenType := parenEvalResult.Value.(*Paren)
+			if !isParenType {
+				t.Errorf("Expected evalResult.Value to be *Paren, got %T", parenEvalResult.Value)
+			}
+		} else {
+			t.Fatalf("Expected evalResult to be *Paren, got %T", evalResult)
 		}
 		
 		// The test for instance equality here is incorrect for Go - we should check 
@@ -282,7 +298,12 @@ func TestParenNestedStructures(t *testing.T) {
 		// Don't check: if evalResult.Value == innerParen
 
 		// Test the output directly with ToCSS method
-		evaluatedCSSResult := evalResult.ToCSS(map[string]any{})
+		evaluatedCSSResult := ""
+		if parenEvalResult, ok := evalResult.(*Paren); ok {
+			evaluatedCSSResult = parenEvalResult.ToCSS(map[string]any{})
+		} else {
+			t.Fatalf("Expected evalResult to be *Paren, got %T", evalResult)
+		}
 
 		// Expected is now "((evaluated-inner))" when evalResult.Value.Value properly handled
 		if evaluatedCSSResult != "((evaluated-inner))" && evaluatedCSSResult != "(())" {
@@ -312,9 +333,14 @@ func TestParenMiscellaneous(t *testing.T) {
 			"someProperty": "test-context-value",
 		}
 		
-		resultMap, ok := result.Value.(map[string]any)
+		parenResult, ok := result.(*Paren)
 		if !ok {
-			t.Fatalf("Expected result.Value to be map[string]any, got %T", result.Value)
+			t.Fatalf("Expected result to be *Paren, got %T", result)
+		}
+		
+		resultMap, ok := parenResult.Value.(map[string]any)
+		if !ok {
+			t.Fatalf("Expected result.Value to be map[string]any, got %T", parenResult.Value)
 		}
 		
 		if !reflect.DeepEqual(resultMap, expected) {

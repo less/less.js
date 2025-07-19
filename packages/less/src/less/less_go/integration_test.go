@@ -107,6 +107,21 @@ func compileLessForTest(factory map[string]any, input string, options map[string
 			}
 			return fmt.Sprintf("/* Result: %+v */", v), nil
 		default:
+			// If it's a promise-like object, try to handle it synchronously
+			if promiseObj, ok := result.(interface{ Await() (any, error) }); ok {
+				promiseResult, err := promiseObj.Await()
+				if err != nil {
+					return "", err
+				}
+				if resultMap, ok := promiseResult.(map[string]any); ok {
+					if css, hasCSS := resultMap["css"]; hasCSS {
+						if cssStr, ok := css.(string); ok {
+							return cssStr, nil
+						}
+					}
+				}
+				return fmt.Sprintf("%v", promiseResult), nil
+			}
 			return fmt.Sprintf("/* Unexpected result type: %T, value: %+v */", result, result), nil
 		}
 	}

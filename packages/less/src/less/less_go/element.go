@@ -65,6 +65,11 @@ func (e *Element) Type() string {
 	return "Element"
 }
 
+// GetType returns the type of the node for visitor pattern consistency
+func (e *Element) GetType() string {
+	return "Element"
+}
+
 // Accept visits the node with a visitor
 func (e *Element) Accept(visitor any) {
 	if v, ok := visitor.(interface{ Visit(any) any }); ok {
@@ -92,15 +97,16 @@ func (e *Element) Accept(visitor any) {
 func (e *Element) Eval(context any) (any, error) {
 	var evaluatedValue any = e.Value
 
+	// Match JavaScript logic: this.value.eval ? this.value.eval(context) : this.value
 	if e.Value != nil {
 		if evalValue, ok := e.Value.(interface{ Eval(any) (any, error) }); ok {
 			evaluated, err := evalValue.Eval(context)
 			if err != nil {
 				return nil, err
 			}
-			if evaluated != nil {
-				evaluatedValue = evaluated
-			}
+			evaluatedValue = evaluated
+		} else if evalValue, ok := e.Value.(interface{ Eval(any) any }); ok {
+			evaluatedValue = evalValue.Eval(context)
 		}
 	}
 
@@ -154,81 +160,65 @@ func (e *Element) GenCSS(context any, output *CSSOutput) {
 
 // ToCSS converts the element to its CSS string representation
 func (e *Element) ToCSS(context any) string {
+	// Match JavaScript logic: context = context || {}
 	ctx := make(map[string]any)
 	if c, ok := context.(map[string]any); ok {
-		for k, v := range c {
-			ctx[k] = v
-		}
+		ctx = c
 	}
 
-	// Generate Combinator CSS
-	combinatorCSS := ""
-	combinatorOutput := &CSSOutput{
-		Add: func(chunk any, fileInfo any, index any) {
-			if chunk != nil {
-				if strChunk, ok := chunk.(string); ok {
-					combinatorCSS += strChunk
-				} else {
-					combinatorCSS += fmt.Sprintf("%v", chunk)
-				}
-			}
-		},
-		IsEmpty: func() bool {
-			return len(combinatorCSS) == 0
-		},
-	}
-	if e.Combinator != nil {
-		e.Combinator.GenCSS(ctx, combinatorOutput)
-	}
-
-	// Generate Value CSS
 	var valueCSS string
-	if e.Value == nil {
-		valueCSS = ""
-	} else if paren, ok := e.Value.(*Paren); ok {
-		// Handle Paren values
-		originalFirstSelector := false
-		if fs, exists := ctx["firstSelector"].(bool); exists {
-			originalFirstSelector = fs
-			ctx["firstSelector"] = true
-		}
-		// Try calling ToCSS on the Paren's inner value first
-		if paren.Value != nil {
-			if innerCSSValue, innerOK := paren.Value.(interface{ ToCSS(any) string }); innerOK {
-				valueCSS = innerCSSValue.ToCSS(ctx)
-			} else {
-				// Fallback to Paren's ToCSS
-				valueCSS = paren.ToCSS(ctx)
-			}
-		}
-		if originalFirstSelector {
-			ctx["firstSelector"] = originalFirstSelector
-		}
-	} else if cssValue, ok := e.Value.(interface{ ToCSS(any) string }); ok {
-		valueCSS = cssValue.ToCSS(ctx)
-	} else {
-		// Handle potential circular references and other edge cases
-		defer func() {
-			if r := recover(); r != nil {
-				valueCSS = fmt.Sprintf("%v", e.Value)
-			}
-		}()
-		
-		// Handle rune values (like & character) properly
-		if runeVal, ok := e.Value.(rune); ok {
-			valueCSS = string(runeVal)
-		} else if stringVal, ok := e.Value.(string); ok {
-			valueCSS = stringVal
-		} else if uint8Val, ok := e.Value.(uint8); ok {
-			// Handle uint8 values (like ASCII codes for characters)
-			valueCSS = string(rune(uint8Val))
-		} else {
-			valueCSS = fmt.Sprintf("%v", e.Value)
-		}
+	value := e.Value
+	firstSelector := false
+	if fs, exists := ctx["firstSelector"].(bool); exists {
+		firstSelector = fs
 	}
 
+	// If value is a Paren, set firstSelector to true
+	if paren, ok := value.(*Paren); ok && paren != nil {
+		// selector in parens should not be affected by outer selector
+		// flags (breaks only interpolated selectors - see #1973)
+		ctx["firstSelector"] = true
+	}
+
+	// Convert value to CSS
+	if value == nil {
+		valueCSS = ""
+	} else if cssValue, ok := value.(interface{ ToCSS(any) string }); ok {
+		valueCSS = cssValue.ToCSS(ctx)
+	} else if strValue, ok := value.(string); ok {
+		valueCSS = strValue
+	} else {
+		valueCSS = fmt.Sprintf("%v", value)
+	}
+
+	// Restore firstSelector
+	ctx["firstSelector"] = firstSelector
+
+	// Handle empty value with & combinator
 	if valueCSS == "" && e.Combinator != nil && len(e.Combinator.Value) > 0 && e.Combinator.Value[0] == '&' {
 		return ""
+	}
+
+	// Get combinator CSS using the same pattern as JavaScript Node.toCSS
+	combinatorCSS := ""
+	if e.Combinator != nil {
+		var strs []string
+		output := &CSSOutput{
+			Add: func(chunk any, fileInfo any, index any) {
+				if chunk != nil {
+					if strChunk, ok := chunk.(string); ok {
+						strs = append(strs, strChunk)
+					} else {
+						strs = append(strs, fmt.Sprintf("%v", chunk))
+					}
+				}
+			},
+			IsEmpty: func() bool {
+				return len(strs) == 0
+			},
+		}
+		e.Combinator.GenCSS(ctx, output)
+		combinatorCSS = strings.Join(strs, "")
 	}
 
 	return combinatorCSS + valueCSS

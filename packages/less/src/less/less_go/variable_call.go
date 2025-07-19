@@ -25,6 +25,11 @@ func NewVariableCall(variable string, index int, currentFileInfo map[string]any)
 	}
 }
 
+// Type returns the node type
+func (vc *VariableCall) Type() string {
+	return "VariableCall"
+}
+
 // GetType returns the node type
 func (vc *VariableCall) GetType() string {
 	return "VariableCall"
@@ -40,72 +45,102 @@ func (vc *VariableCall) FileInfo() map[string]any {
 	return vc._fileInfo
 }
 
-// Eval evaluates the variable call
-func (vc *VariableCall) Eval(context any) (any, error) {
-	variable := NewVariable(vc.variable, vc.GetIndex(), vc.FileInfo())
-	
-	// Wrap the context to implement EvalContext interface
-	wrappedContext := &contextWrapper{ctx: context}
-	
-	detachedRuleset, err := variable.Eval(wrappedContext)
-	if err != nil {
-		return nil, err
-	}
-
-	errorMsg := fmt.Sprintf("Could not evaluate variable call %s", vc.variable)
-	lessError := NewLessError(ErrorDetails{Message: errorMsg}, nil, "")
-
-	var rules any
-
-	// Check if detachedRuleset already has a ruleset property
-	if dr, ok := detachedRuleset.(interface{ GetRuleset() any }); ok {
-		if ruleset := dr.GetRuleset(); ruleset != nil {
-			// detachedRuleset already has a ruleset, use it directly
-			if detached, ok := detachedRuleset.(interface{ CallEval(any) any }); ok {
-				return detached.CallEval(context), nil
+// Eval evaluates the variable call - match JavaScript implementation
+func (vc *VariableCall) Eval(context any) (result any, err error) {
+	// Use defer/recover to catch panics and convert them to errors
+	defer func() {
+		if r := recover(); r != nil {
+			// Convert panic to error
+			if lessErr, ok := r.(*LessError); ok {
+				err = lessErr
+			} else if lessErr, ok := r.(LessError); ok {
+				err = &lessErr
+			} else {
+				err = fmt.Errorf("%v", r)
 			}
 		}
+	}()
+	// Match JavaScript: let detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
+	variable := NewVariable(vc.variable, vc.GetIndex(), vc.FileInfo())
+	// Variable.Eval returns (any, error) but JavaScript ignores the error
+	detachedRuleset, _ := variable.Eval(context)
+	
+	errorMsg := fmt.Sprintf("Could not evaluate variable call %s", vc.variable)
+	
+	// Match JavaScript: if (!detachedRuleset.ruleset)
+	var hasRuleset bool
+	if dr, ok := detachedRuleset.(*DetachedRuleset); ok && dr.ruleset != nil {
+		hasRuleset = true
+	} else if dr, ok := detachedRuleset.(interface{ GetRuleset() any }); ok && dr.GetRuleset() != nil {
+		// Also check for objects with GetRuleset method
+		hasRuleset = true
 	}
-
-	// Handle different return types from Variable.Eval
-	switch dr := detachedRuleset.(type) {
-	case map[string]any:
-		if _, hasRules := dr["rules"]; hasRules {
-			rules = dr
-		} else if valueArray, hasValue := dr["value"].([]any); hasValue {
-			rules = NewRuleset([]any{}, valueArray, false, nil)
-		} else {
-			return nil, lessError
+	
+	if !hasRuleset {
+		var rules any
+		
+		// Match JavaScript conditions in order
+		if rulesObj, ok := detachedRuleset.(interface{ GetRules() []any }); ok && rulesObj.GetRules() != nil {
+			// if (detachedRuleset.rules) - with GetRules() method
+			rules = detachedRuleset
+		} else if mapObj, ok := detachedRuleset.(map[string]any); ok {
+			// if (detachedRuleset.rules) - plain map with "rules" key
+			if rulesVal, hasRules := mapObj["rules"]; hasRules && rulesVal != nil {
+				rules = detachedRuleset
+			} else if valArr, hasValue := mapObj["value"].([]any); hasValue {
+				// else if (Array.isArray(detachedRuleset.value))
+				rules = NewRuleset([]any{}, valArr, false, nil)
+			}
+		} else if arr, ok := detachedRuleset.([]any); ok {
+			// else if (Array.isArray(detachedRuleset))
+			rules = NewRuleset([]any{}, arr, false, nil)
+		} else if valObj, ok := detachedRuleset.(interface{ GetValue() any }); ok {
+			if arr, ok := valObj.GetValue().([]any); ok {
+				// else if (Array.isArray(detachedRuleset.value))
+				rules = NewRuleset([]any{}, arr, false, nil)
+			}
 		}
-	case []any:
-		rules = NewRuleset([]any{}, dr, false, nil)
-	case interface{ GetRules() []any }:
-		rules = dr
-	default:
-		// Check if it has a rules property using interface
-		if rulesGetter, ok := detachedRuleset.(interface{ GetRules() []any }); ok {
-			rules = rulesGetter
+		
+		if rules == nil {
+			// Match JavaScript: throw error;
+			return nil, NewLessError(ErrorDetails{Message: errorMsg}, nil, "")
+		}
+		
+		// Match JavaScript: detachedRuleset = new DetachedRuleset(rules);
+		if rulesetNode, ok := rules.(*Ruleset); ok {
+			// Wrap Ruleset in a Node
+			node := NewNode()
+			node.Value = rulesetNode
+			detachedRuleset = NewDetachedRuleset(node, nil)
+		} else if node, ok := rules.(*Node); ok {
+			detachedRuleset = NewDetachedRuleset(node, nil)
 		} else {
-			return nil, lessError
+			// Wrap in a Node if needed
+			node := NewNode()
+			node.Value = rules
+			detachedRuleset = NewDetachedRuleset(node, nil)
 		}
 	}
-
-	// Create DetachedRuleset with the rules
-	var detached *DetachedRuleset
-	if rulesetNode, ok := rules.(*Ruleset); ok {
-		detached = NewDetachedRuleset(rulesetNode.Node, nil)
-	} else if node, ok := rules.(*Node); ok {
-		detached = NewDetachedRuleset(node, nil)
-	} else {
-		// Wrap in a Node if needed
-		node := NewNode()
-		node.Value = rules
-		detached = NewDetachedRuleset(node, nil)
+	
+	// Match JavaScript: if (detachedRuleset.ruleset) { return detachedRuleset.callEval(context); }
+	if dr, ok := detachedRuleset.(*DetachedRuleset); ok && dr.ruleset != nil {
+		// For VariableCall, we need to return the evaluated result in the format expected by ruleset.go
+		evalResult := dr.CallEval(context)
+		// The ruleset.go expects a map with "rules" key for VariableCall
+		if rs, ok := evalResult.(*Ruleset); ok {
+			return map[string]any{"rules": rs.Rules}, nil
+		}
+		return evalResult, nil
+	} else if dr, ok := detachedRuleset.(interface{ CallEval(any) any }); ok {
+		// Also check for objects with CallEval method (like mocks)
+		evalResult := dr.CallEval(context)
+		// The ruleset.go expects a map with "rules" key for VariableCall
+		if rs, ok := evalResult.(*Ruleset); ok {
+			return map[string]any{"rules": rs.Rules}, nil
+		}
+		return evalResult, nil
 	}
-
-	if detached.ruleset != nil {
-		return detached.CallEval(context), nil
-	}
-
-	return nil, lessError
+	
+	// Match JavaScript: throw error;
+	return nil, NewLessError(ErrorDetails{Message: errorMsg}, nil, "")
 } 

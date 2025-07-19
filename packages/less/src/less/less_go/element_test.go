@@ -149,8 +149,8 @@ func TestElement(t *testing.T) {
 			paren := NewParen(parenValue)
 			element := NewElement(">", paren, false, 0, nil, nil)
 			result := element.ToCSS(nil)
-			if result != " > test" {
-				t.Errorf("Expected CSS to be ' > test', got '%s'", result)
+			if result != " > (test)" {
+				t.Errorf("Expected CSS to be ' > (test)', got '%s'", result)
 			}
 		})
 
@@ -303,4 +303,8 @@ type testCSSGenerator struct {
 
 func (g *testCSSGenerator) ToCSS(context any) string {
 	return g.cssValue
+}
+
+func (g *testCSSGenerator) GenCSS(context any, output *CSSOutput) {
+	output.Add(g.cssValue, nil, nil)
 } 

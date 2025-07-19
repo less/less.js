@@ -88,6 +88,11 @@ func (s *Selector) Type() string {
 	return "Selector"
 }
 
+// GetType returns the type of the node for visitor pattern consistency
+func (s *Selector) GetType() string {
+	return "Selector"
+}
+
 // Accept visits the node with a visitor.
 func (s *Selector) Accept(visitor any) {
 	// Use the visitor framework if it's a proper Visitor, otherwise fall back to direct calls
@@ -511,4 +516,19 @@ func (s *Selector) IsVisible() bool {
 	}
 	// Default to true for selectors - they should be visible unless explicitly marked otherwise
 	return true
+}
+
+// GetExtendList returns the ExtendList of the selector
+func (s *Selector) GetExtendList() []*Extend {
+	// Convert []any to []*Extend
+	if s.ExtendList == nil {
+		return nil
+	}
+	extends := make([]*Extend, 0, len(s.ExtendList))
+	for _, ext := range s.ExtendList {
+		if extend, ok := ext.(*Extend); ok {
+			extends = append(extends, extend)
+		}
+	}
+	return extends
 } 

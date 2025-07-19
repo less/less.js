@@ -1020,9 +1020,8 @@ func (p *Parsers) AnonymousValue() any {
 func (p *Parsers) DetachedRuleset() any {
 	blockRuleset := p.BlockRuleset()
 	if blockRuleset != nil {
-		if ruleset, ok := blockRuleset.(*Ruleset); ok {
-			return NewDetachedRuleset(ruleset.Node, nil)
-		}
+		// Pass the entire ruleset, not just its Node
+		return NewDetachedRuleset(blockRuleset, nil)
 	}
 	return nil
 }

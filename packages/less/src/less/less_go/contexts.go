@@ -208,10 +208,33 @@ func (e *Eval) NormalizePath(path string) string {
 
 // Helper functions
 func isPathRelative(path string) bool {
-	return !strings.HasPrefix(strings.ToLower(path), "http:") &&
-		!strings.HasPrefix(strings.ToLower(path), "https:") &&
-		!strings.HasPrefix(path, "/") &&
-		!strings.HasPrefix(path, "#")
+	// JavaScript regex: /^(?:[a-z-]+:|\/|#)/i
+	// This matches any scheme (e.g., http:, https:, file:, data:, etc.), absolute paths, or hash fragments
+	if path == "" {
+		return true
+	}
+	
+	// Check for absolute path or hash fragment
+	if strings.HasPrefix(path, "/") || strings.HasPrefix(path, "#") {
+		return false
+	}
+	
+	// Check for any scheme (case-insensitive)
+	// Look for pattern: [a-z-]+:
+	lowerPath := strings.ToLower(path)
+	colonIndex := strings.Index(lowerPath, ":")
+	if colonIndex > 0 {
+		// Check if all characters before colon are valid scheme characters (a-z or -)
+		scheme := lowerPath[:colonIndex]
+		for _, ch := range scheme {
+			if !((ch >= 'a' && ch <= 'z') || ch == '-') {
+				return true // Not a valid scheme, so it's relative
+			}
+		}
+		return false // Valid scheme found, so it's not relative
+	}
+	
+	return true
 }
 
 func isPathLocalRelative(path string) bool {

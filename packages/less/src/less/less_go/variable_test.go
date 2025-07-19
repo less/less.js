@@ -48,6 +48,11 @@ func (m *mockFrame) Variable(name string) map[string]any {
 	return m.vars[name]
 }
 
+func (m *mockFrame) Property(name string) []any {
+	// Return empty array for now - tests don't use properties
+	return nil
+}
+
 type mockValue struct {
 	value any
 }

@@ -21,40 +21,37 @@ func (p *Paren) Type() string {
 	return "Paren"
 }
 
+// GetType returns the type of the node for visitor pattern consistency
+func (p *Paren) GetType() string {
+	return "Paren"
+}
+
 // GenCSS generates CSS representation with parentheses around the value
 func (p *Paren) GenCSS(context any, output *CSSOutput) {
 	output.Add("(", nil, nil)
 	
-	// Call genCSS on the value if it implements the required method
-	if valueWithGenCSS, ok := p.Value.(interface {
-		GenCSS(any, *CSSOutput)
-	}); ok {
+	// Match JavaScript: this.value.genCSS(context, output);
+	if valueWithGenCSS, ok := p.Value.(interface{ GenCSS(any, *CSSOutput) }); ok {
 		valueWithGenCSS.GenCSS(context, output)
-	} else if valueWithToCSS, ok := p.Value.(interface {
-		ToCSS(any) string
-	}); ok {
-		// Fallback to ToCSS if GenCSS is not available
-		output.Add(valueWithToCSS.ToCSS(context), nil, nil)
-	} else {
-		// Fallback for basic types
-		output.Add(fmt.Sprintf("%v", p.Value), nil, nil)
 	}
 	
 	output.Add(")", nil, nil)
 }
 
 // Eval evaluates the node and returns a new Paren with the evaluated value
-func (p *Paren) Eval(context any) *Paren {
+func (p *Paren) Eval(context any) any {
+	// Match JavaScript: return new Paren(this.value.eval(context));
 	var evaluatedValue any = p.Value
 	
-	// Call eval on the value if it implements the required method
-	if valueWithEval, ok := p.Value.(interface {
-		Eval(any) any
-	}); ok {
+	// Try single-return eval first (matches most nodes)
+	if valueWithEval, ok := p.Value.(interface{ Eval(any) any }); ok {
 		evaluatedValue = valueWithEval.Eval(context)
-	} else if parenValue, ok := p.Value.(*Paren); ok {
-		// Handle nested Paren structures
-		evaluatedValue = parenValue.Eval(context)
+	} else if valueWithEval, ok := p.Value.(interface{ Eval(any) (any, error) }); ok {
+		// Handle nodes that return errors
+		result, _ := valueWithEval.Eval(context)
+		if result != nil {
+			evaluatedValue = result
+		}
 	}
 	
 	return NewParen(evaluatedValue)

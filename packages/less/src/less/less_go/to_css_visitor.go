@@ -190,6 +190,41 @@ func (v *ToCSSVisitor) Run(root any) any {
 	return v.visitor.Visit(root)
 }
 
+// isRulesetAtRoot checks if a ruleset is at the root level (has no parent selectors)
+func (v *ToCSSVisitor) isRulesetAtRoot(rulesetNode any) bool {
+	// For now, we'll check if it's the first level ruleset
+	// This is a simplified check - in a full implementation we'd track the context
+	return true
+}
+
+// containsOnlyProperties checks if rules contain only properties (no nested rulesets)
+func (v *ToCSSVisitor) containsOnlyProperties(rules []any) bool {
+	if len(rules) == 0 {
+		return false
+	}
+	
+	for _, rule := range rules {
+		if ruleNode, ok := rule.(interface{ GetType() string }); ok {
+			nodeType := ruleNode.GetType()
+			// If we find anything that's not a Declaration, it's not "only properties"
+			if nodeType != "Declaration" && nodeType != "Comment" {
+				return false
+			}
+		}
+	}
+	
+	// Check that we have at least one non-variable declaration
+	for _, rule := range rules {
+		if declNode, ok := rule.(interface{ GetType() string; GetVariable() bool }); ok {
+			if declNode.GetType() == "Declaration" && !declNode.GetVariable() {
+				return true
+			}
+		}
+	}
+	
+	return false
+}
+
 // VisitDeclaration visits a declaration node
 func (v *ToCSSVisitor) VisitDeclaration(declNode any, visitArgs *VisitArgs) any {
 	if declNode == nil {
@@ -400,6 +435,7 @@ func (v *ToCSSVisitor) CheckValidNodes(rules []any, isRoot bool) error {
 	
 	for _, ruleNode := range rules {
 		if isRoot {
+			// Check for direct declarations
 			if declNode, ok := ruleNode.(interface{ GetType() string; GetVariable() bool; GetIndex() int; FileInfo() map[string]any }); ok {
 				if declNode.GetType() == "Declaration" && !declNode.GetVariable() {
 					var filename string
@@ -414,6 +450,16 @@ func (v *ToCSSVisitor) CheckValidNodes(rules []any, isRoot bool) error {
 						Message:  "Properties must be inside selector blocks. They cannot be in the root",
 						Index:    declNode.GetIndex(),
 						Filename: filename,
+					}
+				}
+			}
+			
+			// Check for rulesets with no selectors at root level - their contents should also be checked
+			if rulesetNode, ok := ruleNode.(interface{ GetType() string; GetSelectors() []any; GetRules() []any }); ok {
+				if rulesetNode.GetType() == "Ruleset" && (rulesetNode.GetSelectors() == nil || len(rulesetNode.GetSelectors()) == 0) {
+					// A ruleset with no selectors at root level - check its rules as if they were at root
+					if err := v.CheckValidNodes(rulesetNode.GetRules(), true); err != nil {
+						return err
 					}
 				}
 			}
@@ -473,6 +519,37 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 		var isFirstRoot bool
 		if firstRootNode, ok := rulesetNode.(interface{ GetFirstRoot() bool }); ok {
 			isFirstRoot = firstRootNode.GetFirstRoot()
+		}
+		
+		// Special check: if this is a ruleset with no selectors at the root level,
+		// we need to check if it contains only properties (which would be invalid)
+		if isFirstRoot || v.isRulesetAtRoot(rulesetNode) {
+			if selNode, ok := rulesetNode.(interface{ GetSelectors() []any }); ok {
+				selectors := selNode.GetSelectors()
+				if len(selectors) == 0 && v.containsOnlyProperties(rules) {
+					// This is a selector-less ruleset at root with only properties
+					// Find the first property to report its location
+					for _, rule := range rules {
+						if declNode, ok := rule.(interface{ GetType() string; GetVariable() bool; GetIndex() int; FileInfo() map[string]any }); ok {
+							if declNode.GetType() == "Declaration" && !declNode.GetVariable() {
+								var filename string
+								if fileInfo := declNode.FileInfo(); fileInfo != nil {
+									if fileNameValue, ok := fileInfo["filename"]; ok {
+										if fileNameStr, ok := fileNameValue.(string); ok {
+											filename = fileNameStr
+										}
+									}
+								}
+								panic(&LessError{
+									Message:  "Properties must be inside selector blocks. They cannot be in the root",
+									Index:    declNode.GetIndex(),
+									Filename: filename,
+								})
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		if err := v.CheckValidNodes(rules, isFirstRoot); err != nil {

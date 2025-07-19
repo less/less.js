@@ -107,17 +107,26 @@ func (fc *FunctionCaller) IsValid() bool {
 }
 
 // Call executes the Less function with the given arguments.
-func (fc *FunctionCaller) Call(args []any) (any, error) {
+func (fc *FunctionCaller) Call(args any) (any, error) {
 	if !fc.IsValid() {
 		return nil, fmt.Errorf("function '%s' is not registered", fc.Name)
 	}
+
+	// Convert single arg to array if needed (matching JavaScript behavior)
+	var argsArray []any
+	if arr, ok := args.([]any); ok {
+		argsArray = arr
+	} else {
+		argsArray = []any{args}
+	}
+	
 
 	evalArgs := fc.Func.NeedsEvalArgs()
 
 	var evaluatedArgs []any
 	if evalArgs {
-		evaluatedArgs = make([]any, 0, len(args))
-		for i, arg := range args {
+		evaluatedArgs = make([]any, 0, len(argsArray))
+		for i, arg := range argsArray {
 			if evaluatableArg, ok := arg.(Evaluable); ok {
 				evaluatedValue, err := evaluatableArg.Eval(fc.Context)
 				if err != nil {
@@ -130,7 +139,7 @@ func (fc *FunctionCaller) Call(args []any) (any, error) {
 			}
 		}
 	} else {
-		evaluatedArgs = args // Use raw args if evaluation is not needed
+		evaluatedArgs = argsArray // Use raw args if evaluation is not needed
 	}
 
 	// Filter comments and process Expressions

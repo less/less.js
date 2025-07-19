@@ -30,6 +30,11 @@ func (o *Operation) Type() string {
 	return "Operation"
 }
 
+// GetType returns the type of the node for visitor pattern consistency
+func (o *Operation) GetType() string {
+	return "Operation"
+}
+
 // Accept visits the operation's operands with the visitor
 func (o *Operation) Accept(visitor any) {
 	// Try as interface implementation
@@ -51,109 +56,94 @@ func (o *Operation) Accept(visitor any) {
 	}
 }
 
-// Eval evaluates the operation
+// Eval evaluates the operation - match JavaScript implementation closely
 func (o *Operation) Eval(context any) (any, error) {
-	// Get the evaluated operands
+	// Match JavaScript: let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
 	var a, b any
 	
-	// Try to evaluate operand A - handle both (any, error) and (any) return signatures
-	if aNode, ok := o.Operands[0].(interface{ Eval(any) (any, error) }); ok {
-		var err error
-		a, err = aNode.Eval(context)
-		if err != nil {
-			a = o.Operands[0] // Fall back to original
-		}
-	} else if aNode, ok := o.Operands[0].(interface{ Eval(any) any }); ok {
+	// Evaluate operand A
+	if aNode, ok := o.Operands[0].(interface{ Eval(any) any }); ok {
 		a = aNode.Eval(context)
 	} else {
 		a = o.Operands[0]
 	}
 	
-	// Try to evaluate operand B - handle both (any, error) and (any) return signatures
-	if bNode, ok := o.Operands[1].(interface{ Eval(any) (any, error) }); ok {
-		var err error
-		b, err = bNode.Eval(context)
-		if err != nil {
-			b = o.Operands[1] // Fall back to original
-		}
-	} else if bNode, ok := o.Operands[1].(interface{ Eval(any) any }); ok {
+	// Evaluate operand B  
+	if bNode, ok := o.Operands[1].(interface{ Eval(any) any }); ok {
 		b = bNode.Eval(context)
 	} else {
 		b = o.Operands[1]
 	}
 	
-	// Check if math is on for this operator
-	isMathOn := false
+	// Match JavaScript: if (context.isMathOn(this.op))
 	if ctx, ok := context.(map[string]any); ok {
-		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
-			isMathOn = mathOnFunc(o.Op)
-		}
-	}
-
-	if isMathOn {
-		op := o.Op
-		if op == "./" {
-			op = "/"
-		}
-
-		// Type conversion between dimensions and colors
-		if aDim, aOk := a.(*Dimension); aOk {
-			if _, bOk := b.(*Color); bOk {
-				a = aDim.ToColor()
+		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok && mathOnFunc(o.Op) {
+			// Match JavaScript: op = this.op === './' ? '/' : this.op;
+			op := o.Op
+			if op == "./" {
+				op = "/"
 			}
-		}
-		
-		if bDim, bOk := b.(*Dimension); bOk {
-			if _, aOk := a.(*Color); aOk {
-				b = bDim.ToColor()
-			}
-		}
-
-		// Handle dimension operations
-		if aDim, aOk := a.(*Dimension); aOk {
-			if bDim, bOk := b.(*Dimension); bOk {
-				return aDim.Operate(context, op, bDim), nil
-			}
-		}
-		
-		// Handle color operations
-		if aColor, aOk := a.(*Color); aOk {
-			if bColor, bOk := b.(*Color); bOk {
-				return aColor.OperateColor(context, op, bColor), nil
-			}
-			if bDim, bOk := b.(*Dimension); bOk {
-				return aColor.OperateColor(context, op, bDim.ToColor()), nil
-			}
-		}
-
-		// Handle color operations with dimension first
-		if aDim, aOk := a.(*Dimension); aOk {
-			if bColor, bOk := b.(*Color); bOk {
-				return aDim.ToColor().OperateColor(context, op, bColor), nil
-			}
-		}
-		
-		// Check for operations between operations (nested)
-		aOp, aIsOp := a.(*Operation)
-		_, bIsOp := b.(*Operation)
-		
-		if (aIsOp || bIsOp) && aIsOp && aOp.Op == "/" && IsMathParensDivision(context) {
-			return NewOperation(o.Op, []any{a, b}, o.IsSpaced), nil
-		}
 			
-		// For other operable types, try to use their Operate method
-		if aOperable, ok := a.(interface{ Operate(any, string, any) any }); ok {
-			return aOperable.Operate(context, op, b), nil
+			// Match JavaScript: if (a instanceof Dimension && b instanceof Color) { a = a.toColor(); }
+			if aDim, aOk := a.(*Dimension); aOk {
+				if _, bOk := b.(*Color); bOk {
+					a = aDim.ToColor()
+				}
+			}
+			// Match JavaScript: if (b instanceof Dimension && a instanceof Color) { b = b.toColor(); }
+			if bDim, bOk := b.(*Dimension); bOk {
+				if _, aOk := a.(*Color); aOk {
+					b = bDim.ToColor()
+				}
+			}
+			
+			// Match JavaScript: if (!a.operate || !b.operate)
+			// Check if both operands can operate with each other
+			
+			// Handle Dimension operations
+			if aDim, aOk := a.(*Dimension); aOk {
+				if bDim, bOk := b.(*Dimension); bOk {
+					// Match JavaScript: return a.operate(context, op, b);
+					return aDim.Operate(context, op, bDim), nil
+				}
+			}
+			
+			// Handle Color operations  
+			if aColor, aOk := a.(*Color); aOk {
+				if bColor, bOk := b.(*Color); bOk {
+					// Match JavaScript: return a.operate(context, op, b);
+					if result := aColor.OperateColor(context, op, bColor); result != nil {
+						return result, nil
+					}
+				}
+			}
+			
+			// If we get here, check for the special cases before throwing error
+			// Match JavaScript special case for operations and PARENS_DIVISION
+			aOp, aIsOp := a.(*Operation)
+			bIsOp := false
+			if _, ok := b.(*Operation); ok {
+				bIsOp = true
+			}
+			
+			if (aIsOp || bIsOp) && aIsOp && aOp.Op == "/" && IsMathParensDivision(context) {
+				return NewOperation(o.Op, []any{a, b}, o.IsSpaced), nil
+			}
+			
+			// Try a generic Operate interface for other types
+			if aOperable, aOk := a.(interface{ Operate(any, string, any) any }); aOk {
+				return aOperable.Operate(context, op, b), nil
+			}
+			
+			// Match JavaScript: throw { type: 'Operation', message: 'Operation on an invalid type' };
+			panic(map[string]string{
+				"type":    "Operation",
+				"message": "Operation on an invalid type",
+			})
 		}
-		
-		// If we get here, operation is not supported
-		panic(map[string]string{
-			"type":    "Operation",
-			"message": "Operation on an invalid type",
-		})
 	}
-
-	// If math is off, return a new operation
+	
+	// Match JavaScript: return new Operation(this.op, [a, b], this.isSpaced);
 	return NewOperation(o.Op, []any{a, b}, o.IsSpaced), nil
 }
 

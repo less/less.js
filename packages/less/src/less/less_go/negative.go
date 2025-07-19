@@ -19,6 +19,11 @@ func (n *Negative) Type() string {
 	return "Negative"
 }
 
+// GetType returns the type of the node for visitor pattern consistency
+func (n *Negative) GetType() string {
+	return "Negative"
+}
+
 // GenCSS generates CSS representation
 func (n *Negative) GenCSS(context any, output *CSSOutput) {
 	output.Add("-", nil, nil)
@@ -27,43 +32,66 @@ func (n *Negative) GenCSS(context any, output *CSSOutput) {
 	}
 }
 
-// Eval evaluates the negative node
+// Eval evaluates the negative node - matching JavaScript implementation closely
 func (n *Negative) Eval(context any) any {
-	if ctx, ok := SafeTypeAssertion[map[string]any](context); ok {
-		if mathOnFunc, ok := SafeMapAccess(ctx, "isMathOn"); ok {
-			if mathFunc, ok := SafeTypeAssertion[func(string) bool](mathOnFunc); ok && mathFunc("*") {
-				// Create a dimension with value -1
-				dim, err := NewDimension(-1, nil)
-				if err != nil {
-					// Instead of panicking, return the original negative
-					return n
-				}
-				
-				// Create a multiplication operation: -1 * value
-				op := NewOperation("*", []any{dim, n.Value}, false)
-				
-				// Evaluate the operation safely
-				return SafeEval(op, context)
-			}
-		}
+	ctx, ok := context.(map[string]any)
+	if !ok {
+		// Fall back to simple evaluation if context is not a map
+		return n.evalValue(context)
+	}
+
+	// Match JavaScript: if (context.isMathOn()) 
+	// Check if math is on - try different signatures
+	mathOn := false
+	if mathOnFunc, ok := ctx["isMathOn"].(func() bool); ok {
+		mathOn = mathOnFunc()
+	} else if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
+		mathOn = mathOnFunc("*") // For multiplication which is what negative uses
 	}
 	
-	// If math is off...
-	// Check for nil before attempting to evaluate
-	if SafeNilCheck(n.Value) {
-		// Instead of panicking, return a negative with zero or default value
+	if mathOn {
+		// Match JavaScript: return (new Operation('*', [new Dimension(-1), this.value])).eval(context);
+		dim, _ := NewDimension(-1, nil)
+		
+		// The value needs to be evaluated first if it's an operation
+		var evaluatedValue any = n.Value
+		if valOp, ok := n.Value.(*Operation); ok {
+			evaluatedValue, _ = valOp.Eval(context)
+		}
+		
+		op := NewOperation("*", []any{dim, evaluatedValue}, false)
+		
+		// Operation.Eval returns (any, error) but JavaScript just returns the result
+		result, _ := op.Eval(context)
+		return result
+	}
+	
+	// Match JavaScript: return new Negative(this.value.eval(context));
+	return n.evalValue(context)
+}
+
+// evalValue handles the value evaluation
+func (n *Negative) evalValue(context any) any {
+	if n.Value == nil {
+		// Return a negative with zero dimension as expected by tests
 		if zeroDim, err := NewDimension(0, nil); err == nil {
 			return NewNegative(zeroDim)
 		}
-		// If even creating a zero dimension fails, return the original negative
-		return n
+		return NewNegative(nil)
 	}
 	
-	if valueWithEval, ok := SafeTypeAssertion[interface{ Eval(any) any }](n.Value); ok {
-		evalValue := SafeEval(valueWithEval, context)
-		return NewNegative(evalValue)
+	// Try the single-return Eval first (used by Operation)
+	if eval, ok := n.Value.(interface{ Eval(any) any }); ok {
+		evaluated := eval.Eval(context)
+		return NewNegative(evaluated)
+	} else if eval, ok := n.Value.(interface{ Eval(any) (any, error) }); ok {
+		evaluated, err := eval.Eval(context)
+		if err != nil {
+			return NewNegative(n.Value) // Return original on error
+		}
+		return NewNegative(evaluated)
 	}
 	
-	// If value doesn't have Eval (e.g., Keyword), return a new Negative
+	// If value doesn't have Eval method, return new Negative with same value
 	return NewNegative(n.Value)
 } 

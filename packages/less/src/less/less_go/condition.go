@@ -1,7 +1,6 @@
 package less_go
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -27,6 +26,11 @@ func NewCondition(op string, l, r any, i int, negate bool) *Condition {
 	}
 }
 
+// GetType returns the node type
+func (c *Condition) GetType() string {
+	return "Condition"
+}
+
 // Accept implements the Node Accept method
 func (c *Condition) Accept(visitor any) {
 	if v, ok := visitor.(interface{ Visit(any) any }); ok {
@@ -37,80 +41,60 @@ func (c *Condition) Accept(visitor any) {
 
 // Eval evaluates the condition
 func (c *Condition) Eval(context any) bool {
-	// Define a safe evaluation function
-	safeEval := func(node any) any {
-		if node == nil {
-			return nil
-		}
-		
-		// Try to find an Eval method
-		if evaluator, ok := node.(interface{ Eval(any) any }); ok {
+	// JavaScript implementation:
+	// Evaluates lvalue and rvalue, then uses Node.compare for comparison operators
+	
+	// Helper to evaluate a node
+	eval := func(node any) any {
+		if evaluator, ok := node.(interface{ Eval(any) (any, error) }); ok {
+			result, _ := evaluator.Eval(context)
+			return result
+		} else if evaluator, ok := node.(interface{ Eval(any) any }); ok {
 			return evaluator.Eval(context)
 		}
-		
-		// If no Eval method, return the node itself
 		return node
-	}
-
-	lresult := safeEval(c.Lvalue)
-	rresult := safeEval(c.Rvalue)
-	
-	// Handle nil cases
-	if lresult == nil || rresult == nil {
-		return c.Negate // negate false for error case
 	}
 
 	var result bool
 
 	switch c.Op {
 	case "and":
-		// For logical operators, we expect boolean results
-		lbool, lok := lresult.(bool)
-		rbool, rok := rresult.(bool)
-		if lok && rok {
-			result = lbool && rbool
-		} else {
-			result = false
-		}
+		a := eval(c.Lvalue)
+		b := eval(c.Rvalue)
+		// Convert to bool - JavaScript truthy/falsy conversion
+		abool := toBool(a)
+		bbool := toBool(b)
+		result = abool && bbool
+		
 	case "or":
-		lbool, lok := lresult.(bool)
-		rbool, rok := rresult.(bool)
-		if lok && rok {
-			result = lbool || rbool
-		} else {
-			result = false
-		}
+		a := eval(c.Lvalue)
+		b := eval(c.Rvalue)
+		// Convert to bool - JavaScript truthy/falsy conversion
+		abool := toBool(a)
+		bbool := toBool(b)
+		result = abool || bbool
+		
 	default:
-		// For comparison operators
-		lnode, lok := lresult.(*Node)
-		rnode, rok := rresult.(*Node)
+		// For comparison operators, use Node.compare
+		a := eval(c.Lvalue)
+		b := eval(c.Rvalue)
 		
-		if !lok || !rok {
-			return c.Negate // negate false for error case
+		// Convert to nodes if necessary for comparison
+		var aNode, bNode *Node
+		if n, ok := a.(*Node); ok {
+			aNode = n
+		} else {
+			// Wrap non-node values in a Node for comparison
+			aNode = &Node{Value: a}
 		}
-
-		// Compare types if both nodes have String() methods that identify type
-		areTypesEqual := true
-		if lStringer, lok := lnode.Value.(fmt.Stringer); lok {
-			if rStringer, rok := rnode.Value.(fmt.Stringer); rok {
-				areTypesEqual = lStringer.String() == rStringer.String()
-			}
+		if n, ok := b.(*Node); ok {
+			bNode = n
+		} else {
+			// Wrap non-node values in a Node for comparison
+			bNode = &Node{Value: b}
 		}
 		
-		// If types are different and we're testing for equality,
-		// return false (or negated false)
-		if !areTypesEqual && c.Op == "=" {
-			return c.Negate
-		}
-
-		// Now do the actual comparison
-		compareResult := Compare(lnode, rnode)
-		
-		// If compareResult is 0 but we know types are different, 
-		// consider them not equal
-		if compareResult == 0 && !areTypesEqual && c.Op == "=" {
-			return c.Negate
-		}
+		compareResult := Compare(aNode, bNode)
 		
 		switch compareResult {
 		case -1:
@@ -120,6 +104,7 @@ func (c *Condition) Eval(context any) bool {
 		case 1:
 			result = c.Op == ">" || c.Op == ">="
 		default:
+			// JavaScript returns false for undefined comparison results
 			result = false
 		}
 	}
@@ -128,4 +113,17 @@ func (c *Condition) Eval(context any) bool {
 		return !result
 	}
 	return result
+}
+
+// toBool converts a value to boolean following JavaScript truthy/falsy rules
+func toBool(v any) bool {
+	if v == nil {
+		return false
+	}
+	if b, ok := v.(bool); ok {
+		return b
+	}
+	// In JavaScript, most non-null values are truthy
+	// We'll keep it simple for now
+	return true
 } 

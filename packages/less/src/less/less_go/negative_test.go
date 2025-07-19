@@ -408,9 +408,13 @@ func TestNegativeEval(t *testing.T) {
 		operation := NewOperation("+", []any{dim1, dim2}, false)
 		negative := NewNegative(operation)
 		
-		// Context with math on
+		// Context with math on - JavaScript uses isMathOn() with no args
+		// but our Go code checks with specific operators
 		context := map[string]any{
-			"isMathOn": func(_ string) bool { return true },
+			"isMathOn": func(op string) bool { 
+				// Math should be on for all operators in this test
+				return true 
+			},
 		}
 		
 		// Call the function under test

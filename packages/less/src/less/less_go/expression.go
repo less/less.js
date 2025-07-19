@@ -114,14 +114,31 @@ func (e *Expression) Eval(context any) (any, error) {
 		returnValue = expr
 	} else if len(e.Value) == 1 {
 		if val0, ok := SafeSliceIndex(e.Value, 0); ok && !SafeNilCheck(val0) {
+			// Check if val0 has parens and !parensInOp
+			// This handles nodes with embedded Node struct
+			hasParens := false
+			hasParensInOp := false
 			
-			if v0, ok := SafeTypeAssertion[interface { Parens() bool }](val0); ok && v0.Parens() {
-				if v0p, ok := SafeTypeAssertion[interface { ParensInOp() bool }](val0); ok && !v0p.ParensInOp() {
-					if inCalc, exists := SafeMapAccess(ctx, "inCalc"); !exists {
-						doubleParen = true
-					} else if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); !ok || !inCalcVal {
-						doubleParen = true
-					}
+			// Check various node types that embed Node
+			if expr, ok := val0.(*Expression); ok && expr.Node != nil {
+				hasParens = expr.Node.Parens
+				hasParensInOp = expr.Node.ParensInOp
+			} else if paren, ok := val0.(*Paren); ok && paren.Node != nil {
+				hasParens = paren.Node.Parens
+				hasParensInOp = paren.Node.ParensInOp
+			} else if op, ok := val0.(*Operation); ok && op.Node != nil {
+				hasParens = op.Node.Parens
+				hasParensInOp = op.Node.ParensInOp
+			} else if dim, ok := val0.(*Dimension); ok && dim.Node != nil {
+				hasParens = dim.Node.Parens
+				hasParensInOp = dim.Node.ParensInOp
+			}
+			
+			if hasParens && !hasParensInOp {
+				if inCalc, exists := SafeMapAccess(ctx, "inCalc"); !exists {
+					doubleParen = true
+				} else if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); !ok || !inCalcVal {
+					doubleParen = true
 				}
 			}
 			
@@ -164,20 +181,28 @@ func (e *Expression) GenCSS(context any, output *CSSOutput) {
 		}
 
 		if !e.NoSpacing && i+1 < len(e.Value) {
-			nextValue := e.Value[i+1]
-			if nextValue != nil {
-				// Match JavaScript logic exactly:
-				// Add space unless next value is Anonymous with value ','
-				shouldAddSpace := true
-				if nextAnon, ok := nextValue.(*Anonymous); ok {
-					if strVal, ok := nextAnon.Value.(string); ok && strVal == "," {
-						shouldAddSpace = false
+			// Match JavaScript logic exactly:
+			// if (i + 1 < this.value.length && !(this.value[i + 1] instanceof Anonymous) ||
+			//     this.value[i + 1] instanceof Anonymous && this.value[i + 1].value !== ',')
+			shouldAddSpace := false
+			
+			if i+1 < len(e.Value) {
+				nextValue := e.Value[i+1]
+				if nextValue != nil {
+					if nextAnon, ok := nextValue.(*Anonymous); !ok {
+						// Not Anonymous, add space
+						shouldAddSpace = true
+					} else {
+						// Is Anonymous, check if value is not ','
+						if strVal, ok := nextAnon.Value.(string); !ok || strVal != "," {
+							shouldAddSpace = true
+						}
 					}
 				}
-
-				if shouldAddSpace {
-					output.Add(" ", nil, nil)
-				}
+			}
+			
+			if shouldAddSpace {
+				output.Add(" ", nil, nil)
 			}
 		}
 	}

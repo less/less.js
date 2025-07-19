@@ -20,6 +20,11 @@ func NewAssignment(key, value any) *Assignment {
 	}
 }
 
+// GetType returns the node type
+func (a *Assignment) GetType() string {
+	return "Assignment"
+}
+
 // Accept visits the node with a visitor
 func (a *Assignment) Accept(visitor any) {
 	if v, ok := visitor.(interface{ Visit(any) any }); ok {
@@ -28,11 +33,18 @@ func (a *Assignment) Accept(visitor any) {
 }
 
 // Eval evaluates the assignment
-func (a *Assignment) Eval(context any) any {
-	if eval, ok := a.Value.(interface{ Eval(any) any }); ok {
-		return NewAssignment(a.Key, eval.Eval(context))
+func (a *Assignment) Eval(context any) (any, error) {
+	if eval, ok := a.Value.(interface{ Eval(any) (any, error) }); ok {
+		evaluated, err := eval.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+		return NewAssignment(a.Key, evaluated), nil
+	} else if evalNoError, ok := a.Value.(interface{ Eval(any) any }); ok {
+		// Handle nodes that don't return errors
+		return NewAssignment(a.Key, evalNoError.Eval(context)), nil
 	}
-	return a
+	return a, nil
 }
 
 // GenCSS generates CSS representation

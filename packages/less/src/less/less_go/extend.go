@@ -55,15 +55,32 @@ func NewExtend(selector any, option string, index int, currentFileInfo map[strin
         e.AllowAfter = false
     }
 
-    // Set parent relationship with selector, if it's a *Selector
-    if sel, ok := selector.(*Selector); ok && sel != nil {
-        e.SetParent(sel.Node, e.Node)
+    // Set parent relationship with selector (if not nil)
+    // Check for typed nil (interface{} can hold a nil pointer of a specific type)
+    if selector != nil {
+        // Check if selector is actually nil by trying to access it safely
+        switch s := selector.(type) {
+        case nil:
+            // True nil - do nothing
+        case *Selector:
+            if s != nil {
+                e.SetParent(selector, e.Node)
+            }
+        default:
+            // For other types, assume it's safe
+            e.SetParent(selector, e.Node)
+        }
     }
     return e
 }
 
 // Type returns the node type for Extend.
 func (e *Extend) Type() string {
+    return "Extend"
+}
+
+// GetType returns the node type for visitor pattern consistency
+func (e *Extend) GetType() string {
     return "Extend"
 }
 
@@ -79,24 +96,29 @@ func (e *Extend) Accept(visitor any) {
 }
 
 // Eval evaluates the selector within the given context and returns a new Extend.
-// It handles selector implementations returning (*Selector, error) or any, treating nil results as no selector.
+// Matches JavaScript logic: this.selector.eval(context)
 func (e *Extend) Eval(context any) (*Extend, error) {
-    // Default to the original selector
     var newSelector any = e.Selector
-    // Handle selectors returning (*Selector, error)
-    if evSel, ok := e.Selector.(interface{ Eval(any) (*Selector, error) }); ok {
-        selResult, err := evSel.Eval(context)
-        if err != nil {
-            return nil, err
-        }
-        if selResult == nil {
-            newSelector = nil
-        } else {
+    
+    // Match JavaScript behavior - assume selector has eval method
+    if e.Selector != nil {
+        if evSel, ok := e.Selector.(interface{ Eval(any) (*Selector, error) }); ok {
+            selResult, err := evSel.Eval(context)
+            if err != nil {
+                return nil, err
+            }
+            newSelector = selResult // This can be nil
+        } else if evSel, ok := e.Selector.(interface{ Eval(any) (any, error) }); ok {
+            selResult, err := evSel.Eval(context)
+            if err != nil {
+                return nil, err
+            }
             newSelector = selResult
+        } else if ev, ok := e.Selector.(interface{ Eval(any) any }); ok {
+            newSelector = ev.Eval(context)
         }
-    } else if ev, ok := e.Selector.(interface{ Eval(any) any }); ok {
-        newSelector = ev.Eval(context)
     }
+    
     return NewExtend(newSelector, e.Option, e.GetIndex(), e.FileInfo(), e.VisibilityInfo()), nil
 }
 

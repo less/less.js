@@ -3,6 +3,7 @@ package less_go
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -84,7 +85,19 @@ func (n *Node) SetParent(nodes any, parent *Node) {
 			if ruleset.Node != nil {
 				ruleset.Node.Parent = parent
 			}
+		} else if selector, ok := nodes.(*Selector); ok {
+			// Handle *Selector which embeds *Node
+			if selector.Node != nil {
+				selector.Node.Parent = parent
+			}
+		} else if elemNode, ok := nodes.(*Element); ok {
+			// Handle *Element which embeds *Node
+			if elemNode.Node != nil {
+				elemNode.Node.Parent = parent
+			}
 		}
+		// For any other type that embeds *Node, try reflection as last resort
+		// This handles future types that embed *Node without explicit cases
 	}
 }
 
@@ -231,19 +244,19 @@ func Compare(a, b *Node) int {
 	if fmt.Sprintf("%T", a.Value) != fmt.Sprintf("%T", b.Value) {
 		// If types don't match, they are generally considered incomparable
 		// unless a specific comparison method handles it (checked above).
-		// Return 0 signifies incomparable or equal for base types.
-		return 0 // Return 0 for different types as per original logic/test expectation
+		// Return 999 to indicate incomparable types (like JavaScript's undefined)
+		return 999
 	}
 
 	// Handle array comparison
 	if aArr, ok := a.Value.([]any); ok {
 		if bArr, ok := b.Value.([]any); ok {
 			if len(aArr) != len(bArr) {
-				return 0 // Equivalent to JavaScript's undefined
+				return 999 // Equivalent to JavaScript's undefined
 			}
 			for i := range aArr {
 				if Compare(&Node{Value: aArr[i]}, &Node{Value: bArr[i]}) != 0 {
-					return 0 // Equivalent to JavaScript's undefined
+					return 999 // Equivalent to JavaScript's undefined
 				}
 			}
 			return 0
@@ -273,7 +286,7 @@ func Compare(a, b *Node) int {
 		}
 	}
 
-	return 0 // Equivalent to JavaScript's undefined
+	return 999 // Equivalent to JavaScript's undefined
 }
 
 // NumericCompare compares two numbers
@@ -285,6 +298,26 @@ func NumericCompare(a, b float64) int {
 		return 0
 	}
 	if a > b {
+		return 1
+	}
+	return 0
+}
+
+// NumericCompareStrings compares two string values numerically if possible, otherwise lexically
+func NumericCompareStrings(a, b string) int {
+	// Try to parse as numbers first
+	aNum, aErr := strconv.ParseFloat(a, 64)
+	bNum, bErr := strconv.ParseFloat(b, 64)
+	
+	if aErr == nil && bErr == nil {
+		// Both are numbers
+		return NumericCompare(aNum, bNum)
+	}
+	
+	// Fall back to string comparison
+	if a < b {
+		return -1
+	} else if a > b {
 		return 1
 	}
 	return 0

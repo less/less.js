@@ -3,7 +3,6 @@ package less_go
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -56,6 +55,11 @@ func NewQuoted(str string, content string, escaped bool, index int, currentFileI
 	}
 }
 
+// Type returns the node type
+func (q *Quoted) Type() string {
+	return "Quoted"
+}
+
 // GetType returns the node type
 func (q *Quoted) GetType() string {
 	return "Quoted"
@@ -76,9 +80,9 @@ func (q *Quoted) GenCSS(context any, output *CSSOutput) {
 	if !q.escaped {
 		output.Add(q.quote, q.FileInfo(), q.GetIndex())
 	}
-	output.Add(q.value, q.FileInfo(), q.GetIndex())
+	output.Add(q.value, nil, nil)
 	if !q.escaped {
-		output.Add(q.quote, q.FileInfo(), q.GetIndex())
+		output.Add(q.quote, nil, nil)
 	}
 }
 
@@ -279,66 +283,26 @@ func (q *Quoted) Eval(context any) (any, error) {
 		return nil, err
 	}
 
-	return NewQuoted(q.quote, value, q.escaped, q.GetIndex(), q.FileInfo()), nil
+	// Match JavaScript behavior: first parameter should be quote + value + quote
+	return NewQuoted(q.quote+value+q.quote, value, q.escaped, q.GetIndex(), q.FileInfo()), nil
 }
 
 // Compare compares two quoted strings
-func (q *Quoted) Compare(other *Node) (int, error) {
-	if other == nil {
-		return 0, fmt.Errorf("cannot compare with nil") // In JS: undefined
-	}
-
-	// Check if other is a Quoted type
-	otherQuoted, ok := other.Value.(*Quoted)
-	if !ok {
-		// Try CSS-based comparison if both have ToCSS method
-		if otherCSSable, ok := other.Value.(interface{ ToCSS(any) string }); ok {
-			qCSS := q.ToCSS(nil)
-			otherCSS := otherCSSable.ToCSS(nil)
-			if qCSS == otherCSS {
-				return 0, nil // Equal CSS output
-			}
-		}
-		return 0, fmt.Errorf("cannot compare with non-quoted type") // In JS: undefined
-	}
-
-	// If values are different, they are not comparable regardless of escaped status
-	if q.value != otherQuoted.value {
-		return 0, fmt.Errorf("values are not equal")
-	}
-
-	// When comparing quoted strings allow the quote to differ
-	if !q.escaped && !otherQuoted.escaped {
-		// Try numeric comparison (matching JS behavior)
-		qVal, err1 := strconv.ParseFloat(q.value, 64)
-		otherVal, err2 := strconv.ParseFloat(otherQuoted.value, 64)
-		
-		if err1 == nil && err2 == nil {
-			// Both parse as numbers
-			if qVal < otherVal {
-				return -1, nil
-			} else if qVal > otherVal {
-				return 1, nil
-			}
-			return 0, nil
-		}
-		
-		// String comparison
-		if q.value < otherQuoted.value {
-			return -1, nil
-		}
-		if q.value > otherQuoted.value {
-			return 1, nil
-		}
-		return 0, nil
-	}
-
-	// For other cases (both escaped or one escaped one unescaped with same value)
-	// If values are the same, they should be considered equal regardless of escape status
-	// This matches JavaScript behavior where escaped and unescaped quotes with same values are equal
-	if q.value == otherQuoted.value {
-		return 0, nil
+func (q *Quoted) Compare(other any) *int {
+	// Match JavaScript: if (other.type === 'Quoted' && !this.escaped && !other.escaped)
+	if otherQuoted, ok := other.(*Quoted); ok && !q.escaped && !otherQuoted.escaped {
+		// Match JavaScript: return Node.numericCompare(this.value, other.value);
+		result := NumericCompareStrings(q.value, otherQuoted.value)
+		return &result
 	}
 	
-	return 0, fmt.Errorf("values are not equal") // In JS: undefined
+	// Match JavaScript: return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
+	if otherCSSable, ok := other.(interface{ ToCSS(any) string }); ok {
+		if q.ToCSS(nil) == otherCSSable.ToCSS(nil) {
+			result := 0
+			return &result
+		}
+	}
+	
+	return nil // undefined in JavaScript
 } 

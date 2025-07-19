@@ -22,6 +22,11 @@ func NewComment(value string, isLineComment bool, index int, currentFileInfo map
 	return comment
 }
 
+// GetType returns the node type
+func (c *Comment) GetType() string {
+	return "Comment"
+}
+
 // GenCSS generates CSS representation of the comment
 func (c *Comment) GenCSS(context any, output *CSSOutput) {
 	if c.DebugInfo != nil {
@@ -39,27 +44,21 @@ func (c *Comment) GenCSS(context any, output *CSSOutput) {
 
 // IsSilent determines if the comment should be silent based on context
 func (c *Comment) IsSilent(context any) bool {
-	// Line comments are always silent
-	if c.IsLineComment {
-		return true
-	}
+	// JavaScript implementation:
+	// const isCompressed = context.compress && this.value[2] !== '!';
+	// return this.isLineComment || isCompressed;
 	
-	// For block comments, check if we're in compress mode
+	// Check if we're in compress mode
 	var compress bool
-	
-	// Context is typically a map
 	if ctxMap, ok := context.(map[string]any); ok {
 		if compressVal, exists := ctxMap["compress"]; exists {
 			compress, _ = compressVal.(bool)
 		}
 	}
 	
-	// In compress mode, only keep comments starting with /*!
-	if compress && len(c.Value) > 2 && c.Value[2] != '!' {
-		return true
-	}
-	
-	return false
+	// Match JavaScript logic exactly
+	isCompressed := compress && len(c.Value) > 2 && c.Value[2] != '!'
+	return c.IsLineComment || isCompressed
 }
 
 // SetParent sets the parent for the comment node

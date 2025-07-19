@@ -14,6 +14,11 @@ func (m *jsTestFrame) Variable(name string) map[string]any {
 	return m.vars[name]
 }
 
+func (m *jsTestFrame) Property(name string) []any {
+	// Return empty array for now - tests don't use properties
+	return nil
+}
+
 func (m *jsTestFrame) Variables() map[string]any {
 	// Convert map[string]map[string]any to map[string]any
 	result := make(map[string]any)

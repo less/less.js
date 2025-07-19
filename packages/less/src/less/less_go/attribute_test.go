@@ -178,9 +178,13 @@ func TestAttribute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.context != nil {
-				evaluated := tt.attr.Eval(tt.context)
-				if evaluated.ToCSS(tt.context) != tt.expected {
-					t.Errorf("Eval().ToCSS() = %v, want %v", evaluated.ToCSS(tt.context), tt.expected)
+				evaluated, _ := tt.attr.Eval(tt.context)
+				if attr, ok := evaluated.(*Attribute); ok {
+					if attr.ToCSS(tt.context) != tt.expected {
+						t.Errorf("Eval().ToCSS() = %v, want %v", attr.ToCSS(tt.context), tt.expected)
+					}
+				} else {
+					t.Errorf("Eval() did not return *Attribute")
 				}
 			} else {
 				if tt.attr.ToCSS(nil) != tt.expected {

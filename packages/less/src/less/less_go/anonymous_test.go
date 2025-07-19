@@ -214,8 +214,8 @@ func TestAnonymous(t *testing.T) {
 				Add: func(chunk any, fileInfo any, index any) {},
 			}
 			anon3.GenCSS(nil, output3)
-			if anon3.NodeVisible != nil {
-				t.Error("Expected nodeVisible to be nil for nil value")
+			if anon3.NodeVisible == nil || *anon3.NodeVisible {
+				t.Error("Expected nodeVisible to be false for nil value")
 			}
 		})
 	})

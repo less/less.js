@@ -19,6 +19,11 @@ func (m *mockFrameTest) Variable(name string) map[string]any {
 	return nil
 }
 
+func (m *mockFrameTest) Property(name string) []any {
+	// Return empty array for now - tests don't use properties
+	return nil
+}
+
 func TestJavaScript(t *testing.T) {
 	mockContext := map[string]any{
 		"javascriptEnabled": true,

@@ -155,11 +155,29 @@ func (afm *AbstractFileManager) ExtractURLParts(url, baseURL string) (*URLParts,
 
 	returner.HostPart = urlParts[1]
 	returner.Directories = directories
-	returner.RawPath = urlParts[1] + strings.Join(rawDirectories, "/")
-	returner.Path = urlParts[1] + strings.Join(directories, "/")
+	
+	// Handle empty urlParts[1] for rawPath and path
+	hostPart := ""
+	if urlParts[1] != "" {
+		hostPart = urlParts[1]
+	}
+	returner.RawPath = hostPart + strings.Join(rawDirectories, "/")
+	returner.Path = hostPart + strings.Join(directories, "/")
 	returner.Filename = urlParts[4]
-	returner.FileURL = returner.Path + urlParts[4]
-	returner.URL = returner.FileURL + urlParts[5]
+	
+	// Handle empty urlParts[4] for fileURL
+	filename := ""
+	if urlParts[4] != "" {
+		filename = urlParts[4]
+	}
+	returner.FileURL = returner.Path + filename
+	
+	// Handle empty urlParts[5] for URL
+	params := ""
+	if len(urlParts) > 5 && urlParts[5] != "" {
+		params = urlParts[5]
+	}
+	returner.URL = returner.FileURL + params
 
 	return returner, nil
 }

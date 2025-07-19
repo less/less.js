@@ -399,11 +399,12 @@ func (c *Call) Eval(context any) (any, error) {
 		}
 		
 		if !isNodeType {
-			if _, isBool := result.(bool); isBool {
-				// For any boolean value, return an empty Anonymous node
+			// Check for falsy values or true - these should return empty Anonymous nodes
+			// JavaScript behavior: if (!result || result === true)
+			if result == nil || result == false || result == true || result == "" {
 				result = NewAnonymous(nil, 0, nil, false, false, nil)
 			} else {
-				// Non-boolean values
+				// Non-falsy values are converted to string
 				result = NewAnonymous(fmt.Sprintf("%v", result), 0, nil, false, false, nil)
 			}
 		}

@@ -252,7 +252,7 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 								// Handle detached ruleset
 								if argSlice, ok := argValue.([]any); ok {
 									ruleset := NewRuleset(nil, argSlice, false, nil)
-									val = NewDetachedRuleset(ruleset.Node, nil)
+									val = NewDetachedRuleset(ruleset, nil)
 								} else if evalValue, ok := argValue.(interface{ Eval(any) any }); ok {
 									val = evalValue.Eval(context) 
 								} else {

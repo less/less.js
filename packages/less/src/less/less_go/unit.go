@@ -84,29 +84,17 @@ func (u *Unit) GenCSS(context any, output *CSSOutput) {
 
 // ToString returns the string representation of the unit
 func (u *Unit) ToString() string {
-	if len(u.Numerator) == 0 && len(u.Denominator) == 0 {
-		return ""
+	returnStr := strings.Join(u.Numerator, "*")
+	for i := 0; i < len(u.Denominator); i++ {
+		returnStr += "/" + u.Denominator[i]
 	}
-
-	var parts []string
-	if len(u.Numerator) > 0 {
-		parts = append(parts, strings.Join(u.Numerator, "*"))
-	} else {
-		parts = append(parts, "")
-	}
-
-	parts = append(parts, u.Denominator...)
-
-	return strings.Join(parts, "/")
+	return returnStr
 }
 
 // Compare compares this unit with another unit.
 func (u *Unit) Compare(other *Unit) int {
 	if other == nil {
-		if u.IsEmpty() {
-			return 0 // Both effectively empty/nil
-		}
-		return 1 // Indicate difference: this unit exists, other is nil
+		return 999 // undefined equivalent in JavaScript
 	}
 
 	if u.Is(other.ToString()) {
@@ -114,7 +102,7 @@ func (u *Unit) Compare(other *Unit) int {
 	}
 
 	// Units are not equal
-	return 1 // Indicate difference
+	return 999 // undefined equivalent in JavaScript
 }
 
 // Is checks if the unit matches a given unit string

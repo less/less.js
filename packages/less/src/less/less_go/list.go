@@ -178,8 +178,12 @@ func Each(list any, rs any) any {
 		}
 	} else if detachedRuleset, ok := list.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil {
 		// list.ruleset case
-		if rulesetNode, ok := detachedRuleset.ruleset.Value.(*Ruleset); ok {
+		if rulesetNode, ok := detachedRuleset.ruleset.(*Ruleset); ok {
 			iterator = rulesetNode.Rules
+		} else if node, ok := detachedRuleset.ruleset.(*Node); ok && node.Value != nil {
+			if rulesetNode, ok := node.Value.(*Ruleset); ok {
+				iterator = rulesetNode.Rules
+			}
 		}
 	} else if rulesetNode, ok := list.(*Ruleset); ok {
 		// list.rules case
@@ -206,9 +210,13 @@ func Each(list any, rs any) any {
 	// Handle ruleset parameter extraction (for mixin calls with parameters)
 	var targetRuleset *Ruleset
 	// For now, we'll assume rs is a DetachedRuleset or map with rules
-	if detachedRuleset, ok := rs.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil && detachedRuleset.ruleset.Value != nil {
-		if rulesetNode, ok := detachedRuleset.ruleset.Value.(*Ruleset); ok {
+	if detachedRuleset, ok := rs.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil {
+		if rulesetNode, ok := detachedRuleset.ruleset.(*Ruleset); ok {
 			targetRuleset = rulesetNode
+		} else if node, ok := detachedRuleset.ruleset.(*Node); ok && node.Value != nil {
+			if rulesetNode, ok := node.Value.(*Ruleset); ok {
+				targetRuleset = rulesetNode
+			}
 		}
 	} else if rulesetNode, ok := rs.(*Ruleset); ok {
 		targetRuleset = rulesetNode

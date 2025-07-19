@@ -91,7 +91,7 @@ func TestAssignment(t *testing.T) {
 			assignment := NewAssignment("color", mockValue)
 			context := make(map[string]any)
 
-			result := assignment.Eval(context)
+			result, _ := assignment.Eval(context)
 			if result == nil {
 				t.Fatal("Expected result to not be nil")
 			}
@@ -111,7 +111,7 @@ func TestAssignment(t *testing.T) {
 			assignment := NewAssignment("color", "#000")
 			context := make(map[string]any)
 
-			result := assignment.Eval(context)
+			result, _ := assignment.Eval(context)
 			if result == nil {
 				t.Fatal("Expected result to not be nil")
 			}

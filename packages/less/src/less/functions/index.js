@@ -13,6 +13,7 @@ import string from './string';
 import svg from './svg';
 import types from './types';
 import style from './style';
+import size from './size';
 
 export default environment => {
     const functions = { functionRegistry, functionCaller };
@@ -30,6 +31,7 @@ export default environment => {
     functionRegistry.addMultiple(svg(environment));
     functionRegistry.addMultiple(types);
     functionRegistry.addMultiple(style);
+    functionRegistry.addMultiple(size);
 
     return functions;
 };

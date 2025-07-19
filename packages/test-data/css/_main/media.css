@@ -269,3 +269,11 @@
     padding: 0;
   }
 }
+@media screen and (max-width: 1280px) {
+  .form-process-table {
+    width: 1200px;
+  }
+  .form-process-table > div {
+    width: 960px;
+  }
+}

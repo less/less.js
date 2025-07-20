@@ -157,6 +157,10 @@ func toBool(v any) bool {
 		return len(val) > 0
 	default:
 		// Check if it's a dimension with zero value
+		if dim, ok := v.(*Dimension); ok {
+			return dim.Value != 0.0
+		}
+		// Check if it's another type with GetValue method
 		if dim, ok := v.(interface{ GetValue() float64 }); ok {
 			return dim.GetValue() != 0.0
 		}

@@ -27,6 +27,11 @@ func NewVariable(name string, index int, currentFileInfo map[string]any) *Variab
 	}
 }
 
+// Type returns the node type
+func (v *Variable) Type() string {
+	return "Variable"
+}
+
 // GetType returns the node type
 func (v *Variable) GetType() string {
 	return "Variable"

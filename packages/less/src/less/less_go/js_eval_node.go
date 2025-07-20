@@ -20,6 +20,11 @@ func NewJsEvalNode() *JsEvalNode {
 	}
 }
 
+// Type returns the node type
+func (j *JsEvalNode) Type() string {
+	return "JsEvalNode"
+}
+
 // GetType returns the node type
 func (j *JsEvalNode) GetType() string {
 	return "JsEvalNode"

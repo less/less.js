@@ -160,23 +160,29 @@ func evalName(context any, name []any) string {
 		},
 	}
 
+	// JavaScript always evaluates each name element first
 	for _, n := range name {
-		switch v := n.(type) {
-		case *Keyword:
-			output.Add(v.value, nil, nil)
-		case *Anonymous:
-			output.Add(v.Value, nil, nil)
-		case Evaluator:
-			evaluated, err := v.Eval(context)
-			if err == nil && evaluated != nil {
-				if generator, ok := evaluated.(CSSGenerator); ok {
-					generator.GenCSS(context, output)
-				} else {
-					output.Add(evaluated, nil, nil)
-				}
+		// Always evaluate first, matching JavaScript behavior
+		var evaluated any = n
+		if evaluator, ok := n.(Evaluator); ok {
+			if evald, err := evaluator.Eval(context); err == nil && evald != nil {
+				evaluated = evald
 			}
-		default:
-			output.Add(v, nil, nil)
+		}
+		
+		// Then generate CSS
+		if generator, ok := evaluated.(CSSGenerator); ok {
+			generator.GenCSS(context, output)
+		} else {
+			// Handle simple types
+			switch v := evaluated.(type) {
+			case *Keyword:
+				output.Add(v.value, nil, nil)
+			case *Anonymous:
+				output.Add(v.Value, nil, nil)
+			default:
+				output.Add(v, nil, nil)
+			}
 		}
 	}
 
@@ -313,7 +319,32 @@ func (d *Declaration) GenCSS(context any, output *CSSOutput) {
 		output.Add(": ", d.FileInfo(), d.GetIndex())
 	}
 
-	// Add value
+	// Add value with error handling to match JavaScript
+	// Use defer/recover to catch panics and convert to proper errors
+	defer func() {
+		if r := recover(); r != nil {
+			// Convert panic to error with proper index and filename information
+			var errMsg string
+			switch e := r.(type) {
+			case error:
+				errMsg = e.Error()
+			default:
+				errMsg = fmt.Sprintf("%v", e)
+			}
+			
+			// Create an error with index and filename similar to JavaScript
+			filename := ""
+			if d.FileInfo() != nil {
+				if f, ok := d.FileInfo()["filename"].(string); ok {
+					filename = f
+				}
+			}
+			
+			// Re-panic with enhanced error message
+			panic(fmt.Errorf("%s (index: %d, filename: %s)", errMsg, d.GetIndex(), filename))
+		}
+	}()
+	
 	d.Value.GenCSS(context, output)
 
 	// Add important and semicolon
@@ -327,6 +358,7 @@ func (d *Declaration) GenCSS(context any, output *CSSOutput) {
 		output.Add("", d.FileInfo(), d.GetIndex())
 	}
 }
+
 
 // isLastRule checks if this is the last rule in the context
 func isLastRule(context any) bool {

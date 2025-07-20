@@ -55,22 +55,9 @@ func NewExtend(selector any, option string, index int, currentFileInfo map[strin
         e.AllowAfter = false
     }
 
-    // Set parent relationship with selector (if not nil)
-    // Check for typed nil (interface{} can hold a nil pointer of a specific type)
-    if selector != nil {
-        // Check if selector is actually nil by trying to access it safely
-        switch s := selector.(type) {
-        case nil:
-            // True nil - do nothing
-        case *Selector:
-            if s != nil {
-                e.SetParent(selector, e.Node)
-            }
-        default:
-            // For other types, assume it's safe
-            e.SetParent(selector, e.Node)
-        }
-    }
+    // Set parent relationship with selector - match JavaScript behavior
+    // JavaScript setParent checks if (node && node instanceof Node)
+    e.SetParent(selector, e.Node)
     return e
 }
 

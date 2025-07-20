@@ -22,6 +22,11 @@ func NewProperty(name string, index int, fileInfo map[string]any) *Property {
 	return p
 }
 
+// Type returns the type of the node
+func (p *Property) Type() string {
+	return "Property"
+}
+
 // GetType returns the type of the node
 func (p *Property) GetType() string {
 	return "Property"
@@ -36,7 +41,7 @@ func (p *Property) GetName() string {
 func (p *Property) Eval(context any) (any, error) {
 	if p.evaluating {
 		// Match JavaScript error format
-		return nil, fmt.Errorf("name: recursive property reference for %s (index: %d, filename: %s)",
+		return nil, fmt.Errorf("Name: recursive property reference for %s (index: %d, filename: %s)",
 			p.name, p.GetIndex(), p.FileInfo()["filename"])
 	}
 
@@ -133,7 +138,7 @@ func (p *Property) Eval(context any) (any, error) {
 	}
 
 	// Property not found - match JavaScript error format
-	return nil, fmt.Errorf("name: property '%s' is undefined (index: %d, filename: %s)",
+	return nil, fmt.Errorf("Name: property '%s' is undefined (index: %d, filename: %s)",
 		p.name, p.GetIndex(), p.FileInfo()["filename"])
 }
 

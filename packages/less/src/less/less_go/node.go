@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -82,17 +81,17 @@ func (n *Node) SetParent(nodes any, parent *Node) {
 				node.Parent = parent
 			}
 		} else if ruleset, ok := nodes.(*Ruleset); ok {
-			if ruleset.Node != nil {
+			if ruleset != nil && ruleset.Node != nil {
 				ruleset.Node.Parent = parent
 			}
 		} else if selector, ok := nodes.(*Selector); ok {
 			// Handle *Selector which embeds *Node
-			if selector.Node != nil {
+			if selector != nil && selector.Node != nil {
 				selector.Node.Parent = parent
 			}
 		} else if elemNode, ok := nodes.(*Element); ok {
 			// Handle *Element which embeds *Node
-			if elemNode.Node != nil {
+			if elemNode != nil && elemNode.Node != nil {
 				elemNode.Node.Parent = parent
 			}
 		}
@@ -138,6 +137,28 @@ func (n *Node) IsRulesetLike() bool {
 	return false
 }
 
+// GenCSS generates CSS representation - default implementation
+func (n *Node) GenCSS(context any, output *CSSOutput) {
+	// Match JavaScript default: output.add(this.value);
+	if n.Value != nil {
+		output.Add(n.Value, nil, nil)
+	}
+}
+
+// Accept visits the node with a visitor - default implementation
+func (n *Node) Accept(visitor any) {
+	// Match JavaScript default: this.value = visitor.visit(this.value);
+	if v, ok := visitor.(interface{ Visit(any) any }); ok && n.Value != nil {
+		n.Value = v.Visit(n.Value)
+	}
+}
+
+// Eval evaluates the node - default implementation
+func (n *Node) Eval(context any) any {
+	// Match JavaScript default: return this;
+	return n
+}
+
 // ToCSS generates CSS string representation
 func (n *Node) ToCSS(context any) string {
 	var strs []string
@@ -153,39 +174,7 @@ func (n *Node) ToCSS(context any) string {
 	return strings.Join(strs, "")
 }
 
-// CSSOutput represents the output structure for CSS generation
-type CSSOutput struct {
-	Add     func(any, any, any)
-	IsEmpty func() bool
-}
-
-// GenCSS generates CSS representation
-func (n *Node) GenCSS(context any, output *CSSOutput) {
-	if n.Value != nil {
-		output.Add(n.Value, nil, nil)
-	}
-}
-
-// NodeVisitor interface defines the Visit method
-type NodeVisitor interface {
-	Visit(any) any
-}
-
-// Accept visits the node with a visitor
-func (n *Node) Accept(visitor any) {
-	if v, ok := visitor.(NodeVisitor); ok {
-		if n.Value != nil {
-			n.Value = v.Visit(n.Value)
-		}
-	}
-}
-
-// Eval returns the node itself
-func (n *Node) Eval() *Node {
-	return n
-}
-
-// Operate performs basic arithmetic operations
+// Operate performs arithmetic operations
 func (n *Node) Operate(context any, op string, a, b float64) float64 {
 	switch op {
 	case "+":
@@ -201,22 +190,38 @@ func (n *Node) Operate(context any, op string, a, b float64) float64 {
 	}
 }
 
-// Fround rounds numbers based on precision
+// Fround rounds a float value based on context precision
 func (n *Node) Fround(context any, value float64) float64 {
-	if context == nil {
-		return value
-	}
-	
-	// Add "epsilon" to ensure numbers like 1.000000005 are properly rounded
-	epsilon := 2e-16
+	var precision int
 	if ctx, ok := context.(map[string]any); ok {
-		if precision, ok := ctx["numPrecision"].(int); ok {
-			// Use math.Round to match JavaScript's toFixed behavior
-			rounded := math.Round((value+epsilon)*math.Pow10(precision)) / math.Pow10(precision)
-			return rounded
+		if p, ok := ctx["numPrecision"].(int); ok {
+			precision = p
 		}
 	}
+	
+	if precision > 0 {
+		// Match JavaScript: add "epsilon" to ensure proper rounding
+		// Number((value + 2e-16).toFixed(precision))
+		epsilon := 2e-16
+		rounded := value + epsilon
+		format := fmt.Sprintf("%%.%df", precision)
+		formatted := fmt.Sprintf(format, rounded)
+		result, _ := strconv.ParseFloat(formatted, 64)
+		return result
+	}
+	
 	return value
+}
+
+// CSSOutput represents the output structure for CSS generation
+type CSSOutput struct {
+	Add     func(any, any, any)
+	IsEmpty func() bool
+}
+
+// NodeVisitor interface defines the Visit method
+type NodeVisitor interface {
+	Visit(any) any
 }
 
 // Compareable interface defines the Compare method

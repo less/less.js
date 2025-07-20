@@ -83,6 +83,11 @@ func NewDimensionFrom(value float64, unit *Unit) *Dimension {
 	return d
 }
 
+// GetType returns the node type
+func (d *Dimension) GetType() string {
+	return "Dimension"
+}
+
 // Accept accepts a visitor and updates the unit.
 func (d *Dimension) Accept(visitor Visitor) {
 	result := visitor.Visit(d.Unit)

@@ -96,77 +96,101 @@ func (o *Operation) Eval(context any) (any, error) {
 	}
 	
 	// Match JavaScript: if (context.isMathOn(this.op))
+	mathOn := false
 	if ctx, ok := context.(map[string]any); ok {
-		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok && mathOnFunc(o.Op) {
-			// Match JavaScript: op = this.op === './' ? '/' : this.op;
-			op := o.Op
-			if op == "./" {
-				op = "/"
+		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
+			mathOn = mathOnFunc(o.Op)
+		}
+	}
+	
+	if mathOn {
+		// Match JavaScript: op = this.op === './' ? '/' : this.op;
+		op := o.Op
+		if op == "./" {
+			op = "/"
+		}
+		
+		// Match JavaScript: if (a instanceof Dimension && b instanceof Color) { a = a.toColor(); }
+		if aDim, aOk := a.(*Dimension); aOk {
+			if _, bOk := b.(*Color); bOk {
+				a = aDim.ToColor()
 			}
-			
-			// Match JavaScript: if (a instanceof Dimension && b instanceof Color) { a = a.toColor(); }
-			if aDim, aOk := a.(*Dimension); aOk {
-				if _, bOk := b.(*Color); bOk {
-					a = aDim.ToColor()
-				}
+		}
+		// Match JavaScript: if (b instanceof Dimension && a instanceof Color) { b = b.toColor(); }
+		if bDim, bOk := b.(*Dimension); bOk {
+			if _, aOk := a.(*Color); aOk {
+				b = bDim.ToColor()
 			}
-			// Match JavaScript: if (b instanceof Dimension && a instanceof Color) { b = b.toColor(); }
-			if bDim, bOk := b.(*Dimension); bOk {
-				if _, aOk := a.(*Color); aOk {
-					b = bDim.ToColor()
-				}
-			}
-			
-			// Match JavaScript: if (!a.operate || !b.operate)
-			// Check if both operands can operate with each other
-			
-			// Handle Dimension operations
-			if aDim, aOk := a.(*Dimension); aOk {
-				if bDim, bOk := b.(*Dimension); bOk {
-					// Check for division by zero
-					if (op == "/" || op == "./") && bDim.Value == 0 {
-						return nil, &LessError{
-							Type:    "Operation",
-							Message: "Division by zero",
-						}
-					}
-					// Match JavaScript: return a.operate(context, op, b);
-					return aDim.Operate(context, op, bDim), nil
-				}
-			}
-			
-			// Handle Color operations  
-			if aColor, aOk := a.(*Color); aOk {
-				if bColor, bOk := b.(*Color); bOk {
-					// Match JavaScript: return a.operate(context, op, b);
-					if result := aColor.OperateColor(context, op, bColor); result != nil {
-						return result, nil
-					}
-				}
-			}
-			
-			// If we get here, check for the special cases before throwing error
-			// Match JavaScript special case for operations and PARENS_DIVISION
+		}
+		
+		// Match JavaScript: if (!a.operate || !b.operate)
+		// Check if both operands have operate capability
+		aHasOperate := false
+		bHasOperate := false
+		
+		// Check if a can operate
+		if _, ok := a.(*Dimension); ok {
+			aHasOperate = true
+		} else if _, ok := a.(*Color); ok {
+			aHasOperate = true
+		}
+		
+		// Check if b can operate
+		if _, ok := b.(*Dimension); ok {
+			bHasOperate = true
+		} else if _, ok := b.(*Color); ok {
+			bHasOperate = true
+		}
+		
+		if !aHasOperate || !bHasOperate {
+			// Check for special case before throwing error
 			aOp, aIsOp := a.(*Operation)
-			bIsOp := false
-			if _, ok := b.(*Operation); ok {
-				bIsOp = true
-			}
+			_, bIsOp := b.(*Operation)
 			
 			if (aIsOp || bIsOp) && aIsOp && aOp.Op == "/" && IsMathParensDivision(context) {
 				return NewOperation(o.Op, []any{a, b}, o.IsSpaced), nil
 			}
 			
-			// Try a generic Operate interface for other types
-			if aOperable, aOk := a.(interface{ Operate(any, string, any) any }); aOk {
-				return aOperable.Operate(context, op, b), nil
-			}
-			
-			// Match JavaScript: throw { type: 'Operation', message: 'Operation on an invalid type' };
 			return nil, &LessError{
 				Type:    "Operation",
 				Message: "Operation on an invalid type",
 			}
+		}
+		
+		// Handle Dimension operations
+		if aDim, aOk := a.(*Dimension); aOk {
+			if bDim, bOk := b.(*Dimension); bOk {
+				// Check for division by zero
+				if (op == "/" || op == "./") && bDim.Value == 0 {
+					return nil, &LessError{
+						Type:    "Operation",
+						Message: "Division by zero",
+					}
+				}
+				// Match JavaScript: return a.operate(context, op, b);
+				return aDim.Operate(context, op, bDim), nil
+			}
+		}
+		
+		// Handle Color operations  
+		if aColor, aOk := a.(*Color); aOk {
+			if bColor, bOk := b.(*Color); bOk {
+				// Match JavaScript: return a.operate(context, op, b);
+				result := aColor.OperateColor(context, op, bColor)
+				return result, nil
+			}
+		}
+		
+		// Try a generic Operate interface for other types
+		if aOperable, aOk := a.(interface{ Operate(any, string, any) any }); aOk {
+			return aOperable.Operate(context, op, b), nil
+		}
+		
+		// Should never reach here after operate check above
+		// Match JavaScript: throw { type: 'Operation', message: 'Operation on an invalid type' };
+		return nil, &LessError{
+			Type:    "Operation",
+			Message: "Operation on an invalid type",
 		}
 	}
 	

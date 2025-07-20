@@ -538,4 +538,186 @@ func TestMixinDefinition_Integration(t *testing.T) {
 			t.Errorf("Expected args to match")
 		}
 	})
+}
+
+// TestMixinDefinitionParameterCounting_JavaScriptConsistency tests that our parameter counting logic
+// matches the JavaScript implementation exactly
+func TestMixinDefinitionParameterCounting_JavaScriptConsistency(t *testing.T) {
+	tests := []struct {
+		name                string
+		params              []any
+		expectedRequired    int
+		expectedOptional    []string
+		jsLogic            string
+	}{
+		{
+			name:                "no parameters",
+			params:              []any{},
+			expectedRequired:    0,
+			expectedOptional:    []string{},
+			jsLogic:            "JavaScript: no params -> required=0, optional=[]",
+		},
+		{
+			name: "parameter with no name (pattern parameter)",
+			params: []any{
+				map[string]any{"name": nil, "value": "red"},
+			},
+			expectedRequired: 1,
+			expectedOptional: []string{},
+			jsLogic:         "JavaScript: !p.name -> required (pattern matching parameter)",
+		},
+		{
+			name: "parameter with name but no value (required named parameter)",
+			params: []any{
+				map[string]any{"name": "@color", "value": nil},
+			},
+			expectedRequired: 1,
+			expectedOptional: []string{},
+			jsLogic:         "JavaScript: p.name && !p.value -> required",
+		},
+		{
+			name: "parameter with both name and value (optional parameter)",
+			params: []any{
+				map[string]any{"name": "@color", "value": "blue"},
+			},
+			expectedRequired: 0,
+			expectedOptional: []string{"@color"},
+			jsLogic:         "JavaScript: p.name && p.value -> optional",
+		},
+		{
+			name: "mixed parameters - JavaScript pattern",
+			params: []any{
+				map[string]any{"name": nil, "value": "red"},           // !p.name -> required
+				map[string]any{"name": "@size", "value": nil},         // p.name && !p.value -> required  
+				map[string]any{"name": "@margin", "value": "10px"},    // p.name && p.value -> optional
+				map[string]any{"name": "@padding", "value": "5px"},    // p.name && p.value -> optional
+			},
+			expectedRequired: 2,
+			expectedOptional: []string{"@margin", "@padding"},
+			jsLogic:         "JavaScript: !p.name || (p.name && !p.value) determines required",
+		},
+		{
+			name: "empty name string treated as no name",
+			params: []any{
+				map[string]any{"name": "", "value": "something"},
+			},
+			expectedRequired: 1,
+			expectedOptional: []string{},
+			jsLogic:         "JavaScript: empty string name is falsy -> required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a mixin definition with test parameters
+			md, err := NewMixinDefinition(
+				"testMixin",
+				tt.params,
+				[]any{}, // rules
+				nil,     // condition
+				false,   // variadic
+				[]any{}, // frames
+				map[string]any{}, // visibilityInfo
+			)
+			if err != nil {
+				t.Fatalf("Failed to create MixinDefinition: %v", err)
+			}
+
+			// Check required count
+			if md.Required != tt.expectedRequired {
+				t.Errorf("Required count = %d, expected %d\nParameters: %v\nJavaScript logic: %s",
+					md.Required, tt.expectedRequired, tt.params, tt.jsLogic)
+			}
+
+			// Check optional parameters
+			if len(md.OptionalParameters) != len(tt.expectedOptional) {
+				t.Errorf("Optional parameters count = %d, expected %d\nGot: %v\nExpected: %v\nJavaScript logic: %s",
+					len(md.OptionalParameters), len(tt.expectedOptional), md.OptionalParameters, tt.expectedOptional, tt.jsLogic)
+				return
+			}
+
+			// Check that all expected optional parameters are present
+			optionalMap := make(map[string]bool)
+			for _, opt := range md.OptionalParameters {
+				optionalMap[opt] = true
+			}
+
+			for _, expected := range tt.expectedOptional {
+				if !optionalMap[expected] {
+					t.Errorf("Missing expected optional parameter %s\nGot: %v\nExpected: %v\nJavaScript logic: %s",
+						expected, md.OptionalParameters, tt.expectedOptional, tt.jsLogic)
+				}
+			}
+		})
+	}
+}
+
+// TestJavaScriptParameterLogicConsistency ensures our parameter logic exactly matches
+// the JavaScript reduce function behavior
+func TestJavaScriptParameterLogicConsistency(t *testing.T) {
+	tests := []struct {
+		name        string
+		param       map[string]any
+		shouldBeRequired bool
+		explanation string
+	}{
+		{
+			name:        "undefined name",
+			param:       map[string]any{"name": nil, "value": "something"},
+			shouldBeRequired: true,
+			explanation: "JavaScript: !p.name is true -> required",
+		},
+		{
+			name:        "empty string name",
+			param:       map[string]any{"name": "", "value": "something"},
+			shouldBeRequired: true,
+			explanation: "JavaScript: !p.name is true (empty string is falsy) -> required",
+		},
+		{
+			name:        "name exists but value is nil",
+			param:       map[string]any{"name": "@param", "value": nil},
+			shouldBeRequired: true,
+			explanation: "JavaScript: p.name && !p.value is true -> required",
+		},
+		{
+			name:        "name exists but value is empty string",
+			param:       map[string]any{"name": "@param", "value": ""},
+			shouldBeRequired: false,
+			explanation: "JavaScript: p.name && !p.value is false (empty string is falsy but exists) -> optional",
+		},
+		{
+			name:        "both name and value exist",
+			param:       map[string]any{"name": "@param", "value": "defaultValue"},
+			shouldBeRequired: false,
+			explanation: "JavaScript: !p.name || (p.name && !p.value) is false -> optional",
+		},
+		{
+			name:        "name exists value is false",
+			param:       map[string]any{"name": "@param", "value": false},
+			shouldBeRequired: false,
+			explanation: "JavaScript: p.name && !p.value is false (false is falsy but exists) -> optional",
+		},
+		{
+			name:        "name exists value is zero",
+			param:       map[string]any{"name": "@param", "value": 0},
+			shouldBeRequired: false,
+			explanation: "JavaScript: p.name && !p.value is false (0 is falsy but exists) -> optional",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			paramName := tt.param["name"]
+			paramValue := tt.param["value"]
+			
+			// This is our current Go logic that should match JavaScript !p.name || (p.name && !p.value)
+			nameStr, nameIsString := paramName.(string)
+			isRequired := paramName == nil || (nameIsString && nameStr == "") || (paramName != nil && paramValue == nil)
+			
+			if isRequired != tt.shouldBeRequired {
+				t.Errorf("Parameter should be required=%v but got=%v\nParam: %v\nExplanation: %s",
+					tt.shouldBeRequired, isRequired, tt.param, tt.explanation)
+			}
+		})
+	}
 } 

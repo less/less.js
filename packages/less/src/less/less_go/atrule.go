@@ -85,6 +85,11 @@ func (a *AtRule) Type() string {
 	return "AtRule"
 }
 
+// GetType returns the node type
+func (a *AtRule) GetType() string {
+	return "AtRule"
+}
+
 // Accept visits the node with a visitor
 func (a *AtRule) Accept(visitor any) {
 	if v, ok := visitor.(interface{ VisitArray([]any) []any }); ok {

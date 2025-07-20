@@ -52,8 +52,9 @@ func NewMixinDefinition(name string, params []any, rules []any, condition any, v
 			paramValue := param["value"]
 			
 			// JavaScript logic: !p.name || (p.name && !p.value)
-			// Required if: no name OR (has name but no value)
-			if paramName == nil || (paramName != nil && paramValue == nil) {
+			// Required if: no name OR empty string name OR (has name but no value)
+			nameStr, nameIsString := paramName.(string)
+			if paramName == nil || (nameIsString && nameStr == "") || (paramName != nil && paramValue == nil) {
 				required++
 			} else {
 				// Has both name and value - it's optional
@@ -82,6 +83,11 @@ func NewMixinDefinition(name string, params []any, rules []any, condition any, v
 
 // GetType returns the type of the node
 func (md *MixinDefinition) GetType() string {
+	return "MixinDefinition"
+}
+
+// Type returns the type of the node (for compatibility)
+func (md *MixinDefinition) Type() string {
 	return "MixinDefinition"
 }
 

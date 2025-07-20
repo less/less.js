@@ -30,6 +30,11 @@ func (j *JavaScript) GetType() string {
 	return "JavaScript"
 }
 
+// Type returns the node type (for compatibility)
+func (j *JavaScript) Type() string {
+	return "JavaScript"
+}
+
 // GetIndex returns the node's index
 func (j *JavaScript) GetIndex() int {
 	return j.JsEvalNode.GetIndex()
@@ -50,19 +55,27 @@ func (j *JavaScript) Eval(context any) (any, error) {
 	switch v := result.(type) {
 	case float64:
 		if !parserIsNaN(v) {
-			return NewDimensionFrom(v, NewUnit(nil, nil, "")), nil
+			// Match JavaScript: new Dimension(result)
+			dim, err := NewDimension(v, nil)
+			if err != nil {
+				return nil, err
+			}
+			return dim, nil
 		}
 	case string:
+		// Match JavaScript: new Quoted(`"${result}"`, result, this.escaped, this._index)
 		return NewQuoted(`"`+v+`"`, v, j.escaped, j.GetIndex(), j.FileInfo()), nil
 	case []any:
 		var values []string
 		for _, item := range v {
 			values = append(values, fmt.Sprintf("%v", item))
 		}
-		return NewAnonymous(strings.Join(values, ", "), j.GetIndex(), j.FileInfo(), false, false, nil), nil
+		// Match JavaScript: new Anonymous(result.join(', '))
+		return NewAnonymous(strings.Join(values, ", "), 0, nil, false, false, nil), nil
 	}
 
-	return NewAnonymous(result, j.GetIndex(), j.FileInfo(), false, false, nil), nil
+	// Match JavaScript: new Anonymous(result)
+	return NewAnonymous(result, 0, nil, false, false, nil), nil
 }
 
 // parserIsNaN checks if a float64 is NaN

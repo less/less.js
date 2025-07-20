@@ -184,19 +184,17 @@ func (e *Expression) GenCSS(context any, output *CSSOutput) {
 			// Match JavaScript logic exactly:
 			// if (i + 1 < this.value.length && !(this.value[i + 1] instanceof Anonymous) ||
 			//     this.value[i + 1] instanceof Anonymous && this.value[i + 1].value !== ',')
+			nextValue := e.Value[i+1]
 			shouldAddSpace := false
 			
-			if i+1 < len(e.Value) {
-				nextValue := e.Value[i+1]
-				if nextValue != nil {
-					if nextAnon, ok := nextValue.(*Anonymous); !ok {
-						// Not Anonymous, add space
+			if nextValue != nil {
+				if nextAnon, ok := nextValue.(*Anonymous); !ok {
+					// Not Anonymous, add space
+					shouldAddSpace = true
+				} else {
+					// Is Anonymous, check if value is not ','
+					if strVal, ok := nextAnon.Value.(string); !ok || strVal != "," {
 						shouldAddSpace = true
-					} else {
-						// Is Anonymous, check if value is not ','
-						if strVal, ok := nextAnon.Value.(string); !ok || strVal != "," {
-							shouldAddSpace = true
-						}
 					}
 				}
 			}
@@ -230,6 +228,11 @@ func (e *Expression) GetParens() bool {
 // GetParensInOp returns the ParensInOp flag
 func (e *Expression) GetParensInOp() bool {
 	return e.ParensInOp
+}
+
+// GetType returns the type of the node for visitor pattern consistency
+func (e *Expression) GetType() string {
+	return "Expression"
 }
 
  

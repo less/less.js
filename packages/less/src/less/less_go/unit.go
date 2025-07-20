@@ -53,6 +53,11 @@ func NewUnit(numerator []string, denominator []string, backupUnit string) *Unit 
 	return u
 }
 
+// Type returns the type of the node for visitor pattern consistency
+func (u *Unit) Type() string {
+	return "Unit"
+}
+
 // Clone creates a deep copy of the unit
 func (u *Unit) Clone() *Unit {
 	// Create new slices and copy values

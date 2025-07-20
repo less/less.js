@@ -140,12 +140,6 @@ func (p *ParserInput) skipWhitespace(length int) bool {
 					comment.text = inp[comment.index:finalPos] // Slice text correctly
 					p.commentStore = append(p.commentStore, comment)
 					p.i = finalPos - 1 // Set to one before final position because loop will increment
-
-					if p.i >= len(inp)-1 {
-						// When we reach EOF via a block comment, set to one past end
-						p.i = len(inp) + 1
-						break // Exit loop cleanly if we hit EOF
-					}
 					continue
 				}
 			}

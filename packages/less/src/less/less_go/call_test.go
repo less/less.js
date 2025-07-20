@@ -691,4 +691,284 @@ func TestCallGenCSS(t *testing.T) {
 			t.Errorf("expected output to be '%s', got '%s'", expectedOutput, output.String())
 		}
 	})
+}
+
+// TestCallArgumentPreprocessing_JavaScriptConsistency tests that our argument preprocessing
+// matches the JavaScript implementation exactly
+func TestCallArgumentPreprocessing_JavaScriptConsistency(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          []any
+		expected       []any
+		jsLogic       string
+	}{
+		{
+			name:     "empty arguments",
+			input:    []any{},
+			expected: []any{},
+			jsLogic:  "JavaScript: empty args -> empty result",
+		},
+		{
+			name:     "nil arguments",
+			input:    nil,
+			expected: []any{},
+			jsLogic:  "JavaScript: null/undefined args -> empty array",
+		},
+		{
+			name: "filter out comments",
+			input: []any{
+				&Comment{Value: "// this is a comment"},
+				"regular_value",
+				&Comment{Value: "/* block comment */"},
+				"another_value",
+			},
+			expected: []any{"regular_value", "another_value"},
+			jsLogic:  "JavaScript: args.filter(commentFilter) removes comments",
+		},
+		{
+			name: "single-item expression flattening",
+			input: []any{
+				&Expression{
+					Node:   NewNode(),
+					Value:  []any{"single_value"},
+					Parens: false,
+				},
+			},
+			expected: []any{"single_value"},
+			jsLogic:  "JavaScript: single-item expression flattens to the item",
+		},
+		{
+			name: "single-item expression with parens and division - keep expression",
+			input: []any{
+				&Expression{
+					Node:   NewNode(),
+					Value:  []any{&MockOperation{op: "/", left: "10", right: "2"}},
+					Parens: true,
+				},
+			},
+			// Should keep the expression due to parens + division rule
+			expected: []any{
+				&Expression{
+					Node:   NewNode(),
+					Value:  []any{&MockOperation{op: "/", left: "10", right: "2"}},
+					Parens: true,
+				},
+			},
+			jsLogic: "JavaScript: if (item.parens && subNodes[0].op === '/') return item",
+		},
+		{
+			name: "multi-item expression preserved",
+			input: []any{
+				&Expression{
+					Node:  NewNode(),
+					Value: []any{"value1", "value2", "value3"},
+				},
+			},
+			expected: []any{
+				&Expression{
+					Node:  NewNode(),
+					Value: []any{"value1", "value2", "value3"},
+				},
+			},
+			jsLogic: "JavaScript: multi-item expression creates new Expression",
+		},
+		{
+			name: "expression with comments filtered",
+			input: []any{
+				&Expression{
+					Node: NewNode(),
+					Value: []any{
+						"value1",
+						&Comment{Value: "// comment"},
+						"value2",
+					},
+				},
+			},
+			expected: []any{
+				&Expression{
+					Node:  NewNode(),
+					Value: []any{"value1", "value2"},
+				},
+			},
+			jsLogic: "JavaScript: filters comments from expression.value then processes",
+		},
+		{
+			name: "expression with comments leaving single item",
+			input: []any{
+				&Expression{
+					Node: NewNode(),
+					Value: []any{
+						&Comment{Value: "// comment1"},
+						"single_value",
+						&Comment{Value: "// comment2"},
+					},
+				},
+			},
+			expected: []any{"single_value"},
+			jsLogic: "JavaScript: comments filtered leaving single item -> flatten to item",
+		},
+		{
+			name: "expression with all comments filtered out",
+			input: []any{
+				&Expression{
+					Node: NewNode(),
+					Value: []any{
+						&Comment{Value: "// comment1"},
+						&Comment{Value: "/* comment2 */"},
+					},
+				},
+			},
+			expected: []any{}, // Empty expression is skipped
+			jsLogic: "JavaScript: expression with no non-comment items is skipped",
+		},
+		{
+			name: "mixed arguments with all preprocessing",
+			input: []any{
+				&Comment{Value: "// top level comment"},
+				"regular_arg",
+				&Expression{
+					Node: NewNode(),
+					Value: []any{
+						&Comment{Value: "// nested comment"},
+						"flattened_value",
+					},
+				},
+				&Expression{
+					Node:  NewNode(),
+					Value: []any{"multi1", "multi2"},
+				},
+			},
+			expected: []any{
+				"regular_arg",
+				"flattened_value",
+				&Expression{
+					Node:  NewNode(),
+					Value: []any{"multi1", "multi2"},
+				},
+			},
+			jsLogic: "JavaScript: complete preprocessing pipeline",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			call := &Call{}
+			result := call.preprocessArgs(tt.input)
+			
+			if len(result) != len(tt.expected) {
+				t.Errorf("Length mismatch: got %d, expected %d\nInput: %v\nResult: %v\nExpected: %v\nJavaScript logic: %s",
+					len(result), len(tt.expected), tt.input, result, tt.expected, tt.jsLogic)
+				return
+			}
+			
+			for i, expectedItem := range tt.expected {
+				if i >= len(result) {
+					t.Errorf("Missing item at index %d\nExpected: %v\nJavaScript logic: %s", i, expectedItem, tt.jsLogic)
+					continue
+				}
+				
+				// For expressions, we need to compare the structure
+				if expectedExpr, ok := expectedItem.(*Expression); ok {
+					if resultExpr, ok := result[i].(*Expression); ok {
+						if len(resultExpr.Value) != len(expectedExpr.Value) {
+							t.Errorf("Expression value length mismatch at index %d: got %d, expected %d\nJavaScript logic: %s",
+								i, len(resultExpr.Value), len(expectedExpr.Value), tt.jsLogic)
+							continue
+						}
+						if resultExpr.Parens != expectedExpr.Parens {
+							t.Errorf("Expression parens mismatch at index %d: got %v, expected %v\nJavaScript logic: %s",
+								i, resultExpr.Parens, expectedExpr.Parens, tt.jsLogic)
+						}
+					} else {
+						t.Errorf("Expected Expression at index %d but got %T\nJavaScript logic: %s", i, result[i], tt.jsLogic)
+					}
+				} else {
+					// For non-expressions, compare directly
+					if result[i] != expectedItem {
+						t.Errorf("Item mismatch at index %d: got %v, expected %v\nJavaScript logic: %s",
+							i, result[i], expectedItem, tt.jsLogic)
+					}
+				}
+			}
+		})
+	}
+}
+
+// MockOperation for testing division detection
+type MockOperation struct {
+	op    string
+	left  any
+	right any
+}
+
+func (m *MockOperation) GetOp() string {
+	return m.op
+}
+
+// TestCallIsComment tests the comment detection logic
+func TestCallIsComment_JavaScriptConsistency(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    any
+		expected bool
+		jsLogic  string
+	}{
+		{
+			name:     "nil input",
+			input:    nil,
+			expected: false,
+			jsLogic:  "JavaScript: null/undefined is not a comment",
+		},
+		{
+			name:     "comment object",
+			input:    &Comment{Value: "test comment"},
+			expected: true,
+			jsLogic:  "JavaScript: Comment object is a comment",
+		},
+		{
+			name:     "nil comment",
+			input:    (*Comment)(nil),
+			expected: false,
+			jsLogic:  "JavaScript: null comment object is not a comment",
+		},
+		{
+			name:     "string input",
+			input:    "not a comment",
+			expected: false,
+			jsLogic:  "JavaScript: string is not a comment",
+		},
+		{
+			name: "object with Comment type",
+			input: &MockNodeWithType{nodeType: "Comment"},
+			expected: true,
+			jsLogic: "JavaScript: object with type='Comment' is a comment",
+		},
+		{
+			name: "object with different type",
+			input: &MockNodeWithType{nodeType: "Dimension"},
+			expected: false,
+			jsLogic: "JavaScript: object with other type is not a comment",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			call := &Call{}
+			result := call.isComment(tt.input)
+			
+			if result != tt.expected {
+				t.Errorf("isComment(%v) = %v, expected %v\nJavaScript logic: %s",
+					tt.input, result, tt.expected, tt.jsLogic)
+			}
+		})
+	}
+}
+
+// MockNodeWithType for testing type-based comment detection
+type MockNodeWithType struct {
+	nodeType string
+}
+
+func (m *MockNodeWithType) GetType() string {
+	return m.nodeType
 } 

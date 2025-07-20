@@ -42,6 +42,7 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 	context := jsv.contexts[len(jsv.contexts)-1]
 	paths := make([]any, 0)
 	
+	// Push paths to context stack BEFORE joinSelectors (matches JavaScript timing)
 	jsv.contexts = append(jsv.contexts, paths)
 	
 	// Try interface-based approach first
@@ -81,6 +82,9 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 						for i, path := range pathsSlice {
 							paths[i] = path
 						}
+						
+						// Update the context stack with the populated paths
+						jsv.contexts[len(jsv.contexts)-1] = paths
 					}
 				} else {
 					rulesetInterface.SetSelectors(nil)
@@ -116,7 +120,16 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 						contextSlice := make([][]any, 1)
 						contextSlice[0] = context
 						ruleset.JoinSelectors(pathsPtr, contextSlice, filteredSelectors)
-						ruleset.Paths = *pathsPtr
+						
+						// Convert the result to []any and update context
+						paths = make([]any, len(*pathsPtr))
+						for i, path := range *pathsPtr {
+							paths[i] = path
+						}
+						
+						// Update the context stack with the populated paths
+						jsv.contexts[len(jsv.contexts)-1] = paths
+						ruleset.SetPaths(paths)
 					}
 				} else {
 					ruleset.Selectors = nil

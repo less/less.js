@@ -101,6 +101,11 @@ func NewRuleset(selectors []any, rules []any, strictImports bool, visibilityInfo
 	return r
 }
 
+// Type returns the type of the node
+func (r *Ruleset) Type() string {
+	return "Ruleset"
+}
+
 // GetType returns the type of the node
 func (r *Ruleset) GetType() string {
 	return "Ruleset"
@@ -422,10 +427,10 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		ruleset.DebugInfo = r.DebugInfo
 	}
 
+	// Match JavaScript: if (!hasOnePassingSelector) { rules.length = 0; }
 	if !hasOnePassingSelector {
-		if rules != nil {
-			ruleset.Rules = rules[:0] // Clear the rules slice in the ruleset
-		}
+		// Clear the rules in the newly created ruleset
+		ruleset.Rules = []any{}
 	}
 
 	// inherit a function registry from the frames stack when possible;

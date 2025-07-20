@@ -11,7 +11,7 @@
     "test:go": "go run scripts/test.go integration",
     "test:go:unit": "go run scripts/test.go unit",
     "test:go:full": "go run scripts/test.go integration",
-    "test:go:summary": "go run scripts/test.go summary",
+    "test:go:summary": "go run scripts/test_enhanced.go summary",
     "test:go:debug": "go run scripts/test_enhanced.go integration --debug",
     "test:go:debug:trace": "go run scripts/test_enhanced.go integration --debug --trace",
     "test:go:debug:diff": "LESS_GO_DEBUG=1 LESS_GO_DIFF=1 go run scripts/test_enhanced.go integration",

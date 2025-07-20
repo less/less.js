@@ -40,16 +40,7 @@ func NewAnonymous(value any, index int, fileInfo map[string]any, mapLines bool, 
 
 // Eval evaluates the anonymous value
 func (a *Anonymous) Eval(context any) (any, error) {
-	// Evaluate the contained value if it's evaluable
-	evaluatedValue := a.Value
-	if evaluator, ok := a.Value.(interface{ Eval(any) (any, error) }); ok {
-		result, err := evaluator.Eval(context)
-		if err != nil {
-			return nil, err
-		}
-		evaluatedValue = result
-	}
-	
+	// Match JavaScript: just returns a new Anonymous with the same value (no evaluation)
 	// Create a new Anonymous instance like JavaScript version
 	visibilityInfo := map[string]any{}
 	if a.VisibilityBlocks != nil {
@@ -58,7 +49,7 @@ func (a *Anonymous) Eval(context any) (any, error) {
 	if a.NodeVisible != nil {
 		visibilityInfo["nodeVisible"] = *a.NodeVisible
 	}
-	return NewAnonymous(evaluatedValue, a.Index, a.FileInfo, a.MapLines, a.RulesetLike, visibilityInfo), nil
+	return NewAnonymous(a.Value, a.Index, a.FileInfo, a.MapLines, a.RulesetLike, visibilityInfo), nil
 }
 
 // Compare compares two nodes
@@ -149,6 +140,7 @@ func (a *Anonymous) GenCSS(context any, output *CSSOutput) {
 			generator.GenCSS(context, output)
 		} else if a.Value != nil {
 			// For simple values like strings, add directly
+			// JavaScript passes mapLines as 4th param, but Go's Add only takes 3 params
 			output.Add(a.Value, a.FileInfo, a.Index)
 		}
 	}

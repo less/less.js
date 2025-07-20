@@ -991,7 +991,7 @@ func TestRound(t *testing.T) {
 func TestMathFunctionsMap(t *testing.T) {
 	t.Run("should have all expected functions", func(t *testing.T) {
 		expectedFunctions := []string{
-			"ceil", "floor", "sqrt", "abs", "tan", "sin", "cos", "atan", "asin", "acos",
+			"ceil", "floor", "sqrt", "abs", "tan", "sin", "cos", "atan", "asin", "acos", "round",
 		}
 
 		for _, funcName := range expectedFunctions {
@@ -1006,16 +1006,20 @@ func TestMathFunctionsMap(t *testing.T) {
 	})
 
 	t.Run("should properly execute functions from map", func(t *testing.T) {
-		dim, _ := NewDimension(16.0, nil)
+		testDim, _ := NewDimension(16.0, nil)
 		
 		sqrtFunc := MathFunctions["sqrt"]
-		result, err := sqrtFunc(dim)
-		if err != nil {
-			t.Fatalf("Unexpected error: %v", err)
-		}
-		
-		if result.Value != 4 {
-			t.Errorf("Expected 4, got %f", result.Value)
+		if fn, ok := sqrtFunc.(func(*Dimension) (*Dimension, error)); ok {
+			result, err := fn(testDim)
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+			
+			if result.Value != 4 {
+				t.Errorf("Expected 4, got %f", result.Value)
+			}
+		} else {
+			t.Fatalf("sqrt function has unexpected type")
 		}
 	})
 }

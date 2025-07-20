@@ -516,6 +516,11 @@ func (c *Color) GetAllowRoot() bool {
 	return false
 }
 
+// Eval evaluates the color - returns itself
+func (c *Color) Eval(context any) any {
+	return c
+}
+
 // Helper functions
 func adjustGamma(n float64) float64 {
 	if n <= 0.03928 {

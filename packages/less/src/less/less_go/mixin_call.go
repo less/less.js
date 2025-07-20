@@ -63,6 +63,11 @@ func (mc *MixinCall) GetType() string {
 	return "MixinCall"
 }
 
+// Type returns the node type (for compatibility)
+func (mc *MixinCall) Type() string {
+	return "MixinCall"
+}
+
 // Accept visits the mixin call with a visitor
 func (mc *MixinCall) Accept(visitor any) {
 	if mc.Selector != nil {

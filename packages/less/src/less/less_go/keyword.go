@@ -28,6 +28,11 @@ func (k *Keyword) Type() string {
 	return k.type_
 }
 
+// GetType returns the type of the node for visitor pattern consistency
+func (k *Keyword) GetType() string {
+	return "Keyword"
+}
+
 // GenCSS generates the CSS representation of the keyword
 func (k *Keyword) GenCSS(context any, output *CSSOutput) {
 	if k.value == "%" {

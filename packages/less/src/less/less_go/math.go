@@ -5,7 +5,7 @@ import (
 )
 
 // MathFunctions provides all the mathematical functions that were in math.js
-var MathFunctions = map[string]func(*Dimension) (*Dimension, error){
+var MathFunctions = map[string]any{
 	"ceil":  Ceil,
 	"floor": Floor,
 	"sqrt":  Sqrt,
@@ -16,15 +16,12 @@ var MathFunctions = map[string]func(*Dimension) (*Dimension, error){
 	"atan":  Atan,
 	"asin":  Asin,
 	"acos":  Acos,
+	"round": Round,
 }
 
 // GetWrappedMathFunctions returns math functions wrapped for registry
 func GetWrappedMathFunctions() map[string]interface{} {
-	mathFunctionsInterface := make(map[string]interface{})
-	for name, fn := range MathFunctions {
-		mathFunctionsInterface[name] = fn
-	}
-	return mathFunctionsInterface
+	return MathFunctions
 }
 
 // Ceil rounds up to the nearest integer

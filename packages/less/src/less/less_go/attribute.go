@@ -24,6 +24,11 @@ func NewAttribute(key any, op string, value any, cif string) *Attribute {
 	}
 }
 
+// Type returns the node type
+func (a *Attribute) Type() string {
+	return "Attribute"
+}
+
 // GetType returns the node type
 func (a *Attribute) GetType() string {
 	return "Attribute"
@@ -74,13 +79,14 @@ func (a *Attribute) GenCSS(context any, output *CSSOutput) {
 
 // ToCSS generates CSS string representation
 func (a *Attribute) ToCSS(context any) string {
-	var value string
-
-	// Handle key - if key is nil, return empty brackets
+	// Special case: when key is nil, return empty brackets regardless of other fields
 	if a.Key == nil {
 		return "[]"
 	}
-	
+
+	var value string
+
+	// Match JavaScript: this.key.toCSS ? this.key.toCSS(context) : this.key
 	if cssable, ok := a.Key.(CSSable); ok {
 		value = cssable.ToCSS(context)
 	} else {
@@ -89,13 +95,14 @@ func (a *Attribute) ToCSS(context any) string {
 
 	if a.Op != "" {
 		value += a.Op
-		// Handle value (note: JS doesn't check if value exists before accessing toCSS)
-		if a.Value != nil {
-			if cssable, ok := a.Value.(CSSable); ok {
-				value += cssable.ToCSS(context)
-			} else {
-				value += fmt.Sprintf("%v", a.Value)
-			}
+		// Match JavaScript: this.value.toCSS ? this.value.toCSS(context) : this.value
+		// Note: JavaScript doesn't check if value is nil before accessing toCSS
+		if a.Value == nil {
+			value += ""
+		} else if cssable, ok := a.Value.(CSSable); ok {
+			value += cssable.ToCSS(context)
+		} else {
+			value += fmt.Sprintf("%v", a.Value)
 		}
 	}
 

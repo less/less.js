@@ -1,9 +1,7 @@
 package less_go
 
 import (
-	"fmt"
 	"regexp"
-
 )
 
 // CSS pattern regex for detecting CSS files
@@ -115,18 +113,30 @@ func (i *Import) Accept(visitor any) {
 
 // GenCSS generates CSS representation
 func (i *Import) GenCSS(context any, output *CSSOutput) {
-	if i.css && i.pathFileInfoReference() == nil {
-		output.Add("@import ", i._fileInfo, i._index)
-		if pathGen, ok := i.path.(interface{ GenCSS(any, *CSSOutput) }); ok {
-			pathGen.GenCSS(context, output)
-		}
-		if i.features != nil {
-			output.Add(" ", nil, nil)
-			if featuresGen, ok := i.features.(interface{ GenCSS(any, *CSSOutput) }); ok {
-				featuresGen.GenCSS(context, output)
+	// Match JavaScript: this.css && this.path._fileInfo.reference === undefined
+	if i.css {
+		// Check path._fileInfo.reference like JavaScript
+		var shouldOutput bool = true
+		if pathWithFileInfo, ok := i.path.(interface{ FileInfo() map[string]any }); ok {
+			fileInfo := pathWithFileInfo.FileInfo()
+			if fileInfo != nil && fileInfo["reference"] != nil {
+				shouldOutput = false
 			}
 		}
-		output.Add(";", nil, nil)
+		
+		if shouldOutput {
+			output.Add("@import ", i._fileInfo, i._index)
+			if pathGen, ok := i.path.(interface{ GenCSS(any, *CSSOutput) }); ok {
+				pathGen.GenCSS(context, output)
+			}
+			if i.features != nil {
+				output.Add(" ", nil, nil)
+				if featuresGen, ok := i.features.(interface{ GenCSS(any, *CSSOutput) }); ok {
+					featuresGen.GenCSS(context, output)
+				}
+			}
+			output.Add(";", nil, nil)
+		}
 	}
 }
 
@@ -297,15 +307,21 @@ func (i *Import) DoEval(context any) (any, error) {
 			if rootEval, ok := i.root.(interface{ Eval(any) (any, error) }); ok {
 				_, err := rootEval.Eval(context)
 				if err != nil {
-					// Create LessError like JavaScript version
+					// Match JavaScript error creation
+					// e.message = 'Plugin error during evaluation';
+					// throw new LessError(e, this.root.imports, this.root.filename);
 					var filename string
 					if rootWithFilename, ok := i.root.(interface{ GetFilename() string }); ok {
 						filename = rootWithFilename.GetFilename()
 					}
-					lessErr := NewLessError(ErrorDetails{
-						Message: "Plugin error during evaluation",
-					}, nil, filename)
-					return nil, fmt.Errorf("%v", lessErr)
+					// Wrap the original error with our message
+					lessErr := &LessError{
+						Type:     "Plugin",
+						Message:  "Plugin error during evaluation",
+						Filename: filename,
+						Index:    i.GetIndex(),
+					}
+					return nil, lessErr
 				}
 			}
 		}
@@ -352,10 +368,16 @@ func (i *Import) DoEval(context any) (any, error) {
 		}, true, true, nil)
 
 		if features != nil {
-			if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
-				return NewMedia([]any{contents}, featuresWithValue.GetValue(), 0, nil, nil), nil
+			// Match JavaScript: new Media([contents], this.features.value)
+			var featuresValue any = features
+			if featuresMap, ok := features.(map[string]any); ok {
+				if val, exists := featuresMap["value"]; exists {
+					featuresValue = val
+				}
+			} else if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
+				featuresValue = featuresWithValue.GetValue()
 			}
-			return NewMedia([]any{contents}, features, 0, nil, nil), nil
+			return NewMedia([]any{contents}, featuresValue, 0, nil, nil), nil
 		}
 		return []any{contents}, nil
 	}
@@ -384,10 +406,16 @@ func (i *Import) DoEval(context any) (any, error) {
 		}
 
 		if features != nil {
-			if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
-				return NewMedia(ruleset.Rules, featuresWithValue.GetValue(), 0, nil, nil), nil
+			// Match JavaScript: new Media(ruleset.rules, this.features.value)
+			var featuresValue any = features
+			if featuresMap, ok := features.(map[string]any); ok {
+				if val, exists := featuresMap["value"]; exists {
+					featuresValue = val
+				}
+			} else if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
+				featuresValue = featuresWithValue.GetValue()
 			}
-			return NewMedia(ruleset.Rules, features, 0, nil, nil), nil
+			return NewMedia(ruleset.Rules, featuresValue, 0, nil, nil), nil
 		}
 		return ruleset.Rules, nil
 	}

@@ -81,6 +81,11 @@ func (c *Container) Type() string {
 	return "Container"
 }
 
+// GetType returns the node type
+func (c *Container) GetType() string {
+	return "Container"
+}
+
 // GenCSS generates CSS representation
 func (c *Container) GenCSS(context any, output *CSSOutput) {
 	output.Add("@container ", c.FileInfo(), c.GetIndex())

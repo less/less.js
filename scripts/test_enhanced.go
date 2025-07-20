@@ -1,3 +1,6 @@
+//go:build enhanced
+// +build enhanced
+
 package main
 
 import (
@@ -670,8 +673,73 @@ func (r *EnhancedTestRunner) extractAndDisplaySummary(output string) {
 	// Extract test results and summary
 	lines := strings.Split(output, "\n")
 
+	// Count different types of test results
+	var perfectMatches int // CSS compilation perfect matches
+	var correctErrors int  // Correctly handled error tests
+	var outputDiffers int
+	var compilationFailed int
+	var totalTests int
+
+	// Collect test names for each category
+	var perfectMatchTests []string
+	var correctErrorTests []string
+	var outputDifferTests []string
+	var compilationFailedTests []string
+
 	for _, line := range lines {
-		// Look for the summary section
+		// Extract test name from the line (format: "filename:line: ✅ testname: message")
+		extractTestName := func(line string) string {
+			// Look for emoji followed by test name
+			emojiPos := -1
+			for _, emoji := range []string{"✅", "⚠️", "❌"} {
+				if pos := strings.Index(line, emoji); pos != -1 {
+					emojiPos = pos
+					break
+				}
+			}
+			if emojiPos == -1 {
+				return ""
+			}
+
+			// Extract text after emoji and before the next colon
+			afterEmoji := line[emojiPos+len("✅"):] // All emojis are same byte length
+			afterEmoji = strings.TrimSpace(afterEmoji)
+
+			if colonPos := strings.Index(afterEmoji, ":"); colonPos > 0 {
+				return strings.TrimSpace(afterEmoji[:colonPos])
+			}
+
+			return ""
+		}
+
+		// Count test result types based on emojis and messages
+		if strings.Contains(line, "✅") && strings.Contains(line, "Perfect match!") {
+			perfectMatches++
+			totalTests++
+			if testName := extractTestName(line); testName != "" {
+				perfectMatchTests = append(perfectMatchTests, testName)
+			}
+		} else if strings.Contains(line, "✅") && strings.Contains(line, "Correctly failed") {
+			correctErrors++
+			totalTests++
+			if testName := extractTestName(line); testName != "" {
+				correctErrorTests = append(correctErrorTests, testName)
+			}
+		} else if strings.Contains(line, "⚠️") {
+			outputDiffers++
+			totalTests++
+			if testName := extractTestName(line); testName != "" {
+				outputDifferTests = append(outputDifferTests, testName)
+			}
+		} else if strings.Contains(line, "❌") {
+			compilationFailed++
+			totalTests++
+			if testName := extractTestName(line); testName != "" {
+				compilationFailedTests = append(compilationFailedTests, testName)
+			}
+		}
+
+		// Look for existing summary sections
 		if strings.Contains(line, "Test Summary") {
 			fmt.Println(line)
 		} else if strings.Contains(line, "Total:") ||
@@ -679,6 +747,62 @@ func (r *EnhancedTestRunner) extractAndDisplaySummary(output string) {
 			strings.Contains(line, "Failed:") ||
 			strings.Contains(line, "Error Summary") {
 			fmt.Println(line)
+		}
+	}
+
+	// Display detailed results by category
+	if totalTests > 0 {
+		fmt.Println(colorBold + "\n📊 Integration Test Results by Category" + colorReset)
+
+		// Perfect CSS Matches
+		if len(perfectMatchTests) > 0 {
+			fmt.Printf("\n%s✅ Perfect CSS Matches (%d):%s\n", colorGreen, len(perfectMatchTests), colorReset)
+			for _, test := range perfectMatchTests {
+				fmt.Printf("  • %s\n", test)
+			}
+		}
+
+		// Correct Error Handling
+		if len(correctErrorTests) > 0 {
+			fmt.Printf("\n%s✅ Correct Error Handling (%d):%s\n", colorGreen, len(correctErrorTests), colorReset)
+			for _, test := range correctErrorTests {
+				fmt.Printf("  • %s\n", test)
+			}
+		}
+
+		// Output Differs/Warnings
+		if len(outputDifferTests) > 0 {
+			fmt.Printf("\n%s⚠️  Output Differs/Warnings (%d):%s\n", colorYellow, len(outputDifferTests), colorReset)
+			for _, test := range outputDifferTests {
+				fmt.Printf("  • %s\n", test)
+			}
+		}
+
+		// Failing Tests
+		if len(compilationFailedTests) > 0 {
+			fmt.Printf("\n%s❌ Failing Tests (%d):%s\n", colorRed, len(compilationFailedTests), colorReset)
+			for _, test := range compilationFailedTests {
+				fmt.Printf("  • %s\n", test)
+			}
+		}
+
+		// Summary totals
+		fmt.Println(colorBold + "\n📈 Summary Totals" + colorReset)
+		fmt.Printf("  %s✅ Perfect CSS Matches: %d%s\n", colorGreen, perfectMatches, colorReset)
+		fmt.Printf("  %s✅ Correct Error Handling: %d%s\n", colorGreen, correctErrors, colorReset)
+		fmt.Printf("  %s⚠️  Output Differs/Warnings: %d%s\n", colorYellow, outputDiffers, colorReset)
+		fmt.Printf("  %s❌ Failing Tests: %d%s\n", colorRed, compilationFailed, colorReset)
+		fmt.Printf("  %sTotal Tests: %d%s\n", colorBold, totalTests, colorReset)
+
+		if totalTests > 0 {
+			totalPassing := perfectMatches + correctErrors
+			successRate := float64(totalPassing) / float64(totalTests) * 100
+			fmt.Printf("  %sOverall Success Rate: %.1f%%%s\n", colorBold, successRate, colorReset)
+
+			if perfectMatches > 0 {
+				cssSuccessRate := float64(perfectMatches) / float64(totalTests) * 100
+				fmt.Printf("  %sPerfect CSS Compilation Rate: %.1f%%%s\n", colorCyan, cssSuccessRate, colorReset)
+			}
 		}
 	}
 }
@@ -720,4 +844,8 @@ func (r *EnhancedTestRunner) displayFinalSummary() {
 		fmt.Printf("  GC Runs: %d\n", m.NumGC)
 		fmt.Printf("  Goroutines: %d\n", runtime.NumGoroutine())
 	}
+}
+
+func main() {
+	mainEnhanced()
 }

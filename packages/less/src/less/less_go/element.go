@@ -36,8 +36,40 @@ func NewElement(combinator any, value any, isVariable bool, index int, currentFi
 		val = strings.TrimSpace(v)
 	case nil:
 		val = ""
+	case bool:
+		// JavaScript converts false to ""
+		if !v {
+			val = ""
+		} else {
+			val = v
+		}
+	case int:
+		// JavaScript converts 0 to ""
+		if v == 0 {
+			val = ""
+		} else {
+			val = v
+		}
+	case int64:
+		if v == 0 {
+			val = ""
+		} else {
+			val = v
+		}
+	case float32:
+		if v == 0 {
+			val = ""
+		} else {
+			val = v
+		}
+	case float64:
+		if v == 0 {
+			val = ""
+		} else {
+			val = v
+		}
 	default:
-		// Preserve non-string values as is
+		// For objects and other types, preserve as is
 		val = v
 	}
 
@@ -82,9 +114,14 @@ func (e *Element) Accept(visitor any) {
 			}
 		}
 
-		// Visit the value if it's not a string and not nil
+		// Visit the value only if it's an object (matching JavaScript's typeof value === 'object')
+		// In JavaScript, objects include arrays, functions, and actual objects, but not primitives
 		if e.Value != nil {
-			if _, ok := e.Value.(string); !ok {
+			switch e.Value.(type) {
+			case string, bool, int, int64, float32, float64:
+				// Don't visit primitive types
+			default:
+				// Visit objects (including structs, maps, slices, etc.)
 				if visited := v.Visit(e.Value); visited != nil {
 					e.Value = visited
 				}

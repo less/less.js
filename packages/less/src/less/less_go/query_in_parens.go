@@ -29,6 +29,11 @@ func NewQueryInParens(op string, l any, m any, op2 string, r any, i int) *QueryI
 	return q
 }
 
+// Type returns the type of the node
+func (q *QueryInParens) Type() string {
+	return "QueryInParens"
+}
+
 // GetType returns the type of the node
 func (q *QueryInParens) GetType() string {
 	return "QueryInParens"

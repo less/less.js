@@ -3,6 +3,7 @@ package less_go
 import (
 	"fmt"
 	"math"
+	"reflect"
 )
 
 // NumberFunctions provides all the number-related functions
@@ -130,12 +131,28 @@ func minMax(isMin bool, args []interface{}) (interface{}, error) {
 		// Check if it's a Dimension
 		dim, ok := current.(*Dimension)
 		if !ok {
-			// Check if it's an array-like value
+			// Check if it's an array-like value (JavaScript: Array.isArray(args[i].value))
+			// First check if it has a value property that's an array
 			if valuer, ok := current.(interface{ GetValue() interface{} }); ok {
 				if arr, ok := valuer.GetValue().([]interface{}); ok {
 					// Append array values to args
 					args = append(args, arr...)
 					continue
+				}
+			}
+			// Also check for nodes with .Value field
+			currentVal := reflect.ValueOf(current)
+			if currentVal.Kind() == reflect.Ptr {
+				currentVal = currentVal.Elem()
+			}
+			if currentVal.Kind() == reflect.Struct {
+				valueField := currentVal.FieldByName("Value")
+				if valueField.IsValid() && valueField.CanInterface() {
+					if arr, ok := valueField.Interface().([]interface{}); ok {
+						// Append array values to args
+						args = append(args, arr...)
+						continue
+					}
 				}
 			}
 			return nil, &LessError{Type: "Argument", Message: "incompatible types"}
@@ -239,7 +256,7 @@ func minMax(isMin bool, args []interface{}) (interface{}, error) {
 	}
 	
 	result := fmt.Sprintf("%s(%s)", fnName, joinStrings(cssArgs, separator))
-	return &Anonymous{Value: result}, nil
+	return NewAnonymous(result, 0, nil, false, false, nil), nil
 }
 
 // Min returns the minimum value from the given arguments
@@ -285,6 +302,9 @@ func Pi() (*Dimension, error) {
 
 // Mod calculates the modulo of two dimensions
 func Mod(a *Dimension, b *Dimension) (*Dimension, error) {
+	if b.Value == 0 {
+		return nil, &LessError{Type: "Argument", Message: "cannot divide by zero"}
+	}
 	result := math.Mod(a.Value, b.Value)
 	return NewDimension(result, a.Unit)
 }

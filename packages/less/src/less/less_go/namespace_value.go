@@ -37,6 +37,11 @@ func (nv *NamespaceValue) GetType() string {
 	return "NamespaceValue"
 }
 
+// Type returns the node type (for compatibility)
+func (nv *NamespaceValue) Type() string {
+	return "NamespaceValue"
+}
+
 // GetIndex returns the node's index
 func (nv *NamespaceValue) GetIndex() int {
 	return nv._index

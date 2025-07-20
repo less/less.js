@@ -267,7 +267,7 @@ func TestNode(t *testing.T) {
 			t.Error("IsRulesetLike should return false")
 		}
 
-		if node.Eval() != node {
+		if node.Eval(nil) != node {
 			t.Error("Eval should return self")
 		}
 

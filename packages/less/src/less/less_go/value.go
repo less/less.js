@@ -49,6 +49,11 @@ func NewValue(value any) (*Value, error) {
 	return v, nil
 }
 
+// Type returns the type of the node
+func (v *Value) Type() string {
+	return "Value"
+}
+
 // GetType returns the type of the node
 func (v *Value) GetType() string {
 	return "Value"

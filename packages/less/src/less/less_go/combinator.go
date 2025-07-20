@@ -97,6 +97,16 @@ func isUnicodeWhitespace(r rune) bool {
 	}
 }
 
+// Type returns the node type
+func (c *Combinator) Type() string {
+	return "Combinator"
+}
+
+// GetType returns the node type
+func (c *Combinator) GetType() string {
+	return "Combinator"
+}
+
 // GenCSS generates CSS representation of the combinator
 func (c *Combinator) GenCSS(context any, output *CSSOutput) {
 	var spaceOrEmpty string

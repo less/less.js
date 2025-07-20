@@ -3130,7 +3130,16 @@ func (p *Parsers) ImportOptions() map[string]any {
 
 // PrepareAndGetNestableAtRule handles @media, @container rules
 func (p *Parsers) PrepareAndGetNestableAtRule(atRuleType string, index int, debugInfo map[string]any) any {
-	features := p.MediaFeatures(nil)
+	// Use appropriate syntax options based on at-rule type
+	var syntaxOptions map[string]any
+	switch atRuleType {
+	case "Media":
+		syntaxOptions = map[string]any{"queryInParens": true}
+	case "Container":
+		syntaxOptions = map[string]any{"queryInParens": true}
+	}
+	
+	features := p.MediaFeatures(syntaxOptions)
 	rules := p.Block()
 
 	if rules == nil {
@@ -3579,8 +3588,12 @@ func (e *EntityParsers) Arguments(prevArgs []any) []any {
 		if e.parsers.parser.parserInput.Char(';') != nil || isSemiColonSeparated {
 			isSemiColonSeparated = true
 			var argValue any
-			if len(argsComma) < 1 {
-				argValue = argsComma[0]
+			if len(argsComma) <= 1 {
+				if len(argsComma) == 1 {
+					argValue = argsComma[0]
+				} else {
+					argValue = nil // Empty array case
+				}
 			} else {
 				argValue, _ = NewValue(argsComma)
 			}

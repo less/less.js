@@ -205,8 +205,8 @@ func (s *Selector) getElements(elsInput any) ([]*Element, error) {
 }
 
 // CreateDerived creates a new selector derived from the current one.
-// evaldConditionFromEval is the boolean result of the condition's evaluation.
-func (s *Selector) CreateDerived(elementsInput any, extendList []any, evaldConditionFromEval *bool) (*Selector, error) {
+// evaldCondition is the evaluated condition node (not a boolean).
+func (s *Selector) CreateDerived(elementsInput any, extendList []any, evaldCondition any) (*Selector, error) {
 	// Use s.getElements to process the input elements correctly.
 	parsedElements, err := s.getElements(elementsInput)
 	if err != nil {
@@ -244,8 +244,20 @@ func (s *Selector) CreateDerived(elementsInput any, extendList []any, evaldCondi
 	}
 
 	// Update evaldCondition based on the parameter
-	if evaldConditionFromEval != nil {
-		newSel.EvaldCondition = *evaldConditionFromEval
+	// Match JavaScript: newSelector.evaldCondition = (!utils.isNullOrUndefined(evaldCondition)) ? evaldCondition : this.evaldCondition;
+	if evaldCondition != nil {
+		// Determine truthiness of the condition node
+		if boolVal, ok := evaldCondition.(bool); ok {
+			newSel.EvaldCondition = boolVal
+		} else if boolPtr, ok := evaldCondition.(*bool); ok {
+			// Handle pointer to bool (for test compatibility)
+			newSel.EvaldCondition = *boolPtr
+		} else if truthyProvider, ok := evaldCondition.(interface{ IsTrue() bool }); ok {
+			newSel.EvaldCondition = truthyProvider.IsTrue()
+		} else {
+			// For any other non-nil value, consider it truthy
+			newSel.EvaldCondition = true
+		}
 	} else {
 		newSel.EvaldCondition = s.EvaldCondition // Inherit if no new one is specified
 	}
@@ -413,7 +425,7 @@ func (s *Selector) IsJustParentSelector() bool {
 
 // Eval evaluates the selector.
 func (s *Selector) Eval(context any) (any, error) {
-	var evaluatedConditionBoolean *bool // This is the *boolean* outcome of the condition
+	var evaldCondition any // This is the evaluated condition NODE (not boolean)
 
 	if s.Condition != nil {
 		conditionNode, ok := s.Condition.(interface{ Eval(any) any })
@@ -421,21 +433,7 @@ func (s *Selector) Eval(context any) (any, error) {
 			return nil, errors.New("selector condition cannot be evaluated")
 		}
 		
-		evalResultNode := conditionNode.Eval(context) // This is a NODE
-
-		// Determine truthiness of evalResultNode.
-		// This logic needs to align with how Less.js Condition nodes resolve to true/false.
-		// For instance, if evalResultNode is a `tree.True` or `tree.False` node.
-		// Test mock `mockEvalCondition = { eval: () => true }` suggests eval can directly return bool.
-		var isTruthy bool
-		if boolVal, ok := evalResultNode.(bool); ok {
-			isTruthy = boolVal
-		} else if truthyProvider, ok := evalResultNode.(interface{ IsTrue() bool }); ok { // e.g. for a BooleanNode
-			isTruthy = truthyProvider.IsTrue()
-		} else {
-			isTruthy = (evalResultNode != nil) // Default: non-nil node is "truthy". This might need refinement.
-		}
-		evaluatedConditionBoolean = &isTruthy
+		evaldCondition = conditionNode.Eval(context) // This is a NODE, not a boolean
 	}
 
 	var evaluatedElements []*Element
@@ -465,8 +463,8 @@ func (s *Selector) Eval(context any) (any, error) {
 			}
 		}
 	}
-	// Pass the *boolean* result of condition eval to CreateDerived
-	return s.CreateDerived(evaluatedElements, evaluatedExtendList, evaluatedConditionBoolean)
+	// Pass the evaluated condition NODE to CreateDerived
+	return s.CreateDerived(evaluatedElements, evaluatedExtendList, evaldCondition)
 }
 
 // ToCSS generates CSS string representation (overrides Node ToCSS)

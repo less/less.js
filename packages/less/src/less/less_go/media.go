@@ -64,6 +64,11 @@ func (m *Media) GetType() string {
 	return "Media"
 }
 
+// Type returns the type of the node (for compatibility)
+func (m *Media) Type() string {
+	return "Media"
+}
+
 // IsRulesetLike returns true (implementing NestableAtRulePrototype)
 func (m *Media) IsRulesetLike() bool {
 	return true

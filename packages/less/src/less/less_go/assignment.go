@@ -20,6 +20,11 @@ func NewAssignment(key, value any) *Assignment {
 	}
 }
 
+// Type returns the node type
+func (a *Assignment) Type() string {
+	return "Assignment"
+}
+
 // GetType returns the node type
 func (a *Assignment) GetType() string {
 	return "Assignment"

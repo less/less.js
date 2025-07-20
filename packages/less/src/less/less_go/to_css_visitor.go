@@ -733,8 +733,8 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 		return rules
 	}
 	
-	groups := make(map[string][]any)
-	var groupsArr [][]any
+	groups := make(map[string]*[]any)
+	var groupsArr []*[]any
 	
 	for i := 0; i < len(rules); i++ {
 		rule := rules[i]
@@ -755,20 +755,27 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 			
 			if isTruthy {
 				key := mergeNode.GetName()
-				if _, exists := groups[key]; !exists {
-					groups[key] = []any{}
-					groupsArr = append(groupsArr, groups[key])
+				if groupPtr, exists := groups[key]; !exists {
+					// Create new group and add to groupsArr
+					newGroup := []any{rule}
+					groups[key] = &newGroup
+					groupsArr = append(groupsArr, &newGroup)
+					// Remove from rules array
+					rules = append(rules[:i], rules[i+1:]...)
+					i--
 				} else {
+					// Add to existing group
+					*groupPtr = append(*groupPtr, rule)
 					// Remove from rules array
 					rules = append(rules[:i], rules[i+1:]...)
 					i--
 				}
-				groups[key] = append(groups[key], rule)
 			}
 		}
 	}
 	
-	for _, group := range groupsArr {
+	for _, groupPtr := range groupsArr {
+		group := *groupPtr
 		if len(group) > 0 {
 			result := group[0]
 			var space []any

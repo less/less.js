@@ -929,8 +929,14 @@ func TestLastDeclaration(t *testing.T) {
 
 		result := ruleset.LastDeclaration()
 
-		if result != decl2 {
-			t.Errorf("Expected last declaration to be returned")
+		// The result should be a transformed declaration from ParseValue
+		// Check that it's a declaration with the same name
+		if resultDecl, ok := result.(*Declaration); ok {
+			if resultDecl.GetName() != "prop2" {
+				t.Errorf("Expected declaration with name 'prop2', got '%s'", resultDecl.GetName())
+			}
+		} else {
+			t.Errorf("Expected a Declaration, got %T", result)
 		}
 	})
 

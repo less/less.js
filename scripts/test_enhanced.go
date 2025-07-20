@@ -155,7 +155,7 @@ func mainEnhanced() {
 }
 
 func (r *EnhancedTestRunner) printHelp() {
-	fmt.Println(`Enhanced Less.go Test Runner
+	fmt.Print(`Enhanced Less.go Test Runner
 
 Usage: go run scripts/test_enhanced.go [test-type] [options]
 

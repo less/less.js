@@ -51,9 +51,12 @@ func NewMixinDefinition(name string, params []any, rules []any, condition any, v
 			paramName := param["name"]
 			paramValue := param["value"]
 			
-			if paramName == nil || paramValue == nil {
+			// JavaScript logic: !p.name || (p.name && !p.value)
+			// Required if: no name OR (has name but no value)
+			if paramName == nil || (paramName != nil && paramValue == nil) {
 				required++
 			} else {
+				// Has both name and value - it's optional
 				if nameStr, ok := paramName.(string); ok && nameStr != "" {
 					optionalParameters = append(optionalParameters, nameStr)
 				}
@@ -486,12 +489,19 @@ func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
 		allArgsCnt = len(args)
 	}
 
-	// Count required arguments that are provided
+	// Count required arguments that are provided (match JavaScript logic)
+	// JavaScript: args.reduce(function (count, p) {
+	//   if (optionalParameters.indexOf(p.name) < 0) {
+	//     return count + 1;
+	//   } else {
+	//     return count;
+	//   }
+	// }, 0);
 	requiredArgsCnt := 0
 	for _, arg := range args {
 		if argMap, ok := arg.(map[string]any); ok {
 			if argName, ok := argMap["name"].(string); ok && argName != "" {
-				// Check if this named argument is optional
+				// Check if this named argument is in optional parameters list
 				isOptional := false
 				for _, optParam := range md.OptionalParameters {
 					if optParam == argName {
@@ -499,13 +509,17 @@ func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
 						break
 					}
 				}
+				// Only count if NOT in optional parameters (like JavaScript)
 				if !isOptional {
 					requiredArgsCnt++
 				}
+				// Note: JavaScript only counts named args, so we don't increment for positional args here
 			} else {
+				// Positional argument (no name) - always counts as required
 				requiredArgsCnt++
 			}
 		} else {
+			// Non-map argument - always counts as required
 			requiredArgsCnt++
 		}
 	}

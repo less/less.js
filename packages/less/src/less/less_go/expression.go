@@ -85,7 +85,7 @@ func (e *Expression) Eval(context any) (any, error) {
 		}
 	}
 
-	inParenthesis := e.Node.Parens
+	inParenthesis := e.Parens
 	doubleParen := false
 
 	if inParenthesis {
@@ -156,7 +156,7 @@ func (e *Expression) Eval(context any) (any, error) {
 		}
 	}
 
-	if e.Node.Parens && e.Node.ParensInOp && !mathOn && !doubleParen {
+	if e.Parens && e.ParensInOp && !mathOn && !doubleParen {
 		if _, isDimension := SafeTypeAssertion[*Dimension](returnValue); !isDimension {
 			returnValue = NewParen(returnValue)
 		}
@@ -222,14 +222,14 @@ func (e *Expression) ThrowAwayComments() {
 	e.Value = filtered
 }
 
-// GetParens returns the Parens flag from the embedded Node
+// GetParens returns the Parens flag
 func (e *Expression) GetParens() bool {
-	return e.Node.Parens
+	return e.Parens
 }
 
-// GetParensInOp returns the ParensInOp flag from the embedded Node
+// GetParensInOp returns the ParensInOp flag
 func (e *Expression) GetParensInOp() bool {
-	return e.Node.ParensInOp
+	return e.ParensInOp
 }
 
  

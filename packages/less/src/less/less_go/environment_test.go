@@ -218,7 +218,8 @@ func TestGetFileManager(t *testing.T) {
 		AddListener(mockListener)
 		defer RemoveListener(mockListener)
 
-		env.GetFileManager("", "/path", map[string]any{}, map[string]any{}, false)
+		path := "/path"
+		env.GetFileManager("", &path, map[string]any{}, map[string]any{}, false)
 
 		if len(mockListener.WarnMessages) == 0 {
 			t.Error("Should warn when filename is empty")
@@ -235,7 +236,7 @@ func TestGetFileManager(t *testing.T) {
 		AddListener(mockListener)
 		defer RemoveListener(mockListener)
 
-		env.GetFileManager("test.less", "", map[string]any{}, map[string]any{}, false)
+		env.GetFileManager("test.less", nil, map[string]any{}, map[string]any{}, false)
 
 		if len(mockListener.WarnMessages) == 0 {
 			t.Error("Should warn when currentDirectory is nil")
@@ -253,7 +254,8 @@ func TestGetFileManager(t *testing.T) {
 		defer RemoveListener(mockListener)
 
 		mockFileManager.SupportsFunc = func(string, string, map[string]any, map[string]any) bool { return true }
-		env.GetFileManager("test.less", "null", map[string]any{}, map[string]any{}, false)
+		emptyStr := ""
+		env.GetFileManager("test.less", &emptyStr, map[string]any{}, map[string]any{}, false)
 
 		if len(mockListener.WarnMessages) > 0 {
 			t.Error("Should not warn when currentDirectory is empty string")
@@ -266,7 +268,8 @@ func TestGetFileManager(t *testing.T) {
 			return filename == "test.less" && currentDirectory == "/path"
 		}
 
-		result := env.GetFileManager("test.less", "/path", map[string]any{}, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, map[string]any{}, map[string]any{}, false)
 
 		if result != mockFileManager {
 			t.Error("Should return the mockFileManager")
@@ -279,7 +282,8 @@ func TestGetFileManager(t *testing.T) {
 			return filename == "test.less" && currentDirectory == "/path"
 		}
 
-		result := env.GetFileManager("test.less", "/path", map[string]any{}, map[string]any{}, true)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, map[string]any{}, map[string]any{}, true)
 
 		if result != mockFileManager {
 			t.Error("Should return the mockFileManager")
@@ -290,7 +294,8 @@ func TestGetFileManager(t *testing.T) {
 		setUp()
 		mockFileManager.SupportsFunc = func(string, string, map[string]any, map[string]any) bool { return false }
 
-		result := env.GetFileManager("test.less", "/path", map[string]any{}, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, map[string]any{}, map[string]any{}, false)
 
 		if result != nil {
 			t.Error("Should return nil when no file manager supports the file")
@@ -311,7 +316,8 @@ func TestGetFileManager(t *testing.T) {
 
 		env.FileManagers = []EnvironmentFileManager{fileManager1, fileManager2, fileManager3}
 
-		result := env.GetFileManager("test.less", "/path", map[string]any{}, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, map[string]any{}, map[string]any{}, false)
 
 		// Should return the last one that supports (checked first due to reverse order)
 		if result != fileManager3 {
@@ -329,7 +335,8 @@ func TestGetFileManager(t *testing.T) {
 		}
 
 		options := map[string]any{"pluginManager": mockPluginManager}
-		result := env.GetFileManager("test.less", "/path", options, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, options, map[string]any{}, false)
 
 		if result != mockFileManager2 {
 			t.Error("Should return mockFileManager2 from plugin manager")
@@ -348,7 +355,8 @@ func TestGetFileManager(t *testing.T) {
 		}
 
 		options := map[string]any{"pluginManager": mockPluginManager}
-		result := env.GetFileManager("test.less", "/path", options, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, options, map[string]any{}, false)
 
 		// Plugin manager file managers come after environment file managers,
 		// so they're checked first (reverse order)
@@ -366,7 +374,8 @@ func TestGetFileManager(t *testing.T) {
 		}
 
 		options := map[string]any{"pluginManager": emptyPluginManager}
-		result := env.GetFileManager("test.less", "/path", options, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, options, map[string]any{}, false)
 
 		if result != mockFileManager {
 			t.Error("Should return environment file manager when plugin manager is empty")
@@ -378,7 +387,8 @@ func TestGetFileManager(t *testing.T) {
 		mockFileManager.SupportsFunc = func(string, string, map[string]any, map[string]any) bool { return true }
 
 		options := map[string]any{}
-		result := env.GetFileManager("test.less", "/path", options, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, options, map[string]any{}, false)
 
 		if result != mockFileManager {
 			t.Error("Should return environment file manager")
@@ -397,7 +407,8 @@ func TestGetFileManager(t *testing.T) {
 			}
 		}()
 
-		env.GetFileManager("test.less", "/path", nil, map[string]any{}, false)
+		path := "/path"
+		env.GetFileManager("test.less", &path, nil, map[string]any{}, false)
 	})
 
 	t.Run("should handle undefined options", func(t *testing.T) {
@@ -412,7 +423,8 @@ func TestGetFileManager(t *testing.T) {
 			}
 		}()
 
-		env.GetFileManager("test.less", "/path", nil, map[string]any{}, false)
+		path := "/path"
+		env.GetFileManager("test.less", &path, nil, map[string]any{}, false)
 	})
 
 	t.Run("should pass all parameters to supports method", func(t *testing.T) {
@@ -433,7 +445,7 @@ func TestGetFileManager(t *testing.T) {
 		options := map[string]any{"compress": true}
 		environment := map[string]any{"debug": true}
 
-		env.GetFileManager(filename, currentDirectoryStr, options, environment, false)
+		env.GetFileManager(filename, &currentDirectoryStr, options, environment, false)
 
 		if capturedFilename != filename {
 			t.Errorf("Expected filename '%s', got '%s'", filename, capturedFilename)
@@ -467,7 +479,7 @@ func TestGetFileManager(t *testing.T) {
 		options := map[string]any{"compress": true}
 		environment := map[string]any{"debug": true}
 
-		env.GetFileManager(filename, currentDirectoryStr, options, environment, true)
+		env.GetFileManager(filename, &currentDirectoryStr, options, environment, true)
 
 		if capturedFilename != filename {
 			t.Errorf("Expected filename '%s', got '%s'", filename, capturedFilename)
@@ -626,7 +638,8 @@ func TestEnvironmentIntegrationTests(t *testing.T) {
 
 		// Test getFileManager
 		mockFileManager2.SupportsFunc = func(string, string, map[string]any, map[string]any) bool { return true }
-		result := env.GetFileManager("test.less", "/path", map[string]any{}, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, map[string]any{}, map[string]any{}, false)
 		if result != mockFileManager2 {
 			t.Error("GetFileManager should return mockFileManager2")
 		}
@@ -657,7 +670,8 @@ func TestEnvironmentIntegrationTests(t *testing.T) {
 		env := NewEnvironment(nil, []EnvironmentFileManager{mockFileManager})
 
 		options := map[string]any{"pluginManager": complexPluginManager}
-		result := env.GetFileManager("test.less", "/path", options, map[string]any{}, false)
+		path := "/path"
+		result := env.GetFileManager("test.less", &path, options, map[string]any{}, false)
 
 		// Should return the plugin file manager that supports (checked first due to reverse order)
 		if result != pluginFileManager2 {

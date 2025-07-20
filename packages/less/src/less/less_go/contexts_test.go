@@ -130,7 +130,7 @@ func TestContexts(t *testing.T) {
 				"urlArgs":          "?v=1",
 				"javascriptEnabled": true,
 				"pluginManager":    struct{}{},
-				"importantScope":   []string{},
+				"importantScope":   []map[string]any{},
 				"rewriteUrls":      RewriteUrlsAll,
 			}
 
@@ -319,6 +319,10 @@ func TestContexts(t *testing.T) {
 				if !evalContext.PathRequiresRewrite("relative/path") {
 					t.Error("Should rewrite relative paths")
 				}
+				// Test empty path
+				if !evalContext.PathRequiresRewrite("") {
+					t.Error("Should rewrite empty paths as relative")
+				}
 			})
 
 			t.Run("should correctly identify local relative paths", func(t *testing.T) {
@@ -424,11 +428,14 @@ func TestContexts(t *testing.T) {
 
 		t.Run("importantScope handling", func(t *testing.T) {
 			t.Run("should initialize with provided importantScope", func(t *testing.T) {
-				importantScope := []string{"!important"}
+				importantScope := []map[string]any{{"important": " !important"}}
 				evalContext := NewEval(map[string]any{
 					"importantScope": importantScope,
 				}, nil)
-				if len(evalContext.ImportantScope) != 1 || evalContext.ImportantScope[0] != "!important" {
+				if len(evalContext.ImportantScope) != 1 {
+					t.Error("Should have one importantScope entry")
+				}
+				if evalContext.ImportantScope[0]["important"] != " !important" {
 					t.Error("Should initialize with provided importantScope")
 				}
 			})
@@ -460,6 +467,16 @@ func TestContexts(t *testing.T) {
 				evalContext := NewEval(map[string]any{}, nil)
 				if evalContext.NormalizePath("/") != "/" {
 					t.Error("Should handle root path")
+				}
+			})
+
+			t.Run("should handle special dot paths", func(t *testing.T) {
+				evalContext := NewEval(map[string]any{}, nil)
+				if evalContext.NormalizePath("...") != "..." {
+					t.Error("Should preserve three dots")
+				}
+				if evalContext.NormalizePath("..") != ".." {
+					t.Error("Should preserve two dots when alone")
 				}
 			})
 		})
@@ -562,7 +579,7 @@ func TestCopyFromOriginal(t *testing.T) {
 		original := map[string]any{
 			"paths": []string{"/test/path"},
 			"math": MathAlways,
-			"importantScope": []string{"!important"},
+			"importantScope": []map[string]any{{"important": " !important"}},
 		}
 		copyFromOriginal(original, eval)
 		if len(eval.Paths) != 1 || eval.Paths[0] != "/test/path" {
@@ -571,7 +588,7 @@ func TestCopyFromOriginal(t *testing.T) {
 		if eval.Math != MathAlways {
 			t.Error("Should copy valid math property")
 		}
-		if len(eval.ImportantScope) != 1 || eval.ImportantScope[0] != "!important" {
+		if len(eval.ImportantScope) != 1 || eval.ImportantScope[0]["important"] != " !important" {
 			t.Error("Should copy valid importantScope property")
 		}
 	})

@@ -533,6 +533,18 @@ func createFunctions(env any) any {
 	// Add type functions
 	registry.AddMultiple(GetWrappedTypesFunctions())
 	
+	// Add list functions
+	listFuncs := GetWrappedListFunctions()
+	for name, fn := range listFuncs {
+		if functionImpl, ok := fn.(func(any, any) any); ok {
+			// Wrap simple Go functions to match FunctionDefinition interface
+			registry.Add(name, &SimpleFunctionDef{
+				name: name,
+				fn:   functionImpl,
+			})
+		}
+	}
+	
 	// Add the default() function for mixin guards
 	registry.Add("default", &DefaultFunctionDefinition{})
 	

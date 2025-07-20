@@ -88,8 +88,8 @@ func TestExpressionEval(t *testing.T) {
 	t.Run("should wrap result in Paren when has parens and parensInOp", func(t *testing.T) {
 		anon := NewAnonymous("test", 0, nil, false, false, nil)
 		expr, _ := NewExpression([]any{anon}, false)
-		expr.Node.Parens = true
-		expr.Node.ParensInOp = true
+		expr.Parens = true
+		expr.ParensInOp = true
 		result, err := expr.Eval(createTestContext(false))
 		if err != nil {
 			t.Fatalf("Expression eval failed: %v", err)
@@ -102,8 +102,8 @@ func TestExpressionEval(t *testing.T) {
 	t.Run("should not wrap result in Paren when math mode is on", func(t *testing.T) {
 		anon := NewAnonymous("test", 0, nil, false, false, nil)
 		expr, _ := NewExpression([]any{anon}, false)
-		expr.Node.Parens = true
-		expr.Node.ParensInOp = true
+		expr.Parens = true
+		expr.ParensInOp = true
 		result, err := expr.Eval(createTestContext(true))
 		if err != nil {
 			t.Fatalf("Expression eval failed: %v", err)
@@ -116,8 +116,8 @@ func TestExpressionEval(t *testing.T) {
 	t.Run("should not wrap Dimension in Paren even with parens and parensInOp", func(t *testing.T) {
 		dim, _ := NewDimension(5, "px")
 		expr, _ := NewExpression([]any{dim}, false)
-		expr.Node.Parens = true
-		expr.Node.ParensInOp = true
+		expr.Parens = true
+		expr.ParensInOp = true
 		result, err := expr.Eval(createTestContext(false))
 		if err != nil {
 			t.Fatalf("Expression eval failed: %v", err)
@@ -230,7 +230,7 @@ func TestExpressionParenthesisContext(t *testing.T) {
 		
 		dim, _ := NewDimension(5, "px")
 		expr, _ := NewExpression([]any{dim}, false)
-		expr.Node.Parens = true
+		expr.Parens = true
 		
 		_, err := expr.Eval(context)
 		if err != nil {

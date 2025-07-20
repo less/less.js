@@ -49,7 +49,7 @@ type Eval struct {
 	UrlArgs         string
 	JavascriptEnabled bool
 	PluginManager   any
-	ImportantScope  []string
+	ImportantScope  []map[string]any
 	RewriteUrls     RewriteUrlsType
 
 	// Internal state
@@ -66,7 +66,7 @@ func NewEval(options map[string]any, frames []any) *Eval {
 	e := &Eval{
 		Frames:      frames,
 		MathOn:      true,
-		ImportantScope: []string{},
+		ImportantScope: []map[string]any{},
 	}
 	copyFromOriginal(options, e)
 	if paths, ok := options["paths"].(string); ok {
@@ -153,9 +153,18 @@ func (e *Eval) GetFrames() []ParserFrame {
 
 // GetImportantScope returns the important scope stack (EvalContext interface)
 func (e *Eval) GetImportantScope() []map[string]bool {
-	// Convert ImportantScope to the expected format
-	// For now, return empty as this is used for !important handling
-	return []map[string]bool{}
+	// Convert from []map[string]any to []map[string]bool
+	result := make([]map[string]bool, len(e.ImportantScope))
+	for i, scope := range e.ImportantScope {
+		scopeBool := make(map[string]bool)
+		for k, v := range scope {
+			if boolVal, ok := v.(bool); ok {
+				scopeBool[k] = boolVal
+			}
+		}
+		result[i] = scopeBool
+	}
+	return result
 }
 
 // GetDefaultFunc returns the default function instance (EvalContext interface)
@@ -329,8 +338,16 @@ func copyFromOriginal(original map[string]any, destination any) {
 		if pluginManager, ok := original["pluginManager"]; ok {
 			d.PluginManager = pluginManager
 		}
-		if importantScope, ok := original["importantScope"].([]string); ok {
+		if importantScope, ok := original["importantScope"].([]map[string]any); ok {
 			d.ImportantScope = importantScope
+		} else if importantScope, ok := original["importantScope"].([]any); ok {
+			// Handle case where it comes as []any and needs conversion
+			d.ImportantScope = make([]map[string]any, len(importantScope))
+			for i, scope := range importantScope {
+				if scopeMap, ok := scope.(map[string]any); ok {
+					d.ImportantScope[i] = scopeMap
+				}
+			}
 		}
 		if rewriteUrls, ok := original["rewriteUrls"].(RewriteUrlsType); ok {
 			d.RewriteUrls = rewriteUrls

@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"math"
 	"strings"
 )
 
@@ -120,10 +121,50 @@ func toBool(v any) bool {
 	if v == nil {
 		return false
 	}
-	if b, ok := v.(bool); ok {
-		return b
+	
+	switch val := v.(type) {
+	case bool:
+		return val
+	case int:
+		return val != 0
+	case int8:
+		return val != 0
+	case int16:
+		return val != 0
+	case int32:
+		return val != 0
+	case int64:
+		return val != 0
+	case uint:
+		return val != 0
+	case uint8:
+		return val != 0
+	case uint16:
+		return val != 0
+	case uint32:
+		return val != 0
+	case uint64:
+		return val != 0
+	case float32:
+		return val != 0.0 && !math.IsNaN(float64(val))
+	case float64:
+		return val != 0.0 && !math.IsNaN(val)
+	case string:
+		return val != ""
+	case []any:
+		return len(val) > 0
+	case map[string]any:
+		return len(val) > 0
+	default:
+		// Check if it's a dimension with zero value
+		if dim, ok := v.(interface{ GetValue() float64 }); ok {
+			return dim.GetValue() != 0.0
+		}
+		// Check if it's a Node-like object that could be evaluated
+		if hasVal, ok := v.(interface{ Value() any }); ok {
+			return toBool(hasVal.Value())
+		}
+		// For other types (like Node objects), they are truthy unless explicitly falsy
+		return true
 	}
-	// In JavaScript, most non-null values are truthy
-	// We'll keep it simple for now
-	return true
 } 

@@ -60,33 +60,25 @@ func (v *Variable) Eval(context any) (any, error) {
 			return nil, err
 		}
 		
-		// Convert innerResult to string and prepend "@"
-		// Handle different types of results to extract the actual value
+		// Extract the value string from the result
 		var valueStr string
-		if innerResultMap, ok := innerResult.(map[string]any); ok {
-			if value, exists := innerResultMap["value"]; exists {
+		switch res := innerResult.(type) {
+		case map[string]any:
+			if value, exists := res["value"]; exists {
 				valueStr = fmt.Sprintf("%v", value)
 			}
-		} else if quoted, ok := innerResult.(*Quoted); ok {
-			// Handle Quoted objects directly
-			valueStr = quoted.value
-		} else if anon, ok := innerResult.(*Anonymous); ok {
-			// Handle Anonymous objects - the Value might itself be a complex object
-			if quoted, ok := anon.Value.(*Quoted); ok {
+		case *Quoted:
+			valueStr = res.value
+		case *Anonymous:
+			// Handle Anonymous objects - extract the underlying value
+			if quoted, ok := res.Value.(*Quoted); ok {
 				valueStr = quoted.value
-			} else if cssObj, ok := anon.Value.(interface{ ToCSS(any) string }); ok {
-				valueStr = cssObj.ToCSS(nil)
 			} else {
-				valueStr = fmt.Sprintf("%v", anon.Value)
+				valueStr = fmt.Sprintf("%v", res.Value)
 			}
-		} else if valueObj, ok := innerResult.(interface{ GetValue() any }); ok {
-			// Handle objects with GetValue method
-			valueStr = fmt.Sprintf("%v", valueObj.GetValue())
-		} else if cssObj, ok := innerResult.(interface{ ToCSS(any) string }); ok {
-			// Handle objects with ToCSS method
-			valueStr = cssObj.ToCSS(nil)
-		} else {
-			// Fallback: use string representation
+		case interface{ GetValue() any }:
+			valueStr = fmt.Sprintf("%v", res.GetValue())
+		default:
 			valueStr = fmt.Sprintf("%v", innerResult)
 		}
 		
@@ -96,8 +88,18 @@ func (v *Variable) Eval(context any) (any, error) {
 	}
 
 	if v.evaluating {
-		return nil, fmt.Errorf("name: recursive variable definition for %s (index: %d, filename: %s)", 
-			name, v.GetIndex(), v.FileInfo()["filename"])
+		filename := ""
+		if v._fileInfo != nil {
+			if fn, ok := v._fileInfo["filename"].(string); ok {
+				filename = fn
+			}
+		}
+		return nil, &LessError{
+			Type:     "Name",
+			Message:  fmt.Sprintf("Recursive variable definition for %s", name),
+			Filename: filename,
+			Index:    v.GetIndex(),
+		}
 	}
 
 	v.evaluating = true
@@ -208,8 +210,18 @@ func (v *Variable) Eval(context any) (any, error) {
 		return nil, fmt.Errorf("context is neither map[string]any nor interface context")
 	}
 
-	return nil, fmt.Errorf("name: variable %s is undefined (index: %d, filename: %s)", 
-		name, v.GetIndex(), v.FileInfo()["filename"])
+	filename := ""
+	if v._fileInfo != nil {
+		if fn, ok := v._fileInfo["filename"].(string); ok {
+			filename = fn
+		}
+	}
+	return nil, &LessError{
+		Type:     "Name",
+		Message:  fmt.Sprintf("variable %s is undefined", name),
+		Filename: filename,
+		Index:    v.GetIndex(),
+	}
 }
 
 // ToCSS converts the variable to CSS by evaluating it first

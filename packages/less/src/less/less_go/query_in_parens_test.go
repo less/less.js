@@ -189,7 +189,10 @@ func TestQueryInParens(t *testing.T) {
 			r := NewAnonymous("right", 0, nil, false, false, nil)
 			query = NewQueryInParens("and", l, m, "or", r, 0)
 
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 
 			if result != query {
 				t.Error("Expected result to be the same instance")
@@ -229,7 +232,10 @@ func TestQueryInParens(t *testing.T) {
 				"rules": []any{varDecl},
 			}}
 
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 
 			if result != query {
 				t.Error("Expected result to be the same instance")
@@ -264,8 +270,14 @@ func TestQueryInParens(t *testing.T) {
 				"rules": []any{varDecl},
 			}}
 
-			result := query.Eval(context)
-			result2 := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
+			result2, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Second eval failed: %v", err)
+			}
 
 			if result.(*QueryInParens).mvalueCopy == nil {
 				t.Error("Expected mvalueCopy to be defined")
@@ -282,7 +294,10 @@ func TestQueryInParens(t *testing.T) {
 			query = NewQueryInParens("and", l, m, "", nil, 0)
 
 			context["frames"] = []any{}
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 
 			if result != query {
 				t.Error("Expected result to be the same instance")
@@ -331,7 +346,10 @@ func TestQueryInParens(t *testing.T) {
 				},
 			}
 
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 			if len(result.(*QueryInParens).mvalues) != 1 {
 				t.Error("Expected mvalues to have length 1")
 			}
@@ -347,7 +365,10 @@ func TestQueryInParens(t *testing.T) {
 				"type":  "OtherType",
 				"rules": []any{},
 			}}
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 
 			if result != query {
 				t.Error("Expected result to be the same instance")
@@ -396,7 +417,10 @@ func TestQueryInParens(t *testing.T) {
 				},
 			}
 
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 			if len(result.(*QueryInParens).mvalues) != 1 {
 				t.Error("Expected mvalues to have length 1")
 			}
@@ -409,7 +433,10 @@ func TestQueryInParens(t *testing.T) {
 			query = NewQueryInParens("and", l, m, "", nil, 0)
 			query.mvalueCopy = nil
 
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 			if result.(*QueryInParens).mvalueCopy == nil {
 				t.Error("Expected mvalueCopy to be defined")
 			}
@@ -421,7 +448,10 @@ func TestQueryInParens(t *testing.T) {
 			m := NewAnonymous("middle", 0, nil, false, false, nil)
 			query = NewQueryInParens("and", l, m, "or", nil, 0)
 
-			result := query.Eval(context)
+			result, err := query.Eval(context)
+			if err != nil {
+				t.Fatalf("Eval failed: %v", err)
+			}
 			if result.(*QueryInParens).op2 != "or" {
 				t.Errorf("Expected op2 to be 'or', got '%s'", result.(*QueryInParens).op2)
 			}

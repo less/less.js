@@ -23,6 +23,7 @@ func (m *MockStyleEvalContext) IsMathOn() bool { return false }
 func (m *MockStyleEvalContext) SetMathOn(bool) {}
 func (m *MockStyleEvalContext) IsInCalc() bool { return false }
 func (m *MockStyleEvalContext) GetImportantScope() []map[string]bool { return nil }
+func (m *MockStyleEvalContext) GetDefaultFunc() *DefaultFunc { return nil }
 
 func TestStyle(t *testing.T) {
 	t.Run("should return error with no arguments", func(t *testing.T) {

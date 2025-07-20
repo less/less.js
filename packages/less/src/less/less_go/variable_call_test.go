@@ -63,6 +63,10 @@ func (m *mockVariableCallContext) ExitCalc() {
 	m.inCalc = false
 }
 
+func (m *mockVariableCallContext) GetDefaultFunc() *DefaultFunc {
+	return nil
+}
+
 // Mock detached ruleset for testing successful cases
 type mockDetachedRuleset struct {
 	ruleset   any

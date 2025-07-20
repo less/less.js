@@ -90,18 +90,22 @@ func performParse(lessContext *LessContext, input string, options map[string]any
 	var actualOptions map[string]any
 	var actualCallback ParseCallbackFunc
 
-	// Handle JavaScript-style overloading: if options is a function, treat it as callback
+	// Handle JavaScript-style overloading: parse.js lines 10-16
+	// In JavaScript: if (typeof options === 'function') { callback = options; options = ... }
+	// In Go, we can't dynamically check if options is a function, so we assume correct typing
+	
 	if callback == nil {
-		// Check if we should treat this as a promise (no callback provided)
+		// No callback provided - return promise (parse.js lines 18-28)
 		if lessContext.Options != nil {
 			actualOptions = CopyOptions(lessContext.Options, options)
 		} else {
 			actualOptions = CopyOptions(map[string]any{}, options)
 		}
 		
-		// Return promise
+		// Return promise equivalent
 		return createPromise(lessContext, input, actualOptions, environment, parseTree, importManagerFactory)
 	} else {
+		// Callback provided - synchronous execution (parse.js line 29+)
 		actualCallback = callback
 		if lessContext.Options != nil {
 			actualOptions = CopyOptions(lessContext.Options, options)
@@ -196,7 +200,7 @@ func performParse(lessContext *LessContext, input string, options map[string]any
 							}
 						}
 					} else {
-						// Direct plugin object (parse.js lines 73-75)
+						// Direct plugin object (parse.js line 74: pluginManager.addPlugin(plugin))
 						pluginManager.AddPlugin(plugin, "", nil)
 					}
 				}

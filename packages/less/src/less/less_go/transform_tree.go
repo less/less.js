@@ -26,6 +26,9 @@ func TransformTree(root any, options map[string]any) any {
 	evalEnv["importantScope"] = []map[string]bool{}
 	evalEnv["mathOn"] = true
 	
+	// Initialize defaultFunc for mixin guards
+	evalEnv["defaultFunc"] = NewDefaultFunc()
+	
 	// Add function registry support - check if functions are provided in options
 	var functionRegistry *Registry
 	if functionsObj, ok := options["functions"]; ok {

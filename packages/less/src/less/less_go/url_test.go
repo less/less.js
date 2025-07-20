@@ -40,20 +40,20 @@ func TestURL(t *testing.T) {
 			}
 			url := NewURL(value, index, fileInfo, false)
 
-			if urlValue, ok := url.value.(map[string]any); ok {
+			if urlValue, ok := url.Value.(map[string]any); ok {
 				if urlValue["type"] != value["type"] || urlValue["value"] != value["value"] {
-					t.Errorf("Expected value to be %v, got %v", value, url.value)
+					t.Errorf("Expected value to be %v, got %v", value, url.Value)
 				}
 			} else {
-				t.Errorf("Expected value to be a map, got %T", url.value)
+				t.Errorf("Expected value to be a map, got %T", url.Value)
 			}
 			if url._index != index {
 				t.Errorf("Expected _index to be %d, got %d", index, url._index)
 			}
-			if url.fileInfo["filename"] != fileInfo["filename"] {
-				t.Errorf("Expected fileInfo to be %v, got %v", fileInfo, url.fileInfo)
+			if url._fileInfo["filename"] != fileInfo["filename"] {
+				t.Errorf("Expected fileInfo to be %v, got %v", fileInfo, url._fileInfo)
 			}
-			if url.isEvald {
+			if url.IsEvald {
 				t.Error("Expected isEvald to be false")
 			}
 		})
@@ -64,18 +64,18 @@ func TestURL(t *testing.T) {
 				"value": "",
 			}
 			url := NewURL(value, 0, map[string]any{}, false)
-			if urlValue, ok := url.value.(map[string]any); ok {
+			if urlValue, ok := url.Value.(map[string]any); ok {
 				if urlValue["type"] != value["type"] || urlValue["value"] != value["value"] {
-					t.Errorf("Expected value to be %v, got %v", value, url.value)
+					t.Errorf("Expected value to be %v, got %v", value, url.Value)
 				}
 			} else {
-				t.Errorf("Expected value to be a map, got %T", url.value)
+				t.Errorf("Expected value to be a map, got %T", url.Value)
 			}
 		})
 
 		t.Run("should handle null/undefined values", func(t *testing.T) {
 			url1 := NewURL(nil, 0, map[string]any{}, false)
-			if url1.value != nil {
+			if url1.Value != nil {
 				t.Error("Expected value to be nil")
 			}
 		})
@@ -192,8 +192,8 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{"rootpath": "/assets/"}, false)
 			result := url.Eval(context)
 
-			if result.value.(map[string]any)["value"] != "/assets/test.png" {
-				t.Errorf("Expected value to be '/assets/test.png', got '%v'", result.value.(map[string]any)["value"])
+			if result.Value.(map[string]any)["value"] != "/assets/test.png" {
+				t.Errorf("Expected value to be '/assets/test.png', got '%v'", result.Value.(map[string]any)["value"])
 			}
 		})
 
@@ -227,8 +227,8 @@ func TestURL(t *testing.T) {
 				url := NewURL(value, 0, map[string]any{"rootpath": tc.rootpath}, false)
 				result := url.Eval(context)
 
-				if result.value.(map[string]any)["value"] != tc.expected {
-					t.Errorf("Expected value to be '%s', got '%v'", tc.expected, result.value.(map[string]any)["value"])
+				if result.Value.(map[string]any)["value"] != tc.expected {
+					t.Errorf("Expected value to be '%s', got '%v'", tc.expected, result.Value.(map[string]any)["value"])
 				}
 			}
 		})
@@ -251,8 +251,8 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if result.value.(map[string]any)["value"] != "test.png?v=1.0.0" {
-				t.Errorf("Expected value to be 'test.png?v=1.0.0', got '%v'", result.value.(map[string]any)["value"])
+			if result.Value.(map[string]any)["value"] != "test.png?v=1.0.0" {
+				t.Errorf("Expected value to be 'test.png?v=1.0.0', got '%v'", result.Value.(map[string]any)["value"])
 			}
 		})
 
@@ -274,8 +274,8 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if result.value.(map[string]any)["value"] != "test.png?param=1&v=1.0.0" {
-				t.Errorf("Expected value to be 'test.png?param=1&v=1.0.0', got '%v'", result.value.(map[string]any)["value"])
+			if result.Value.(map[string]any)["value"] != "test.png?param=1&v=1.0.0" {
+				t.Errorf("Expected value to be 'test.png?param=1&v=1.0.0', got '%v'", result.Value.(map[string]any)["value"])
 			}
 		})
 
@@ -297,8 +297,8 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if result.value.(map[string]any)["value"] != "test.png?v=1.0.0#section" {
-				t.Errorf("Expected value to be 'test.png?v=1.0.0#section', got '%v'", result.value.(map[string]any)["value"])
+			if result.Value.(map[string]any)["value"] != "test.png?v=1.0.0#section" {
+				t.Errorf("Expected value to be 'test.png?v=1.0.0#section', got '%v'", result.Value.(map[string]any)["value"])
 			}
 		})
 
@@ -320,8 +320,8 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if result.value.(map[string]any)["value"] != "data:image/png;base64,test" {
-				t.Errorf("Expected value to be 'data:image/png;base64,test', got '%v'", result.value.(map[string]any)["value"])
+			if result.Value.(map[string]any)["value"] != "data:image/png;base64,test" {
+				t.Errorf("Expected value to be 'data:image/png;base64,test', got '%v'", result.Value.(map[string]any)["value"])
 			}
 		})
 
@@ -343,7 +343,7 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if !result.isEvald {
+			if !result.IsEvald {
 				t.Error("Expected isEval to be true after evaluation")
 			}
 		})
@@ -359,8 +359,8 @@ func TestURL(t *testing.T) {
 			url := NewURL(testObj, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if _, ok := result.value.(*TestObject); !ok {
-				t.Errorf("Expected value to be a *TestObject, got %T", result.value)
+			if _, ok := result.Value.(*TestObject); !ok {
+				t.Errorf("Expected value to be a *TestObject, got %T", result.Value)
 			}
 		})
 
@@ -369,10 +369,10 @@ func TestURL(t *testing.T) {
 			url := NewURL(nil, 0, map[string]any{}, false)
 			result := url.Eval(context)
 
-			if result.value != nil {
-				t.Errorf("Expected value to be nil, got %v", result.value)
+			if result.Value != nil {
+				t.Errorf("Expected value to be nil, got %v", result.Value)
 			}
-			if !result.isEvald {
+			if !result.IsEvald {
 				t.Error("Expected isEvald to be true")
 			}
 		})
@@ -397,9 +397,9 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			url.Accept(visitor)
 
-			result, ok := url.value.(map[string]any)
+			result, ok := url.Value.(map[string]any)
 			if !ok {
-				t.Errorf("Expected value to be a map, got %T", url.value)
+				t.Errorf("Expected value to be a map, got %T", url.Value)
 				return
 			}
 			visited, ok := result["visited"].(bool)
@@ -422,7 +422,7 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			url.Accept(visitor)
 
-			if url.value != nil {
+			if url.Value != nil {
 				t.Error("Expected value to be nil")
 			}
 		})
@@ -444,7 +444,7 @@ func TestURL(t *testing.T) {
 			url := NewURL(value, 0, map[string]any{}, false)
 			url.Accept(visitor)
 
-			result := url.value.(map[string]any)
+			result := url.Value.(map[string]any)
 			if result["type"] != "Modified" {
 				t.Errorf("Expected type to be 'Modified', got '%v'", result["type"])
 			}

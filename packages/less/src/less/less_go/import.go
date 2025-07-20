@@ -150,10 +150,10 @@ func (i *Import) pathFileInfoReference() any {
 // GetPath returns the path value
 func (i *Import) GetPath() any {
 	if urlPath, ok := i.path.(*URL); ok {
-		if urlValue, ok := urlPath.value.(map[string]any); ok {
+		if urlValue, ok := urlPath.Value.(map[string]any); ok {
 			return urlValue["value"]
 		}
-		return urlPath.value
+		return urlPath.Value
 	}
 	if pathMap, ok := i.path.(map[string]any); ok {
 		return pathMap["value"]
@@ -168,7 +168,7 @@ func (i *Import) GetPath() any {
 func (i *Import) IsVariableImport() bool {
 	path := i.path
 	if urlPath, ok := path.(*URL); ok {
-		path = urlPath.value
+		path = urlPath.Value
 	}
 	if quotedPath, ok := path.(*Quoted); ok {
 		return quotedPath.ContainsVariables()
@@ -180,7 +180,7 @@ func (i *Import) IsVariableImport() bool {
 func (i *Import) EvalForImport(context any) *Import {
 	path := i.path
 	if urlPath, ok := path.(*URL); ok {
-		path = urlPath.value
+		path = urlPath.Value
 	}
 
 	var evaluatedPath any

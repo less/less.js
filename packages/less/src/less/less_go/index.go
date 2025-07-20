@@ -533,6 +533,9 @@ func createFunctions(env any) any {
 	// Add type functions
 	registry.AddMultiple(GetWrappedTypesFunctions())
 	
+	// Add the default() function for mixin guards
+	registry.Add("default", &DefaultFunctionDefinition{})
+	
 	return &DefaultFunctions{registry: registry}
 }
 

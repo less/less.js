@@ -69,6 +69,10 @@ func (m *jsTestContext) ExitCalc() {
 	m.inCalc = false
 }
 
+func (m *jsTestContext) GetDefaultFunc() *DefaultFunc {
+	return nil
+}
+
 // jsTestEvalValue implements the Eval method returning both a value and error
 type jsTestEvalValue struct {
 	value any

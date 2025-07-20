@@ -8,10 +8,10 @@ import (
 // URL represents a URL node in the Less AST
 type URL struct {
 	*Node
-	value   any
-	_index  int
-	fileInfo map[string]any
-	isEvald bool
+	Value    any            // Exported for external access
+	_index   int
+	_fileInfo map[string]any // Use _fileInfo to match JavaScript naming
+	IsEvald  bool           // Exported for external access
 }
 
 // Type returns the node type to match JavaScript's lowercase 'Url'
@@ -27,11 +27,11 @@ func (u *URL) GetType() string {
 // NewURL creates a new URL instance
 func NewURL(val any, index int, currentFileInfo map[string]any, isEvald bool) *URL {
 	url := &URL{
-		Node:     NewNode(),
-		value:    val,
-		_index:   index,
-		fileInfo: currentFileInfo,
-		isEvald:  isEvald,
+		Node:      NewNode(),
+		Value:     val,
+		_index:    index,
+		_fileInfo: currentFileInfo,
+		IsEvald:   isEvald,
 	}
 	
 	// Set the index and file info in the embedded Node
@@ -41,6 +41,18 @@ func NewURL(val any, index int, currentFileInfo map[string]any, isEvald bool) *U
 	}
 	
 	return url
+}
+
+// fileInfo returns the file info for this node, traversing up the parent chain if needed
+func (u *URL) fileInfo() map[string]any {
+	if u._fileInfo != nil {
+		return u._fileInfo
+	}
+	if u.Node != nil && u.Node.Parent != nil {
+		// Parent is already a *Node, so we can call FileInfo directly
+		return u.Node.Parent.FileInfo()
+	}
+	return make(map[string]any)
 }
 
 // escapePath escapes special characters in a path
@@ -53,22 +65,22 @@ func escapePath(path string) string {
 
 // Accept visits the URL with a visitor
 func (u *URL) Accept(visitor any) {
-	if v, ok := visitor.(interface{ Visit(any) any }); ok && u.value != nil {
-		u.value = v.Visit(u.value)
+	if v, ok := visitor.(interface{ Visit(any) any }); ok && u.Value != nil {
+		u.Value = v.Visit(u.Value)
 	}
 }
 
 // GenCSS generates CSS representation
 func (u *URL) GenCSS(context any, output *CSSOutput) {
 	output.Add("url(", nil, nil)
-	if u.value != nil {
+	if u.Value != nil {
 		// In JS, only the genCSS method is used if available
 		// The value should have a genCSS method, matching the JS behavior
-		if v, ok := u.value.(map[string]any); ok {
+		if v, ok := u.Value.(map[string]any); ok {
 			if genCSS, ok := v["genCSS"].(func(any, *CSSOutput)); ok {
 				genCSS(context, output)
 			}
-		} else if hasGenCSS, ok := u.value.(interface{ GenCSS(any, *CSSOutput) }); ok {
+		} else if hasGenCSS, ok := u.Value.(interface{ GenCSS(any, *CSSOutput) }); ok {
 			// This is a Go-specific enhancement for typed objects that implement GenCSS
 			hasGenCSS.GenCSS(context, output)
 		}
@@ -80,22 +92,21 @@ func (u *URL) GenCSS(context any, output *CSSOutput) {
 func (u *URL) Eval(context any) *URL {
 	// Match JavaScript: const val = this.value.eval(context);
 	var val any
-	if u.value != nil {
-		if hasEval, ok := u.value.(interface{ Eval(any) any }); ok {
+	if u.Value != nil {
+		if hasEval, ok := u.Value.(interface{ Eval(any) any }); ok {
 			val = hasEval.Eval(context)
 		} else {
-			val = u.value
+			val = u.Value
 		}
 	}
 	
 	// Get rootpath from fileInfo
 	var rootpath string
-	if !u.isEvald {
+	if !u.IsEvald {
 		// Match JavaScript: rootpath = this.fileInfo() && this.fileInfo().rootpath;
-		if u.fileInfo != nil {
-			if rp, ok := u.fileInfo["rootpath"].(string); ok {
-				rootpath = rp
-			}
+		fileInfo := u.fileInfo()
+		if rp, ok := fileInfo["rootpath"].(string); ok {
+			rootpath = rp
 		}
 		
 		// Match JavaScript URL rewriting logic
@@ -149,5 +160,5 @@ func (u *URL) Eval(context any) *URL {
 	}
 	
 	// Match JavaScript: return new URL(val, this.getIndex(), this.fileInfo(), true);
-	return NewURL(val, u.GetIndex(), u.FileInfo(), true)
+	return NewURL(val, u.GetIndex(), u.fileInfo(), true)
 } 

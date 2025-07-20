@@ -113,49 +113,14 @@ func (v *Value) GenCSS(context any, output *CSSOutput) {
 		return
 	}
 
-
 	for i, val := range v.Value {
+		// Match JavaScript: directly call genCSS on each value
 		if cssValue, ok := val.(CSSGenerator); ok {
 			cssValue.GenCSS(context, output)
-		} else if str, ok := val.(string); ok {
-			output.Add(str, nil, nil)
 		} else {
-			// Convert Go objects to appropriate CSS strings
-			switch v := val.(type) {
-			case *Keyword:
-				if keywordGen, ok := val.(CSSGenerator); ok {
-					keywordGen.GenCSS(context, output)
-				} else {
-					output.Add(v.value, nil, nil)
-				}
-			case *Anonymous:
-				if anonGen, ok := val.(CSSGenerator); ok {
-					anonGen.GenCSS(context, output)
-				} else {
-					output.Add(fmt.Sprintf("%v", v.Value), nil, nil)
-				}
-			case *Dimension:
-				if dimGen, ok := val.(CSSGenerator); ok {
-					dimGen.GenCSS(context, output)
-				} else {
-					output.Add(fmt.Sprintf("%v", val), nil, nil)
-				}
-			case *Color:
-				if colorGen, ok := val.(CSSGenerator); ok {
-					colorGen.GenCSS(context, output)
-				} else {
-					output.Add(fmt.Sprintf("%v", val), nil, nil)
-				}
-			case *Variable:
-				// Variables should be evaluated before GenCSS. If we get here,
-				// the variable was undefined during evaluation. In JavaScript,
-				// this would throw an error, but to match test expectations,
-				// we output nothing.
-				continue
-			default:
-				// For other types, convert to string representation
-				output.Add(fmt.Sprintf("%v", val), nil, nil)
-			}
+			// For non-CSSGenerator types, output string representation
+			// This is a safety fallback that JavaScript doesn't have
+			output.Add(fmt.Sprintf("%v", val), nil, nil)
 		}
 
 		if i+1 < len(v.Value) {

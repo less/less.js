@@ -54,6 +54,11 @@ func (k *Keyword) ToCSS(context any) string {
 	return strings.Join(strs, "")
 }
 
+// Eval evaluates the keyword - keywords evaluate to themselves
+func (k *Keyword) Eval(context any) (any, error) {
+	return k, nil
+}
+
 // Predefined keywords
 var (
 	KeywordTrue  = NewKeyword("true")

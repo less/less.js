@@ -84,6 +84,13 @@ func (w *contextWrapper) GetImportantScope() []map[string]bool {
 	return nil
 }
 
+func (w *contextWrapper) GetDefaultFunc() *DefaultFunc {
+	if defaultCtx, ok := w.ctx.(interface{ GetDefaultFunc() *DefaultFunc }); ok {
+		return defaultCtx.GetDefaultFunc()
+	}
+	return nil
+}
+
 // EvaluateJavaScript evaluates JavaScript expressions.
 // Since JavaScript evaluation is not supported in the Go port,
 // this will always return an error if JavaScript is enabled,

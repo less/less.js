@@ -40,6 +40,10 @@ func (m *mockContext) ExitCalc() {
 	m.inCalc = false
 }
 
+func (m *mockContext) GetDefaultFunc() *DefaultFunc {
+	return nil
+}
+
 type mockFrame struct {
 	vars map[string]map[string]any
 }

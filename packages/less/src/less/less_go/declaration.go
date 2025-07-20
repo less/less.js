@@ -2,7 +2,7 @@ package less_go
 
 import (
 	"fmt"
-
+	"strings"
 )
 
 // Declaration represents a declaration node in the Less AST
@@ -11,13 +11,13 @@ type Declaration struct {
 	name      any
 	Value     *Value
 	important string
-	merge     bool
+	merge     any // Can be bool or string ('+' for comma merge)
 	inline    bool
 	variable  bool
 }
 
 // NewDeclaration creates a new Declaration instance
-func NewDeclaration(name any, value any, important any, merge bool, index int, fileInfo map[string]any, inline bool, variable any) (*Declaration, error) {
+func NewDeclaration(name any, value any, important any, merge any, index int, fileInfo map[string]any, inline bool, variable any) (*Declaration, error) {
 	d := &Declaration{
 		Node:      NewNode(),
 		name:      name,
@@ -122,6 +122,19 @@ func (d *Declaration) GetName() string {
 // GetMerge returns the merge flag
 func (d *Declaration) GetMerge() any {
 	return d.merge
+}
+
+// MergeType returns the type of merge (true for space, "+" for comma)
+func (d *Declaration) MergeType() string {
+	switch m := d.merge.(type) {
+	case string:
+		return m
+	case bool:
+		if m {
+			return "true" // space separated
+		}
+	}
+	return ""
 }
 
 // GetImportant returns whether this declaration is important
@@ -338,4 +351,19 @@ func (d *Declaration) IsVisible() bool {
 func (d *Declaration) MakeImportant() *Declaration {
 	newDecl, _ := NewDeclaration(d.name, d.Value, "!important", d.merge, d.GetIndex(), d.FileInfo(), d.inline, d.variable)
 	return newDecl
+}
+
+// ToCSS generates CSS string representation
+func (d *Declaration) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	d.GenCSS(context, output)
+	return strings.Join(strs, "")
 } 

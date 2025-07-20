@@ -14,6 +14,7 @@ type EvalContext interface {
 	ExitCalc()
 	GetFrames() []ParserFrame
 	GetImportantScope() []map[string]bool
+	GetDefaultFunc() *DefaultFunc
 }
 
 // ParserFunctionCaller represents the interface needed to call functions
@@ -204,6 +205,16 @@ func (m *MapEvalContext) GetImportantScope() []map[string]bool {
 		}
 	}
 	return []map[string]bool{}
+}
+
+// GetDefaultFunc returns the default function instance
+func (m *MapEvalContext) GetDefaultFunc() *DefaultFunc {
+	if defaultFunc, exists := m.ctx["defaultFunc"]; exists {
+		if df, ok := defaultFunc.(*DefaultFunc); ok {
+			return df
+		}
+	}
+	return nil
 }
 
 // RegistryAdapter adapts a single FunctionDefinition to the FunctionRegistry interface

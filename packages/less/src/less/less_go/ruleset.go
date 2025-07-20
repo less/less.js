@@ -40,6 +40,8 @@ type Ruleset struct {
 	ValueParseFunc     ValueParseFunc
 	ParseContext       map[string]any
 	ParseImports       map[string]any
+	// Parse object matching JavaScript structure
+	Parse map[string]any // Contains context and importManager
 	// Debug info
 	DebugInfo any
 	// Multi-media flag for nested media queries
@@ -78,11 +80,21 @@ func NewRuleset(selectors []any, rules []any, strictImports bool, visibilityInfo
 	if len(parseFuncs) > 2 {
 		if parseContext, ok := parseFuncs[2].(map[string]any); ok {
 			r.ParseContext = parseContext
+			// Also set in Parse object for JavaScript compatibility
+			if r.Parse == nil {
+				r.Parse = make(map[string]any)
+			}
+			r.Parse["context"] = parseContext
 		}
 	}
 	if len(parseFuncs) > 3 {
 		if parseImports, ok := parseFuncs[3].(map[string]any); ok {
 			r.ParseImports = parseImports
+			// Also set in Parse object for JavaScript compatibility
+			if r.Parse == nil {
+				r.Parse = make(map[string]any)
+			}
+			r.Parse["importManager"] = parseImports
 		}
 	}
 
@@ -752,6 +764,18 @@ func (r *Ruleset) MatchCondition(args []any, context any) bool {
 					ctx["frames"] = frames
 				}
 				
+				// IMPORTANT: Preserve the defaultFunc in the context
+				// This is needed for the default() function in mixin guards
+				if evalCtx, ok := context.(EvalContext); ok {
+					if df := evalCtx.GetDefaultFunc(); df != nil {
+						ctx["defaultFunc"] = df
+					}
+				} else if c, ok := context.(map[string]any); ok {
+					if df, exists := c["defaultFunc"]; exists {
+						ctx["defaultFunc"] = df
+					}
+				}
+				
 				result, err := eval.Eval(ctx)
 				if err != nil {
 					return false
@@ -1002,25 +1026,58 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 					// Parse using ValueParseFunc (equivalent to JS parseNode call)
 					result, err := r.ValueParseFunc(str, r.ParseContext, r.ParseImports, d.FileInfo(), anon.GetIndex())
 					if err != nil {
-						// If parsing fails, mark as parsed to avoid infinite loops
-						d.Parsed = true
+						// If parsing fails, create a copy and mark as parsed to avoid infinite loops
+						nodeCopy := NewNode()
+						nodeCopy.CopyVisibilityInfo(d.Node.VisibilityInfo())
+						nodeCopy.Parsed = true
+						dCopy := &Declaration{
+							Node:      nodeCopy,
+							name:      d.name,
+							Value:     d.Value,
+							important: d.important,
+							merge:     d.merge,
+							inline:    d.inline,
+							variable:  d.variable,
+						}
+						return dCopy
 					} else if len(result) > 0 {
-						// Update the declaration with parsed values
-						d.Value.Value[0] = result[0] // New value
+						// Create a copy of the declaration to avoid mutating shared instances
+						valueCopy, _ := NewValue([]any{result[0]})
+						nodeCopy := NewNode()
+						nodeCopy.CopyVisibilityInfo(d.Node.VisibilityInfo())
+						nodeCopy.Parsed = true
+						dCopy := &Declaration{
+							Node:      nodeCopy,
+							name:      d.name,
+							Value:     valueCopy,
+							important: d.important,
+							merge:     d.merge,
+							inline:    d.inline,
+							variable:  d.variable,
+						}
 						if len(result) > 1 {
-							// Handle important flag if present (using reflection to access private field)
+							// Handle important flag if present
 							if important, ok := result[1].(string); ok {
-								rv := reflect.ValueOf(d).Elem()
-								if importantField := rv.FieldByName("important"); importantField.IsValid() && importantField.CanSet() {
-									importantField.SetString(important)
-								}
+								dCopy.important = important
 							}
 						}
-						d.Parsed = true
+						return dCopy
 					}
 				} else if str != "" {
-					// Mark as parsed even if no parser function available
-					d.Parsed = true
+					// Create a copy and mark as parsed even if no parser function available
+					nodeCopy := NewNode()
+					nodeCopy.CopyVisibilityInfo(d.Node.VisibilityInfo())
+					nodeCopy.Parsed = true
+					dCopy := &Declaration{
+						Node:      nodeCopy,
+						name:      d.name,
+						Value:     d.Value,
+						important: d.important,
+						merge:     d.merge,
+						inline:    d.inline,
+						variable:  d.variable,
+					}
+					return dCopy
 				}
 			}
 		}
@@ -1089,16 +1146,29 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 	
 	// this.rulesets().forEach(function (rule) { ... }) pattern
 	rulesets := r.Rulesets()
-	// fmt.Printf("DEBUG Find: Rulesets() returned %d rulesets\n", len(rulesets))
 	for _, rule := range rulesets {
 		if rule == self {
 			continue
 		}
 		
-		if rs, ok := rule.(*Ruleset); ok && rs.Selectors != nil {
-			for j := 0; j < len(rs.Selectors); j++ {
+		// Handle both *Ruleset and *MixinDefinition (which embeds *Ruleset)
+		var rulesetSelectors []any
+		switch r := rule.(type) {
+		case *Ruleset:
+			rulesetSelectors = r.Selectors
+		case *MixinDefinition:
+			rulesetSelectors = r.Selectors
+		default:
+			// Check if it has a Selectors field via interface
+			if rs, ok := rule.(interface{ GetSelectors() []any }); ok {
+				rulesetSelectors = rs.GetSelectors()
+			}
+		}
+		
+		if rulesetSelectors != nil {
+			for j := 0; j < len(rulesetSelectors); j++ {
 				if sel, ok := selector.(*Selector); ok {
-					if ruleSelector, ok := rs.Selectors[j].(*Selector); ok {
+					if ruleSelector, ok := rulesetSelectors[j].(*Selector); ok {
 						match = sel.Match(ruleSelector)
 						if match > 0 {
 							if len(sel.Elements) > match {
@@ -1108,7 +1178,10 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 									copy(remainingElements, sel.Elements[match:])
 									newSelector, err := NewSelector(remainingElements, nil, nil, sel.GetIndex(), sel.FileInfo(), nil)
 									if err == nil {
-										foundMixins = rs.Find(newSelector, self, filter)
+										// Use Find method on the rule (works for both Ruleset and MixinDefinition)
+										if finder, ok := rule.(interface{ Find(any, any, func(any) bool) []any }); ok {
+											foundMixins = finder.Find(newSelector, self, filter)
+										}
 										for i := 0; i < len(foundMixins); i++ {
 											if mixin, ok := foundMixins[i].(map[string]any); ok {
 												if path, ok := mixin["path"].([]any); ok {
@@ -1136,7 +1209,7 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 				} else {
 					// Handle any selector with Match method using interface
 					if selectorWithMatch, ok := selector.(interface{ Match(any) int }); ok {
-						match = selectorWithMatch.Match(rs.Selectors[j])
+						match = selectorWithMatch.Match(rulesetSelectors[j])
 						if match > 0 {
 							rules = append(rules, map[string]any{
 								"rule": rule,

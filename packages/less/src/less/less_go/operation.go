@@ -61,15 +61,35 @@ func (o *Operation) Eval(context any) (any, error) {
 	// Match JavaScript: let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
 	var a, b any
 	
+	// Check for nil operands
+	if len(o.Operands) < 2 || o.Operands[0] == nil || o.Operands[1] == nil {
+		return nil, &LessError{
+			Type:    "Operation",
+			Message: "Operation requires two operands",
+		}
+	}
+	
 	// Evaluate operand A
-	if aNode, ok := o.Operands[0].(interface{ Eval(any) any }); ok {
+	if aNode, ok := o.Operands[0].(interface{ Eval(any) (any, error) }); ok {
+		var err error
+		a, err = aNode.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+	} else if aNode, ok := o.Operands[0].(interface{ Eval(any) any }); ok {
 		a = aNode.Eval(context)
 	} else {
 		a = o.Operands[0]
 	}
 	
 	// Evaluate operand B  
-	if bNode, ok := o.Operands[1].(interface{ Eval(any) any }); ok {
+	if bNode, ok := o.Operands[1].(interface{ Eval(any) (any, error) }); ok {
+		var err error
+		b, err = bNode.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+	} else if bNode, ok := o.Operands[1].(interface{ Eval(any) any }); ok {
 		b = bNode.Eval(context)
 	} else {
 		b = o.Operands[1]
@@ -103,6 +123,13 @@ func (o *Operation) Eval(context any) (any, error) {
 			// Handle Dimension operations
 			if aDim, aOk := a.(*Dimension); aOk {
 				if bDim, bOk := b.(*Dimension); bOk {
+					// Check for division by zero
+					if (op == "/" || op == "./") && bDim.Value == 0 {
+						return nil, &LessError{
+							Type:    "Operation",
+							Message: "Division by zero",
+						}
+					}
 					// Match JavaScript: return a.operate(context, op, b);
 					return aDim.Operate(context, op, bDim), nil
 				}
@@ -136,10 +163,10 @@ func (o *Operation) Eval(context any) (any, error) {
 			}
 			
 			// Match JavaScript: throw { type: 'Operation', message: 'Operation on an invalid type' };
-			panic(map[string]string{
-				"type":    "Operation",
-				"message": "Operation on an invalid type",
-			})
+			return nil, &LessError{
+				Type:    "Operation",
+				Message: "Operation on an invalid type",
+			}
 		}
 	}
 	

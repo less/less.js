@@ -112,20 +112,39 @@ func (u *Unit) Is(unitString string) bool {
 
 // IsLength checks if the unit is a valid length unit
 func (u *Unit) IsLength() bool {
+	// Match JavaScript: RegExp('^(px|em|ex|ch|rem|in|cm|mm|pc|pt|ex|vw|vh|vmin|vmax)$', 'gi').test(this.toCSS())
+	// Note: JavaScript has 'ex' twice in the regex
+	css := u.ToCSS(nil)
 	lengthUnits := []string{
 		"px", "em", "ex", "ch", "rem", "in", "cm", "mm", "pc", "pt",
 		"vw", "vh", "vmin", "vmax",
 	}
-
-	// Check if any numerator unit is a length unit
-	for _, unit := range u.Numerator {
-		for _, lengthUnit := range lengthUnits {
-			if strings.EqualFold(unit, lengthUnit) {
-				return true
-			}
+	
+	for _, lengthUnit := range lengthUnits {
+		if strings.EqualFold(css, lengthUnit) {
+			return true
 		}
 	}
 	return false
+}
+
+// ToCSS generates the CSS representation of the unit
+func (u *Unit) ToCSS(context any) string {
+	// Use GenCSS to generate the CSS output
+	var chunks []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			if chunk != nil {
+				chunks = append(chunks, chunk.(string))
+			}
+		},
+		IsEmpty: func() bool {
+			return len(chunks) == 0
+		},
+	}
+	
+	u.GenCSS(context, output)
+	return strings.Join(chunks, "")
 }
 
 // IsEmpty checks if the unit has no numerators or denominators

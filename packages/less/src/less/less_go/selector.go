@@ -65,10 +65,11 @@ func NewSelector(elementsInput any, extendList []any, condition any, index int, 
 	// GetElements needs s.Index, s.FileInfo, and s.ParseFunc to be set first.
 	parsedElements, err := s.getElements(elementsInput)
 	if err != nil {
-		// If getElements itself throws a LessError, it should be returned as is.
-		// Otherwise, wrap generic errors if needed, or return as is.
-		// The JS version throws LessError from within getElements for parser errors.
-		// Our stub returns a generic error.
+		// Add context to the error if it's not already a LessError
+		if _, ok := err.(*LessError); !ok {
+			err = fmt.Errorf("selector parsing failed at index %d in %s: %w", 
+				s.Index, s.FileInfo()["filename"], err)
+		}
 		return nil, err
 	}
 	s.Elements = parsedElements
@@ -330,7 +331,7 @@ func init() {
 	// Following: `([\w-]|(\\.))*` -> word char or hyphen, OR escaped char, repeated.
 	// Go: `[,\x26#*\.\w\-]([\w\-]|(\\\\.))*` -- assuming `.` is any char after `\\`
 	var err error
-	mixinElementsRegex, err = regexp.Compile(`[,\x26#*\.\w\-]([\w\-]|(\\\S))*`) // \S for non-whitespace after escape
+	mixinElementsRegex, err = regexp.Compile(`[,\x26#*\.\w\-]([\w\-]|(\\\\.))*`) // \\\\ matches backslash followed by any character
 	if err != nil {
 		panic(fmt.Sprintf("Failed to compile MixinElements regex: %v", err))
 	}

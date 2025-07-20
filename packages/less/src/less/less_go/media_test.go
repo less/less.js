@@ -223,12 +223,12 @@ func TestMediaEval(t *testing.T) {
 			t.Error("Expected result to be defined")
 		}
 		
-		// Check that mediaBlocks and mediaPath were initialized
-		if _, ok := mockContext["mediaBlocks"]; !ok {
-			t.Error("Expected mediaBlocks to be defined in context")
+		// Check that mediaBlocks and mediaPath were deleted by evalTop (matches JavaScript behavior)
+		if _, ok := mockContext["mediaBlocks"]; ok {
+			t.Error("Expected mediaBlocks to be deleted from context by evalTop")
 		}
-		if _, ok := mockContext["mediaPath"]; !ok {
-			t.Error("Expected mediaPath to be defined in context")
+		if _, ok := mockContext["mediaPath"]; ok {
+			t.Error("Expected mediaPath to be deleted from context by evalTop")
 		}
 	})
 

@@ -24,8 +24,8 @@ func TestDeclaration(t *testing.T) {
 			if decl.important != "" {
 				t.Errorf("expected important to be empty, got %v", decl.important)
 			}
-			if decl.merge {
-				t.Error("expected merge to be false")
+			if decl.merge != nil && decl.merge != false {
+				t.Error("expected merge to be false or nil")
 			}
 			if decl.inline {
 				t.Error("expected inline to be false")
@@ -430,7 +430,7 @@ func TestDeclaration(t *testing.T) {
 			decl, _ := NewDeclaration("color", "red", nil, true, 1, fileInfo, true, nil)
 			important := decl.MakeImportant()
 
-			if !important.merge {
+			if important.merge != true {
 				t.Error("expected merge to be preserved")
 			}
 			if important.GetIndex() != 1 {

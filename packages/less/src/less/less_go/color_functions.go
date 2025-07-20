@@ -195,7 +195,11 @@ func ColorRGB(r, g, b any) any {
 	
 	color := ColorRGBA(r, g, b, a)
 	if c, ok := color.(*Color); ok {
-		c.Value = "rgb"
+		if a == 1.0 {
+			c.Value = "rgb" // rgb() function should preserve rgb format for alpha=1
+		} else {
+			c.Value = "rgba" // rgb() with alpha < 1 should use rgba format
+		}
 	}
 	return color
 }
@@ -272,7 +276,11 @@ func ColorHSL(h, s, l any) any {
 	
 	color := ColorHSLA(h, s, l, a)
 	if c, ok := color.(*Color); ok {
-		c.Value = "hsl"  // Keep HSL format for hsl() function
+		if a == 1.0 {
+			c.Value = "hsl"  // hsl() function should preserve hsl format for alpha=1
+		} else {
+			c.Value = "hsla" // hsl() with alpha < 1 should use hsla format
+		}
 		return c
 	}
 	return color

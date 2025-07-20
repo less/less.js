@@ -27,103 +27,6 @@ type MixinCall struct {
 	AllowRoot  bool
 }
 
-// ParserDefaultFunc represents the default function implementation matching JavaScript behavior
-type ParserDefaultFunc struct {
-	value_ any
-	error_ any
-}
-
-// NewParserDefaultFunc creates a new ParserDefaultFunc instance
-func NewParserDefaultFunc() *ParserDefaultFunc {
-	return &ParserDefaultFunc{
-		value_: nil,
-		error_: nil,
-	}
-}
-
-// Value sets the value
-func (d *ParserDefaultFunc) Value(v any) {
-	d.value_ = v
-}
-
-// Error sets the error
-func (d *ParserDefaultFunc) Error(e any) {
-	d.error_ = e
-}
-
-// Reset resets both value and error to nil
-func (d *ParserDefaultFunc) Reset() {
-	d.value_ = nil
-	d.error_ = nil
-}
-
-// Eval evaluates the default function, matching JavaScript behavior
-func (d *ParserDefaultFunc) Eval() any {
-	v := d.value_
-	e := d.error_
-	
-	if e != nil {
-		// JavaScript throws the error, Go panics or returns error
-		if err, ok := e.(error); ok {
-			panic(err)
-		}
-		panic(e)
-	}
-	
-	// Check if value is null/undefined (nil in Go)
-	if v == nil {
-		return nil
-	}
-	
-	// Return based on truthiness like JavaScript
-	if parserIsTruthy(v) {
-		return KeywordTrue
-	}
-	return KeywordFalse
-}
-
-// parserIsTruthy checks if a value is truthy according to JavaScript rules
-func parserIsTruthy(v any) bool {
-	if v == nil {
-		return false
-	}
-	
-	switch val := v.(type) {
-	case bool:
-		return val
-	case int:
-		return val != 0
-	case int8:
-		return val != 0
-	case int16:
-		return val != 0
-	case int32:
-		return val != 0
-	case int64:
-		return val != 0
-	case uint:
-		return val != 0
-	case uint8:
-		return val != 0
-	case uint16:
-		return val != 0
-	case uint32:
-		return val != 0
-	case uint64:
-		return val != 0
-	case float32:
-		return val != 0 && !isNaN(float64(val))
-	case float64:
-		return val != 0 && !isNaN(val)
-	case string:
-		return val != ""
-	default:
-		// For all other types (objects, arrays, functions, etc.), they are truthy
-		return true
-	}
-}
-
-
 
 // NewMixinCall creates a new MixinCall instance
 func NewMixinCall(elements any, args []any, index int, currentFileInfo map[string]any, important bool) (*MixinCall, error) {
@@ -200,10 +103,27 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	const defFalse = 2
 	var count []int
 	var originalRuleset any
+	
 	var noArgumentsFilter func(any) bool
 
 	// Use the proper default function implementation
-	defaultFunc := NewDefaultFunc()
+	var defaultFunc *DefaultFunc
+	
+	// Try to get defaultFunc from context
+	if evalCtx, ok := context.(EvalContext); ok {
+		defaultFunc = evalCtx.GetDefaultFunc()
+	} else if ctxMap, ok := context.(map[string]any); ok {
+		if df, exists := ctxMap["defaultFunc"]; exists {
+			if dfTyped, ok := df.(*DefaultFunc); ok {
+				defaultFunc = dfTyped
+			}
+		}
+	}
+	
+	// Create a new one if none exists
+	if defaultFunc == nil {
+		defaultFunc = NewDefaultFunc()
+	}
 
 	// Evaluate selector
 	if evaluated, err := mc.Selector.Eval(context); err != nil {
@@ -229,27 +149,59 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 				conditionResult[f] = true
 			}
 			defaultFunc.Value(f)
+			// Debug: Add some logging to see what's happening
+			// fmt.Printf("DEBUG calcDefGroup: f=%d, setting defaultFunc.Value(%d)\n", f, f)
 
 			for p = 0; p < len(mixinPath) && conditionResult[f]; p++ {
 				namespace = mixinPath[p]
 				if ns, ok := namespace.(interface{ MatchCondition(any, any) bool }); ok {
-					conditionResult[f] = conditionResult[f] && ns.MatchCondition(nil, context)
+					// Create context with defaultFunc for condition evaluation
+					condContext := context
+					if ctxMap, ok := context.(map[string]any); ok {
+						// Make a copy and add defaultFunc
+						newCtx := make(map[string]any)
+						for k, v := range ctxMap {
+							newCtx[k] = v
+						}
+						newCtx["defaultFunc"] = defaultFunc
+						condContext = newCtx
+					}
+					conditionResult[f] = conditionResult[f] && ns.MatchCondition(nil, condContext)
+					// fmt.Printf("DEBUG calcDefGroup: namespace condition result for f=%d: %v\n", f, conditionResult[f])
 				}
 			}
 			if mix, ok := mixin.(interface{ MatchCondition([]any, any) bool }); ok {
-				conditionResult[f] = conditionResult[f] && mix.MatchCondition(args, context)
+				// Create context with defaultFunc for condition evaluation
+				condContext := context
+				if ctxMap, ok := context.(map[string]any); ok {
+					// Make a copy and add defaultFunc
+					newCtx := make(map[string]any)
+					for k, v := range ctxMap {
+						newCtx[k] = v
+					}
+					newCtx["defaultFunc"] = defaultFunc
+					condContext = newCtx
+				}
+				// fmt.Printf("DEBUG calcDefGroup: calling mixin.MatchCondition for f=%d\n", f)
+				conditionResult[f] = conditionResult[f] && mix.MatchCondition(args, condContext)
+				// fmt.Printf("DEBUG calcDefGroup: mixin condition result for f=%d: %v\n", f, conditionResult[f])
 			}
 		}
 
+		// fmt.Printf("DEBUG calcDefGroup: final conditionResult[0]=%v, conditionResult[1]=%v\n", conditionResult[0], conditionResult[1])
 		if len(conditionResult) >= 2 && (conditionResult[0] || conditionResult[1]) {
 			if conditionResult[0] != conditionResult[1] {
 				if conditionResult[1] {
+					// fmt.Printf("DEBUG calcDefGroup: returning defTrue=%d\n", defTrue)
 					return defTrue
 				}
+				// fmt.Printf("DEBUG calcDefGroup: returning defFalse=%d\n", defFalse)
 				return defFalse
 			}
+			// fmt.Printf("DEBUG calcDefGroup: returning defNone=%d\n", defNone)
 			return defNone
 		}
+		// fmt.Printf("DEBUG calcDefGroup: returning defFalseEitherCase=%d\n", defFalseEitherCase)
 		return defFalseEitherCase
 	}
 
@@ -297,6 +249,8 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 					if len(foundMixins) > 0 {
 						mixins = foundMixins
 						isOneFound = true
+						// Debug: print number of mixins found
+						// fmt.Printf("DEBUG: Found %d mixins for selector %s\n", len(mixins), mc.Selector.ToCSS(context))
 
 						// Process each found mixin
 						for m = 0; m < len(mixins); m++ {
@@ -352,6 +306,9 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								}
 							}
 						}
+						// Debug: print count values and candidate info
+						// fmt.Printf("DEBUG: mixin=%s, args=%v, count[defNone]=%d, count[defTrue]=%d, count[defFalse]=%d, candidates=%d\n", 
+						//     mc.Selector.ToCSS(context), args, count[defNone], count[defTrue], count[defFalse], len(candidates))
 
 						if count[defNone] > 0 {
 							defaultResult = defFalse

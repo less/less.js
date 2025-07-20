@@ -216,13 +216,7 @@ func TestOperationEval(t *testing.T) {
 		}
 	})
 	
-	t.Run("should throw error for invalid operation types", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("Expected panic for invalid operation types")
-			}
-		}()
-		
+	t.Run("should return error for invalid operation types", func(t *testing.T) {
 		invalid := &struct{ *Node }{NewNode()}
 		context := map[string]any{
 			"isMathOn": func(string) bool { return true },
@@ -232,6 +226,17 @@ func TestOperationEval(t *testing.T) {
 		_, err := op.Eval(context)
 		if err == nil {
 			t.Error("Expected error but got none")
+		}
+		
+		lessErr, ok := err.(*LessError)
+		if !ok {
+			t.Error("Expected LessError type")
+		}
+		if lessErr.Type != "Operation" {
+			t.Errorf("Expected error type 'Operation', got '%s'", lessErr.Type)
+		}
+		if lessErr.Message != "Operation on an invalid type" {
+			t.Errorf("Expected error message 'Operation on an invalid type', got '%s'", lessErr.Message)
 		}
 	})
 	
@@ -252,6 +257,102 @@ func TestOperationEval(t *testing.T) {
 		
 		if result.Value != 2 {
 			t.Errorf("Expected value to be 2, got %v", result.Value)
+		}
+	})
+	
+	t.Run("should return error for division by zero", func(t *testing.T) {
+		dim1, _ := NewDimension(10, "px")
+		dim2, _ := NewDimension(0, "px")
+		
+		context := map[string]any{
+			"isMathOn": func(string) bool { return true },
+		}
+		
+		// Test regular division
+		op := NewOperation("/", []any{dim1, dim2}, false)
+		_, err := op.Eval(context)
+		if err == nil {
+			t.Error("Expected error for division by zero")
+		}
+		
+		lessErr, ok := err.(*LessError)
+		if !ok {
+			t.Error("Expected LessError type")
+		}
+		if lessErr.Type != "Operation" {
+			t.Errorf("Expected error type 'Operation', got '%s'", lessErr.Type)
+		}
+		if lessErr.Message != "Division by zero" {
+			t.Errorf("Expected error message 'Division by zero', got '%s'", lessErr.Message)
+		}
+		
+		// Test special ./ operator
+		op2 := NewOperation("./", []any{dim1, dim2}, false)
+		_, err2 := op2.Eval(context)
+		if err2 == nil {
+			t.Error("Expected error for division by zero with ./ operator")
+		}
+	})
+	
+	t.Run("should return error for null operands", func(t *testing.T) {
+		context := map[string]any{
+			"isMathOn": func(string) bool { return true },
+		}
+		
+		// Test nil first operand
+		op1 := NewOperation("+", []any{nil, 5}, false)
+		_, err1 := op1.Eval(context)
+		if err1 == nil {
+			t.Error("Expected error for nil first operand")
+		}
+		
+		// Test nil second operand
+		op2 := NewOperation("+", []any{5, nil}, false)
+		_, err2 := op2.Eval(context)
+		if err2 == nil {
+			t.Error("Expected error for nil second operand")
+		}
+		
+		// Test both nil
+		op3 := NewOperation("+", []any{nil, nil}, false)
+		_, err3 := op3.Eval(context)
+		if err3 == nil {
+			t.Error("Expected error for both nil operands")
+		}
+		
+		// Test empty operands array
+		op4 := NewOperation("+", []any{}, false)
+		_, err4 := op4.Eval(context)
+		if err4 == nil {
+			t.Error("Expected error for empty operands array")
+		}
+		
+		// Test single operand
+		op5 := NewOperation("+", []any{5}, false)
+		_, err5 := op5.Eval(context)
+		if err5 == nil {
+			t.Error("Expected error for single operand")
+		}
+	})
+	
+	t.Run("should handle mixed operations with division", func(t *testing.T) {
+		dim1, _ := NewDimension(10, "px")
+		dim2, _ := NewDimension(2, "px")
+		dim3, _ := NewDimension(0, "px")
+		
+		context := map[string]any{
+			"isMathOn": func(string) bool { return true },
+		}
+		
+		// Create nested operation: 10px + (2px / 0px)
+		divOp := NewOperation("/", []any{dim2, dim3}, false)
+		addOp := NewOperation("+", []any{dim1, divOp}, false)
+		
+		// The inner division operation should fail when evaluated,
+		// so the outer operation should also fail
+		_, err := addOp.Eval(context)
+		if err == nil {
+			t.Error("Expected error for nested division by zero")
 		}
 	})
 }

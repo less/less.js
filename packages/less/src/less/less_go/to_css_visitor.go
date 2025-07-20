@@ -606,11 +606,12 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 		}
 	}
 	
-	if nodeWithRules, ok := rulesetNode.(interface{ GetRules() []any }); ok {
+	if nodeWithRules, ok := rulesetNode.(interface{ GetRules() []any; SetRules([]any) }); ok {
 		rules := nodeWithRules.GetRules()
 		if rules != nil {
-			v.mergeRules(rules)
-			v.removeDuplicateRules(rules)
+			rules = v.mergeRules(rules)
+			rules = v.removeDuplicateRules(rules)
+			nodeWithRules.SetRules(rules)
 		}
 	}
 	
@@ -679,9 +680,9 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 }
 
 // removeDuplicateRules removes duplicate rules
-func (v *ToCSSVisitor) removeDuplicateRules(rules []any) {
+func (v *ToCSSVisitor) removeDuplicateRules(rules []any) []any {
 	if rules == nil {
-		return
+		return rules
 	}
 	
 	// remove duplicates
@@ -697,7 +698,8 @@ func (v *ToCSSVisitor) removeDuplicateRules(rules []any) {
 				} else {
 					var ruleList []string
 					if existingDecl, ok := existing.(interface{ ToCSS(any) string }); ok {
-						ruleList = []string{existingDecl.ToCSS(v.context)}
+						existingCSS := existingDecl.ToCSS(v.context)
+						ruleList = []string{existingCSS}
 					} else if existingList, ok := existing.([]string); ok {
 						ruleList = existingList
 					}
@@ -722,12 +724,13 @@ func (v *ToCSSVisitor) removeDuplicateRules(rules []any) {
 			}
 		}
 	}
+	return rules
 }
 
 // mergeRules merges rules with merge property
-func (v *ToCSSVisitor) mergeRules(rules []any) {
+func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 	if rules == nil {
-		return
+		return rules
 	}
 	
 	groups := make(map[string][]any)
@@ -736,7 +739,21 @@ func (v *ToCSSVisitor) mergeRules(rules []any) {
 	for i := 0; i < len(rules); i++ {
 		rule := rules[i]
 		if mergeNode, ok := rule.(interface{ GetMerge() any; GetName() string }); ok {
-			if mergeNode.GetMerge() != nil {
+			merge := mergeNode.GetMerge()
+			// Check if merge is truthy (not nil, not false, not empty string)
+			isTruthy := false
+			switch m := merge.(type) {
+			case bool:
+				isTruthy = m
+			case string:
+				isTruthy = m != ""
+			case nil:
+				isTruthy = false
+			default:
+				isTruthy = true // Other non-nil values are considered truthy
+			}
+			
+			if isTruthy {
 				key := mergeNode.GetName()
 				if _, exists := groups[key]; !exists {
 					groups[key] = []any{}
@@ -783,4 +800,5 @@ func (v *ToCSSVisitor) mergeRules(rules []any) {
 			}
 		}
 	}
+	return rules
 }

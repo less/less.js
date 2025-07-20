@@ -56,6 +56,10 @@ func (m *mockEvalContext) GetImportantScope() []map[string]bool {
 	return m.importantScope
 }
 
+func (m *mockEvalContext) GetDefaultFunc() *DefaultFunc {
+	return nil
+}
+
 // Mock ParserFunctionCaller implementation
 type mockParserFunctionCaller struct {
 	valid  bool

@@ -194,12 +194,12 @@ func (n *NestableAtRulePrototype) Permute(arr []any) any {
 		
 		restArray, ok := rest.([]any)
 		if !ok {
-			return nil
+			return []any{} // Return empty array instead of nil
 		}
 
 		firstArray, ok := arr[0].([]any)
 		if !ok {
-			return nil
+			return []any{} // Return empty array instead of nil
 		}
 
 		for i := 0; i < len(restArray); i++ {

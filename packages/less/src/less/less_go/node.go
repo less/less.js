@@ -112,6 +112,11 @@ func (n *Node) GetIndex() int {
 	return 0
 }
 
+// CurrentFileInfo returns the node's file information (getter equivalent)
+func (n *Node) CurrentFileInfo() map[string]any {
+	return n.FileInfo()
+}
+
 // FileInfo returns the node's file information
 func (n *Node) FileInfo() map[string]any {
 	if len(n.fileInfo) > 0 {
@@ -342,9 +347,11 @@ func (n *Node) AddVisibilityBlock() {
 
 // RemoveVisibilityBlock decrements visibility blocks
 func (n *Node) RemoveVisibilityBlock() {
-	if n.VisibilityBlocks != nil && *n.VisibilityBlocks > 0 {
-		*n.VisibilityBlocks--
+	if n.VisibilityBlocks == nil {
+		zero := 0
+		n.VisibilityBlocks = &zero
 	}
+	*n.VisibilityBlocks--
 }
 
 // EnsureVisibility sets node visibility to true

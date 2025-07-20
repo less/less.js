@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"fmt"
-
 )
 
 // MixinDefinition represents a mixin definition node in the Less AST
@@ -479,6 +478,7 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 	return false
 }
 
+
 // MatchArgs checks if the mixin arguments match
 func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
 	allArgsCnt := 0
@@ -523,7 +523,85 @@ func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
 		}
 	}
 
-	// TODO: Implement pattern matching properly
-	// For now, just return true to maintain existing behavior
+	// Check patterns - match JavaScript implementation
+	lenCheck := requiredArgsCnt
+	if lenCheck > md.Arity {
+		lenCheck = md.Arity
+	}
+	
+	for i := 0; i < lenCheck; i++ {
+		if i >= len(md.Params) {
+			continue
+		}
+		
+		param, ok := md.Params[i].(map[string]any)
+		if !ok {
+			continue
+		}
+		
+		// Check if this parameter has a name or is variadic
+		paramName, hasName := param["name"].(string)
+		paramVariadic, isVariadic := param["variadic"].(bool)
+		
+		// If the parameter has no name and is not variadic, it's a pattern that needs matching
+		if (!hasName || paramName == "") && (!isVariadic || !paramVariadic) {
+			// Get the parameter value
+			paramValue := param["value"]
+			if paramValue == nil {
+				continue
+			}
+			
+			// Get the argument at this position
+			if i >= len(args) {
+				return false
+			}
+			
+			argValue := args[i]
+			if argMap, ok := argValue.(map[string]any); ok {
+				if val, hasVal := argMap["value"]; hasVal {
+					argValue = val
+				}
+			}
+			
+			// Evaluate both values and compare their CSS output
+			// First evaluate the parameter value
+			var paramCSS string
+			if evaluator, ok := paramValue.(interface{ Eval(any) (any, error) }); ok {
+				evalResult, err := evaluator.Eval(context)
+				if err != nil {
+					return false
+				}
+				if cssGenerator, ok := evalResult.(interface{ ToCSS(any) string }); ok {
+					paramCSS = cssGenerator.ToCSS(context)
+				} else {
+					paramCSS = fmt.Sprintf("%v", evalResult)
+				}
+			} else {
+				paramCSS = fmt.Sprintf("%v", paramValue)
+			}
+			
+			// Then evaluate the argument value
+			var argCSS string
+			if evaluator, ok := argValue.(interface{ Eval(any) (any, error) }); ok {
+				evalResult, err := evaluator.Eval(context)
+				if err != nil {
+					return false
+				}
+				if cssGenerator, ok := evalResult.(interface{ ToCSS(any) string }); ok {
+					argCSS = cssGenerator.ToCSS(context)
+				} else {
+					argCSS = fmt.Sprintf("%v", evalResult)
+				}
+			} else {
+				argCSS = fmt.Sprintf("%v", argValue)
+			}
+			
+			// Compare the CSS output
+			if paramCSS != argCSS {
+				return false
+			}
+		}
+	}
+	
 	return true
 } 

@@ -359,7 +359,7 @@ func TestImportGetPath(t *testing.T) {
 	})
 
 	t.Run("should return nested value for URL paths", func(t *testing.T) {
-		urlPath := &URL{value: map[string]any{"value": "test.less"}}
+		urlPath := &URL{Value: map[string]any{"value": "test.less"}}
 		importNode := NewImport(urlPath, nil, map[string]any{}, 0, nil, nil)
 
 		result := importNode.GetPath()

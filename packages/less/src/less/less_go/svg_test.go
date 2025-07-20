@@ -24,6 +24,7 @@ func (m *MockSvgEvalContext) IsMathOn() bool                        { return fal
 func (m *MockSvgEvalContext) SetMathOn(bool)                        {}
 func (m *MockSvgEvalContext) IsInCalc() bool                        { return false }
 func (m *MockSvgEvalContext) GetImportantScope() []map[string]bool { return nil }
+func (m *MockSvgEvalContext) GetDefaultFunc() *DefaultFunc         { return nil }
 
 func TestSvgGradient(t *testing.T) {
 	ctx := SvgContext{
@@ -69,10 +70,10 @@ func TestSvgGradient(t *testing.T) {
 			t.Error("Expected non-nil result")
 		}
 
-		if result.value == nil {
-			t.Error("Expected non-nil result.value")
+		if result.Value == nil {
+			t.Error("Expected non-nil result.Value")
 		} else {
-			resultStr := result.value.(*Quoted).value
+			resultStr := result.Value.(*Quoted).value
 			if !strings.Contains(resultStr, "data:image/svg+xml,") {
 				t.Error("Expected data URI prefix")
 			}
@@ -100,7 +101,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "x1%3D%220%25%22%20y1%3D%220%25%22%20x2%3D%22100%25%22%20y2%3D%220%25%22") {
 			t.Error("Expected to right gradient direction")
 		}
@@ -118,7 +119,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "radialGradient") {
 			t.Error("Expected radial gradient")
 		}
@@ -137,7 +138,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "stop-color%3D%22%23ff0000%22") {
 			t.Error("Expected red color")
 		}
@@ -164,7 +165,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "offset%3D%220%25%22") {
 			t.Error("Expected 0% offset")
 		}
@@ -185,7 +186,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "stop-opacity%3D%220.5%22") {
 			t.Error("Expected stop-opacity for partial alpha")
 		}
@@ -203,7 +204,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if strings.Contains(resultStr, "stop-opacity") {
 			t.Error("Should not include stop-opacity for full alpha")
 		}
@@ -224,7 +225,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "stop-color%3D%22%23ff0000%22") {
 			t.Error("Expected red color")
 		}
@@ -283,7 +284,7 @@ func TestSvgGradient(t *testing.T) {
 			t.Errorf("Unexpected error: %v", err)
 		}
 
-		resultStr := result.value.(*Quoted).value
+		resultStr := result.Value.(*Quoted).value
 		if !strings.Contains(resultStr, "stop-opacity%3D%220%22") {
 			t.Error("Expected stop-opacity for zero alpha")
 		}

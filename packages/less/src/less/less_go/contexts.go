@@ -58,6 +58,7 @@ type Eval struct {
 	ParensStack  []bool
 	InCalc       bool
 	MathOn       bool
+	DefaultFunc  *DefaultFunc // For default() function in mixin guards
 }
 
 // NewEval creates a new Eval context with the given options and frames
@@ -155,6 +156,11 @@ func (e *Eval) GetImportantScope() []map[string]bool {
 	// Convert ImportantScope to the expected format
 	// For now, return empty as this is used for !important handling
 	return []map[string]bool{}
+}
+
+// GetDefaultFunc returns the default function instance (EvalContext interface)
+func (e *Eval) GetDefaultFunc() *DefaultFunc {
+	return e.DefaultFunc
 }
 
 // PathRequiresRewrite determines if a path needs to be rewritten

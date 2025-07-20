@@ -46,11 +46,16 @@ func (q *QueryInParens) Accept(visitor any) {
 }
 
 // Eval evaluates the query
-func (q *QueryInParens) Eval(context any) any {
-	var err error
-	q.lvalue, err = q.lvalue.(Evaluator).Eval(context)
-	if err != nil {
-		return q
+func (q *QueryInParens) Eval(context any) (any, error) {
+	// Evaluate lvalue
+	if evaluator, ok := q.lvalue.(interface{ Eval(any) (any, error) }); ok {
+		var err error
+		q.lvalue, err = evaluator.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+	} else if evaluator, ok := q.lvalue.(interface{ Eval(any) any }); ok {
+		q.lvalue = evaluator.Eval(context)
 	}
 
 	var variableDeclaration any
@@ -84,25 +89,40 @@ func (q *QueryInParens) Eval(context any) any {
 
 	if variableDeclaration != nil {
 		q.mvalue = q.mvalueCopy
-		q.mvalue, err = q.mvalue.(Evaluator).Eval(context)
-		if err != nil {
-			return q
+		if evaluator, ok := q.mvalue.(interface{ Eval(any) (any, error) }); ok {
+			var err error
+			q.mvalue, err = evaluator.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+		} else if evaluator, ok := q.mvalue.(interface{ Eval(any) any }); ok {
+			q.mvalue = evaluator.Eval(context)
 		}
 		q.mvalues = append(q.mvalues, q.mvalue)
 	} else {
-		q.mvalue, err = q.mvalue.(Evaluator).Eval(context)
-		if err != nil {
-			return q
+		if evaluator, ok := q.mvalue.(interface{ Eval(any) (any, error) }); ok {
+			var err error
+			q.mvalue, err = evaluator.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+		} else if evaluator, ok := q.mvalue.(interface{ Eval(any) any }); ok {
+			q.mvalue = evaluator.Eval(context)
 		}
 	}
 
 	if q.rvalue != nil {
-		q.rvalue, err = q.rvalue.(Evaluator).Eval(context)
-		if err != nil {
-			return q
+		if evaluator, ok := q.rvalue.(interface{ Eval(any) (any, error) }); ok {
+			var err error
+			q.rvalue, err = evaluator.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+		} else if evaluator, ok := q.rvalue.(interface{ Eval(any) any }); ok {
+			q.rvalue = evaluator.Eval(context)
 		}
 	}
-	return q
+	return q, nil
 }
 
 // GenCSS generates CSS representation
@@ -168,8 +188,73 @@ func deepCopy(value any) any {
 		copy := *v
 		return &copy
 	case *Value:
+		vcopy := *v
+		return &vcopy
+	case *Dimension:
 		copy := *v
 		return &copy
+	case *Color:
+		ccopy := *v
+		// Deep copy RGB slice
+		ccopy.RGB = make([]float64, len(v.RGB))
+		for i := range v.RGB {
+			ccopy.RGB[i] = v.RGB[i]
+		}
+		return &ccopy
+	case *Operation:
+		copy := *v
+		// Deep copy operands
+		copy.Operands = deepCopy(v.Operands).([]any)
+		return &copy
+	case *Selector:
+		copy := *v
+		// Deep copy elements
+		if v.Elements != nil {
+			copy.Elements = make([]*Element, len(v.Elements))
+			for i, el := range v.Elements {
+				if el != nil {
+					elCopy := deepCopy(el).(*Element)
+					copy.Elements[i] = elCopy
+				}
+			}
+		}
+		// Deep copy ExtendList
+		if v.ExtendList != nil {
+			copy.ExtendList = deepCopy(v.ExtendList).([]any)
+		}
+		return &copy
+	case *Element:
+		copy := *v
+		// Deep copy Value
+		copy.Value = deepCopy(v.Value)
+		// Deep copy Combinator
+		if v.Combinator != nil {
+			combCopy := deepCopy(v.Combinator).(*Combinator)
+			copy.Combinator = combCopy
+		}
+		return &copy
+	case *Combinator:
+		copy := *v
+		return &copy
+	case *Keyword:
+		copy := *v
+		return &copy
+	case *Unit:
+		ucopy := *v
+		// Deep copy numerator and denominator
+		if v.Numerator != nil {
+			ucopy.Numerator = make([]string, len(v.Numerator))
+			for i := range v.Numerator {
+				ucopy.Numerator[i] = v.Numerator[i]
+			}
+		}
+		if v.Denominator != nil {
+			ucopy.Denominator = make([]string, len(v.Denominator))
+			for i := range v.Denominator {
+				ucopy.Denominator[i] = v.Denominator[i]
+			}
+		}
+		return &ucopy
 	case []any:
 		copy := make([]any, len(v))
 		for i, item := range v {
@@ -182,7 +267,12 @@ func deepCopy(value any) any {
 			copy[k] = deepCopy(val)
 		}
 		return copy
+	case string, int, int64, float64, bool, nil:
+		// Primitive types are already immutable
+		return v
 	default:
+		// For unknown types, return as-is
+		// This is safer than panicking and matches JavaScript behavior
 		return v
 	}
 } 

@@ -17,6 +17,7 @@ type Context struct {
 type Frame struct {
 	FunctionRegistry FunctionRegistry
 	variables        map[string]any // Add variable storage
+	EvalContext      EvalContext    // Reference to the evaluation context
 }
 
 // Variable gets a variable from the frame

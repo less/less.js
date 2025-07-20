@@ -209,9 +209,8 @@ func (c *Color) ToCSS(context any) string {
 		if strings.HasPrefix(c.Value, "rgb") {
 			if alpha < 1 {
 				colorFunction = "rgba"
-			} else {
-				colorFunction = "rgb"
 			}
+			// Note: JavaScript doesn't set colorFunction to "rgb" here, it leaves it empty
 		} else if strings.HasPrefix(c.Value, "hsl") {
 			if alpha < 1 {
 				colorFunction = "hsla"

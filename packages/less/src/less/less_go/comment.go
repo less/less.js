@@ -27,6 +27,14 @@ func (c *Comment) GetType() string {
 	return "Comment"
 }
 
+// Accept accepts a visitor
+func (c *Comment) Accept(visitor any) {
+	// Comments don't have children to visit, so just visit self
+	if v, ok := visitor.(interface{ VisitComment(any, any) any }); ok {
+		v.VisitComment(c, nil)
+	}
+}
+
 // GenCSS generates CSS representation of the comment
 func (c *Comment) GenCSS(context any, output *CSSOutput) {
 	if c.DebugInfo != nil {

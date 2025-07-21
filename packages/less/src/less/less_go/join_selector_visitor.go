@@ -1,5 +1,20 @@
 package less_go
 
+// flattenPath flattens nested arrays in selector paths to ensure correct CSS generation
+func flattenPath(path []any) []any {
+	result := make([]any, 0, len(path))
+	for _, item := range path {
+		if arr, ok := item.([]any); ok {
+			// If this item is an array, flatten it
+			result = append(result, arr...)
+		} else {
+			// If this item is a selector, keep it as-is
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
 // JoinSelectorVisitor implements a visitor that joins selectors in rulesets
 type JoinSelectorVisitor struct {
 	contexts [][]any
@@ -42,7 +57,7 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 	context := jsv.contexts[len(jsv.contexts)-1]
 	paths := make([]any, 0)
 	
-	// Push paths to context stack BEFORE joinSelectors (matches JavaScript timing)
+	// Push paths to context stack BEFORE JoinSelectors (matches JavaScript)
 	jsv.contexts = append(jsv.contexts, paths)
 	
 	// Try interface-based approach first
@@ -77,10 +92,12 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 						
 						jsInterface.JoinSelectors(&pathsSlice, contextSlice, filteredSelectors)
 						
-						// Convert [][]any to []any for paths variable
-						paths = make([]any, len(pathsSlice))
-						for i, path := range pathsSlice {
-							paths[i] = path
+						// Convert [][]any to []any and update the existing paths slice in place
+						// This ensures the paths array on the context stack gets populated
+						for _, path := range pathsSlice {
+							// Flatten any nested arrays in the path to match expected structure
+							flatPath := flattenPath(path)
+							paths = append(paths, flatPath)
 						}
 						
 						// Update the context stack with the populated paths
@@ -121,10 +138,12 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 						contextSlice[0] = context
 						ruleset.JoinSelectors(pathsPtr, contextSlice, filteredSelectors)
 						
-						// Convert the result to []any and update context
-						paths = make([]any, len(*pathsPtr))
-						for i, path := range *pathsPtr {
-							paths[i] = path
+						// Convert the result to []any and update the existing paths slice in place
+						// This ensures the paths array on the context stack gets populated
+						for _, path := range *pathsPtr {
+							// Flatten any nested arrays in the path to match expected structure
+							flatPath := flattenPath(path)
+							paths = append(paths, flatPath)
 						}
 						
 						// Update the context stack with the populated paths

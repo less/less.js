@@ -6,30 +6,6 @@ import (
 	"strings"
 )
 
-// SimpleFunctionDef wraps a simple Go function to implement FunctionDefinition
-type SimpleFunctionDef struct {
-	name string
-	fn   func(any, any) any
-}
-
-func (s *SimpleFunctionDef) Call(args ...any) (any, error) {
-	if len(args) != 2 {
-		return nil, fmt.Errorf("function %s expects 2 arguments, got %d", s.name, len(args))
-	}
-	result := s.fn(args[0], args[1])
-	return result, nil
-}
-
-func (s *SimpleFunctionDef) CallCtx(ctx *Context, args ...any) (any, error) {
-	// For these simple functions, we don't need context
-	return s.Call(args...)
-}
-
-func (s *SimpleFunctionDef) NeedsEvalArgs() bool {
-	// Most list functions like 'each' need unevaluated args
-	return s.name != "each"
-}
-
 // Factory creates a new Less instance
 func Factory(environment map[string]any, fileManagers []any) map[string]any {
 	var sourceMapOutput any
@@ -491,15 +467,66 @@ func createFunctions(env any) any {
 	// Create a function registry and populate it with all functions
 	registry := DefaultRegistry.Inherit()
 	
+	// Register test functions used in integration tests
+	// These match the functions defined in the JavaScript test setup
+	RegisterTestFunctions(registry)
+	
 	// Add all list functions
 	listFunctions := GetWrappedListFunctions()
 	for name, fn := range listFunctions {
-		if functionImpl, ok := fn.(func(any, any) any); ok {
-			// Wrap simple Go functions to match FunctionDefinition interface
-			registry.Add(name, &SimpleFunctionDef{
-				name: name,
-				fn:   functionImpl,
-			})
+		switch name {
+		case "_SELF":
+			if selfFn, ok := fn.(func(any) any); ok {
+				registry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   1,
+					maxArgs:   1,
+					variadic:  false,
+					fn:        selfFn,
+					needsEval: true,
+				})
+			}
+		case "~":
+			if spaceFn, ok := fn.(func(...any) any); ok {
+				registry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   0,
+					maxArgs:   -1,
+					variadic:  true,
+					fn:        spaceFn,
+					needsEval: true,
+				})
+			}
+		case "range":
+			if rangeFn, ok := fn.(func(any, any, any) any); ok {
+				registry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   1,
+					maxArgs:   3,
+					variadic:  false,
+					fn:        rangeFn,
+					needsEval: true,
+				})
+			}
+		case "each":
+			if eachFn, ok := fn.(func(any, any) any); ok {
+				registry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   2,
+					maxArgs:   2,
+					variadic:  false,
+					fn:        eachFn,
+					needsEval: false, // 'each' needs unevaluated args
+				})
+			}
+		default:
+			// Try as 2-argument function (extract, length)
+			if functionImpl, ok := fn.(func(any, any) any); ok {
+				registry.Add(name, &SimpleFunctionDef{
+					name: name,
+					fn:   functionImpl,
+				})
+			}
 		}
 	}
 	
@@ -533,17 +560,7 @@ func createFunctions(env any) any {
 	// Add type functions
 	registry.AddMultiple(GetWrappedTypesFunctions())
 	
-	// Add list functions
-	listFuncs := GetWrappedListFunctions()
-	for name, fn := range listFuncs {
-		if functionImpl, ok := fn.(func(any, any) any); ok {
-			// Wrap simple Go functions to match FunctionDefinition interface
-			registry.Add(name, &SimpleFunctionDef{
-				name: name,
-				fn:   functionImpl,
-			})
-		}
-	}
+	// List functions already added above, skip duplicate
 	
 	// Add the default() function for mixin guards
 	registry.Add("default", &DefaultFunctionDefinition{})

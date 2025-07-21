@@ -5,9 +5,27 @@ import (
 	"testing"
 )
 
+// Force imports to trigger init functions
+var _ = GetListFunctions
+
+// Manually register _SELF for testing
+func init() {
+	listFunctions := GetListFunctions()
+	if selfFn, ok := listFunctions["_SELF"].(func(any) any); ok {
+		DefaultRegistry.Add("_SELF", &FlexibleFunctionDef{
+			name:      "_SELF",
+			minArgs:   1,
+			maxArgs:   1,
+			variadic:  false,
+			fn:        selfFn,
+			needsEval: true,
+		})
+	}
+}
+
 type mockContext struct {
 	frames         []ParserFrame
-	importantScope []map[string]bool
+	importantScope []map[string]any
 	inCalc         bool
 	mathOn         bool
 }
@@ -16,7 +34,7 @@ func (m *mockContext) GetFrames() []ParserFrame {
 	return m.frames
 }
 
-func (m *mockContext) GetImportantScope() []map[string]bool {
+func (m *mockContext) GetImportantScope() []map[string]any {
 	return m.importantScope
 }
 
@@ -61,8 +79,15 @@ type mockValue struct {
 	value any
 }
 
-func (m *mockValue) Eval(context EvalContext) (any, error) {
-	return map[string]any{"value": m.value}, nil
+// Implement the Eval(any) interface that the variable code expects
+func (m *mockValue) Eval(context any) (any, error) {
+	// Return self, simulating a simple evaluated value
+	return m, nil
+}
+
+// Add a method to get the actual value for test assertions
+func (m *mockValue) GetValue() any {
+	return m.value
 }
 
 func TestVariable(t *testing.T) {
@@ -104,24 +129,25 @@ func TestVariable(t *testing.T) {
 	t.Run("Variable evaluation", func(t *testing.T) {
 		t.Run("should evaluate a simple variable", func(t *testing.T) {
 			variable := NewVariable("@color", 1, mockFileInfo)
-			mockValue := &mockValue{value: "red"}
+			testValue := &mockValue{value: "red"}
 			context := &mockContext{
 				frames: []ParserFrame{
 					&mockFrame{
 						vars: map[string]map[string]any{
-							"@color": {"value": mockValue},
+							"@color": {"value": testValue},
 						},
 					},
 				},
-				importantScope: []map[string]bool{{"important": false}},
+				importantScope: []map[string]any{{"important": false}},
 			}
 
 			result, err := variable.Eval(context)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if result.(map[string]any)["value"] != "red" {
-				t.Errorf("Expected value to be red, got %v", result.(map[string]any)["value"])
+			mockVal, ok := result.(*mockValue)
+			if !ok || mockVal.value != "red" {
+				t.Errorf("Expected mockValue with value 'red', got %v", result)
 			}
 		})
 
@@ -138,15 +164,16 @@ func TestVariable(t *testing.T) {
 						},
 					},
 				},
-				importantScope: []map[string]bool{{"important": false}},
+				importantScope: []map[string]any{{"important": false}},
 			}
 
 			result, err := variable.Eval(context)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if result.(map[string]any)["value"] != "red" {
-				t.Errorf("Expected value to be red, got %v", result.(map[string]any)["value"])
+			mockVal, ok := result.(*mockValue)
+			if !ok || mockVal.value != "red" {
+				t.Errorf("Expected mockValue with value 'red', got %v", result)
 			}
 		})
 
@@ -156,7 +183,7 @@ func TestVariable(t *testing.T) {
 
 			context := &mockContext{
 				frames: []ParserFrame{&mockFrame{vars: map[string]map[string]any{}}},
-				importantScope: []map[string]bool{{"important": false}},
+				importantScope: []map[string]any{{"important": false}},
 			}
 
 			_, err := variable.Eval(context)
@@ -169,7 +196,7 @@ func TestVariable(t *testing.T) {
 			variable := NewVariable("@undefined", 1, mockFileInfo)
 			context := &mockContext{
 				frames: []ParserFrame{&mockFrame{vars: map[string]map[string]any{}}},
-				importantScope: []map[string]bool{{"important": false}},
+				importantScope: []map[string]any{{"important": false}},
 			}
 
 			_, err := variable.Eval(context)
@@ -180,16 +207,16 @@ func TestVariable(t *testing.T) {
 
 		t.Run("should handle variables in calc context", func(t *testing.T) {
 			variable := NewVariable("@number", 1, mockFileInfo)
-			mockValue := &mockValue{value: 42}
+			testValue := &mockValue{value: 42}
 			context := &mockContext{
 				frames: []ParserFrame{
 					&mockFrame{
 						vars: map[string]map[string]any{
-							"@number": {"value": mockValue},
+							"@number": {"value": testValue},
 						},
 					},
 				},
-				importantScope: []map[string]bool{{"important": false}},
+				importantScope: []map[string]any{{"important": false}},
 				inCalc:         true,
 			}
 
@@ -209,35 +236,44 @@ func TestVariable(t *testing.T) {
 			if len(call.Args) != 1 {
 				t.Errorf("Expected call to have 1 argument, got %d", len(call.Args))
 			}
-			// The argument should be our mockValue
-			if call.Args[0] != mockValue {
-				t.Errorf("Expected call argument to be mockValue")
+			// The argument should be our testValue
+			if call.Args[0] != testValue {
+				t.Errorf("Expected call argument to be testValue")
 			}
 		})
 
 		t.Run("should handle variables with important flag", func(t *testing.T) {
 			variable := NewVariable("@important", 1, mockFileInfo)
-			mockValue := &mockValue{value: "important!"}
-			context := &mockContext{
-				frames: []ParserFrame{
+			testValue := &mockValue{value: "important!"}
+			
+			// Use map-based context to test important flag handling
+			importantScope := []any{map[string]any{}}
+			context := map[string]any{
+				"frames": []any{
 					&mockFrame{
 						vars: map[string]map[string]any{
 							"@important": {
-								"value":     mockValue,
+								"value":     testValue,
 								"important": true,
 							},
 						},
 					},
 				},
-				importantScope: []map[string]bool{{"important": false}},
+				"importantScope": importantScope,
 			}
 
 			_, err := variable.Eval(context)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if !context.importantScope[0]["important"] {
-				t.Error("Expected important flag to be set to true")
+			
+			// Check the importantScope was updated
+			if scope, ok := importantScope[0].(map[string]any); ok {
+				if scope["important"] != "!important" {
+					t.Errorf("Expected important flag to be set to '!important', got %v", scope["important"])
+				}
+			} else {
+				t.Error("ImportantScope[0] is not a map[string]any")
 			}
 		})
 
@@ -256,15 +292,16 @@ func TestVariable(t *testing.T) {
 						},
 					},
 				},
-				importantScope: []map[string]bool{{"important": false}},
+				importantScope: []map[string]any{{"important": false}},
 			}
 
 			result, err := variable.Eval(context)
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
 			}
-			if result.(map[string]any)["value"] != "blue" {
-				t.Errorf("Expected value to be blue, got %v", result.(map[string]any)["value"])
+			mockVal, ok := result.(*mockValue)
+			if !ok || mockVal.value != "blue" {
+				t.Errorf("Expected mockValue with value 'blue', got %v", result)
 			}
 		})
 
@@ -273,7 +310,7 @@ func TestVariable(t *testing.T) {
 				variable := NewVariable("", 1, mockFileInfo)
 				context := &mockContext{
 					frames: []ParserFrame{&mockFrame{vars: map[string]map[string]any{}}},
-					importantScope: []map[string]bool{{"important": false}},
+					importantScope: []map[string]any{{"important": false}},
 				}
 
 				_, err := variable.Eval(context)
@@ -284,48 +321,50 @@ func TestVariable(t *testing.T) {
 
 			t.Run("should handle special characters in variable names", func(t *testing.T) {
 				variable := NewVariable("@special!#$%", 1, mockFileInfo)
-				mockValue := &mockValue{value: "special"}
+				testValue := &mockValue{value: "special"}
 				context := &mockContext{
 					frames: []ParserFrame{
 						&mockFrame{
 							vars: map[string]map[string]any{
-								"@special!#$%": {"value": mockValue},
+								"@special!#$%": {"value": testValue},
 							},
 						},
 					},
-					importantScope: []map[string]bool{{"important": false}},
+					importantScope: []map[string]any{{"important": false}},
 				}
 
 				result, err := variable.Eval(context)
 				if err != nil {
 					t.Errorf("Unexpected error: %v", err)
 				}
-				if result.(map[string]any)["value"] != "special" {
-					t.Errorf("Expected value to be special, got %v", result.(map[string]any)["value"])
+				mockVal, ok := result.(*mockValue)
+				if !ok || mockVal.value != "special" {
+					t.Errorf("Expected mockValue with value 'special', got %v", result)
 				}
 			})
 
 			t.Run("should handle very long variable names", func(t *testing.T) {
 				longName := "@" + strings.Repeat("a", 1000)
 				variable := NewVariable(longName, 1, mockFileInfo)
-				mockValue := &mockValue{value: "long"}
+				testValue := &mockValue{value: "long"}
 				context := &mockContext{
 					frames: []ParserFrame{
 						&mockFrame{
 							vars: map[string]map[string]any{
-								longName: {"value": mockValue},
+								longName: {"value": testValue},
 							},
 						},
 					},
-					importantScope: []map[string]bool{{"important": false}},
+					importantScope: []map[string]any{{"important": false}},
 				}
 
 				result, err := variable.Eval(context)
 				if err != nil {
 					t.Errorf("Unexpected error: %v", err)
 				}
-				if result.(map[string]any)["value"] != "long" {
-					t.Errorf("Expected value to be long, got %v", result.(map[string]any)["value"])
+				mockVal, ok := result.(*mockValue)
+				if !ok || mockVal.value != "long" {
+					t.Errorf("Expected mockValue with value 'long', got %v", result)
 				}
 			})
 		})

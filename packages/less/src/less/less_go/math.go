@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -19,9 +20,78 @@ var MathFunctions = map[string]any{
 	"round": Round,
 }
 
+// MathFunctionWrapper wraps math functions to implement FunctionDefinition interface
+type MathFunctionWrapper struct {
+	name string
+	fn   func(args ...interface{}) (interface{}, error)
+}
+
+func (w *MathFunctionWrapper) Call(args ...any) (any, error) {
+	return w.fn(args...)
+}
+
+func (w *MathFunctionWrapper) CallCtx(ctx *Context, args ...any) (any, error) {
+	// Math functions don't need context evaluation
+	return w.Call(args...)
+}
+
+func (w *MathFunctionWrapper) NeedsEvalArgs() bool {
+	// Math functions need evaluated arguments
+	return true
+}
+
+// Function adapters for different signatures
+func wrapUnaryMath(fn func(*Dimension) (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, fmt.Errorf("function expects 1 argument, got %d", len(args))
+		}
+		dim, ok := args[0].(*Dimension)
+		if !ok {
+			return nil, fmt.Errorf("function expects dimension argument")
+		}
+		return fn(dim)
+	}
+}
+
+func wrapRound(fn func(*Dimension, *Dimension) (*Dimension, error)) func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		if len(args) < 1 || len(args) > 2 {
+			return nil, fmt.Errorf("round expects 1 or 2 arguments, got %d", len(args))
+		}
+		n, ok := args[0].(*Dimension)
+		if !ok {
+			return nil, fmt.Errorf("round expects dimension as first argument")
+		}
+		var f *Dimension
+		if len(args) == 2 {
+			f, ok = args[1].(*Dimension)
+			if !ok {
+				return nil, fmt.Errorf("round expects dimension as second argument")
+			}
+		}
+		return fn(n, f)
+	}
+}
+
 // GetWrappedMathFunctions returns math functions wrapped for registry
 func GetWrappedMathFunctions() map[string]interface{} {
-	return MathFunctions
+	wrappedFunctions := make(map[string]interface{})
+	
+	// Wrap each function with proper interface
+	wrappedFunctions["ceil"] = &MathFunctionWrapper{name: "ceil", fn: wrapUnaryMath(Ceil)}
+	wrappedFunctions["floor"] = &MathFunctionWrapper{name: "floor", fn: wrapUnaryMath(Floor)}
+	wrappedFunctions["sqrt"] = &MathFunctionWrapper{name: "sqrt", fn: wrapUnaryMath(Sqrt)}
+	wrappedFunctions["abs"] = &MathFunctionWrapper{name: "abs", fn: wrapUnaryMath(Abs)}
+	wrappedFunctions["tan"] = &MathFunctionWrapper{name: "tan", fn: wrapUnaryMath(Tan)}
+	wrappedFunctions["sin"] = &MathFunctionWrapper{name: "sin", fn: wrapUnaryMath(Sin)}
+	wrappedFunctions["cos"] = &MathFunctionWrapper{name: "cos", fn: wrapUnaryMath(Cos)}
+	wrappedFunctions["atan"] = &MathFunctionWrapper{name: "atan", fn: wrapUnaryMath(Atan)}
+	wrappedFunctions["asin"] = &MathFunctionWrapper{name: "asin", fn: wrapUnaryMath(Asin)}
+	wrappedFunctions["acos"] = &MathFunctionWrapper{name: "acos", fn: wrapUnaryMath(Acos)}
+	wrappedFunctions["round"] = &MathFunctionWrapper{name: "round", fn: wrapRound(Round)}
+	
+	return wrappedFunctions
 }
 
 // Ceil rounds up to the nearest integer
@@ -108,4 +178,12 @@ func Round(n *Dimension, f *Dimension) (*Dimension, error) {
 	}
 
 	return MathHelper(roundFunc, nil, n)
+}
+
+// init registers math functions with the default registry
+func init() {
+	// Register all math functions
+	for name, fn := range GetWrappedMathFunctions() {
+		DefaultRegistry.Add(name, fn)
+	}
 }

@@ -34,7 +34,11 @@ func NewDeclaration(name any, value any, important any, merge any, index int, fi
 	// Handle important flag
 	if important != nil {
 		if str, ok := important.(string); ok {
-			d.important = " " + str
+			// Ensure consistent spacing: remove any leading space and add exactly one
+			str = strings.TrimLeft(str, " ")
+			if str != "" {
+				d.important = " " + str
+			}
 		}
 	}
 
@@ -260,14 +264,18 @@ func (d *Declaration) Eval(context any) (any, error) {
 	important := d.important
 	if ctx, ok := context.(map[string]any); ok {
 		if importantScope, ok := ctx["importantScope"].([]any); ok && len(importantScope) > 0 {
+			// Pop the scope
 			lastScope := importantScope[len(importantScope)-1]
-			if scope, ok := lastScope.(map[string]any); ok {
-				if imp, ok := scope["important"].(string); ok {
-					important = imp
+			ctx["importantScope"] = importantScope[:len(importantScope)-1]
+			
+			// Check if we should use the important flag from the scope
+			if important == "" && lastScope != nil {
+				if scope, ok := lastScope.(map[string]any); ok {
+					if imp, ok := scope["important"].(string); ok && imp != "" {
+						important = imp
+					}
 				}
 			}
-			// Pop the scope
-			ctx["importantScope"] = importantScope[:len(importantScope)-1]
 		}
 	}
 

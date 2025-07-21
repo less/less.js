@@ -23,7 +23,7 @@ func TransformTree(root any, options map[string]any) any {
 	}
 	// Initialize required fields
 	evalEnv["frames"] = []any{}
-	evalEnv["importantScope"] = []map[string]bool{}
+	evalEnv["importantScope"] = []any{}  // Changed from []map[string]bool{} to []any{}
 	evalEnv["mathOn"] = true
 	
 	// Initialize defaultFunc for mixin guards
@@ -42,12 +42,59 @@ func TransformTree(root any, options map[string]any) any {
 		// Add list functions to the registry
 		listFunctions := GetListFunctions()
 		for name, fn := range listFunctions {
-			if functionImpl, ok := fn.(func(any, any) any); ok {
-				// Wrap simple Go functions to match FunctionDefinition interface
-				functionRegistry.Add(name, &SimpleFunctionDef{
-					name: name,
-					fn:   functionImpl,
-				})
+			switch name {
+			case "_SELF":
+				if selfFn, ok := fn.(func(any) any); ok {
+					functionRegistry.Add(name, &FlexibleFunctionDef{
+						name:      name,
+						minArgs:   1,
+						maxArgs:   1,
+						variadic:  false,
+						fn:        selfFn,
+						needsEval: true,
+					})
+				}
+			case "~":
+				if spaceFn, ok := fn.(func(...any) any); ok {
+					functionRegistry.Add(name, &FlexibleFunctionDef{
+						name:      name,
+						minArgs:   0,
+						maxArgs:   -1,
+						variadic:  true,
+						fn:        spaceFn,
+						needsEval: true,
+					})
+				}
+			case "range":
+				if rangeFn, ok := fn.(func(any, any, any) any); ok {
+					functionRegistry.Add(name, &FlexibleFunctionDef{
+						name:      name,
+						minArgs:   1,
+						maxArgs:   3,
+						variadic:  false,
+						fn:        rangeFn,
+						needsEval: true,
+					})
+				}
+			case "each":
+				if eachFn, ok := fn.(func(any, any) any); ok {
+					functionRegistry.Add(name, &FlexibleFunctionDef{
+						name:      name,
+						minArgs:   2,
+						maxArgs:   2,
+						variadic:  false,
+						fn:        eachFn,
+						needsEval: false, // 'each' needs unevaluated args
+					})
+				}
+			default:
+				// Try as 2-argument function (extract, length)
+				if functionImpl, ok := fn.(func(any, any) any); ok {
+					functionRegistry.Add(name, &SimpleFunctionDef{
+						name: name,
+						fn:   functionImpl,
+					})
+				}
 			}
 		}
 	}
@@ -56,6 +103,8 @@ func TransformTree(root any, options map[string]any) any {
 	if _, exists := evalEnv["math"]; !exists {
 		evalEnv["math"] = Math.Always
 	}
+	// Set mathOn to true by default, matching JavaScript contexts.js
+	evalEnv["mathOn"] = true
 	// Add isMathOn function that matches JavaScript contexts.js implementation
 	evalEnv["isMathOn"] = func(op string) bool {
 		mathOn, exists := evalEnv["mathOn"]

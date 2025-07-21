@@ -144,6 +144,22 @@ func (e *Element) Eval(context any) (any, error) {
 			evaluatedValue = evaluated
 		} else if evalValue, ok := e.Value.(interface{ Eval(any) any }); ok {
 			evaluatedValue = evalValue.Eval(context)
+		} else if strValue, ok := e.Value.(string); ok {
+			// Check if string contains variable interpolation
+			if strings.Contains(strValue, "@{") {
+				// Create a Quoted node to handle interpolation
+				quoted := NewQuoted("", strValue, true, e.GetIndex(), e.FileInfo())
+				evaluated, err := quoted.Eval(context)
+				if err != nil {
+					return nil, err
+				}
+				// Extract the string value from the evaluated Quoted node
+				if quotedResult, ok := evaluated.(*Quoted); ok {
+					evaluatedValue = quotedResult.value
+				} else {
+					evaluatedValue = evaluated
+				}
+			}
 		}
 	}
 

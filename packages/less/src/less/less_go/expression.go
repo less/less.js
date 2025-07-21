@@ -156,9 +156,21 @@ func (e *Expression) Eval(context any) (any, error) {
 		}
 	}
 
+	// Match JavaScript: if (this.parens && this.parensInOp && !mathOn && !doubleParen && (!(returnValue instanceof Dimension)))
 	if e.Parens && e.ParensInOp && !mathOn && !doubleParen {
 		if _, isDimension := SafeTypeAssertion[*Dimension](returnValue); !isDimension {
 			returnValue = NewParen(returnValue)
+		}
+	} else if e.Parens && !mathOn && !doubleParen {
+		// Special case for calc(): preserve parentheses even without ParensInOp
+		// Check if we're in calc context
+		if inCalc, exists := SafeMapAccess(ctx, "inCalc"); exists {
+			if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); ok && inCalcVal {
+				// In calc context, wrap operations and expressions in parentheses
+				if _, isOp := SafeTypeAssertion[*Operation](returnValue); isOp {
+					returnValue = NewParen(returnValue)
+				}
+			}
 		}
 	}
 

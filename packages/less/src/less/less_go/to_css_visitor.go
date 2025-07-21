@@ -1,7 +1,6 @@
 package less_go
 
-import (
-)
+import ()
 
 // CSSVisitorUtils provides utility functions for CSS visitor
 type CSSVisitorUtils struct {
@@ -72,7 +71,22 @@ func (u *CSSVisitorUtils) IsEmpty(owner any) bool {
 	
 	if ownerWithRules, ok := owner.(interface{ GetRules() []any }); ok {
 		rules := ownerWithRules.GetRules()
-		return rules == nil || len(rules) == 0
+		// DEBUG: Check what rules remain
+		isEmpty := rules == nil || len(rules) == 0
+		if !isEmpty {
+			// Check if all rules are nil or invisible
+			allNil := true
+			for _, r := range rules {
+				if r != nil {
+					allNil = false
+					break
+				}
+			}
+			if allNil {
+				isEmpty = true
+			}
+		}
+		return isEmpty
 	}
 	
 	return true
@@ -170,7 +184,7 @@ type ToCSSVisitor struct {
 	context    any
 	utils      *CSSVisitorUtils
 	charset    bool
-	IsReplacing bool
+	isReplacing bool
 }
 
 // NewToCSSVisitor creates a new ToCSSVisitor
@@ -179,7 +193,7 @@ func NewToCSSVisitor(context any) *ToCSSVisitor {
 		context:     context,
 		utils:       NewCSSVisitorUtils(context),
 		charset:     false,
-		IsReplacing: true,
+		isReplacing: true,
 	}
 	v.visitor = NewVisitor(v)
 	return v
@@ -188,6 +202,11 @@ func NewToCSSVisitor(context any) *ToCSSVisitor {
 // Run runs the visitor on the root node
 func (v *ToCSSVisitor) Run(root any) any {
 	return v.visitor.Visit(root)
+}
+
+// IsReplacing returns true as ToCSSVisitor is a replacing visitor
+func (v *ToCSSVisitor) IsReplacing() bool {
+	return true
 }
 
 // isRulesetAtRoot checks if a ruleset is at the root level (has no parent selectors)
@@ -511,7 +530,9 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 		return nil
 	}
 	
+	
 	var rulesets []any
+	
 	
 	// Check valid nodes
 	if nodeWithRules, ok := rulesetNode.(interface{ GetRules() []any }); ok {
@@ -616,13 +637,38 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 	}
 	
 	// now decide whether we keep the ruleset
-	if v.utils.IsVisibleRuleset(rulesetNode) {
+	keepRuleset := v.utils.IsVisibleRuleset(rulesetNode)
+	
+	
+	
+	// Special case: if we extracted nested rulesets and the parent has non-variable declarations,
+	// we should keep it even if paths were filtered
+	if !keepRuleset && len(rulesets) > 0 {
+		if nodeWithRules, ok := rulesetNode.(interface{ GetRules() []any }); ok {
+			rules := nodeWithRules.GetRules()
+			if rules != nil {
+				for _, rule := range rules {
+					// Check if it's a non-variable declaration
+					if decl, ok := rule.(interface{ GetVariable() bool }); ok {
+						if !decl.GetVariable() {
+							// Has at least one non-variable declaration
+							keepRuleset = true
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	if keepRuleset {
 		if ensureVisNode, hasEnsure := rulesetNode.(interface{ EnsureVisibility() }); hasEnsure {
 			ensureVisNode.EnsureVisibility()
 		}
 		// Insert at beginning
 		rulesets = append([]any{rulesetNode}, rulesets...)
 	}
+	
 	
 	if len(rulesets) == 1 {
 		return rulesets[0]
@@ -657,11 +703,23 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 						}
 					}
 					
-					// Check if path has any visible and output elements
+					// Check if path has any visible and output selectors
+					// In JavaScript: p[i].isVisible() && p[i].getIsOutput()
+					// where p is a path array and p[i] is a selector
 					hasVisibleOutput := false
-					for _, pathElem := range pathSlice {
-						if visibleNode, ok := pathElem.(interface{ IsVisible() bool; GetIsOutput() bool }); ok {
-							if visibleNode.IsVisible() && visibleNode.GetIsOutput() {
+					for _, selector := range pathSlice {
+						// Check if it's a selector with the required methods
+						if sel, ok := selector.(*Selector); ok {
+							// Check visibility - handle that IsVisible returns *bool
+							isVisible := true // default to visible if not set
+							if vis := sel.IsVisible(); vis != nil {
+								isVisible = *vis
+							}
+							
+							// Check output status
+							isOutput := sel.GetIsOutput()
+							
+							if isVisible && isOutput {
 								hasVisibleOutput = true
 								break
 							}
@@ -670,9 +728,44 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 					
 					if hasVisibleOutput {
 						filteredPaths = append(filteredPaths, p)
+					} else {
+						// DEBUG: Path filtered out
+						// fmt.Printf("DEBUG: Path filtered out, no visible output elements\n")
 					}
 				}
 			}
+			
+			// If no paths passed the filter but the ruleset has non-variable declarations,
+			// keep at least one path to ensure the ruleset is output
+			if len(filteredPaths) == 0 && len(paths) > 0 {
+				// Check if ruleset has non-variable declarations
+				hasDeclarations := false
+				if nodeWithRules, ok := rulesetNode.(interface{ GetRules() []any }); ok {
+					rules := nodeWithRules.GetRules()
+					if rules != nil {
+						for _, rule := range rules {
+							// Check if it's a declaration (not a ruleset)
+							if _, isRuleset := rule.(interface{ GetRules() []any }); !isRuleset {
+								if decl, ok := rule.(interface{ GetVariable() bool }); ok {
+									if !decl.GetVariable() {
+										hasDeclarations = true
+										break
+									}
+								}
+							}
+						}
+					}
+				}
+				// If it has declarations, keep the original paths
+				if hasDeclarations {
+					filteredPaths = paths
+				}
+			}
+			
+			// DEBUG: Check path filtering
+			// if len(paths) > 0 && len(filteredPaths) == 0 {
+			//     fmt.Printf("DEBUG: All paths filtered out! Original: %d, Filtered: 0\n", len(paths))
+			// }
 			
 			pathNode.SetPaths(filteredPaths)
 		}

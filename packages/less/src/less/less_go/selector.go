@@ -506,15 +506,13 @@ func (s *Selector) GetIsOutput() bool {
 }
 
 // IsVisible returns whether the selector is visible (for path filtering)
-func (s *Selector) IsVisible() bool {
+func (s *Selector) IsVisible() *bool {
 	if s.Node != nil {
-		visible := s.Node.IsVisible()
-		if visible != nil {
-			return *visible
-		}
+		return s.Node.IsVisible()
 	}
 	// Default to true for selectors - they should be visible unless explicitly marked otherwise
-	return true
+	defaultVisible := true
+	return &defaultVisible
 }
 
 // GetExtendList returns the ExtendList of the selector

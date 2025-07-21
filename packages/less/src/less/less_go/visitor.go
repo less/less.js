@@ -276,8 +276,8 @@ func (v *Visitor) VisitArray(nodes []any, nonReplacing ...bool) []any {
 			continue // Skip undefined results like JS
 		}
 		
-		// Check if result has splice method (array-like) - mirrors JS !evaluated.splice check
-		if v.hasSpliceMethod(evaluated) {
+		// Check if result is array-like (Go slice or has splice method)
+		if v.isArrayLike(evaluated) {
 			// It's array-like, flatten it
 			if arrayItems := v.convertToSlice(evaluated); len(arrayItems) > 0 {
 				v.Flatten(arrayItems, &out)
@@ -302,8 +302,8 @@ func (v *Visitor) Flatten(arr []any, out *[]any) []any {
 			continue // Skip undefined items like JS
 		}
 		
-		// Check if item has splice method (array-like) - mirrors JS !item.splice check
-		if v.hasSpliceMethod(item) {
+		// Check if item is array-like (Go slice or has splice method)
+		if v.isArrayLike(item) {
 			// Recursively flatten nested arrays
 			if nestedItems := v.convertToSlice(item); len(nestedItems) > 0 {
 				v.Flatten(nestedItems, out)
@@ -366,6 +366,22 @@ func (v *Visitor) hasSpliceMethod(obj any) bool {
 	objValue := reflect.ValueOf(obj)
 	spliceMethod := objValue.MethodByName("Splice")
 	return spliceMethod.IsValid()
+}
+
+// isArrayLike checks if an object is array-like (Go slice or has splice method)
+func (v *Visitor) isArrayLike(obj any) bool {
+	if obj == nil {
+		return false
+	}
+	
+	// Check if it's a Go slice
+	objValue := reflect.ValueOf(obj)
+	if objValue.Kind() == reflect.Slice {
+		return true
+	}
+	
+	// Also check for splice method (JS-style arrays)
+	return v.hasSpliceMethod(obj)
 }
 
 // convertToSlice converts an array-like object to a Go slice

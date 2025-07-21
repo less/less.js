@@ -642,8 +642,7 @@ func (p *Parsers) Primary() []any {
 		}
 
 		// Check for closing brace - this is the key termination condition
-		currentChar := p.parser.parserInput.CurrentChar()
-		if currentChar == '}' {
+		if p.parser.parserInput.CurrentChar() == '}' {
 			break
 		}
 
@@ -675,9 +674,6 @@ func (p *Parsers) Primary() []any {
 		if p.parser.parserInput.CurrentChar() == '}' {
 			break
 		}
-
-		// Store current position to detect if any parsing function advances the input
-		currentPos := p.parser.parserInput.GetIndex()
 
 		// Try extend rule
 		node = p.ExtendRule()
@@ -726,14 +722,8 @@ func (p *Parsers) Primary() []any {
 				foundSemiColon = true
 			}
 			if !foundSemiColon {
-				// Safety check: if no parsing function advanced the input position,
-				// we need to break out to prevent infinite loops
-				newPos := p.parser.parserInput.GetIndex()
-				if newPos == currentPos {
-					// If we're at the same position and can't parse anything,
-					// this indicates a parsing error or end of parseable content
-					break
-				}
+				// JavaScript parser simply breaks here without additional checks
+				// This allows trailing comments to be picked up in the next iteration
 				break
 			}
 		}
@@ -826,10 +816,25 @@ func (p *Parsers) Declaration() any {
 			}
 
 			if value != nil {
+				// For anonymous values, check if they contain !important
+				if anon, ok := value.(*Anonymous); ok {
+					if str, ok := anon.Value.(string); ok && strings.Contains(str, "!important") {
+						// Extract the value without !important
+						parts := strings.Split(str, "!")
+						if len(parts) >= 2 {
+							anon.Value = strings.TrimSpace(parts[0])
+							important = "!important"
+						}
+					}
+				}
+				// Still try to parse important flag in case it's after the anonymous value
+				if important == nil {
+					important = p.Important()
+				}
 				p.parser.parserInput.Forget()
 				mergeFlag := merge == "+"
 				// Create declaration
-				decl, err := NewDeclaration(name, value, false, mergeFlag, index+p.parser.currentIndex, p.parser.fileInfo, false, isVariable)
+				decl, err := NewDeclaration(name, value, important, mergeFlag, index+p.parser.currentIndex, p.parser.fileInfo, false, isVariable)
 				if err != nil {
 					return nil
 				}
@@ -2083,7 +2088,7 @@ func (p *Parsers) Sub() any {
 			return nil
 		}
 		// Mark as having parentheses - this is equivalent to e.parens = true in JavaScript
-		expr.Node.Parens = true
+		expr.Parens = true
 		return expr
 	}
 
@@ -3531,6 +3536,17 @@ func (e *EntityParsers) CustomFuncCall(name string) map[string]any {
 	lowerName := strings.ToLower(name)
 
 	switch lowerName {
+	case "alpha":
+		return map[string]any{
+			"parse": func() []any {
+				result := e.parsers.IeAlpha()
+				if result != nil {
+					return result
+				}
+				return nil
+			},
+			"stop": true,
+		}
 	case "boolean":
 		return map[string]any{
 			"parse": func() []any {
@@ -3650,24 +3666,33 @@ func (p *Parsers) IeAlpha() []any {
 	if p.parser.parserInput.Re(regexp.MustCompile(`^opacity=`)) == nil {
 		return nil
 	}
+	
+	// First try to parse a number
 	value := p.parser.parserInput.Re(regexp.MustCompile(`^\d+`))
-	if value == nil {
+	var valueStr string
+	
+	if value != nil {
+		// We have a numeric value
+		if matches, ok := value.([]string); ok && len(matches) > 0 {
+			valueStr = matches[0]
+		} else if str, ok := value.(string); ok {
+			valueStr = str
+		}
+	} else {
+		// Try to parse a variable
 		variable := p.parser.expect(p.entities.Variable, "Could not parse alpha")
 		if variable != nil {
 			if v, ok := variable.(*Variable); ok {
-				value = fmt.Sprintf("@{%s}", v.GetName()[1:]) // Remove @ prefix
+				// Create variable interpolation syntax like JavaScript
+				valueStr = fmt.Sprintf("@{%s}", v.GetName()[1:]) // Remove @ prefix
 			}
 		}
 	}
+	
 	p.parser.expectChar(')', "")
 
-	var valueStr string
-	if matches, ok := value.([]string); ok && len(matches) > 0 {
-		valueStr = matches[0]
-	} else if str, ok := value.(string); ok {
-		valueStr = str
-	}
-
-	quoted := NewQuoted("", fmt.Sprintf("alpha(opacity=%s)", valueStr), false, 0, nil)
+	// Return a Quoted node with the full alpha function string
+	// The escaped flag should be true to ensure the quoted string is evaluated
+	quoted := NewQuoted("", fmt.Sprintf("alpha(opacity=%s)", valueStr), true, p.parser.parserInput.GetIndex()+p.parser.currentIndex, p.parser.fileInfo)
 	return []any{quoted}
 }

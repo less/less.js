@@ -238,6 +238,12 @@ func minMax(isMin bool, args []interface{}) (interface{}, error) {
 	for _, arg := range order {
 		if dim, ok := arg.(*Dimension); ok {
 			cssArgs = append(cssArgs, dim.ToCSS(nil))
+		} else if node, ok := arg.(interface{ ToCSS(any) string }); ok {
+			// Handle any node that can generate CSS
+			cssArgs = append(cssArgs, node.ToCSS(nil))
+		} else {
+			// Fallback to string representation
+			cssArgs = append(cssArgs, fmt.Sprintf("%v", arg))
 		}
 	}
 	
@@ -398,4 +404,12 @@ func joinStrings(strs []string, separator string) string {
 		result += str
 	}
 	return result
+}
+
+// init registers number functions with the default registry
+func init() {
+	// Register all number functions
+	for name, fn := range GetWrappedNumberFunctions() {
+		DefaultRegistry.Add(name, fn)
+	}
 }

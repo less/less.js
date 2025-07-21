@@ -239,8 +239,13 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 
 	// No arguments filter
 	noArgumentsFilter = func(rule any) bool {
+		// Handle both MixinDefinition (with context) and Ruleset (without context)
 		if matcher, ok := rule.(interface{ MatchArgs([]any, any) bool }); ok {
+			// MixinDefinition case
 			return matcher.MatchArgs(nil, context)
+		} else if matcher, ok := rule.(interface{ MatchArgs([]any) bool }); ok {
+			// Ruleset case
+			return matcher.MatchArgs(nil)
 		}
 		return false
 	}
@@ -283,19 +288,27 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								}
 
 								// Check if mixin matches arguments
+								// Handle both MixinDefinition (with context) and Ruleset (without context)
+								var matchesArgs bool
 								if matcher, ok := mixin.(interface{ MatchArgs([]any, any) bool }); ok {
-									if matcher.MatchArgs(args, context) {
-										candidateMap := map[string]any{
-											"mixin": mixin,
-											"group": calcDefGroup(mixin, mixinPath),
-										}
-
-										if candidateMap["group"] != defFalseEitherCase {
-											candidates = append(candidates, candidateMap)
-										}
-
-										match = true
+									// MixinDefinition case
+									matchesArgs = matcher.MatchArgs(args, context)
+								} else if matcher, ok := mixin.(interface{ MatchArgs([]any) bool }); ok {
+									// Ruleset case
+									matchesArgs = matcher.MatchArgs(args)
+								}
+								
+								if matchesArgs {
+									candidateMap := map[string]any{
+										"mixin": mixin,
+										"group": calcDefGroup(mixin, mixinPath),
 									}
+
+									if candidateMap["group"] != defFalseEitherCase {
+										candidates = append(candidates, candidateMap)
+									}
+
+									match = true
 								}
 							}
 						}

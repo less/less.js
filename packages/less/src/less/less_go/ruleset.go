@@ -255,7 +255,7 @@ func (r *Ruleset) Accept(visitor any) {
 			r.Selectors = v.VisitArray(r.Selectors, false)
 		}
 		if len(r.Rules) > 0 {
-			r.Rules = v.VisitArray(r.Rules, false)
+			r.Rules = v.VisitArray(r.Rules)
 		}
 	} else if v, ok := visitor.(interface{ VisitArray([]any, bool) []any }); ok {
 		if r.Paths != nil {
@@ -624,6 +624,9 @@ func (r *Ruleset) Eval(context any) (any, error) {
 			rsRules[i] = evalRule.Eval(context)
 		}
 	}
+	
+	// Reset cache after evaluating rules since variable values may have changed
+	ruleset.ResetCache()
 
 	// Handle parent selector folding like JavaScript version
 	i := 0
@@ -931,7 +934,8 @@ func (r *Ruleset) Variable(name string) map[string]any {
 			
 			// Check if the declaration has important flag
 			if d.GetImportant() {
-				result["important"] = true
+				// Store the actual important string value, not just a boolean
+				result["important"] = d.important
 			}
 			
 			return result
@@ -1128,6 +1132,7 @@ func (r *Ruleset) Rulesets() []any {
 			// fmt.Printf("DEBUG Rulesets: Found MixinDefinition in rules\n")
 		}
 		if rs, ok := rule.(interface{ IsRuleset() bool }); ok && rs.IsRuleset() {
+			// Debug code removed
 			filtered = append(filtered, rule)
 		}
 	}
@@ -1176,6 +1181,7 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 	
 	// this.rulesets().forEach(function (rule) { ... }) pattern
 	rulesets := r.Rulesets()
+	// fmt.Printf("DEBUG Find: Found %d rulesets to search\n", len(rulesets))
 	for _, rule := range rulesets {
 		if rule == self {
 			continue
@@ -1199,6 +1205,8 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 			for j := 0; j < len(rulesetSelectors); j++ {
 				if sel, ok := selector.(*Selector); ok {
 					if ruleSelector, ok := rulesetSelectors[j].(*Selector); ok {
+						// fmt.Printf("DEBUG Find: Comparing selector '%s' with rule selector '%s'\n", 
+						//	sel.ToCSS(nil), ruleSelector.ToCSS(nil))
 						match = sel.Match(ruleSelector)
 						if match > 0 {
 							if len(sel.Elements) > match {

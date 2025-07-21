@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -67,6 +68,81 @@ func (r *Registry) Create(base *Registry) *Registry {
 
 // DefaultRegistry is the default registry instance (equivalent to the default export in JS)
 var DefaultRegistry = makeRegistry(nil)
+
+// SimpleFunctionDef wraps a simple Go function to implement FunctionDefinition
+type SimpleFunctionDef struct {
+	name string
+	fn   func(any, any) any
+}
+
+func (s *SimpleFunctionDef) Call(args ...any) (any, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("function %s expects 2 arguments, got %d", s.name, len(args))
+	}
+	result := s.fn(args[0], args[1])
+	return result, nil
+}
+
+func (s *SimpleFunctionDef) CallCtx(ctx *Context, args ...any) (any, error) {
+	// For these simple functions, we don't need context
+	return s.Call(args...)
+}
+
+func (s *SimpleFunctionDef) NeedsEvalArgs() bool {
+	// Most list functions like 'each' need unevaluated args
+	return s.name != "each"
+}
+
+// FlexibleFunctionDef wraps Go functions with variable argument counts
+type FlexibleFunctionDef struct {
+	name        string
+	minArgs     int
+	maxArgs     int
+	variadic    bool
+	fn          any
+	needsEval   bool
+}
+
+func (f *FlexibleFunctionDef) Call(args ...any) (any, error) {
+	if !f.variadic {
+		if len(args) < f.minArgs || len(args) > f.maxArgs {
+			return nil, fmt.Errorf("function %s expects %d-%d arguments, got %d", f.name, f.minArgs, f.maxArgs, len(args))
+		}
+	} else if len(args) < f.minArgs {
+		return nil, fmt.Errorf("function %s expects at least %d arguments, got %d", f.name, f.minArgs, len(args))
+	}
+	
+	switch fn := f.fn.(type) {
+	case func(any) any:
+		if len(args) != 1 {
+			return nil, fmt.Errorf("function %s expects 1 argument, got %d", f.name, len(args))
+		}
+		return fn(args[0]), nil
+	case func(any, any) any:
+		if len(args) != 2 {
+			return nil, fmt.Errorf("function %s expects 2 arguments, got %d", f.name, len(args))
+		}
+		return fn(args[0], args[1]), nil
+	case func(any, any, any) any:
+		if len(args) != 3 {
+			return nil, fmt.Errorf("function %s expects 3 arguments, got %d", f.name, len(args))
+		}
+		return fn(args[0], args[1], args[2]), nil
+	case func(...any) any:
+		return fn(args...), nil
+	default:
+		return nil, fmt.Errorf("unknown function type for %s", f.name)
+	}
+}
+
+func (f *FlexibleFunctionDef) CallCtx(ctx *Context, args ...any) (any, error) {
+	// For these simple functions, we don't need context
+	return f.Call(args...)
+}
+
+func (f *FlexibleFunctionDef) NeedsEvalArgs() bool {
+	return f.needsEval
+}
 
 // RegistryFunctionAdapter adapts the Registry to work with function_caller.FunctionRegistry interface
 type RegistryFunctionAdapter struct {

@@ -70,21 +70,57 @@ func (v *Variable) Eval(context any) (any, error) {
 		switch res := innerResult.(type) {
 		case map[string]any:
 			if value, exists := res["value"]; exists {
-				valueStr = fmt.Sprintf("%v", value)
+				// Handle the value properly - it might be a node type
+				switch v := value.(type) {
+				case *Quoted:
+					valueStr = v.value
+				case *Anonymous:
+					if str, ok := v.Value.(string); ok {
+						valueStr = str
+					} else {
+						valueStr = fmt.Sprintf("%v", v.Value)
+					}
+				case string:
+					valueStr = v
+				default:
+					valueStr = fmt.Sprintf("%v", v)
+				}
 			}
 		case *Quoted:
 			valueStr = res.value
+		case *Keyword:
+			valueStr = res.value
+		case *Color:
+			// For colors, use the original form if it's a keyword like "red"
+			if res.Value != "" {
+				valueStr = res.Value
+			} else {
+				valueStr = res.ToCSS(context)
+			}
 		case *Anonymous:
 			// Handle Anonymous objects - extract the underlying value
 			if quoted, ok := res.Value.(*Quoted); ok {
 				valueStr = quoted.value
+			} else if str, ok := res.Value.(string); ok {
+				valueStr = str
 			} else {
 				valueStr = fmt.Sprintf("%v", res.Value)
 			}
 		case interface{ GetValue() any }:
-			valueStr = fmt.Sprintf("%v", res.GetValue())
+			if val := res.GetValue(); val != nil {
+				if str, ok := val.(string); ok {
+					valueStr = str
+				} else {
+					valueStr = fmt.Sprintf("%v", val)
+				}
+			}
 		default:
-			valueStr = fmt.Sprintf("%v", innerResult)
+			// Try to get a value field if the type has one
+			if valuer, ok := innerResult.(interface{ GetValue() string }); ok {
+				valueStr = valuer.GetValue()
+			} else {
+				valueStr = fmt.Sprintf("%v", innerResult)
+			}
 		}
 		
 		if valueStr != "" {
@@ -119,11 +155,20 @@ func (v *Variable) Eval(context any) (any, error) {
 			if varResult := frame.Variable(name); varResult != nil {
 				
 				// Handle important flag if present
-				if importantVal, ok := varResult["important"].(bool); ok && importantVal {
-					if importantScopes, ok := context.(interface{ GetImportantScope() []map[string]bool }); ok {
-						scope := importantScopes.GetImportantScope()
-						if len(scope) > 0 {
-							scope[len(scope)-1]["important"] = true
+				if importantVal, exists := varResult["important"]; exists && importantVal != nil {
+					if ctx, ok := context.(map[string]any); ok {
+						if importantScopeAny, exists := ctx["importantScope"]; exists {
+							if importantScope, ok := importantScopeAny.([]any); ok && len(importantScope) > 0 {
+								lastScope := importantScope[len(importantScope)-1]
+								if scope, ok := lastScope.(map[string]any); ok {
+									// Convert boolean to appropriate string
+									if boolVal, ok := importantVal.(bool); ok && boolVal {
+										scope["important"] = "!important"
+									} else if strVal, ok := importantVal.(string); ok {
+										scope["important"] = strVal
+									}
+								}
+							}
 						}
 					}
 				}
@@ -137,8 +182,10 @@ func (v *Variable) Eval(context any) (any, error) {
 				// If in calc context, wrap vars in a function call to cascade evaluate args first
 				if isInCalc, ok := context.(interface{ IsInCalc() bool }); ok && isInCalc.IsInCalc() {
 					selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
-					// Evaluate the _SELF call like JavaScript does
-					return selfCall.Eval(context)
+					// Set the CallerFactory so _SELF can be resolved later
+					selfCall.CallerFactory = NewDefaultFunctionCallerFactory(DefaultRegistry)
+					// Return the Call object, don't evaluate it yet (JavaScript behavior)
+					return selfCall, nil
 				}
 
 				// Evaluate value - check both interface types
@@ -176,11 +223,18 @@ func (v *Variable) Eval(context any) (any, error) {
 				if varResult := frame.Variable(name); varResult != nil {
 					
 					// Handle important flag if present
-					if importantVal, ok := varResult["important"].(bool); ok && importantVal {
+					if importantVal, exists := varResult["important"]; exists && importantVal != nil {
 						if importantScopeAny, exists := ctx["importantScope"]; exists {
-							if importantScope, ok := importantScopeAny.([]map[string]bool); ok && len(importantScope) > 0 {
+							if importantScope, ok := importantScopeAny.([]any); ok && len(importantScope) > 0 {
 								lastScope := importantScope[len(importantScope)-1]
-								lastScope["important"] = true
+								if scope, ok := lastScope.(map[string]any); ok {
+									// Convert boolean to appropriate string
+									if boolVal, ok := importantVal.(bool); ok && boolVal {
+										scope["important"] = "!important"
+									} else if strVal, ok := importantVal.(string); ok {
+										scope["important"] = strVal
+									}
+								}
 							}
 						}
 					}
@@ -194,8 +248,10 @@ func (v *Variable) Eval(context any) (any, error) {
 					// If in calc context, wrap vars in a function call to cascade evaluate args first
 					if isInCalc, exists := ctx["inCalc"]; exists && isInCalc == true {
 						selfCall := NewCall("_SELF", []any{val}, v.GetIndex(), v.FileInfo())
-						// Evaluate the _SELF call like JavaScript does
-						return selfCall.Eval(context)
+						// Set the CallerFactory so _SELF can be resolved later
+						selfCall.CallerFactory = NewDefaultFunctionCallerFactory(DefaultRegistry)
+						// Return the Call object, don't evaluate it yet (JavaScript behavior)
+						return selfCall, nil
 					}
 
 					// Evaluate value - check both interface types

@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -148,9 +149,40 @@ func Range(start, end, step any) *Expression {
 	return expr
 }
 
+// EachFunctionDef is a special function definition for the each() function
+type EachFunctionDef struct {
+	name string
+}
+
+// Call implements the FunctionDefinition interface for non-context calls
+func (e *EachFunctionDef) Call(args ...any) (any, error) {
+	// This shouldn't be called for each() since it needs context
+	return nil, fmt.Errorf("each() function requires context")
+}
+
+// CallCtx implements the FunctionDefinition interface for context calls
+func (e *EachFunctionDef) CallCtx(ctx *Context, args ...any) (any, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("each() requires exactly 2 arguments")
+	}
+	return EachWithContext(args[0], args[1], ctx), nil
+}
+
+// NeedsEvalArgs returns whether arguments should be evaluated before calling
+func (e *EachFunctionDef) NeedsEvalArgs() bool {
+	return false // each() needs unevaluated arguments
+}
+
 // Each function iterates over a list and creates rulesets with injected variables
 // This is a direct port of the JavaScript each function from list.js
 func Each(list any, rs any) any {
+	// This is the old function signature, kept for compatibility
+	// It delegates to EachWithContext with nil context
+	return EachWithContext(list, rs, nil)
+}
+
+// EachWithContext is the actual implementation that accepts context
+func EachWithContext(list any, rs any, ctx *Context) any {
 	rules := make([]any, 0)
 	var iterator []any
 
@@ -158,9 +190,14 @@ func Each(list any, rs any) any {
 	tryEval := func(val any) any {
 		// Check if val has an Eval method (implements Node interface)
 		if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
-			// Note: In JavaScript, this.context is available, but in Go we don't have context here
-			// For now, we'll return the node as-is since we don't have evaluation context
-			// This matches the JavaScript behavior when context is not available
+			if ctx != nil {
+				// We have context, evaluate the node
+				result, err := evalable.Eval(ctx)
+				if err == nil {
+					return result
+				}
+			}
+			// No context or error, return as-is
 			return evalable
 		}
 		return val
@@ -317,8 +354,16 @@ func Each(list any, rs any) any {
 	finalRuleset := NewRuleset([]any{ampersandSelector}, rules, targetRuleset.StrictImports, targetRuleset.VisibilityInfo())
 	
 	// The JavaScript version calls .eval(this.context) on the final result
-	// Since we don't have context here, we return the ruleset as-is
-	// The caller should handle evaluation with proper context
+	if ctx != nil {
+		// Evaluate the final ruleset with context
+		result, err := finalRuleset.Eval(ctx)
+		if err != nil {
+			// If evaluation fails, return the unevaluated ruleset
+			return finalRuleset
+		}
+		return result
+	}
+	// No context available, return as-is
 	return finalRuleset
 }
 
@@ -344,4 +389,59 @@ func GetListFunctions() map[string]any {
 // GetWrappedListFunctions returns list functions for registry
 func GetWrappedListFunctions() map[string]interface{} {
 	return GetListFunctions()
+}
+
+// init registers list functions with the default registry
+func init() {
+	listFunctions := GetListFunctions()
+	for name, fn := range listFunctions {
+		switch name {
+		case "_SELF":
+			if selfFn, ok := fn.(func(any) any); ok {
+				DefaultRegistry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   1,
+					maxArgs:   1,
+					variadic:  false,
+					fn:        selfFn,
+					needsEval: true,
+				})
+			}
+		case "~":
+			if spaceFn, ok := fn.(func(...any) any); ok {
+				DefaultRegistry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   0,
+					maxArgs:   -1,
+					variadic:  true,
+					fn:        spaceFn,
+					needsEval: true,
+				})
+			}
+		case "range":
+			if rangeFn, ok := fn.(func(any, any, any) any); ok {
+				DefaultRegistry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   1,
+					maxArgs:   3,
+					variadic:  false,
+					fn:        rangeFn,
+					needsEval: true,
+				})
+			}
+		case "each":
+			// Register the EachFunctionDef which supports context
+			DefaultRegistry.Add(name, &EachFunctionDef{
+				name: name,
+			})
+		default:
+			// Try as 2-argument function (extract, length)
+			if functionImpl, ok := fn.(func(any, any) any); ok {
+				DefaultRegistry.Add(name, &SimpleFunctionDef{
+					name: name,
+					fn:   functionImpl,
+				})
+			}
+		}
+	}
 }

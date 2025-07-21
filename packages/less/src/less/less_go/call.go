@@ -396,50 +396,52 @@ func (c *Call) Eval(context any) (any, error) {
 				errorType, errorMsg, c.GetIndex(), c.FileInfo()["filename"], lineNumber, columnNumber)
 		}
 		exitCalc()
-	}
-
-	if result != nil {
-		// Results that are not nodes are cast as Anonymous nodes
-		// Falsy values or booleans are returned as empty nodes
-		// Check if result implements common node interfaces or is a known node type
-		isNodeType := false
-		switch result.(type) {
-		case *Node, *Color, *Dimension, *Quoted, *Anonymous, *Keyword, *Value, *Expression, *Call, *Ruleset, *Declaration:
-			isNodeType = true
-		case interface{ GetType() string }:
-			// Has GetType method, likely a node
-			isNodeType = true
-		}
 		
-		if !isNodeType {
-			// Check for falsy values or true - these should return empty Anonymous nodes
-			// JavaScript behavior: if (!result || result === true)
-			if result == nil || result == false || result == true || result == "" {
-				result = NewAnonymous(nil, 0, nil, false, false, nil)
-			} else {
-				// Non-falsy values are converted to string
-				result = NewAnonymous(fmt.Sprintf("%v", result), 0, nil, false, false, nil)
+		if result != nil {
+			// Results that are not nodes are cast as Anonymous nodes
+			// Falsy values or booleans are returned as empty nodes
+			// Check if result implements common node interfaces or is a known node type
+			isNodeType := false
+			switch result.(type) {
+			case *Node, *Color, *Dimension, *Quoted, *Anonymous, *Keyword, *Value, *Expression, *Call, *Ruleset, *Declaration:
+				isNodeType = true
+			case interface{ GetType() string }:
+				// Has GetType method, likely a node
+				isNodeType = true
 			}
-		}
+			
+			if !isNodeType {
+				// Check for falsy values or true - these should return empty Anonymous nodes
+				// JavaScript behavior: if (!result || result === true)
+				if result == nil || result == false || result == true || result == "" {
+					result = NewAnonymous(nil, 0, nil, false, false, nil)
+				} else {
+					// Non-falsy values are converted to string
+					result = NewAnonymous(fmt.Sprintf("%v", result), 0, nil, false, false, nil)
+				}
+			}
 
-		// Set index and file info
-		resultNode, ok := result.(interface {
-			SetIndex(int)
-			SetFileInfo(map[string]any)
-		})
-		if ok {
-			resultNode.SetIndex(c._index)
-			resultNode.SetFileInfo(c._fileInfo)
+			// Set index and file info
+			resultNode, ok := result.(interface {
+				SetIndex(int)
+				SetFileInfo(map[string]any)
+			})
+			if ok {
+				resultNode.SetIndex(c._index)
+				resultNode.SetFileInfo(c._fileInfo)
+			}
+			return result, nil
 		}
-		return result, nil
 	}
 
-	// Evaluate args
+	// If function not found or no result, evaluate args and return new Call
+	// This matches JavaScript behavior (line 93 in call.js)
 	evaledArgs := make([]any, len(c.Args))
 	for i, arg := range c.Args {
 		if evalable, ok := arg.(interface{ Eval(any) (any, error) }); ok {
 			evaledVal, err := evalable.Eval(context)
 			if err != nil {
+				exitCalc()
 				return nil, err
 			}
 			evaledArgs[i] = evaledVal
@@ -447,6 +449,8 @@ func (c *Call) Eval(context any) (any, error) {
 			evaledArgs[i] = arg
 		}
 	}
+	
+	// Important: exit calc AFTER evaluating arguments
 	exitCalc()
 
 	return NewCall(c.Name, evaledArgs, c.GetIndex(), c.FileInfo()), nil
@@ -458,6 +462,18 @@ func (c *Call) GenCSS(context any, output *CSSOutput) {
 	if c.Name == "_SELF" && len(c.Args) > 0 {
 		if genCSSable, ok := c.Args[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
 			genCSSable.GenCSS(context, output)
+			return
+		}
+	}
+	
+	// Special case: alpha() function for IE compatibility
+	if c.Name == "alpha" && len(c.Args) == 1 {
+		if assignment, ok := c.Args[0].(*Assignment); ok && assignment.Key == "opacity" {
+			output.Add("alpha(opacity=", c.FileInfo(), c.GetIndex())
+			if genCSSable, ok := assignment.Value.(interface{ GenCSS(any, *CSSOutput) }); ok {
+				genCSSable.GenCSS(context, output)
+			}
+			output.Add(")", nil, nil)
 			return
 		}
 	}

@@ -175,9 +175,17 @@ func (d *Dimension) Operate(context any, op string, other *Dimension) *Dimension
 				unit.BackupUnit = d.Unit.BackupUnit
 			}
 		} else if len(other.Unit.Numerator) == 0 && len(unit.Denominator) == 0 {
-			// do nothing
+			// do nothing - use the first operand's unit
+			// value is already calculated above
 		} else {
-			otherConverted := other.ConvertTo(d.Unit.UsedUnits())
+			// Convert other to this dimension's units before operating
+			usedUnits := d.Unit.UsedUnits()
+			// Convert map[string]string to map[string]any for ConvertTo
+			conversionMap := make(map[string]any)
+			for k, v := range usedUnits {
+				conversionMap[k] = v
+			}
+			otherConverted := other.ConvertTo(conversionMap)
 			if ctx, ok := SafeTypeAssertion[map[string]any](context); ok {
 				if strict, exists := SafeMapAccess(ctx, "strictUnits"); exists {
 					if strictVal, ok := SafeTypeAssertion[bool](strict); ok && strictVal {
@@ -189,6 +197,7 @@ func (d *Dimension) Operate(context any, op string, other *Dimension) *Dimension
 					}
 				}
 			}
+			// Recalculate value with converted units
 			value = d.OperateArithmetic(context, op, d.Value, otherConverted.Value)
 		}
 	} else if op == "*" {

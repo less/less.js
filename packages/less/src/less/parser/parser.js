@@ -2048,7 +2048,49 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     return null;
                 }
             },
-
+            atruleUnknown: function (value, name, hasBlock) {
+                value = this.permissiveValue(/^[{;]/);
+                hasBlock = (parserInput.currentChar() === '{');
+                if (!value) {
+                    if (!hasBlock && parserInput.currentChar() !== ';') {
+                        error(''.concat(name, ' rule is missing block or ending semi-colon'));
+                    }
+                }
+                else if (!value.value) {
+                    value = null;
+                }
+                return [value, hasBlock];
+            },
+            atruleBlock: function (rules, value, isRooted, isKeywordList) {
+                rules = this.blockRuleset();
+                parserInput.save();
+                if (!rules && !isRooted) {
+                    value = this.entity();
+                    rules = this.blockRuleset();
+                }
+                if (!rules && !isRooted) {
+                    parserInput.restore();
+                    var e = [];
+                    value = this.entity();
+                    while (parserInput.$char(',')) {
+                        e.push(value);
+                        value = this.entity();
+                    }
+                    if (value && e.length > 0) {
+                        e.push(value);
+                        value = e;
+                        isKeywordList = true;
+                    }
+                    else {
+                        rules = this.blockRuleset();
+                    }
+                }
+                else {
+                    parserInput.forget();
+                }
+                    
+                return [rules, value, isKeywordList];
+            },
             //
             // A CSS AtRule
             //
@@ -2127,48 +2169,29 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         error(`expected ${name} expression`);
                     }
                 } else if (hasUnknown) {
-                    value = this.permissiveValue(/^[{;]/);
-                    hasBlock = (parserInput.currentChar() === '{');
-                    if (!value) {
-                        if (!hasBlock && parserInput.currentChar() !== ';') {
-                            error(`${name} rule is missing block or ending semi-colon`);
-                        }
-                    }
-                    else if (!value.value) {
-                        value = null;
-                    }
+                    const unknownPackage = this.atruleUnknown(value, name, hasBlock);
+                    value = unknownPackage[0];
+                    hasBlock = unknownPackage[1];
                 }
-
+                    
                 if (hasBlock) {
-                    rules = this.blockRuleset();
+                    let blockPackage = this.atruleBlock(rules, value, isRooted, isKeywordList);
+                    rules = blockPackage[0];
+                    value = blockPackage[1];
+                    isKeywordList = blockPackage[2];
 
-                    parserInput.save();
-
-                    if (!rules && !isRooted) {
-                        value = this.entity();
-                        rules = this.blockRuleset();
-                    }
-
-                    if (!rules && !isRooted) {
+                    if (!rules && !hasUnknown) {
                         parserInput.restore();
-
-                        let e = [];
-                        value = this.entity();
-
-                        while (parserInput.$char(',')) {
-                            e.push(value);
-                            value = this.entity();
+                        name = parserInput.$re(/^@[a-z-]+/);
+                        const unknownPackage = this.atruleUnknown(value, name, hasBlock);
+                        value = unknownPackage[0];
+                        hasBlock = unknownPackage[1];
+                        if (hasBlock) {
+                            blockPackage = this.atruleBlock(rules, value, isRooted, isKeywordList);
+                            rules = blockPackage[0];
+                            value = blockPackage[1];
+                            isKeywordList = blockPackage[2];
                         }
-
-                        if (value && e.length > 0) {
-                            e.push(value);
-                            value = e;
-                            isKeywordList = true;
-                        } else {
-                            rules = this.blockRuleset();
-                        }
-                    } else {
-                        parserInput.forget();
                     }
                 }
 

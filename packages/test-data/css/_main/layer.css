@@ -69,3 +69,25 @@
 .parent:hover {
   background: lightgray;
 }
+@layer foo.baz {
+  .bar {
+    font-weight: bold;
+  }
+}
+@layer framework {
+  @layer layout {
+    .container {
+      display: grid;
+      gap: 2rem;
+    }
+  }
+}
+@layer framework.layout {
+  main {
+    padding: 2rem;
+  }
+  p {
+    margin-block: 1rem;
+    color: #555;
+  }
+}

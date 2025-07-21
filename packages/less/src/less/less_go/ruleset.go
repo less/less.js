@@ -417,7 +417,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 	}
 
 	// Create new ruleset
-	ruleset := NewRuleset(selectors, rules, r.StrictImports, r.VisibilityInfo())
+	ruleset := NewRuleset(selectors, rules, r.StrictImports, r.VisibilityInfo(), r.SelectorsParseFunc, r.ValueParseFunc, r.ParseContext, r.ParseImports)
 	ruleset.OriginalRuleset = r
 	ruleset.Root = r.Root
 	ruleset.FirstRoot = r.FirstRoot
@@ -914,9 +914,19 @@ func (r *Ruleset) Variable(name string) map[string]any {
 	vars := r.Variables()
 	if decl, exists := vars[name]; exists {
 		if d, ok := decl.(*Declaration); ok {
+			// Transform the declaration to parse Anonymous values into proper nodes
+			transformed := r.transformDeclaration(d)
+			
 			// Return the expected format with value and important fields
+			var value any
+			if transformedDecl, ok := transformed.(*Declaration); ok {
+				value = transformedDecl.Value
+			} else {
+				value = d.Value
+			}
+			
 			result := map[string]any{
-				"value": d.Value, // Return the Declaration's Value directly, not the Declaration itself
+				"value": value,
 			}
 			
 			// Check if the declaration has important flag
@@ -1018,6 +1028,8 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 	if d, ok := decl.(*Declaration); ok {
 		// Match JavaScript logic: if (decl.value instanceof Anonymous && !decl.parsed)
 		if d.Value != nil && len(d.Value.Value) > 0 {
+			// DEBUG
+			// fmt.Printf("DEBUG transformDeclaration: name=%v, Value[0]=%T, ValueParseFunc=%v\n", d.GetName(), d.Value.Value[0], r.ValueParseFunc != nil)
 			// Check if not parsed (similar to JS !decl.parsed)
 			parsed := false
 			if d.Parsed != nil {
@@ -1031,6 +1043,8 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 					// Parse using ValueParseFunc (equivalent to JS parseNode call)
 					result, err := r.ValueParseFunc(str, r.ParseContext, r.ParseImports, d.FileInfo(), anon.GetIndex())
 					if err != nil {
+						// DEBUG: Log parsing failure
+						// fmt.Printf("DEBUG: ValueParseFunc failed for '%s': %v\n", str, err)
 						// If parsing fails, create a copy and mark as parsed to avoid infinite loops
 						nodeCopy := NewNode()
 						nodeCopy.CopyVisibilityInfo(d.Node.VisibilityInfo())
@@ -1046,8 +1060,19 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 						}
 						return dCopy
 					} else if len(result) > 0 {
-						// Create a copy of the declaration to avoid mutating shared instances
-						valueCopy, _ := NewValue([]any{result[0]})
+						// DEBUG: Log successful parsing
+						// fmt.Printf("DEBUG: ValueParseFunc succeeded for '%s': %T\n", str, result[0])
+						
+						// The parser returns Value>Expression>Dimension for "10px"
+						// We should use the parsed Value directly, not wrap it again
+						var valueCopy *Value
+						if parsedValue, ok := result[0].(*Value); ok {
+							valueCopy = parsedValue
+						} else {
+							// Fallback: wrap in Value if not already a Value
+							valueCopy, _ = NewValue([]any{result[0]})
+						}
+						
 						nodeCopy := NewNode()
 						nodeCopy.CopyVisibilityInfo(d.Node.VisibilityInfo())
 						nodeCopy.Parsed = true
@@ -1759,6 +1784,17 @@ func GetDebugInfo(context map[string]any, ruleset *Ruleset, separator string) st
 	}
 	
 	return result
+}
+
+// asComment formats debug info as a CSS comment
+func asComment(lineNumber int, fileName string) string {
+	return fmt.Sprintf("/* line %d, %s */", lineNumber, fileName)
+}
+
+// asMediaQuery formats debug info as a media query
+func asMediaQuery(lineNumber int, fileName string) string {
+	return fmt.Sprintf("@media -sass-debug-info{filename{font-family:file\\:\\/\\/%s}line{font-family:\\00003%d}}", 
+		strings.ReplaceAll(fileName, "/", "\\/"), lineNumber)
 }
 
 // Helper function to create debug context from ruleset

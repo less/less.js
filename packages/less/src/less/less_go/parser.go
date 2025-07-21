@@ -343,8 +343,11 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 
 		if result != nil {
 			returnNodes = append(returnNodes, result)
+		} else if parserName == "important" {
+			// Important is optional, don't fail if not found
+			continue
 		} else {
-			// If any parser fails, we should fail the whole parseNode operation
+			// If any required parser fails, we should fail the whole parseNode operation
 			callback(&ParseNodeResult{
 				Error: true,
 				Nodes: nil,
@@ -371,6 +374,7 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 	// Check if we've consumed all input or only have whitespace remaining
 	isFinished := currentIndex >= len(input)
 
+	// JavaScript parser requires all input to be consumed
 	if isFinished {
 		callback(&ParseNodeResult{
 			Error: nil,

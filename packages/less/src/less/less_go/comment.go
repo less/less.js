@@ -71,4 +71,59 @@ func (c *Comment) SetParent(node any, parent *Node) {
 // GetDebugInfo returns debug information for this comment
 func (c *Comment) GetDebugInfo() map[string]any {
 	return c.DebugInfo
+}
+
+// DebugInfo formats debug info for a comment node
+func DebugInfo(context map[string]any, node any, separator string) string {
+	if context == nil || node == nil {
+		return ""
+	}
+	
+	// Check if dumpLineNumbers is enabled
+	dumpLineNumbers, ok := context["dumpLineNumbers"].(string)
+	if !ok || dumpLineNumbers == "" {
+		return ""
+	}
+	
+	// Check if compress is enabled
+	compress, _ := context["compress"].(bool)
+	if compress && dumpLineNumbers != "all" {
+		return ""
+	}
+	
+	// Get debug info from the node
+	var debugInfo map[string]any
+	if comment, ok := node.(*Comment); ok && comment.DebugInfo != nil {
+		debugInfo = comment.DebugInfo
+	} else {
+		return ""
+	}
+	
+	// Extract line number and filename
+	lineNumber, ok := debugInfo["lineNumber"].(int)
+	if !ok {
+		return ""
+	}
+	
+	fileName, ok := debugInfo["fileName"].(string)
+	if !ok {
+		return ""
+	}
+	
+	// Use the same formatting functions as GetDebugInfo in ruleset.go
+	var result string
+	switch dumpLineNumbers {
+	case "comments":
+		result = asComment(lineNumber, fileName)
+	case "mediaquery":
+		result = asMediaQuery(lineNumber, fileName)
+	case "all":
+		result = asComment(lineNumber, fileName)
+		if separator != "" {
+			result += separator
+		}
+		result += asMediaQuery(lineNumber, fileName)
+	}
+	
+	return result
 } 

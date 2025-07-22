@@ -87,14 +87,6 @@ func TransformTree(root any, options map[string]any) any {
 						needsEval: false, // 'each' needs unevaluated args
 					})
 				}
-			default:
-				// Try as 2-argument function (extract, length)
-				if functionImpl, ok := fn.(func(any, any) any); ok {
-					functionRegistry.Add(name, &SimpleFunctionDef{
-						name: name,
-						fn:   functionImpl,
-					})
-				}
 			}
 		}
 	}

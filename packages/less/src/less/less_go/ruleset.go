@@ -1032,8 +1032,6 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 	if d, ok := decl.(*Declaration); ok {
 		// Match JavaScript logic: if (decl.value instanceof Anonymous && !decl.parsed)
 		if d.Value != nil && len(d.Value.Value) > 0 {
-			// DEBUG
-			// fmt.Printf("DEBUG transformDeclaration: name=%v, Value[0]=%T, ValueParseFunc=%v\n", d.GetName(), d.Value.Value[0], r.ValueParseFunc != nil)
 			// Check if not parsed (similar to JS !decl.parsed)
 			parsed := false
 			if d.Parsed != nil {
@@ -1047,8 +1045,6 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 					// Parse using ValueParseFunc (equivalent to JS parseNode call)
 					result, err := r.ValueParseFunc(str, r.ParseContext, r.ParseImports, d.FileInfo(), anon.GetIndex())
 					if err != nil {
-						// DEBUG: Log parsing failure
-						// fmt.Printf("DEBUG: ValueParseFunc failed for '%s': %v\n", str, err)
 						// If parsing fails, create a copy and mark as parsed to avoid infinite loops
 						nodeCopy := NewNode()
 						nodeCopy.CopyVisibilityInfo(d.Node.VisibilityInfo())
@@ -1064,8 +1060,6 @@ func (r *Ruleset) transformDeclaration(decl any) any {
 						}
 						return dCopy
 					} else if len(result) > 0 {
-						// DEBUG: Log successful parsing
-						// fmt.Printf("DEBUG: ValueParseFunc succeeded for '%s': %T\n", str, result[0])
 						
 						// The parser returns Value>Expression>Dimension for "10px"
 						// We should use the parsed Value directly, not wrap it again
@@ -1127,12 +1121,7 @@ func (r *Ruleset) Rulesets() []any {
 	
 	var filtered []any
 	for _, rule := range r.Rules {
-		// Debug: Check for MixinDefinition
-		if _, isMixinDef := rule.(*MixinDefinition); isMixinDef {
-			// fmt.Printf("DEBUG Rulesets: Found MixinDefinition in rules\n")
-		}
 		if rs, ok := rule.(interface{ IsRuleset() bool }); ok && rs.IsRuleset() {
-			// Debug code removed
 			filtered = append(filtered, rule)
 		}
 	}
@@ -1176,12 +1165,9 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 	var match int
 	var foundMixins []any
 	
-	// Debug
-	// fmt.Printf("DEBUG Find: Looking for '%s' in ruleset with %d rules\n", key, len(r.Rules))
 	
 	// this.rulesets().forEach(function (rule) { ... }) pattern
 	rulesets := r.Rulesets()
-	// fmt.Printf("DEBUG Find: Found %d rulesets to search\n", len(rulesets))
 	for _, rule := range rulesets {
 		if rule == self {
 			continue
@@ -1205,8 +1191,6 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 			for j := 0; j < len(rulesetSelectors); j++ {
 				if sel, ok := selector.(*Selector); ok {
 					if ruleSelector, ok := rulesetSelectors[j].(*Selector); ok {
-						// fmt.Printf("DEBUG Find: Comparing selector '%s' with rule selector '%s'\n", 
-						//	sel.ToCSS(nil), ruleSelector.ToCSS(nil))
 						match = sel.Match(ruleSelector)
 						if match > 0 {
 							if len(sel.Elements) > match {
@@ -1366,6 +1350,8 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 					output.Add(sep, nil, nil)
 				}
 				
+				// Always set firstSelector to true for the first selector in a path
+				// This ensures no extra space is added at the beginning of selectors
 				ctx["firstSelector"] = true
 				if gen, ok := path[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
 					gen.GenCSS(ctx, output)

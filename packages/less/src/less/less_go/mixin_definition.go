@@ -51,14 +51,21 @@ func NewMixinDefinition(name string, params []any, rules []any, condition any, v
 			paramName := param["name"]
 			paramValue := param["value"]
 			
+			// Extract name string from either string or Variable
+			var nameStr string
+			if s, ok := paramName.(string); ok {
+				nameStr = s
+			} else if v, ok := paramName.(*Variable); ok {
+				nameStr = v.GetName()
+			}
+			
 			// JavaScript logic: !p.name || (p.name && !p.value)
 			// Required if: no name OR empty string name OR (has name but no value)
-			nameStr, nameIsString := paramName.(string)
-			if paramName == nil || (nameIsString && nameStr == "") || (paramName != nil && paramValue == nil) {
+			if paramName == nil || nameStr == "" || (paramName != nil && paramValue == nil) {
 				required++
 			} else {
 				// Has both name and value - it's optional
-				if nameStr, ok := paramName.(string); ok && nameStr != "" {
+				if nameStr != "" {
 					optionalParameters = append(optionalParameters, nameStr)
 				}
 			}
@@ -173,18 +180,56 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 					name = argName
 					isNamedFound = false
 					
+					// Ensure evaldArguments has enough slots
+					for len(evaldArguments) < len(params) {
+						evaldArguments = append(evaldArguments, nil)
+					}
+					
 					for j := 0; j < len(params); j++ {
-						if j >= len(evaldArguments) {
-							break
-						}
 						if evaldArguments[j] != nil {
 							continue
 						}
 						
 						if paramMap, ok := params[j].(map[string]any); ok {
-							if paramName, ok := paramMap["name"].(string); ok && name == paramName {
-								if argValue, ok := argMap["value"].(interface{ Eval(any) any }); ok {
+							// Handle both string names and Variable objects
+							var paramNameStr string
+							if paramName, ok := paramMap["name"].(string); ok {
+								paramNameStr = paramName
+							} else if paramVar, ok := paramMap["name"].(*Variable); ok {
+								paramNameStr = paramVar.GetName()
+							}
+							
+							
+							if paramNameStr != "" && name == paramNameStr {
+								// Handle values that implement Eval with error return
+								if argValue, ok := argMap["value"].(interface{ Eval(any) (any, error) }); ok {
+									evalResult, err := argValue.Eval(context)
+									if err != nil {
+										return nil, err
+									}
+									evaldArguments[j] = evalResult
+									// Create declaration and prepend to frame
+									decl, err := NewDeclaration(name, evaldArguments[j], nil, false, 0, make(map[string]any), false, true)
+									if err != nil {
+										return nil, err
+									}
+									frame.PrependRule(decl)
+									isNamedFound = true
+									break
+								} else if argValue, ok := argMap["value"].(interface{ Eval(any) any }); ok {
+									// Handle values that implement Eval without error return
 									evaldArguments[j] = argValue.Eval(context)
+									// Create declaration and prepend to frame
+									decl, err := NewDeclaration(name, evaldArguments[j], nil, false, 0, make(map[string]any), false, true)
+									if err != nil {
+										return nil, err
+									}
+									frame.PrependRule(decl)
+									isNamedFound = true
+									break
+								} else {
+									// If value doesn't implement Eval, use it directly
+									evaldArguments[j] = argMap["value"]
 									// Create declaration and prepend to frame
 									decl, err := NewDeclaration(name, evaldArguments[j], nil, false, 0, make(map[string]any), false, true)
 									if err != nil {
@@ -228,8 +273,16 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 		}
 
 		if paramMap, ok := params[i].(map[string]any); ok {
-			if paramName, ok := paramMap["name"].(string); ok && paramName != "" {
-				name = paramName
+			// Extract name string from either string or Variable
+			var paramNameStr string
+			if s, ok := paramMap["name"].(string); ok {
+				paramNameStr = s
+			} else if v, ok := paramMap["name"].(*Variable); ok {
+				paramNameStr = v.GetName()
+			}
+			
+			if paramNameStr != "" {
+				name = paramNameStr
 				
 				if variadic, ok := paramMap["variadic"].(bool); ok && variadic {
 					varargs = []any{}
@@ -270,7 +323,9 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 						}
 					} else if paramValue, ok := paramMap["value"]; ok && paramValue != nil {
 						if evalValue, ok := paramValue.(interface{ Eval(any) any }); ok {
-							val = evalValue.Eval(evalContext)
+							// Default parameters should use mixinEnv (like JavaScript line 119)
+							// This gives them access to both mixin's lexical scope and caller's scope
+							val = evalValue.Eval(mixinEnv)
 							frame.ResetCache()
 						}
 					} else {
@@ -335,7 +390,12 @@ func (md *MixinDefinition) Eval(context any) (*MixinDefinition, error) {
 		}
 	}
 	
-	result, err := NewMixinDefinition(md.Name, md.Params, md.Rules, md.Condition, md.Variadic, frames, md.VisibilityInfo())
+	// Important: Do NOT evaluate the rules here. The rules should only be evaluated 
+	// when the mixin is called via EvalCall
+	// Copy the rules without evaluating them
+	copiedRules := CopyArray(md.Rules)
+	
+	result, err := NewMixinDefinition(md.Name, md.Params, copiedRules, md.Condition, md.Variadic, frames, md.VisibilityInfo())
 	if err != nil {
 		return nil, err
 	}
@@ -624,4 +684,9 @@ func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
 	}
 	
 	return true
+}
+
+// GenCSS for MixinDefinition - mixin definitions should not output any CSS
+func (md *MixinDefinition) GenCSS(context any, output *CSSOutput) {
+	// Mixin definitions do not generate CSS output
 } 

@@ -79,8 +79,6 @@ func (v *Value) Eval(context any) (any, error) {
 		
 		if evalValue, ok := v.Value[0].(Evaluator); ok {
 			result, err := evalValue.Eval(context)
-			// DEBUG: Log evaluation
-			// fmt.Printf("DEBUG Value.Eval: v.Value[0]=%T, result=%T\n", v.Value[0], result)
 			return result, err
 		}
 		return v.Value[0], nil

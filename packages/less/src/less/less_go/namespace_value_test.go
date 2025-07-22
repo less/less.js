@@ -789,7 +789,6 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
-		// Debug: Print the actual result
 		t.Logf("Result type: %T, Result value: %+v", result, result)
 		// The intermediate array should have been extracted from the variable evaluation
 		if result == nil {

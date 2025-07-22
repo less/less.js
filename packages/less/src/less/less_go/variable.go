@@ -257,8 +257,6 @@ func (v *Variable) Eval(context any) (any, error) {
 					// Evaluate value - check both interface types
 					if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
 						result, err := evalable.Eval(context)
-						// DEBUG: Log what we're returning
-						// fmt.Printf("DEBUG Variable.Eval('%s'): val=%T, result=%T\n", name, val, result)
 						return result, err
 					} else if _, ok := val.(interface{ Eval(EvalContext) (any, error) }); ok {
 						// For map context, we can't pass EvalContext, so return value as-is

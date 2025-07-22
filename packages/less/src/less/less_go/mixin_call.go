@@ -154,8 +154,6 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 				conditionResult[f] = true
 			}
 			defaultFunc.Value(f)
-			// Debug: Add some logging to see what's happening
-			// fmt.Printf("DEBUG calcDefGroup: f=%d, setting defaultFunc.Value(%d)\n", f, f)
 
 			for p = 0; p < len(mixinPath) && conditionResult[f]; p++ {
 				namespace = mixinPath[p]
@@ -172,7 +170,6 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 						condContext = newCtx
 					}
 					conditionResult[f] = conditionResult[f] && ns.MatchCondition(nil, condContext)
-					// fmt.Printf("DEBUG calcDefGroup: namespace condition result for f=%d: %v\n", f, conditionResult[f])
 				}
 			}
 			if mix, ok := mixin.(interface{ MatchCondition([]any, any) bool }); ok {
@@ -187,26 +184,19 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 					newCtx["defaultFunc"] = defaultFunc
 					condContext = newCtx
 				}
-				// fmt.Printf("DEBUG calcDefGroup: calling mixin.MatchCondition for f=%d\n", f)
 				conditionResult[f] = conditionResult[f] && mix.MatchCondition(args, condContext)
-				// fmt.Printf("DEBUG calcDefGroup: mixin condition result for f=%d: %v\n", f, conditionResult[f])
 			}
 		}
 
-		// fmt.Printf("DEBUG calcDefGroup: final conditionResult[0]=%v, conditionResult[1]=%v\n", conditionResult[0], conditionResult[1])
 		if len(conditionResult) >= 2 && (conditionResult[0] || conditionResult[1]) {
 			if conditionResult[0] != conditionResult[1] {
 				if conditionResult[1] {
-					// fmt.Printf("DEBUG calcDefGroup: returning defTrue=%d\n", defTrue)
 					return defTrue
 				}
-				// fmt.Printf("DEBUG calcDefGroup: returning defFalse=%d\n", defFalse)
 				return defFalse
 			}
-			// fmt.Printf("DEBUG calcDefGroup: returning defNone=%d\n", defNone)
 			return defNone
 		}
-		// fmt.Printf("DEBUG calcDefGroup: returning defFalseEitherCase=%d\n", defFalseEitherCase)
 		return defFalseEitherCase
 	}
 
@@ -259,8 +249,6 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 					if len(foundMixins) > 0 {
 						mixins = foundMixins
 						isOneFound = true
-						// Debug: print number of mixins found
-						// fmt.Printf("DEBUG: Found %d mixins for selector %s\n", len(mixins), mc.Selector.ToCSS(context))
 
 						// Process each found mixin
 						for m = 0; m < len(mixins); m++ {
@@ -324,9 +312,6 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								}
 							}
 						}
-						// Debug: print count values and candidate info
-						// fmt.Printf("DEBUG: mixin=%s, args=%v, count[defNone]=%d, count[defTrue]=%d, count[defFalse]=%d, candidates=%d\n", 
-						//     mc.Selector.ToCSS(context), args, count[defNone], count[defTrue], count[defFalse], len(candidates))
 
 						if count[defNone] > 0 {
 							defaultResult = defFalse

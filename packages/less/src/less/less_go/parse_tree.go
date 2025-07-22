@@ -166,7 +166,14 @@ func (pt *ParseTree) ToCSS(options *ToCSSOptions) (*ToCSSResult, error) {
 				if cssGenerator, ok := ruleset.(interface {
 					ToCSS(map[string]any) (string, error)
 				}); ok {
-					generatedCSS, err := cssGenerator.ToCSS(toCSSOptions)
+					// Create a copy of options to ensure each ruleset is treated as top-level
+					rulesetOptions := make(map[string]any)
+					for k, v := range toCSSOptions {
+						rulesetOptions[k] = v
+					}
+					// Mark this as a top-level ruleset to prevent extra space before first selector
+					rulesetOptions["topLevel"] = true
+					generatedCSS, err := cssGenerator.ToCSS(rulesetOptions)
 					if err != nil {
 						return nil, NewLessError(ErrorDetails{
 							Message: err.Error(),

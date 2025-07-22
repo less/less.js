@@ -580,7 +580,7 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 	
 	if rootNode, ok := rulesetNode.(interface{ GetRoot() bool }); ok {
 		if !rootNode.GetRoot() {
-			// remove invisible paths
+			// remove invisible paths and clean up combinators
 			v.compileRulesetPaths(rulesetNode)
 			
 			// remove rulesets from this ruleset body and compile them separately
@@ -620,6 +620,8 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 			visitArgs.VisitDeeper = false
 		} else {
 			// if (! rulesetNode.root) {
+			// For the root ruleset, we need to clean up paths of its direct children
+			// This ensures top-level rulesets don't have extra space combinators
 			if acceptor, ok := rulesetNode.(interface{ Accept(any) }); ok {
 				acceptor.Accept(v.visitor)
 			}
@@ -686,20 +688,13 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 			for _, p := range paths {
 				if pathSlice, ok := p.([]any); ok && len(pathSlice) > 0 {
 					// Convert space combinator to empty at start of path
-					if pathElement, ok := pathSlice[0].(interface{ GetElements() []any }); ok {
-						elements := pathElement.GetElements()
-						if len(elements) > 0 {
-							if combNode, ok := elements[0].(interface{ GetCombinator() any }); ok {
-								if combWithValue, ok := combNode.GetCombinator().(interface{ GetValue() string }); ok {
-									if combWithValue.GetValue() == " " {
-										// Set combinator to empty
-										newComb := NewCombinator("")
-										if combSetter, ok := elements[0].(interface{ SetCombinator(any) }); ok {
-											combSetter.SetCombinator(newComb)
-										}
-									}
-								}
-							}
+					// pathSlice[0] should be a Selector
+					if selector, ok := pathSlice[0].(*Selector); ok && len(selector.Elements) > 0 {
+						// Check the first element's combinator
+						firstElement := selector.Elements[0]
+						if firstElement.Combinator != nil && firstElement.Combinator.Value == " " {
+							// Set combinator to empty for top-level selectors
+							firstElement.Combinator = NewCombinator("")
 						}
 					}
 					
@@ -729,8 +724,6 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 					if hasVisibleOutput {
 						filteredPaths = append(filteredPaths, p)
 					} else {
-						// DEBUG: Path filtered out
-						// fmt.Printf("DEBUG: Path filtered out, no visible output elements\n")
 					}
 				}
 			}
@@ -762,10 +755,6 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 				}
 			}
 			
-			// DEBUG: Check path filtering
-			// if len(paths) > 0 && len(filteredPaths) == 0 {
-			//     fmt.Printf("DEBUG: All paths filtered out! Original: %d, Filtered: 0\n", len(paths))
-			// }
 			
 			pathNode.SetPaths(filteredPaths)
 		}

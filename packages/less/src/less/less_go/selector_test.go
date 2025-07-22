@@ -143,7 +143,6 @@ func TestSelector(t *testing.T) {
 		t.Run("should parse string input successfully", func(t *testing.T) {
 			sel, err := NewSelector("div.class", nil, nil, 0, mockFileInfo, nil, mockParseFunc, mockContext, mockImports)
 			
-			// Debug: Check if ParseFunc was set
 			if sel != nil && sel.ParseFunc == nil {
 				t.Errorf("ParseFunc was not set on selector")
 			}

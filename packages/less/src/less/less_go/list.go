@@ -434,8 +434,34 @@ func init() {
 			DefaultRegistry.Add(name, &EachFunctionDef{
 				name: name,
 			})
+		case "length":
+			if lengthFn, ok := fn.(func(any) *Dimension); ok {
+				DefaultRegistry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   1,
+					maxArgs:   1,
+					variadic:  false,
+					fn:        func(args ...any) any {
+						return lengthFn(args[0])
+					},
+					needsEval: true,
+				})
+			}
+		case "extract":
+			if extractFn, ok := fn.(func(any, any) any); ok {
+				DefaultRegistry.Add(name, &FlexibleFunctionDef{
+					name:      name,
+					minArgs:   2,
+					maxArgs:   2,
+					variadic:  false,
+					fn:        func(args ...any) any {
+						return extractFn(args[0], args[1])
+					},
+					needsEval: true,
+				})
+			}
 		default:
-			// Try as 2-argument function (extract, length)
+			// Try as 2-argument function 
 			if functionImpl, ok := fn.(func(any, any) any); ok {
 				DefaultRegistry.Add(name, &SimpleFunctionDef{
 					name: name,

@@ -40,8 +40,14 @@ func (c *Condition) Accept(visitor any) {
 	}
 }
 
-// Eval evaluates the condition
-func (c *Condition) Eval(context any) bool {
+// Eval evaluates the condition and returns it following the interface{ Eval(any) any } pattern
+func (c *Condition) Eval(context any) any {
+	// The selector expects Eval to return any, but internally we evaluate to bool
+	return c.EvalBool(context)
+}
+
+// EvalBool evaluates the condition and returns a boolean result
+func (c *Condition) EvalBool(context any) bool {
 	// JavaScript implementation:
 	// Evaluates lvalue and rvalue, then uses Node.compare for comparison operators
 	

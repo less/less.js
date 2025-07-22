@@ -36,6 +36,10 @@ func NewElement(combinator any, value any, isVariable bool, index int, currentFi
 		val = strings.TrimSpace(v)
 	case nil:
 		val = ""
+	case byte:
+		// Convert byte to string character (e.g., byte(38) -> "&")
+		// Note: byte is an alias for uint8 in Go
+		val = string(v)
 	case bool:
 		// JavaScript converts false to ""
 		if !v {

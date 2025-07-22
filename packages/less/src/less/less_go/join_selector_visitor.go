@@ -87,8 +87,26 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 					if jsInterface, ok := rulesetNode.(interface{ JoinSelectors(*[][]any, [][]any, []any) }); ok {
 						// Convert paths and context to the expected types
 						pathsSlice := make([][]any, 0)
-						contextSlice := make([][]any, 1)
-						contextSlice[0] = context
+						
+						// The context is already a []any containing paths.
+						// JoinSelectors expects [][]any where each element is a path.
+						// If context is empty, pass empty [][]any
+						// Otherwise, convert context elements to [][]any
+						var contextSlice [][]any
+						if len(context) == 0 {
+							contextSlice = [][]any{}
+						} else {
+							// Each element in context should be a path ([]any)
+							contextSlice = make([][]any, len(context))
+							for i, path := range context {
+								if pathArray, ok := path.([]any); ok {
+									contextSlice[i] = pathArray
+								} else {
+									// If it's a single selector, wrap it
+									contextSlice[i] = []any{path}
+								}
+							}
+						}
 						
 						jsInterface.JoinSelectors(&pathsSlice, contextSlice, filteredSelectors)
 						
@@ -134,8 +152,27 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 					if hasJoinSelectors(ruleset) {
 						pathsSlice := make([][]any, 0)
 						pathsPtr := &pathsSlice
-						contextSlice := make([][]any, 1)
-						contextSlice[0] = context
+						
+						// The context is already a []any containing paths.
+						// JoinSelectors expects [][]any where each element is a path.
+						// If context is empty, pass empty [][]any
+						// Otherwise, convert context elements to [][]any
+						var contextSlice [][]any
+						if len(context) == 0 {
+							contextSlice = [][]any{}
+						} else {
+							// Each element in context should be a path ([]any)
+							contextSlice = make([][]any, len(context))
+							for i, path := range context {
+								if pathArray, ok := path.([]any); ok {
+									contextSlice[i] = pathArray
+								} else {
+									// If it's a single selector, wrap it
+									contextSlice[i] = []any{path}
+								}
+							}
+						}
+						
 						ruleset.JoinSelectors(pathsPtr, contextSlice, filteredSelectors)
 						
 						// Convert the result to []any and update the existing paths slice in place

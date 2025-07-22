@@ -3211,14 +3211,8 @@ func (p *Parsers) Combinator() *Combinator {
 		return NewCombinator(combinator)
 	} else {
 		// Check for whitespace combinator (descendant selector)
-		if p.parser.parserInput.IsWhitespace(0) {
-			// Consume whitespace
-			for {
-				if !p.parser.parserInput.IsWhitespace(0) {
-					break
-				}
-				p.parser.parserInput.SetIndex(p.parser.parserInput.GetIndex() + 1)
-			}
+		// Match JavaScript: check if previous character was whitespace
+		if p.parser.parserInput.IsWhitespace(-1) {
 			return NewCombinator(" ")
 		} else {
 			return NewCombinator("")

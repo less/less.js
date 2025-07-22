@@ -343,7 +343,7 @@ func init() {
 	// Following: `([\w-]|(\\.))*` -> word char or hyphen, OR escaped char, repeated.
 	// Go: `[,\x26#*\.\w\-]([\w\-]|(\\\\.))*` -- assuming `.` is any char after `\\`
 	var err error
-	mixinElementsRegex, err = regexp.Compile(`[,\x26#*\.\w\-]([\w\-]|(\\\\.))*`) // \\\\ matches backslash followed by any character
+	mixinElementsRegex, err = regexp.Compile(`[,\x26#*\.\w\-]([\w\-]|(\\.))*`) // \\. matches backslash followed by any character
 	if err != nil {
 		panic(fmt.Sprintf("Failed to compile MixinElements regex: %v", err))
 	}

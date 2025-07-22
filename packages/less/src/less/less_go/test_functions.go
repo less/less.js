@@ -1,5 +1,10 @@
 package less_go
 
+func init() {
+	// Register test functions in the DefaultRegistry for integration tests
+	RegisterTestFunctions(DefaultRegistry)
+}
+
 // RegisterTestFunctions adds the custom test functions used in integration tests
 // These functions are defined in the JavaScript test setup in less-test.js
 func RegisterTestFunctions(registry *Registry) {
@@ -9,7 +14,12 @@ func RegisterTestFunctions(registry *Registry) {
 
 	// add function: adds two numbers
 	// JavaScript: add: function (a, b) { return new(less.tree.Dimension)(a.value + b.value); }
-	registry.Add("add", func(args ...any) any {
+	registry.Add("add", &FlexibleFunctionDef{
+		name:     "add",
+		minArgs:  2,
+		maxArgs:  2,
+		variadic: false,
+		fn: func(args ...any) any {
 		if len(args) < 2 {
 			return nil
 		}
@@ -57,11 +67,18 @@ func RegisterTestFunctions(registry *Registry) {
 			return nil
 		}
 		return result
+		},
+		needsEval: true,
 	})
 
 	// increment function: adds 1 to a number
 	// JavaScript: increment: function (a) { return new(less.tree.Dimension)(a.value + 1); }
-	registry.Add("increment", func(args ...any) any {
+	registry.Add("increment", &FlexibleFunctionDef{
+		name:     "increment",
+		minArgs:  1,
+		maxArgs:  1,
+		variadic: false,
+		fn: func(args ...any) any {
 		if len(args) < 1 {
 			return nil
 		}
@@ -88,11 +105,18 @@ func RegisterTestFunctions(registry *Registry) {
 			return nil
 		}
 		return result
+		},
+		needsEval: true,
 	})
 
 	// _color function: converts "evil red" to #660000
 	// JavaScript: _color: function (str) { if (str.value === 'evil red') { return new(less.tree.Color)('600'); } }
-	registry.Add("_color", func(args ...any) any {
+	registry.Add("_color", &FlexibleFunctionDef{
+		name:     "_color",
+		minArgs:  1,
+		maxArgs:  1,
+		variadic: false,
+		fn: func(args ...any) any {
 		if len(args) < 1 {
 			return nil
 		}
@@ -116,5 +140,7 @@ func RegisterTestFunctions(registry *Registry) {
 		}
 		
 		return nil
+		},
+		needsEval: true,
 	})
 }

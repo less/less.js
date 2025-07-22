@@ -45,6 +45,9 @@ func (f *DefaultFunctionCallerFactory) NewFunctionCaller(name string, context Ev
 	// Get function definition from registry via adapter
 	lowerName := strings.ToLower(name)
 	funcDef := f.adapter.Get(lowerName)
+	
+	// Debug logging
+	// fmt.Printf("[DEBUG] Looking up function '%s' (lowercased: '%s'), found: %v\n", name, lowerName, funcDef != nil)
 
 	if funcDef == nil {
 		// Return an invalid caller - this matches JavaScript behavior where unknown functions are not called

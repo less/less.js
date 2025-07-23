@@ -31,7 +31,7 @@ class AbstractFileManager {
     }
 
     isPathAbsolute(filename) {
-        return (/^(?:[a-z-]+:|\/|\\|#)/i).test(filename);
+        return (/^(?:[a-z-]+:|\/|\\)/i).test(filename);
     }
 
     // TODO: pull out / replace?

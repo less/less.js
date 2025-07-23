@@ -129,7 +129,15 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 			Eval(any) (any, error)
 		}); ok {
 			// Fallback to the more generic Eval(any) signature
-			evalResult, err := evalable.Eval(c.context)
+			// For Variable nodes, pass the underlying map context for better compatibility
+			// For other nodes, keep the EvalContext wrapper
+			var evalCtx any = c.context
+			if _, isVariable := arg.(*Variable); isVariable {
+				if mapCtx, ok := c.context.(*MapEvalContext); ok {
+					evalCtx = mapCtx.ctx
+				}
+			}
+			evalResult, err := evalable.Eval(evalCtx)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
 			}

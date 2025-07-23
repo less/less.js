@@ -7,12 +7,16 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
 
-// Global results collector for integration suite summary
-var integrationResults []TestResult
+// Global results collector for integration suite summary with mutex protection
+var (
+	integrationResults []TestResult
+	resultsMutex       sync.Mutex
+)
 
 // Debug configuration from environment
 var (
@@ -23,10 +27,19 @@ var (
 	strictMode  = os.Getenv("LESS_GO_STRICT") == "1"  // Fail tests on output differences
 )
 
+// addTestResult safely adds a test result to the global results slice
+func addTestResult(result TestResult) {
+	resultsMutex.Lock()
+	defer resultsMutex.Unlock()
+	integrationResults = append(integrationResults, result)
+}
+
 // TestIntegrationSuite runs the comprehensive test suite that matches JavaScript test/index.js
 func TestIntegrationSuite(t *testing.T) {
-	// Reset results collector
+	// Reset results collector safely
+	resultsMutex.Lock()
 	integrationResults = []TestResult{}
+	resultsMutex.Unlock()
 	
 	// Track overall progress
 	startTime := time.Now()
@@ -237,7 +250,13 @@ func TestIntegrationSuite(t *testing.T) {
 
 	// Run summary as a final subtest to ensure it appears at the end
 	t.Run("zzz_summary", func(t *testing.T) {
-		printTestSummary(t, integrationResults)
+		// Create a copy of results under lock
+		resultsMutex.Lock()
+		resultsCopy := make([]TestResult, len(integrationResults))
+		copy(resultsCopy, integrationResults)
+		resultsMutex.Unlock()
+		
+		printTestSummary(t, resultsCopy)
 		
 		// Show timing information
 		duration := time.Since(startTime)
@@ -301,7 +320,7 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 			if err != nil {
 				result.Status = "skip"
 				result.Error = "Failed to read .less file: " + err.Error()
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				t.Skipf("Failed to read %s: %v", lessFile, err)
 				return
 			}
@@ -312,7 +331,7 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 			if err != nil {
 				result.Status = "skip"
 				result.Error = "Expected CSS file not found: " + err.Error()
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				t.Skipf("Expected CSS file %s not found: %v", cssFile, err)
 				return
 			}
@@ -336,8 +355,15 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 				result.Status = "fail"
 				result.Error = err.Error()
 				result.ActualCSS = ""
-				integrationResults = append(integrationResults, result)
-				t.Logf("❌ %s: Compilation failed: %v", testName, err)
+				addTestResult(result)
+				
+				if strictMode {
+					// In strict mode, fail the test on compilation errors
+					t.Errorf("❌ %s: Compilation failed: %v", testName, err)
+				} else {
+					// In normal mode, just log the error (expected during development)
+					t.Logf("❌ %s: Compilation failed: %v", testName, err)
+				}
 				enhancedErrorReport(t, err, lessFile, string(lessContent))
 				return
 			}
@@ -347,13 +373,13 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 
 			if result.ActualCSS == result.ExpectedCSS {
 				result.Status = "pass"
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				t.Logf("✅ %s: Perfect match!", testName)
 				successCount++
 			} else {
 				result.Status = "fail"
 				result.Error = "Output differs from expected"
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				
 				if strictMode {
 					// In strict mode, fail the test immediately
@@ -415,7 +441,7 @@ func runErrorTestSuite(t *testing.T, suite TestSuite, lessRoot string) {
 			if err != nil {
 				result.Status = "skip"
 				result.Error = "Failed to read .less file: " + err.Error()
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				t.Skipf("Failed to read %s: %v", lessFile, err)
 				return
 			}
@@ -436,13 +462,13 @@ func runErrorTestSuite(t *testing.T, suite TestSuite, lessRoot string) {
 			if err != nil {
 				result.Status = "pass" // For error tests, failure is success
 				result.Error = err.Error()
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				t.Logf("✅ %s: Correctly failed with error: %v", testName, err)
 			} else {
 				result.Status = "fail" // For error tests, success is failure
 				result.ActualCSS = actualResult
 				result.Error = "Expected error but compilation succeeded"
-				integrationResults = append(integrationResults, result)
+				addTestResult(result)
 				t.Logf("⚠️  %s: Expected error but compilation succeeded", testName)
 				t.Logf("   Result: %s", actualResult)
 			}

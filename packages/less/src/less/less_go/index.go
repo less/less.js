@@ -281,9 +281,13 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 				}
 			}
 			
-			// Create context map
+			// Create context map with parser factory
 			contextMap := map[string]any{
 				"paths": []string{},
+				"parserFactory": func(parserContext map[string]any, parserImports map[string]any, parserFileInfo map[string]any, currentIndex int) ParserInterface {
+					// Create a new parser for importing files
+					return NewParser(parserContext, parserImports, parserFileInfo, currentIndex)
+				},
 			}
 			
 			return factory(environment, contextMap, fileInfo)
@@ -307,10 +311,12 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 				
 				// Convert options to ToCSSOptions
 				toCSSOptions := &ToCSSOptions{
-					Compress:     false,
-					StrictUnits:  false,
-					NumPrecision: 8,
-					Functions:    functionsObj,
+					Compress:      false,
+					StrictUnits:   false,
+					NumPrecision:  8,
+					Functions:     functionsObj,
+					ProcessImports: true,  // Enable import processing
+					ImportManager: imports, // Pass the import manager
 				}
 				if opts != nil {
 					if compress, ok := opts["compress"].(bool); ok {
@@ -647,7 +653,8 @@ func mergeDefaults(target, source map[string]any) map[string]any {
 type SimpleImportManagerEnvironment struct{}
 
 func (s *SimpleImportManagerEnvironment) GetFileManager(path, currentDirectory string, context map[string]any, environment ImportManagerEnvironment) FileManager {
-	return &SimpleFileManager{}
+	// Use the real FileSystemFileManager instead of the simple one
+	return NewFileSystemFileManager()
 }
 
 // SimpleFileManager provides a basic implementation for testing

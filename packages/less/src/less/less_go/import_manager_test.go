@@ -109,15 +109,16 @@ func (m *MockImportPluginLoader) LoadPlugin(path, currentDirectory string, conte
 
 // MockParserInterface implements the ParserInterface
 type MockParserInterface struct {
-	ParseFunc func(str string, callback func(*LessError, any), additionalData map[string]any)
+	ParseFunc func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData)
 }
 
-func (m *MockParserInterface) Parse(str string, callback func(*LessError, any), additionalData map[string]any) {
+func (m *MockParserInterface) Parse(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 	if m.ParseFunc != nil {
 		m.ParseFunc(str, callback, additionalData)
 	} else {
 		// Default behavior - return a mock root
-		callback(nil, map[string]string{"type": "Ruleset"})
+		mockRuleset := NewRuleset(nil, []any{}, false, nil)
+		callback(nil, mockRuleset)
 	}
 }
 
@@ -616,7 +617,7 @@ func TestImportManagerPushErrorHandling(t *testing.T) {
 	// Create a parser that returns an error
 	mockContext["parserFactory"] = func(context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ParserInterface {
 		return &MockParserInterface{
-			ParseFunc: func(str string, callback func(*LessError, any), additionalData map[string]any) {
+			ParseFunc: func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 				err := &LessError{Message: "Parse error"}
 				callback(err, nil)
 			},
@@ -1460,9 +1461,10 @@ func TestImportManagerPushSpecialCharactersInContent(t *testing.T) {
 	var capturedContent string
 	mockContext["parserFactory"] = func(context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ParserInterface {
 		return &MockParserInterface{
-			ParseFunc: func(str string, callback func(*LessError, any), additionalData map[string]any) {
+			ParseFunc: func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 				capturedContent = str
-				callback(nil, map[string]string{"type": "Ruleset"})
+				mockRuleset := NewRuleset(nil, []any{}, false, nil)
+				callback(nil, mockRuleset)
 			},
 		}
 	}
@@ -1649,7 +1651,7 @@ func TestImportManagerPushMultipleErrors(t *testing.T) {
 	mockContext["parserFactory"] = func(context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ParserInterface {
 		parseCallCount++
 		return &MockParserInterface{
-			ParseFunc: func(str string, callback func(*LessError, any), additionalData map[string]any) {
+			ParseFunc: func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 				if parseCallCount == 1 {
 					callback(&LessError{Message: "First error"}, nil)
 				} else {
@@ -1726,9 +1728,10 @@ func TestImportManagerPushFileCaching(t *testing.T) {
 	parseCallCount := 0
 	mockContext["parserFactory"] = func(context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ParserInterface {
 		return &MockParserInterface{
-			ParseFunc: func(str string, callback func(*LessError, any), additionalData map[string]any) {
+			ParseFunc: func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 				parseCallCount++
-				callback(nil, map[string]any{"type": "Ruleset", "parseCount": parseCallCount})
+				mockRuleset := NewRuleset(nil, []any{}, false, nil)
+				callback(nil, mockRuleset)
 			},
 		}
 	}
@@ -1772,17 +1775,17 @@ func TestImportManagerPushFileCaching(t *testing.T) {
 		t.Errorf("Expected parse to still be called only once, got %d", parseCallCount)
 	}
 
-	// Both should return the same cached result (compare map contents)
-	if firstRootMap, ok1 := firstRoot.(map[string]any); ok1 {
-		if secondRootMap, ok2 := secondRoot.(map[string]any); ok2 {
-			if firstRootMap["parseCount"] != secondRootMap["parseCount"] {
-				t.Error("Expected both imports to return the same cached result")
-			}
-		} else {
-			t.Error("Expected second root to be a map")
-		}
-	} else {
-		t.Error("Expected first root to be a map")
+	// Both should return the same cached result (compare object identity)
+	if firstRoot != secondRoot {
+		t.Error("Expected both imports to return the same cached result")
+	}
+
+	// Verify we got Rulesets (Go port returns *Ruleset, not maps)
+	if _, ok := firstRoot.(*Ruleset); !ok {
+		t.Errorf("Expected first root to be a *Ruleset, got %T", firstRoot)
+	}
+	if _, ok := secondRoot.(*Ruleset); !ok {
+		t.Errorf("Expected second root to be a *Ruleset, got %T", secondRoot)
 	}
 }
 
@@ -1807,9 +1810,10 @@ func TestImportManagerPushMultipleImportsBypass(t *testing.T) {
 	parseCallCount := 0
 	mockContext["parserFactory"] = func(context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ParserInterface {
 		return &MockParserInterface{
-			ParseFunc: func(str string, callback func(*LessError, any), additionalData map[string]any) {
+			ParseFunc: func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 				parseCallCount++
-				callback(nil, map[string]any{"type": "Ruleset", "parseCount": parseCallCount})
+				mockRuleset := NewRuleset(nil, []any{}, false, nil)
+				callback(nil, mockRuleset)
 			},
 		}
 	}
@@ -1896,16 +1900,13 @@ func TestImportManagerFullPipeline(t *testing.T) {
 	var parsedFiles []string
 	mockContext["parserFactory"] = func(context map[string]any, imports map[string]any, fileInfo map[string]any, index int) ParserInterface {
 		return &MockParserInterface{
-			ParseFunc: func(str string, callback func(*LessError, any), additionalData map[string]any) {
+			ParseFunc: func(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData) {
 				filename := fileInfo["filename"].(string)
 				parsedFiles = append(parsedFiles, filename)
 				
 				// Simulate successful parsing
-				callback(nil, map[string]any{
-					"type":     "Stylesheet",
-					"filename": filename,
-					"content":  str,
-				})
+				mockRuleset := NewRuleset(nil, []any{}, false, nil)
+				callback(nil, mockRuleset)
 			},
 		}
 	}

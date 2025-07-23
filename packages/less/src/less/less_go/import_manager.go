@@ -133,7 +133,7 @@ type ParseCallback func(error, any, bool, string)
 
 // ParserInterface represents the parser interface used by ImportManager
 type ParserInterface interface {
-	Parse(str string, callback func(*LessError, any), additionalData map[string]any)
+	Parse(str string, callback func(*LessError, *Ruleset), additionalData *AdditionalData)
 }
 
 // NewImportManager creates a new import manager factory function
@@ -369,7 +369,7 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 			if parserFactory, exists := im.context["parserFactory"]; exists {
 				if pf, ok := parserFactory.(func(map[string]any, map[string]any, map[string]any, int) ParserInterface); ok {
 					parser := pf(parserContext, parserImports, parserFileInfo, 0)
-					parser.Parse(contents, func(e *LessError, root any) {
+					parser.Parse(contents, func(e *LessError, root *Ruleset) {
 						var err error
 						if e != nil {
 							err = e

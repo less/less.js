@@ -54,10 +54,10 @@ func TestRegistryFactoryFunction(t *testing.T) {
 			}
 		}
 		
-		// Should also verify they are ColorFunctionDefinition types
+		// Should also verify they implement FunctionDefinition interface
 		if rgbFunc := DefaultRegistry.Get("rgb"); rgbFunc != nil {
-			if _, ok := rgbFunc.(*ColorFunctionDefinition); !ok {
-				t.Errorf("Expected rgb function to be ColorFunctionDefinition, got %T", rgbFunc)
+			if _, ok := rgbFunc.(FunctionDefinition); !ok {
+				t.Errorf("Expected rgb function to implement FunctionDefinition, got %T", rgbFunc)
 			}
 		}
 	})

@@ -46,6 +46,8 @@ type ToCSSOptions struct {
 	SourceMap        any
 	PluginManager    any
 	Functions        any
+	ProcessImports   bool
+	ImportManager    any
 }
 
 // ToCSS converts the parse tree to CSS
@@ -66,6 +68,8 @@ func (pt *ParseTree) ToCSS(options *ToCSSOptions) (*ToCSSResult, error) {
 			"sourceMap":        options.SourceMap,
 			"pluginManager":    options.PluginManager,
 			"functions":        options.Functions,
+			"processImports":   options.ProcessImports,
+			"importManager":    options.ImportManager,
 		}
 	} else {
 		optionsMap = make(map[string]any)

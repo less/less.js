@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"sync"
 )
 
 // Extend represents an extend node in the Less AST.
@@ -23,20 +24,36 @@ type Extend struct {
 }
 
 // extendNextID is a package-level counter for unique object IDs.
-var extendNextID int = 0
+// Protected by mutex for thread safety.
+var (
+	extendNextID int
+	extendIDMutex sync.Mutex
+)
+
+// ResetExtendID resets the extend ID counter - useful for tests
+func ResetExtendID() {
+	extendIDMutex.Lock()
+	extendNextID = 0
+	extendIDMutex.Unlock()
+}
 
 // NewExtend creates a new Extend node with the given selector, option, index,
 // file information, and visibility information.
 func NewExtend(selector any, option string, index int, currentFileInfo map[string]any, visibilityInfo map[string]any) *Extend {
+    // Get next ID with thread safety
+    extendIDMutex.Lock()
+    currentID := extendNextID
+    extendNextID++
+    extendIDMutex.Unlock()
+    
     e := &Extend{
         Node: NewNode(),
         Selector: selector,
         Option: option,
-        ObjectId: extendNextID,
-        ParentIds: []int{extendNextID},
+        ObjectId: currentID,
+        ParentIds: []int{currentID},
         AllowRoot: true,
     }
-    extendNextID++
     // Set index and file info
     e.Index = index
     if currentFileInfo != nil {

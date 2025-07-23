@@ -88,6 +88,13 @@ func (mc *MixinCall) Accept(visitor any) {
 
 // Eval evaluates the mixin call
 func (mc *MixinCall) Eval(context any) ([]any, error) {
+	// Add recursion depth check as safety
+	if ctx, ok := context.(map[string]any); ok {
+		if depth, ok := ctx["mixinCallDepth"].(int); ok && depth > 500 {
+			return nil, fmt.Errorf("mixin call recursion limit exceeded")
+		}
+	}
+	
 	var mixins []any
 	var mixin any
 	var mixinPath []any
@@ -227,15 +234,16 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 		}
 	}
 
-	// No arguments filter
+	// No arguments filter - match JavaScript: rule.matchArgs(null, context) 
 	noArgumentsFilter = func(rule any) bool {
-		// Handle both MixinDefinition (with context) and Ruleset (without context)
-		if matcher, ok := rule.(interface{ MatchArgs([]any, any) bool }); ok {
-			// MixinDefinition case
-			return matcher.MatchArgs(nil, context)
-		} else if matcher, ok := rule.(interface{ MatchArgs([]any) bool }); ok {
-			// Ruleset case
-			return matcher.MatchArgs(nil)
+		// In JavaScript, both Ruleset and MixinDefinition use matchArgs(args, context)
+		// But Go Ruleset only takes (args), while MixinDefinition takes (args, context)
+		if mixinDef, ok := rule.(*MixinDefinition); ok {
+			// MixinDefinition case - takes context
+			return mixinDef.MatchArgs(nil, context)
+		} else if ruleset, ok := rule.(*Ruleset); ok {
+			// Ruleset case - no context parameter
+			return ruleset.MatchArgs(nil)
 		}
 		return false
 	}
@@ -276,14 +284,14 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								}
 
 								// Check if mixin matches arguments
-								// Handle both MixinDefinition (with context) and Ruleset (without context)
+								// Use same logic as noArgumentsFilter - match JavaScript behavior
 								var matchesArgs bool
-								if matcher, ok := mixin.(interface{ MatchArgs([]any, any) bool }); ok {
-									// MixinDefinition case
-									matchesArgs = matcher.MatchArgs(args, context)
-								} else if matcher, ok := mixin.(interface{ MatchArgs([]any) bool }); ok {
-									// Ruleset case
-									matchesArgs = matcher.MatchArgs(args)
+								if mixinDef, ok := mixin.(*MixinDefinition); ok {
+									// MixinDefinition case - takes context
+									matchesArgs = mixinDef.MatchArgs(args, context)
+								} else if ruleset, ok := mixin.(*Ruleset); ok {
+									// Ruleset case - no context parameter 
+									matchesArgs = ruleset.MatchArgs(args)
 								}
 								
 								if matchesArgs {
@@ -335,28 +343,40 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 									mixinCandidate := candMap["mixin"]
 									
 									if !isMixinDefinition(mixinCandidate) {
-										if ruleMap, ok := mixinCandidate.(map[string]any); ok {
-											originalRuleset = ruleMap["originalRuleset"]
-											if originalRuleset == nil {
-												originalRuleset = mixinCandidate
-											}
-											// Create MixinDefinition wrapper
-											if mixinDef, err := NewMixinDefinition("", []any{}, ruleMap["rules"].([]any), nil, false, nil, getVisibilityInfo(originalRuleset)); err != nil {
+										// mixinCandidate should be a *Ruleset - match JavaScript behavior
+										if ruleset, ok := mixinCandidate.(*Ruleset); ok {
+											originalRuleset = ruleset
+											// Create MixinDefinition wrapper - match JavaScript: 
+											// new MixinDefinition('', [], mixin.rules, null, false, null, originalRuleset.visibilityInfo())
+											if mixinDef, err := NewMixinDefinition("", []any{}, ruleset.Rules, nil, false, nil, getVisibilityInfo(originalRuleset)); err != nil {
 												return nil, err
 											} else {
 												mixinCandidate = mixinDef
 												if mixinDef, ok := mixinCandidate.(*MixinDefinition); ok {
-													if rulesetType, ok := originalRuleset.(*Ruleset); ok {
-														mixinDef.OriginalRuleset = rulesetType
-													}
+													mixinDef.OriginalRuleset = ruleset
 												}
 											}
 										}
 									}
 
-									// Evaluate call
+									// Evaluate call with incremented depth
 									if mixinDef, ok := mixinCandidate.(interface{ EvalCall(any, []any, bool) (*Ruleset, error) }); ok {
-										if newRuleset, err := mixinDef.EvalCall(context, args, mc.Important); err != nil {
+										// Create new context with incremented depth
+										callContext := context
+										if ctx, ok := context.(map[string]any); ok {
+											newCtx := make(map[string]any)
+											for k, v := range ctx {
+												newCtx[k] = v
+											}
+											depth := 0
+											if d, ok := ctx["mixinCallDepth"].(int); ok {
+												depth = d
+											}
+											newCtx["mixinCallDepth"] = depth + 1
+											callContext = newCtx
+										}
+										
+										if newRuleset, err := mixinDef.EvalCall(callContext, args, mc.Important); err != nil {
 											return nil, &MixinCallError{
 												Message:  err.Error(),
 												Index:    mc.GetIndex(),

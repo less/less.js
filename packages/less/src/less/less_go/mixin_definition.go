@@ -130,6 +130,7 @@ func (md *MixinDefinition) Accept(visitor any) {
 func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, evaldArguments []any) (*Ruleset, error) {
 	frame := NewRuleset(nil, nil, false, nil)
 	
+	
 	var varargs []any
 	var arg any
 	params := CopyArray(md.Params)
@@ -283,6 +284,8 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 			
 			if paramNameStr != "" {
 				name = paramNameStr
+				// Debug: check if name has @ prefix
+				// fmt.Printf("DEBUG: Parameter name: %s\n", name)
 				
 				if variadic, ok := paramMap["variadic"].(bool); ok && variadic {
 					varargs = []any{}
@@ -307,6 +310,7 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 					}
 					frame.PrependRule(decl)
 				} else {
+					// Non-variadic parameter
 					if arg != nil {
 						if argMap, ok := arg.(map[string]any); ok {
 							if argValue, ok := argMap["value"]; ok {
@@ -319,14 +323,59 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 								} else {
 									val = argValue
 								}
+							} else {
+								// No 'value' key in argMap
+							}
+						} else {
+							// Try to handle direct values
+							if evalValue, ok := arg.(interface{ Eval(any) any }); ok {
+								val = evalValue.Eval(context)
+							} else {
+								val = arg
 							}
 						}
 					} else if paramValue, ok := paramMap["value"]; ok && paramValue != nil {
-						if evalValue, ok := paramValue.(interface{ Eval(any) any }); ok {
-							// Default parameters should use mixinEnv (like JavaScript line 119)
-							// This gives them access to both mixin's lexical scope and caller's scope
-							val = evalValue.Eval(mixinEnv)
+						// Try both Eval signatures
+						if evalValue, ok := paramValue.(interface{ Eval(any) (any, error) }); ok {
+							// Default parameters should use an environment that includes the frame being built
+							// This allows them to reference earlier parameters
+							defaultParamEnv := mixinEnv
+							if mixinEnvMap, ok := mixinEnv.(map[string]any); ok {
+								// Create new environment with frame prepended to frames
+								defaultParamEnv = make(map[string]any)
+								for k, v := range mixinEnvMap {
+									defaultParamEnv.(map[string]any)[k] = v
+								}
+								if frames, ok := mixinEnvMap["frames"].([]any); ok {
+									updatedFrames := []any{frame}
+									updatedFrames = append(updatedFrames, frames...)
+									defaultParamEnv.(map[string]any)["frames"] = updatedFrames
+								}
+							}
+							evalResult, err := evalValue.Eval(defaultParamEnv)
+							if err != nil {
+								return nil, err
+							}
+							val = evalResult
 							frame.ResetCache()
+						} else if evalValue, ok := paramValue.(interface{ Eval(any) any }); ok {
+							// Create updated environment for default parameter evaluation
+							defaultParamEnv := mixinEnv
+							if mixinEnvMap, ok := mixinEnv.(map[string]any); ok {
+								// Create new environment with frame prepended to frames
+								defaultParamEnv = make(map[string]any)
+								for k, v := range mixinEnvMap {
+									defaultParamEnv.(map[string]any)[k] = v
+								}
+								if frames, ok := mixinEnvMap["frames"].([]any); ok {
+									updatedFrames := []any{frame}
+									updatedFrames = append(updatedFrames, frames...)
+									defaultParamEnv.(map[string]any)["frames"] = updatedFrames
+								}
+							}
+							val = evalValue.Eval(defaultParamEnv)
+							frame.ResetCache()
+						} else {
 						}
 					} else {
 						return nil, fmt.Errorf("wrong number of arguments for %s (%d for %d)", md.Name, argsLength, md.Arity)
@@ -337,24 +386,35 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 						return nil, err
 					}
 					frame.PrependRule(decl)
+					// Populate evaldArguments if within bounds
 					if i < len(evaldArguments) {
 						evaldArguments[i] = val
 					}
 				}
 			}
+			
+			// Always increment argIndex to match JavaScript behavior (line 135)
+			if arg != nil {
+				argIndex++
+			}
 
 			if variadic, ok := paramMap["variadic"].(bool); ok && variadic && args != nil {
+				// For variadic parameters, populate evaldArguments with evaluated args
 				for j := argIndex; j < argsLength; j++ {
-					if argMap, ok := args[j].(map[string]any); ok {
-						if argValue, ok := argMap["value"].(interface{ Eval(any) any }); ok {
-							if j < len(evaldArguments) {
-								evaldArguments[j] = argValue.Eval(context)
+					if j < len(evaldArguments) {
+						if argMap, ok := args[j].(map[string]any); ok {
+							if argValue, ok := argMap["value"]; ok {
+								if evalValue, ok := argValue.(interface{ Eval(any) any }); ok {
+									evaldArguments[j] = evalValue.Eval(context)
+								} else {
+									evaldArguments[j] = argValue
+								}
 							}
 						}
 					}
 				}
+				argIndex = argsLength // Set to end since variadic consumes all remaining
 			}
-			argIndex++
 		}
 	}
 
@@ -404,7 +464,10 @@ func (md *MixinDefinition) Eval(context any) (*MixinDefinition, error) {
 
 // EvalCall evaluates a mixin call
 func (md *MixinDefinition) EvalCall(context any, args []any, important bool) (*Ruleset, error) {
-	arguments := []any{}
+	// Arguments array will be populated by EvalParams
+	// Pre-allocate to ensure EvalParams can populate it
+	arguments := make([]any, len(args))
+	// fmt.Printf("DEBUG EvalCall: mixin=%s, args=%d, arguments pre-allocated=%d\n", md.Name, len(args), len(arguments))
 	
 	// Determine mixin frames
 	var mixinFrames []any

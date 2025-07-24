@@ -81,6 +81,11 @@ func (c *Comment) GetDebugInfo() map[string]any {
 	return c.DebugInfo
 }
 
+// Eval evaluates the comment - just returns itself
+func (c *Comment) Eval(context any) any {
+	return c
+}
+
 // DebugInfo formats debug info for a comment node
 func DebugInfo(context map[string]any, node any, separator string) string {
 	if context == nil || node == nil {

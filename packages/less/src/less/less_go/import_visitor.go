@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"fmt"
-
 )
 
 // ImportVisitor processes import nodes in the AST
@@ -288,6 +287,16 @@ func (iv *ImportVisitor) onImported(importNode any, context *Eval, args ...any) 
 func (iv *ImportVisitor) getProperty(node any, prop string) any {
 	if n, ok := node.(map[string]any); ok {
 		return n[prop]
+	} else if imp, ok := node.(*Import); ok {
+		// Handle Import struct properties
+		switch prop {
+		case "root":
+			return imp.root
+		case "importedFilename":
+			return imp.importedFilename
+		case "skip":
+			return imp.skip
+		}
 	}
 	return nil
 }
@@ -295,6 +304,18 @@ func (iv *ImportVisitor) getProperty(node any, prop string) any {
 func (iv *ImportVisitor) setProperty(node any, prop string, value any) {
 	if n, ok := node.(map[string]any); ok {
 		n[prop] = value
+	} else if imp, ok := node.(*Import); ok {
+		// Handle Import struct properties
+		switch prop {
+		case "root":
+			imp.root = value
+		case "importedFilename":
+			if filename, ok := value.(string); ok {
+				imp.importedFilename = filename
+			}
+		case "skip":
+			imp.skip = value
+		}
 	}
 }
 
@@ -302,6 +323,12 @@ func (iv *ImportVisitor) getOptionBool(node any, option string, defaultValue boo
 	if n, ok := node.(map[string]any); ok {
 		if options, hasOptions := n["options"].(map[string]any); hasOptions {
 			if val, hasVal := options[option].(bool); hasVal {
+				return val
+			}
+		}
+	} else if imp, ok := node.(*Import); ok {
+		if imp.options != nil {
+			if val, hasVal := imp.options[option].(bool); hasVal {
 				return val
 			}
 		}
@@ -367,6 +394,72 @@ func (iv *ImportVisitor) replaceRuleInParent(parent any, oldRule any, newRule an
 }
 
 func (iv *ImportVisitor) callImporterPush(importNode any, tryAppendLessExtension bool, callback func(...any)) {
+	// Handle ImportManager struct directly
+	if importManager, ok := iv.importer.(*ImportManager); ok {
+		path := iv.getPath(importNode)
+		fileInfo := iv.getFileInfo(importNode)
+		options := iv.getOptions(importNode)
+		
+		// Convert fileInfo map to FileInfo struct
+		currentFileInfo := &FileInfo{}
+		if fileInfo != nil {
+			if cd, ok := fileInfo["currentDirectory"].(string); ok {
+				currentFileInfo.CurrentDirectory = cd
+			}
+			if ep, ok := fileInfo["entryPath"].(string); ok {
+				currentFileInfo.EntryPath = ep
+			}
+			if fn, ok := fileInfo["filename"].(string); ok {
+				currentFileInfo.Filename = fn
+			}
+			if rp, ok := fileInfo["rootpath"].(string); ok {
+				currentFileInfo.Rootpath = rp
+			}
+			if rfn, ok := fileInfo["rootFilename"].(string); ok {
+				currentFileInfo.RootFilename = rfn
+			}
+			if ref, ok := fileInfo["reference"].(bool); ok {
+				currentFileInfo.Reference = ref
+			}
+		}
+		
+		// Convert options map to ImportOptions struct
+		importOptions := &ImportOptions{}
+		if options != nil {
+			if opt, ok := options["optional"].(bool); ok {
+				importOptions.Optional = opt
+			}
+			if inline, ok := options["inline"].(bool); ok {
+				importOptions.Inline = inline
+			}
+			if ref, ok := options["reference"].(bool); ok {
+				importOptions.Reference = ref
+			}
+			if mult, ok := options["multiple"].(bool); ok {
+				importOptions.Multiple = mult
+			}
+			if plugin, ok := options["isPlugin"].(bool); ok {
+				importOptions.IsPlugin = plugin
+			}
+			if args, ok := options["pluginArgs"].(map[string]any); ok {
+				importOptions.PluginArgs = args
+			}
+		}
+		
+		// Create a callback that matches the ImportManager.Push signature
+		pushCallback := func(err error, root any, importedEqualsRoot bool, fullPath string) {
+			if err != nil {
+				callback(err, nil, false, "")
+			} else {
+				callback(nil, root, importedEqualsRoot, fullPath)
+			}
+		}
+		
+		importManager.Push(path, tryAppendLessExtension, currentFileInfo, importOptions, pushCallback)
+		return
+	}
+	
+	// Fallback: handle map-based importer (legacy)
 	if imp, ok := iv.importer.(map[string]any); ok {
 		if pushMethod, hasPush := imp["push"]; hasPush {
 			if fn, ok := pushMethod.(func(string, bool, map[string]any, map[string]any, func(...any))); ok {
@@ -380,7 +473,21 @@ func (iv *ImportVisitor) callImporterPush(importNode any, tryAppendLessExtension
 }
 
 func (iv *ImportVisitor) getPath(node any) string {
-	// Call getPath method if it exists
+	// Handle Import struct directly
+	if imp, ok := node.(*Import); ok {
+		path := imp.GetPath()
+		if pathStr, ok := path.(string); ok {
+			return pathStr
+		}
+		// Handle Quoted path - use direct type assertion since we know it's *Quoted
+		if quoted, ok := path.(*Quoted); ok {
+			value := quoted.GetValue()
+			return value
+		}
+		return ""
+	}
+	
+	// Fallback: handle map-based node (legacy)
 	if n, ok := node.(map[string]any); ok {
 		if method, hasMethod := n["getPath"]; hasMethod {
 			if fn, ok := method.(func() string); ok {
@@ -392,7 +499,26 @@ func (iv *ImportVisitor) getPath(node any) string {
 }
 
 func (iv *ImportVisitor) getFileInfo(node any) map[string]any {
-	// Call fileInfo method if it exists
+	// Handle Import struct directly
+	if imp, ok := node.(*Import); ok {
+		// Create fileInfo map from Import struct fields
+		fileInfo := make(map[string]any)
+		if imp._fileInfo != nil {
+			// Copy from the _fileInfo field
+			for k, v := range imp._fileInfo {
+				fileInfo[k] = v
+			}
+		}
+		// Add current directory if not present (GetFileInfo method doesn't exist, use _fileInfo)
+		if _, hasCD := fileInfo["currentDirectory"]; !hasCD && imp._fileInfo != nil {
+			if cd, ok := imp._fileInfo["currentDirectory"]; ok {
+				fileInfo["currentDirectory"] = cd
+			}
+		}
+		return fileInfo
+	}
+	
+	// Fallback: handle map-based node (legacy)
 	if n, ok := node.(map[string]any); ok {
 		if method, hasMethod := n["fileInfo"]; hasMethod {
 			if fn, ok := method.(func() map[string]any); ok {
@@ -404,6 +530,12 @@ func (iv *ImportVisitor) getFileInfo(node any) map[string]any {
 }
 
 func (iv *ImportVisitor) getOptions(node any) map[string]any {
+	// Handle Import struct directly
+	if imp, ok := node.(*Import); ok {
+		return imp.options
+	}
+	
+	// Fallback: handle map-based node (legacy)
 	if n, ok := node.(map[string]any); ok {
 		if options, hasOptions := n["options"].(map[string]any); hasOptions {
 			return options

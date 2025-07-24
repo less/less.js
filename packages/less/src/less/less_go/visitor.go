@@ -101,12 +101,7 @@ func (v *Visitor) Visit(node any) any {
 	var nodeTypeIndex int
 	var nodeType string
 
-	// Try to get typeIndex from the node - this mirrors JS behavior
-	if nodeWithTypeIndex, ok := node.(NodeWithTypeIndex); ok {
-		nodeTypeIndex = nodeWithTypeIndex.GetTypeIndex()
-	}
-
-	// Try to get type from the node
+	// Try to get type from the node first
 	if nodeWithType, ok := node.(NodeWithType); ok {
 		nodeType = nodeWithType.GetType()
 	} else {
@@ -117,6 +112,11 @@ func (v *Visitor) Visit(node any) any {
 		} else if nodeVal.Kind() == reflect.Struct {
 			nodeType = nodeVal.Type().Name()
 		}
+	}
+
+	// Try to get typeIndex from the node - this mirrors JS behavior
+	if nodeWithTypeIndex, ok := node.(NodeWithTypeIndex); ok {
+		nodeTypeIndex = nodeWithTypeIndex.GetTypeIndex()
 	}
 
 	if nodeTypeIndex == 0 {

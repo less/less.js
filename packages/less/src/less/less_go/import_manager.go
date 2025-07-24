@@ -282,6 +282,10 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 
 	// Define load file callback
 	loadFileCallback := func(loadedFile *LoadedFile) {
+		if loadedFile == nil {
+			fileParsedFunc(fmt.Errorf("LoadedFile is nil for path: %s", path), nil, "")
+			return
+		}
 		if loadedFile.Message != "" {
 			// This is an error case
 			fileParsedFunc(fmt.Errorf("%s", loadedFile.Message), nil, "")

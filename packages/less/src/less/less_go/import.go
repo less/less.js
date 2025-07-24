@@ -421,4 +421,9 @@ func (i *Import) DoEval(context any) (any, error) {
 	}
 
 	return []any{}, nil
+}
+
+// GetTypeIndex returns the type index for visitor pattern
+func (i *Import) GetTypeIndex() int {
+	return 3 // Non-zero value to enable visitor pattern (different from Ruleset's 1 and Declaration's 2)
 } 

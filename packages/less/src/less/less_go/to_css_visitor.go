@@ -1,7 +1,5 @@
 package less_go
 
-import ()
-
 // CSSVisitorUtils provides utility functions for CSS visitor
 type CSSVisitorUtils struct {
 	visitor *Visitor
@@ -342,7 +340,6 @@ func (v *ToCSSVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs) any {
 			return v.VisitAtRuleWithBody(atRuleNode, visitArgs)
 		}
 	}
-	
 	return v.VisitAtRuleWithoutBody(atRuleNode, visitArgs)
 }
 

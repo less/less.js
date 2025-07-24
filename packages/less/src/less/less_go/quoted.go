@@ -70,6 +70,11 @@ func (q *Quoted) GetIndex() int {
 	return q._index
 }
 
+// GetValue returns the raw string value of the quoted string
+func (q *Quoted) GetValue() string {
+	return q.value
+}
+
 // FileInfo returns the node's file information
 func (q *Quoted) FileInfo() map[string]any {
 	return q._fileInfo

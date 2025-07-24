@@ -1,6 +1,7 @@
 package less_go
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -88,6 +89,31 @@ func (a *AtRule) Type() string {
 // GetType returns the node type
 func (a *AtRule) GetType() string {
 	return "AtRule"
+}
+
+// GetName returns the at-rule name
+func (a *AtRule) GetName() string {
+	return a.Name
+}
+
+// GetDebugInfo returns debug info for the at-rule
+func (a *AtRule) GetDebugInfo() any {
+	return a.DebugInfo
+}
+
+// ToCSS converts the at-rule to CSS string
+func (a *AtRule) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	a.GenCSS(context, output)
+	return strings.Join(strs, "")
 }
 
 // Accept visits the node with a visitor

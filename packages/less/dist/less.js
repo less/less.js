@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v4.4.0
+ * Less - Leaner CSS v4.4.1
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2025, Alexis Sellier <self@cloudhead.net>
@@ -908,7 +908,11 @@
             output.add(')');
         },
         eval: function (context) {
-            return new Paren(this.value.eval(context));
+            var paren = new Paren(this.value.eval(context));
+            if (this.noSpacing) {
+                paren.noSpacing = true;
+            }
+            return paren;
         }
     });
 
@@ -5010,8 +5014,14 @@
                     var e;
                     var p;
                     var rangeP;
+                    var spacing = false;
                     parserInput.save();
                     do {
+                        parserInput.save();
+                        if (parserInput.$re(/^[0-9a-z-]*\s+\(/)) {
+                            spacing = true;
+                        }
+                        parserInput.restore();
                         e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup();
                         if (e) {
                             nodes.push(e);
@@ -5039,9 +5049,14 @@
                                 }
                                 else if (p && e) {
                                     nodes.push(new (tree.Paren)(new (tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
+                                    if (!spacing) {
+                                        nodes[nodes.length - 1].noSpacing = true;
+                                    }
+                                    spacing = false;
                                 }
                                 else if (e) {
                                     nodes.push(new (tree.Paren)(e));
+                                    spacing = false;
                                 }
                                 else {
                                     error('badly formed media feature definition');
@@ -5163,6 +5178,48 @@
                         return null;
                     }
                 },
+                atruleUnknown: function (value, name, hasBlock) {
+                    value = this.permissiveValue(/^[{;]/);
+                    hasBlock = (parserInput.currentChar() === '{');
+                    if (!value) {
+                        if (!hasBlock && parserInput.currentChar() !== ';') {
+                            error(''.concat(name, ' rule is missing block or ending semi-colon'));
+                        }
+                    }
+                    else if (!value.value) {
+                        value = null;
+                    }
+                    return [value, hasBlock];
+                },
+                atruleBlock: function (rules, value, isRooted, isKeywordList) {
+                    rules = this.blockRuleset();
+                    parserInput.save();
+                    if (!rules && !isRooted) {
+                        value = this.entity();
+                        rules = this.blockRuleset();
+                    }
+                    if (!rules && !isRooted) {
+                        parserInput.restore();
+                        var e = [];
+                        value = this.entity();
+                        while (parserInput.$char(',')) {
+                            e.push(value);
+                            value = this.entity();
+                        }
+                        if (value && e.length > 0) {
+                            e.push(value);
+                            value = e;
+                            isKeywordList = true;
+                        }
+                        else {
+                            rules = this.blockRuleset();
+                        }
+                    }
+                    else {
+                        parserInput.forget();
+                    }
+                    return [rules, value, isKeywordList];
+                },
                 //
                 // A CSS AtRule
                 //
@@ -5238,43 +5295,27 @@
                         }
                     }
                     else if (hasUnknown) {
-                        value = this.permissiveValue(/^[{;]/);
-                        hasBlock = (parserInput.currentChar() === '{');
-                        if (!value) {
-                            if (!hasBlock && parserInput.currentChar() !== ';') {
-                                error("".concat(name, " rule is missing block or ending semi-colon"));
-                            }
-                        }
-                        else if (!value.value) {
-                            value = null;
-                        }
+                        var unknownPackage = this.atruleUnknown(value, name, hasBlock);
+                        value = unknownPackage[0];
+                        hasBlock = unknownPackage[1];
                     }
                     if (hasBlock) {
-                        rules = this.blockRuleset();
-                        parserInput.save();
-                        if (!rules && !isRooted) {
-                            value = this.entity();
-                            rules = this.blockRuleset();
-                        }
-                        if (!rules && !isRooted) {
+                        var blockPackage = this.atruleBlock(rules, value, isRooted, isKeywordList);
+                        rules = blockPackage[0];
+                        value = blockPackage[1];
+                        isKeywordList = blockPackage[2];
+                        if (!rules && !hasUnknown) {
                             parserInput.restore();
-                            var e = [];
-                            value = this.entity();
-                            while (parserInput.$char(',')) {
-                                e.push(value);
-                                value = this.entity();
+                            name = parserInput.$re(/^@[a-z-]+/);
+                            var unknownPackage = this.atruleUnknown(value, name, hasBlock);
+                            value = unknownPackage[0];
+                            hasBlock = unknownPackage[1];
+                            if (hasBlock) {
+                                blockPackage = this.atruleBlock(rules, value, isRooted, isKeywordList);
+                                rules = blockPackage[0];
+                                value = blockPackage[1];
+                                isKeywordList = blockPackage[2];
                             }
-                            if (value && e.length > 0) {
-                                e.push(value);
-                                value = e;
-                                isKeywordList = true;
-                            }
-                            else {
-                                rules = this.blockRuleset();
-                            }
-                        }
-                        else {
-                            parserInput.forget();
                         }
                     }
                     if (rules || isKeywordList || (!hasBlock && value && parserInput.$char(';'))) {
@@ -7119,7 +7160,26 @@
                 this.rules = visitor.visitArray(this.rules);
             }
         },
+        evalFunction: function () {
+            if (!this.features || !Array.isArray(this.features.value) || this.features.value.length < 1) {
+                return;
+            }
+            var exprValues = this.features.value;
+            var expr, paren;
+            for (var index = 0; index < exprValues.length; ++index) {
+                expr = exprValues[index];
+                if (expr.type === 'Keyword' && index + 1 < exprValues.length) {
+                    paren = exprValues[index + 1];
+                    if (paren.type === 'Paren' && paren.noSpacing) {
+                        exprValues[index] = new Expression([expr, paren]);
+                        exprValues.splice(index + 1, 1);
+                        exprValues[index].noSpacing = true;
+                    }
+                }
+            }
+        },
         evalTop: function (context) {
+            this.evalFunction();
             var result = this;
             // Render all dependent Media blocks.
             if (context.mediaBlocks.length > 1) {
@@ -7134,6 +7194,7 @@
             return result;
         },
         evalNested: function (context) {
+            this.evalFunction();
             var i;
             var value;
             var path = context.mediaPath.concat([this]);
@@ -11128,7 +11189,7 @@
         return render;
     }
 
-    var version = "4.4.0";
+    var version = "4.4.1";
 
     function parseNodeVersion(version) {
       var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

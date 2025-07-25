@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "4.4.0",
+  "version": "4.4.1",
   "description": "Less files and CSS results",
   "author": "Alexis Sellier <self@cloudhead.net>",
   "contributors": [

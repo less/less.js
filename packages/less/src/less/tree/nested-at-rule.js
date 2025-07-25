@@ -20,7 +20,32 @@ const NestableAtRulePrototype = {
         }
     },
 
+    evalFunction: function () {
+        if (!this.features || !Array.isArray(this.features.value) || this.features.value.length < 1) {
+            return;
+        }
+
+        const exprValues = this.features.value;
+        let expr, paren;
+
+        for (let index = 0; index < exprValues.length; ++index) {
+            expr = exprValues[index];
+
+            if (expr.type === 'Keyword' && index + 1 < exprValues.length) {
+                paren =  exprValues[index + 1];
+                
+                if (paren.type ===  'Paren' && paren.noSpacing) {
+                    exprValues[index]= new Expression([expr, paren]);
+                    exprValues.splice(index + 1, 1);
+                    exprValues[index].noSpacing = true;
+                }
+            }
+        }
+    },
+
     evalTop(context) {
+        this.evalFunction();
+
         let result = this;
 
         // Render all dependent Media blocks.
@@ -39,6 +64,8 @@ const NestableAtRulePrototype = {
     },
 
     evalNested(context) {
+        this.evalFunction();
+
         let i;
         let value;
         const path = context.mediaPath.concat([this]);

@@ -1,5 +1,10 @@
 ## Change Log
 
+### v4.4.1 (2025-07-25)
+
+- [#4342](https://github.com/less/less.js/pull/4342) Add support for CSS scroll state container queries (@puckowski)
+- [#4349](https://github.com/less/less.js/pull/4349) Fix [#4348](https://github.com/less/less.js/issues/4348) parse layer nesting syntax (@puckowski)
+
 ### v4.4.0 (2025-05-31)
 
 - [#4337](https://github.com/less/less.js/pull/4337) Add support for layer at-rule (@puckowski)

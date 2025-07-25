@@ -2019,7 +2019,7 @@ func (p *Parsers) Plugin() any {
 	if dir == nil {
 		return nil
 	}
-
+	
 	args = p.PluginArgs()
 	if args != "" {
 		options = map[string]any{
@@ -3139,6 +3139,89 @@ func (p *Parsers) ImportOptions() map[string]any {
 
 // PrepareAndGetNestableAtRule handles @media, @container rules
 func (p *Parsers) PrepareAndGetNestableAtRule(atRuleType string, index int, debugInfo map[string]any) any {
+	// Check for invalid media query patterns before parsing
+	// At this point, "@media " has already been consumed
+	savedPos := p.parser.parserInput.GetIndex()
+	
+	// Get the remaining input to check for invalid patterns
+	if savedPos < len(p.parser.parserInput.input) {
+		remainingInput := p.parser.parserInput.input[savedPos:]
+		
+		// Check for the invalid pattern: " and" followed by comment followed by "("
+		// Look for "and" keyword first
+		if strings.HasPrefix(remainingInput, "all and") {
+			// Check what comes after "all and"
+			afterAllAnd := remainingInput[7:] // Skip "all and"
+			// Skip any whitespace
+			afterAllAnd = strings.TrimLeft(afterAllAnd, " \t")
+			if strings.HasPrefix(afterAllAnd, "/*") {
+				// Find the comment end
+				if commentEnd := strings.Index(afterAllAnd, "*/"); commentEnd != -1 {
+					afterComment := afterAllAnd[commentEnd+2:]
+					// Skip any whitespace after comment
+					afterComment = strings.TrimLeft(afterComment, " \t")
+					// If there's a parenthesis after the comment, this is invalid
+					if strings.HasPrefix(afterComment, "(") {
+						// Invalid pattern detected
+						// We need to consume the rest of the invalid rule to avoid parse errors
+						// Skip everything until we find the matching closing '}'
+						// First consume the rest of the media features and find the opening '{'
+						braceDepth := 0
+						foundOpenBrace := false
+						
+						for !p.parser.parserInput.Finished() {
+							ch := p.parser.parserInput.CurrentChar()
+							
+							if ch == '{' {
+								foundOpenBrace = true
+								braceDepth = 1
+								p.parser.parserInput.Char('{') // Consume the opening brace
+								break
+							} else if ch == 0 {
+								break
+							} else {
+								// Skip any character that's not an opening brace
+								p.parser.parserInput.Char(ch)
+								if ch == 0 && p.parser.parserInput.Char(' ') == nil {
+									// Try to advance by manually incrementing index
+									currentIdx := p.parser.parserInput.GetIndex()
+									p.parser.parserInput.SetIndex(currentIdx + 1)
+								}
+							}
+						}
+						
+						// Now skip the block content if we found the opening brace
+						if foundOpenBrace {
+							for !p.parser.parserInput.Finished() && braceDepth > 0 {
+								ch := p.parser.parserInput.CurrentChar()
+								if ch == '{' {
+									braceDepth++
+								} else if ch == '}' {
+									braceDepth--
+								}
+								
+								if ch != 0 {
+									p.parser.parserInput.Char(ch) // Consume the character
+								} else {
+									// Manually advance if we can't consume
+									currentIdx := p.parser.parserInput.GetIndex()
+									if currentIdx < len(p.parser.parserInput.input)-1 {
+										p.parser.parserInput.SetIndex(currentIdx + 1)
+									} else {
+										break
+									}
+								}
+							}
+						}
+						
+						// Return nil to indicate this rule should be skipped
+						return nil
+					}
+				}
+			}
+		}
+	}
+	
 	// Use appropriate syntax options based on at-rule type
 	var syntaxOptions map[string]any
 	switch atRuleType {

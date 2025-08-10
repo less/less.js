@@ -1,3 +1,4 @@
+@namespace foo url(http://www.example.com);
 .comma-delimited {
   text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
   -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset, 0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
@@ -17,10 +18,10 @@
 p:not([class*="lead"]) {
   color: black;
 }
-input[type="text"].class#id[attr=32]:not(1) {
+input[type="text"].class#id[attr=i32]:not(.one) {
   color: inherit;
 }
-div#id.class[a=1][b=2].class:not(1) {
+div#id.class[a=one][b=two].class:not(.one) {
   color: inherit;
 }
 ul.comma > li:not(:only-child)::after {
@@ -88,7 +89,6 @@ p::before {
 @viewport {
   font-size: 10px;
 }
-@namespace foo url(http://www.example.com);
 foo|h1 {
   color: blue;
 }
@@ -109,15 +109,15 @@ h1 {
     display: block;
   }
 }
-::distributed(input::placeholder) {
+:not(input::placeholder) {
   color: #b3b3b3;
 }
 .shadow > .dom,
 body > .shadow {
   display: done;
 }
-:host(.sel .a),
-:host-context(.sel .b),
+:host(.sel.a),
+:host-context(.sel.b),
 .sel > .b,
 ::content .sel {
   type: shadow-dom;

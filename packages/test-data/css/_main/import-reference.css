@@ -1,7 +1,7 @@
-input[type="text"].class#id[attr=32]:not(1) {
+input[type="text"].class#id[attr=i32]:not(.one) {
   color: inherit;
 }
-div#id.class[a=1][b=2].class:not(1) {
+div#id.class[a=one][b=two].class:not(.one) {
   color: inherit;
 }
 @media print {

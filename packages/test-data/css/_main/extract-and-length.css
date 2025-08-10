@@ -15,7 +15,7 @@
   number-value: 12345678;
   color-value: blue;
   rgba-value: rgba(80, 160, 240, 0.67);
-  empty-value: ;
+  --empty-value: ;
   name-length: 1;
   string-length: 1;
   number-length: 1;

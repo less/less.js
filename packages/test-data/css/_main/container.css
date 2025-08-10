@@ -204,7 +204,9 @@
       font-size: 1rem;
     }
     @media (hover: hover) {
-      font-size: 1.75rem;
+      .foo {
+        font-size: 1.75rem;
+      }
     }
   }
   .media-2 {
@@ -220,9 +222,13 @@
       font-size: 1rem;
     }
     @media (hover: hover) {
-      font-size: 1.75rem;
+      .foo {
+        font-size: 1.75rem;
+      }
       @media not all and (hover: hover) {
-        color: limegreen;
+        .foo {
+          color: limegreen;
+        }
       }
       .media-3 {
         padding: 0.5rem;
@@ -235,7 +241,9 @@
 }
 @container (min-width: 768px) {
   @media only screen and (min-width: 768px) {
-    color: aliceblue;
+    .foo {
+      color: aliceblue;
+    }
   }
   .container-1 {
     color: purple;

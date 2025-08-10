@@ -78,6 +78,6 @@
 /* } */
 /*by block */
 #output-block {
-  comment: /* // Not commented out // */;
+  --comment: /* // Not commented out // */;
 }
 /*comment on last line*/

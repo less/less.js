@@ -71,9 +71,9 @@ AtRule.prototype = Object.assign(new Node(), {
 
     declarationsBlock(rules, mergeable = false) {
         if (!mergeable) {
-            return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge}).length === rules.length;
+            return rules.every(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge});
         } else {
-            return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules.length;
+            return rules.every(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); });
         }
     },
 
@@ -81,7 +81,7 @@ AtRule.prototype = Object.assign(new Node(), {
         if (!Array.isArray(rules)) {
             return false;
         } else { 
-            return rules.filter(function (node) { return (node.type === 'Keyword' || node.type === 'Comment'); }).length === rules.length;
+            return rules.every(function (node) { return (node.type === 'Keyword' || node.type === 'Comment'); });
         }
     },
 
@@ -135,7 +135,7 @@ AtRule.prototype = Object.assign(new Node(), {
 
         if (value) {
             value = value.eval(context);
-            if (value.value && this.keywordList(value.value)) {
+            if (this.name === '@layer' && value.value && this.keywordList(value.value)) {
                 value = new Anonymous(value.value.map(keyword => keyword.value).join(', '), this.getIndex(), this.fileInfo());
             }
         }

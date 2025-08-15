@@ -142,6 +142,11 @@ p a span {
 [p] {
   attributes: yes;
 }
+[p-attr^="val3"],
+[p-attr=3],
+[p-attr] {
+  attributes: yes;
+}
 /**
  * https://www.w3.org/TR/selectors-4/#attribute-case
  */

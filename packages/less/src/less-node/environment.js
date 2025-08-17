@@ -1,3 +1,11 @@
+class SourceMapGeneratorFallback {
+    addMapping(){}
+    setSourceContent(){}
+    toJSON(){
+        return null;
+    }
+};
+
 export default {
     encodeBase64: function encodeBase64(str) {
         // Avoid Buffer constructor on newer versions of Node.js.
@@ -5,12 +13,15 @@ export default {
         return buffer.toString('base64');
     },
     mimeLookup: function (filename) {
-        return require('mime').lookup(filename);
+        const mimeModule = require('mime');
+        return mimeModule ? mimeModule.lookup(filename) : "application/octet-stream";
     },
     charsetLookup: function (mime) {
-        return require('mime').charsets.lookup(mime);
+        const mimeModule = require('mime');
+        return mimeModule ? mimeModule.charsets.lookup(mime) : undefined;
     },
     getSourceMapGenerator: function getSourceMapGenerator() {
-        return require('source-map').SourceMapGenerator;
+        const sourceMapModule = require('source-map');
+        return sourceMapModule ? sourceMapModule.SourceMapGenerator : SourceMapGeneratorFallback;
     }
 };

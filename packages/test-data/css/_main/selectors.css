@@ -188,3 +188,24 @@ a:is(.b, :is(.c)) {
 a:is(.b, :is(.c), :has(div)) {
   color: red;
 }
+.multiple-not-by-comma:not(.multiple-not-by-comma--a, .multiple-not-by-comma--b):not(.multiple-not-by-comma--c, .multiple-not-by-comma--d):hover {
+  background-color: green;
+}
+.multiple-not-by-comma2 {
+  color: red;
+}
+.multiple-not-by-comma2:not(.multiple-not-by-comma2--a, .multiple-not-by-comma2--b):not(.multiple-not-by-comma2--c):hover {
+  background-color: blue;
+}
+.multiple-not:not(.multiple-not--a):not(.multiple-not--b):hover {
+  background-color: yellow;
+}
+.multiple-not-by-comma3 {
+  color: #ffdde3;
+}
+.multiple-not-by-comma3:not(.multiple-not-by-comma3--a, .multiple-not-by-comma3--b):not(.multiple-not-by-comma3--c):hover {
+  background-color: #ffed54;
+}
+.multiple-not-by-comma3:is(.multiple-not-by-comma3--g, .multiple-not-by-comma3--h) {
+  color: #eeff55;
+}

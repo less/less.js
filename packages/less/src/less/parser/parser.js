@@ -1949,11 +1949,17 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (e) {
                         features.push(e);
                         if (!parserInput.$char(',')) { break; }
+                        else if (!features[features.length - 1].noSpacing) {
+                            features[features.length - 1].noSpacing = false;
+                        }
                     } else {
                         e = entities.variable() || entities.mixinLookup();
                         if (e) {
                             features.push(e);
                             if (!parserInput.$char(',')) { break; }
+                            else if (!features[features.length - 1].noSpacing) {
+                                features[features.length - 1].noSpacing = false;
+                            }
                         }
                     }
                 } while (e);

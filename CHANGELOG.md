@@ -1,5 +1,9 @@
 ## Change Log
 
+### v4.4.2 (2025-08-27)
+
+- [#4363](https://github.com/less/less.js/pull/4363) Fix [#4362] no spacing regression for function (@puckowski)
+
 ### v4.4.1 (2025-07-25)
 
 - [#4342](https://github.com/less/less.js/pull/4342) Add support for CSS scroll state container queries (@puckowski)

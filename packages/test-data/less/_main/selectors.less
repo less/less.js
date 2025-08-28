@@ -207,3 +207,35 @@ a:is(.b, :is(.c)) {
 a:is(.b, :is(.c), :has(div)) {
   color: red;
 }
+
+.multiple-not-by-comma {
+  &:not(&--a, &--b):not(&--c, &--d):hover {
+    background-color: green;
+  }
+}
+
+.multiple-not-by-comma2 {
+  color: red;
+
+  &:not(&--a, &--b):not(&--c):hover {
+    background-color: blue;
+  }
+}
+
+.multiple-not {
+  &:not(&--a):not(&--b):hover {
+    background-color: yellow;
+  }
+}
+
+.multiple-not-by-comma3 {
+  color: #ffdde3;
+
+  &:not(&--a, &--b):not(&--c):hover {
+    background-color: #ffed54;
+  }
+
+  &:is(&--g, &--h) {
+    color: #eeff55;
+  }
+}

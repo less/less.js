@@ -972,7 +972,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (elements) {
                         parensIndex = parserInput.i;
                         if (parserInput.$char('(')) {
-                            parensWS = parserInput.isWhitespace(-2);
+                            parserInput.save();
+                            parensWS = parserInput.$re(/[ \t\u00A0]$/, -2);
+                            parserInput.forget();
+
                             args = this.args(true).args;
                             expectChar(')');
                             hasParens = true;

@@ -264,3 +264,8 @@
     padding: 0;
   }
 }
+@media print, (max-width: 992px) {
+  div {
+    color: red;
+  }
+}

@@ -31,7 +31,7 @@ const NestableAtRulePrototype = {
         for (let index = 0; index < exprValues.length; ++index) {
             expr = exprValues[index];
 
-            if (expr.type === 'Keyword' && index + 1 < exprValues.length) {
+            if (expr.type === 'Keyword' && index + 1 < exprValues.length && (expr.noSpacing || expr.noSpacing == null)) {
                 paren =  exprValues[index + 1];
                 
                 if (paren.type ===  'Paren' && paren.noSpacing) {

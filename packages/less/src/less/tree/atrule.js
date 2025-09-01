@@ -12,7 +12,8 @@ const AtRule = function(
     currentFileInfo,
     debugInfo,
     isRooted,
-    visibilityInfo
+    visibilityInfo,
+    hasUnknown
 ) {
     let i;
     var selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
@@ -62,6 +63,7 @@ const AtRule = function(
     this.isRooted = isRooted || false;
     this.copyVisibilityInfo(visibilityInfo);
     this.allowRoot = true;
+    this.hasUnknown = hasUnknown;
 }
 
 AtRule.prototype = Object.assign(new Node(), {
@@ -135,7 +137,7 @@ AtRule.prototype = Object.assign(new Node(), {
 
         if (value) {
             value = value.eval(context);
-            if (value.value && this.keywordList(value.value)) {
+            if (!this.hasUnknown && value.value && this.keywordList(value.value)) {
                 value = new Anonymous(value.value.map(keyword => keyword.value).join(', '), this.getIndex(), this.fileInfo());
             }
         }

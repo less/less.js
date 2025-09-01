@@ -2217,7 +2217,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     parserInput.forget();
                     return new(tree.AtRule)(name, value, rules, index + currentIndex, fileInfo,
                         context.dumpLineNumbers ? getDebugInfo(index) : null,
-                        isRooted
+                        isRooted, undefined, hasUnknown
                     );
                 }
 

@@ -1,0 +1,37 @@
+/** comment at the top**/
+@plugin "../../plugin/plugin-simple";
+
+@import url(/absolute/something.css) screen and (color) and (max-width: 600px);
+
+@import (optional) "file-does-not-exist.does-not-exist";
+
+@import "assets/import-test-e" screen and (max-width: 600px);
+
+@import url("assets/import-test-a.less");
+
+@import (less, multiple) "assets/import-test-d.css" screen and (max-width: 601px);
+
+@import (multiple) "assets/import-test-e" screen and (max-width: 602px);
+
+@import (less, multiple) url("assets/import-test-d.css") screen and (max-width: 603px);
+
+@var: 100px;
+@a: 20px;
+@import url("//ha.com/file.css") (min-width:@var);
+
+.mixin() {
+  height: 10px;
+  color: red;
+}
+
+#import-test {
+  .mixin();
+  width: 10px;
+  height: (@a + 10%);
+  value: pi-anon();
+}
+
+@media print {
+  @import (multiple) "assets/import-test-e";
+}
+@charset "UTF-8"; // climb on top #2126

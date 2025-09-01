@@ -1,61 +1,43 @@
-var lessTest = require('./less-test'),
+var path = require('path'),
+    lessTest = require('./less-test'),
     lessTester = lessTest(),
-    path = require('path'),
     stylize = require('../lib/less-node/lessc-helper').stylize,
     nock = require('nock');
 
 console.log('\n' + stylize('Less', 'underline') + '\n');
 
+// Glob patterns with exclusions
+var globPatterns = [
+    '../tests-config/*/*.less',
+    '../tests-unit/*/*.less',
+    '!../tests-config/sourcemaps/*',           // Exclude sourcemaps (need special handling)
+    '!../tests-config/sourcemaps-empty/*',     // Exclude sourcemaps-empty (need special handling)
+    '!../tests-config/sourcemaps-disable-annotation/*', // Exclude sourcemaps-disable-annotation (need special handling)
+    '!../tests-config/sourcemaps-variable-selector/*',  // Exclude sourcemaps-variable-selector (need special handling)
+    '!../tests-config/globalVars/*',           // Exclude globalVars (need JSON config handling)
+    '!../tests-config/modifyVars/*',           // Exclude modifyVars (need JSON config handling)
+    '!../tests-config/js-type-errors/*',       // Exclude js-type-errors (need special test function)
+    '!../tests-config/no-js-errors/*',         // Exclude no-js-errors (need special test function)
+];
+
 var testMap = [
-    [{
-        // TODO: Change this to rewriteUrls: 'all' once the relativeUrls option is removed
-        relativeUrls: true,
-        silent: true,
-        javascriptEnabled: true
-    }, '_main/'],
-    [{
-        relativeUrls: true,
-        silent: true,
-        javascriptEnabled: true
-    }, '../tests/'],
-    [{
-        relativeUrls: true,
-        silent: true,
-        javascriptEnabled: true
-    }, '../tests/*/*'],
-    [{}, 'namespacing/'],
-    [{
-        math: 'parens'
-    }, 'math/strict/'],
-    [{
-        math: 'parens-division'
-    }, 'math/parens-division/'],
-    [{
-        math: 'always'
-    }, 'math/always/'],
-    // Use legacy strictMath: true here to demonstrate it still works
-    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../errors/eval/',
+    // Run all tests using glob patterns (cosmiconfig will handle the configs)
+    [{}, globPatterns],
+    
+    // Error tests still need specific configurations
+    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../tests-error/eval/',
         lessTester.testErrors, null],
-    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../errors/parse/',
+    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../tests-error/parse/',
         lessTester.testErrors, null],
-    [{math: 'strict', strictUnits: true, javascriptEnabled: true}, 'js-type-errors/',
+    
+    // Special test cases that need specific handling
+    [{math: 'strict', strictUnits: true, javascriptEnabled: true}, '../tests-config/js-type-errors/',
         lessTester.testTypeErrors, null],
-    [{math: 'strict', strictUnits: true, javascriptEnabled: false}, 'no-js-errors/',
+    [{math: 'strict', strictUnits: true, javascriptEnabled: false}, '../tests-config/no-js-errors/',
         lessTester.testErrors, null],
-    [{math: 'strict', dumpLineNumbers: 'comments'}, 'debug/', null,
-        function(name) { return name + '-comments'; }],
-    [{math: 'strict', dumpLineNumbers: 'mediaquery'}, 'debug/', null,
-        function(name) { return name + '-mediaquery'; }],
-    [{math: 'strict', dumpLineNumbers: 'all'}, 'debug/', null,
-        function(name) { return name + '-all'; }],
-    // TODO: Change this to rewriteUrls: false once the relativeUrls option is removed
-    [{math: 'strict', relativeUrls: false, rootpath: 'folder (1)/'}, 'static-urls/'],
-    [{math: 'strict', compress: true}, 'compression/'],
-
-    [{math: 0, strictUnits: true}, 'units/strict/'],
-    [{math: 0, strictUnits: false}, 'units/no-strict/'],
-
-    [{math: 'strict', strictUnits: true, sourceMap: true, globalVars: true }, 'sourcemaps/',
+    
+    // Sourcemap tests need special handling
+    [{math: 'strict', strictUnits: true, sourceMap: true, globalVars: true }, '../tests-config/sourcemaps/',
         lessTester.testSourcemap, null, null,
         function(filename, type, baseFolder) {
             if (type === 'vars') {
@@ -63,42 +45,28 @@ var testMap = [
             }
             return path.join('test/sourcemaps', filename) + '.json';
         }],
-
-    [{math: 'strict', strictUnits: true, globalVars: true }, '_main/import/json/',
-        lessTester.testImports, null, true,
-        function(filename, type, baseFolder) {
-            return path.join(baseFolder, filename) + '.json';
-        }],
     [{math: 'strict', strictUnits: true, sourceMap: {sourceMapFileInline: true}},
-        'sourcemaps-empty/', lessTester.testEmptySourcemap],
+        '../tests-config/sourcemaps-empty/', lessTester.testEmptySourcemap],
     [{math: 'strict', strictUnits: true, sourceMap: {disableSourcemapAnnotation: true}},
-        'sourcemaps-disable-annotation/', lessTester.testSourcemapWithoutUrlAnnotation],
+        '../tests-config/sourcemaps-disable-annotation/', lessTester.testSourcemapWithoutUrlAnnotation],
     [{math: 'strict', strictUnits: true, sourceMap: true},
-        'sourcemaps-variable-selector/', lessTester.testSourcemapWithVariableInSelector],
-    [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, 'globalVars/',
+        '../tests-config/sourcemaps-variable-selector/', lessTester.testSourcemapWithVariableInSelector],
+    
+    // Import tests with JSON configs
+    [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, '../tests-config/globalVars/',
         null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
-    [{modifyVars: true}, 'modifyVars/',
-        null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
-    [{urlArgs: '424242'}, 'url-args/'],
-    [{rewriteUrls: 'all'}, 'rewrite-urls-all/'],
-    [{rewriteUrls: 'local'}, 'rewrite-urls-local/'],
-    [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'all'}, 'rootpath-rewrite-urls-all/'],
-    [{rootpath: 'http://example.com/assets/css/', rewriteUrls: 'local'}, 'rootpath-rewrite-urls-local/'],
-    [{paths: ['data/', '_main/import/']}, 'include-path/'],
-    [{paths: 'data/'}, 'include-path-string/'],
-    [{plugin: 'test/plugins/postprocess/'}, 'postProcessorPlugin/'],
-    [{plugin: 'test/plugins/preprocess/'}, 'preProcessorPlugin/'],
-    [{plugin: 'test/plugins/visitor/'}, 'visitorPlugin/'],
-    [{plugin: 'test/plugins/filemanager/'}, 'filemanagerPlugin/'],
-    [{math: 0}, '3rd-party/'],
-    [{ processImports: false }, 'process-imports/']
+    [{modifyVars: true}, '../tests-config/modifyVars/',
+        null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }]
 ];
+
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
-lessTester.testSyncronous({syncImport: true}, '../tests/import/import');
-lessTester.testSyncronous({syncImport: true}, '_main/plugin');
-lessTester.testSyncronous({syncImport: true}, 'math/strict/css');
+
+// Special synchronous tests
+lessTester.testSyncronous({syncImport: true}, '../tests-unit/import/import');
+lessTester.testSyncronous({syncImport: true}, '../tests-config/math-strict/css');
+
 lessTester.testNoOptions();
 lessTester.testDisablePluginRule();
 lessTester.testJSImport();
@@ -115,7 +83,7 @@ lessTester.finished();
         .reply(200);
     lessTester.runTestSet(
         {},
-        'import-redirect/',
+        '../tests-config/import-redirect/',
         lessTester.testImportRedirect(scope)
     );
     lessTester.finished();

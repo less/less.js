@@ -1,0 +1,39 @@
+@import (reference) url("assets/import-once.less");
+@import (reference) url("assets/css-3.less");
+@import (reference) url("assets/media.less");
+@import (reference) url("assets/import/import-reference.less");
+@import (reference) url("assets/import/css-import.less");
+
+.b {
+  .z();
+}
+
+.zz() {
+  color: black;
+}
+
+.visible:extend(.z all) {
+  extend: test;
+}
+
+.mixin-with-mediaq(@width) {
+  color: green;
+  test: @width;
+}
+
+.test-rule-mediaq-import {
+  .mixin-with-mediaq(340px);
+}
+
+.class:extend(.class all) {
+}
+.mixin-with-nested-selectors() {
+  color: gray;
+}
+.mixin-with-directives(some-name) {
+  color: gray;
+}
+
+.print-referenced-import-inline() {
+  color: gray;
+}

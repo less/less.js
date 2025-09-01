@@ -1,0 +1,23 @@
+body {
+  width: 100%;
+}
+.import-test-e {
+  color: purple;
+}
+#logo {
+  width: 100px;
+  height: 100px;
+  background: url('../assets/logo.png');
+  background: url("#inline-svg");
+}
+.import-testpolation {
+  color: pink;
+}
+
+.a {
+  var: test;
+}
+.interpolation-vars {
+  color: orange;
+}
+

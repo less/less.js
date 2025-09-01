@@ -1,0 +1,28 @@
+#import {
+  color: red;
+}
+.import-once-test-c {
+  color: cyan;
+}
+body {
+  width: 100%;
+}
+.import-once-test-a {
+  color: magenta;
+}
+.test-rule-f {
+  height: 10px;
+}
+
+.import-test-f {
+  color: yellow;
+}
+body {
+  width: 100%;
+}
+.import-test-f {
+  color: yellow;
+}
+.test-rule-f {
+  height: 10px;
+}

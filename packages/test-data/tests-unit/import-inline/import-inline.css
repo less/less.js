@@ -1,0 +1,18 @@
+#import {
+  color: red;
+}
+.import-test-c {
+  color: green;
+}
+@media (min-width: 600px) {
+  #css { color: yellow; }
+  .import-test-d {
+  color: orange;
+}
+
+}
+this isn't very valid CSS.
+.invalid-css {
+  color: invalid;
+}
+

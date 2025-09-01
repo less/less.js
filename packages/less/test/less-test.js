@@ -357,18 +357,104 @@ module.exports = function() {
             doReplacements = globalReplacements;
         }
 
-        function getBasename(file) {
-            return foldername + path.basename(file, '.less');
+        function getBasename(file, relativePath) {
+            var basePath = relativePath || foldername;
+            // Ensure basePath ends with a slash for proper path construction
+            if (basePath.charAt(basePath.length - 1) !== '/') {
+                basePath = basePath + '/';
+            }
+            return basePath + path.basename(file, '.less');
         }
 
-        fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (!/\.less$/.test(file)) { return; }
+        // Check if this is a glob pattern
+        var isGlob = foldername.indexOf('/*/*') !== -1;
+        var isRecursive = foldername.indexOf('/*/*') !== -1;
+        
+        var filesToProcess = [];
+        
+        // Recursively find all .less files in the directory and subdirectories
+        function findLessFiles(dir, relativePath) {
+            var files = [];
+            var items = fs.readdirSync(dir);
+            
+            items.forEach(function(item) {
+                var fullPath = path.join(dir, item);
+                var stat = fs.statSync(fullPath);
+                
+                if (stat.isDirectory()) {
+                    // Recursively scan subdirectories
+                    var subRelativePath = relativePath + item + '/';
+                    files = files.concat(findLessFiles(fullPath, subRelativePath));
+                } else if (stat.isFile() && /\.less$/.test(item)) {
+                    // Add file with its relative path
+                    files.push({
+                        file: item,
+                        fullPath: fullPath,
+                        relativePath: relativePath
+                    });
+                }
+            });
+            
+            return files;
+        }
+        
+        if (isRecursive) {
+            
+            // Remove the glob pattern from the foldername for path resolution
+            var baseDir = foldername.replace(/\/\*\/\*.*$/, '');
+            // Ensure baseDir ends with a slash for proper path construction
+            if (baseDir.charAt(baseDir.length - 1) !== '/') {
+                baseDir = baseDir + '/';
+            }
+            
+            // For the new pattern, we only want direct children of sub-folders
+            // So we scan the base directory for sub-folders, then scan each sub-folder for .less files
+            var baseDirPath = path.join(baseFolder, baseDir);
+            var subDirs = fs.readdirSync(baseDirPath);
+            
+            subDirs.forEach(function(subDir) {
+                var subDirPath = path.join(baseDirPath, subDir);
+                var stat = fs.statSync(subDirPath);
+                
+                if (stat.isDirectory()) {
+                    // Scan this sub-directory for .less files
+                    var subDirItems = fs.readdirSync(subDirPath);
+                    subDirItems.forEach(function(item) {
+                        if (/\.less$/.test(item)) {
+                            filesToProcess.push({
+                                file: item,
+                                fullPath: path.join(subDirPath, item),
+                                relativePath: baseDir + subDir + '/'
+                            });
+                        }
+                    });
+                }
+            });
+        } else {
+            // Original behavior: only scan the immediate directory
+            var dirPath = path.join(baseFolder, foldername);
+            var items = fs.readdirSync(dirPath);
+            
+            items.forEach(function(item) {
+                if (/\.less$/.test(item)) {
+                    filesToProcess.push({
+                        file: item,
+                        fullPath: path.join(dirPath, item),
+                        relativePath: foldername
+                    });
+                }
+            });
+        }
+        
+        filesToProcess.forEach(function(fileInfo) {
+            var file = fileInfo.file;
+            var relativePath = fileInfo.relativePath;
 
             var options = clone(originalOptions);
 
             options.stylize = stylize;
 
-            var name = getBasename(file);
+            var name = getBasename(file, relativePath);
 
             if (oneTestOnly && name !== oneTestOnly) {
                 return;
@@ -391,7 +477,7 @@ module.exports = function() {
 
             options.getVars = function(file) {
                 try {
-                    return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars', baseFolder), 'utf8'));
+                    return JSON.parse(fs.readFileSync(getFilename(getBasename(file, relativePath), 'vars', baseFolder), 'utf8'));
                 }
                 catch (e) {
                     return {};
@@ -400,7 +486,7 @@ module.exports = function() {
 
             var doubleCallCheck = false;
             queue(function() {
-                toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
+                toCSS(options, fileInfo.fullPath, function (err, result) {
 
                     if (doubleCallCheck) {
                         totalTests++;
@@ -439,10 +525,29 @@ module.exports = function() {
                     var css_name = name;
                     if (nameModifier) { css_name = nameModifier(name); }
 
-                    fs.readFile(path.join(testFolder, 'css', css_name) + '.css', 'utf8', function (e, css) {
-                        process.stdout.write('- ' + path.join(baseFolder, css_name) + ': ');
+                    // Check if we're using the new co-located structure (tests/) or the old separated structure
+                    var cssPath;
+                    if (foldername.startsWith('../tests/')) {
+                        // New co-located structure: CSS file is in the same directory as LESS file
+                        cssPath = path.join(path.dirname(fileInfo.fullPath), path.basename(file, '.less') + '.css');
+                    } else {
+                        // Old separated structure: CSS file is in separate css/ folder
+                        cssPath = path.join(testFolder, 'css', css_name) + '.css';
+                    }
+                    
+                    fs.readFile(cssPath, 'utf8', function (e, css) {
+                        // Construct a clean test name for output - use absolute path
+                        var testName = fileInfo.fullPath.replace(/\.less$/, '');
+                        process.stdout.write('- ' + testName + ': ');
 
-                        css = css && doReplacements(css, path.join(baseFolder, foldername));
+                        // For the new structure, we need to handle replacements differently
+                        var replacementPath;
+                        if (foldername.startsWith('../tests/')) {
+                            replacementPath = path.dirname(fileInfo.fullPath);
+                        } else {
+                            replacementPath = path.join(baseFolder, foldername);
+                        }
+                        css = css && doReplacements(css, replacementPath);
                         if (result.css === css) { ok('OK'); }
                         else {
                             difference('FAIL', css, result.css);

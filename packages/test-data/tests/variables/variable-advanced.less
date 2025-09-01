@@ -1,0 +1,80 @@
+// Advanced variable features not covered in existing tests
+@a: 2;
+@c: #888;
+@onePixel: 1px;
+
+.alpha {
+    @var: 42;
+    filter: alpha(opacity=@var);
+}
+
+.units-extended {
+  width: @onePixel;
+  same-unit-as-previously: (@onePixel / @onePixel);
+  square-pixel-divided: (@onePixel * @onePixel / @onePixel);
+  odd-unit: unit((@onePixel * 4em / 2cm));
+  percentage: (10 * 50%);
+  pixels: (50px * 10);
+  conversion-metric-a: (20mm + 1cm);
+  conversion-metric-b: (1cm + 20mm);
+  conversion-imperial: (1in + 72pt + 6pc);
+  custom-unit: (42octocats * 10);
+  custom-unit-cancelling: (8cats * 9dogs / 4cats);
+  mix-units: (1px + 1em);
+  invalid-units: (1px * 1px);
+  .fallback {
+    @px: 14px;
+    @em: 1.4em;
+    @cm: 10cm;
+    div-px-1: (@px / @em);
+    div-px-2: ((@px / @em) / @cm);
+    sub-px-1: (@px - @em);
+    sub-cm-1: (@cm - (@px - @em));
+    mul-px-1: (@px * @em);
+    mul-em-1: (@em * @px);
+    mul-em-2: ((@em * @px) * @cm);
+    mul-cm-1: (@cm * (@em * @px));
+    add-px-1: (@px + @em);
+    add-px-2: ((@px + @em) + @cm);
+    mul-px-2: ((1 * @px) * @cm);
+    mul-px-3: ((@px * 1) * @cm);
+  }
+}
+
+.css-custom-properties {
+	--tw-pan-x:  ;
+	--tw-pan-y:  ;
+	--tw-pinch-zoom:  ;
+	--tw-scroll-snap-strictness: proximity;
+}
+
+.variable-interpolation {
+  @a1: 1px;
+  @b2: 2px;
+  @c3: @a1 + @b2;
+
+  @radio-cls: radio;
+  @radio-cls-checked: @{radio-cls}_checked;
+
+  .@{radio-cls-checked} {
+    border-color: #fff;
+  }
+}
+
+.each-with-variables {
+  @items:
+  // Fruit
+      apple,
+      banana,
+      cherry,
+  // Vegetables
+      carrot,
+      potato,
+  ;
+
+  each(@items, {
+    div#@{value} {
+      color: blue;
+    }
+  })
+}

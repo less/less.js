@@ -1,0 +1,31 @@
+.calc-basic {
+  width: calc(100% - 30px);
+  height: calc(50% + 20px);
+  margin: calc(10px * 2);
+  padding: calc(100vh - 50px);
+}
+.calc-variables {
+  root: calc(100% - 30px);
+  root2: calc(100% - 40px);
+  width: calc(50% + (25vh - 20px));
+  height: calc(50% + (25vh - 20px));
+}
+.calc-nested {
+  min-height: calc(10vh + calc(5vh));
+  nested: calc(calc(2.25rem + 2px) - 1px * 2);
+}
+.calc-functions {
+  one: calc(100% - 20px);
+  two: calc(100% - (10px + 10px));
+  bar: calc(1 + 20%);
+}
+.calc-escape {
+  three: calc(100% - (3 * 1));
+  four: calc(100% - (3 * 1));
+}
+.calc-mixed {
+  foo: 3 calc(3 + 4) 11;
+  height: calc(100% - ((10px * 3) + (10px * 2)));
+}
+
+

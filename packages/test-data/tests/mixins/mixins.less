@@ -1,0 +1,68 @@
+.mixin { border: 1px solid black; }
+.mixout { border-color: orange; }
+.borders { border-style: dashed; }
+
+.mixins-basic {
+  .mixin();
+  .mixout();
+  .borders();
+}
+
+#namespace {
+  .borders {
+    border-style: dotted;
+  }
+  .biohazard {
+    content: "death";
+  }
+}
+
+#theme {
+  .mixin {
+    background-color: grey;
+  }
+}
+
+.mixins-namespace {
+  #namespace .borders();
+  #theme .mixin();
+}
+
+.mixins-parameters {
+  .bo, .bar {
+    width: 100%;
+  }
+  .bo {
+    border: 1px;
+  }
+  .ar.bo.ca {
+    color: black;
+  }
+  .jo.ki {
+    background: none;
+  }
+}
+
+.mixins-extended {
+  .bo();
+  .jo.ki();
+  .ar.bo.ca();
+}
+
+.mixins-parent-selectors {
+  .amp {
+    &.support {
+      color: orange;
+    }
+  }
+  .amp.support();
+}
+
+.mixins-guards {
+  .has_parents() {
+    & .underParents {
+      color: red;
+    }
+  }
+  .has_parents();
+}

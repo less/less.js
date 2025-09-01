@@ -13,6 +13,16 @@ var testMap = [
         silent: true,
         javascriptEnabled: true
     }, '_main/'],
+    [{
+        relativeUrls: true,
+        silent: true,
+        javascriptEnabled: true
+    }, '../tests/'],
+    [{
+        relativeUrls: true,
+        silent: true,
+        javascriptEnabled: true
+    }, '../tests/*/*'],
     [{}, 'namespacing/'],
     [{
         math: 'parens'
@@ -86,7 +96,7 @@ var testMap = [
 testMap.forEach(function(args) {
     lessTester.runTestSet.apply(lessTester, args)
 });
-lessTester.testSyncronous({syncImport: true}, '_main/import');
+lessTester.testSyncronous({syncImport: true}, '../tests/import/import');
 lessTester.testSyncronous({syncImport: true}, '_main/plugin');
 lessTester.testSyncronous({syncImport: true}, 'math/strict/css');
 lessTester.testNoOptions();

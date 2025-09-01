@@ -1,0 +1,58 @@
+// Comprehensive color function tests - all color functions without problematic nesting
+.lightenblue {
+    color: lighten(blue, 10%);
+}
+
+.darkenblue {
+    color: darken(blue, 10%);
+}
+
+.unknowncolors {
+    color: blue2;
+    border: 2px solid superred;
+}
+
+.transparent {
+    color: transparent;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#alpha {
+    @colorvar: rgba(150, 200, 150, 0.7);
+    #fromvar {
+        opacity: alpha(@colorvar);
+    }
+    #short {
+        opacity: alpha(#aaa);
+    }
+    #long {
+        opacity: alpha(#bababa);
+    }
+    #rgba {
+        opacity: alpha(rgba(50, 120, 95, 0.2));
+    }
+    #hsl {
+        opacity: alpha(hsl(120, 100%, 50%));
+    }
+}
+
+#percentage {
+  color: red(rgb(100%, 0, 0));
+  border-color: rgba(100%, 0, 0, 50%);
+}
+
+#grey {
+  color: rgb(200, 200, 200);
+}
+
+#aa3333 {
+  color: rgb(66.66%, 20%, 20%);
+}
+
+#bb8080 {
+  color: hsl(0deg, 30%, 62%);
+}
+
+#ccff00 {
+  color: hsl(72deg, 100%, 50%);
+}

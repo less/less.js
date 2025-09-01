@@ -1,0 +1,15 @@
+#alpha #fromvar {
+  opacity: 0.7;
+}
+#alpha #short {
+  opacity: 1;
+}
+#alpha #long {
+  opacity: 1;
+}
+#alpha #rgba {
+  opacity: 0.2;
+}
+#alpha #hsl {
+  opacity: 1;
+}

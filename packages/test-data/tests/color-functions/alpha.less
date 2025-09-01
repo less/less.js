@@ -1,0 +1,19 @@
+// Alpha function tests - no nesting, just alpha function behavior
+#alpha {
+    @colorvar: rgba(150, 200, 150, 0.7);
+    #fromvar {
+        opacity: alpha(@colorvar);
+    }
+    #short {
+        opacity: alpha(#aaa);
+    }
+    #long {
+        opacity: alpha(#bababa);
+    }
+    #rgba {
+        opacity: alpha(rgba(50, 120, 95, 0.2));
+    }
+    #hsl {
+        opacity: alpha(hsl(120, 100%, 50%));
+    }
+}

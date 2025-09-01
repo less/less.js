@@ -20,7 +20,7 @@ logger.addListener({
 });
 
 
-module.exports = function() {
+module.exports = function(testFilter) {
     var path = require('path'),
         fs = require('fs'),
         clone = require('copy-anything').copy;
@@ -31,7 +31,7 @@ module.exports = function() {
 
     var globals = Object.keys(global);
 
-    var oneTestOnly = process.argv[2],
+    var oneTestOnly = testFilter || process.argv[2],
         isFinished = false;
 
     var testFolder = path.dirname(require.resolve('@less/test-data'));
@@ -342,7 +342,18 @@ module.exports = function() {
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
-        options = options ? clone(options) : {};
+        // Handle case where first parameter is glob patterns (no options object)
+        if (Array.isArray(options)) {
+            // First parameter is glob patterns, no options object
+            foldername = options;
+            options = {};
+        } else if (typeof options === 'string') {
+            // First parameter is foldername (no options object)
+            foldername = options;
+            options = {};
+        } else {
+            options = options ? clone(options) : {};
+        }
         runTestSetInternal(lessFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
     }
 
@@ -427,12 +438,27 @@ module.exports = function() {
                     options[key] = lessConfig[key];
                 });
             }
+            
+            // Merge any lessOptions from the testMap (for dynamic options like getVars functions)
+            if (originalOptions && originalOptions.lessOptions) {
+                Object.keys(originalOptions.lessOptions).forEach(function(key) {
+                    var value = originalOptions.lessOptions[key];
+                    if (typeof value === 'function') {
+                        // For functions, call them with the file path
+                        var result = value(fullPath);
+                        options[key] = result;
+                    } else {
+                        // For static values, use them directly
+                        options[key] = value;
+                    }
+                });
+            }
 
             // Don't pass stylize to less.render as it's not a valid option
 
             var name = getBasename(file, relativePath);
 
-            if (oneTestOnly && name !== oneTestOnly) {
+            if (oneTestOnly && typeof oneTestOnly === 'string' && !name.includes(oneTestOnly)) {
                 return;
             }
 
@@ -561,15 +587,23 @@ module.exports = function() {
     }
 
     function diff(left, right) {
-        require('diff').diffLines(left, right).forEach(function(item) {
-            if (item.added || item.removed) {
-                var text = item.value && item.value.replace('\n', String.fromCharCode(182) + '\n').replace('\ufeff', '[[BOM]]');
-                process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
-            } else {
-                process.stdout.write(item.value && item.value.replace('\ufeff', '[[BOM]]'));
-            }
+        // Configure chalk to always show colors
+        var chalk = require('chalk');
+        chalk.level = 3; // Force colors on
+        
+        // Use jest-diff for much clearer output like Vitest
+        var diffResult = require('jest-diff').diffStringsUnified(left || '', right || '', {
+            expand: false,
+            includeChangeCounts: true,
+            contextLines: 1,
+            aColor: chalk.red,
+            bColor: chalk.green,
+            changeColor: chalk.inverse,
+            commonColor: chalk.dim
         });
-        process.stdout.write('\n');
+        
+        // jest-diff returns a string with ANSI colors, so we can output it directly
+        process.stdout.write(diffResult + '\n');
     }
 
     function fail(msg) {
@@ -582,6 +616,13 @@ module.exports = function() {
         process.stdout.write(stylize(msg, 'yellow') + '\n');
         failedTests++;
 
+        // Add clear labels for Expected vs Received
+        process.stdout.write(stylize('Expected:', 'yellow') + '\n');
+        process.stdout.write(left || '');
+        process.stdout.write('\n' + stylize('Received:', 'yellow') + '\n');
+        process.stdout.write(right || '');
+        process.stdout.write('\n' + stylize('Diff:', 'yellow') + '\n');
+        
         diff(left || '', right || '');
         endTest();
     }
@@ -634,8 +675,14 @@ module.exports = function() {
      * @param {Function} callback
      */
     function toCSS(options, filePath, callback) {
-        // Deep clone options to prevent modifying the original
-        options = JSON.parse(JSON.stringify(options || {}));
+        // Deep clone options to prevent modifying the original, but preserve functions
+        var originalOptions = options || {};
+        options = JSON.parse(JSON.stringify(originalOptions));
+        
+        // Restore functions that were lost in JSON serialization
+        if (originalOptions.getVars) {
+            options.getVars = originalOptions.getVars;
+        }
         var str = fs.readFileSync(filePath, 'utf8'), addPath = path.dirname(filePath);
         if (typeof options.paths !== 'string') {
             options.paths = options.paths || [];
@@ -651,11 +698,7 @@ module.exports = function() {
         options.filename = path.resolve(process.cwd(), filePath);
         options.optimization = options.optimization || 0;
 
-        if (options.globalVars) {
-            options.globalVars = options.getVars(filePath);
-        } else if (options.modifyVars) {
-            options.modifyVars = options.getVars(filePath);
-        }
+        // Note: globalVars and modifyVars are now handled via styles.config.cjs or lessOptions
         if (options.plugin) {
             var Plugin = require(path.resolve(process.cwd(), options.plugin));
             options.plugins = [Plugin];

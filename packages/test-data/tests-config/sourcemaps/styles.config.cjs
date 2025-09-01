@@ -1,10 +1,12 @@
 module.exports = {
-  language: {
-    less: {
-      "math": "strict",
-      "strictUnits": true,
-      "sourceMap": true,
-      "globalVars": true
-}
-  }
+    language: {
+        less: {
+            math: 'strict',
+            strictUnits: true,
+            sourceMap: true,
+            globalVars: {
+                '@my-color': 'red'
+            }
+        }
+    }
 };

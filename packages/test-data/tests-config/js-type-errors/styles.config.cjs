@@ -1,9 +1,9 @@
 module.exports = {
-  language: {
-    less: {
-      "math": "strict",
-      "strictUnits": true,
-      "javascriptEnabled": true
-}
-  }
+    language: {
+        less: {
+            math: 'strict',
+            strictUnits: true,
+            javascriptEnabled: true
+        }
+    }
 };

@@ -1,12 +1,22 @@
 var path = require('path'),
     lessTest = require('./less-test'),
-    lessTester = lessTest(),
     stylize = require('../lib/less-node/lessc-helper').stylize,
     nock = require('nock');
 
+// Parse command line arguments for test filtering
+var args = process.argv.slice(2);
+var testFilter = args.length > 0 ? args[0] : null;
+
+// Create the test runner with the filter
+var lessTester = lessTest(testFilter);
+
 console.log('\n' + stylize('Less', 'underline') + '\n');
 
-// Glob patterns with exclusions
+if (testFilter) {
+    console.log('Running tests matching: ' + testFilter + '\n');
+}
+
+// Glob patterns for main test runs
 var globPatterns = [
     '../tests-config/*/*.less',
     '../tests-unit/*/*.less',
@@ -21,46 +31,113 @@ var globPatterns = [
 ];
 
 var testMap = [
-    // Run all tests using glob patterns (cosmiconfig will handle the configs)
-    [{}, globPatterns],
-    
-    // Error tests still need specific configurations
-    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../tests-error/eval/',
-        lessTester.testErrors, null],
-    [{strictMath: true, strictUnits: true, javascriptEnabled: true}, '../tests-error/parse/',
-        lessTester.testErrors, null],
-    
-    // Special test cases that need specific handling
-    [{math: 'strict', strictUnits: true, javascriptEnabled: true}, '../tests-config/js-type-errors/',
-        lessTester.testTypeErrors, null],
-    [{math: 'strict', strictUnits: true, javascriptEnabled: false}, '../tests-config/no-js-errors/',
-        lessTester.testErrors, null],
-    
-    // Sourcemap tests need special handling
-    [{math: 'strict', strictUnits: true, sourceMap: true, globalVars: true }, '../tests-config/sourcemaps/',
-        lessTester.testSourcemap, null, null,
-        function(filename, type, baseFolder) {
+    // Main test runs using glob patterns (cosmiconfig handles configs)
+    {
+        patterns: globPatterns
+    },
+
+    // Error tests
+    {
+        patterns: ['../tests-error/eval/*.less'],
+        verifyFunction: lessTester.testErrors
+    },
+    {
+        patterns: ['../tests-error/parse/*.less'],
+        verifyFunction: lessTester.testErrors
+    },
+
+    // Special test cases with specific handling
+    {
+        patterns: ['../tests-config/js-type-errors/*.less'],
+        verifyFunction: lessTester.testTypeErrors
+    },
+    {
+        patterns: ['../tests-config/no-js-errors/*.less'],
+        verifyFunction: lessTester.testErrors
+    },
+
+    // Sourcemap tests with special handling
+    {
+        patterns: ['../tests-config/sourcemaps/*.less'],
+        verifyFunction: lessTester.testSourcemap,
+        getFilename: function(filename, type, baseFolder) {
             if (type === 'vars') {
                 return path.join(baseFolder, filename) + '.json';
             }
             return path.join('test/sourcemaps', filename) + '.json';
-        }],
-    [{math: 'strict', strictUnits: true, sourceMap: {sourceMapFileInline: true}},
-        '../tests-config/sourcemaps-empty/', lessTester.testEmptySourcemap],
-    [{math: 'strict', strictUnits: true, sourceMap: {disableSourcemapAnnotation: true}},
-        '../tests-config/sourcemaps-disable-annotation/', lessTester.testSourcemapWithoutUrlAnnotation],
-    [{math: 'strict', strictUnits: true, sourceMap: true},
-        '../tests-config/sourcemaps-variable-selector/', lessTester.testSourcemapWithVariableInSelector],
-    
+        }
+    },
+    {
+        patterns: ['../tests-config/sourcemaps-empty/*.less'],
+        verifyFunction: lessTester.testEmptySourcemap
+    },
+    {
+        patterns: ['../tests-config/sourcemaps-disable-annotation/*.less'],
+        verifyFunction: lessTester.testSourcemapWithoutUrlAnnotation
+    },
+    {
+        patterns: ['../tests-config/sourcemaps-variable-selector/*.less'],
+        verifyFunction: lessTester.testSourcemapWithVariableInSelector
+    },
+
     // Import tests with JSON configs
-    [{globalVars: true, banner: '/**\n  * Test\n  */\n'}, '../tests-config/globalVars/',
-        null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }],
-    [{modifyVars: true}, '../tests-config/modifyVars/',
-        null, null, null, function(name, type, baseFolder) { return path.join(baseFolder, name) + '.json'; }]
+    {
+        patterns: ['../tests-config/globalVars/*.less'],
+        lessOptions: {
+            globalVars: function(file) {
+                const fs = require('fs');
+                const path = require('path');
+                const basename = path.basename(file, '.less');
+                const jsonPath = path.join(path.dirname(file), basename + '.json');
+                try {
+                    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+                } catch (e) {
+                    return {};
+                }
+            }
+        }
+    },
+    {
+        patterns: ['../tests-config/modifyVars/*.less'],
+        lessOptions: {
+            modifyVars: function(file) {
+                const fs = require('fs');
+                const path = require('path');
+                const basename = path.basename(file, '.less');
+                const jsonPath = path.join(path.dirname(file), basename + '.json');
+                try {
+                    return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+                } catch (e) {
+                    return {};
+                }
+            }
+        }
+    }
 ];
 
-testMap.forEach(function(args) {
-    lessTester.runTestSet.apply(lessTester, args)
+testMap.forEach(function(testConfig) {
+    // For glob patterns, pass lessOptions as the first parameter and patterns as the second
+    if (testConfig.patterns) {
+        lessTester.runTestSet(
+            testConfig.lessOptions || {},           // First param: options (including lessOptions)
+            testConfig.patterns,                    // Second param: patterns
+            testConfig.verifyFunction || null,      // Third param: verifyFunction
+            testConfig.nameModifier || null,        // Fourth param: nameModifier
+            testConfig.doReplacements || null,      // Fifth param: doReplacements
+            testConfig.getFilename || null          // Sixth param: getFilename
+        );
+    } else {
+        // Legacy format for non-glob tests
+        var args = [
+            testConfig.options || {},               // First param: options
+            testConfig.foldername,                  // Second param: foldername
+            testConfig.verifyFunction || null,      // Third param: verifyFunction
+            testConfig.nameModifier || null,        // Fourth param: nameModifier
+            testConfig.doReplacements || null,      // Fifth param: doReplacements
+            testConfig.getFilename || null          // Sixth param: getFilename
+        ];
+        lessTester.runTestSet.apply(lessTester, args);
+    }
 });
 
 // Special synchronous tests

@@ -145,6 +145,11 @@ a {
 [@{prop}] {
   attributes: yes;
 }
+[@{prop}-attr^="val@{num}"],
+[@{prop}-attr=@{num}],
+[@{prop}-attr] {
+  attributes: yes;
+}
 
 /**
  * https://www.w3.org/TR/selectors-4/#attribute-case

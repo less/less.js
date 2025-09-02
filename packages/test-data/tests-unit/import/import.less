@@ -5,24 +5,8 @@
 
 @import (optional) "file-does-not-exist.does-not-exist";
 
-@import "assets/import-test-e" screen and (max-width: 600px);
-
-@import url("assets/import-test-a.less");
-
-@import (less, multiple) "assets/import-test-d.css" screen and (max-width: 601px);
-
-@import (multiple) "assets/import-test-e" screen and (max-width: 602px);
-
-@import (less, multiple) url("assets/import-test-d.css") screen and (max-width: 603px);
-
 @var: 100px;
-@a: 20px;
 @import url("//ha.com/file.css") (min-width:@var);
-
-.mixin() {
-  height: 10px;
-  color: red;
-}
 
 #import-test {
   .mixin();
@@ -30,8 +14,19 @@
   height: (@a + 10%);
   value: pi-anon();
 }
+@import "import/import-test-e" screen and (max-width: 600px);
+
+@import url("import/import-test-a.less");
+
+@import (less, multiple) "import/import-test-d.css" screen and (max-width: 601px);
+
+@import (multiple) "import/import-test-e" screen and (max-width: 602px);
+
+@import (less, multiple) url("import/import-test-d.css") screen and (max-width: 603px);
 
 @media print {
-  @import (multiple) "assets/import-test-e";
+  @import (multiple) "import/import-test-e";
 }
+
 @charset "UTF-8"; // climb on top #2126
+

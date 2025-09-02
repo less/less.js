@@ -58,6 +58,10 @@ div#id.class[a=one][b=two].class:not(.one) {
 .b + .b .sub {
   color: green;
 }
+.y {
+  pulled-in: yes /* inline comment survives */;
+}
+/* comment pulled in */
 .visible {
   extend: test;
 }
@@ -70,3 +74,24 @@ div#id.class[a=one][b=two].class:not(.one) {
     color: red;
   }
 }
+.test-rule {
+  color: red;
+}
+.test-rule:first-child {
+  color: blue;
+}
+@keyframes some-name {
+  property: value;
+}
+@supports (animation-name: test) {
+  @keyframes some-name {
+    property: value;
+  }
+  .selector {
+    color: red;
+  }
+}
+div {
+  this isn't very valid CSS.
+}
+this isn't very valid CSS.

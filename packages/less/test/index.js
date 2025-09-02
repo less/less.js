@@ -40,52 +40,13 @@ nock('https://example.com')
 
 console.log('DEBUG: Global nock mocks set up for CDN and redirect tests');
 
-// Function to run problematic tests in child processes
-function runTestInChildProcess(testName, testPath) {
-    return new Promise((resolve, reject) => {
-        const { spawn } = require('child_process');
-        const child = spawn('node', ['index.js', testName], {
-            cwd: __dirname,
-            stdio: 'pipe'
-        });
-        
-        let output = '';
-        let errorOutput = '';
-        
-        child.stdout.on('data', (data) => {
-            output += data.toString();
-        });
-        
-        child.stderr.on('data', (data) => {
-            errorOutput += data.toString();
-        });
-        
-        child.on('close', (code) => {
-            if (code === 0) {
-                console.log(`✓ ${testName}: PASSED (child process)`);
-                resolve(true);
-            } else {
-                console.log(`✗ ${testName}: FAILED (child process)`);
-                console.log('Output:', output);
-                console.log('Error:', errorOutput);
-                resolve(false);
-            }
-        });
-        
-        child.on('error', (err) => {
-            console.log(`✗ ${testName}: ERROR (child process)`, err.message);
-            resolve(false);
-        });
-    });
-}
-
 console.log('\n' + stylize('Less', 'underline') + '\n');
 
 if (testFilter) {
     console.log('Running tests matching: ' + testFilter + '\n');
 }
 
-// Glob patterns for main test runs (excluding problematic tests that will run in child processes)
+// Glob patterns for main test runs (excluding problematic tests that will run separately)
 var globPatterns = [
     'tests-config/*/*.less',
     'tests-unit/*/*.less',
@@ -97,8 +58,10 @@ var globPatterns = [
     '!tests-config/modifyVars/*',           // Exclude modifyVars (need JSON config handling)
     '!tests-config/js-type-errors/*',       // Exclude js-type-errors (need special test function)
     '!tests-config/no-js-errors/*',         // Exclude no-js-errors (need special test function)
-    '!tests-unit/import-remote/*',          // Exclude import-remote (will run in child process)
-    '!tests-config/import-redirect/*',      // Exclude import-redirect (will run in child process)
+
+    '!tests-config/import-redirect/*',      // Exclude import-redirect (will run separately)
+    '!tests-unit/import/import-remote.less', // Exclude import-remote (will run separately)
+    '!tests-unit/import/import-inline.less', // Exclude import-inline (will run separately)
 ];
 
 var testMap = [
@@ -222,42 +185,38 @@ lessTester.testDisablePluginRule();
 lessTester.testJSImport();
 lessTester.finished();
 
-(() => {
-    // Create new tester, since tests are not independent and tests
-    // above modify tester in a way that breaks remote imports.
-    lessTester = lessTest();
-    
-    // Note: nock mocks are already set up globally
-    
-    lessTester.runTestSet(
-        {},
-        'tests-config/import-redirect/',
-        lessTester.testImportRedirect()
-    );
-    
-    // Note: nock mocks are persistent
-    
-    lessTester.finished();
-})();
 
-// Run problematic tests in child processes to avoid nock interference
-console.log('\nRunning problematic tests in isolated child processes...');
-Promise.all([
-    runTestInChildProcess('import-remote', 'tests-unit/import-remote'),
-    runTestInChildProcess('import-redirect', 'tests-config/import-redirect')
-]).then((results) => {
-    const passed = results.filter(r => r).length;
-    const total = results.length;
-    console.log(`\nChild process tests: ${passed}/${total} passed`);
-    
-    if (passed === total) {
-        console.log('All tests passed!');
-        process.exit(0);
-    } else {
-        console.log('Some tests failed.');
-        process.exit(1);
-    }
-}).catch((err) => {
-    console.error('Error running child process tests:', err);
-    process.exit(1);
-});
+// Run problematic tests directly with clean nock setup
+console.log('\nRunning problematic tests with clean nock setup...');
+
+// Clean up any existing nock mocks and set up fresh ones
+nock.cleanAll();
+
+// Set up fresh nock mocks for these specific tests
+nock('https://cdn.jsdelivr.net')
+    .persist()
+    .get('/npm/@less/test-data/less/_main/selectors.less')
+    .reply(200, fs.readFileSync(path.join(__dirname, '../../test-data/tests-unit/selectors/selectors.less'), 'utf8'))
+    .get('/npm/@less/test-data/less/_main/media.less')
+    .reply(200, fs.readFileSync(path.join(__dirname, '../../test-data/tests-unit/media/media.less'), 'utf8'))
+    .get('/npm/@less/test-data/less/_main/empty.less')
+    .query(true)
+    .reply(200, fs.readFileSync(path.join(__dirname, '../../test-data/tests-unit/empty/empty.less'), 'utf8'));
+
+nock('https://example.com')
+    .persist()
+    .get('/redirect.less').query(true)
+    .reply(301, null, { location: '/target.less' })
+    .get('/target.less').query(true)
+    .reply(200);
+
+console.log('Fresh nock mocks set up for problematic tests');
+
+// Run the problematic tests
+lessTester.runTestSet({}, 'tests-config/import-redirect/', lessTester.testImportRedirect());
+
+// Run specific problematic import files
+lessTester.runTestSet({}, ['tests-unit/import/import-remote.less']);
+lessTester.runTestSet({}, ['tests-unit/import/import-inline.less']);
+
+console.log('Problematic tests completed');

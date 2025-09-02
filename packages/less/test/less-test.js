@@ -23,7 +23,8 @@ logger.addListener({
 module.exports = function(testFilter) {
     var path = require('path'),
         fs = require('fs'),
-        clone = require('copy-anything').copy;
+        clone = require('copy-anything').copy,
+        nock = require('nock');
 
     var less = require('../');
 
@@ -376,6 +377,8 @@ module.exports = function(testFilter) {
             var includePatterns = [];
             var excludePatterns = [];
             
+            console.log('DEBUG: Processing glob patterns:', patterns);
+            
             patterns.forEach(function(pattern) {
                 if (pattern.startsWith('!')) {
                     excludePatterns.push(pattern.substring(1));
@@ -396,14 +399,15 @@ module.exports = function(testFilter) {
                 allFiles = allFiles.concat(files);
             });
             
+            // Note: nock mocks are set up globally in index.js
+            
             // Process each .less file found
             allFiles.forEach(function(filePath) {
                 if (/\.less$/.test(filePath)) {
                     var file = path.basename(filePath);
                     // For glob patterns, we need to construct the relative path differently
                     // The filePath is absolute, so we need to get the path relative to the test-data directory
-                    var testDataDir = path.join(baseFolder, '..');
-                    var relativePath = '../' + path.relative(testDataDir, path.dirname(filePath)) + '/';
+                    var relativePath = path.relative(baseFolder, path.dirname(filePath)) + '/';
 
                     // Only process files that have corresponding .css files (these are the actual tests)
                     var cssPath = path.join(path.dirname(filePath), path.basename(file, '.less') + '.css');
@@ -417,6 +421,8 @@ module.exports = function(testFilter) {
                     }
                 }
             });
+            
+
             return;
         }
 
@@ -529,7 +535,7 @@ module.exports = function(testFilter) {
 
                     // Check if we're using the new co-located structure (tests-unit/ or tests-config/) or the old separated structure
                     var cssPath;
-                    if (relativePath.startsWith('../tests-unit/') || relativePath.startsWith('../tests-config/')) {
+                    if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
                         // New co-located structure: CSS file is in the same directory as LESS file
                         cssPath = path.join(path.dirname(fullPath), path.basename(file, '.less') + '.css');
                     } else {
@@ -539,7 +545,7 @@ module.exports = function(testFilter) {
 
                     // For the new structure, we need to handle replacements differently
                     var replacementPath;
-                    if (relativePath.startsWith('../tests-unit/') || relativePath.startsWith('../tests-config/')) {
+                    if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
                         replacementPath = path.dirname(fullPath);
                     } else {
                         replacementPath = path.join(baseFolder, relativePath);
@@ -555,6 +561,7 @@ module.exports = function(testFilter) {
                     else {
                         difference('FAIL', css, result.css);
                     }
+                    
                     release();
                 });
             });
@@ -693,9 +700,13 @@ module.exports = function(testFilter) {
             options.paths.push(addPath);
         }
         
-        // Resolve all paths relative to lessFolder
+        // Resolve all paths relative to the test file's directory
         options.paths = options.paths.map(searchPath => {
-            return path.resolve(lessFolder, searchPath)
+            if (path.isAbsolute(searchPath)) {
+                return searchPath;
+            }
+            // Resolve relative to the test file's directory
+            return path.resolve(path.dirname(filePath), searchPath);
         })
         
         options.filename = path.resolve(process.cwd(), filePath);

@@ -35,7 +35,7 @@ module.exports = function(testFilter) {
         isFinished = false;
 
     var testFolder = path.dirname(require.resolve('@less/test-data'));
-    var lessFolder = path.join(testFolder, 'tests-config');
+    var lessFolder = testFolder;
 
     // Define String.prototype.endsWith if it doesn't exist (in older versions of node)
     // This is required by the testSourceMap function below
@@ -283,7 +283,7 @@ module.exports = function(testFilter) {
             return new less.tree.Anonymous('file');
         });
         var expected = '@charset "utf-8";\n';
-        toCSS({}, path.join(lessFolder, 'root-registry', 'root.less'), function(error, output) {
+        toCSS({}, path.join(lessFolder, 'tests-config', 'root-registry', 'root.less'), function(error, output) {
             if (error) {
                 return fail('ERROR: ' + error);
             }
@@ -616,12 +616,8 @@ module.exports = function(testFilter) {
         process.stdout.write(stylize(msg, 'yellow') + '\n');
         failedTests++;
 
-        // Add clear labels for Expected vs Received
-        process.stdout.write(stylize('Expected:', 'yellow') + '\n');
-        process.stdout.write(left || '');
-        process.stdout.write('\n' + stylize('Received:', 'yellow') + '\n');
-        process.stdout.write(right || '');
-        process.stdout.write('\n' + stylize('Diff:', 'yellow') + '\n');
+        // Only show the diff, not the full text
+        process.stdout.write(stylize('Diff:', 'yellow') + '\n');
         
         diff(left || '', right || '');
         endTest();
@@ -684,17 +680,24 @@ module.exports = function(testFilter) {
             options.getVars = originalOptions.getVars;
         }
         var str = fs.readFileSync(filePath, 'utf8'), addPath = path.dirname(filePath);
+        
+        // Initialize paths array if it doesn't exist
         if (typeof options.paths !== 'string') {
             options.paths = options.paths || [];
-            if (!contains(options.paths, addPath)) {
-                options.paths.push(addPath);
-            }
         } else {
-            options.paths = [options.paths]
+            options.paths = [options.paths];
         }
+        
+        // Add the current directory to paths if not already present
+        if (!contains(options.paths, addPath)) {
+            options.paths.push(addPath);
+        }
+        
+        // Resolve all paths relative to lessFolder
         options.paths = options.paths.map(searchPath => {
             return path.resolve(lessFolder, searchPath)
         })
+        
         options.filename = path.resolve(process.cwd(), filePath);
         options.optimization = options.optimization || 0;
 
@@ -721,7 +724,7 @@ module.exports = function(testFilter) {
         ok(stylize('OK\n', 'green'));
     }
 
-    function testImportRedirect(nockScope) {
+    function testImportRedirect() {
         return (name, err, css, doReplacements, sourcemap, baseFolder) => {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             if (err) {
@@ -733,7 +736,7 @@ module.exports = function(testFilter) {
                 difference('FAIL', expected, css);
                 return;
             }
-            nockScope.done();
+            // Note: nock cleanup is now handled centrally in index.js
             ok('OK');
         };
     }

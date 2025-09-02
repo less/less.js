@@ -49,5 +49,3 @@ foo[attr="blah"] {
 .test-no-trailing-semicolon3 {
   --value: foo;
 }
-
-

@@ -14,8 +14,5 @@
 }
 #percentage {
   color: 255;
-  border-color: rgba(100%, 0, 0, 50%);
+  border-color: rgba(255, 0, 0, 0.5);
 }
-
-
-

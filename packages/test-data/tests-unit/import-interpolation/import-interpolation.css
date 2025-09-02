@@ -13,11 +13,9 @@ body {
 .import-testpolation {
   color: pink;
 }
-
 .a {
   var: test;
 }
 .interpolation-vars {
   color: orange;
 }
-

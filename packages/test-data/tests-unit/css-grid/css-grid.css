@@ -22,5 +22,3 @@
   grid-template-rows: auto;
   grid-template-areas: "header header header" "content . sidebar" "footer footer footer";
 }
-
-

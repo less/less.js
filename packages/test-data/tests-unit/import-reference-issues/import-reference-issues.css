@@ -22,4 +22,3 @@ show-all-content .something {
 call-mixin-with-import-by-reference-inside {
   the-only-property: nothing-below-this;
 }
-

@@ -1,7 +1,7 @@
 module.exports = {
   language: {
     less: {
-      "paths": "data/"
-}
+      "paths": ["../../data/"]
+    }
   }
 };

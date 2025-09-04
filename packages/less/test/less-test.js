@@ -463,6 +463,12 @@ module.exports = function(testFilter) {
             // Don't pass stylize to less.render as it's not a valid option
 
             var name = getBasename(file, relativePath);
+            
+            // Debug logging for import-redirect test
+            if (fullPath.includes('import-redirect')) {
+                console.log('DEBUG: import-redirect test running, fullPath:', fullPath);
+                console.log('DEBUG: nock.pendingMocks():', require('nock').pendingMocks());
+            }
 
             if (oneTestOnly && typeof oneTestOnly === 'string' && !name.includes(oneTestOnly)) {
                 return;

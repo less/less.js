@@ -1,5 +1,5 @@
 @import "folder (1)/css/background.css";
-@import "folder (1)/import/import-test-d.css";
+@import "folder (1)/import-test-d.css";
 @font-face {
   src: url("/fonts/garamond-pro.ttf");
   src: local(Futura-Medium), url(folder\ \(1\)/fonts.svg#MyGeometricModern) format("svg");

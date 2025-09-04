@@ -220,3 +220,69 @@ lessTester.runTestSet({}, ['tests-unit/import/import-remote.less']);
 lessTester.runTestSet({}, ['tests-unit/import/import-inline.less']);
 
 console.log('Problematic tests completed');
+
+// Check the current state of file managers
+try {
+    console.log('DEBUG: Attempting to access Less.js environment...');
+    var lessModule = require('../lib/less-node');
+    console.log('DEBUG: Less.js module loaded:', typeof lessModule);
+    console.log('DEBUG: Module properties:', Object.keys(lessModule));
+    
+    var less = lessModule.default || lessModule;
+    console.log('DEBUG: Using less object:', typeof less);
+    
+    if (less && less.environment) {
+        console.log('DEBUG: Less.js environment found:', typeof less.environment);
+        if (less.environment.fileManagers) {
+            console.log('DEBUG: Current file managers:', less.environment.fileManagers.length);
+            less.environment.fileManagers.forEach((fm, index) => {
+                console.log('DEBUG: File manager', index, ':', fm.constructor.name);
+                console.log('DEBUG: File manager', index, 'prototype:', Object.getPrototypeOf(fm).constructor.name);
+                console.log('DEBUG: File manager', index, 'type:', typeof fm);
+                console.log('DEBUG: File manager', index, 'keys:', Object.keys(fm));
+                
+                if (fm.supports) {
+                    var testUrl = 'https://example.com/redirect.less';
+                    var result = fm.supports(testUrl, '/test/dir', {}, less.environment);
+                    console.log('DEBUG:', fm.constructor.name, '.supports("' + testUrl + '") =', result);
+                    
+                    // Test with a local file too to see the difference
+                    var localFile = 'test.less';
+                    var localResult = fm.supports(localFile, '/test/dir', {}, less.environment);
+                    console.log('DEBUG:', fm.constructor.name, '.supports("' + localFile + '") =', localResult);
+                }
+                
+                // Also patch the loadFile method to see what actually happens
+                if (fm.loadFile) {
+                    var originalLoadFile = fm.loadFile;
+                    fm.loadFile = function(filename, currentDirectory, options, environment) {
+                        if (filename && filename.includes('example.com')) {
+                            console.log('DEBUG:', fm.constructor.name, '.loadFile() called with HTTP URL:', filename);
+                            console.log('DEBUG:', fm.constructor.name, '.loadFile() currentDirectory:', currentDirectory);
+                            console.log('DEBUG:', fm.constructor.name, '.loadFile() options:', JSON.stringify(options));
+                            
+                            // Call the original method and see what happens
+                            try {
+                                var result = originalLoadFile.apply(this, arguments);
+                                console.log('DEBUG:', fm.constructor.name, '.loadFile() result:', result);
+                                return result;
+                            } catch (e) {
+                                console.log('DEBUG:', fm.constructor.name, '.loadFile() threw error:', e.message);
+                                throw e;
+                            }
+                        }
+                        return originalLoadFile.apply(this, arguments);
+                    };
+                }
+            });
+        } else {
+            console.log('DEBUG: No fileManagers array found');
+        }
+    } else {
+        console.log('DEBUG: Less.js environment not found');
+        console.log('DEBUG: Available properties on less:', Object.keys(less || {}));
+    }
+} catch (e) {
+    console.log('DEBUG: Error checking file managers:', e.message);
+    console.log('DEBUG: Error stack:', e.stack);
+}

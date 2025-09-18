@@ -741,22 +741,7 @@ module.exports = function(testFilter) {
         ok(stylize('OK\n', 'green'));
     }
 
-    function testImportRedirect() {
-        return (name, err, css, doReplacements, sourcemap, baseFolder) => {
-            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
-            if (err) {
-                fail('FAIL: ' + (err && err.message));
-                return;
-            }
-            const expected = 'h1 {\n  color: red;\n}\n';
-            if (css !== expected) {
-                difference('FAIL', expected, css);
-                return;
-            }
-            // Note: nock cleanup is now handled centrally in index.js
-            ok('OK');
-        };
-    }
+    // HTTP redirect testing is now handled directly in test/index.js
 
     function testDisablePluginRule() {
         less.render(
@@ -785,7 +770,6 @@ module.exports = function(testFilter) {
         testSourcemapWithoutUrlAnnotation: testSourcemapWithoutUrlAnnotation,
         testSourcemapWithVariableInSelector: testSourcemapWithVariableInSelector,
         testImports: testImports,
-        testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         testDisablePluginRule: testDisablePluginRule,

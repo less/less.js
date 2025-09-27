@@ -741,6 +741,52 @@ Ruleset.prototype = Object.assign(new Node(), {
                         const nestedPaths = [];
                         let replaced;
                         const replacedNewSelectors = [];
+
+                        let hasFutureParentSelector = false;
+                        if (nestedSelector.elements && nestedSelector.elements.length > 0) {
+                            if (nestedSelector.elements[0].value === '&' || (nestedSelector.elements[0].elements && nestedSelector.elements[0].elements[0].value === '&')) {
+                                hasFutureParentSelector = true;
+                            }
+                        }
+                        if (hadParentSelector || hasFutureParentSelector) {
+                            context = [[]];
+                            for (let index = 0; index < newSelectors.length; index++) {
+                                for (let j = 0; j < newSelectors[index].length; j++) {
+                                    let selector = newSelectors[index][j];
+                                    if (selector && selector.elements) {
+                                        const eleCopy = [];
+                                        selector.elements.forEach(element => {
+                                            eleCopy.push(new Element(
+                                                element.combinator,
+                                                element.value,
+                                                element.isVariable,
+                                                element._index,
+                                                element._fileInfo
+                                            ));
+                                        });
+                                        selector = new Selector(
+                                            eleCopy,
+                                            selector.extendList,
+                                            selector.condition,
+                                            selector.index,
+                                            selector.currentFileInfo,
+                                            selector.visibilityInfo && selector.visibilityInfo()
+                                        );
+                                        let inSelectorIndex = 0;
+                                        for (let k = 0; k < selector.elements.length; k++) {
+                                            if (/^[:[]/.test(selector.elements[k].value) || (inSelector.elements[inSelectorIndex].value !== '&' && hadParentSelector)) {
+                                                selector.elements.splice(k, 1);
+                                                k--;
+                                            }
+                                            inSelectorIndex++;
+                                        }
+                                    }
+
+                                    context[index][j] = selector;
+                                }
+                            }
+                        }
+
                         replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
                         hadParentSelector = hadParentSelector || replaced;
                         // the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
@@ -748,6 +794,32 @@ Ruleset.prototype = Object.assign(new Node(), {
                             const replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
                             addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
                         }
+                        newSelectors = replacedNewSelectors;
+                        currentElements = [];
+                    } else if (el instanceof Selector) {
+                        const nestedSelector = el;
+
+                        // merge the current list of non parent selector elements
+                        // on to the current list of selectors to add
+                        mergeElementsOnToSelectors(currentElements, newSelectors);
+
+                        const nestedPaths = [];
+                        let replaced;
+                        let replacedNewSelectors = [];
+                        let currentReplacedSelectors = [];
+                        replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
+                        hadParentSelector = hadParentSelector || replaced;
+
+                        for (k = 0; k < nestedPaths.length; k++) {
+                            for (let selectorIndex = 0; selectorIndex < nestedPaths[k].length; ++selectorIndex) {
+                                const replacementSelector = nestedPaths[k][selectorIndex];
+                                addAllReplacementsIntoPath(newSelectors, [replacementSelector], el.elements[0], inSelector, replacedNewSelectors);
+                                for (let current = 0; current < currentReplacedSelectors.length; ++current) {
+                                    replacedNewSelectors.push(currentReplacedSelectors[current]);
+                                }
+                            }
+                        }
+
                         newSelectors = replacedNewSelectors;
                         currentElements = [];
                     } else {

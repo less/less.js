@@ -188,3 +188,15 @@ a:is(.b, :is(.c)) {
 a:is(.b, :is(.c), :has(div)) {
   color: red;
 }
+.x:is(.x.a) {
+  color: #f00;
+}
+.x:not(.x.b, .x.c) {
+  color: #0f0;
+}
+.x:is(.x-a) {
+  color: #f00;
+}
+.x:not(.x-b, .x-c) {
+  color: #0f0;
+}

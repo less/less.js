@@ -23,8 +23,7 @@ logger.addListener({
 module.exports = function(testFilter) {
     var path = require('path'),
         fs = require('fs'),
-        clone = require('copy-anything').copy,
-        nock = require('nock');
+        clone = require('copy-anything').copy;
 
     var less = require('../');
 
@@ -377,7 +376,6 @@ module.exports = function(testFilter) {
             var includePatterns = [];
             var excludePatterns = [];
             
-            console.log('DEBUG: Processing glob patterns:', patterns);
             
             patterns.forEach(function(pattern) {
                 if (pattern.startsWith('!')) {
@@ -399,7 +397,7 @@ module.exports = function(testFilter) {
                 allFiles = allFiles.concat(files);
             });
             
-            // Note: nock mocks are set up globally in index.js
+            // Note: needle mocking is set up globally in index.js
             
             // Process each .less file found
             allFiles.forEach(function(filePath) {
@@ -464,11 +462,6 @@ module.exports = function(testFilter) {
 
             var name = getBasename(file, relativePath);
             
-            // Debug logging for import-redirect test
-            if (fullPath.includes('import-redirect')) {
-                console.log('DEBUG: import-redirect test running, fullPath:', fullPath);
-                console.log('DEBUG: nock.pendingMocks():', require('nock').pendingMocks());
-            }
 
             if (oneTestOnly && typeof oneTestOnly === 'string' && !name.includes(oneTestOnly)) {
                 return;

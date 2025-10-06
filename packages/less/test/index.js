@@ -245,7 +245,7 @@ var testMap = [
     }
 ];
 
-// Note: nock mocks are set up globally at the top of the file
+// Note: needle mocking is set up globally at the top of the file
 
 testMap.forEach(function(testConfig) {
     // For glob patterns, pass lessOptions as the first parameter and patterns as the second

@@ -214,7 +214,7 @@ module.exports = function(grunt) {
                 command: "node build/rollup.js --browser --out=./tmp/browser/less.min.js"
             },
             test: {
-                command: 'ts-node test/test-es6.ts && node test/index.js'
+                command: 'npx ts-node test/test-es6.ts && node test/index.js'
             },
             generatebrowser: {
                 command: 'node test/browser/generator/generate.js'

@@ -380,8 +380,16 @@ class ProcessExtendsVisitor {
             return elementValue1 === elementValue2;
         }
         if (elementValue1 instanceof tree.Attribute) {
-            if (elementValue1.op !== elementValue2.op || elementValue1.key !== elementValue2.key) {
+            if (elementValue1.op !== elementValue2.op) {
                 return false;
+            }
+            if (elementValue1.key.length !== elementValue2.key.length) {
+                return false;
+            }
+            for(let i=0;i<elementValue1.key.length;++i){
+                if(elementValue1.key[i] !== elementValue2.key[i]){
+                    return false;
+                }
             }
             if (!elementValue1.value || !elementValue2.value) {
                 if (elementValue1.value || elementValue2.value) {

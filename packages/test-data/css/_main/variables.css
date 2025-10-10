@@ -80,6 +80,17 @@
 .radio_checked {
   border-color: #fff;
 }
+.mixed {
+  m-1: "a.hello";
+  m-2: 'a';
+  m-3: 'a' a a "a.";
+  m-4: a "a-" a "abc";
+  m-5: a "a.ab" c c 'a.bc' abc d;
+  m-6: a.hello;
+  m-7: 'a.b' "abc" abc a.b.c 'a.b.c';
+  m-8: hello;
+  m-9: 'a.hello';
+}
 div#apple {
   color: blue;
 }

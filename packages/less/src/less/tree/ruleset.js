@@ -189,6 +189,9 @@ Ruleset.prototype = Object.assign(new Node(), {
         for (i = 0; (rule = rsRules[i]); i++) {
             if (!rule.evalFirst) {
                 rsRules[i] = rule = rule.eval ? rule.eval(context) : rule;
+                if (rule instanceof Declaration) {
+                    ruleset.resetCache();
+                }
             }
         }
 

@@ -207,6 +207,7 @@
   format-escaped-string: hello escaped world;
   format-keyword: hello;
   format-anonymous: hello anonymous world;
+  format-color: 'hsla(90, 100%, 50%, 0.5)';
 }
 #list-details {
   length: 2;

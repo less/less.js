@@ -1,0 +1,36 @@
+// Test cases for min/max with CSS variables and operations fix
+
+.test-min-max {
+  // Test 1: min() with CSS variable
+  width: min(var(--width), 100px);
+  
+  // Test 2: max() with CSS variable
+  height: max(var(--height), 50px);
+  
+  // Test 3: min() with calc()
+  padding: min(calc(100% - 20px), 500px);
+  
+  // Test 4: max() with multiple CSS variables
+  margin: max(var(--margin-top), var(--margin-bottom), 10px);
+  
+  // Test 5: Nested min/max
+  font-size: min(max(var(--min-font), 12px), var(--max-font));
+  
+  // Test 6: min() with only dimensions (should work as before)
+  line-height: min(1.5em, 24px, 2rem);
+  
+  // Test 7: max() with only dimensions
+  max-width: max(300px, 20em);
+}
+
+.test-operations {
+  // Test 8: Operation with CSS variable (should preserve)
+  width: calc(var(--base-width) + 20px);
+  
+  // Test 9: Normal operation (should work)
+  @base: 100px;
+  height: @base * 2;
+  
+  // Test 10: Operation with dimensions
+  margin: (10px + 5px);
+}

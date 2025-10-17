@@ -1,5 +1,6 @@
 import Dimension from '../tree/dimension';
 import Anonymous from '../tree/anonymous';
+import Call from '../tree/call';
 import mathHelper from './math-helper.js';
 
 const minMax = function (isMin, args) {
@@ -15,6 +16,7 @@ const minMax = function (isMin, args) {
     let unit;
     let unitStatic;
     let unitClone;
+    let hasNonDimension = false;
 
     const // elems only contains original argument values.
         order  = [];
@@ -28,7 +30,15 @@ const minMax = function (isMin, args) {
                 Array.prototype.push.apply(args, Array.prototype.slice.call(args[i].value));
                 continue;
             } else {
-                throw { type: 'Argument', message: 'incompatible types' };
+                // Handle CSS variables (var()), calc(), and other function calls
+                // by preserving them in the output
+                if (current instanceof Call || current instanceof Anonymous) {
+                    hasNonDimension = true;
+                    order.push(current);
+                    continue;
+                } else {
+                    throw { type: 'Argument', message: 'incompatible types' };
+                }
             }
         }
         currentUnified = current.unit.toString() === '' && unitClone !== undefined ? new Dimension(current.value, unitClone).unify() : current.unify();
@@ -50,9 +60,17 @@ const minMax = function (isMin, args) {
             order[j] = current;
         }
     }
+    
+    // If there are non-dimension values (like CSS variables), always output as CSS function
+    if (hasNonDimension || order.length > 1) {
+        args = order.map(a => { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
+        return new Anonymous(`${isMin ? 'min' : 'max'}(${args})`);
+    }
+    
     if (order.length == 1) {
         return order[0];
     }
+    
     args = order.map(a => { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
     return new Anonymous(`${isMin ? 'min' : 'max'}(${args})`);
 };
@@ -61,12 +79,20 @@ export default {
     min: function(...args) {
         try {
             return minMax.call(this, true, args);
-        } catch (e) {}
+        } catch (e) {
+            // If we can't evaluate, return as native CSS function
+            const argsCSS = args.map(a => a.toCSS ? a.toCSS(this.context) : a).join(this.context.compress ? ',' : ', ');
+            return new Anonymous(`min(${argsCSS})`);
+        }
     },
     max: function(...args) {
         try {
             return minMax.call(this, false, args);
-        } catch (e) {}
+        } catch (e) {
+            // If we can't evaluate, return as native CSS function
+            const argsCSS = args.map(a => a.toCSS ? a.toCSS(this.context) : a).join(this.context.compress ? ',' : ', ');
+            return new Anonymous(`max(${argsCSS})`);
+        }
     },
     convert: function (val, unit) {
         return val.convertTo(unit.value);

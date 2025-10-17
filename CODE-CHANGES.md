@@ -6,7 +6,7 @@
 - Enhanced type detection for CSS variables and functions
 
 
-## Fix #2: Enhanced Operation Error Handling
+## Fix #2: Enhanced Operation 
 - Added imports for Call and Anonymous nodes
 - Added CSS variable detection in operations
 ---

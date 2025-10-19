@@ -1,0 +1,29 @@
+/* Block comment should remain */
+.test {
+  color: red;
+  background: blue;
+}
+.another {
+  margin: 10px;
+  padding: 5px;
+}
+/* Block comment should remain */
+.block-comment {
+  /* This stays */
+  width: 100%;
+}
+.custom {
+  --color: red;
+  --size: 10px;
+}
+.parent {
+  color: black;
+}
+.parent .child {
+  color: white;
+}
+.mixed {
+  /* Block comment */
+  color: green;
+  background: /* inline block */ yellow;
+}

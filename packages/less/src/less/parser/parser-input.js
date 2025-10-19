@@ -260,9 +260,27 @@ export default () => {
                         break;
                     case '/':
                         if (input.charAt(i + 1) === '*') {
+                            // Block comment start: /* ... */
                             i++;
                             inComment = true;
                             blockDepth++;
+                        } else if (input.charAt(i + 1) === '/') {
+                            // Line comment start: // ... (strip until newline)
+                            // Push any content before the comment
+                            if (i > lastPos) {
+                                parseGroups.push(input.substr(lastPos, i - lastPos));
+                            }
+                            // Find end of line (\n). If not found, jump to end of input
+                            let nextNewLine = input.indexOf('\n', i + 2);
+                            if (nextNewLine < 0) {
+                                // No newline, skip to end and finish
+                                i = length; // will exit loop below
+                                lastPos = i;
+                                continue;
+                            }
+                            // Skip past the newline; set lastPos to first char after newline
+                            i = nextNewLine;
+                            lastPos = i + 1;
                         }
                         break;
                     case '\'':

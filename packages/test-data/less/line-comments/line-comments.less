@@ -1,0 +1,49 @@
+// This is a line comment at the top
+// It should be stripped from output
+
+.test {
+  color: red; // inline comment
+  // This is a comment inside a block
+  background: blue;
+}
+
+// Comment between rules
+.another {
+  // Multiple comments
+  // in a row
+  margin: 10px;
+  padding: 5px; // trailing comment
+}
+
+/* Block comment should remain */
+.block-comment {
+  /* This stays */
+  width: 100%;
+}
+
+// Test with custom properties
+.custom {
+  --color: red; // line comment after custom prop
+  --size: 10px;
+}
+
+// Test in nested rules
+.parent {
+  // Comment in parent
+  color: black;
+  
+  .child {
+    // Comment in child
+    color: white;
+  }
+}
+
+// Test with mixed comments
+.mixed {
+  /* Block comment */
+  color: green; // line comment
+  // Another line comment
+  background: /* inline block */ yellow;
+}
+
+// End of file comment

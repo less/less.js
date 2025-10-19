@@ -1,0 +1,19 @@
+// Test for extend/variable scope issue #3706
+// Demonstrates that variables cannot be overridden via extend
+
+@color: red;
+
+a {
+  color: @color;
+}
+
+// This will NOT make .foo a green
+// because extend works after evaluation
+.foo {
+  &:extend(a all);
+  @color: green; // This variable is scoped to .foo only
+}
+
+// Expected output:
+// a, .foo a { color: red; }
+// NOT .foo a { color: green; }

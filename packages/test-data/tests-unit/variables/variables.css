@@ -41,3 +41,6 @@
 .variable-pollution {
   a: 'no-pollution';
 }
+.icon-5_large {
+  background-image: url(/img/icon/5_large.svg);
+}

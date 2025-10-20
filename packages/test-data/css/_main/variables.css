@@ -95,3 +95,6 @@ div#carrot {
 div#potato {
   color: blue;
 }
+.icon-5_large {
+  background-image: url(/img/icon/5_large.svg);
+}

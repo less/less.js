@@ -24,10 +24,11 @@ Element.prototype = Object.assign(new Node(), {
     type: 'Element',
 
     accept(visitor) {
-        const value = this.value;
         this.combinator = visitor.visit(this.combinator);
-        if (typeof value === 'object') {
-            this.value = visitor.visit(value);
+
+        // Visit value only if it's an object with an accept method
+        if (this.value && typeof this.value === 'object' && typeof this.value.accept === 'function') {
+            this.value = visitor.visit(this.value);
         }
     },
 

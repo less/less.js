@@ -1,5 +1,5 @@
 /**
- * Less - Leaner CSS v4.4.1
+ * Less - Leaner CSS v4.4.2
  * http://lesscss.org
  * 
  * Copyright (c) 2009-2025, Alexis Sellier <self@cloudhead.net>
@@ -5083,6 +5083,9 @@
                             if (!parserInput.$char(',')) {
                                 break;
                             }
+                            else if (!features[features.length - 1].noSpacing) {
+                                features[features.length - 1].noSpacing = false;
+                            }
                         }
                         else {
                             e = entities.variable() || entities.mixinLookup();
@@ -5090,6 +5093,9 @@
                                 features.push(e);
                                 if (!parserInput.$char(',')) {
                                     break;
+                                }
+                                else if (!features[features.length - 1].noSpacing) {
+                                    features[features.length - 1].noSpacing = false;
                                 }
                             }
                         }
@@ -7168,7 +7174,7 @@
             var expr, paren;
             for (var index = 0; index < exprValues.length; ++index) {
                 expr = exprValues[index];
-                if (expr.type === 'Keyword' && index + 1 < exprValues.length) {
+                if (expr.type === 'Keyword' && index + 1 < exprValues.length && (expr.noSpacing || expr.noSpacing == null)) {
                     paren = exprValues[index + 1];
                     if (paren.type === 'Paren' && paren.noSpacing) {
                         exprValues[index] = new Expression([expr, paren]);
@@ -11189,7 +11195,7 @@
         return render;
     }
 
-    var version = "4.4.1";
+    var version = "4.4.2";
 
     function parseNodeVersion(version) {
       var match = version.match(/^v(\d{1,2})\.(\d{1,2})\.(\d{1,2})(?:-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-.]+))?$/); // eslint-disable-line max-len

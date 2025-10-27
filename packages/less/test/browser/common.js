@@ -169,7 +169,7 @@ testErrorSheet = function (sheet) {
                     errorTxt = errorTxt
                         .replace(/\{path\}/g, '')
                         .replace(/\{pathrel\}/g, '')
-                        .replace(/\{pathhref\}/g, 'http://localhost:8081/test/less/errors/')
+                        .replace(/\{pathhref\}/g, 'http://localhost:8081/packages/less/node_modules/@less/test-data/tests-error/eval/')
                         .replace(/\{404status\}/g, ' (404)')
                         .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
                         .replace(/\n$/, '')

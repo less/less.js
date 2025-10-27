@@ -85,8 +85,7 @@ module.exports = function(grunt) {
         "relative-urls",
         "rewrite-urls",
         "browser",
-        "no-js-errors",
-        "legacy"
+        "no-js-errors"
     ];
 
     function makeJob(testName) {

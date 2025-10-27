@@ -25,9 +25,20 @@ module.exports = (stylesheets, helpers, spec, less) => {
     <!-- for each test, generate CSS/LESS link tags -->
     $${stylesheets.map(function(fullLessName) {
         var pathParts = fullLessName.split('/');
-        var fullCssName = fullLessName
-            .replace(/\/(browser|test-data)\/less\//g, '/$1/css/')
-            .replace(/less$/, 'css')
+        var fullCssName = fullLessName.replace(/less$/, 'css');
+        
+        // Check if the CSS file exists in the same directory as the LESS file
+        var fs = require('fs');
+        var cssExists = fs.existsSync(fullCssName);
+        
+        // If not, try the css/ directory for local browser tests
+        if (!cssExists && fullLessName.includes('/test/browser/less/')) {
+            var cssInCssDir = fullLessName.replace('/test/browser/less/', '/test/browser/css/').replace(/less$/, 'css');
+            if (fs.existsSync(cssInCssDir)) {
+                fullCssName = cssInCssDir;
+            }
+        }
+        
         var lessName = pathParts[pathParts.length - 1];
         var name = lessName.split('.')[0];
         return `

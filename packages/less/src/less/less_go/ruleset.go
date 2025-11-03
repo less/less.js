@@ -959,10 +959,10 @@ func (r *Ruleset) Variable(name string) map[string]any {
 }
 
 // Property returns a specific property by name
-func (r *Ruleset) Property(name string) any {
+func (r *Ruleset) Property(name string) []any {
 	props := r.Properties()
 	if decl, exists := props[name]; exists {
-		return r.ParseValue(decl)
+		return decl
 	}
 	return nil
 }

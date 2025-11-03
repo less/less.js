@@ -162,8 +162,18 @@ func (i *Import) pathFileInfoReference() any {
 // GetPath returns the path value
 func (i *Import) GetPath() any {
 	if urlPath, ok := i.path.(*URL); ok {
+		// Match JavaScript: this.path.value.value
+		// When path is a URL, we need to extract the value from URL.Value
 		if urlValue, ok := urlPath.Value.(map[string]any); ok {
 			return urlValue["value"]
+		}
+		// Handle case where URL.Value is a Quoted object
+		if quoted, ok := urlPath.Value.(*Quoted); ok {
+			return quoted.GetValue()
+		}
+		// Handle other objects with GetValue() method
+		if pathWithValue, ok := urlPath.Value.(interface{ GetValue() any }); ok {
+			return pathWithValue.GetValue()
 		}
 		return urlPath.Value
 	}

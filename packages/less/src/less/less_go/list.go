@@ -241,8 +241,37 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 
 	// Default variable names
 	valueName := "@value"
-	keyName := "@key" 
+	keyName := "@key"
 	indexName := "@index"
+
+	// Handle MixinDefinition (anonymous mixins with parameters)
+	// If rs is a MixinDefinition, extract parameter names and get the rules
+	if mixinDef, ok := rs.(*MixinDefinition); ok {
+		// Extract parameter names from mixin params
+		if len(mixinDef.Params) > 0 {
+			if param0, ok := mixinDef.Params[0].(map[string]any); ok {
+				if name, ok := param0["name"].(string); ok {
+					valueName = name
+				}
+			}
+		}
+		if len(mixinDef.Params) > 1 {
+			if param1, ok := mixinDef.Params[1].(map[string]any); ok {
+				if name, ok := param1["name"].(string); ok {
+					keyName = name
+				}
+			}
+		}
+		if len(mixinDef.Params) > 2 {
+			if param2, ok := mixinDef.Params[2].(map[string]any); ok {
+				if name, ok := param2["name"].(string); ok {
+					indexName = name
+				}
+			}
+		}
+		// Use the mixin definition's rules as rs
+		rs = mixinDef.Rules
+	}
 
 	// Handle ruleset parameter extraction (for mixin calls with parameters)
 	var targetRuleset *Ruleset

@@ -1,9 +1,13 @@
 package less_go
 
 import (
+	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // FileSystemFileManager implements a real file manager that loads files from disk
@@ -26,8 +30,123 @@ func (fm *FileSystemFileManager) SupportsSync(filename, currentDirectory string,
 	return true
 }
 
+// isRemoteURL checks if a filename is a remote HTTP/HTTPS URL
+func isRemoteURL(filename string) bool {
+	return strings.HasPrefix(filename, "http://") || strings.HasPrefix(filename, "https://")
+}
+
+// fetchRemoteFile fetches a file from a remote URL
+func fetchRemoteFile(url string) *LoadedFile {
+	// Create HTTP client with timeout
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	// Make GET request
+	resp, err := client.Get(url)
+	if err != nil {
+		return &LoadedFile{
+			Message: fmt.Sprintf("Failed to fetch remote file: %v", err),
+		}
+	}
+	defer resp.Body.Close()
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		return &LoadedFile{
+			Message: fmt.Sprintf("Remote file returned status %d: %s", resp.StatusCode, resp.Status),
+		}
+	}
+
+	// Read response body
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return &LoadedFile{
+			Message: fmt.Sprintf("Failed to read remote file: %v", err),
+		}
+	}
+
+	return &LoadedFile{
+		Filename: url,
+		Contents: string(contents),
+	}
+}
+
+// resolveNodeModule attempts to resolve a module path using Node.js module resolution algorithm
+// This mimics Node's require.resolve() behavior
+func resolveNodeModule(modulePath, startDir string) (string, error) {
+	// Clean the start directory
+	startDir, err := filepath.Abs(startDir)
+	if err != nil {
+		return "", err
+	}
+
+	// Get current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		cwd = startDir // Fallback to startDir if we can't get CWD
+	}
+
+	// Try to resolve from multiple starting points:
+	// 1. Current working directory (where the process is running)
+	// 2. Start directory (where the file being compiled is located)
+	// This mimics Node's behavior where CWD node_modules is checked first
+	searchDirs := []string{cwd}
+	if startDir != cwd {
+		searchDirs = append(searchDirs, startDir)
+	}
+
+	for _, searchStart := range searchDirs {
+		// Walk up the directory tree from this search start
+		currentDir := searchStart
+		for {
+			// Try looking in node_modules under current directory
+			tryPath := filepath.Join(currentDir, "node_modules", modulePath)
+
+			// Check if file exists
+			if _, err := os.Stat(tryPath); err == nil {
+				return tryPath, nil
+			}
+
+			// Try with .less extension if no extension present
+			if !strings.Contains(filepath.Base(modulePath), ".") {
+				tryPathWithExt := tryPath + ".less"
+				if _, err := os.Stat(tryPathWithExt); err == nil {
+					return tryPathWithExt, nil
+				}
+			}
+
+			// Move up one directory
+			parentDir := filepath.Dir(currentDir)
+
+			// If we've reached the root, stop
+			if parentDir == currentDir {
+				break
+			}
+
+			currentDir = parentDir
+		}
+	}
+
+	return "", fmt.Errorf("module not found: %s", modulePath)
+}
+
+// isExplicitPath checks if a path is explicit (starts with . or /)
+func isExplicitPath(path string) bool {
+	if len(path) == 0 {
+		return false
+	}
+	prefix := path[0:1]
+	return prefix == "." || prefix == "/"
+}
+
 // LoadFileSync loads a file synchronously
 func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string, context map[string]any, environment ImportManagerEnvironment) *LoadedFile {
+	// Check if this is a remote URL
+	if isRemoteURL(filename) {
+		return fetchRemoteFile(filename)
+	}
+
 	isAbsolute := fm.IsPathAbsolute(filename)
 	paths := []string{}
 	
@@ -68,14 +187,31 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 	var fullPath string
 	var contents []byte
 	var err error
-	
+	explicit := isExplicitPath(filename)
+
 	for _, dir := range paths {
 		if isAbsolute {
 			fullPath = filename
 		} else {
 			fullPath = filepath.Join(dir, filename)
 		}
-		
+
+		// Try Node module resolution if:
+		// 1. Path is not explicit (doesn't start with . or /)
+		// 2. We're searching in the current directory (.)
+		if !explicit && dir == "." {
+			resolvedPath, resolveErr := resolveNodeModule(filename, currentDirectory)
+			if resolveErr == nil {
+				// Successfully resolved as Node module
+				contents, err = ioutil.ReadFile(resolvedPath)
+				if err == nil {
+					fullPath = resolvedPath
+					break
+				}
+			}
+			// If Node module resolution fails, continue with normal file resolution
+		}
+
 		// Try with .less extension if no extension
 		if !strings.Contains(filepath.Base(fullPath), ".") {
 			tryPath := fullPath + ".less"
@@ -85,7 +221,7 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 				break
 			}
 		}
-		
+
 		// Try as-is
 		contents, err = ioutil.ReadFile(fullPath)
 		if err == nil {
@@ -148,6 +284,10 @@ func (fm *FileSystemFileManager) PathDiff(url, baseUrl string) string {
 
 // IsPathAbsolute checks if a path is absolute
 func (fm *FileSystemFileManager) IsPathAbsolute(filename string) bool {
+	// Remote URLs are considered absolute
+	if isRemoteURL(filename) {
+		return true
+	}
 	return filepath.IsAbs(filename)
 }
 

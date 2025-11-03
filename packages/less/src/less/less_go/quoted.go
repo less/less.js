@@ -198,6 +198,21 @@ func (q *Quoted) Eval(context any) (any, error) {
 							} else {
 								result = fmt.Sprintf("%v", anon.Value)
 							}
+						} else if quoted, ok := evaluated.(*Quoted); ok {
+							// Handle Quoted results from Value eval
+							result = quoted.value
+						} else if expr, ok := evaluated.(*Expression); ok {
+							// Handle Expression results from Value eval
+							// Expression may contain multiple values, take the first one
+							if len(expr.Value) > 0 {
+								if quoted, ok := expr.Value[0].(*Quoted); ok {
+									result = quoted.value
+								} else if cssable, ok := expr.Value[0].(interface{ ToCSS(any) string }); ok {
+									result = cssable.ToCSS(nil)
+								} else {
+									result = fmt.Sprintf("%v", expr.Value[0])
+								}
+							}
 						} else if cssable, ok := evaluated.(interface{ ToCSS(any) string }); ok {
 							result = cssable.ToCSS(nil)
 						} else {

@@ -185,6 +185,11 @@ func NewParser(context map[string]any, imports map[string]any, fileInfo map[stri
 
 // error throws a LessError
 func (p *Parser) error(msg string, errorType string) {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		tracer.TraceError("Parser.error", msg, p)
+	}
+
 	if errorType == "" {
 		errorType = "Syntax"
 	}
@@ -628,6 +633,11 @@ func SerializeVars(vars map[string]any) string {
 
 // Primary is the main entry and exit point of the parser
 func (p *Parsers) Primary() []any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("Primary", p.parser)()
+	}
+
 	root := make([]any, 0)
 	var node any
 	maxIterations := 10000 // Safety limit
@@ -692,24 +702,48 @@ func (p *Parsers) Primary() []any {
 		}
 
 		// Try other rules
+		tracer := GetParserTracer()
 		node = p.mixin.Definition()
+		if node != nil {
+			tracer.TraceCheckpoint("Parsed MixinDefinition", p.parser)
+		}
 		if node == nil {
 			node = p.Declaration()
+			if node != nil {
+				tracer.TraceCheckpoint("Parsed Declaration", p.parser)
+			}
 		}
 		if node == nil {
 			node = p.mixin.Call(false, false)
+			if node != nil {
+				tracer.TraceCheckpoint("Parsed MixinCall", p.parser)
+			}
 		}
 		if node == nil {
 			node = p.Ruleset()
+			if node != nil {
+				tracer.TraceCheckpoint("Parsed Ruleset", p.parser)
+			}
 		}
 		if node == nil {
 			node = p.VariableCall()
+			if node != nil {
+				tracer.TraceCheckpoint("Parsed VariableCall", p.parser)
+			}
 		}
 		if node == nil {
+			// CRITICAL: entities.Call() should only be tried if all else fails
+			tracer.TraceCallStackAt("About to try entities.Call() in Primary()", p.parser)
 			node = p.entities.Call()
+			if node != nil {
+				tracer.TraceCheckpoint("Parsed entities.Call()", p.parser)
+			}
 		}
 		if node == nil {
 			node = p.AtRule()
+			if node != nil {
+				tracer.TraceCheckpoint("Parsed AtRule", p.parser)
+			}
 		}
 
 		if node != nil {
@@ -745,6 +779,11 @@ func (p *Parsers) Comment() any {
 
 // Declaration parses property declarations
 func (p *Parsers) Declaration() any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("Declaration", p.parser)()
+	}
+
 	var name any
 	var value any
 	index := p.parser.parserInput.GetIndex()
@@ -754,7 +793,9 @@ func (p *Parsers) Declaration() any {
 	var merge string
 	var isVariable bool
 
+	tracer.TraceMode("Declaration: checking current char", fmt.Sprintf("char='%c' (0x%02x)", c, c), p.parser)
 	if c == '.' || c == '#' || c == '&' || c == ':' {
+		tracer.TraceMode("Declaration: early return", fmt.Sprintf("current char is '%c'", c), p.parser)
 		return nil
 	}
 
@@ -764,6 +805,7 @@ func (p *Parsers) Declaration() any {
 	if name == nil {
 		name = p.RuleProperty()
 	}
+	tracer.TraceMode("Declaration: after parsing name", fmt.Sprintf("name=%v", name != nil), p.parser)
 
 	if name != nil {
 		// Determine if this is a variable declaration
@@ -813,6 +855,7 @@ func (p *Parsers) Declaration() any {
 			// Try anonymousValue for performance
 			if value == nil {
 				value = p.AnonymousValue()
+				tracer.TraceMode("Declaration: after AnonymousValue()", fmt.Sprintf("value=%v", value != nil), p.parser)
 			}
 
 			if value != nil {
@@ -842,19 +885,24 @@ func (p *Parsers) Declaration() any {
 			}
 
 			value = p.Value()
+			tracer.TraceMode("Declaration: after Value()", fmt.Sprintf("value=%v", value != nil), p.parser)
 			// Handle variable lookups in property values, e.g., @detached[@color]
 			if value == nil {
 				value = p.VariableCall()
+				tracer.TraceMode("Declaration: after VariableCall()", fmt.Sprintf("value=%v", value != nil), p.parser)
 			}
 			if value != nil {
 				important = p.Important()
 			} else if isVariable {
 				// As fallback, try permissive value for variables
 				value = p.PermissiveValue(nil, false)
+				tracer.TraceMode("Declaration: after PermissiveValue()", fmt.Sprintf("value=%v", value != nil), p.parser)
 			}
 		}
 
-		if value != nil && (p.End() || hasDR) {
+		endResult := p.End()
+		tracer.TraceMode("Declaration: checking End()", fmt.Sprintf("value=%v, End()=%v, hasDR=%v", value != nil, endResult, hasDR), p.parser)
+		if value != nil && (endResult || hasDR) {
 			p.parser.parserInput.Forget()
 			mergeFlag := merge == "+"
 
@@ -1027,10 +1075,84 @@ func (p *Parsers) AnonymousValue() any {
 
 // DetachedRuleset parses detached rulesets
 func (p *Parsers) DetachedRuleset() any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("DetachedRuleset", p.parser)()
+	}
+
+	var argInfo map[string]any
+	var params []any
+	var variadic bool
+
+	p.parser.parserInput.Save()
+	if tracer.IsEnabled() {
+		tracer.TraceSaveRestore("Save", "DetachedRuleset", p.parser)
+	}
+
+	// Check for anonymous mixin syntax: .(@args) or #(@args)
+	// DR args currently only implemented for each() function
+	mixinMatch := p.parser.parserInput.Re(regexp.MustCompile(`^[.#]\(`))
+	if tracer.IsEnabled() {
+		tracer.TraceRegex("DetachedRuleset", "^[.#]\\(", mixinMatch != nil, mixinMatch)
+	}
+	if mixinMatch != nil {
+		argInfo = p.parser.parsers.mixin.Args(false)
+		if argInfo != nil {
+			if args, ok := argInfo["args"].([]any); ok {
+				params = args
+			}
+			if v, ok := argInfo["variadic"].(bool); ok {
+				variadic = v
+			}
+			if p.parser.parserInput.Char(')') == nil {
+				p.parser.parserInput.Restore("")
+				if tracer.IsEnabled() {
+					tracer.TraceSaveRestore("Restore", "DetachedRuleset", p.parser)
+					tracer.TraceResult("DetachedRuleset", nil, "missing closing paren after args")
+				}
+				return nil
+			}
+		}
+	}
+
 	blockRuleset := p.BlockRuleset()
 	if blockRuleset != nil {
-		// Pass the entire ruleset, not just its Node
-		return NewDetachedRuleset(blockRuleset, nil)
+		p.parser.parserInput.Forget()
+		if tracer.IsEnabled() {
+			tracer.TraceSaveRestore("Forget", "DetachedRuleset", p.parser)
+		}
+		// If we have params, return a MixinDefinition instead
+		if params != nil {
+			// Get the rules from the blockRuleset
+			var rules []any
+			if ruleset, ok := blockRuleset.(*Ruleset); ok {
+				rules = ruleset.Rules
+			}
+			// NewMixinDefinition expects: (name string, params []any, rules []any, condition any, variadic bool, frames []any, visibilityInfo map[string]any)
+			mixinDef, err := NewMixinDefinition("", params, rules, nil, variadic, nil, nil)
+			if err != nil {
+				p.parser.parserInput.Restore("")
+				if tracer.IsEnabled() {
+					tracer.TraceSaveRestore("Restore", "DetachedRuleset", p.parser)
+					tracer.TraceResult("DetachedRuleset", nil, "mixin definition creation failed")
+				}
+				return nil
+			}
+			if tracer.IsEnabled() {
+				tracer.TraceResult("DetachedRuleset", mixinDef, "mixin definition with params")
+			}
+			return mixinDef
+		}
+		result := NewDetachedRuleset(blockRuleset, nil)
+		if tracer.IsEnabled() {
+			tracer.TraceResult("DetachedRuleset", result, "detached ruleset")
+		}
+		return result
+	}
+	p.parser.parserInput.Restore("")
+	if tracer.IsEnabled() {
+		tracer.TraceSaveRestore("Restore", "DetachedRuleset", p.parser)
+		tracer.TraceResult("DetachedRuleset", nil, "no block found")
 	}
 	return nil
 }
@@ -1046,9 +1168,15 @@ func (p *Parsers) BlockRuleset() any {
 
 // Block parses a { ... } block
 func (p *Parsers) Block() any {
-	if p.parser.parserInput.Char('{') != nil {
+	tracer := GetParserTracer()
+	openBrace := p.parser.parserInput.Char('{') != nil
+	tracer.TraceMode("Block: after checking '{'", fmt.Sprintf("found={%v}", openBrace), p.parser)
+	if openBrace {
 		content := p.Primary()
-		if p.parser.parserInput.Char('}') != nil {
+		tracer.TraceMode("Block: after Primary()", fmt.Sprintf("content=%v", content != nil), p.parser)
+		closeBrace := p.parser.parserInput.Char('}') != nil
+		tracer.TraceMode("Block: after checking '}'", fmt.Sprintf("found=%v}", closeBrace), p.parser)
+		if closeBrace {
 			return content
 		}
 	}
@@ -1167,37 +1295,65 @@ func (p *Parsers) PermissiveValue(untilTokens *regexp.Regexp, allowComments bool
 
 // Entity parses entities
 func (p *Parsers) Entity() any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("Entity", p.parser)()
+		// Log current character for debugging
+		if p.parser.parserInput != nil {
+			c := p.parser.parserInput.CurrentChar()
+			idx := p.parser.parserInput.GetIndex()
+			input := p.parser.parserInput.GetInput()
+			remaining := ""
+			if idx < len(input) {
+				end := idx + 30
+				if end > len(input) {
+					end = len(input)
+				}
+				remaining = input[idx:end]
+			}
+			tracer.TraceMode("Entity: parser state", fmt.Sprintf("currentChar='%c'(0x%02x) idx=%d remaining=%q", c, c, idx, remaining), p.parser)
+		}
+	}
+
 	entities := p.entities
 
 	result := p.Comment()
+	tracer.TraceMode("Entity: Comment()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = entities.Literal()
+	tracer.TraceMode("Entity: Literal()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = entities.Variable()
+	tracer.TraceMode("Entity: Variable()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = entities.URL()
+	tracer.TraceMode("Entity: URL()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = entities.Property()
+	tracer.TraceMode("Entity: Property()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = entities.Call()
+	tracer.TraceMode("Entity: Call()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = entities.Keyword()
+	tracer.TraceMode("Entity: Keyword()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
 	result = p.mixin.Call(true, false)
+	tracer.TraceMode("Entity: mixin.Call()", fmt.Sprintf("result=%v", result != nil), p.parser)
 	if result != nil {
 		return result
 	}
@@ -1282,9 +1438,15 @@ func (e *EntityParsers) Quoted(forceEscaped bool) any {
 
 // Keyword parses keywords - black border-collapse
 func (e *EntityParsers) Keyword() any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("Keyword", e.parsers.parser)()
+	}
+
 	k := e.parsers.parser.parserInput.Char('%')
 	if k == nil {
 		k = e.parsers.parser.parserInput.Re(regexp.MustCompile(`^\[?(?:[\w-]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+\]?`))
+		tracer.TraceMode("Keyword: after regex", fmt.Sprintf("matched=%v, value=%v", k != nil, k), e.parsers.parser)
 	}
 
 	if k != nil {
@@ -1467,6 +1629,11 @@ func (e *EntityParsers) JavaScript() any {
 
 // Ruleset parses CSS rulesets
 func (p *Parsers) Ruleset() any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("Ruleset", p.parser)()
+	}
+
 	var selectors []any
 	var rules []any
 	var debugInfo map[string]any
@@ -1478,9 +1645,11 @@ func (p *Parsers) Ruleset() any {
 	}
 
 	selectors = p.Selectors()
+	tracer.TraceMode("After Selectors()", fmt.Sprintf("selectors=%v", selectors != nil), p.parser)
 
 	if selectors != nil {
 		blockResult := p.Block()
+		tracer.TraceMode("After Block()", fmt.Sprintf("blockResult=%v", blockResult != nil), p.parser)
 		if blockResult != nil {
 			if rulesSlice, ok := blockResult.([]any); ok {
 				rules = rulesSlice
@@ -1905,6 +2074,8 @@ func (p *Parsers) MediaFeature(syntaxOptions map[string]any) any {
 			prop = p.Property()
 			p.parser.parserInput.Save()
 
+			// Check if this is a query-in-parens condition (e.g., (width > 500px))
+			conditionMatched := false
 			if prop == nil && syntaxOptions != nil {
 				if queryInParens, ok := syntaxOptions["queryInParens"].(bool); ok && queryInParens {
 					if p.parser.parserInput.Re(regexp.MustCompile(`^[0-9a-z-]*\s*([<>]=|<=|>=|[<>]|=)`)) != nil {
@@ -1920,9 +2091,13 @@ func (p *Parsers) MediaFeature(syntaxOptions map[string]any) any {
 						if rangeProp == nil {
 							p.parser.parserInput.Restore("")
 						}
+						conditionMatched = true
 					}
 				}
-			} else {
+			}
+
+			// If no property and no condition matched, or if property was found, try parsing a value
+			if !conditionMatched {
 				p.parser.parserInput.Restore("")
 				e = p.Value()
 			}
@@ -2948,6 +3123,11 @@ func (e *EntityParsers) Literal() any {
 
 // Call parses function calls - rgb(255, 0, 255)
 func (e *EntityParsers) Call() any {
+	tracer := GetParserTracer()
+	if tracer.IsEnabled() {
+		defer tracer.TraceEnter("Call", e.parsers.parser)()
+	}
+
 	var name string
 	var args []any
 	var function any
@@ -2955,14 +3135,27 @@ func (e *EntityParsers) Call() any {
 
 	// Skip url() calls as they are handled separately - case insensitive
 	if e.parsers.parser.parserInput.Peek(regexp.MustCompile(`(?i)^url\(`)) {
+		if tracer.IsEnabled() {
+			tracer.TraceResult("Call", nil, "skipped url()")
+		}
 		return nil
 	}
 
 	e.parsers.parser.parserInput.Save()
+	if tracer.IsEnabled() {
+		tracer.TraceSaveRestore("Save", "Call", e.parsers.parser)
+	}
 
 	nameMatch := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^([\w-]+|%|~|progid:[\w.]+)\(`))
+	if tracer.IsEnabled() {
+		tracer.TraceRegex("Call", "^([\\w-]+|%|~|progid:[\\w.]+)\\(", nameMatch != nil, nameMatch)
+	}
 	if nameMatch == nil {
 		e.parsers.parser.parserInput.Forget()
+		if tracer.IsEnabled() {
+			tracer.TraceSaveRestore("Forget", "Call", e.parsers.parser)
+			tracer.TraceResult("Call", nil, "no function name matched")
+		}
 		return nil
 	}
 
@@ -2971,6 +3164,10 @@ func (e *EntityParsers) Call() any {
 		name = matches[1]
 	} else {
 		e.parsers.parser.parserInput.Forget()
+		if tracer.IsEnabled() {
+			tracer.TraceSaveRestore("Forget", "Call", e.parsers.parser)
+			tracer.TraceResult("Call", nil, "failed to extract function name")
+		}
 		return nil
 	}
 
@@ -2980,6 +3177,10 @@ func (e *EntityParsers) Call() any {
 			args = parseFunc()
 			if args != nil && funcMap["stop"].(bool) {
 				e.parsers.parser.parserInput.Forget()
+				if tracer.IsEnabled() {
+					tracer.TraceSaveRestore("Forget", "Call", e.parsers.parser)
+					tracer.TraceResult("Call", args[0], "custom function: "+name)
+				}
 				return args[0] // Return the result directly for custom functions
 			}
 		}
@@ -2989,12 +3190,23 @@ func (e *EntityParsers) Call() any {
 
 	if e.parsers.parser.parserInput.Char(')') == nil {
 		e.parsers.parser.parserInput.Restore("Could not parse call arguments or missing ')'")
+		if tracer.IsEnabled() {
+			tracer.TraceSaveRestore("Restore", "Call", e.parsers.parser)
+			tracer.TraceResult("Call", nil, "missing closing paren")
+		}
 		return nil
 	}
 
 	e.parsers.parser.parserInput.Forget()
+	if tracer.IsEnabled() {
+		tracer.TraceSaveRestore("Forget", "Call", e.parsers.parser)
+	}
 
-	return NewCall(name, args, index+e.parsers.parser.currentIndex, e.parsers.parser.fileInfo)
+	result := NewCall(name, args, index+e.parsers.parser.currentIndex, e.parsers.parser.fileInfo)
+	if tracer.IsEnabled() {
+		tracer.TraceResult("Call", result, "function: "+name)
+	}
+	return result
 }
 
 // DeclarationCall parses declaration-like function calls
@@ -3139,89 +3351,6 @@ func (p *Parsers) ImportOptions() map[string]any {
 
 // PrepareAndGetNestableAtRule handles @media, @container rules
 func (p *Parsers) PrepareAndGetNestableAtRule(atRuleType string, index int, debugInfo map[string]any) any {
-	// Check for invalid media query patterns before parsing
-	// At this point, "@media " has already been consumed
-	savedPos := p.parser.parserInput.GetIndex()
-	
-	// Get the remaining input to check for invalid patterns
-	if savedPos < len(p.parser.parserInput.input) {
-		remainingInput := p.parser.parserInput.input[savedPos:]
-		
-		// Check for the invalid pattern: " and" followed by comment followed by "("
-		// Look for "and" keyword first
-		if strings.HasPrefix(remainingInput, "all and") {
-			// Check what comes after "all and"
-			afterAllAnd := remainingInput[7:] // Skip "all and"
-			// Skip any whitespace
-			afterAllAnd = strings.TrimLeft(afterAllAnd, " \t")
-			if strings.HasPrefix(afterAllAnd, "/*") {
-				// Find the comment end
-				if commentEnd := strings.Index(afterAllAnd, "*/"); commentEnd != -1 {
-					afterComment := afterAllAnd[commentEnd+2:]
-					// Skip any whitespace after comment
-					afterComment = strings.TrimLeft(afterComment, " \t")
-					// If there's a parenthesis after the comment, this is invalid
-					if strings.HasPrefix(afterComment, "(") {
-						// Invalid pattern detected
-						// We need to consume the rest of the invalid rule to avoid parse errors
-						// Skip everything until we find the matching closing '}'
-						// First consume the rest of the media features and find the opening '{'
-						braceDepth := 0
-						foundOpenBrace := false
-						
-						for !p.parser.parserInput.Finished() {
-							ch := p.parser.parserInput.CurrentChar()
-							
-							if ch == '{' {
-								foundOpenBrace = true
-								braceDepth = 1
-								p.parser.parserInput.Char('{') // Consume the opening brace
-								break
-							} else if ch == 0 {
-								break
-							} else {
-								// Skip any character that's not an opening brace
-								p.parser.parserInput.Char(ch)
-								if ch == 0 && p.parser.parserInput.Char(' ') == nil {
-									// Try to advance by manually incrementing index
-									currentIdx := p.parser.parserInput.GetIndex()
-									p.parser.parserInput.SetIndex(currentIdx + 1)
-								}
-							}
-						}
-						
-						// Now skip the block content if we found the opening brace
-						if foundOpenBrace {
-							for !p.parser.parserInput.Finished() && braceDepth > 0 {
-								ch := p.parser.parserInput.CurrentChar()
-								if ch == '{' {
-									braceDepth++
-								} else if ch == '}' {
-									braceDepth--
-								}
-								
-								if ch != 0 {
-									p.parser.parserInput.Char(ch) // Consume the character
-								} else {
-									// Manually advance if we can't consume
-									currentIdx := p.parser.parserInput.GetIndex()
-									if currentIdx < len(p.parser.parserInput.input)-1 {
-										p.parser.parserInput.SetIndex(currentIdx + 1)
-									} else {
-										break
-									}
-								}
-							}
-						}
-						
-						// Return nil to indicate this rule should be skipped
-						return nil
-					}
-				}
-			}
-		}
-	}
-	
 	// Use appropriate syntax options based on at-rule type
 	var syntaxOptions map[string]any
 	switch atRuleType {
@@ -3230,7 +3359,7 @@ func (p *Parsers) PrepareAndGetNestableAtRule(atRuleType string, index int, debu
 	case "Container":
 		syntaxOptions = map[string]any{"queryInParens": true}
 	}
-	
+
 	features := p.MediaFeatures(syntaxOptions)
 	rules := p.Block()
 
@@ -3627,7 +3756,7 @@ func (e *EntityParsers) CustomFuncCall(name string) map[string]any {
 	case "boolean":
 		return map[string]any{
 			"parse": func() []any {
-				condition := e.parsers.parser.expect(e.parsers.Conditions, "expected condition")
+				condition := e.parsers.parser.expect(func() any { return e.parsers.Condition(false) }, "expected condition")
 				return []any{condition}
 			},
 			"stop": false,
@@ -3635,7 +3764,7 @@ func (e *EntityParsers) CustomFuncCall(name string) map[string]any {
 	case "if":
 		return map[string]any{
 			"parse": func() []any {
-				condition := e.parsers.parser.expect(e.parsers.Conditions, "expected condition")
+				condition := e.parsers.parser.expect(func() any { return e.parsers.Condition(false) }, "expected condition")
 				return []any{condition}
 			},
 			"stop": false,

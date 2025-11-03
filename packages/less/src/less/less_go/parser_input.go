@@ -21,9 +21,10 @@ type ParserInput struct {
 }
 
 type saveState struct {
-	current string
-	i       int
-	j       int
+	current      string
+	i            int
+	j            int
+	commentStore []inputComment
 }
 
 // inputComment represents a parsed comment in the input
@@ -158,10 +159,14 @@ func (p *ParserInput) skipWhitespace(length int) bool {
 
 func (p *ParserInput) Save() {
 	p.currentPos = p.i
+	// Make a copy of commentStore to avoid sharing the slice
+	commentStoreCopy := make([]inputComment, len(p.commentStore))
+	copy(commentStoreCopy, p.commentStore)
 	p.saveStack = append(p.saveStack, saveState{
-		current: p.current,
-		i:       p.i,
-		j:       p.j,
+		current:      p.current,
+		i:            p.i,
+		j:            p.j,
+		commentStore: commentStoreCopy,
 	})
 }
 
@@ -176,6 +181,7 @@ func (p *ParserInput) Restore(possibleErrorMessage string) {
 	p.currentPos = p.i
 	p.i = state.i
 	p.j = state.j
+	p.commentStore = state.commentStore
 }
 
 func (p *ParserInput) Forget() {

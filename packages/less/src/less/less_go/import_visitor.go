@@ -125,6 +125,17 @@ func (iv *ImportVisitor) processImportNode(importNode any, context *Eval, import
 		}
 	}
 
+	// For variable imports, update context frames to include variables from
+	// imports processed since this import was deferred (variable hoisting)
+	// NOTE: This partially fixes basic interpolation but forward references
+	// (using variables defined in later imports) remain unsupported.
+	// See IMPORT_INTERPOLATION_INVESTIGATION.md for details on why full fix
+	// causes regressions in error detection tests.
+	if iv.isVariableImport(importNode) {
+		context.Frames = CopyArray(iv.context.Frames)
+	}
+
+
 	// Try to evaluate the import node - matches JavaScript try/catch
 	func() {
 		defer func() {
@@ -357,7 +368,12 @@ func (iv *ImportVisitor) getFilename(node any) string {
 }
 
 func (iv *ImportVisitor) isVariableImport(node any) bool {
-	// Call isVariableImport method if it exists
+	// Check if node is an Import struct
+	if imp, ok := node.(*Import); ok {
+		return imp.IsVariableImport()
+	}
+
+	// Call isVariableImport method if it exists (for map-based nodes)
 	if n, ok := node.(map[string]any); ok {
 		if method, hasMethod := n["isVariableImport"]; hasMethod {
 			if fn, ok := method.(func() bool); ok {
@@ -369,7 +385,12 @@ func (iv *ImportVisitor) isVariableImport(node any) bool {
 }
 
 func (iv *ImportVisitor) evalForImport(node any, context *Eval) any {
-	// Call evalForImport method if it exists
+	// Handle Import struct directly
+	if imp, ok := node.(*Import); ok {
+		return imp.EvalForImport(context)
+	}
+
+	// Call evalForImport method if it exists (legacy map-based nodes)
 	if n, ok := node.(map[string]any); ok {
 		if method, hasMethod := n["evalForImport"]; hasMethod {
 			if fn, ok := method.(func(*Eval) any); ok {
@@ -484,9 +505,19 @@ func (iv *ImportVisitor) getPath(node any) string {
 			value := quoted.GetValue()
 			return value
 		}
+		// Handle Anonymous path (inline imports can have Anonymous nodes)
+		// Anonymous.Value can be a string or a Quoted object
+		if anon, ok := path.(*Anonymous); ok {
+			if str, ok := anon.Value.(string); ok {
+				return str
+			}
+			if quoted, ok := anon.Value.(*Quoted); ok {
+				return quoted.GetValue()
+			}
+		}
 		return ""
 	}
-	
+
 	// Fallback: handle map-based node (legacy)
 	if n, ok := node.(map[string]any); ok {
 		if method, hasMethod := n["getPath"]; hasMethod {

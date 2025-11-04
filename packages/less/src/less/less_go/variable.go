@@ -152,7 +152,7 @@ func (v *Variable) Eval(context any) (any, error) {
 	if interfaceContext, ok := context.(interface{ GetFrames() []ParserFrame }); ok {
 		// Interface-based context (for tests)
 		frames := interfaceContext.GetFrames()
-		
+
 		for _, frame := range frames {
 			if varResult := frame.Variable(name); varResult != nil {
 				

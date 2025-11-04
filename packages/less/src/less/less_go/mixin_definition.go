@@ -495,12 +495,12 @@ func (md *MixinDefinition) Eval(context any) (*MixinDefinition, error) {
 			}
 		}
 	}
-	
-	// Important: Do NOT evaluate the rules here. The rules should only be evaluated 
+
+	// Important: Do NOT evaluate the rules here. The rules should only be evaluated
 	// when the mixin is called via EvalCall
 	// Copy the rules without evaluating them
 	copiedRules := CopyArray(md.Rules)
-	
+
 	result, err := NewMixinDefinition(md.Name, md.Params, copiedRules, md.Condition, md.Variadic, frames, md.VisibilityInfo())
 	if err != nil {
 		return nil, err
@@ -511,8 +511,9 @@ func (md *MixinDefinition) Eval(context any) (*MixinDefinition, error) {
 // EvalCall evaluates a mixin call
 func (md *MixinDefinition) EvalCall(context any, args []any, important bool) (*Ruleset, error) {
 	// Arguments array will be populated by EvalParams
-	// Pre-allocate to ensure EvalParams can populate it
-	arguments := make([]any, len(args))
+	// Pre-allocate with parameter count (not arg count) to handle default values
+	// This matches JavaScript behavior where _arguments[] can be indexed by parameter position
+	arguments := make([]any, len(md.Params))
 	// fmt.Printf("DEBUG EvalCall: mixin=%s, args=%d, arguments pre-allocated=%d\n", md.Name, len(args), len(arguments))
 	
 	// Determine mixin frames
@@ -570,10 +571,18 @@ func (md *MixinDefinition) EvalCall(context any, args []any, important bool) (*R
 
 	// Copy rules
 	rules := CopyArray(md.Rules)
-	
+
 	// Create result ruleset
 	ruleset := NewRuleset(nil, rules, false, nil)
-	ruleset.OriginalRuleset = md.Ruleset
+	// Match JavaScript: ruleset.originalRuleset = this
+	// If this MixinDefinition was created as a wrapper for a Ruleset,
+	// use the wrapped Ruleset as the originalRuleset for recursion detection.
+	// Otherwise, use the MixinDefinition's own Ruleset field.
+	if md.OriginalRuleset != nil {
+		ruleset.OriginalRuleset = md.OriginalRuleset
+	} else {
+		ruleset.OriginalRuleset = md.Ruleset
+	}
 
 	// Evaluate ruleset with proper context
 	evalFrames := []any{md, frame}

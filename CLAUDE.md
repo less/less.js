@@ -38,30 +38,30 @@ When working on this project, please be aware of the following:
    - JavaScript tests use Vitest framework
    - Go tests should verify ported functionality matches JavaScript behavior
 
-4. **Current Integration Test Status** (as of 2025-11-03 Evening):
-   - **69/185 tests passing (37.3%)**
-   - 13 perfect CSS matches (7.0%)
+4. **Current Integration Test Status** (as of 2025-11-04):
+   - **71/185 tests passing (38.4%)** - UP from 70!
+   - 15 perfect CSS matches (8.1%) - UP from 14!
    - 56 correct error handling (30.3%)
-   - 98 tests with output differences (53.0%) - **compiles but CSS doesn't match**
-   - 18 tests failing (9.7%) - **runtime/evaluation errors, NOT parser errors**
+   - 102 tests with output differences (55.1%) - **compiles but CSS doesn't match**
+   - 12 tests failing (6.5%) - **runtime/evaluation errors, NOT parser errors** - DOWN from 13!
    - 7 tests quarantined (plugin system & JavaScript execution - punted for later)
 
    **🎉 Parser Status: ALL BUGS FIXED!**
    - Parser correctly handles full LESS syntax
-   - All 167/185 tests compile successfully (90.3% compilation rate)
+   - **171/185 tests compile successfully (92.4% compilation rate)**
    - Remaining work is in runtime evaluation and functional implementation
 
-   **Recent Progress** (Parser Fixes):
-   - ✅ MediaFeature parsing (simple media queries like `@media (hover)`)
-   - ✅ BUG-008 (functions) - boolean/if function condition parsing
-   - ✅ BUG-009 (detached-rulesets) - variable call parsing
-   - ✅ BUG-001 (comments2) - Save/Restore commentStore
-   - ✅ BUG-003/004 (import options) - Path extraction
-   - ✅ BUG-005 (import-remote) - Remote imports
-   - ✅ BUG-006 (import-module) - NPM module resolution
-   - ✅ BUG-007 (line comments) - Empty media query comments
-   - ✅ BUG-010 (functions-each) - Detached ruleset arguments
-   - ⏸️ BUG-002 (import-interpolation) - Deferred (architectural refactor needed)
+   **Recent Progress** (Runtime Fixes):
+   - ✅ Issue #1: `if()` function context passing - FIXED
+   - ✅ Issue #1b: Type function wrapping (unit, iscolor, etc.) - FIXED
+   - ✅ Issue #2: Detached ruleset variable calls and frame scoping - FIXED
+   - ✅ Issue #2b: `functions-each` context propagation and variable scope - FIXED
+   - ✅ Issue #4: Parenthesized expression evaluation in function arguments - FIXED
+   - ✅ Issue #5: `mixins-named-args` @arguments population for named arguments - FIXED
+   - ✅ Issue #6: `mixins-closure`, `mixins-interpolated` - Mixin closure frame capture - FIXED
+   - ✅ Issue #7: `mixins` - Mixin recursion detection for wrapped rulesets - FIXED
+   - ✅ Compilation rate improved from 90.3% → 92.4%
+   - ✅ Runtime failures reduced from 18 → 12 tests
 
 5. **Current Focus: Runtime & Evaluation Issues**:
    - **See RUNTIME_ISSUES.md** for comprehensive tracking of remaining issues
@@ -71,11 +71,13 @@ When working on this project, please be aware of the following:
    - Compare with JavaScript implementation when fixing issues
 
    **Priority Order**:
-   1. Variable evaluation in functions/loops (3 tests)
-   2. Mixin argument binding and scope (4 tests)
-   3. Import reference functionality (2 tests)
-   4. Namespace resolution (2 tests)
-   5. Output differences (98 tests)
+   1. ✅ Variable evaluation in functions/loops - FIXED (Issue #2b)
+   2. ✅ Mixin closure and variable scope - FIXED (Issue #6)
+   3. ✅ Mixin recursion detection - FIXED (Issue #7)
+   4. Import reference functionality (2 tests: `import-reference`, `import-reference-issues`)
+   5. Namespace resolution (2 tests: `namespacing-6`, `namespacing-functions`)
+   6. Other failing tests (8 tests: `urls` x2, `mixins-args` x2, `include-path`, `import-interpolation`, `bootstrap4`)
+   7. Output differences (102 tests)
 
 6. **Quarantined Features** (for future implementation):
    - Plugin system tests (`plugin`, `plugin-module`, `plugin-preeval`)

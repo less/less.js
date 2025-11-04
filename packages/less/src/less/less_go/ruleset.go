@@ -496,7 +496,14 @@ func (r *Ruleset) Eval(context any) (any, error) {
 	rsRules := ruleset.Rules
 	for i, rule := range rsRules {
 		if r, ok := rule.(interface{ EvalFirst() bool }); ok && r.EvalFirst() {
-			if eval, ok := rule.(interface{ Eval(any) (any, error) }); ok {
+			// Handle MixinDefinition specifically (returns *MixinDefinition, not any)
+			if eval, ok := rule.(interface{ Eval(any) (*MixinDefinition, error) }); ok {
+				evaluated, err := eval.Eval(context)
+				if err != nil {
+					return nil, err
+				}
+				rsRules[i] = evaluated
+			} else if eval, ok := rule.(interface{ Eval(any) (any, error) }); ok {
 				evaluated, err := eval.Eval(context)
 				if err != nil {
 					return nil, err

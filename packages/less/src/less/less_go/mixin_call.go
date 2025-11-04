@@ -267,15 +267,36 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 
 								// Check for recursion
 								for f = 0; f < len(frames); f++ {
-									if frame, ok := frames[f].(map[string]any); ok {
-										originalRuleset := frame["originalRuleset"]
+									frame := frames[f]
+									var originalRuleset any
+
+									// Try to get originalRuleset from frame - match JavaScript:
+									// mixin === (context.frames[f].originalRuleset || context.frames[f])
+									if frameMap, ok := frame.(map[string]any); ok {
+										originalRuleset = frameMap["originalRuleset"]
 										if originalRuleset == nil {
 											originalRuleset = frame
 										}
-										if !isMixinDefinition(mixin) && mixin == originalRuleset {
-											isRecursive = true
-											break
+									} else if frameRuleset, ok := frame.(*Ruleset); ok {
+										// Frame is a *Ruleset - get its OriginalRuleset
+										originalRuleset = frameRuleset.OriginalRuleset
+										if originalRuleset == nil {
+											originalRuleset = frame
 										}
+									} else if frameMixinDef, ok := frame.(*MixinDefinition); ok {
+										// Frame is a *MixinDefinition - get its OriginalRuleset
+										originalRuleset = frameMixinDef.OriginalRuleset
+										if originalRuleset == nil {
+											originalRuleset = frame
+										}
+									} else {
+										// Unknown frame type - use frame itself
+										originalRuleset = frame
+									}
+
+									if !isMixinDefinition(mixin) && mixin == originalRuleset {
+										isRecursive = true
+										break
 									}
 								}
 

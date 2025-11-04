@@ -555,16 +555,10 @@ func createFunctions(env any) any {
 				})
 			}
 		case "each":
-			if eachFn, ok := fn.(func(any, any) any); ok {
-				registry.Add(name, &FlexibleFunctionDef{
-					name:      name,
-					minArgs:   2,
-					maxArgs:   2,
-					variadic:  false,
-					fn:        eachFn,
-					needsEval: false, // 'each' needs unevaluated args
-				})
-			}
+			// Register the EachFunctionDef which supports context
+			registry.Add(name, &EachFunctionDef{
+				name: name,
+			})
 		default:
 			// Try as 2-argument function (extract, length)
 			if functionImpl, ok := fn.(func(any, any) any); ok {

@@ -4,20 +4,23 @@
 
 ## Status Overview
 
-**Current Test Results** (as of 2025-11-03 Evening - After Issue #4 Fix):
-- ✅ **Perfect CSS Matches**: 12 tests (6.5%)
+**Current Test Results** (as of 2025-11-04 - After Issue #7 Fix):
+- ✅ **Perfect CSS Matches**: 15 tests (8.1%) - UP from 14!
 - ✅ **Correct Error Handling**: 56 tests (30.3%)
-- ⚠️ **Output Differs**: 101 tests (54.6%) - Compiles but CSS output differs
-- ❌ **Runtime Failures**: 16 tests (8.6%) - Evaluation/runtime errors
+- ⚠️ **Output Differs**: 102 tests (55.1%) - Compiles but CSS output differs
+- ❌ **Runtime Failures**: 12 tests (6.5%) - Evaluation/runtime errors (DOWN from 13!)
 - **Total Active Tests**: 185 (7 quarantined for plugins/JS execution)
 
-**Overall Success Rate**: 36.8% passing (68/185)
-**Compilation Rate**: 91.4% (169/185 tests compile successfully - UP from 90.3%!)
+**Overall Success Rate**: 38.4% passing (71/185) - UP from 37.8%!
+**Compilation Rate**: 92.4% (171/185 tests compile successfully)
 
 **Recent Progress**:
+- ✅ Fixed mixin recursion detection - wrapped rulesets now properly detect recursion (Issue #7)
+- ✅ Fixed mixin closure frame capture - mixins now capture definition scope (Issue #6)
+- ✅ Fixed @arguments variable population for named mixin arguments (Issue #5)
+- ✅ Fixed each() function context propagation and variable scope (Issue #2b)
 - ✅ Fixed parenthesized expression evaluation in function arguments (Issue #4)
-- ✅ 2 tests moved from "Runtime Failures" to "Output Differs" (can now compile!)
-- ✅ Compilation rate improved from 90.3% to 91.4%
+- ✅ 3 more tests passing: `mixins`, `mixins-closure`, `mixins-interpolated`
 
 ---
 
@@ -37,7 +40,7 @@ All parser bugs have been resolved. The parser correctly handles the full LESS s
 
 ## Categories of Remaining Issues
 
-### 1. Evaluation Errors (16 tests failing - DOWN from 18!)
+### 1. Evaluation Errors (13 tests failing - DOWN from 15!)
 
 These tests compile successfully but crash during evaluation:
 
@@ -45,15 +48,14 @@ These tests compile successfully but crash during evaluation:
 - ✅ **Issue #1 FIXED**: `if()` function context passing - resolved
 - ✅ **Issue #1b FIXED**: `functions` - Type functions now properly wrapped as FunctionDefinitions
 - ✅ **Issue #2 FIXED**: `detached-rulesets` - Variable call, frame scoping, and unit() all fixed!
+- ✅ **Issue #2b FIXED**: `functions-each` - Context propagation and variable declarations fixed!
 - ✅ **Issue #4 FIXED**: Parenthesized expression evaluation in function arguments - resolved
-- ❌ `functions-each` - Still fails: "variable @msgs is undefined" (Issue #2b)
+- ✅ **Issue #5 FIXED**: `mixins-named-args` - @arguments variable population for named arguments - resolved
+- ✅ **Issue #6 FIXED**: `mixins-closure`, `mixins-interpolated` - Mixin closure frame capture - resolved
 
 **Mixin/Namespace Resolution**:
 - `import-reference-issues` - "#Namespace > .mixin is undefined"
-- `mixins` - Various mixin-related evaluation errors
-- `mixins-args` - Mixin argument binding issues
-- `mixins-closure` - Closure/scope issues
-- `mixins-interpolated` - Variable interpolation in mixin names
+- ✅ **Issue #7 FIXED**: `mixins` - Mixin recursion detection for wrapped rulesets - resolved
 - `namespacing-6` - Namespace resolution failures
 - `namespacing-functions` - Functions within namespaces
 
@@ -66,13 +68,13 @@ These tests compile successfully but crash during evaluation:
 - `include-path` - Include path resolution
 - `bootstrap4` - Large real-world test (multiple issues)
 
-### 2. Output Differences (101 tests - UP from 98 due to Issue #4 fix)
+### 2. Output Differences (102 tests - UP from 101 due to Issue #2b fix)
 
 These tests compile and evaluate without errors, but produce incorrect CSS output:
 
 **Recent Additions**:
+- `functions-each` - Now compiles! Variables accessible in each() iterations
 - `detached-rulesets` - Now compiles! Has media query bubbling issue (separate from Issue #4)
-- 1 other test moved from "Runtime Failures"
 
 **Common Issues**:
 - Missing or incorrect CSS properties
@@ -259,35 +261,91 @@ The test now progresses to line 59 and fails with "the first argument to unit mu
 
 ---
 
-### Issue #2b: Variable Scope in each() Function - NEW
+### Issue #2b: Variable Scope in each() Function - ✅ RESOLVED
 
 **Test Affected**: `functions-each`
 
-**Status**: ❌ **FAILING** - Separate issue from Issue #1
+**Status**: ✅ **FULLY RESOLVED** (2025-11-04)
 
-**Error**: "variable @msgs is undefined"
+**Original Error**: "variable @msgs is undefined" when a mixin parameter was referenced inside an `each()` function call
 
-**Problem**: Variables defined inside the `each()` function's iteration context are not accessible in the function body.
-
-**Example** (likely pattern):
+**Example** (actual test case):
 ```less
-each(@list, {
-  @msgs: something;  // Variable defined in iteration
-  // @msgs is undefined when accessed
-});
+.log(@msgs) {
+  each(@msgs; {
+    content: @value;  // @value, @key, @index should be accessible
+  });
+}
+
+@messages: 'foo', 'bar';
+span {
+  .log(@messages);  // Should output: content: 'foo'; content: 'bar';
+}
 ```
 
-**Investigation Needed**:
-- Check how `each()` function creates variable scope for iterations
-- Compare with JavaScript's each() implementation
-- Verify variable frames are properly set up during iteration
+**Root Causes Discovered**:
 
-**Files to Check**:
-- Look for `each()` function implementation in function files
-- `variable.go` - Variable scope and frame management
-- Check how iteration variables are stored/accessed
+1. **Wrong Function Definition Registration**:
+   - In `index.go`, the `each()` function was registered as `FlexibleFunctionDef` instead of `EachFunctionDef`
+   - This prevented the context-aware `CallCtx` method from being invoked
+   - Without `CallCtx`, the mixin parameter frames were not passed to the each() function
 
-**Priority**: Medium - This is a specific issue with the each() function's variable scoping
+2. **Wrong Variable Declaration Flag**:
+   - The `@value`, `@key`, and `@index` declarations created by `each()` had `variable=false`
+   - `Ruleset.Variables()` only returns declarations with `variable=true` (line 845 in ruleset.go)
+   - Variables were being created but not found during lookup
+
+**Fixes Applied**:
+
+1. **Fixed Function Registration** (`index.go:557-561`):
+   - Changed from `FlexibleFunctionDef` wrapper to `EachFunctionDef`
+   - This ensures `CallCtx` is called with proper context containing mixin parameter frames
+
+2. **Fixed Variable Declarations** (`list.go:351-376`):
+   - Changed the last parameter in all three `NewDeclaration` calls from `false` to `true`
+   - Now properly marks `@value`, `@key`, and `@index` as variables
+
+3. **Enhanced Context Flow** (`function_caller.go:18-29`):
+   - Added `GetFrames()` method to `Context` struct to extract frames from evaluation context
+   - This supports the proper context propagation chain
+
+**Context Flow After Fix**:
+```
+Mixin Call (with @msgs parameter)
+  ↓ (frames include @msgs)
+Call.Eval (each function call)
+  ↓ (passes context with frames)
+DefaultParserFunctionCaller.Call
+  ↓ (creates funcContext with EvalContext)
+EachFunctionDef.CallCtx
+  ↓ (receives context with frames)
+EachWithContext
+  ↓ (creates @value, @key, @index as variables)
+Variable.Eval
+  ✓ (finds @msgs in parent frames and @value/@key/@index in current frame)
+```
+
+**Changes Made**:
+- `index.go`: Fixed each() registration to use `EachFunctionDef`
+- `list.go`: Changed variable flag from `false` to `true` for @value, @key, @index
+- `function_caller.go`: Added `GetFrames()` method to Context struct
+- `call.go`: Import cleanup (removed unused `os` import)
+- `variable.go`: Minor cleanup
+
+**Verification**:
+- ✅ All unit tests pass with no regressions
+- ✅ `functions-each` test now compiles successfully
+- ✅ Test moved from "Failing Tests" to "Output Differs"
+- ✅ Variables in mixin parameters are now accessible in each() iterations
+- ✅ @value, @key, @index variables are properly created and accessible
+- ✅ Compilation rate improved from 91.4% to 91.9%
+
+**Files Modified**:
+- `call.go` - Import cleanup
+- `function_caller.go` - Added GetFrames() method
+- `index.go` - Fixed each() function registration
+- `list.go` - Fixed variable declaration flags
+- `variable.go` - Minor cleanup
 
 ---
 
@@ -341,6 +399,304 @@ Rather than fix the parser (which might break other things), we enable math when
 
 **Impact**:
 This fix enables proper evaluation of any mathematical expressions in function arguments, not just `unit()`. Any function that expects computed values (colors, dimensions, etc.) will now receive properly evaluated arguments.
+
+---
+
+### Issue #5: @arguments Variable Population for Named Mixin Arguments - ✅ RESOLVED
+
+**Test Affected**: `mixins-named-args` (and potentially other mixin tests)
+
+**Status**: ✅ **FULLY RESOLVED** (2025-11-04)
+
+**Original Error**: The `@arguments` special variable contained `<nil>` values instead of the actual argument values when mixins were called with named arguments.
+
+**Example** (actual test case):
+```less
+.mixin (@a: 1px, @b: 50%) {
+  width: (@a * 5);
+  height: (@b - 1%);
+  args: @arguments;  // Should contain all arguments
+}
+
+.named-arg {
+  .mixin(@b: 100%);  // Only @b provided, @a should use default
+}
+
+// Expected: args: 1px 100%;
+// Actual (before fix): args: <nil>;
+```
+
+**Root Cause**:
+In `mixin_definition.go:515`, the `arguments` array was pre-allocated based on the number of arguments passed (`len(args)`), not the number of parameters defined in the mixin (`len(md.Params)`). When named arguments were used, not all parameters were provided in the call, so the array was too small to hold all parameter values including defaults.
+
+**Problem Flow**:
+1. Mixin defined with 2 parameters: `(@a: 1px, @b: 50%)`
+2. Mixin called with 1 named argument: `.mixin(@b: 100%)`
+3. `arguments` array allocated with size 1 (`len(args) = 1`)
+4. `EvalParams` tries to populate position 0 with `1px` (default for `@a`) and position 1 with `100%` (provided `@b`)
+5. Position 1 is out of bounds, so the array can't be fully populated
+6. `@arguments` ends up with `<nil>` values
+
+**JavaScript Comparison**:
+In `mixin-definition.js:158`, JavaScript initializes `_arguments` as an empty array `[]`, then `evalParams` assigns to indices like `evaldArguments[j] = value`. JavaScript allows assigning to any array index, automatically extending the array. In Go, we must pre-allocate with the correct size.
+
+**Fix Applied**:
+Changed line 516 in `mixin_definition.go` from:
+```go
+arguments := make([]any, len(args))
+```
+to:
+```go
+arguments := make([]any, len(md.Params))
+```
+
+This ensures the `arguments` slice has enough capacity for all parameters, allowing `EvalParams` to populate both explicitly provided arguments and default parameter values at their correct positions.
+
+**Changes Made**:
+- `mixin_definition.go:516` - Changed array allocation from `len(args)` to `len(md.Params)`
+- Added comment explaining the rationale
+
+**Verification**:
+- ✅ All unit tests pass with no regressions
+- ✅ `mixins-named-args` test now outputs correct `@arguments` values
+- ✅ Test shows `args: 1px 100%;` instead of `args: <nil>;`
+- ✅ Test moved from "Output Differs" category closer to passing
+- ⚠️ Remaining issue in test: guarded mixin not being applied (separate issue)
+
+**Files Modified**:
+- `mixin_definition.go` - Fixed @arguments array allocation
+
+**Impact**:
+This fix ensures that `@arguments` properly reflects all mixin parameters (both explicitly provided and defaults) when mixins are called with named arguments. This is critical for mixin introspection and metaprogramming patterns.
+
+**Related Tests That May Benefit**:
+- Other mixin tests that use `@arguments`
+- Tests with mixins that have default parameters
+- Tests mixing named and positional arguments
+
+---
+
+### Issue #6: Mixin Closure - Frame Capture During Evaluation - ✅ RESOLVED
+
+**Tests Affected**: `mixins-closure`, `mixins-interpolated`
+
+**Status**: ✅ **FULLY RESOLVED** (2025-11-04)
+
+**Original Error**: `variable @var is undefined in ../../../../test-data/less/_main/mixins-closure.less`
+
+**Example** (actual test case):
+```less
+.scope {
+    @var: 99px;
+    .mixin () {
+        width: @var;  // Should see @var from .scope
+    }
+}
+
+.class {
+    .scope > .mixin();  // Should output: width: 99px;
+}
+
+.overwrite {
+    @var: 0px;
+    .scope > .mixin();  // Should still output: width: 99px; (closure!)
+}
+```
+
+**Expected Output**: Mixins should capture variables from their **definition scope** (closure), not from the **call site scope**.
+
+**Root Cause**:
+MixinDefinition nodes have `EvalFirst() bool` returning `true`, indicating they should be evaluated before other rules in a ruleset. However, in `ruleset.go:499`, the type assertion for EvalFirst rules was:
+
+```go
+if eval, ok := rule.(interface{ Eval(any) (any, error) }); ok
+```
+
+But `MixinDefinition.Eval()` has the signature:
+```go
+func (md *MixinDefinition) Eval(context any) (*MixinDefinition, error)
+```
+
+In Go, a method returning `(*MixinDefinition, error)` does NOT satisfy an interface requiring `(any, error)` - the return types must match exactly. This caused `MixinDefinition.Eval()` to never be called during the EvalFirst phase.
+
+**Problem Flow**:
+1. Ruleset `.scope` is evaluated, containing `@var: 99px` and `.mixin()`
+2. During evaluation, `.scope` is pushed to the frames stack
+3. Rules marked with `EvalFirst()` should be evaluated (line 495-507)
+4. `.mixin()` has `EvalFirst() == true`, but the type assertion failed
+5. `.mixin().Eval()` was never called, so it never captured the frames
+6. Later when `.mixin()` was called, its `Frames` field was `nil`
+7. When mixin body evaluated `@var`, the frames didn't include `.scope`
+8. Result: "variable @var is undefined"
+
+**JavaScript Comparison**:
+In `mixin-definition.js:154`, the `eval()` method is called automatically during ruleset evaluation:
+```javascript
+eval(context) {
+    return new Definition(this.name, this.params, this.rules, this.condition,
+                         this.variadic, this.frames || utils.copyArray(context.frames));
+}
+```
+
+This captures `context.frames` at definition time, creating a **closure**. The captured frames include the parent ruleset (`.scope`) with its variables.
+
+**Fix Applied**:
+Added specific type assertion for MixinDefinition before the generic one in `ruleset.go:499-512`:
+
+```go
+// Evaluate rules that need to be evaluated first
+for i, rule := range rsRules {
+    if r, ok := rule.(interface{ EvalFirst() bool }); ok && r.EvalFirst() {
+        // Handle MixinDefinition specifically (returns *MixinDefinition, not any)
+        if eval, ok := rule.(interface{ Eval(any) (*MixinDefinition, error) }); ok {
+            evaluated, err := eval.Eval(context)
+            if err != nil {
+                return nil, err
+            }
+            rsRules[i] = evaluated
+        } else if eval, ok := rule.(interface{ Eval(any) (any, error) }); ok {
+            evaluated, err := eval.Eval(context)
+            if err != nil {
+                return nil, err
+            }
+            rsRules[i] = evaluated
+        }
+    }
+}
+```
+
+This ensures `MixinDefinition.Eval()` is called during the EvalFirst phase, allowing it to capture the current frames (including parent rulesets with their variables) and create proper closures.
+
+**Verification**:
+- ✅ All unit tests pass with no regressions
+- ✅ `mixins-closure` test now passes completely
+- ✅ `mixins-interpolated` test also fixed as a side effect
+- ✅ Perfect CSS match count increased from 12 → 14
+- ✅ Failing tests reduced from 15 → 13
+- ✅ Overall success rate improved from 36.8% → 37.8%
+
+**Files Modified**:
+- `ruleset.go:495-514` - Added specific type assertion for MixinDefinition in EvalFirst section
+
+**Impact**:
+This fix is critical for mixin closure behavior - one of the most important features of LESS. Mixins now correctly capture variables from their definition scope rather than looking them up at call time. This enables:
+- Proper encapsulation (local variables don't override mixin internals)
+- Predictable behavior (mixin output doesn't depend on where it's called)
+- Modular design (mixins are self-contained)
+
+**Related Tests Fixed**:
+- `mixins-closure` - Primary target test
+- `mixins-interpolated` - Fixed as side effect (interpolation needed closure to work)
+
+---
+
+### Issue #7: Mixin Recursion Detection for Wrapped Rulesets - ✅ RESOLVED
+
+**Test Affected**: `mixins`
+
+**Status**: ✅ **FULLY RESOLVED** (2025-11-04)
+
+**Original Error**: `Syntax: mixin call recursion limit exceeded in ../../../../test-data/less/_main/mixins.less`
+
+**Example** (simplified test case):
+```less
+.clearfix() {
+  color: blue;
+}
+.clearfix {
+  .clearfix();  // Should call the mixin, not itself
+}
+.foo {
+  .clearfix();  // Should expand to: color: blue;
+}
+```
+
+**Expected Output**:
+- `.clearfix` ruleset calls `.clearfix()` mixin → expands to `color: blue;`
+- `.foo` calls `.clearfix()` mixin → expands to `color: blue;`
+- No infinite recursion!
+
+**Root Cause**:
+When a Ruleset is used as a mixin (e.g., `.clearfix { .clearfix(); }`), it's wrapped in a temporary MixinDefinition. The recursion detection logic checks if a mixin candidate matches any ruleset in the current call stack to prevent infinite loops.
+
+**Problem Flow**:
+1. When `.clearfix` ruleset is found as a mixin candidate, it's wrapped: `wrapperMD = new MixinDefinition(...); wrapperMD.OriginalRuleset = clearfixRuleset`
+2. `wrapperMD.EvalCall()` creates a result ruleset and sets: `resultRuleset.OriginalRuleset = md.Ruleset`
+3. But `md.Ruleset` was `nil` for wrapped MixinDefinitions!
+4. When recursion is checked, it compares: `mixin === frames[f].OriginalRuleset`
+5. Since `frames[f].OriginalRuleset` was `nil`, the check failed
+6. The wrapped ruleset wasn't detected as recursive
+7. Result: Infinite recursion until depth limit (500) exceeded
+
+**JavaScript Comparison**:
+In `mixin-definition.js:169`:
+```javascript
+ruleset.originalRuleset = this;  // Sets to MixinDefinition itself
+```
+
+And in recursion check (`mixin-call.js:112`):
+```javascript
+mixin === (context.frames[f].originalRuleset || context.frames[f])
+```
+
+When a wrapped MixinDefinition is in the frames, `frames[f].originalRuleset` points to the original Ruleset, enabling recursion detection.
+
+**Fixes Applied**:
+
+**1. MixinDefinition.EvalCall() - mixin_definition.go:577-585**:
+```go
+// Before:
+ruleset.OriginalRuleset = md.Ruleset
+
+// After:
+// Match JavaScript: ruleset.originalRuleset = this
+// If this MixinDefinition was created as a wrapper for a Ruleset,
+// use the wrapped Ruleset as the originalRuleset for recursion detection.
+if md.OriginalRuleset != nil {
+    ruleset.OriginalRuleset = md.OriginalRuleset
+} else {
+    ruleset.OriginalRuleset = md.Ruleset
+}
+```
+
+**2. Recursion Detection - mixin_call.go:286-291**:
+Added support for checking MixinDefinition frames:
+```go
+} else if frameMixinDef, ok := frame.(*MixinDefinition); ok {
+    // Frame is a *MixinDefinition - get its OriginalRuleset
+    originalRuleset = frameMixinDef.OriginalRuleset
+    if originalRuleset == nil {
+        originalRuleset = frame
+    }
+}
+```
+
+This ensures that when a MixinDefinition is in the frames (from evalFrames assignment), we can extract its `OriginalRuleset` for comparison.
+
+**How It Works**:
+1. `.clearfix` Ruleset is found and wrapped: `wrapperMD.OriginalRuleset = clearfixRuleset`
+2. EvalCall creates result: `resultRuleset.OriginalRuleset = wrapperMD.OriginalRuleset` (the original ruleset!)
+3. Evaluation happens with frames: `[wrapperMD, frame, ...]`
+4. Inside the ruleset body, `.clearfix()` is called again
+5. Recursion check: Is `.clearfix` ruleset === `frames[0].OriginalRuleset`?
+6. `frames[0]` is `wrapperMD`, so `frames[0].OriginalRuleset` is `clearfixRuleset`
+7. YES! They match → recursion detected → skip this candidate
+8. Only the `.clearfix()` MixinDefinition is used → expands to `color: blue;`
+9. No infinite loop!
+
+**Verification**:
+- ✅ All unit tests pass with no regressions
+- ✅ `mixins` test now passes completely (Perfect CSS match!)
+- ✅ Infinite recursion issue resolved
+- ✅ Perfect CSS match count increased from 14 → 15
+- ✅ Failing tests reduced from 13 → 12
+- ✅ Overall success rate improved from 37.8% → 38.4%
+
+**Files Modified**:
+- `mixin_definition.go:577-585` - Fixed OriginalRuleset assignment in EvalCall()
+- `mixin_call.go:286-291` - Added MixinDefinition support in recursion detection
+
+**Key Insight**: Recursion detection for wrapped rulesets requires proper propagation of the `OriginalRuleset` reference through the wrapper MixinDefinition. The Go code was setting it to `md.Ruleset` (often `nil`) instead of `md.OriginalRuleset` (the actual wrapped ruleset), breaking the recursion detection chain.
 
 ---
 

@@ -186,13 +186,20 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 	rules := make([]any, 0)
 	var iterator []any
 
+	// Extract the actual eval context from the Context struct
+	// The Context struct contains Frames with EvalContext, but Variable.Eval expects the map-based context
+	var evalContext any = ctx
+	if ctx != nil && len(ctx.Frames) > 0 && ctx.Frames[0].EvalContext != nil {
+		evalContext = ctx.Frames[0].EvalContext
+	}
+
 	// tryEval function - evaluates nodes if they have an Eval method
 	tryEval := func(val any) any {
 		// Check if val has an Eval method (implements Node interface)
 		if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
-			if ctx != nil {
+			if evalContext != nil {
 				// We have context, evaluate the node
-				result, err := evalable.Eval(ctx)
+				result, err := evalable.Eval(evalContext)
 				if err == nil {
 					return result
 				}
@@ -202,6 +209,10 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 		}
 		return val
 	}
+
+	// Evaluate the list parameter first if it's a Variable or other evaluable node
+	// This ensures we get the actual value before type-checking
+	list = tryEval(list)
 
 	// Handle different list types following JavaScript logic
 	if valueNode, ok := list.(*Value); ok && valueNode.Value != nil {
@@ -339,7 +350,7 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 
 		// Inject @value variable
 		if valueName != "" && value != nil {
-			valueDecl, err := NewDeclaration(valueName, value, false, false, 0, nil, false, false)
+			valueDecl, err := NewDeclaration(valueName, value, false, false, 0, nil, false, true)
 			if err == nil {
 				newRules = append(newRules, valueDecl)
 			}
@@ -349,16 +360,16 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 		if indexName != "" {
 			indexDim, err := NewDimension(float64(i+1), nil)
 			if err == nil {
-				indexDecl, err := NewDeclaration(indexName, indexDim, false, false, 0, nil, false, false)
+				indexDecl, err := NewDeclaration(indexName, indexDim, false, false, 0, nil, false, true)
 				if err == nil {
 					newRules = append(newRules, indexDecl)
 				}
 			}
 		}
 
-		// Inject @key variable  
+		// Inject @key variable
 		if keyName != "" && key != nil {
-			keyDecl, err := NewDeclaration(keyName, key, false, false, 0, nil, false, false)
+			keyDecl, err := NewDeclaration(keyName, key, false, false, 0, nil, false, true)
 			if err == nil {
 				newRules = append(newRules, keyDecl)
 			}
@@ -381,11 +392,11 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 	}
 
 	finalRuleset := NewRuleset([]any{ampersandSelector}, rules, targetRuleset.StrictImports, targetRuleset.VisibilityInfo())
-	
+
 	// The JavaScript version calls .eval(this.context) on the final result
-	if ctx != nil {
+	if evalContext != nil {
 		// Evaluate the final ruleset with context
-		result, err := finalRuleset.Eval(ctx)
+		result, err := finalRuleset.Eval(evalContext)
 		if err != nil {
 			// If evaluation fails, return the unevaluated ruleset
 			return finalRuleset

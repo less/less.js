@@ -13,6 +13,21 @@ type Context struct {
 	// Add other context fields as needed (e.g., isMathOn, inParenthesis)
 }
 
+// GetFrames implements the interface expected by Variable.Eval
+// It delegates to the underlying EvalContext if available
+func (c *Context) GetFrames() []ParserFrame {
+	if c == nil || len(c.Frames) == 0 {
+		return []ParserFrame{}
+	}
+	// Get frames from the first Frame's EvalContext
+	if c.Frames[0].EvalContext != nil {
+		if ec, ok := c.Frames[0].EvalContext.(interface{ GetFrames() []ParserFrame }); ok {
+			return ec.GetFrames()
+		}
+	}
+	return []ParserFrame{}
+}
+
 // Frame represents a scope frame.
 type Frame struct {
 	FunctionRegistry FunctionRegistry

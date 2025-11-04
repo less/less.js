@@ -133,6 +133,7 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 				},
 			},
 		}
+
 		return c.funcDef.CallCtx(funcContext, args...)
 	}
 

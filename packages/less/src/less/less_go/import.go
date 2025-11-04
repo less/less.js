@@ -51,7 +51,20 @@ func NewImport(path any, features any, options map[string]any, index int, curren
 		} else {
 			pathValue := imp.GetPath()
 			if pathValue != nil {
-				if pathStr, ok := pathValue.(string); ok && cssPatternRegex.MatchString(pathStr) {
+				// Try to extract string value for CSS detection
+				var pathStr string
+				if str, ok := pathValue.(string); ok {
+					pathStr = str
+				} else if quoted, ok := pathValue.(*Quoted); ok {
+					// Handle Quoted objects that weren't unwrapped by GetPath
+					pathStr = quoted.GetValue()
+				} else if anon, ok := pathValue.(*Anonymous); ok {
+					// Handle Anonymous nodes
+					if str, ok := anon.Value.(string); ok {
+						pathStr = str
+					}
+				}
+				if pathStr != "" && cssPatternRegex.MatchString(pathStr) {
 					imp.css = true
 				}
 			}
@@ -59,7 +72,20 @@ func NewImport(path any, features any, options map[string]any, index int, curren
 	} else {
 		pathValue := imp.GetPath()
 		if pathValue != nil {
-			if pathStr, ok := pathValue.(string); ok && cssPatternRegex.MatchString(pathStr) {
+			// Try to extract string value for CSS detection
+			var pathStr string
+			if str, ok := pathValue.(string); ok {
+				pathStr = str
+			} else if quoted, ok := pathValue.(*Quoted); ok {
+				// Handle Quoted objects that weren't unwrapped by GetPath
+				pathStr = quoted.GetValue()
+			} else if anon, ok := pathValue.(*Anonymous); ok {
+				// Handle Anonymous nodes
+				if str, ok := anon.Value.(string); ok {
+					pathStr = str
+				}
+			}
+			if pathStr != "" && cssPatternRegex.MatchString(pathStr) {
 				imp.css = true
 			}
 		}

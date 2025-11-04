@@ -76,15 +76,39 @@ func (iv *ImportVisitor) VisitImport(importNode any, visitArgs *VisitArgs) {
 	inlineCSS := false
 	css := false
 
-	// Get options and css property - direct access like JavaScript
-	if node, ok := importNode.(map[string]any); ok {
+	// Handle Import struct directly
+	if imp, ok := importNode.(*Import); ok {
+		// Get inline option from Import struct
+		if imp.options != nil {
+			if inline, hasInline := imp.options["inline"].(bool); hasInline {
+				inlineCSS = inline
+			}
+		}
+		// Get css property from Import struct
+		css = imp.css
+	} else if node, ok := importNode.(map[string]any); ok {
+		// Handle legacy map-based Import nodes
 		if options, hasOptions := node["options"].(map[string]any); hasOptions {
 			if inline, hasInline := options["inline"].(bool); hasInline {
 				inlineCSS = inline
 			}
 		}
+
+		// Check if css field is explicitly set
 		if cssValue, hasCss := node["css"].(bool); hasCss {
 			css = cssValue
+		} else {
+			// If css field is not set, check if the path ends with .css
+			// This matches the JavaScript Import constructor logic (import.js lines 33-36)
+			path := iv.getPath(importNode)
+			if path != "" {
+				// Check for CSS file extension using the same regex as JavaScript
+				if cssPatternRegex.MatchString(path) {
+					css = true
+					// Set the css field on the node for consistency
+					node["css"] = true
+				}
+			}
 		}
 	}
 
@@ -116,8 +140,14 @@ func (iv *ImportVisitor) processImportNode(importNode any, context *Eval, import
 	var evaldImportNode any
 	inlineCSS := false
 
-	// Get inline option
-	if node, ok := importNode.(map[string]any); ok {
+	// Get inline option - handle both Import structs and maps
+	if imp, ok := importNode.(*Import); ok {
+		if imp.options != nil {
+			if inline, hasInline := imp.options["inline"].(bool); hasInline {
+				inlineCSS = inline
+			}
+		}
+	} else if node, ok := importNode.(map[string]any); ok {
 		if options, hasOptions := node["options"].(map[string]any); hasOptions {
 			if inline, hasInline := options["inline"].(bool); hasInline {
 				inlineCSS = inline
@@ -159,9 +189,25 @@ func (iv *ImportVisitor) processImportNode(importNode any, context *Eval, import
 		evaldImportNode = iv.evalForImport(importNode, context)
 	}()
 
-	// Check if evaldImportNode is CSS
-	evaldCSS := iv.getProperty(evaldImportNode, "css")
-	isCSS := evaldCSS != nil && evaldCSS.(bool)
+	// Check if evaldImportNode is CSS - must handle both Import structs and maps
+	isCSS := false
+	cssUndefined := false
+	if evaldImp, ok := evaldImportNode.(*Import); ok {
+		// Handle Import struct directly
+		isCSS = evaldImp.css
+		// For Import structs, css is always defined (defaults to false)
+		cssUndefined = false
+	} else {
+		// Handle map-based nodes
+		evaldCSS := iv.getProperty(evaldImportNode, "css")
+		if evaldCSS == nil {
+			cssUndefined = true
+			isCSS = false
+		} else {
+			cssUndefined = false
+			isCSS = evaldCSS.(bool)
+		}
+	}
 
 	if evaldImportNode != nil && (!isCSS || inlineCSS) {
 		// Set context.importMultiple if multiple option is true
@@ -170,7 +216,7 @@ func (iv *ImportVisitor) processImportNode(importNode any, context *Eval, import
 		}
 
 		// Try appending less extension if CSS status is undefined
-		tryAppendLessExtension := evaldCSS == nil
+		tryAppendLessExtension := cssUndefined
 
 		// Replace import node in parent rules - matches JavaScript
 		iv.replaceRuleInParent(importParent, importNode, evaldImportNode)

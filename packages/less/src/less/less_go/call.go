@@ -87,6 +87,28 @@ func (c *DefaultParserFunctionCaller) IsValid() bool {
 	return c.valid
 }
 
+// createMathEnabledContext creates a context with math always enabled
+// This is used for function argument evaluation, as function arguments
+// should always be fully computed (matching JavaScript behavior)
+func (c *DefaultParserFunctionCaller) createMathEnabledContext() any {
+	// Try to create a map context with math always enabled
+	if mapCtx, ok := c.context.(*MapEvalContext); ok {
+		// Clone the context and ensure math is enabled
+		newCtx := make(map[string]any)
+		for k, v := range mapCtx.ctx {
+			newCtx[k] = v
+		}
+		// Set mathOn to true and create an isMathOn function that always returns true
+		newCtx["mathOn"] = true
+		newCtx["isMathOn"] = func(op string) bool {
+			return true
+		}
+		return newCtx
+	}
+	// Fallback: return the original context
+	return c.context
+}
+
 // Call executes the function with the given arguments
 func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 	if !c.valid || c.funcDef == nil {
@@ -98,7 +120,7 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 
 	// Create a simplified context for function calling if needed
 	if !needsEval {
-		// For functions that don't need evaluated args, create a minimal context
+		// For functions that don't need evaluated args, create a context with proper EvalContext
 		// We need a registry that contains this function
 		tempRegistry := NewRegistryFunctionAdapter(DefaultRegistry.Inherit())
 		tempRegistry.registry.Add(c.name, c.funcDef)
@@ -107,6 +129,7 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 			Frames: []*Frame{
 				{
 					FunctionRegistry: tempRegistry,
+					EvalContext:      c.context, // Pass the evaluation context for variable resolution
 				},
 			},
 		}
@@ -114,37 +137,49 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 	}
 
 	// For functions that need evaluated args, evaluate them first
+	// Function arguments should always be evaluated with math enabled
+	// because functions operate on computed values
+	mathCtx := c.createMathEnabledContext()
+
 	evaluatedArgs := make([]any, len(args))
 	for i, arg := range args {
+		var evalResult any
+
 		// First try the EvalContext interface
 		if evalable, ok := arg.(interface {
 			Eval(EvalContext) (any, error)
 		}); ok {
-			evalResult, err := evalable.Eval(c.context)
+			var err error
+			evalResult, err = evalable.Eval(c.context)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
 			}
-			evaluatedArgs[i] = evalResult
 		} else if evalable, ok := arg.(interface {
 			Eval(any) (any, error)
 		}); ok {
-			// Fallback to the more generic Eval(any) signature
-			// For Variable nodes, pass the underlying map context for better compatibility
-			// For other nodes, keep the EvalContext wrapper
-			var evalCtx any = c.context
-			if _, isVariable := arg.(*Variable); isVariable {
-				if mapCtx, ok := c.context.(*MapEvalContext); ok {
-					evalCtx = mapCtx.ctx
-				}
-			}
-			evalResult, err := evalable.Eval(evalCtx)
+			// Use the math-enabled context for map-based Eval
+			var err error
+			evalResult, err = evalable.Eval(mathCtx)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
 			}
-			evaluatedArgs[i] = evalResult
+		} else if evalable, ok := arg.(interface {
+			Eval(any) any
+		}); ok {
+			// Handle nodes with single-return Eval (like Paren, DetachedRuleset, etc.)
+			// Use the math-enabled context
+			evalResult = evalable.Eval(mathCtx)
 		} else {
-			evaluatedArgs[i] = arg
+			evalResult = arg
 		}
+
+		// Unwrap Paren nodes to get the inner value
+		// This matches JavaScript behavior where parens are transparent to functions
+		if paren, ok := evalResult.(*Paren); ok {
+			evalResult = paren.Value
+		}
+
+		evaluatedArgs[i] = evalResult
 	}
 
 	return c.funcDef.Call(evaluatedArgs...)
@@ -374,6 +409,7 @@ func (c *Call) Eval(context any) (any, error) {
 		// Preprocess arguments to match JavaScript behavior
 		processedArgs := c.preprocessArgs(c.Args)
 		result, err = funcCaller.Call(processedArgs)
+
 		if err != nil {
 			exitCalc()
 			// Check if error has line and column properties

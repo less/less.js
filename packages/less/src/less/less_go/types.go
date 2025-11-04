@@ -30,10 +30,80 @@ func (tf *TypesFunctions) GetFunctions() map[string]any {
 	}
 }
 
-// GetWrappedTypesFunctions returns type functions for registry
+// GetWrappedTypesFunctions returns type functions wrapped in FunctionDefinition adapters
 func GetWrappedTypesFunctions() map[string]interface{} {
 	tf := &TypesFunctions{}
-	return tf.GetFunctions()
+
+	// Wrap each function in a TypeFunctionDef adapter
+	return map[string]interface{}{
+		"isruleset":    &TypeFunctionDef{name: "isruleset", fn: tf.IsRuleset, argCount: 1},
+		"iscolor":      &TypeFunctionDef{name: "iscolor", fn: tf.IsColor, argCount: 1},
+		"isnumber":     &TypeFunctionDef{name: "isnumber", fn: tf.IsNumber, argCount: 1},
+		"isstring":     &TypeFunctionDef{name: "isstring", fn: tf.IsString, argCount: 1},
+		"iskeyword":    &TypeFunctionDef{name: "iskeyword", fn: tf.IsKeyword, argCount: 1},
+		"isurl":        &TypeFunctionDef{name: "isurl", fn: tf.IsURL, argCount: 1},
+		"ispixel":      &TypeFunctionDef{name: "ispixel", fn: tf.IsPx, argCount: 1},
+		"ispercentage": &TypeFunctionDef{name: "ispercentage", fn: tf.IsPercentage, argCount: 1},
+		"isem":         &TypeFunctionDef{name: "isem", fn: tf.IsEm, argCount: 1},
+		"isunit":       &TypeFunctionDef{name: "isunit", fn: tf.IsUnit, argCount: 2},
+		"unit":         &TypeFunctionDef{name: "unit", fn: tf.Unit, minArgCount: 1, maxArgCount: 2},
+		"get-unit":     &TypeFunctionDef{name: "get-unit", fn: tf.GetUnit, argCount: 1},
+	}
+}
+
+// TypeFunctionDef wraps type functions to implement FunctionDefinition
+type TypeFunctionDef struct {
+	name        string
+	fn          any
+	argCount    int  // Required argument count (for fixed-arg functions)
+	minArgCount int  // Minimum argument count (for variable-arg functions)
+	maxArgCount int  // Maximum argument count (for variable-arg functions)
+}
+
+func (t *TypeFunctionDef) Call(args ...any) (any, error) {
+	// Handle variable argument count functions
+	if t.minArgCount > 0 || t.maxArgCount > 0 {
+		if len(args) < t.minArgCount || (t.maxArgCount > 0 && len(args) > t.maxArgCount) {
+			if t.minArgCount == t.maxArgCount {
+				return nil, fmt.Errorf("function %s expects %d arguments, got %d", t.name, t.minArgCount, len(args))
+			}
+			return nil, fmt.Errorf("function %s expects %d-%d arguments, got %d", t.name, t.minArgCount, t.maxArgCount, len(args))
+		}
+	} else {
+		// Fixed argument count
+		if len(args) != t.argCount {
+			if t.argCount == 1 {
+				return nil, fmt.Errorf("function %s expects 1 argument, got %d", t.name, len(args))
+			}
+			return nil, fmt.Errorf("function %s expects %d arguments, got %d", t.name, t.argCount, len(args))
+		}
+	}
+
+	switch fn := t.fn.(type) {
+	case func(any) (*Keyword, error):
+		return fn(args[0])
+	case func(any, any) (*Keyword, error):
+		return fn(args[0], args[1])
+	case func(any, any) (*Dimension, error):
+		// Handle optional second argument by passing nil
+		var arg1 any
+		if len(args) > 1 {
+			arg1 = args[1]
+		}
+		return fn(args[0], arg1)
+	case func(any) (*Anonymous, error):
+		return fn(args[0])
+	default:
+		return nil, fmt.Errorf("unsupported function type for %s", t.name)
+	}
+}
+
+func (t *TypeFunctionDef) CallCtx(ctx *Context, args ...any) (any, error) {
+	return t.Call(args...)
+}
+
+func (t *TypeFunctionDef) NeedsEvalArgs() bool {
+	return true // Type functions need evaluated arguments
 }
 
 // isa is a helper function that checks if a value is of a specific type

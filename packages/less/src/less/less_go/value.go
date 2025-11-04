@@ -1,6 +1,8 @@
 package less_go
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ValueError represents a Less value error
 type ValueError struct {
@@ -74,9 +76,25 @@ func (v *Value) Eval(context any) (any, error) {
 		// Check for Variable specifically first
 		if variable, ok := v.Value[0].(*Variable); ok {
 			result, err := variable.Eval(context)
+			// Continue evaluating if result is still a Variable (but not the same one to avoid loops)
+			// This handles the case where a Variable's value is another Variable (e.g., mixin parameters)
+			seen := make(map[*Variable]bool)
+			seen[variable] = true
+			for {
+				if resultVar, ok := result.(*Variable); ok && err == nil {
+					// Avoid infinite loops - if we've seen this variable before, stop
+					if seen[resultVar] {
+						break
+					}
+					seen[resultVar] = true
+					result, err = resultVar.Eval(context)
+				} else {
+					break
+				}
+			}
 			return result, err
 		}
-		
+
 		if evalValue, ok := v.Value[0].(Evaluator); ok {
 			result, err := evalValue.Eval(context)
 			return result, err

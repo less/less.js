@@ -1,6 +1,8 @@
 package less_go
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ParserFrame represents a scope frame that can look up variables and properties
 type ParserFrame interface {
@@ -257,6 +259,26 @@ func (v *Variable) Eval(context any) (any, error) {
 					// Evaluate value - check both interface types
 					if evalable, ok := val.(interface{ Eval(any) (any, error) }); ok {
 						result, err := evalable.Eval(context)
+
+						// Continue evaluating if result is still a Variable (handles nested variable references)
+						// Use a set to detect circular references
+						seen := make(map[*Variable]bool)
+						seen[v] = true
+						for {
+							if resultVar, ok := result.(*Variable); ok && err == nil {
+								// Avoid infinite loops - if we've seen this variable before, stop
+								if seen[resultVar] {
+									// Circular reference detected - stop evaluation
+									// This should not happen with the fix to evaluate Expression arguments
+									break
+								}
+								seen[resultVar] = true
+								result, err = resultVar.Eval(context)
+							} else {
+								break
+							}
+						}
+
 						return result, err
 					} else if _, ok := val.(interface{ Eval(EvalContext) (any, error) }); ok {
 						// For map context, we can't pass EvalContext, so return value as-is

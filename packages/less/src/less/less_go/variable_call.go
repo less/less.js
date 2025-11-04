@@ -2,7 +2,7 @@ package less_go
 
 import (
 	"fmt"
-
+	"os"
 )
 
 // VariableCall represents a variable call node in the Less AST
@@ -62,9 +62,18 @@ func (vc *VariableCall) Eval(context any) (result any, err error) {
 	}()
 	// Match JavaScript: let detachedRuleset = new Variable(this.variable, this.getIndex(), this.fileInfo()).eval(context);
 	variable := NewVariable(vc.variable, vc.GetIndex(), vc.FileInfo())
-	// Variable.Eval returns (any, error) but JavaScript ignores the error
-	detachedRuleset, _ := variable.Eval(context)
-	
+	// In JavaScript, if eval throws, execution stops. In Go, we need to check the error.
+	detachedRuleset, varErr := variable.Eval(context)
+	if varErr != nil {
+		// Variable not found or couldn't be evaluated
+		return nil, varErr
+	}
+
+	// Debug: check what we got
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Fprintf(os.Stderr, "[DEBUG VariableCall] %s evaluated to type: %T, value: %+v\n", vc.variable, detachedRuleset, detachedRuleset)
+	}
+
 	errorMsg := fmt.Sprintf("Could not evaluate variable call %s", vc.variable)
 	
 	// Match JavaScript: if (!detachedRuleset.ruleset)

@@ -96,9 +96,16 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 			// For Rulesets, ensure we have a map context
 			mapContext, ok := evalContext.(map[string]any)
 			if !ok {
-				// Create a minimal map context for the ruleset evaluation
-				mapContext = map[string]any{
-					"frames": []any{},
+				// Convert Eval context to map context
+				if evalCtx, ok := evalContext.(*Eval); ok {
+					mapContext = map[string]any{
+						"frames": evalCtx.Frames,
+					}
+				} else {
+					// Fallback for unknown context types
+					mapContext = map[string]any{
+						"frames": []any{},
+					}
 				}
 			}
 			result, err := ruleset.Eval(mapContext)
@@ -108,7 +115,7 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 			}
 			return result
 		}
-		
+
 		// Check if ruleset is a Node with Value
 		if node, ok := dr.ruleset.(*Node); ok && node.Value != nil {
 			// Check if the value is a Ruleset
@@ -116,9 +123,16 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 				// For Rulesets, ensure we have a map context
 				mapContext, ok := evalContext.(map[string]any)
 				if !ok {
-					// Create a minimal map context for the ruleset evaluation
-					mapContext = map[string]any{
-						"frames": []any{},
+					// Convert Eval context to map context
+					if evalCtx, ok := evalContext.(*Eval); ok {
+						mapContext = map[string]any{
+							"frames": evalCtx.Frames,
+						}
+					} else {
+						// Fallback for unknown context types
+						mapContext = map[string]any{
+							"frames": []any{},
+						}
 					}
 				}
 				result, err := ruleset.Eval(mapContext)

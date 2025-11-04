@@ -4,6 +4,29 @@ import (
 	"fmt"
 )
 
+// continueEvaluatingVariables continues evaluating if the result is a Variable
+// This handles cases where a Variable's value is another Variable (e.g., nested mixin parameters)
+func continueEvaluatingVariables(val any, context any) any {
+	seen := make(map[*Variable]bool)
+	for {
+		if varResult, ok := val.(*Variable); ok {
+			// Avoid infinite loops - if we've seen this variable before, stop
+			if seen[varResult] {
+				break
+			}
+			seen[varResult] = true
+			if evalVar, ok := val.(interface{ Eval(any) any }); ok {
+				val = evalVar.Eval(context)
+			} else {
+				break
+			}
+		} else {
+			break
+		}
+	}
+	return val
+}
+
 // MixinDefinition represents a mixin definition node in the Less AST
 type MixinDefinition struct {
 	*Ruleset
@@ -208,6 +231,8 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 									if err != nil {
 										return nil, err
 									}
+									// Continue evaluating if result is still a Variable
+									evalResult = continueEvaluatingVariables(evalResult, context)
 									evaldArguments[j] = evalResult
 									// Create declaration and prepend to frame
 									decl, err := NewDeclaration(name, evaldArguments[j], nil, false, 0, make(map[string]any), false, true)
@@ -219,7 +244,10 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 									break
 								} else if argValue, ok := argMap["value"].(interface{ Eval(any) any }); ok {
 									// Handle values that implement Eval without error return
-									evaldArguments[j] = argValue.Eval(context)
+									evalResult := argValue.Eval(context)
+									// Continue evaluating if result is still a Variable
+									evalResult = continueEvaluatingVariables(evalResult, context)
+									evaldArguments[j] = evalResult
 									// Create declaration and prepend to frame
 									decl, err := NewDeclaration(name, evaldArguments[j], nil, false, 0, make(map[string]any), false, true)
 									if err != nil {
@@ -318,8 +346,22 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 								if argSlice, ok := argValue.([]any); ok {
 									ruleset := NewRuleset(nil, argSlice, false, nil)
 									val = NewDetachedRuleset(ruleset, nil)
+								} else if evalValue, ok := argValue.(interface{ Eval(any) (any, error) }); ok {
+									// Check for Eval with error return first (more common in Go)
+									// This handles Expression, Variable, and other nodes that return (any, error)
+									evalResult, err := evalValue.Eval(context)
+									if err != nil {
+										return nil, err
+									}
+									val = evalResult
+									// Continue evaluating if result is still a Variable (handles nested variable references)
+									val = continueEvaluatingVariables(val, context)
 								} else if evalValue, ok := argValue.(interface{ Eval(any) any }); ok {
-									val = evalValue.Eval(context) 
+									// Check for Eval without error return (less common)
+									// This handles DetachedRuleset and other nodes that return any
+									val = evalValue.Eval(context)
+									// Continue evaluating if result is still a Variable (handles nested variable references)
+									val = continueEvaluatingVariables(val, context)
 								} else {
 									val = argValue
 								}
@@ -356,6 +398,8 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 							if err != nil {
 								return nil, err
 							}
+							// Continue evaluating if result is still a Variable
+							evalResult = continueEvaluatingVariables(evalResult, defaultParamEnv)
 							val = evalResult
 							frame.ResetCache()
 						} else if evalValue, ok := paramValue.(interface{ Eval(any) any }); ok {
@@ -374,6 +418,8 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 								}
 							}
 							val = evalValue.Eval(defaultParamEnv)
+							// Continue evaluating if result is still a Variable
+							val = continueEvaluatingVariables(val, defaultParamEnv)
 							frame.ResetCache()
 						} else {
 						}

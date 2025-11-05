@@ -3,7 +3,7 @@
   "last_updated": "2025-11-05T01:00:00Z",
   "tasks": {
     "fix-import-reference": {
-      "status": "available",
+      "status": "in-progress",
       "priority": "high",
       "category": "runtime-failures",
       "tests_affected": [
@@ -17,7 +17,9 @@
         "import_visitor.go",
         "ruleset.go"
       ],
-      "task_file": ".claude/tasks/runtime-failures/import-reference.md"
+      "task_file": ".claude/tasks/runtime-failures/import-reference.md",
+      "agent_session_id": "011CUq2UdcuwonuWYY5Ai4u2",
+      "claimed_at": "2025-11-05T03:00:00Z"
     },
     "fix-namespace-resolution": {
       "status": "completed",

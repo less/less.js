@@ -3,7 +3,7 @@
   "last_updated": "2025-11-05T01:00:00Z",
   "tasks": {
     "fix-import-reference": {
-      "status": "in-progress",
+      "status": "partial",
       "priority": "high",
       "category": "runtime-failures",
       "tests_affected": [
@@ -19,7 +19,12 @@
       ],
       "task_file": ".claude/tasks/runtime-failures/import-reference.md",
       "agent_session_id": "011CUq2UdcuwonuWYY5Ai4u2",
-      "claimed_at": "2025-11-05T03:00:00Z"
+      "claimed_at": "2025-11-05T03:00:00Z",
+      "completed_at": "2025-11-05T04:30:00Z",
+      "pr_branch": "claude/fix-import-reference-011CUq2UdcuwonuWYY5Ai4u2",
+      "status_note": "Partial fix: CSS import loading resolved. Remaining: mixin availability.",
+      "fixed": "CSS imports within referenced files no longer trigger file loads",
+      "remaining": "Mixins from referenced imports not available for calling"
     },
     "fix-namespace-resolution": {
       "status": "completed",

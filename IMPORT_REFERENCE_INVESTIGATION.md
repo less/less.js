@@ -1,5 +1,11 @@
 # Import Reference Test Investigation
 
+**⚠️ SUPERSEDED - See `.claude/tasks/runtime-failures/import-reference.md` for current task**
+
+> **Note**: This file contains historical investigation notes.
+> For current work on this issue, see: **`.claude/tasks/runtime-failures/import-reference.md`**
+> This file can be deleted once the import-reference task is completed.
+
 **Date**: 2025-11-04
 **Status**: Partial Fix Applied, Further Investigation Needed
 **Test**: `import-reference`

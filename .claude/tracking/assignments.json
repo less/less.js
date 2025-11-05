@@ -1,0 +1,202 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-11-05T00:00:00Z",
+  "tasks": {
+    "fix-import-reference": {
+      "status": "available",
+      "priority": "high",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "import-reference",
+        "import-reference-issues"
+      ],
+      "estimated_time": "2-3 hours",
+      "complexity": "medium",
+      "files_likely_modified": [
+        "import.go",
+        "import_visitor.go",
+        "ruleset.go"
+      ],
+      "task_file": ".claude/tasks/runtime-failures/import-reference.md"
+    },
+    "fix-namespace-resolution": {
+      "status": "available",
+      "priority": "high",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "namespacing-6",
+        "namespacing-functions"
+      ],
+      "estimated_time": "2-4 hours",
+      "complexity": "medium-high",
+      "files_likely_modified": [
+        "namespace_value.go",
+        "mixin_call.go",
+        "ruleset.go"
+      ],
+      "task_file": ".claude/tasks/runtime-failures/namespace-resolution.md"
+    },
+    "fix-url-processing": {
+      "status": "available",
+      "priority": "high",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "urls (main)",
+        "urls (static-urls)"
+      ],
+      "estimated_time": "1-2 hours",
+      "complexity": "medium",
+      "files_likely_modified": [
+        "url.go"
+      ],
+      "task_file": ".claude/tasks/runtime-failures/url-processing.md"
+    },
+    "fix-mixin-args": {
+      "status": "available",
+      "priority": "high",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "mixins-args (various)"
+      ],
+      "estimated_time": "2-3 hours",
+      "complexity": "medium",
+      "files_likely_modified": [
+        "mixin_definition.go",
+        "mixin_call.go"
+      ],
+      "task_file": ".claude/tasks/runtime-failures/mixin-args.md"
+    },
+    "fix-include-path": {
+      "status": "available",
+      "priority": "high",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "include-path"
+      ],
+      "estimated_time": "1-2 hours",
+      "complexity": "low-medium",
+      "files_likely_modified": [
+        "import_manager.go",
+        "file_manager.go"
+      ],
+      "task_file": ".claude/tasks/runtime-failures/include-path.md"
+    },
+    "fix-import-interpolation": {
+      "status": "available",
+      "priority": "medium",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "import-interpolation"
+      ],
+      "estimated_time": "3-4 hours",
+      "complexity": "high",
+      "notes": "Architectural issue - may need to defer",
+      "files_likely_modified": [
+        "import.go",
+        "import_visitor.go"
+      ],
+      "task_file": ".claude/tasks/runtime-failures/import-interpolation.md"
+    },
+    "fix-bootstrap4": {
+      "status": "available",
+      "priority": "low",
+      "category": "runtime-failures",
+      "tests_affected": [
+        "bootstrap4"
+      ],
+      "estimated_time": "4-8 hours",
+      "complexity": "very-high",
+      "notes": "Large integration test - do last after other fixes",
+      "task_file": ".claude/tasks/runtime-failures/bootstrap4.md"
+    },
+    "fix-extend-functionality": {
+      "status": "available",
+      "priority": "medium",
+      "category": "output-differences",
+      "tests_affected": [
+        "extend-chaining",
+        "extend-clearfix",
+        "extend-exact",
+        "extend-media",
+        "extend-nest",
+        "extend-selector",
+        "extend"
+      ],
+      "estimated_time": "3-5 hours",
+      "complexity": "medium-high",
+      "files_likely_modified": [
+        "extend.go",
+        "extend_visitor.go"
+      ],
+      "task_file": ".claude/tasks/output-differences/extend-functionality.md"
+    },
+    "fix-guards-conditionals": {
+      "status": "available",
+      "priority": "medium",
+      "category": "output-differences",
+      "tests_affected": [
+        "css-guards",
+        "mixins-guards-default-func",
+        "mixins-guards"
+      ],
+      "estimated_time": "2-3 hours",
+      "complexity": "medium",
+      "files_likely_modified": [
+        "mixin_definition.go",
+        "ruleset.go"
+      ],
+      "task_file": ".claude/tasks/output-differences/guards-conditionals.md"
+    },
+    "fix-math-operations": {
+      "status": "available",
+      "priority": "medium",
+      "category": "output-differences",
+      "tests_affected": [
+        "math-parens: css",
+        "math-parens: media-math",
+        "math-parens: parens",
+        "math-parens-division: media-math",
+        "math-parens-division: new-division",
+        "math-parens-division: parens",
+        "operations"
+      ],
+      "estimated_time": "2-4 hours",
+      "complexity": "medium",
+      "files_likely_modified": [
+        "operation.go",
+        "dimension.go"
+      ],
+      "task_file": ".claude/tasks/output-differences/math-operations.md"
+    },
+    "fix-namespacing-output": {
+      "status": "available",
+      "priority": "medium",
+      "category": "output-differences",
+      "tests_affected": [
+        "namespacing-1",
+        "namespacing-2",
+        "namespacing-3",
+        "namespacing-4",
+        "namespacing-5",
+        "namespacing-7",
+        "namespacing-8",
+        "namespacing-media",
+        "namespacing-operations"
+      ],
+      "estimated_time": "3-4 hours",
+      "complexity": "medium",
+      "notes": "May be blocked by fix-namespace-resolution",
+      "files_likely_modified": [
+        "namespace_value.go",
+        "ruleset.go"
+      ],
+      "task_file": ".claude/tasks/output-differences/namespacing-output.md"
+    }
+  },
+  "notes": {
+    "coordination": "Update this file when claiming, completing, or blocking tasks",
+    "conflicts": "If multiple agents claim same task, first to push wins",
+    "blocked_tasks": "Tasks marked 'blocked' should document what they're waiting for",
+    "priority_guide": "high = runtime failures, medium = output differences, low = polish"
+  }
+}

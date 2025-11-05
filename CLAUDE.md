@@ -63,23 +63,36 @@ When working on this project, please be aware of the following:
    - ✅ Compilation rate improved from 90.3% → 92.4%
    - ✅ Runtime failures reduced from 18 → 12 tests
 
-5. **Current Focus: Runtime & Evaluation Issues**:
-   - **See RUNTIME_ISSUES.md** for comprehensive tracking of remaining issues
-   - **See NEXT_SESSION.md** for prompt to start fixing runtime issues
-   - Focus on variable evaluation, mixin execution, and import functionality
+5. **Organized Task System**:
+   All project coordination and task management is now organized in the `.claude/` directory:
+
+   - **`.claude/strategy/MASTER_PLAN.md`** - Overall strategy and current status
+   - **`.claude/strategy/agent-workflow.md`** - Step-by-step workflow for working on tasks
+   - **`.claude/templates/AGENT_PROMPT.md`** - Template for spinning up new agents
+   - **`.claude/tasks/runtime-failures/`** - High-priority failing tests (12 tests)
+   - **`.claude/tasks/output-differences/`** - Tests that compile but produce wrong CSS (102 tests)
+   - **`.claude/tracking/assignments.json`** - Track which tasks are available/in-progress/completed
+
+   **If you're working on a specific task**: Check `.claude/tasks/` for detailed task specifications.
+
+   **If you're a new agent**: Start with `.claude/strategy/MASTER_PLAN.md` for context.
+
+6. **Current Focus: Runtime & Evaluation Issues**:
    - **Runtime tracing available**: Use `LESS_GO_TRACE=1` to debug evaluation flow
    - Compare with JavaScript implementation when fixing issues
+   - See `.claude/tasks/runtime-failures/` for specific tasks
 
-   **Priority Order**:
+   **Priority Order** (High to Low):
    1. ✅ Variable evaluation in functions/loops - FIXED (Issue #2b)
    2. ✅ Mixin closure and variable scope - FIXED (Issue #6)
    3. ✅ Mixin recursion detection - FIXED (Issue #7)
-   4. Import reference functionality (2 tests: `import-reference`, `import-reference-issues`)
-   5. Namespace resolution (2 tests: `namespacing-6`, `namespacing-functions`)
-   6. Other failing tests (8 tests: `urls` x2, `mixins-args` x2, `include-path`, `import-interpolation`, `bootstrap4`)
-   7. Output differences (102 tests)
+   4. Import reference functionality (2 tests) - `.claude/tasks/runtime-failures/import-reference.md`
+   5. Namespace resolution (2 tests) - `.claude/tasks/runtime-failures/namespace-resolution.md`
+   6. URL processing (2 tests) - `.claude/tasks/runtime-failures/url-processing.md`
+   7. Other runtime failures (6 tests) - See `.claude/tracking/assignments.json`
+   8. Output differences (102 tests) - See `.claude/tasks/output-differences/`
 
-6. **Quarantined Features** (for future implementation):
+7. **Quarantined Features** (for future implementation):
    - Plugin system tests (`plugin`, `plugin-module`, `plugin-preeval`)
    - JavaScript execution tests (`javascript`, `js-type-errors/*`, `no-js-errors/*`)
    - Import test that depends on plugins (`import`)

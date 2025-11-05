@@ -1,5 +1,11 @@
 # Import Interpolation Bug Investigation
 
+**⚠️ SUPERSEDED - See `.claude/tasks/runtime-failures/import-interpolation.md` for current task**
+
+> **Note**: This file contains historical investigation notes showing this is an architectural issue.
+> For current task (if/when ready to tackle), see: **`.claude/tasks/runtime-failures/import-interpolation.md`**
+> This file can be deleted once the import-interpolation task is completed.
+
 **Bug**: BUG-002: import-interpolation
 **Status**: ⏸️ **DEFERRED - Skip for now, revisit after frame/context architecture refactored**
 **Date**: 2025-11-01 (Initial Investigation), 2025-11-03 (Deferred Decision)

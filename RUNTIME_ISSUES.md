@@ -1,6 +1,15 @@
 # Runtime & Evaluation Issues
 
-**⚠️ DELETE THIS FILE once all runtime issues are resolved ⚠️**
+**⚠️ SUPERSEDED BY `.claude/` DIRECTORY - DELETE THIS FILE ONCE ALL RUNTIME ISSUES ARE RESOLVED ⚠️**
+
+> **Note**: This file contains detailed historical analysis of runtime issues that have been fixed.
+> For current work, see:
+> - **`.claude/strategy/MASTER_PLAN.md`** - Overall strategy
+> - **`.claude/tasks/runtime-failures/`** - Specific tasks to fix
+> - **`.claude/tracking/assignments.json`** - Task assignments
+>
+> This file will be deleted once all 12 remaining runtime failures are fixed.
+> It's kept for now as historical reference for the fixes already completed.
 
 ## Status Overview
 

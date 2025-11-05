@@ -256,7 +256,13 @@ func (i *Import) EvalForImport(context any) *Import {
 		evaluatedPath = path
 	}
 
-	return NewImport(evaluatedPath, i.features, i.options, i._index, i._fileInfo, i.VisibilityInfo())
+	newImport := NewImport(evaluatedPath, i.features, i.options, i._index, i._fileInfo, i.VisibilityInfo())
+	// Copy fields that are set by ImportVisitor - these need to be preserved
+	newImport.root = i.root
+	newImport.importedFilename = i.importedFilename
+	newImport.skip = i.skip
+	newImport.error = i.error
+	return newImport
 }
 
 // EvalPath evaluates the import path

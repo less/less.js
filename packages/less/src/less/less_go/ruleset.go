@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 
@@ -703,19 +702,6 @@ func (r *Ruleset) EvalImports(context any) error {
 				}
 				importRules = evaluated
 
-				// DEBUG
-				if os.Getenv("LESS_GO_DEBUG") != "" {
-					if imp, ok := rules[i].(*Import); ok {
-						pathStr := ""
-						if p, ok := imp.GetPath().(string); ok {
-							pathStr = p
-						}
-						if slice, ok := importRules.([]any); ok {
-							fmt.Printf("[DEBUG] EvalImports: import path=%v returned %d rules, before splice: %d rules total\n", pathStr, len(slice), len(rules))
-						}
-					}
-				}
-
 				// Handle different return types like JavaScript version
 				if importRulesSlice, ok := importRules.([]any); ok {
 					// if (importRules && (importRules.length || importRules.length === 0))
@@ -728,11 +714,6 @@ func (r *Ruleset) EvalImports(context any) error {
 						rules = newRules
 						r.Rules = rules
 						i += len(importRulesSlice) - 1
-
-						// DEBUG
-						if os.Getenv("LESS_GO_DEBUG") != "" {
-							fmt.Printf("[DEBUG] EvalImports: after splice: %d rules total\n", len(rules))
-						}
 					} else {
 						// rules.splice(i, 1, importRules);
 						rules[i] = importRules
@@ -1195,19 +1176,6 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 	// this.rulesets().forEach(function (rule) { ... }) pattern
 	rulesets := r.Rulesets()
 
-	// DEBUG
-	if os.Getenv("LESS_GO_DEBUG") != "" {
-		fmt.Printf("[DEBUG] Find: selector=%v, found %d rulesets to search in Rules array of size %d\n", key, len(rulesets), len(r.Rules))
-		for i, rule := range rulesets {
-			if rs, ok := rule.(*Ruleset); ok && len(rs.Selectors) > 0 {
-				if sel, ok := rs.Selectors[0].(*Selector); ok && len(sel.Elements) > 0 {
-					if elem, ok := sel.Elements[0].(*Element); ok {
-						fmt.Printf("[DEBUG] Find:   ruleset[%d] has selector starting with: %v\n", i, elem.Value)
-					}
-				}
-			}
-		}
-	}
 	for _, rule := range rulesets {
 		if rule == self {
 			continue

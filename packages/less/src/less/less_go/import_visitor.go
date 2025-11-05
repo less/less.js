@@ -457,6 +457,16 @@ func (iv *ImportVisitor) replaceRuleInParent(parent any, oldRule any, newRule an
 				}
 			}
 		}
+	} else if ruleset, ok := parent.(*Ruleset); ok {
+		// Handle *Ruleset parent
+		if ruleset.Rules != nil {
+			for i, rule := range ruleset.Rules {
+				if rule == oldRule {
+					ruleset.Rules[i] = newRule
+					break
+				}
+			}
+		}
 	}
 }
 

@@ -37,21 +37,30 @@
       "task_file": ".claude/tasks/runtime-failures/namespace-resolution.md"
     },
     "fix-url-processing": {
-      "status": "in-progress",
+      "status": "blocked",
       "priority": "high",
       "category": "runtime-failures",
       "tests_affected": [
         "urls (main)",
         "urls (static-urls)"
       ],
-      "estimated_time": "1-2 hours",
-      "complexity": "medium",
+      "estimated_time": "3-4 hours",
+      "complexity": "high",
       "files_likely_modified": [
+        "parser.go",
         "url.go"
       ],
       "task_file": ".claude/tasks/runtime-failures/url-processing.md",
       "agent_session_id": "011CUpytEzhDrKDHf6ybVrFA",
-      "claimed_at": "2025-11-05T00:00:00Z"
+      "claimed_at": "2025-11-05T00:00:00Z",
+      "partial_progress": {
+        "completed_at": "2025-11-05T02:00:00Z",
+        "branch": "claude/fix-url-processing-011CUpytEzhDrKDHf6ybVrFA",
+        "commit": "cfa3595",
+        "status_note": "Fixed Sub() parser state management. Test still failing - needs investigation of ParenthesisCondition triggering during expression parsing.",
+        "progress_file": ".claude/tasks/runtime-failures/url-processing-progress.md"
+      },
+      "blocked_reason": "Parser incorrectly calling ParenthesisCondition() during expression parsing. Need to investigate parser precedence and context detection."
     },
     "fix-mixin-args": {
       "status": "available",

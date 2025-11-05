@@ -1,14 +1,15 @@
 {
-  "version": "1.1",
-  "last_updated": "2025-11-05T18:00:00Z",
+  "version": "1.2",
+  "last_updated": "2025-11-05T23:00:00Z",
   "summary": {
     "perfect_matches": 15,
-    "compilation_failures": 6,
-    "output_differences": 106,
+    "compilation_failures": 8,
+    "output_differences": 104,
+    "error_handling_tests": 58,
     "tasks_available": 8,
     "tasks_completed": 1,
     "tasks_partial": 2,
-    "tasks_in_progress": 1
+    "tasks_in_progress": 0
   },
   "tasks": {
     "fix-import-reference": {
@@ -200,7 +201,7 @@
       "notes": "Builds on completed fix-namespace-resolution. Variable lookups returning Go internals instead of values."
     },
     "fix-extend-functionality": {
-      "status": "in-progress",
+      "status": "available",
       "priority": "medium",
       "category": "output-differences",
       "tests_affected": [
@@ -211,15 +212,13 @@
         "extend-selector",
         "extend"
       ],
-      "estimated_time": "2-3 hours remaining",
+      "estimated_time": "2-3 hours",
       "complexity": "medium-high",
       "files_likely_modified": [
         "extend.go",
         "extend_visitor.go"
       ],
       "task_file": ".claude/tasks/output-differences/extend-functionality.md",
-      "agent_session_id": "011CUpykwZ1VoCRiU62oaWno",
-      "claimed_at": "2025-11-05T00:00:00Z",
       "notes": "extend-clearfix already passes. Working on remaining extend issues."
     },
     "fix-guards-conditionals": {
@@ -394,18 +393,19 @@
       "plugi",
       "rulesets"
     ],
-    "compilation_failures": 6,
+    "compilation_failures": 8,
     "compilation_failures_names": [
-      "mixins-args (3 instances)",
-      "include-path",
       "import-interpolation",
       "import-module",
-      "google",
-      "bootstrap4"
+      "mixins-args (math-parens)",
+      "mixins-args (math-parens-division)",
+      "include-path",
+      "bootstrap4",
+      "google"
     ],
-    "output_differences": 106,
+    "output_differences": 104,
     "quarantined": 5,
-    "error_handling_tests_passing": 35
+    "error_handling_tests_passing": 58
   },
   "notes": {
     "coordination": "Update this file when claiming, completing, or blocking tasks",

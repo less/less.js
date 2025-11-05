@@ -107,13 +107,13 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 					}
 				}
 			}
-			
+
 			// Match JavaScript exactly: if (rules.variables) { rules = rules.variable(name); }
 			hasVariablesProperty := false
 			if variableChecker, ok := rules.(interface{ HasVariables() bool }); ok {
 				hasVariablesProperty = variableChecker.HasVariables()
 			}
-			
+
 			if hasVariablesProperty {
 				if ruleset, ok := rules.(interface{ Variable(string) any }); ok {
 					rules = ruleset.Variable(name)
@@ -187,7 +187,12 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		}
 		
 		// Match JavaScript: if (rules.value) { rules = rules.eval(context).value; }
-		if rulesWithValue, ok := rules.(interface{ 
+		// First check if rules is a plain map with a "value" key
+		if rulesMap, ok := rules.(map[string]any); ok {
+			if value, exists := rulesMap["value"]; exists {
+				rules = value
+			}
+		} else if rulesWithValue, ok := rules.(interface{
 			Eval(any) (any, error)
 		}); ok {
 			// Check if it has a value property (matches JavaScript rules.value check)
@@ -206,13 +211,27 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		
 		// Match JavaScript: if (rules.ruleset) { rules = rules.ruleset.eval(context); }
 		if rulesWithRuleset, ok := rules.(interface{ HasRuleset() bool }); ok && rulesWithRuleset.HasRuleset() {
-			if rulesetGetter, ok := rules.(interface{ GetRuleset() interface{ Eval(any) (any, error) } }); ok {
-				if ruleset := rulesetGetter.GetRuleset(); ruleset != nil {
-					evalResult, err := ruleset.Eval(context)
-					if err != nil {
-						return nil, err
+			if rulesetGetter, ok := rules.(interface{ GetRuleset() any }); ok {
+				ruleset := rulesetGetter.GetRuleset()
+				if ruleset != nil {
+					// Try to unwrap if it's a Node containing a Ruleset
+					if node, ok := ruleset.(*Node); ok && node.Value != nil {
+						if rs, ok := node.Value.(*Ruleset); ok {
+							ruleset = rs
+						}
 					}
-					rules = evalResult
+
+					// Now try to evaluate the ruleset
+					if evaluator, ok := ruleset.(interface{ Eval(any) (any, error) }); ok {
+						evalResult, err := evaluator.Eval(context)
+						if err != nil {
+							return nil, err
+						}
+						rules = evalResult
+					} else {
+						// If it doesn't have an Eval method, use it directly
+						rules = ruleset
+					}
 				}
 			}
 		}

@@ -186,4 +186,16 @@ func (dr *DetachedRuleset) GetType() string {
 // EvalFirst indicates whether this node should be evaluated first
 func (dr *DetachedRuleset) EvalFirst() bool {
 	return true
+}
+
+// HasRuleset indicates whether this detached ruleset has an inner ruleset
+// This is used by NamespaceValue to determine if it should unwrap the ruleset
+func (dr *DetachedRuleset) HasRuleset() bool {
+	return dr.ruleset != nil
+}
+
+// GetRuleset returns the inner ruleset for evaluation
+// This is used by NamespaceValue to unwrap detached rulesets and access their variables/properties
+func (dr *DetachedRuleset) GetRuleset() any {
+	return dr.ruleset
 } 

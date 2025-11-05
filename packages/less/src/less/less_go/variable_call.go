@@ -75,7 +75,19 @@ func (vc *VariableCall) Eval(context any) (result any, err error) {
 	}
 
 	errorMsg := fmt.Sprintf("Could not evaluate variable call %s", vc.variable)
-	
+
+	// Handle MixinCall - when a variable contains a mixin call, we need to evaluate it
+	// This handles cases like: @alias: .mixin(); @alias();
+	if mixinCall, ok := detachedRuleset.(*MixinCall); ok {
+		// Evaluate the mixin call to get its rules
+		rules, err := mixinCall.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+		// Return the rules in the format expected by ruleset.go
+		return map[string]any{"rules": rules}, nil
+	}
+
 	// Match JavaScript: if (!detachedRuleset.ruleset)
 	var hasRuleset bool
 	if dr, ok := detachedRuleset.(*DetachedRuleset); ok && dr.ruleset != nil {
@@ -84,10 +96,10 @@ func (vc *VariableCall) Eval(context any) (result any, err error) {
 		// Also check for objects with GetRuleset method
 		hasRuleset = true
 	}
-	
+
 	if !hasRuleset {
 		var rules any
-		
+
 		// Match JavaScript conditions in order
 		if rulesObj, ok := detachedRuleset.(interface{ GetRules() []any }); ok && rulesObj.GetRules() != nil {
 			// if (detachedRuleset.rules) - with GetRules() method
@@ -109,7 +121,7 @@ func (vc *VariableCall) Eval(context any) (result any, err error) {
 				rules = NewRuleset([]any{}, arr, false, nil)
 			}
 		}
-		
+
 		if rules == nil {
 			// Match JavaScript: throw error;
 			return nil, NewLessError(ErrorDetails{Message: errorMsg}, nil, "")

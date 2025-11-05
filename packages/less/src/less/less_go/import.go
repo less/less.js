@@ -197,6 +197,18 @@ func (i *Import) GetPath() any {
 		if quoted, ok := urlPath.Value.(*Quoted); ok {
 			return quoted.GetValue()
 		}
+		// Handle case where URL.Value is an Anonymous object
+		if anon, ok := urlPath.Value.(*Anonymous); ok {
+			// Anonymous.Value can be a string or other types
+			if str, ok := anon.Value.(string); ok {
+				return str
+			}
+			// If Value is a Quoted object
+			if quoted, ok := anon.Value.(*Quoted); ok {
+				return quoted.GetValue()
+			}
+			return anon.Value
+		}
 		// Handle other objects with GetValue() method
 		if pathWithValue, ok := urlPath.Value.(interface{ GetValue() any }); ok {
 			return pathWithValue.GetValue()

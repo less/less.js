@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-05T00:01:00Z",
+  "last_updated": "2025-11-05T01:00:00Z",
   "tasks": {
     "fix-import-reference": {
       "status": "available",
@@ -20,7 +20,7 @@
       "task_file": ".claude/tasks/runtime-failures/import-reference.md"
     },
     "fix-namespace-resolution": {
-      "status": "in-progress",
+      "status": "completed",
       "priority": "high",
       "category": "runtime-failures",
       "tests_affected": [
@@ -30,13 +30,20 @@
       "estimated_time": "2-4 hours",
       "complexity": "medium-high",
       "files_likely_modified": [
-        "namespace_value.go",
-        "mixin_call.go",
-        "ruleset.go"
+        "variable_call.go"
       ],
       "task_file": ".claude/tasks/runtime-failures/namespace-resolution.md",
       "agent_session_id": "011CUpyq8TTyJcEfVbW5eCZA",
-      "claimed_at": "2025-11-05T00:00:00Z"
+      "claimed_at": "2025-11-05T00:00:00Z",
+      "completed_at": "2025-11-05T01:00:00Z",
+      "pr_branch": "claude/fix-namespace-resolution-011CUpyq8TTyJcEfVbW5eCZA",
+      "results": {
+        "namespacing-6": "Perfect match",
+        "namespacing-functions": "Improved from crash to compile (output differs)"
+      },
+      "perfect_matches_change": "+1 (14 -> 15)",
+      "failing_tests_change": "-1 (12 -> 11)",
+      "notes": "Fixed VariableCall to handle MixinCall. namespacing-functions still needs namespace value lookups with brackets."
     },
     "fix-url-processing": {
       "status": "available",

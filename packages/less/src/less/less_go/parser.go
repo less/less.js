@@ -3262,7 +3262,12 @@ func (e *EntityParsers) URL() any {
 	var value any
 	index := e.parsers.parser.parserInput.GetIndex()
 
+	// Disable comment absorption during URL parsing (matches JavaScript behavior)
+	oldAutoCommentAbsorb := e.parsers.parser.parserInput.GetAutoCommentAbsorb()
+	e.parsers.parser.parserInput.SetAutoCommentAbsorb(false)
+
 	if e.parsers.parser.parserInput.Str("url(") == nil {
+		e.parsers.parser.parserInput.SetAutoCommentAbsorb(oldAutoCommentAbsorb)
 		return nil
 	}
 
@@ -3285,6 +3290,9 @@ func (e *EntityParsers) URL() any {
 			value = ""
 		}
 	}
+
+	// Re-enable comment absorption before expecting closing paren
+	e.parsers.parser.parserInput.SetAutoCommentAbsorb(oldAutoCommentAbsorb)
 
 	e.parsers.parser.expectChar(')', "")
 

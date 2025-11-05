@@ -550,4 +550,14 @@ func (p *ParserInput) syncCurrent() {
 	} else {
 		p.current = ""
 	}
+}
+
+// GetAutoCommentAbsorb returns the current autoCommentAbsorb setting
+func (p *ParserInput) GetAutoCommentAbsorb() bool {
+	return p.autoCommentAbsorb
+}
+
+// SetAutoCommentAbsorb sets the autoCommentAbsorb setting
+func (p *ParserInput) SetAutoCommentAbsorb(value bool) {
+	p.autoCommentAbsorb = value
 } 

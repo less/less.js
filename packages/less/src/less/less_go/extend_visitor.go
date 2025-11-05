@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"fmt"
-
 )
 
 type ExtendFinderVisitor struct {
@@ -174,6 +173,7 @@ func (pev *ProcessExtendsVisitor) Run(root any) any {
 	extendFinder := NewExtendFinderVisitor()
 	pev.extendIndices = make(map[string]bool)
 	root = extendFinder.Run(root)
+
 	if !extendFinder.foundExtends {
 		return root
 	}
@@ -187,7 +187,7 @@ func (pev *ProcessExtendsVisitor) Run(root any) any {
 	// Chain extends and concatenate with original extends
 	chained := pev.doExtendChaining(rootAllExtends, rootAllExtends, 0)
 	newAllExtends := append(rootAllExtends, chained...)
-	
+
 	// Set the new extends back on root
 	if rootWithExtends, ok := root.(interface{ SetAllExtends([]*Extend) }); ok {
 		rootWithExtends.SetAllExtends(newAllExtends)
@@ -269,7 +269,8 @@ func (pev *ProcessExtendsVisitor) doExtendChaining(extendsList []*Extend, extend
 						info = targetExtend.VisibilityInfo()
 
 						// process the extend as usual
-						newSelector = pev.extendSelector(matches, selectorPath, selfSelector, extend.IsVisible())
+						// Extended selectors should always be visible (same logic as in VisitRuleset)
+						newSelector = pev.extendSelector(matches, selectorPath, selfSelector, true)
 
 						// but now we create a new extend from it
 						var infoMap map[string]any
@@ -373,7 +374,7 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 	if ruleset.Root {
 		return
 	}
-	
+
 	var matches []any
 	var pathIndex, extendIndex int
 	allExtends := pev.allExtendsStack[len(pev.allExtendsStack)-1]
@@ -389,7 +390,7 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 			if ruleset.ExtendOnEveryPath {
 				continue
 			}
-			
+
 			if len(selectorPath) > 0 {
 				if selectorWithExtends, ok := selectorPath[len(selectorPath)-1].(interface{ GetExtendList() []*Extend }); ok {
 					extendList := selectorWithExtends.GetExtendList()
@@ -405,13 +406,15 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 				allExtends[extendIndex].HasFoundMatches = true
 
 				for _, selfSelector := range allExtends[extendIndex].SelfSelectors {
-					extendedSelectors := pev.extendSelector(matches, selectorPath, selfSelector, allExtends[extendIndex].IsVisible())
+					// Extended selectors should always be visible since they're being added to rulesets
+					// that will be output. The extend itself may be invisible (it's not CSS), but the
+					// extended selectors are actual CSS selectors that should appear in the output.
+					extendedSelectors := pev.extendSelector(matches, selectorPath, selfSelector, true)
 					selectorsToAdd = append(selectorsToAdd, extendedSelectors)
 				}
 			}
 		}
 	}
-	
 	ruleset.Paths = append(ruleset.Paths, selectorsToAdd...)
 }
 

@@ -209,7 +209,12 @@ Math modes (strict, parens, parens-division, always) not implemented correctly. 
 
 3. Follow the workflow in `.claude/strategy/agent-workflow.md`
 
-4. When complete, update assignments.json with results
+4. **CRITICAL**: Before creating PR, run ALL tests (see `.claude/VALIDATION_REQUIREMENTS.md`):
+   - ✅ ALL unit tests (`pnpm -w test:go:unit`)
+   - ✅ ALL integration tests (`pnpm -w test:go`)
+   - ✅ Zero regressions tolerance
+
+5. When complete, update assignments.json with results
 
 ---
 

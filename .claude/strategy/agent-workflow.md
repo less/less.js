@@ -113,26 +113,38 @@ Make focused changes:
 
 ### Step 8: Validate Fix
 
-Run tests in this order:
+**CRITICAL**: You MUST run ALL tests to verify no regressions before creating a PR.
+
+Run tests in this exact order:
 
 ```bash
 # 1. Verify the specific test now passes
 pnpm -w test:go:filter -- "import-reference"
+# Expected: ✅ Test passes or shows significant improvement
 
-# 2. Run ALL unit tests (catch regressions)
+# 2. Run ALL unit tests (catch regressions) - REQUIRED
 pnpm -w test:go:unit
+# Expected: ✅ All unit tests pass (no failures)
 
-# 3. Check overall integration test status
+# 3. Run FULL integration test suite - REQUIRED
+pnpm -w test:go
+# Expected: No new failures, ideally improved results
+
+# 4. Check overall integration test summary
 pnpm -w test:go:summary
+# Expected: Success rate improved or stayed same
 ```
 
-**Success Criteria**:
+**Success Criteria** (ALL must be met):
 - ✅ Target test(s) now pass or show improvement
-- ✅ All unit tests still pass
+- ✅ **ALL unit tests still pass (zero failures)**
+- ✅ **ALL integration tests run without new failures**
 - ✅ No previously passing integration tests now fail
 - ✅ Overall success rate increased (or at minimum, stayed same)
 
-If validation fails, iterate on Steps 6-8 until successful.
+**IMPORTANT**: If ANY unit test fails or ANY previously passing integration test now fails, you MUST fix the regression before proceeding. Do NOT create a PR with regressions.
+
+If validation fails, iterate on Steps 6-8 until all criteria are met.
 
 ### Step 9: Commit Changes
 
@@ -302,12 +314,16 @@ If conflict is complex, coordinate with other agents via tracking file.
 If your fix breaks previously passing tests:
 
 1. **STOP** - do not create PR
-2. Investigate why the regression occurred
-3. Refine your approach to avoid the regression
-4. Consider if this task is `blocked` by another issue
-5. If you can't resolve, document findings and mark task as `blocked`
+2. **DO NOT PUSH** - regression fixes must happen before pushing
+3. Investigate why the regression occurred
+4. Refine your approach to avoid the regression
+5. Re-run ALL tests (unit + integration) after fixing
+6. Consider if this task is `blocked` by another issue
+7. If you can't resolve, document findings and mark task as `blocked`
 
 **Zero regressions tolerance** - we're improving, not trading one bug for another.
+
+**Reminder**: You MUST run the full test suite (unit + integration) before every PR. Regressions caught after PR creation waste time and resources.
 
 ## Best Practices
 
@@ -326,8 +342,10 @@ If your fix breaks previously passing tests:
 ### Testing
 - ✅ Test the happy path
 - ✅ Test edge cases
-- ✅ Run full test suite
-- ✅ Verify no regressions
+- ✅ **ALWAYS run FULL unit test suite (`pnpm -w test:go:unit`)**
+- ✅ **ALWAYS run FULL integration test suite (`pnpm -w test:go`)**
+- ✅ Verify zero regressions before creating PR
+- ✅ Check that success rate improved or stayed same
 
 ### Communication
 - ✅ Write clear commit messages

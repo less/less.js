@@ -23,6 +23,11 @@ This is a fork of less.js being ported to Go. The goal is to maintain 1:1 functi
 
 When working on this project, please be aware of the following:
 
+**⚠️ CRITICAL VALIDATION REQUIREMENT**: Before creating ANY pull request, you MUST run ALL tests:
+- ✅ ALL unit tests: `pnpm -w test:go:unit` (must pass 100%)
+- ✅ ALL integration tests: `pnpm -w test:go`
+- ✅ Zero regressions tolerance - see `.claude/VALIDATION_REQUIREMENTS.md` for details
+
 1. **File Type Detection**: The rules above should be considered based on the file types you're working with:
    - For `.go` files: Apply Go language rules and conventions
    - For `.js` files: Apply JavaScript rules (remember: never modify original JS files)

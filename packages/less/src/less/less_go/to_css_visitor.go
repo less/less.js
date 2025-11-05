@@ -681,7 +681,7 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 		paths := pathNode.GetPaths()
 		if paths != nil {
 			var filteredPaths []any
-			
+
 			for _, p := range paths {
 				if pathSlice, ok := p.([]any); ok && len(pathSlice) > 0 {
 					// Convert space combinator to empty at start of path
@@ -694,7 +694,7 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 							firstElement.Combinator = NewCombinator("")
 						}
 					}
-					
+
 					// Check if path has any visible and output selectors
 					// In JavaScript: p[i].isVisible() && p[i].getIsOutput()
 					// where p is a path array and p[i] is a selector
@@ -707,20 +707,19 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 							if vis := sel.IsVisible(); vis != nil {
 								isVisible = *vis
 							}
-							
+
 							// Check output status
 							isOutput := sel.GetIsOutput()
-							
+
 							if isVisible && isOutput {
 								hasVisibleOutput = true
 								break
 							}
 						}
 					}
-					
+
 					if hasVisibleOutput {
 						filteredPaths = append(filteredPaths, p)
-					} else {
 					}
 				}
 			}

@@ -130,7 +130,7 @@
       "task_file": ".claude/tasks/runtime-failures/bootstrap4.md"
     },
     "fix-extend-functionality": {
-      "status": "available",
+      "status": "in-progress",
       "priority": "medium",
       "category": "output-differences",
       "tests_affected": [
@@ -148,7 +148,9 @@
         "extend.go",
         "extend_visitor.go"
       ],
-      "task_file": ".claude/tasks/output-differences/extend-functionality.md"
+      "task_file": ".claude/tasks/output-differences/extend-functionality.md",
+      "agent_session_id": "011CUpykwZ1VoCRiU62oaWno",
+      "claimed_at": "2025-11-05T00:00:00Z"
     },
     "fix-guards-conditionals": {
       "status": "available",

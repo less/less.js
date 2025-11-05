@@ -2246,29 +2246,25 @@ func (p *Parsers) PluginArgs() string {
 // Sub parses parenthetical expressions
 func (p *Parsers) Sub() any {
 	var a any
+	var e any
 
-	startIndex := p.parser.parserInput.GetIndex()
-
-	// Check for opening parenthesis
-	if p.parser.parserInput.Char('(') == nil {
+	p.parser.parserInput.Save()
+	if p.parser.parserInput.Char('(') != nil {
+		a = p.Addition()
+		if a != nil && p.parser.parserInput.Char(')') != nil {
+			p.parser.parserInput.Forget()
+			expr, err := NewExpression([]any{a}, false)
+			if err == nil {
+				// Mark as having parentheses - this is equivalent to e.parens = true in JavaScript
+				expr.Parens = true
+				e = expr
+			}
+			return e
+		}
+		p.parser.parserInput.Restore("Expected ')'")
 		return nil
 	}
-
-	a = p.Addition()
-	if a != nil && p.parser.parserInput.Char(')') != nil {
-		expr, err := NewExpression([]any{a}, false)
-		if err != nil {
-			// Restore position if expression creation failed
-			p.parser.parserInput.SetIndex(startIndex)
-			return nil
-		}
-		// Mark as having parentheses - this is equivalent to e.parens = true in JavaScript
-		expr.Parens = true
-		return expr
-	}
-
-	// Restore to original position if parsing failed
-	p.parser.parserInput.SetIndex(startIndex)
+	p.parser.parserInput.Restore("")
 	return nil
 }
 

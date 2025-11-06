@@ -18,8 +18,11 @@ type Declaration struct {
 
 // NewDeclaration creates a new Declaration instance
 func NewDeclaration(name any, value any, important any, merge any, index int, fileInfo map[string]any, inline bool, variable any) (*Declaration, error) {
+	node := NewNode()
+	node.TypeIndex = GetTypeIndexForNodeType("Declaration")
+
 	d := &Declaration{
-		Node:      NewNode(),
+		Node:      node,
 		name:      name,
 		important: "",
 		merge:     merge,
@@ -107,7 +110,11 @@ func (d *Declaration) GetType() string {
 
 // GetTypeIndex returns the type index for visitor pattern
 func (d *Declaration) GetTypeIndex() int {
-	return 2 // Non-zero value to enable visitor pattern (different from Ruleset's 1)
+	// Return from Node field if set, otherwise get from registry
+	if d.Node != nil && d.Node.TypeIndex != 0 {
+		return d.Node.TypeIndex
+	}
+	return GetTypeIndexForNodeType("Declaration")
 }
 
 // GetVariable returns whether this is a variable declaration

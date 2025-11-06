@@ -18,6 +18,7 @@ type Node struct {
 	fileInfo        map[string]any
 	Parens          bool
 	ParensInOp      bool
+	TypeIndex       int // Index for visitor pattern lookup
 }
 
 // GenCSSSourceMap implements SourceMapNode interface for Node
@@ -108,6 +109,17 @@ func (n *Node) GetIndex() int {
 	if n.Parent != nil {
 		return n.Parent.GetIndex()
 	}
+	return 0
+}
+
+// GetTypeIndex returns the node's type index for visitor pattern
+func (n *Node) GetTypeIndex() int {
+	// Return cached value if available
+	if n.TypeIndex != 0 {
+		return n.TypeIndex
+	}
+	// Note: For base Node, return 0. Specific node types should override
+	// this method to return their proper TypeIndex.
 	return 0
 }
 

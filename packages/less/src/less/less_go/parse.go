@@ -299,8 +299,25 @@ func createPromise(lessContext *LessContext, input string, options map[string]an
 	promise := &ParsePromise{
 		done: make(chan bool, 1),
 	}
-	
+
 	go func() {
+		// Add panic recovery for goroutine - panics in goroutines need separate recovery
+		defer func() {
+			if r := recover(); r != nil {
+				// Format error message
+				var errMsg string
+				if err, ok := r.(error); ok {
+					errMsg = err.Error()
+				} else {
+					errMsg = fmt.Sprintf("%v", r)
+				}
+
+				// Set error in promise
+				promise.error = fmt.Errorf("%s", errMsg)
+				promise.done <- true
+			}
+		}()
+
 		// Perform parse operation
 		performParse(lessContext, input, options, func(e error, root any, imports *ImportManager, opts map[string]any) {
 			if e != nil {
@@ -311,7 +328,7 @@ func createPromise(lessContext *LessContext, input string, options map[string]an
 			promise.done <- true
 		}, environment, parseTree, importManagerFactory)
 	}()
-	
+
 	return promise
 }
 

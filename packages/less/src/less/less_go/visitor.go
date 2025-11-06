@@ -501,3 +501,19 @@ func createNodePrototype(nodeType string) *NodePrototype {
 		TypeIndex: 0, // Will be set by indexNodeTypes
 	}
 }
+
+// GetTypeIndexForNodeType returns the TypeIndex for a given node type string
+// This is used by node constructors to set the TypeIndex field
+func GetTypeIndexForNodeType(nodeType string) int {
+	if !_hasIndexed {
+		// Initialize if needed - this ensures prototypes are indexed
+		NewVisitor(nil)
+	}
+
+	if nodeProto, ok := treeRegistry.NodeTypes[nodeType]; ok {
+		if proto, ok := nodeProto.(*NodePrototype); ok {
+			return proto.TypeIndex
+		}
+	}
+	return 0
+}

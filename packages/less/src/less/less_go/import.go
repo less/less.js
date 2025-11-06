@@ -35,8 +35,11 @@ type Import struct {
 
 // NewImport creates a new Import instance
 func NewImport(path any, features any, options map[string]any, index int, currentFileInfo map[string]any, visibilityInfo map[string]any) *Import {
+	node := NewNode()
+	node.TypeIndex = GetTypeIndexForNodeType("Import")
+
 	imp := &Import{
-		Node:      NewNode(),
+		Node:      node,
 		path:      path,
 		features:  features,
 		options:   options,
@@ -524,5 +527,9 @@ func registerTestPluginFunctions(registry any) {
 
 // GetTypeIndex returns the type index for visitor pattern
 func (i *Import) GetTypeIndex() int {
-	return 3 // Non-zero value to enable visitor pattern (different from Ruleset's 1 and Declaration's 2)
+	// Return from Node field if set, otherwise get from registry
+	if i.Node != nil && i.Node.TypeIndex != 0 {
+		return i.Node.TypeIndex
+	}
+	return GetTypeIndexForNodeType("Import")
 } 

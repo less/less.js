@@ -69,6 +69,11 @@ func (m *Media) Type() string {
 	return "Media"
 }
 
+// GetTypeIndex returns the type index for visitor pattern
+func (m *Media) GetTypeIndex() int {
+	return GetTypeIndexForNodeType("Media")
+}
+
 // IsRulesetLike returns true (implementing NestableAtRulePrototype)
 func (m *Media) IsRulesetLike() bool {
 	return true

@@ -19,8 +19,11 @@ type AtRule struct {
 
 // NewAtRule creates a new AtRule instance
 func NewAtRule(name string, value any, rules any, index int, currentFileInfo map[string]any, debugInfo any, isRooted bool, visibilityInfo map[string]any) *AtRule {
+	node := NewNode()
+	node.TypeIndex = GetTypeIndexForNodeType("AtRule")
+
 	atRule := &AtRule{
-		Node:      NewNode(),
+		Node:      node,
 		Name:      name,
 		IsRooted:  isRooted,
 		AllowRoot: true,

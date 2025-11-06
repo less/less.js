@@ -50,8 +50,11 @@ type Ruleset struct {
 
 // NewRuleset creates a new Ruleset instance
 func NewRuleset(selectors []any, rules []any, strictImports bool, visibilityInfo map[string]any, parseFuncs ...any) *Ruleset {
+	node := NewNode()
+	node.TypeIndex = GetTypeIndexForNodeType("Ruleset")
+
 	r := &Ruleset{
-		Node:          NewNode(),
+		Node:          node,
 		Selectors:     selectors,
 		Rules:         rules,
 		StrictImports: strictImports,
@@ -113,7 +116,11 @@ func (r *Ruleset) GetType() string {
 
 // GetTypeIndex returns the type index for visitor pattern
 func (r *Ruleset) GetTypeIndex() int {
-	return 1 // Non-zero value to enable visitor pattern
+	// Return from Node field if set, otherwise get from registry
+	if r.Node != nil && r.Node.TypeIndex != 0 {
+		return r.Node.TypeIndex
+	}
+	return GetTypeIndexForNodeType("Ruleset")
 }
 
 // IsRuleset returns true (this is a ruleset)

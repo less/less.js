@@ -642,7 +642,7 @@ func (iv *ImportVisitor) VisitDeclaration(declNode any, visitArgs *VisitArgs) {
 }
 
 func (iv *ImportVisitor) VisitDeclarationOut(declNode any) {
-	if iv.isDetachedRuleset(declNode) {
+	if iv.isDetachedRuleset(declNode) && len(iv.context.Frames) > 0 {
 		iv.context.Frames = iv.context.Frames[1:]
 	}
 }
@@ -652,7 +652,9 @@ func (iv *ImportVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs) {
 }
 
 func (iv *ImportVisitor) VisitAtRuleOut(atRuleNode any) {
-	iv.context.Frames = iv.context.Frames[1:]
+	if len(iv.context.Frames) > 0 {
+		iv.context.Frames = iv.context.Frames[1:]
+	}
 }
 
 func (iv *ImportVisitor) VisitMixinDefinition(mixinDefinitionNode any, visitArgs *VisitArgs) {
@@ -660,7 +662,9 @@ func (iv *ImportVisitor) VisitMixinDefinition(mixinDefinitionNode any, visitArgs
 }
 
 func (iv *ImportVisitor) VisitMixinDefinitionOut(mixinDefinitionNode any) {
-	iv.context.Frames = iv.context.Frames[1:]
+	if len(iv.context.Frames) > 0 {
+		iv.context.Frames = iv.context.Frames[1:]
+	}
 }
 
 func (iv *ImportVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) {
@@ -668,7 +672,9 @@ func (iv *ImportVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) {
 }
 
 func (iv *ImportVisitor) VisitRulesetOut(rulesetNode any) {
-	iv.context.Frames = iv.context.Frames[1:]
+	if len(iv.context.Frames) > 0 {
+		iv.context.Frames = iv.context.Frames[1:]
+	}
 }
 
 func (iv *ImportVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) {
@@ -681,7 +687,9 @@ func (iv *ImportVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) {
 }
 
 func (iv *ImportVisitor) VisitMediaOut(mediaNode any) {
-	iv.context.Frames = iv.context.Frames[1:]
+	if len(iv.context.Frames) > 0 {
+		iv.context.Frames = iv.context.Frames[1:]
+	}
 }
 
 func (iv *ImportVisitor) isDetachedRuleset(node any) bool {

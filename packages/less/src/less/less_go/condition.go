@@ -101,6 +101,9 @@ func (c *Condition) EvalBool(context any) bool {
 		} else if col, ok := a.(*Color); ok {
 			// Color embeds *Node
 			aNode = col.Node
+		} else if kw, ok := a.(*Keyword); ok {
+			// Keyword embeds *Node
+			aNode = kw.Node
 		} else {
 			// Wrap non-node values in a Node for comparison
 			aNode = &Node{Value: a}
@@ -115,6 +118,9 @@ func (c *Condition) EvalBool(context any) bool {
 			bNode = dim.Node
 		} else if col, ok := b.(*Color); ok {
 			bNode = col.Node
+		} else if kw, ok := b.(*Keyword); ok {
+			// Keyword embeds *Node
+			bNode = kw.Node
 		} else {
 			bNode = &Node{Value: b}
 		}

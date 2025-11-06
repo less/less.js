@@ -413,6 +413,15 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 			if len(matches) > 0 {
 				allExtends[extendIndex].HasFoundMatches = true
 
+				// IMPORTANT: When a selector path is matched by an extend, mark all selectors
+				// in that path as visible because they're being referenced/used.
+				// This ensures the original selectors appear in the output alongside the extended ones.
+				for _, pathSelector := range selectorPath {
+					if sel, ok := pathSelector.(*Selector); ok {
+						sel.EnsureVisibility()
+					}
+				}
+
 				for _, selfSelector := range allExtends[extendIndex].SelfSelectors {
 					// Extended selectors should always be visible since they're being added to rulesets
 					// that will be output. The extend itself may be invisible (it's not CSS), but the

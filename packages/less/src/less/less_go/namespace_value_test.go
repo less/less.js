@@ -81,13 +81,8 @@ func (m *MockVariableDeclaration) HasRuleset() bool {
 }
 
 // GetRuleset returns the ruleset if it exists
-func (m *MockVariableDeclaration) GetRuleset() interface{ Eval(any) (any, error) } {
-	if m.ruleset != nil {
-		if evaluator, ok := m.ruleset.(interface{ Eval(any) (any, error) }); ok {
-			return evaluator
-		}
-	}
-	return nil
+func (m *MockVariableDeclaration) GetRuleset() any {
+	return m.ruleset
 }
 
 type MockContext struct{}

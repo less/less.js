@@ -222,7 +222,7 @@ func NewMockErrorNode(err error) *MockNode {
 	return &MockNode{err: err}
 }
 
-func (m *MockNode) Eval(context *Context) (any, error) {
+func (m *MockNode) Eval(context any) (any, error) {
 	if m.err != nil {
 		return nil, m.err
 	}

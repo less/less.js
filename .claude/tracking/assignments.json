@@ -6,8 +6,8 @@
     "compilation_failures": 4,
     "output_differences": 146,
     "error_handling_tests": 58,
-    "tasks_available": 7,
-    "tasks_completed": 2,
+    "tasks_available": 6,
+    "tasks_completed": 3,
     "tasks_partial": 2,
     "tasks_in_progress": 0
   },
@@ -115,20 +115,31 @@
       "notes": "Fixed variadic parameter expansion and argument matching. Tests now compile successfully."
     },
     "fix-include-path": {
-      "status": "available",
+      "status": "completed",
       "priority": "high",
       "category": "runtime-failures",
       "tests_affected": [
-        "include-path"
+        "include-path",
+        "include-path-string"
       ],
-      "estimated_time": "1-2 hours",
+      "estimated_time": "DONE",
       "complexity": "low-medium",
       "files_likely_modified": [
         "import_manager.go",
-        "file_system_file_manager.go"
+        "file_system_file_manager.go",
+        "index.go",
+        "integration_suite_test.go"
       ],
       "task_file": ".claude/tasks/runtime-failures/include-path.md",
-      "notes": "Quick win - implement --include-path option"
+      "agent_session_id": "011CUqtTQQiKADUC9oF1c5z1",
+      "completed_at": "2025-11-05T20:02:25Z",
+      "pr_branch": "claude/implement-include-path-cli-011CUqtTQQiKADUC9oF1c5z1",
+      "commit_sha": "a6a581b",
+      "results": {
+        "include-path": "Compiles with output differences ⚠️ (data-uri/image-size functions not implemented)",
+        "include-path-string": "Compiles with output differences ⚠️ (data-uri function not implemented)"
+      },
+      "notes": "COMPLETED - Include path resolution working correctly. Output differs due to data-uri() and image-size() functions not being fully implemented (separate issue)."
     },
     "fix-import-interpolation": {
       "status": "available",
@@ -334,13 +345,12 @@
   "priority_order": [
     "1. fix-namespacing-output (HIGH - 10 tests)",
     "2. fix-math-operations (HIGH - UNBLOCKED - 10+ tests)",
-    "3. fix-include-path (HIGH - quick win)",
-    "4. Complete fix-import-reference (HIGH - partial)",
-    "5. Complete fix-extend-functionality (MEDIUM - in progress)",
-    "6. fix-guards-conditionals (MEDIUM - 3 tests)",
-    "7. fix-mixin-issues (MEDIUM - 3 tests)",
-    "8. fix-import-interpolation (MEDIUM)",
-    "9. Lower priority tasks..."
+    "3. Complete fix-import-reference (HIGH - partial)",
+    "4. Complete fix-extend-functionality (MEDIUM - in progress)",
+    "5. fix-guards-conditionals (MEDIUM - 3 tests)",
+    "6. fix-mixin-issues (MEDIUM - 3 tests)",
+    "7. fix-import-interpolation (MEDIUM)",
+    "8. Lower priority tasks..."
   ],
   "agent_recommendations": {
     "immediate_work": [
@@ -355,12 +365,6 @@
         "reason": "NOW UNBLOCKED! 10+ tests. High impact.",
         "difficulty": "medium-high",
         "time": "3-5 hours"
-      },
-      {
-        "task": "fix-include-path",
-        "reason": "Quick win. Simple feature addition. 1 test.",
-        "difficulty": "low-medium",
-        "time": "1-2 hours"
       },
       {
         "task": "Complete fix-import-reference",

@@ -20,7 +20,7 @@ type MockRuleset struct {
 	variables           bool
 	properties          bool
 	variableFunc        func(string) map[string]any
-	propertyFunc        func(string) any
+	propertyFunc        func(string) []any
 	lastDeclarationFunc func() any
 }
 
@@ -41,7 +41,7 @@ func (m *MockRuleset) HasProperties() bool {
 	return m.properties
 }
 
-func (m *MockRuleset) Property(name string) any {
+func (m *MockRuleset) Property(name string) []any {
 	if m.propertyFunc != nil {
 		return m.propertyFunc(name)
 	}
@@ -170,7 +170,8 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 	t.Run("should handle empty string lookup (lastDeclaration)", func(t *testing.T) {
 		innerValue := "lastValue"
 		stubDecl := &MockVariableDeclaration{
-			value: innerValue,
+			value:    innerValue,
+			hasValue: true,
 			evalFunc: func(context any) (any, error) {
 				return map[string]any{"value": innerValue}, nil
 			},
@@ -194,15 +195,17 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
-		if result != stubDecl {
-			t.Errorf("Expected result to be stubDecl")
+		// Should return the evaluated value, not the declaration
+		if result != innerValue {
+			t.Errorf("Expected result to be innerValue (%v), got %v", innerValue, result)
 		}
 	})
 
 	t.Run("should handle variable lookups", func(t *testing.T) {
 		innerValue := "variableValue"
 		mockVariable := &MockVariableDeclaration{
-			value: innerValue,
+			value:    innerValue,
+			hasValue: true,
 			evalFunc: func(context any) (any, error) {
 				return map[string]any{"value": innerValue}, nil
 			},
@@ -230,22 +233,24 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
-		if result != mockVariable {
-			t.Errorf("Expected result to be mockVariable")
+		// Should return the evaluated value, not the declaration object
+		if result != innerValue {
+			t.Errorf("Expected result to be innerValue (%v), got %v", innerValue, result)
 		}
 	})
 
 	t.Run("should handle property lookups", func(t *testing.T) {
 		innerValue := "propertyValue"
 		stubDecl := &MockVariableDeclaration{
-			value: innerValue,
+			value:    innerValue,
+			hasValue: true,
 			evalFunc: func(context any) (any, error) {
 				return map[string]any{"value": innerValue}, nil
 			},
 		}
 		mockRuleset := &MockRuleset{
 			properties: true,
-			propertyFunc: func(name string) any {
+			propertyFunc: func(name string) []any {
 				if name == "$width" {
 					return []any{stubDecl}
 				}
@@ -266,22 +271,24 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
-		if result != stubDecl {
-			t.Errorf("Expected result to be stubDecl")
+		// Should return the evaluated value, not the declaration
+		if result != innerValue {
+			t.Errorf("Expected result to be innerValue (%v), got %v", innerValue, result)
 		}
 	})
 
 	t.Run("should handle property lookups with $ prefix", func(t *testing.T) {
 		innerValue := "propertyValue"
 		stubDecl := &MockVariableDeclaration{
-			value: innerValue,
+			value:    innerValue,
+			hasValue: true,
 			evalFunc: func(context any) (any, error) {
 				return map[string]any{"value": innerValue}, nil
 			},
 		}
 		mockRuleset := &MockRuleset{
 			properties: true,
-			propertyFunc: func(name string) any {
+			propertyFunc: func(name string) []any {
 				if name == "$width" {
 					return []any{stubDecl}
 				}
@@ -302,8 +309,9 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
-		if result != stubDecl {
-			t.Errorf("Expected result to be stubDecl")
+		// Should return the evaluated value, not the declaration
+		if result != innerValue {
+			t.Errorf("Expected result to be innerValue (%v), got %v", innerValue, result)
 		}
 	})
 
@@ -311,16 +319,18 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		innerValues := []string{"firstValue", "secondValue", "thirdValue"}
 		stubDecls := make([]any, len(innerValues))
 		for i, v := range innerValues {
+			val := v // Capture the value for the closure
 			stubDecls[i] = &MockVariableDeclaration{
-				value: v,
+				value:    val,
+				hasValue: true,
 				evalFunc: func(context any) (any, error) {
-					return map[string]any{"value": v}, nil
+					return map[string]any{"value": val}, nil
 				},
 			}
 		}
 		mockRuleset := &MockRuleset{
 			properties: true,
-			propertyFunc: func(name string) any {
+			propertyFunc: func(name string) []any {
 				if name == "$width" {
 					return stubDecls
 				}
@@ -341,8 +351,9 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
-		if result != stubDecls[2] {
-			t.Errorf("Expected result to be third stubDecl")
+		// Should return the evaluated value of the last property
+		if result != innerValues[2] {
+			t.Errorf("Expected result to be last innerValue (%v), got %v", innerValues[2], result)
 		}
 	})
 }
@@ -393,7 +404,7 @@ func TestNamespaceValueErrorHandling(t *testing.T) {
 	t.Run("should throw error when property not found", func(t *testing.T) {
 		mockRuleset := &MockRuleset{
 			properties: true,
-			propertyFunc: func(name string) any {
+			propertyFunc: func(name string) []any {
 				return nil
 			},
 		}
@@ -546,7 +557,7 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 			t.Errorf("Expected no error, got %v", err)
 		}
 		if result != finalValue {
-			t.Errorf("Expected result to be finalValue")
+			t.Errorf("Expected result to be finalValue (%v), got result type: %T, value: %v", finalValue, result, result)
 		}
 	})
 
@@ -561,7 +572,7 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		}
 		intermediateRuleset := &MockRuleset{
 			properties: true,
-			propertyFunc: func(name string) any {
+			propertyFunc: func(name string) []any {
 				if name == "$width" {
 					return []any{finalProperty}
 				}
@@ -719,7 +730,7 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 	t.Run("should handle empty properties array", func(t *testing.T) {
 		mockRuleset := &MockRuleset{
 			properties: true,
-			propertyFunc: func(name string) any {
+			propertyFunc: func(name string) []any {
 				if name == "$width" {
 					return []any{} // Empty array
 				}

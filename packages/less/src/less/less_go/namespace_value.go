@@ -58,7 +58,14 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 	
 	// Start by evaluating the initial value - matches JavaScript: rules = this.value.eval(context)
 	var rules any
-	if evaluator, ok := nv.value.(interface{ Eval(any) (any, error) }); ok {
+	// Handle MixinCall which has Eval(any) ([]any, error) signature
+	if mixinCall, ok := nv.value.(*MixinCall); ok {
+		evalResult, err := mixinCall.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+		rules = evalResult
+	} else if evaluator, ok := nv.value.(interface{ Eval(any) (any, error) }); ok {
 		evalResult, err := evaluator.Eval(context)
 		if err != nil {
 			return nil, err
@@ -184,15 +191,29 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			if propertyChecker, ok := rules.(interface{ HasProperties() bool }); ok {
 				hasPropertiesProperty = propertyChecker.HasProperties()
 			}
-			
+
 			if hasPropertiesProperty {
-				if ruleset, ok := rules.(interface{ Property(string) any }); ok {
+				if ruleset, ok := rules.(interface{ Property(string) []any }); ok {
 					rules = ruleset.Property(name)
 				}
 			}
-			
+
 			// Match JavaScript: if (!rules) { throw error; }
+			// Note: In Go, a nil slice in an interface{} is not == nil, so we need to check both
 			if rules == nil {
+				propertyName := name
+				if len(name) > 1 && name[0] == '$' {
+					propertyName = name[1:]
+				}
+				return nil, &LessError{
+					Type:     "Name",
+					Message:  fmt.Sprintf("property \"%s\" not found", propertyName),
+					Filename: nv.getFilename(),
+					Index:    nv.GetIndex(),
+				}
+			}
+			// Also check if rules is a nil slice (Go gotcha: nil slice in interface{} is not == nil)
+			if rulesSlice, ok := rules.([]any); ok && rulesSlice == nil {
 				propertyName := name
 				if len(name) > 1 && name[0] == '$' {
 					propertyName = name[1:]
@@ -211,35 +232,64 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 				rules = rulesArray[len(rulesArray)-1]
 			}
 		}
-		
-		// Match JavaScript: if (rules.value) { rules = rules.eval(context).value; }
-		// First check if rules is a plain map with a "value" key
+
+		// First, extract value from map if present (Variable() returns {"value": ...})
 		if rulesMap, ok := rules.(map[string]any); ok {
 			if value, exists := rulesMap["value"]; exists {
 				rules = value
 			}
 		}
 
-		// After unwrapping map, check if the result has an Eval method with HasValue
-		// Use a separate if (not else if) so this runs after the map unwrapping above
-		if rulesWithValue, ok := rules.(interface{
-			Eval(any) (any, error)
-		}); ok {
-			// Check if it has a value property (matches JavaScript rules.value check)
-			if valueChecker, ok := rules.(interface{ HasValue() bool }); ok && valueChecker.HasValue() {
-				evalResult, err := rulesWithValue.Eval(context)
+		// Match JavaScript: if (rules.value) { rules = rules.eval(context).value; }
+		// Check for value first - this may transform rules
+		if rulesWithValue, ok := rules.(interface{ HasValue() bool }); ok {
+			// Has HasValue method
+			if rulesWithValue.HasValue() {
+				// Value property is true, evaluate it
+				if evaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
+					evalResult, err := evaluator.Eval(context)
+					if err != nil {
+						return nil, err
+					}
+					// Extract value from the eval result
+					if evalMap, ok := evalResult.(map[string]any); ok {
+						if value, exists := evalMap["value"]; exists {
+							rules = value
+						}
+					} else {
+						rules = evalResult
+					}
+				}
+			}
+			// If HasValue() returns false, skip evaluation entirely
+		} else {
+			// No HasValue method - handle special types like Declaration
+			if decl, ok := rules.(*Declaration); ok {
+				evalResult, err := decl.Eval(context)
 				if err != nil {
 					return nil, err
 				}
-				if evalMap, ok := evalResult.(map[string]any); ok {
-					if value, exists := evalMap["value"]; exists {
-						rules = value
+				if evalDecl, ok := evalResult.(*Declaration); ok {
+					rules = evalDecl.Value
+				}
+			} else if evaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
+				// Evaluate the value if it's evaluable
+				evalResult, err := evaluator.Eval(context)
+				if err != nil {
+					return nil, err
+				}
+				rules = evalResult
+				// If eval result is a map with "value", extract it
+				if resultMap, ok := evalResult.(map[string]any); ok {
+					if resultValue, exists := resultMap["value"]; exists {
+						rules = resultValue
 					}
 				}
 			}
 		}
-		
+
 		// Match JavaScript: if (rules.ruleset) { rules = rules.ruleset.eval(context); }
+		// Check for ruleset AFTER value processing - applies to the transformed result
 		if rulesWithRuleset, ok := rules.(interface{ HasRuleset() bool }); ok && rulesWithRuleset.HasRuleset() {
 			if rulesetGetter, ok := rules.(interface{ GetRuleset() any }); ok {
 				ruleset := rulesetGetter.GetRuleset()

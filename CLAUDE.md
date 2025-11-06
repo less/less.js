@@ -69,7 +69,9 @@ When working on this project, please be aware of the following:
    - ✅ Issue #8: `namespacing-6` - VariableCall handling for MixinCall nodes - FIXED
    - ✅ Issue #9: DetachedRuleset missing methods - FIXED (regression fix)
    - ✅ Issue #10: Mixin variadic parameter expansion and argument matching - FIXED
-   - ✅ Compilation failures reduced from 12 → 4 tests (67% reduction!)
+   - ✅ Issue #11: `include-path` - Include path option for import resolution - FIXED
+   - ✅ Issue #12: `css-guards` - CSS guard evaluation on rulesets - FIXED
+   - ✅ Compilation failures reduced from 12 → 2 tests (83% reduction!)
 
 5. **Organized Task System**:
    All project coordination and task management is now organized in the `.claude/` directory:
@@ -92,18 +94,21 @@ When working on this project, please be aware of the following:
    - See `.claude/tasks/` for specific task specifications
 
    **Priority Order** (High to Low):
-   1. **HIGH**: Include path option (1 test) - `.claude/tasks/runtime-failures/include-path.md`
-   2. **HIGH**: Guards and conditionals evaluation - `.claude/tasks/output-differences/guards-conditionals.md`
-   3. **MEDIUM**: Math operations and expressions - `.claude/tasks/output-differences/math-operations.md`
-   4. **MEDIUM**: Output formatting issues - See `.claude/tracking/assignments.json`
+   1. **HIGH**: Extend functionality (7 tests) - `.claude/tasks/output-differences/extend-functionality.md`
+   2. **HIGH**: Math operations and expressions (10+ tests) - `.claude/tasks/output-differences/math-operations.md`
+   3. **HIGH**: Complete import-reference (2 tests) - `.claude/tasks/runtime-failures/import-reference.md`
+   4. **MEDIUM**: Namespacing output issues (7 tests) - `.claude/tasks/output-differences/namespacing-output.md`
+   5. **MEDIUM**: Remaining guard conditionals (2 tests) - `.claude/tasks/output-differences/guards-conditionals.md`
 
-   **Completed**:
+   **Recently Completed**:
    - ✅ Variable evaluation in functions/loops - FIXED (Issue #2b)
    - ✅ Mixin closure and variable scope - FIXED (Issue #6)
    - ✅ Mixin recursion detection - FIXED (Issue #7)
    - ✅ Basic namespace resolution - FIXED (Issue #8: namespacing-6)
    - ✅ DetachedRuleset missing methods causing regressions - FIXED (Issue #9)
    - ✅ Mixin variadic parameter expansion and argument matching - FIXED (Issue #10)
+   - ✅ Include path option for import resolution - FIXED (Issue #11)
+   - ✅ CSS guard evaluation on rulesets - FIXED (Issue #12: css-guards)
 
 7. **Quarantined Features** (for future implementation):
    - Plugin system tests (`plugin`, `plugin-module`, `plugin-preeval`)

@@ -1,19 +1,21 @@
 # Task: Fix Guards and Conditionals
 
 **Status**: Available
-**Priority**: MEDIUM (3 tests, common feature)
-**Estimated Time**: 2-3 hours
-**Complexity**: Medium
+**Priority**: MEDIUM (2 tests remaining, common feature)
+**Estimated Time**: 1-2 hours (reduced - CSS guards already working!)
+**Complexity**: Low-Medium (reduced from Medium - main guard logic is working)
 
 ## Overview
 
-Fix guard evaluation on mixins and CSS rulesets so that rules are only included when their guard conditions evaluate to true.
+Fix guard evaluation on mixins so that rules are only included when their guard conditions evaluate to true.
 
-## Failing Tests (Output Differences)
+**UPDATE (2025-11-06)**: The `css-guards` test is now FIXED and showing "Perfect match!" ✅
 
-1. `css-guards` - Most guarded rules not outputting
+## Remaining Failing Tests (Output Differences)
+
+1. ~~`css-guards`~~ - ✅ FIXED! Now showing "Perfect match!"
 2. `mixins-guards-default-func` - Guards with default() function
-3. `mixins-guards` - General mixin guards
+3. `mixins-guards` - General mixin guards (Note: `math-always/mixins-guards` is already passing)
 
 ## Current Behavior
 

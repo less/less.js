@@ -319,16 +319,29 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 					varargs = []any{}
 					for j := argIndex; j < argsLength; j++ {
 						if argMap, ok := args[j].(map[string]any); ok {
-							if argValue, ok := argMap["value"].(interface{ Eval(any) any }); ok {
-								varargs = append(varargs, argValue.Eval(context))
+							argValue := argMap["value"]
+							// Try to evaluate the value - handle both Eval signatures
+							// Match JavaScript: args[j].value.eval(context)
+							if evalMethod, ok := argValue.(interface{ Eval(any) (any, error) }); ok {
+								evaluated, err := evalMethod.Eval(context)
+								if err == nil {
+									argValue = evaluated
+								}
+								// If error, use unevaluated value
+							} else if evalMethod, ok := argValue.(interface{ Eval(any) any }); ok {
+								argValue = evalMethod.Eval(context)
 							}
+							// If no Eval method, use the value as-is (e.g., Keywords)
+							varargs = append(varargs, argValue)
 						}
 					}
 					expr, err := NewExpression(varargs, false)
 					if err != nil {
 						return nil, err
 					}
-					evalExpr, err := expr.Eval(evalContext)
+					// Match JavaScript: new Expression(varargs).eval(context)
+					// Use context, not evalContext, to preserve math mode and other settings
+					evalExpr, err := expr.Eval(context)
 					if err != nil {
 						return nil, err
 					}

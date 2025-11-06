@@ -212,11 +212,14 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 		arg = mc.Arguments[i]
 		if argMap, ok := arg.(map[string]any); ok {
 			// Try both Eval signatures: Eval(any) (any, error) and Eval(any) any
+			// Match JavaScript: argValue = arg.value.eval(context);
+			// JavaScript doesn't handle errors here, so we shouldn't fall back on error
 			if argValueEval, ok := argMap["value"].(interface{ Eval(any) (any, error) }); ok {
 				var err error
 				argValue, err = argValueEval.Eval(context)
 				if err != nil {
-					argValue = argMap["value"]
+					// Don't fall back to unevaluated value - propagate the error
+					return nil, fmt.Errorf("error evaluating mixin argument: %v", err)
 				}
 			} else if argValueEval, ok := argMap["value"].(interface{ Eval(any) any }); ok {
 				argValue = argValueEval.Eval(context)
@@ -238,10 +241,18 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 					}
 				}
 
-				if valueSlice != nil {
+				if valueSlice != nil && len(valueSlice) > 0 {
+					// Expand the array into individual arguments
 					for m = 0; m < len(valueSlice); m++ {
 						args = append(args, map[string]any{"value": valueSlice[m]})
 					}
+				} else {
+					// Match JavaScript behavior: if not array-like, add as single argument
+					// This handles cases like .m4(@a..., 4) where 4 has expand=true but isn't expandable
+					args = append(args, map[string]any{
+						"name":  argMap["name"],
+						"value": argValue,
+					})
 				}
 			} else {
 				args = append(args, map[string]any{

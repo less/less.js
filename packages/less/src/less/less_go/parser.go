@@ -1528,6 +1528,13 @@ func (e *EntityParsers) Color() any {
 		if rgb != nil {
 			matches := rgb.([]string)
 			if len(matches) > 1 {
+				// Check if followed by '.' or '[' - if so, this is a namespace/mixin reference, not a color
+				// This handles cases like #DEF.colors[primary] where #DEF looks like a color but isn't
+				nextChar := e.parsers.parser.parserInput.CurrentChar()
+				if nextChar == '.' || nextChar == '[' {
+					e.parsers.parser.parserInput.Restore("")
+					return nil
+				}
 				e.parsers.parser.parserInput.Forget()
 				return NewColor(matches[1], 1.0, matches[0])
 			}

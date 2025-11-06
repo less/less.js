@@ -117,15 +117,32 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			if len(name) > 1 && name[1] == '@' {
 				// Handle @@ case - evaluate the variable name
 				innerVar := NewVariable(name[1:], nv.GetIndex(), nv.FileInfo())
-				if evalContext, ok := context.(EvalContext); ok {
-					innerResult, err := innerVar.Eval(evalContext)
-					if err != nil {
-						return nil, err
+				innerResult, err := innerVar.Eval(context)
+				if err != nil {
+					return nil, err
+				}
+				if resultMap, ok := innerResult.(map[string]any); ok {
+					if value, ok := resultMap["value"]; ok {
+						name = "@" + fmt.Sprintf("%v", value)
 					}
-					if resultMap, ok := innerResult.(map[string]any); ok {
-						if value, ok := resultMap["value"]; ok {
-							name = "@" + fmt.Sprintf("%v", value)
+				} else {
+					// Handle direct value returns - extract value from various node types
+					switch v := innerResult.(type) {
+					case *Quoted:
+						name = "@" + v.value
+					case *Anonymous:
+						if str, ok := v.Value.(string); ok {
+							name = "@" + str
+						} else {
+							name = "@" + fmt.Sprintf("%v", v.Value)
 						}
+					case *Keyword:
+						name = "@" + v.value
+					case string:
+						name = "@" + v
+					default:
+						// Try to convert to string
+						name = "@" + fmt.Sprintf("%v", innerResult)
 					}
 				}
 			}
@@ -168,15 +185,32 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			if len(name) >= 2 && name[:2] == "$@" {
 				// Handle $@ case - evaluate the variable name
 				innerVar := NewVariable(name[1:], nv.GetIndex(), nv.FileInfo())
-				if evalContext, ok := context.(EvalContext); ok {
-					innerResult, err := innerVar.Eval(evalContext)
-					if err != nil {
-						return nil, err
+				innerResult, err := innerVar.Eval(context)
+				if err != nil {
+					return nil, err
+				}
+				if resultMap, ok := innerResult.(map[string]any); ok {
+					if value, ok := resultMap["value"]; ok {
+						name = "$" + fmt.Sprintf("%v", value)
 					}
-					if resultMap, ok := innerResult.(map[string]any); ok {
-						if value, ok := resultMap["value"]; ok {
-							name = "$" + fmt.Sprintf("%v", value)
+				} else {
+					// Handle direct value returns - extract value from various node types
+					switch v := innerResult.(type) {
+					case *Quoted:
+						name = "$" + v.value
+					case *Anonymous:
+						if str, ok := v.Value.(string); ok {
+							name = "$" + str
+						} else {
+							name = "$" + fmt.Sprintf("%v", v.Value)
 						}
+					case *Keyword:
+						name = "$" + v.value
+					case string:
+						name = "$" + v
+					default:
+						// Try to convert to string
+						name = "$" + fmt.Sprintf("%v", innerResult)
 					}
 				}
 			} else {

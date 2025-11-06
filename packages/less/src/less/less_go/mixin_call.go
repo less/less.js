@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -115,7 +116,8 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	const defFalse = 2
 	var count []int
 	var originalRuleset any
-	
+	debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
+
 	var noArgumentsFilter func(any) bool
 
 	// Use the proper default function implementation
@@ -152,6 +154,11 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	calcDefGroup := func(mixin any, mixinPath []any) int {
 		var f, p int
 		var namespace any
+
+		if debug {
+			mixinType := fmt.Sprintf("%T", mixin)
+			fmt.Printf("DEBUG: calcDefGroup for %s\n", mixinType)
+		}
 
 		for f = 0; f < 2; f++ {
 			conditionResult = append(conditionResult, true)
@@ -198,11 +205,23 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 		if len(conditionResult) >= 2 && (conditionResult[0] || conditionResult[1]) {
 			if conditionResult[0] != conditionResult[1] {
 				if conditionResult[1] {
+					if debug {
+						fmt.Printf("DEBUG: calcDefGroup returning defTrue (%d)\n", defTrue)
+					}
 					return defTrue
+				}
+				if debug {
+					fmt.Printf("DEBUG: calcDefGroup returning defFalse (%d)\n", defFalse)
 				}
 				return defFalse
 			}
+			if debug {
+				fmt.Printf("DEBUG: calcDefGroup returning defNone (%d)\n", defNone)
+			}
 			return defNone
+		}
+		if debug {
+			fmt.Printf("DEBUG: calcDefGroup returning defFalseEitherCase (%d), conditionResult=%v\n", defFalseEitherCase, conditionResult)
 		}
 		return defFalseEitherCase
 	}
@@ -263,18 +282,15 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 		}
 	}
 
-	// No arguments filter - match JavaScript: rule.matchArgs(null, context) 
+	// No arguments filter - In JavaScript this calls rule.matchArgs(null, context)
+	// but this is used as a preliminary filter to find ALL potential mixin candidates
+	// The actual argument matching happens later in the code
+	// So we should accept all MixinDefinitions and Rulesets, not filter them here
 	noArgumentsFilter = func(rule any) bool {
-		// In JavaScript, both Ruleset and MixinDefinition use matchArgs(args, context)
-		// But Go Ruleset only takes (args), while MixinDefinition takes (args, context)
-		if mixinDef, ok := rule.(*MixinDefinition); ok {
-			// MixinDefinition case - takes context
-			return mixinDef.MatchArgs(nil, context)
-		} else if ruleset, ok := rule.(*Ruleset); ok {
-			// Ruleset case - no context parameter
-			return ruleset.MatchArgs(nil)
-		}
-		return false
+		// Accept all MixinDefinitions and Rulesets - the actual matching will be done later
+		_, isMixinDef := rule.(*MixinDefinition)
+		_, isRuleset := rule.(*Ruleset)
+		return isMixinDef || isRuleset
 	}
 
 	// Find mixins in context frames
@@ -286,6 +302,20 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 					if len(foundMixins) > 0 {
 						mixins = foundMixins
 						isOneFound = true
+
+						// DEBUG: Print found mixins
+						if debug {
+							fmt.Printf("DEBUG: frame.Find returned %d mixins\n", len(foundMixins))
+							for idx, fm := range foundMixins {
+								if fmMap, ok := fm.(map[string]any); ok {
+									rule := fmMap["rule"]
+									fmt.Printf("DEBUG:   Found[%d]: type=%T\n", idx, rule)
+									if md, ok := rule.(*MixinDefinition); ok {
+										fmt.Printf("DEBUG:     MixinDefinition: name=%s, arity=%d\n", md.Name, md.Arity)
+									}
+								}
+							}
+						}
 
 						// Process each found mixin
 						for m = 0; m < len(mixins); m++ {
@@ -339,11 +369,17 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								if mixinDef, ok := mixin.(*MixinDefinition); ok {
 									// MixinDefinition case - takes context
 									matchesArgs = mixinDef.MatchArgs(args, context)
+									if debug && !matchesArgs {
+										fmt.Printf("DEBUG:   Mixin[%d] MatchArgs returned false\n", m)
+									}
 								} else if ruleset, ok := mixin.(*Ruleset); ok {
-									// Ruleset case - no context parameter 
+									// Ruleset case - no context parameter
 									matchesArgs = ruleset.MatchArgs(args)
+									if debug && !matchesArgs {
+										fmt.Printf("DEBUG:   Ruleset[%d] MatchArgs returned false\n", m)
+									}
 								}
-								
+
 								if matchesArgs {
 									candidateMap := map[string]any{
 										"mixin": mixin,
@@ -371,6 +407,27 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 							}
 						}
 
+						// DEBUG: Print candidate information
+						if debug {
+							fmt.Printf("DEBUG: MixinCall %s with %d args\n", mc.Format(args), len(args))
+							fmt.Printf("DEBUG: Found %d candidates\n", len(candidates))
+							for m = 0; m < len(candidates); m++ {
+								if candMap, ok := candidates[m].(map[string]any); ok {
+									group := candMap["group"]
+									mixin := candMap["mixin"]
+									mixinType := fmt.Sprintf("%T", mixin)
+									fmt.Printf("DEBUG:   Candidate %d: type=%s, group=%v\n", m, mixinType, group)
+									if md, ok := mixin.(*MixinDefinition); ok {
+										fmt.Printf("DEBUG:     MixinDefinition: name=%s, arity=%d, params=%d\n", md.Name, md.Arity, len(md.Params))
+										if md.Condition != nil {
+											fmt.Printf("DEBUG:       has condition\n")
+										}
+									}
+								}
+							}
+							fmt.Printf("DEBUG: Count by group: defNone=%d, defTrue=%d, defFalse=%d\n", count[defNone], count[defTrue], count[defFalse])
+						}
+
 						if count[defNone] > 0 {
 							defaultResult = defFalse
 						} else {
@@ -383,6 +440,10 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 									Filename: getFilename(mc.FileInfo()),
 								}
 							}
+						}
+
+						if debug {
+							fmt.Printf("DEBUG: defaultResult=%d (defFalse=%d, defTrue=%d)\n", defaultResult, defFalse, defTrue)
 						}
 
 						// Process selected candidates

@@ -2,7 +2,16 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 )
+
+// toCSS converts a value to its CSS string representation
+func toCSS(val any, context any) string {
+	if cssGenerator, ok := val.(interface{ ToCSS(any) string }); ok {
+		return cssGenerator.ToCSS(context)
+	}
+	return fmt.Sprintf("%v", val)
+}
 
 // continueEvaluatingVariables continues evaluating if the result is a Variable
 // This handles cases where a Variable's value is another Variable (e.g., nested mixin parameters)
@@ -664,6 +673,12 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 
 	if condEval, ok := md.Condition.(interface{ Eval(any) any }); ok {
 		result := condEval.Eval(evalContext)
+
+		debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
+		if debug {
+			fmt.Printf("DEBUG:  MatchCondition for '%s': result=%v (%T)\n", md.Name, result, result)
+		}
+
 		// Check if result is falsy
 		if result == nil {
 			return false
@@ -681,9 +696,15 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 
 // MatchArgs checks if the mixin arguments match
 func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
+	debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
+
 	allArgsCnt := 0
 	if args != nil {
 		allArgsCnt = len(args)
+	}
+
+	if debug {
+		fmt.Printf("DEBUG: MatchArgs for mixin '%s' with %d args (arity=%d, required=%d)\n", md.Name, allArgsCnt, md.Arity, md.Required)
 	}
 
 	// Count required arguments that are provided (match JavaScript logic)
@@ -739,81 +760,107 @@ func (md *MixinDefinition) MatchArgs(args []any, context any) bool {
 	if lenCheck > md.Arity {
 		lenCheck = md.Arity
 	}
-	
+
 	for i := 0; i < lenCheck; i++ {
 		if i >= len(md.Params) {
 			continue
 		}
-		
+
 		param, ok := md.Params[i].(map[string]any)
 		if !ok {
 			continue
 		}
-		
+
 		// Check if this parameter has a name or is variadic
 		paramName, hasName := param["name"].(string)
 		paramVariadic, isVariadic := param["variadic"].(bool)
-		
-		// If the parameter has no name and is not variadic, it's a pattern that needs matching
-		if (!hasName || paramName == "") && (!isVariadic || !paramVariadic) {
+
+		if debug {
+			paramValue := param["value"]
+			fmt.Printf("DEBUG:   Param[%d]: hasName=%v, name='%s', variadic=%v, value=%T\n", i, hasName, paramName, paramVariadic, paramValue)
+		}
+
+		// If the parameter has an empty name and is not variadic, it's a pattern that needs matching
+		// Note: hasName can be true even when paramName is empty string
+		if paramName == "" && (!isVariadic || !paramVariadic) {
 			// Get the parameter value
 			paramValue := param["value"]
 			if paramValue == nil {
+				if debug {
+					fmt.Printf("DEBUG:   Pattern param has nil value, skipping\n")
+				}
 				continue
 			}
-			
+
 			// Get the argument at this position
 			if i >= len(args) {
+				if debug {
+					fmt.Printf("DEBUG:   Pattern matching failed: not enough args\n")
+				}
 				return false
 			}
-			
+
 			argValue := args[i]
 			if argMap, ok := argValue.(map[string]any); ok {
 				if val, hasVal := argMap["value"]; hasVal {
 					argValue = val
 				}
 			}
-			
+
 			// Evaluate both values and compare their CSS output
-			// First evaluate the parameter value
+			// Match JavaScript: args[i].value.eval(context).toCSS() != this.params[i].value.eval(context).toCSS()
 			var paramCSS string
 			if evaluator, ok := paramValue.(interface{ Eval(any) (any, error) }); ok {
 				evalResult, err := evaluator.Eval(context)
 				if err != nil {
+					if debug {
+						fmt.Printf("DEBUG:   Pattern matching failed: param eval error: %v\n", err)
+					}
 					return false
 				}
-				if cssGenerator, ok := evalResult.(interface{ ToCSS(any) string }); ok {
-					paramCSS = cssGenerator.ToCSS(context)
-				} else {
-					paramCSS = fmt.Sprintf("%v", evalResult)
-				}
+				paramCSS = toCSS(evalResult, context)
+			} else if cssGenerator, ok := paramValue.(interface{ ToCSS(any) string }); ok {
+				paramCSS = cssGenerator.ToCSS(context)
 			} else {
 				paramCSS = fmt.Sprintf("%v", paramValue)
 			}
-			
+
 			// Then evaluate the argument value
 			var argCSS string
 			if evaluator, ok := argValue.(interface{ Eval(any) (any, error) }); ok {
 				evalResult, err := evaluator.Eval(context)
 				if err != nil {
+					if debug {
+						fmt.Printf("DEBUG:   Pattern matching failed: arg eval error: %v\n", err)
+					}
 					return false
 				}
-				if cssGenerator, ok := evalResult.(interface{ ToCSS(any) string }); ok {
-					argCSS = cssGenerator.ToCSS(context)
-				} else {
-					argCSS = fmt.Sprintf("%v", evalResult)
-				}
+				argCSS = toCSS(evalResult, context)
+			} else if cssGenerator, ok := argValue.(interface{ ToCSS(any) string }); ok {
+				argCSS = cssGenerator.ToCSS(context)
 			} else {
 				argCSS = fmt.Sprintf("%v", argValue)
 			}
-			
+
 			// Compare the CSS output
+			if debug {
+				fmt.Printf("DEBUG:   Pattern match: param='%s' vs arg='%s'\n", paramCSS, argCSS)
+			}
 			if paramCSS != argCSS {
+				if debug {
+					fmt.Printf("DEBUG:   Pattern matching failed: CSS mismatch\n")
+				}
 				return false
+			}
+			if debug {
+				fmt.Printf("DEBUG:   Pattern matched!\n")
 			}
 		}
 	}
-	
+
+	if debug {
+		fmt.Printf("DEBUG:   MatchArgs returning true\n")
+	}
 	return true
 }
 

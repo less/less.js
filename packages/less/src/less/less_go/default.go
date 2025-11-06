@@ -1,5 +1,9 @@
 package less_go
 
+import (
+	"fmt"
+	"os"
+)
 
 // DefaultFunc represents the default function with value and error state
 type DefaultFunc struct {
@@ -19,22 +23,34 @@ func NewDefaultFunc() *DefaultFunc {
 func (d *DefaultFunc) Eval() any {
 	v := d.value_
 	e := d.error_
-	
+
+	debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
+	if debug {
+		fmt.Printf("DEBUG:   default() called: value_=%v, error_=%v\n", v, e)
+	}
+
 	if e != nil {
 		if err, ok := e.(error); ok {
 			panic(err)
 		}
 		panic(e)
 	}
-	
+
 	if !IsNullOrUndefined(v) {
 		// In Go, we need to check truthiness similar to JavaScript
+		result := KeywordFalse
 		if isTruthy(v) {
-			return KeywordTrue
+			result = KeywordTrue
 		}
-		return KeywordFalse
+		if debug {
+			fmt.Printf("DEBUG:   default() returning %v\n", result)
+		}
+		return result
 	}
-	
+
+	if debug {
+		fmt.Printf("DEBUG:   default() returning nil\n")
+	}
 	return nil
 }
 

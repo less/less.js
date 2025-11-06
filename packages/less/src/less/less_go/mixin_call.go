@@ -211,18 +211,36 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	for i = 0; i < len(mc.Arguments); i++ {
 		arg = mc.Arguments[i]
 		if argMap, ok := arg.(map[string]any); ok {
-			if argValueEval, ok := argMap["value"].(interface{ Eval(any) any }); ok {
+			// Try both Eval signatures: Eval(any) (any, error) and Eval(any) any
+			if argValueEval, ok := argMap["value"].(interface{ Eval(any) (any, error) }); ok {
+				var err error
+				argValue, err = argValueEval.Eval(context)
+				if err != nil {
+					argValue = argMap["value"]
+				}
+			} else if argValueEval, ok := argMap["value"].(interface{ Eval(any) any }); ok {
 				argValue = argValueEval.Eval(context)
 			} else {
 				argValue = argMap["value"]
 			}
 
 			if expand, ok := argMap["expand"].(bool); ok && expand {
-				if argValueMap, ok := argValue.(map[string]any); ok {
-					if valueSlice, ok := argValueMap["value"].([]any); ok {
-						for m = 0; m < len(valueSlice); m++ {
-							args = append(args, map[string]any{"value": valueSlice[m]})
-						}
+				// Match JavaScript: if (arg.expand && Array.isArray(argValue.value))
+				// In Go, argValue could be an *Expression or *Value with a Value field
+				var valueSlice []any
+				if expr, ok := argValue.(*Expression); ok {
+					valueSlice = expr.Value
+				} else if val, ok := argValue.(*Value); ok {
+					valueSlice = val.Value
+				} else if argValueMap, ok := argValue.(map[string]any); ok {
+					if slice, ok := argValueMap["value"].([]any); ok {
+						valueSlice = slice
+					}
+				}
+
+				if valueSlice != nil {
+					for m = 0; m < len(valueSlice); m++ {
+						args = append(args, map[string]any{"value": valueSlice[m]})
 					}
 				}
 			} else {
@@ -468,7 +486,10 @@ func (mc *MixinCall) Format(args []any) string {
 					argValue += name + ":"
 				}
 				if value, ok := argMap["value"]; ok {
-					if cssValue, ok := value.(interface{ ToCSS() string }); ok {
+					// Try ToCSS(context) first, then ToCSS()
+					if cssValue, ok := value.(interface{ ToCSS(any) string }); ok {
+						argValue += cssValue.ToCSS(nil)
+					} else if cssValue, ok := value.(interface{ ToCSS() string }); ok {
 						argValue += cssValue.ToCSS()
 					} else {
 						argValue += "???"

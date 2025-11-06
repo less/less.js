@@ -203,7 +203,9 @@ func (jsv *JoinSelectorVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 
 // VisitRulesetOut removes the top context when exiting a ruleset
 func (jsv *JoinSelectorVisitor) VisitRulesetOut(rulesetNode any) {
-	jsv.contexts = jsv.contexts[:len(jsv.contexts)-1]
+	if len(jsv.contexts) > 0 {
+		jsv.contexts = jsv.contexts[:len(jsv.contexts)-1]
+	}
 }
 
 // MediaRule interface for the first rule in media
@@ -213,6 +215,10 @@ type MediaRule interface {
 
 // VisitMedia processes media nodes
 func (jsv *JoinSelectorVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) any {
+	// Guard against empty contexts
+	if len(jsv.contexts) == 0 {
+		return nil
+	}
 	context := jsv.contexts[len(jsv.contexts)-1]
 	
 	// Try interface-based approach first
@@ -265,6 +271,10 @@ type AtRuleRule interface {
 
 // VisitAtRule processes at-rule nodes
 func (jsv *JoinSelectorVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs) any {
+	// Guard against empty contexts
+	if len(jsv.contexts) == 0 {
+		return nil
+	}
 	context := jsv.contexts[len(jsv.contexts)-1]
 	
 	// Try interface-based approach first

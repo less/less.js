@@ -24,6 +24,10 @@ func NewExtendFinderVisitor() *ExtendFinderVisitor {
 func (efv *ExtendFinderVisitor) Run(root any) any {
 	root = efv.visitor.Visit(root)
 	// Convert []any to []*Extend for type consistency
+	// Safety check: ensure stack is not empty (visitor Out methods might have popped too many times)
+	if len(efv.allExtendsStack) == 0 {
+		return root
+	}
 	extends := make([]*Extend, len(efv.allExtendsStack[0]))
 	for i, ext := range efv.allExtendsStack[0] {
 		if extend, ok := ext.(*Extend); ok {
@@ -124,8 +128,8 @@ func (efv *ExtendFinderVisitor) VisitRulesetOut(rulesetNode any) {
 	if !ok {
 		return
 	}
-	
-	if !ruleset.Root {
+
+	if !ruleset.Root && len(efv.contexts) > 0 {
 		efv.contexts = efv.contexts[:len(efv.contexts)-1]
 	}
 }
@@ -139,7 +143,9 @@ func (efv *ExtendFinderVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) 
 
 func (efv *ExtendFinderVisitor) VisitMediaOut(mediaNode any) {
 	// Match JavaScript: this.allExtendsStack.length = this.allExtendsStack.length - 1;
-	efv.allExtendsStack = efv.allExtendsStack[:len(efv.allExtendsStack)-1]
+	if len(efv.allExtendsStack) > 0 {
+		efv.allExtendsStack = efv.allExtendsStack[:len(efv.allExtendsStack)-1]
+	}
 }
 
 func (efv *ExtendFinderVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs) {
@@ -151,7 +157,9 @@ func (efv *ExtendFinderVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs
 
 func (efv *ExtendFinderVisitor) VisitAtRuleOut(atRuleNode any) {
 	// Match JavaScript: this.allExtendsStack.length = this.allExtendsStack.length - 1;
-	efv.allExtendsStack = efv.allExtendsStack[:len(efv.allExtendsStack)-1]
+	if len(efv.allExtendsStack) > 0 {
+		efv.allExtendsStack = efv.allExtendsStack[:len(efv.allExtendsStack)-1]
+	}
 }
 
 type ProcessExtendsVisitor struct {
@@ -765,7 +773,12 @@ func (pev *ProcessExtendsVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs
 	if media, ok := mediaNode.(interface{ GetAllExtends() []*Extend }); ok {
 		mediaAllExtends = media.GetAllExtends()
 	}
-	
+
+	// Guard against empty stack - initialize with empty slice
+	if len(pev.allExtendsStack) == 0 {
+		pev.allExtendsStack = [][]*Extend{make([]*Extend, 0)}
+	}
+
 	currentAllExtends := pev.allExtendsStack[len(pev.allExtendsStack)-1]
 	newAllExtends := append(mediaAllExtends, currentAllExtends...)
 	chained := pev.doExtendChaining(newAllExtends, mediaAllExtends, 0)
@@ -775,8 +788,10 @@ func (pev *ProcessExtendsVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs
 
 func (pev *ProcessExtendsVisitor) VisitMediaOut(mediaNode any) {
 	// Match JavaScript: this.allExtendsStack.length = lastIndex;
-	lastIndex := len(pev.allExtendsStack) - 1
-	pev.allExtendsStack = pev.allExtendsStack[:lastIndex]
+	if len(pev.allExtendsStack) > 0 {
+		lastIndex := len(pev.allExtendsStack) - 1
+		pev.allExtendsStack = pev.allExtendsStack[:lastIndex]
+	}
 }
 
 func (pev *ProcessExtendsVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs) {
@@ -784,7 +799,12 @@ func (pev *ProcessExtendsVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitAr
 	if atRule, ok := atRuleNode.(interface{ GetAllExtends() []*Extend }); ok {
 		atRuleAllExtends = atRule.GetAllExtends()
 	}
-	
+
+	// Guard against empty stack - initialize with empty slice
+	if len(pev.allExtendsStack) == 0 {
+		pev.allExtendsStack = [][]*Extend{make([]*Extend, 0)}
+	}
+
 	currentAllExtends := pev.allExtendsStack[len(pev.allExtendsStack)-1]
 	newAllExtends := append(atRuleAllExtends, currentAllExtends...)
 	chained := pev.doExtendChaining(newAllExtends, atRuleAllExtends, 0)
@@ -794,8 +814,10 @@ func (pev *ProcessExtendsVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitAr
 
 func (pev *ProcessExtendsVisitor) VisitAtRuleOut(atRuleNode any) {
 	// Match JavaScript: this.allExtendsStack.length = lastIndex;
-	lastIndex := len(pev.allExtendsStack) - 1
-	pev.allExtendsStack = pev.allExtendsStack[:lastIndex]
+	if len(pev.allExtendsStack) > 0 {
+		lastIndex := len(pev.allExtendsStack) - 1
+		pev.allExtendsStack = pev.allExtendsStack[:lastIndex]
+	}
 }
 
 // NewExtendVisitor creates a new extend visitor (alias for NewProcessExtendsVisitor)

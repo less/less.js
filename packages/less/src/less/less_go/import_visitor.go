@@ -683,6 +683,12 @@ func (iv *ImportVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) {
 		if rules, hasRules := n["rules"].([]any); hasRules && len(rules) > 0 {
 			iv.context.Frames = append([]any{rules[0]}, iv.context.Frames...)
 		}
+	} else if media, ok := mediaNode.(interface{ GetRules() []any }); ok {
+		// Handle Media nodes that implement GetRules interface
+		rules := media.GetRules()
+		if len(rules) > 0 {
+			iv.context.Frames = append([]any{rules[0]}, iv.context.Frames...)
+		}
 	}
 }
 

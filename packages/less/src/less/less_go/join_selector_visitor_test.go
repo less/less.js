@@ -639,13 +639,19 @@ func TestJoinSelectorVisitor_EdgeCases(t *testing.T) {
 	
 	t.Run("should handle context stack underflow", func(t *testing.T) {
 		visitor.contexts = [][]any{} // empty contexts
-		
+
+		// Should handle empty contexts gracefully without panicking
 		defer func() {
-			if r := recover(); r == nil {
-				t.Error("Expected panic when contexts is empty")
+			if r := recover(); r != nil {
+				t.Errorf("Unexpected panic when contexts is empty: %v", r)
 			}
 		}()
-		
+
 		visitor.VisitRulesetOut("ruleset_node")
+
+		// Verify contexts remains empty (no crash)
+		if len(visitor.contexts) != 0 {
+			t.Error("Expected contexts to remain empty")
+		}
 	})
 }

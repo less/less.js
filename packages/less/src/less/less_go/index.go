@@ -283,9 +283,9 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 					}
 				}
 				
-				// Always log stack trace for debugging nil pointers
-				if strings.Contains(errMsg, "nil pointer dereference") || strings.Contains(errMsg, "invalid memory address") {
-					fmt.Fprintf(os.Stderr, "\n=== DEBUG: Nil pointer in render ===\nError: %s\nFile: %s\nStack trace:\n%s\n===\n", errMsg, filename, stackTrace)
+				// Always log stack trace for debugging nil pointers and array bounds errors
+				if strings.Contains(errMsg, "nil pointer dereference") || strings.Contains(errMsg, "invalid memory address") || strings.Contains(errMsg, "index out of range") {
+					fmt.Fprintf(os.Stderr, "\n=== DEBUG: Runtime error in render ===\nError: %s\nFile: %s\nStack trace:\n%s\n===\n", errMsg, filename, stackTrace)
 				}
 				
 				// Create a proper error response

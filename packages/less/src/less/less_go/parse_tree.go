@@ -2,6 +2,8 @@ package less_go
 
 import (
 	"fmt"
+	"os"
+	"runtime"
 	"strings"
 )
 
@@ -78,15 +80,26 @@ func (pt *ParseTree) ToCSS(options *ToCSSOptions) (*ToCSSResult, error) {
 	// Use defer to catch panics from transform tree and convert to LessError
 	defer func() {
 		if r := recover(); r != nil {
+			// Get stack trace for debugging
+			buf := make([]byte, 4096)
+			n := runtime.Stack(buf, false)
+			stackTrace := string(buf[:n])
+
+			var errMsg string
 			if err, ok := r.(error); ok {
-				panic(NewLessError(ErrorDetails{
-					Message: err.Error(),
-				}, pt.Imports.Contents(), pt.Imports.RootFilename()))
+				errMsg = err.Error()
 			} else {
-				panic(NewLessError(ErrorDetails{
-					Message: fmt.Sprintf("transform tree failed: %v", r),
-				}, pt.Imports.Contents(), pt.Imports.RootFilename()))
+				errMsg = fmt.Sprintf("transform tree failed: %v", r)
 			}
+
+			// Log stack trace for index out of range errors
+			if strings.Contains(errMsg, "index out of range") {
+				fmt.Fprintf(os.Stderr, "\n=== DEBUG: ParseTree.ToCSS panic ===\nError: %s\nStack trace:\n%s\n===\n", errMsg, stackTrace)
+			}
+
+			panic(NewLessError(ErrorDetails{
+				Message: errMsg,
+			}, pt.Imports.Contents(), pt.Imports.RootFilename()))
 		}
 	}()
 

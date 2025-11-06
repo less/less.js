@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -232,10 +233,16 @@ func (d *Declaration) Eval(context any) (any, error) {
 	if name == "font" {
 		if ctx, ok := context.(map[string]any); ok {
 			if mathVal, ok := ctx["math"]; ok {
+				if os.Getenv("LESS_GO_TRACE") == "1" {
+					fmt.Printf("[DECL-DEBUG] Font declaration: current math=%v\n", mathVal)
+				}
 				if mathVal == Math.Always {
 					mathBypass = true
 					prevMath = mathVal
 					ctx["math"] = Math.ParensDivision
+					if os.Getenv("LESS_GO_TRACE") == "1" {
+						fmt.Printf("[DECL-DEBUG] Changed math from Always to ParensDivision for font\n")
+					}
 				}
 			}
 		}
@@ -289,6 +296,9 @@ func (d *Declaration) Eval(context any) (any, error) {
 	// Restore math context
 	if mathBypass {
 		if ctx, ok := context.(map[string]any); ok {
+			if os.Getenv("LESS_GO_TRACE") == "1" {
+				fmt.Printf("[DECL-DEBUG] Restoring math to %v after font declaration\n", prevMath)
+			}
 			ctx["math"] = prevMath
 		}
 	}

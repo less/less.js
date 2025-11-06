@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -87,22 +88,81 @@ func (c *DefaultParserFunctionCaller) IsValid() bool {
 	return c.valid
 }
 
-// createMathEnabledContext creates a context with math always enabled
-// This is used for function argument evaluation, as function arguments
-// should always be fully computed (matching JavaScript behavior)
+// createMathEnabledContext creates a context with math enabled for function arguments
+// This matches JavaScript behavior where mathOn is set to true (for non-calc functions)
+// but the math mode and parensStack logic is still respected
 func (c *DefaultParserFunctionCaller) createMathEnabledContext() any {
-	// Try to create a map context with math always enabled
+	// Try to create a map context with math enabled
 	if mapCtx, ok := c.context.(*MapEvalContext); ok {
-		// Clone the context and ensure math is enabled
+		// Clone the context and enable math
 		newCtx := make(map[string]any)
 		for k, v := range mapCtx.ctx {
 			newCtx[k] = v
 		}
-		// Set mathOn to true and create an isMathOn function that always returns true
+		// Set mathOn to true (matching JavaScript: context.mathOn = !this.calc)
 		newCtx["mathOn"] = true
+
+		// Create a new isMathOn function that references newCtx instead of the original
+		// This preserves the math mode logic while using the updated mathOn value
 		newCtx["isMathOn"] = func(op string) bool {
+			debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
+
+			mathOn, exists := newCtx["mathOn"]
+			if !exists || !mathOn.(bool) {
+				if debugTrace {
+					fmt.Printf("[MATH-DEBUG] isMathOn(%s): mathOn not set or false\n", op)
+				}
+				return false
+			}
+
+			// Check for division operator with math mode restrictions
+			if op == "/" {
+				math, mathExists := newCtx["math"]
+				if mathExists && math != Math.Always {
+					// Check if we're in parentheses
+					parensStack, parensExists := newCtx["parensStack"]
+					if !parensExists {
+						if debugTrace {
+							fmt.Printf("[MATH-DEBUG] isMathOn(/): no parensStack, returning false\n")
+						}
+						return false
+					}
+					if stack, ok := parensStack.([]bool); ok && len(stack) == 0 {
+						if debugTrace {
+							fmt.Printf("[MATH-DEBUG] isMathOn(/): empty parensStack, math=%v, returning false\n", math)
+						}
+						return false
+					}
+				}
+			}
+
+			// Check if math is disabled for everything except in parentheses
+			if math, mathExists := newCtx["math"]; mathExists {
+				if mathType, ok := math.(MathType); ok && mathType > Math.ParensDivision {
+					parensStack, parensExists := newCtx["parensStack"]
+					if !parensExists {
+						if debugTrace {
+							fmt.Printf("[MATH-DEBUG] isMathOn(%s): PARENS mode, no parensStack, returning false\n", op)
+						}
+						return false
+					}
+					if stack, ok := parensStack.([]bool); ok {
+						result := len(stack) > 0
+						if debugTrace {
+							fmt.Printf("[MATH-DEBUG] isMathOn(%s): PARENS mode, parensStack len=%d, returning %v\n", op, len(stack), result)
+						}
+						return result
+					}
+					return false
+				}
+			}
+
+			if debugTrace {
+				fmt.Printf("[MATH-DEBUG] isMathOn(%s): returning true (default)\n", op)
+			}
 			return true
 		}
+
 		return newCtx
 	}
 	// Fallback: return the original context

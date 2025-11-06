@@ -305,7 +305,16 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 		if options == nil {
 			options = make(map[string]any)
 		}
-		
+
+		// Convert options (string values to proper types like MathType)
+		if os.Getenv("LESS_GO_TRACE") == "1" {
+			fmt.Printf("[RENDER-DEBUG] Options before CopyOptions: math=%v (type=%T)\n", options["math"], options["math"])
+		}
+		options = CopyOptions(options, nil)
+		if os.Getenv("LESS_GO_TRACE") == "1" {
+			fmt.Printf("[RENDER-DEBUG] Options after CopyOptions: math=%v (type=%T)\n", options["math"], options["math"])
+		}
+
 		// Create the parse function
 		parseFunc := CreateParse(env, parseTree, func(environment any, context *Parse, rootFileInfo map[string]any) *ImportManager {
 			// Debug logging
@@ -378,6 +387,7 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 					Functions:     functionsObj,
 					ProcessImports: true,  // Enable import processing
 					ImportManager: imports, // Pass the import manager
+					Math:          Math.ParensDivision, // Default math mode
 				}
 				if opts != nil {
 					if compress, ok := opts["compress"].(bool); ok {
@@ -385,6 +395,9 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 					}
 					if strictUnits, ok := opts["strictUnits"].(bool); ok {
 						toCSSOptions.StrictUnits = strictUnits
+					}
+					if math, ok := opts["math"].(MathType); ok {
+						toCSSOptions.Math = math
 					}
 				}
 				

@@ -40,19 +40,22 @@ func (u *CSSVisitorUtils) KeepOnlyVisibleChilds(owner any) {
 	if owner == nil {
 		return
 	}
-	
+
 	// Try to access rules field
 	if ownerWithRules, ok := owner.(interface{ GetRules() []any; SetRules([]any) }); ok {
 		rules := ownerWithRules.GetRules()
 		if rules != nil {
 			var visibleRules []any
 			for _, rule := range rules {
-				if visibleRule, hasVisible := rule.(interface{ IsVisible() bool }); hasVisible {
-					if visibleRule.IsVisible() {
+				// Node.IsVisible() returns *bool, so we need to handle that
+				if visibleRule, hasVisible := rule.(interface{ IsVisible() *bool }); hasVisible {
+					vis := visibleRule.IsVisible()
+					// Keep only if explicitly visible (not nil and true)
+					if vis != nil && *vis {
 						visibleRules = append(visibleRules, rule)
 					}
 				} else {
-					// If rule doesn't have IsVisible method, keep it
+					// If rule doesn't have IsVisible method, keep it (for primitives, etc.)
 					visibleRules = append(visibleRules, rule)
 				}
 			}
@@ -156,23 +159,35 @@ func (u *CSSVisitorUtils) IsVisibleRuleset(rulesetNode any) bool {
 	if rulesetNode == nil {
 		return false
 	}
-	
+
 	if firstRootNode, ok := rulesetNode.(interface{ GetFirstRoot() bool }); ok {
 		if firstRootNode.GetFirstRoot() {
 			return true
 		}
 	}
-	
+
 	if u.IsEmpty(rulesetNode) {
 		return false
 	}
-	
+
+	// Check if the ruleset blocks visibility and has undefined nodeVisible
+	// This indicates it's from a referenced import and hasn't been explicitly used
+	if blockedNode, ok := rulesetNode.(interface{ BlocksVisibility() bool; IsVisible() *bool }); ok {
+		if blockedNode.BlocksVisibility() {
+			vis := blockedNode.IsVisible()
+			// If visibility is undefined (nil) or explicitly false, hide the ruleset
+			if vis == nil || !*vis {
+				return false
+			}
+		}
+	}
+
 	if rootNode, ok := rulesetNode.(interface{ GetRoot() bool }); ok {
 		if !rootNode.GetRoot() && !u.HasVisibleSelector(rulesetNode) {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -400,10 +415,16 @@ func (v *ToCSSVisitor) VisitAtRuleWithoutBody(atRuleNode any, visitArgs *VisitAr
 	if atRuleNode == nil {
 		return nil
 	}
-	
-	if blockedNode, hasBlocked := atRuleNode.(interface{ BlocksVisibility() bool }); hasBlocked {
+
+	// Check if the at-rule blocks visibility and has undefined/false nodeVisible
+	// This filters out at-rules from referenced imports that haven't been explicitly used
+	if blockedNode, ok := atRuleNode.(interface{ BlocksVisibility() bool; IsVisible() *bool }); ok {
 		if blockedNode.BlocksVisibility() {
-			return nil
+			vis := blockedNode.IsVisible()
+			// If visibility is undefined (nil) or explicitly false, hide the at-rule
+			if vis == nil || !*vis {
+				return nil
+			}
 		}
 	}
 	
@@ -703,7 +724,9 @@ func (v *ToCSSVisitor) compileRulesetPaths(rulesetNode any) {
 						// Check if it's a selector with the required methods
 						if sel, ok := selector.(*Selector); ok {
 							// Check visibility - handle that IsVisible returns *bool
-							isVisible := true // default to visible if not set
+							// When visibility is undefined (nil), it's falsy in JavaScript
+							// So we default to false to match JavaScript's behavior
+							isVisible := false
 							if vis := sel.IsVisible(); vis != nil {
 								isVisible = *vis
 							}

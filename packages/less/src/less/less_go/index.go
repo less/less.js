@@ -308,9 +308,14 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 		
 		// Create the parse function
 		parseFunc := CreateParse(env, parseTree, func(environment any, context *Parse, rootFileInfo map[string]any) *ImportManager {
+			// Debug logging
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG createRender ImportManagerFactory] Called with context.Paths: %v\n", context.Paths)
+			}
+
 			// Create a simple import manager factory
 			factory := NewImportManager(&SimpleImportManagerEnvironment{})
-			
+
 			// Convert rootFileInfo to FileInfo
 			fileInfo := &FileInfo{
 				Filename: "input",
@@ -320,17 +325,33 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 					fileInfo.Filename = fn
 				}
 			}
-			
-			// Create context map with parser factory
+
+			// Create context map with parser factory and paths from Parse context
 			contextMap := map[string]any{
-				"paths": []string{},
 				"parserFactory": func(parserContext map[string]any, parserImports map[string]any, parserFileInfo map[string]any, currentIndex int) ParserInterface {
 					// Create a new parser for importing files
 					return NewParser(parserContext, parserImports, parserFileInfo, currentIndex)
 				},
 			}
-			
-			return factory(environment, contextMap, fileInfo)
+
+			// Extract paths from Parse context
+			if context != nil && context.Paths != nil && len(context.Paths) > 0 {
+				contextMap["paths"] = context.Paths
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG createRender ImportManagerFactory] Setting contextMap paths: %v\n", context.Paths)
+				}
+			} else {
+				contextMap["paths"] = []string{}
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG createRender ImportManagerFactory] No paths in context\n")
+				}
+			}
+
+			result := factory(environment, contextMap, fileInfo)
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG createRender ImportManagerFactory] Created ImportManager with paths: %v\n", result.paths)
+			}
+			return result
 		})
 		
 		// Use a channel to capture the result synchronously
@@ -395,11 +416,25 @@ func createTransformTree() any {
 }
 
 func createParse(env any, parseTree any, importManager any) func(string, ...any) any {
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG] createParse function called\n")
+	}
+
 	// Create the actual parse function using the real CreateParse
 	importManagerFactory := func(environment any, context *Parse, rootFileInfo map[string]any) *ImportManager {
+		// Debug logging at the start
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG ImportManagerFactory] Called\n")
+			if context != nil {
+				fmt.Printf("[DEBUG ImportManagerFactory] context.Paths: %v (len=%d)\n", context.Paths, len(context.Paths))
+			} else {
+				fmt.Printf("[DEBUG ImportManagerFactory] context is nil\n")
+			}
+		}
+
 		// Create a simple import manager factory
 		factory := NewImportManager(&SimpleImportManagerEnvironment{})
-		
+
 		// Convert rootFileInfo to FileInfo
 		fileInfo := &FileInfo{
 			Filename: "input",
@@ -409,13 +444,28 @@ func createParse(env any, parseTree any, importManager any) func(string, ...any)
 				fileInfo.Filename = fn
 			}
 		}
-		
-		// Create context map
-		contextMap := map[string]any{
-			"paths": []string{},
+
+		// Create context map - extract paths from Parse context
+		contextMap := map[string]any{}
+
+		// Copy paths from Parse context if available
+		if context != nil && context.Paths != nil && len(context.Paths) > 0 {
+			contextMap["paths"] = context.Paths
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG ImportManagerFactory] Setting contextMap['paths']: %v\n", context.Paths)
+			}
+		} else {
+			contextMap["paths"] = []string{}
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG ImportManagerFactory] Setting empty paths\n")
+			}
 		}
-		
-		return factory(environment, contextMap, fileInfo)
+
+		result := factory(environment, contextMap, fileInfo)
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG ImportManagerFactory] Created ImportManager with im.paths: %v (len=%d)\n", result.paths, len(result.paths))
+		}
+		return result
 	}
 	
 	// Use the real CreateParse function

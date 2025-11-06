@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -318,8 +319,12 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 
 		newFileInfo.Filename = resolvedFilename
 
-		// Create new parse context
-		newEnv := NewParse(im.context)
+		// Create new parse context with paths from ImportManager
+		contextWithPaths := im.cloneContext()
+		if len(im.paths) > 0 {
+			contextWithPaths["paths"] = im.paths
+		}
+		newEnv := NewParse(contextWithPaths)
 		newEnv.ProcessImports = false
 		im.contents[resolvedFilename] = contents
 
@@ -390,6 +395,18 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 
 	// Clone context
 	context := im.cloneContext()
+
+	// Add paths from ImportManager to context for file resolution
+	if len(im.paths) > 0 {
+		context["paths"] = im.paths
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG ImportManager.Push] Setting context paths from im.paths: %v\n", im.paths)
+		}
+	} else {
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG ImportManager.Push] im.paths is empty\n")
+		}
+	}
 
 	if tryAppendExtension {
 		if importOptions.IsPlugin {

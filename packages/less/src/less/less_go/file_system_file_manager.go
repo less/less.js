@@ -147,15 +147,25 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 		return fetchRemoteFile(filename)
 	}
 
+	// Debug logging
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG FileManager] LoadFileSync: filename=%s, currentDirectory=%s\n", filename, currentDirectory)
+		if context != nil {
+			if contextPaths, ok := context["paths"]; ok {
+				fmt.Printf("[DEBUG FileManager] Context paths: %v\n", contextPaths)
+			}
+		}
+	}
+
 	isAbsolute := fm.IsPathAbsolute(filename)
 	paths := []string{}
-	
+
 	if isAbsolute {
 		paths = append(paths, "")
 	} else {
 		paths = append(paths, currentDirectory)
 	}
-	
+
 	// Add paths from options
 	if context != nil {
 		if optionPaths, ok := context["paths"].([]string); ok {
@@ -167,6 +177,11 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 				}
 			}
 		}
+	}
+
+	// Debug logging
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG FileManager] Final paths to search: %v\n", paths)
 	}
 	
 	// If not absolute and "." is not in paths, add it
@@ -196,6 +211,11 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 			fullPath = filepath.Join(dir, filename)
 		}
 
+		// Debug logging
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG FileManager] Trying path: %s\n", fullPath)
+		}
+
 		// Try Node module resolution if:
 		// 1. Path is not explicit (doesn't start with . or /)
 		// 2. We're searching in the current directory (.)
@@ -206,6 +226,9 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 				contents, err = ioutil.ReadFile(resolvedPath)
 				if err == nil {
 					fullPath = resolvedPath
+					if os.Getenv("LESS_GO_DEBUG") == "1" {
+						fmt.Printf("[DEBUG FileManager] ✓ Found via Node module resolution: %s\n", fullPath)
+					}
 					break
 				}
 			}
@@ -215,16 +238,28 @@ func (fm *FileSystemFileManager) LoadFileSync(filename, currentDirectory string,
 		// Try with .less extension if no extension
 		if !strings.Contains(filepath.Base(fullPath), ".") {
 			tryPath := fullPath + ".less"
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG FileManager] Trying with .less extension: %s\n", tryPath)
+			}
 			contents, err = ioutil.ReadFile(tryPath)
 			if err == nil {
 				fullPath = tryPath
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG FileManager] ✓ Found: %s\n", fullPath)
+				}
 				break
 			}
 		}
 
 		// Try as-is
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG FileManager] Trying as-is: %s\n", fullPath)
+		}
 		contents, err = ioutil.ReadFile(fullPath)
 		if err == nil {
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG FileManager] ✓ Found: %s\n", fullPath)
+			}
 			break
 		}
 	}

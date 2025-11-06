@@ -1,6 +1,8 @@
 package less_go
 
 import (
+	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -124,7 +126,13 @@ func performParse(lessContext *LessContext, input string, options map[string]any
 	actualOptions["pluginManager"] = pluginManager
 	
 	// Create parsing context (equivalent to: context = new contexts.Parse(options))
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG performParse] Creating Parse context with actualOptions paths: %v\n", actualOptions["paths"])
+	}
 	context = NewParse(actualOptions)
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG performParse] Created Parse context with context.Paths: %v\n", context.Paths)
+	}
 	
 	// Handle rootFileInfo (parse.js lines 38-55)
 	if rootFileInfoVal, ok := actualOptions["rootFileInfo"]; ok {
@@ -161,8 +169,14 @@ func performParse(lessContext *LessContext, input string, options map[string]any
 	}
 	
 	// Create import manager (equivalent to: const imports = new ImportManager(this, context, rootFileInfo))
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG performParse] About to call importManagerFactory with context.Paths: %v\n", context.Paths)
+	}
 	imports := importManagerFactory(environment, context, rootFileInfo)
-	
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG performParse] importManagerFactory returned, imports.paths: %v\n", imports.paths)
+	}
+
 	// Set importManager on the context (equivalent to: this.importManager = imports)
 	lessContext.ImportManager = imports
 	

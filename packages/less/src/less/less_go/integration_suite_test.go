@@ -391,7 +391,43 @@ func runTestSuite(t *testing.T, suite TestSuite, lessRoot, cssRoot string) {
 				options[k] = v
 			}
 			options["filename"] = lessFile
-			options["paths"] = []string{filepath.Dir(lessFile)}
+
+			// Handle include paths - merge suite paths with file directory
+			// Start with the file's directory as the primary search path
+			paths := []string{filepath.Dir(lessFile)}
+
+			// Add suite paths if specified (resolve relative to lessRoot)
+			if suitePaths, ok := suite.Options["paths"]; ok {
+				switch v := suitePaths.(type) {
+				case []string:
+					for _, p := range v {
+						// Resolve relative paths relative to lessRoot
+						if !filepath.IsAbs(p) {
+							p = filepath.Join(lessRoot, p)
+						}
+						paths = append(paths, p)
+					}
+				case string:
+					// Single string path
+					p := v
+					if !filepath.IsAbs(p) {
+						p = filepath.Join(lessRoot, p)
+					}
+					paths = append(paths, p)
+				case []any:
+					// Handle []any type (from JSON unmarshaling)
+					for _, pAny := range v {
+						if pStr, ok := pAny.(string); ok {
+							if !filepath.IsAbs(pStr) {
+								pStr = filepath.Join(lessRoot, pStr)
+							}
+							paths = append(paths, pStr)
+						}
+					}
+				}
+			}
+
+			options["paths"] = paths
 
 			// Create Less factory
 			factory := Factory(nil, nil)
@@ -508,7 +544,43 @@ func runErrorTestSuite(t *testing.T, suite TestSuite, lessRoot string) {
 				options[k] = v
 			}
 			options["filename"] = lessFile
-			options["paths"] = []string{filepath.Dir(lessFile)}
+
+			// Handle include paths - merge suite paths with file directory
+			// Start with the file's directory as the primary search path
+			paths := []string{filepath.Dir(lessFile)}
+
+			// Add suite paths if specified (resolve relative to lessRoot)
+			if suitePaths, ok := suite.Options["paths"]; ok {
+				switch v := suitePaths.(type) {
+				case []string:
+					for _, p := range v {
+						// Resolve relative paths relative to lessRoot
+						if !filepath.IsAbs(p) {
+							p = filepath.Join(lessRoot, p)
+						}
+						paths = append(paths, p)
+					}
+				case string:
+					// Single string path
+					p := v
+					if !filepath.IsAbs(p) {
+						p = filepath.Join(lessRoot, p)
+					}
+					paths = append(paths, p)
+				case []any:
+					// Handle []any type (from JSON unmarshaling)
+					for _, pAny := range v {
+						if pStr, ok := pAny.(string); ok {
+							if !filepath.IsAbs(pStr) {
+								pStr = filepath.Join(lessRoot, pStr)
+							}
+							paths = append(paths, pStr)
+						}
+					}
+				}
+			}
+
+			options["paths"] = paths
 
 			// Create Less factory
 			factory := Factory(nil, nil)

@@ -41,7 +41,10 @@ func NewColor(rgb any, alpha float64, originalForm string) *Color {
 	}
 
 	// Assign the provided alpha value, defaulting handled by initialization
-	c.Alpha = alpha
+	// Special case: if alpha is -1, don't override (used by color() function for hex with alpha)
+	if alpha != -1 {
+		c.Alpha = alpha
+	}
 
 	if originalForm != "" {
 		c.Value = originalForm
@@ -197,15 +200,25 @@ func (c *Color) ToCSS(context any) string {
 	var colorFunction string
 	var args []any
 
-	// Handle malformed hex strings
+	// Handle hex strings - but check alpha first
 	if strings.HasPrefix(c.Value, "#") {
 		hex := c.Value[1:]
 		if len(hex) == 3 || len(hex) == 6 {
+			// If alpha < 1, need to use rgba format
+			if alpha < 1 {
+				colorFunction = "rgba"
+			} else {
+				return c.Value
+			}
+		} else if len(hex) == 4 || len(hex) == 8 {
+			// 4-digit or 8-digit hex with alpha - preserve as-is
+			// (functions like fade() will change Value to rgb/hsl)
 			return c.Value
 		}
 	}
 
-	if c.Value != "" {
+	// Only check c.Value if colorFunction hasn't been set yet
+	if colorFunction == "" && c.Value != "" {
 		if strings.HasPrefix(c.Value, "rgb") {
 			if alpha < 1 {
 				colorFunction = "rgba"
@@ -220,7 +233,7 @@ func (c *Color) ToCSS(context any) string {
 		} else {
 			return c.Value
 		}
-	} else if alpha < 1 {
+	} else if alpha < 1 && colorFunction == "" {
 		colorFunction = "rgba"
 	}
 

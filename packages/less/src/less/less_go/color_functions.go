@@ -137,7 +137,7 @@ func hslaHelper(origColor *Color, h, s, l, a float64) *Color {
 // ColorRGB creates a color from RGB values
 func ColorRGB(r, g, b any) any {
 	a := 1.0
-	
+
 	// Handle comma-less syntax (e.g., rgb(0 128 255 / 50%))
 	// First check if wrapped in Anonymous
 	if anon, ok := r.(*Anonymous); ok {
@@ -158,30 +158,53 @@ func ColorRGB(r, g, b any) any {
 			}
 		}
 	}
-	
+
 	if expr, ok := r.(*Expression); ok && len(expr.Value) >= 3 {
 		r = expr.Value[0]
 		g = expr.Value[1]
 		b = expr.Value[2]
-		
-		// Check if the third value is an operation (for alpha)
+
+		// Evaluate the extracted values (but check for Operation first to preserve it)
+		if node, ok := r.(Node); ok {
+			r = node.Eval(nil)
+		}
+		if node, ok := g.(Node); ok {
+			g = node.Eval(nil)
+		}
+
+		// Check if the third value is an operation (for alpha) BEFORE evaluating
 		if op, ok := b.(*Operation); ok {
-			b = op.Operands[0]
+			// Extract operands and evaluate them separately
+			if len(op.Operands) > 0 {
+				if node, ok := op.Operands[0].(Node); ok {
+					b = node.Eval(nil)
+				} else {
+					b = op.Operands[0]
+				}
+			}
 			if len(op.Operands) > 1 {
-				if aVal, err := number(op.Operands[1]); err == nil {
+				// Evaluate the alpha operand
+				var alphaVal any = op.Operands[1]
+				if node, ok := alphaVal.(Node); ok {
+					alphaVal = node.Eval(nil)
+				}
+				if aVal, err := number(alphaVal); err == nil {
 					a = aVal
 				}
 			}
+		} else {
+			// No operation, just evaluate b normally
+			if node, ok := b.(Node); ok {
+				b = node.Eval(nil)
+			}
 		}
 	}
-	
+
 	color := ColorRGBA(r, g, b, a)
 	if c, ok := color.(*Color); ok {
-		if a == 1.0 {
-			c.Value = "rgb" // rgb() function should preserve rgb format for alpha=1
-		} else {
-			c.Value = "rgba" // rgb() with alpha < 1 should use rgba format
-		}
+		// Match JavaScript behavior: rgb() always sets value to 'rgb',
+		// but ToCSS() will convert to 'rgba' if alpha < 1
+		c.Value = "rgb"
 	}
 	return color
 }
@@ -234,7 +257,7 @@ func ColorRGBA(r, g, b, a any) any {
 // ColorHSL creates a color from HSL values
 func ColorHSL(h, s, l any) any {
 	a := 1.0
-	
+
 	// Handle comma-less syntax
 	// First check if wrapped in Anonymous
 	if anon, ok := h.(*Anonymous); ok {
@@ -247,33 +270,61 @@ func ColorHSL(h, s, l any) any {
 				h = arr[0]
 				s = arr[1]
 				l = arr[2]
-				return ColorHSLA(h, s, l, a)
+				color := ColorHSLA(h, s, l, a)
+				if c, ok := color.(*Color); ok {
+					c.Value = "hsl"
+				}
+				return color
 			}
 		}
 	}
-	
+
 	if expr, ok := h.(*Expression); ok && len(expr.Value) >= 3 {
 		h = expr.Value[0]
 		s = expr.Value[1]
 		l = expr.Value[2]
-		
+
+		// Evaluate the extracted values (but check for Operation first to preserve it)
+		if node, ok := h.(Node); ok {
+			h = node.Eval(nil)
+		}
+		if node, ok := s.(Node); ok {
+			s = node.Eval(nil)
+		}
+
+		// Check if the third value is an operation (for alpha) BEFORE evaluating
 		if op, ok := l.(*Operation); ok {
-			l = op.Operands[0]
+			// Extract operands and evaluate them separately
+			if len(op.Operands) > 0 {
+				if node, ok := op.Operands[0].(Node); ok {
+					l = node.Eval(nil)
+				} else {
+					l = op.Operands[0]
+				}
+			}
 			if len(op.Operands) > 1 {
-				if aVal, err := number(op.Operands[1]); err == nil {
+				// Evaluate the alpha operand
+				var alphaVal any = op.Operands[1]
+				if node, ok := alphaVal.(Node); ok {
+					alphaVal = node.Eval(nil)
+				}
+				if aVal, err := number(alphaVal); err == nil {
 					a = aVal
 				}
 			}
+		} else {
+			// No operation, just evaluate l normally
+			if node, ok := l.(Node); ok {
+				l = node.Eval(nil)
+			}
 		}
 	}
-	
+
 	color := ColorHSLA(h, s, l, a)
 	if c, ok := color.(*Color); ok {
-		if a == 1.0 {
-			c.Value = "hsl"  // hsl() function should preserve hsl format for alpha=1
-		} else {
-			c.Value = "hsla" // hsl() with alpha < 1 should use hsla format
-		}
+		// Match JavaScript behavior: hsl() always sets value to 'hsl',
+		// but ToCSS() will convert to 'hsla' if alpha < 1
+		c.Value = "hsl"
 		return c
 	}
 	return color
@@ -426,20 +477,23 @@ func ColorARGB(color any) any {
 // ColorFunction parses a color from a hex string
 func ColorFunction(colorStr any) any {
 	if quoted, ok := colorStr.(*Quoted); ok {
-		colorStr = quoted.Value
+		colorStr = quoted.GetValue()
 	}
-	
+
 	if str, ok := colorStr.(string); ok {
 		// Remove quotes if present
 		str = strings.Trim(str, "\"'")
-		
+
 		// Try to parse as hex color
 		if strings.HasPrefix(str, "#") {
 			hexStr := str[1:] // Remove the #
-			return NewColor(hexStr, 1, "")
+			// Pass the full hex string (with #) as the Value so it's preserved in output
+			// Use a sentinel alpha value (-1) to indicate "don't override alpha from hex"
+			c := NewColor(hexStr, -1, str)
+			return c
 		}
 	}
-	
+
 	return nil
 }
 
@@ -735,8 +789,10 @@ func ColorFade(color, amount any) any {
 		if err != nil {
 			return nil
 		}
-		
-		return NewColor(c.RGB, clampUnit(amountVal), c.Value)
+
+		hsl := c.ToHSL()
+		hsl.A = clampUnit(amountVal)
+		return hslaHelper(c, hsl.H, hsl.S, hsl.L, hsl.A)
 	}
 	return nil
 }
@@ -1003,8 +1059,8 @@ func (w *ColorFunctionWrapper) Call(args ...any) (any, error) {
 		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
 	case "color":
 		if len(args) == 1 {
-			if fn, ok := w.fn.(func(any) (any, error)); ok {
-				return fn(args[0])
+			if fn, ok := w.fn.(func(any) any); ok {
+				return fn(args[0]), nil
 			}
 		}
 		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
@@ -1109,8 +1165,15 @@ func (w *ColorFunctionWrapper) CallCtx(ctx *Context, args ...any) (any, error) {
 }
 
 func (w *ColorFunctionWrapper) NeedsEvalArgs() bool {
-	// Color functions need evaluated arguments
-	return true
+	// rgb, rgba, hsl, hsla need unevaluated arguments to handle comma-less syntax
+	// with operations (e.g., rgb(0 128 255 / 50%))
+	switch w.name {
+	case "rgb", "rgba", "hsl", "hsla":
+		return false
+	default:
+		// Other color functions need evaluated arguments
+		return true
+	}
 }
 
 // GetWrappedColorFunctions returns color functions wrapped for registry

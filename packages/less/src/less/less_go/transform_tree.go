@@ -97,13 +97,27 @@ func TransformTree(root any, options map[string]any) any {
 	}
 	// Set mathOn to true by default, matching JavaScript contexts.js
 	evalEnv["mathOn"] = true
+	// Initialize parensStack for tracking parenthesis context
+	evalEnv["parensStack"] = []bool{}
+	// Add inParenthesis function to push to parensStack
+	evalEnv["inParenthesis"] = func() {
+		stack, _ := evalEnv["parensStack"].([]bool)
+		evalEnv["parensStack"] = append(stack, true)
+	}
+	// Add outOfParenthesis function to pop from parensStack
+	evalEnv["outOfParenthesis"] = func() {
+		stack, _ := evalEnv["parensStack"].([]bool)
+		if len(stack) > 0 {
+			evalEnv["parensStack"] = stack[:len(stack)-1]
+		}
+	}
 	// Add isMathOn function that matches JavaScript contexts.js implementation
 	evalEnv["isMathOn"] = func(op string) bool {
 		mathOn, exists := evalEnv["mathOn"]
 		if !exists || !mathOn.(bool) {
 			return false
 		}
-		
+
 		// Check for division operator with math mode restrictions
 		if op == "/" {
 			math, mathExists := evalEnv["math"]
@@ -118,7 +132,7 @@ func TransformTree(root any, options map[string]any) any {
 				}
 			}
 		}
-		
+
 		// Check if math is disabled for everything except in parentheses
 		if math, mathExists := evalEnv["math"]; mathExists {
 			if mathType, ok := math.(MathType); ok && mathType > Math.ParensDivision {
@@ -132,7 +146,7 @@ func TransformTree(root any, options map[string]any) any {
 				return false
 			}
 		}
-		
+
 		return true
 	}
 

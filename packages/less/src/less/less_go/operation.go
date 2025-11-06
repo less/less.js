@@ -97,7 +97,11 @@ func (o *Operation) Eval(context any) (any, error) {
 	
 	// Match JavaScript: if (context.isMathOn(this.op))
 	mathOn := false
-	if ctx, ok := context.(map[string]any); ok {
+	// First try the proper Eval context
+	if evalCtx, ok := context.(*Eval); ok {
+		mathOn = evalCtx.IsMathOnWithOp(o.Op)
+	} else if ctx, ok := context.(map[string]any); ok {
+		// Fallback to map-based context for compatibility
 		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
 			mathOn = mathOnFunc(o.Op)
 		}
@@ -219,6 +223,11 @@ func (o *Operation) GenCSS(context any, output *CSSOutput) {
 
 // IsMathParensDivision checks if the math mode is PARENS_DIVISION
 func IsMathParensDivision(context any) bool {
+	// First try the proper Eval context
+	if evalCtx, ok := context.(*Eval); ok {
+		return evalCtx.Math == MathParensDivision
+	}
+	// Fallback to map-based context for compatibility
 	if ctx, ok := context.(map[string]any); ok {
 		if mathType, ok := ctx["math"].(MathType); ok {
 			return mathType == Math.ParensDivision

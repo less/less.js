@@ -41,8 +41,9 @@ func (p *Paren) GenCSS(context any, output *CSSOutput) {
 // Eval evaluates the node and returns a new Paren with the evaluated value
 func (p *Paren) Eval(context any) any {
 	// Match JavaScript: return new Paren(this.value.eval(context));
+	// Note: parensStack is managed by Expression, not Paren
 	var evaluatedValue any = p.Value
-	
+
 	// Try single-return eval first (matches most nodes)
 	if valueWithEval, ok := p.Value.(interface{ Eval(any) any }); ok {
 		evaluatedValue = valueWithEval.Eval(context)
@@ -53,7 +54,7 @@ func (p *Paren) Eval(context any) any {
 			evaluatedValue = result
 		}
 	}
-	
+
 	return NewParen(evaluatedValue)
 }
 

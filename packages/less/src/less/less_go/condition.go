@@ -50,7 +50,7 @@ func (c *Condition) Eval(context any) any {
 func (c *Condition) EvalBool(context any) bool {
 	// JavaScript implementation:
 	// Evaluates lvalue and rvalue, then uses Node.compare for comparison operators
-	
+
 	// Helper to evaluate a node
 	eval := func(node any) any {
 		if evaluator, ok := node.(interface{ Eval(any) (any, error) }); ok {
@@ -72,7 +72,7 @@ func (c *Condition) EvalBool(context any) bool {
 		abool := toBool(a)
 		bbool := toBool(b)
 		result = abool && bbool
-		
+
 	case "or":
 		a := eval(c.Lvalue)
 		b := eval(c.Rvalue)
@@ -80,29 +80,68 @@ func (c *Condition) EvalBool(context any) bool {
 		abool := toBool(a)
 		bbool := toBool(b)
 		result = abool || bbool
-		
+
 	default:
 		// For comparison operators, use Node.compare
 		a := eval(c.Lvalue)
 		b := eval(c.Rvalue)
-		
+
 		// Convert to nodes if necessary for comparison
+		// Handle types that embed *Node (like Dimension, Color, etc.)
 		var aNode, bNode *Node
-		if n, ok := a.(*Node); ok {
+
+		// Check if a has a way to get its embedded Node
+		if nodeProvider, ok := a.(interface{ GetNode() *Node }); ok {
+			aNode = nodeProvider.GetNode()
+		} else if n, ok := a.(*Node); ok {
 			aNode = n
+		} else if dim, ok := a.(*Dimension); ok {
+			// Dimension embeds *Node, access it directly
+			aNode = dim.Node
+		} else if col, ok := a.(*Color); ok {
+			// Color embeds *Node
+			aNode = col.Node
 		} else {
 			// Wrap non-node values in a Node for comparison
 			aNode = &Node{Value: a}
 		}
-		if n, ok := b.(*Node); ok {
+
+		// Same for b
+		if nodeProvider, ok := b.(interface{ GetNode() *Node }); ok {
+			bNode = nodeProvider.GetNode()
+		} else if n, ok := b.(*Node); ok {
 			bNode = n
+		} else if dim, ok := b.(*Dimension); ok {
+			bNode = dim.Node
+		} else if col, ok := b.(*Color); ok {
+			bNode = col.Node
 		} else {
-			// Wrap non-node values in a Node for comparison
 			bNode = &Node{Value: b}
 		}
-		
-		compareResult := Compare(aNode, bNode)
-		
+
+		// For types that have their own Compare method (like Dimension), call it directly
+		var compareResult int
+		if dim, ok := a.(*Dimension); ok {
+			if otherDim, ok := b.(*Dimension); ok {
+				if cmpPtr := dim.Compare(otherDim); cmpPtr != nil {
+					compareResult = *cmpPtr
+				} else {
+					compareResult = 999 // undefined
+				}
+			} else {
+				compareResult = 999
+			}
+		} else if col, ok := a.(*Color); ok {
+			if otherCol, ok := b.(*Color); ok {
+				compareResult = col.Compare(otherCol)
+			} else {
+				compareResult = 999
+			}
+		} else {
+			// Fall back to Node.Compare
+			compareResult = Compare(aNode, bNode)
+		}
+
 		switch compareResult {
 		case -1:
 			result = c.Op == "<" || c.Op == "=<" || c.Op == "<="

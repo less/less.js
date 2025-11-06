@@ -217,27 +217,27 @@ func (s *Selector) CreateDerived(elementsInput any, extendList []any, evaldCondi
 	if extendList != nil { // only override if a new one is provided
 		finalExtendList = extendList
 	}
-	
+
 	// In JS: const newSelector = new Selector(elements, extendList || this.extendList, null, ...);
 	// The 'null' for condition means the new selector's .condition is nil, and its .evaldCondition
 	// will be based on the evaldConditionFromEval parameter or the original s.evaldCondition.
-	
+
 	// Handle potential nil Node
 	index := 0
 	if s.Node != nil {
 		index = s.GetIndex()
 	}
-	
+
 	fileInfo := make(map[string]any)
 	if s.Node != nil {
 		fileInfo = s.FileInfo()
 	}
-	
+
 	visibilityInfo := make(map[string]any)
 	if s.Node != nil {
 		visibilityInfo = s.VisibilityInfo()
 	}
-	
+
 	newSel, err := NewSelector(parsedElements, finalExtendList, nil, index, fileInfo, visibilityInfo)
 	if err != nil {
 		return nil, err

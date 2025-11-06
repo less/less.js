@@ -3727,7 +3727,11 @@ func (m *MixinParsers) LookupValue() *string {
 	nameMatch := m.parsers.parser.parserInput.Re(regexp.MustCompile(`^(?:[@$]{0,2})[_a-zA-Z0-9-]*`))
 	name := ""
 	if nameMatch != nil {
-		if matches, ok := nameMatch.([]string); ok && len(matches) > 0 {
+		// Re() returns a string when there's only one match (no capture groups)
+		// or []string when there are multiple matches
+		if str, ok := nameMatch.(string); ok {
+			name = str
+		} else if matches, ok := nameMatch.([]string); ok && len(matches) > 0 {
 			name = matches[0]
 		}
 	}

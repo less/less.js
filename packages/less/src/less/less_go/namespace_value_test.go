@@ -19,12 +19,12 @@ func (m *MockRuleCall) Eval(context any) (any, error) {
 type MockRuleset struct {
 	variables           bool
 	properties          bool
-	variableFunc        func(string) any
+	variableFunc        func(string) map[string]any
 	propertyFunc        func(string) any
 	lastDeclarationFunc func() any
 }
 
-func (m *MockRuleset) Variable(name string) any {
+func (m *MockRuleset) Variable(name string) map[string]any {
 	if m.variableFunc != nil {
 		return m.variableFunc(name)
 	}
@@ -209,9 +209,9 @@ func TestNamespaceValueEvalBasicCases(t *testing.T) {
 		}
 		mockRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				if name == "@color" {
-					return mockVariable
+					return map[string]any{"value": mockVariable}
 				}
 				return nil
 			},
@@ -351,7 +351,7 @@ func TestNamespaceValueErrorHandling(t *testing.T) {
 	t.Run("should throw error when variable not found", func(t *testing.T) {
 		mockRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				return nil
 			},
 		}
@@ -485,9 +485,9 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		}
 		mockRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				if name == "@color" {
-					return mockVariable
+					return map[string]any{"value": mockVariable}
 				}
 				return nil
 			},
@@ -524,9 +524,9 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		}
 		mockRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				if name == "@color" {
-					return mockVariable
+					return map[string]any{"value": mockVariable}
 				}
 				return nil
 			},
@@ -577,9 +577,9 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		}
 		firstRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				if name == "@namespace" {
-					return intermediateVariable
+					return map[string]any{"value": intermediateVariable}
 				}
 				return nil
 			},
@@ -620,9 +620,9 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		}
 		mockRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				if name == "@color" {
-					return mockVariable
+					return map[string]any{"value": mockVariable}
 				}
 				return nil
 			},
@@ -763,9 +763,9 @@ func TestNamespaceValueAdvancedCases(t *testing.T) {
 		}
 		mockRuleset := &MockRuleset{
 			variables: true,
-			variableFunc: func(name string) any {
+			variableFunc: func(name string) map[string]any {
 				if name == "@namespace" {
-					return mockVariable
+					return map[string]any{"value": mockVariable}
 				}
 				return nil
 			},

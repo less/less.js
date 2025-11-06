@@ -194,6 +194,33 @@ The Go code correctly implements the JavaScript logic, but receives empty lookup
 
 ## Conclusion
 
-The namespace value lookup failures are caused by a **parser bug in `LookupValue()`** that returns empty strings instead of variable names. The evaluation code in `namespace_value.go` is working as designed - it just can't work properly with empty lookup names.
+The namespace value lookup failures were caused by **TWO bugs**:
 
-Fixing the parser to correctly extract variable names from bracket notation should resolve all 10 failing namespace tests.
+### 1. Parser Bug in `LookupValue()` (parser.go:3727)
+**Issue**: The `Re()` function returns a `string` when there's only one match (no capture groups), but the code was only handling the `[]string` case. This caused all variable names to be lost, resulting in empty strings.
+
+**Fix Applied**: Updated `LookupValue()` to handle both `string` and `[]string` returns:
+```go
+if str, ok := nameMatch.(string); ok {
+    name = str
+} else if matches, ok := nameMatch.([]string); ok && len(matches) > 0 {
+    name = matches[0]
+}
+```
+
+### 2. Type Assertion Bug in namespace_value.go (line 142)
+**Issue**: The interface check was looking for `Variable(string) any` but the actual method signature is `Variable(string) map[string]any`. Type assertions in Go are strict about exact method signatures.
+
+**Fix Applied**: Updated the interface to match the actual method signature:
+```go
+if ruleset, ok := rules.(interface{ Variable(string) map[string]any }); ok {
+    rules = ruleset.Variable(name)
+}
+```
+
+## Status After Fixes
+
+- **Parser**: Now correctly extracts variable names from bracket notation (e.g., `@default-color` from `[@default-color]`)
+- **Namespace Lookup**: Variable lookups now work correctly and return the expected values
+- **Unit Tests**: Some tests need adjustment for the new interface signature
+- **Integration Tests**: Improved but still have some edge cases to resolve

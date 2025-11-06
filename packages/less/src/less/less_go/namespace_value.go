@@ -67,11 +67,26 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 	} else {
 		rules = nv.value
 	}
-	
+
+	// Unwrap map structure returned by VariableCall.Eval()
+	// VariableCall returns map[string]any{"rules": [...]} for detached rulesets
+	if rulesMap, ok := rules.(map[string]any); ok {
+		if rulesArray, hasRules := rulesMap["rules"]; hasRules {
+			if arr, ok := rulesArray.([]any); ok {
+				// Create new Ruleset with empty selector
+				emptySelector, err := NewSelector(nil, nil, nil, 0, make(map[string]any), nil)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create empty selector: %w", err)
+				}
+				rules = NewRuleset([]any{emptySelector}, arr, false, nil)
+			}
+		}
+	}
+
 	// Process each lookup
 	for i := 0; i < len(nv.lookups); i++ {
 		name = nv.lookups[i]
-		
+
 		// CRITICAL: Array conversion must happen INSIDE the loop - matches JavaScript behavior
 		// Eval'd DRs return rulesets.
 		// Eval'd mixins return rules, so let's make a ruleset if we need it.
@@ -115,14 +130,25 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			}
 
 			if hasVariablesProperty {
-				if ruleset, ok := rules.(interface{ Variable(string) any }); ok {
+				if ruleset, ok := rules.(interface{ Variable(string) map[string]any }); ok {
 					rules = ruleset.Variable(name)
 				}
 			}
-			
+
 			// Match JavaScript: if (!rules) { throw error; } - ALWAYS check regardless of variables property
 			// This check happens AFTER the variable lookup attempt
+			// Note: In Go, when a nil map is stored in an interface, the interface != nil
+			// So we need to check both the interface and the map value
 			if rules == nil {
+				return nil, &LessError{
+					Type:     "Name",
+					Message:  fmt.Sprintf("variable %s not found", name),
+					Filename: nv.getFilename(),
+					Index:    nv.GetIndex(),
+				}
+			}
+			// Also check if rules is a nil map wrapped in an interface
+			if rulesMap, ok := rules.(map[string]any); ok && rulesMap == nil {
 				return nil, &LessError{
 					Type:     "Name",
 					Message:  fmt.Sprintf("variable %s not found", name),
@@ -192,7 +218,11 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			if value, exists := rulesMap["value"]; exists {
 				rules = value
 			}
-		} else if rulesWithValue, ok := rules.(interface{
+		}
+
+		// After unwrapping map, check if the result has an Eval method with HasValue
+		// Use a separate if (not else if) so this runs after the map unwrapping above
+		if rulesWithValue, ok := rules.(interface{
 			Eval(any) (any, error)
 		}); ok {
 			// Check if it has a value property (matches JavaScript rules.value check)

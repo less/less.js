@@ -166,7 +166,11 @@ func (s *Selector) getElements(elsInput any) ([]*Element, error) {
 	}
 
 	if elsSlice, ok := elsInput.([]*Element); ok {
-		return elsSlice, nil
+		// Make a copy to avoid sharing the underlying array between selectors
+		// This is critical for nested selectors with multiple & references
+		elementsCopy := make([]*Element, len(elsSlice))
+		copy(elementsCopy, elsSlice)
+		return elementsCopy, nil
 	}
 
 	if elsSliceAny, ok := elsInput.([]any); ok {

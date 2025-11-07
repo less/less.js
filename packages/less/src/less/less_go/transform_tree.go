@@ -27,7 +27,8 @@ func TransformTree(root any, options map[string]any) any {
 	var functionRegistry *Registry
 	if functionsObj, ok := options["functions"]; ok {
 		if defaultFuncs, ok := functionsObj.(*DefaultFunctions); ok && defaultFuncs.registry != nil {
-			functionRegistry = defaultFuncs.registry.Inherit()
+			// Use the registry directly, don't inherit - we want all the functions that were registered
+			functionRegistry = defaultFuncs.registry
 		}
 	}
 	if functionRegistry == nil {

@@ -859,15 +859,13 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 			if isTruthy {
 				key := mergeNode.GetName()
 				if groupPtr, exists := groups[key]; !exists {
-					// Create new group and add to groupsArr
+					// Create new group and add to groupsArr (first occurrence - keep in place)
 					newGroup := []any{rule}
 					groups[key] = &newGroup
 					groupsArr = append(groupsArr, &newGroup)
-					// Remove from rules array
-					rules = append(rules[:i], rules[i+1:]...)
-					i--
+					// DON'T remove the first occurrence - keep it in place
 				} else {
-					// Add to existing group
+					// Add to existing group (subsequent occurrence - remove from rules)
 					*groupPtr = append(*groupPtr, rule)
 					// Remove from rules array
 					rules = append(rules[:i], rules[i+1:]...)
@@ -881,21 +879,24 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 		group := *groupPtr
 		if len(group) > 0 {
 			result := group[0]
-			var space []any
-			spaceExpr, _ := NewExpression(space, false)
-			comma := []any{spaceExpr}
-			
+			space := []any{}
+			comma := []any{}
+
 			for _, rule := range group {
 				if mergeRule, ok := rule.(interface{ GetMerge() any; GetValue() any; GetImportant() bool }); ok {
+					// If merge is "+" and we have content, start a new expression for comma separation
 					if mergeValue, ok := mergeRule.GetMerge().(string); ok && mergeValue == "+" {
 						if len(space) > 0 {
-							emptyExpr, _ := NewExpression([]any{}, false)
-							comma = append(comma, emptyExpr)
+							// Finalize current space expression and start a new one
+							spaceExpr, _ := NewExpression(space, false)
+							comma = append(comma, spaceExpr)
 							space = []any{}
 						}
 					}
+					// Add the value to the current space
 					space = append(space, mergeRule.GetValue())
-					
+
+					// Merge important flags
 					if resultSetter, ok := result.(interface{ SetImportant(bool) }); ok {
 						if resultGetter, ok := result.(interface{ GetImportant() bool }); ok {
 							resultSetter.SetImportant(resultGetter.GetImportant() || mergeRule.GetImportant())
@@ -903,7 +904,14 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 					}
 				}
 			}
-			
+
+			// Add the final space expression
+			if len(space) > 0 {
+				spaceExpr, _ := NewExpression(space, false)
+				comma = append(comma, spaceExpr)
+			}
+
+			// Set the merged value
 			if resultSetter, ok := result.(interface{ SetValue(any) }); ok {
 				value, _ := NewValue(comma)
 				resultSetter.SetValue(value)

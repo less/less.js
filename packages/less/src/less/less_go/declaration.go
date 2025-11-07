@@ -154,6 +154,27 @@ func (d *Declaration) GetImportant() bool {
 	return d.important != ""
 }
 
+// GetValue returns the value of the declaration
+func (d *Declaration) GetValue() any {
+	return d.Value
+}
+
+// SetValue sets the value of the declaration
+func (d *Declaration) SetValue(value any) {
+	if v, ok := value.(*Value); ok {
+		d.Value = v
+	}
+}
+
+// SetImportant sets the important flag
+func (d *Declaration) SetImportant(important bool) {
+	if important {
+		d.important = "!important"
+	} else {
+		d.important = ""
+	}
+}
+
 // evalName evaluates the name of the declaration
 func evalName(context any, name []any) string {
 	value := ""

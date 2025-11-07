@@ -875,7 +875,13 @@ func (p *Parsers) Declaration() any {
 					important = p.Important()
 				}
 				p.parser.parserInput.Forget()
-				mergeFlag := merge == "+"
+				// Pass merge as-is (string "+" or "+_")
+			var mergeFlag any
+			if merge != "" {
+				mergeFlag = merge
+			} else {
+				mergeFlag = false
+			}
 				// Create declaration
 				decl, err := NewDeclaration(name, value, important, mergeFlag, index+p.parser.currentIndex, p.parser.fileInfo, false, isVariable)
 				if err != nil {
@@ -904,7 +910,13 @@ func (p *Parsers) Declaration() any {
 		tracer.TraceMode("Declaration: checking End()", fmt.Sprintf("value=%v, End()=%v, hasDR=%v", value != nil, endResult, hasDR), p.parser)
 		if value != nil && (endResult || hasDR) {
 			p.parser.parserInput.Forget()
-			mergeFlag := merge == "+"
+			// Pass merge as-is (string "+" or "+_")
+			var mergeFlag any
+			if merge != "" {
+				mergeFlag = merge
+			} else {
+				mergeFlag = false
+			}
 
 			decl, err := NewDeclaration(name, value, important, mergeFlag, index+p.parser.currentIndex, p.parser.fileInfo, false, isVariable)
 			if err != nil {

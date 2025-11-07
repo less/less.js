@@ -248,46 +248,22 @@ func (q *Quoted) Eval(context any) (any, error) {
 
 	// propertyReplacement handles ${name} syntax
 	propertyReplacement := func(_ string, name string) (string, error) {
-		// First try direct frame access for the test case
-		for _, frame := range frames {
-			if pFrame, ok := interface{}(frame).(interface{ Property(string) []any }); ok {
-				if props := pFrame.Property("$" + name); len(props) > 0 && props[len(props)-1] != nil {
-					decl := props[len(props)-1]
-					
-					// Try to access value through various interfaces
-					if declWithValue, ok := decl.(interface{ Value() any }); ok {
-						value := declWithValue.Value()
-						if quoted, ok := value.(*Quoted); ok {
-							return quoted.value, nil
-						} else if cssable, ok := value.(interface{ ToCSS(any) string }); ok {
-							return cssable.ToCSS(nil), nil
-						} else {
-							return fmt.Sprintf("%v", value), nil
-						}
-					}
-					
-					if cssable, ok := decl.(interface{ ToCSS(any) string }); ok {
-						return cssable.ToCSS(nil), nil
-					}
-				}
-			}
-		}
-		
-		// Fall back to Property eval
+		// Use Property eval to get the evaluated value
 		p := NewProperty("$"+name, q.GetIndex(), q.FileInfo())
 		result, err := p.Eval(context)
 		if err != nil {
 			return "", fmt.Errorf("property $%s is undefined", name)
 		}
-		
+
+		// Extract the string value from the result
 		if quoted, ok := result.(*Quoted); ok {
 			return quoted.value, nil
 		}
-		
+
 		if cssable, ok := result.(interface{ ToCSS(any) string }); ok {
 			return cssable.ToCSS(nil), nil
 		}
-		
+
 		return fmt.Sprintf("%v", result), nil
 	}
 

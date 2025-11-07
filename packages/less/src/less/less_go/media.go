@@ -342,6 +342,10 @@ func (m *Media) GenCSS(context any, output *CSSOutput) {
 
 // Eval evaluates the media rule - matching JavaScript implementation closely
 func (m *Media) Eval(context any) (any, error) {
+	if context == nil {
+		return nil, fmt.Errorf("context is required for Media.Eval")
+	}
+
 	// Accept both *Eval and map[string]any contexts
 	var ctx map[string]any
 	var evalCtx *Eval

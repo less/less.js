@@ -334,6 +334,19 @@ func (d *Declaration) Eval(context any) (any, error) {
 
 // GenCSS generates CSS representation
 func (d *Declaration) GenCSS(context any, output *CSSOutput) {
+	// Check visibility - skip if node blocks visibility and is not explicitly visible
+	// Also skip if this is a variable declaration (variables are not output as CSS)
+	if d.variable {
+		return
+	}
+	if d.Node != nil && d.Node.BlocksVisibility() {
+		nodeVisible := d.Node.IsVisible()
+		if nodeVisible == nil || !*nodeVisible {
+			// Node blocks visibility and is not explicitly visible, skip output
+			return
+		}
+	}
+
 	compress := false
 	if ctx, ok := context.(map[string]any); ok {
 		if c, ok := ctx["compress"].(bool); ok {

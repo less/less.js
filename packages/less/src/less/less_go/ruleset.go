@@ -1323,17 +1323,28 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 
 // GenCSS generates CSS for the ruleset
 func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
+	// Check visibility - skip if node blocks visibility and is not explicitly visible
+	// This implements the reference import functionality where nodes from referenced
+	// imports are hidden unless explicitly used (via extend or mixin call)
+	if r.Node != nil && r.Node.BlocksVisibility() {
+		nodeVisible := r.Node.IsVisible()
+		if nodeVisible == nil || !*nodeVisible {
+			// Node blocks visibility and is not explicitly visible, skip output
+			return
+		}
+	}
+
 	ctx, ok := context.(map[string]any)
 	if !ok {
 		ctx = make(map[string]any)
 	}
-	
+
 	// Set tab level
 	tabLevel := 0
 	if tl, ok := ctx["tabLevel"].(int); ok {
 		tabLevel = tl
 	}
-	
+
 	if !r.Root {
 		tabLevel++
 		ctx["tabLevel"] = tabLevel

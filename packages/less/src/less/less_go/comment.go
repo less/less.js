@@ -37,6 +37,16 @@ func (c *Comment) Accept(visitor any) {
 
 // GenCSS generates CSS representation of the comment
 func (c *Comment) GenCSS(context any, output *CSSOutput) {
+	// Check visibility - skip if node blocks visibility and is not explicitly visible
+	// Also skip if comment is silent (handled by IsSilent check in caller)
+	if c.Node != nil && c.Node.BlocksVisibility() {
+		nodeVisible := c.Node.IsVisible()
+		if nodeVisible == nil || !*nodeVisible {
+			// Node blocks visibility and is not explicitly visible, skip output
+			return
+		}
+	}
+
 	if c.DebugInfo != nil {
 		// Convert context to map if needed
 		var ctx map[string]any

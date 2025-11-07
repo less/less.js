@@ -114,8 +114,9 @@ func (iv *ImportVisitor) VisitImport(importNode any, visitArgs *VisitArgs) {
 
 	if !css || inlineCSS {
 		// Create context with copied frames - matches JavaScript
+		// Pass parent context properties (including importMultiple) to child
 		frames := CopyArray(iv.context.Frames)
-		context := NewEval(nil, frames)
+		context := NewEval(iv.context.ToMap(), frames)
 		
 		var importParent any
 		if len(context.Frames) > 0 {

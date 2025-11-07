@@ -112,6 +112,24 @@ func (e *Eval) OutOfParenthesis() {
 	}
 }
 
+// ToMap converts the Eval context to a map for copying to child contexts
+// This matches the JavaScript behavior where a parent context is passed to new Eval()
+func (e *Eval) ToMap() map[string]any {
+	return map[string]any{
+		"paths":             e.Paths,
+		"compress":          e.Compress,
+		"math":              e.Math,
+		"strictUnits":       e.StrictUnits,
+		"sourceMap":         e.SourceMap,
+		"importMultiple":    e.ImportMultiple,
+		"urlArgs":           e.UrlArgs,
+		"javascriptEnabled": e.JavascriptEnabled,
+		"pluginManager":     e.PluginManager,
+		"importantScope":    e.ImportantScope,
+		"rewriteUrls":       e.RewriteUrls,
+	}
+}
+
 // IsMathOn determines if math operations are enabled (EvalContext interface)
 func (e *Eval) IsMathOn() bool {
 	return e.MathOn

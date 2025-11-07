@@ -354,6 +354,16 @@ func copyFromOriginal(original map[string]any, destination any) {
 		}
 		if math, ok := original["math"].(MathType); ok {
 			d.Math = math
+		} else if mathStr, ok := original["math"].(string); ok {
+			// Convert string values to MathType enum
+			switch mathStr {
+			case "always":
+				d.Math = MathAlways
+			case "parens-division":
+				d.Math = MathParensDivision
+			case "parens", "strict":
+				d.Math = MathParens
+			}
 		}
 		if strictUnits, ok := original["strictUnits"].(bool); ok {
 			d.StrictUnits = strictUnits

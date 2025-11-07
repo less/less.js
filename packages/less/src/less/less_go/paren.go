@@ -44,19 +44,11 @@ func (p *Paren) GenCSS(context any, output *CSSOutput) {
 // Eval evaluates the node and returns a new Paren with the evaluated value
 func (p *Paren) Eval(context any) any {
 	// Match JavaScript: return new Paren(this.value.eval(context));
-	// Push to parensStack before evaluating (so operations inside know they're in parens)
+	// NOTE: Paren nodes are used for syntactic parentheses (media queries, etc.),
+	// NOT for mathematical grouping. Mathematical parentheses are handled by
+	// Expression nodes with Parens=true. Therefore, we should NOT call
+	// InParenthesis() here as it would incorrectly affect math evaluation.
 	debug := os.Getenv("LESS_DEBUG_PAREN") == "1"
-	if evalCtx, ok := context.(*Eval); ok {
-		if debug {
-			fmt.Printf("[Paren.Eval] Pushing to parensStack, value type: %T\n", p.Value)
-		}
-		evalCtx.InParenthesis()
-		defer evalCtx.OutOfParenthesis()
-	} else {
-		if debug {
-			fmt.Printf("[Paren.Eval] Context is not *Eval (type: %T)\n", context)
-		}
-	}
 
 	var evaluatedValue any = p.Value
 

@@ -69,7 +69,7 @@ func (u *CSSVisitorUtils) IsEmpty(owner any) bool {
 	if owner == nil {
 		return true
 	}
-	
+
 	if ownerWithRules, ok := owner.(interface{ GetRules() []any }); ok {
 		rules := ownerWithRules.GetRules()
 		// DEBUG: Check what rules remain
@@ -89,7 +89,7 @@ func (u *CSSVisitorUtils) IsEmpty(owner any) bool {
 		}
 		return isEmpty
 	}
-	
+
 	return true
 }
 
@@ -112,17 +112,19 @@ func (u *CSSVisitorUtils) ResolveVisibility(node any) any {
 	if node == nil {
 		return nil
 	}
-	
+
 	if blockedNode, hasBlocked := node.(interface{ BlocksVisibility() bool }); hasBlocked {
 		if !blockedNode.BlocksVisibility() {
-			if u.IsEmpty(node) {
+			isEmpty := u.IsEmpty(node)
+			if isEmpty {
 				return nil
 			}
 			return node
 		}
 	} else {
 		// If node doesn't have BlocksVisibility method, treat as not blocked
-		if u.IsEmpty(node) {
+		isEmpty := u.IsEmpty(node)
+		if isEmpty {
 			return nil
 		}
 		return node

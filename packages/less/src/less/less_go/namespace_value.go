@@ -106,7 +106,7 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			}
 			rules = NewRuleset([]any{emptySelector}, rulesArray, false, nil)
 		}
-		
+
 		if name == "" {
 			// Empty string lookup - call lastDeclaration
 			if ruleset, ok := rules.(interface{ LastDeclaration() any }); ok {

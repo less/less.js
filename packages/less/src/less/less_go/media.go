@@ -74,6 +74,11 @@ func (m *Media) GetTypeIndex() int {
 	return GetTypeIndexForNodeType("Media")
 }
 
+// GetRules returns the rules for this media query
+func (m *Media) GetRules() []any {
+	return m.Rules
+}
+
 // IsRulesetLike returns true (implementing NestableAtRulePrototype)
 func (m *Media) IsRulesetLike() bool {
 	return true
@@ -325,13 +330,13 @@ func (m *Media) BubbleSelectors(selectors any) {
 // GenCSS generates CSS representation
 func (m *Media) GenCSS(context any, output *CSSOutput) {
 	output.Add("@media ", m.FileInfo(), m.GetIndex())
-	
+
 	if m.Features != nil {
 		if gen, ok := m.Features.(interface{ GenCSS(any, *CSSOutput) }); ok {
 			gen.GenCSS(context, output)
 		}
 	}
-	
+
 	m.OutputRuleset(context, output, m.Rules)
 }
 
@@ -427,7 +432,8 @@ func (m *Media) Eval(context any) (any, error) {
 	// Match JavaScript: return context.mediaPath.length === 0 ? media.evalTop(context) : media.evalNested(context);
 	if mediaPath, ok := ctx["mediaPath"].([]any); ok {
 		if len(mediaPath) == 0 {
-			return media.EvalTop(context), nil
+			result := media.EvalTop(context)
+			return result, nil
 		} else {
 			return media.EvalNested(context), nil
 		}

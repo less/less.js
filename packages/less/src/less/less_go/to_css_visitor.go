@@ -47,12 +47,26 @@ func (u *CSSVisitorUtils) KeepOnlyVisibleChilds(owner any) {
 		if rules != nil {
 			var visibleRules []any
 			for _, rule := range rules {
-				// Node.IsVisible() returns *bool, so we need to handle that
-				if visibleRule, hasVisible := rule.(interface{ IsVisible() *bool }); hasVisible {
-					vis := visibleRule.IsVisible()
-					// Match JavaScript: undefined/null means inherit parent's visibility (keep it)
-					// Only filter out if explicitly set to false
-					if vis == nil || *vis {
+				// Try to get IsVisible() value - handle different ways a node might have this
+				var vis *bool
+				var hasVisibility bool
+
+				// Try direct method call
+				if visibleRule, ok := rule.(interface{ IsVisible() *bool }); ok {
+					vis = visibleRule.IsVisible()
+					hasVisibility = true
+				} else if decl, ok := rule.(*Declaration); ok && decl.Node != nil {
+					// Declaration embeds *Node, but type assertion might not work, so access directly
+					vis = decl.Node.IsVisible()
+					hasVisibility = true
+				}
+
+				if hasVisibility {
+					// Match JavaScript: isVisible() returns nodeVisible, which when undefined is falsy
+					// In JavaScript, the filter is: rules.filter(thing => thing.isVisible())
+					// This means: keep only if isVisible() is truthy (non-nil and true)
+					// undefined (nil) or false = filter out
+					if vis != nil && *vis {
 						visibleRules = append(visibleRules, rule)
 					}
 				} else {
@@ -130,30 +144,30 @@ func (u *CSSVisitorUtils) ResolveVisibility(node any) any {
 		}
 		return node
 	}
-	
+
 	// Node blocks visibility, process it
 	if nodeWithRules, ok := node.(interface{ GetRules() []any }); ok {
 		rules := nodeWithRules.GetRules()
 		if len(rules) > 0 {
 			compiledRulesBody := rules[0]
 			u.KeepOnlyVisibleChilds(compiledRulesBody)
-			
+
 			if u.IsEmpty(compiledRulesBody) {
 				return nil
 			}
-			
+
 			if ensureVisNode, hasEnsure := node.(interface{ EnsureVisibility() }); hasEnsure {
 				ensureVisNode.EnsureVisibility()
 			}
-			
+
 			if removeVisNode, hasRemove := node.(interface{ RemoveVisibilityBlock() }); hasRemove {
 				removeVisNode.RemoveVisibilityBlock()
 			}
-			
+
 			return node
 		}
 	}
-	
+
 	return nil
 }
 

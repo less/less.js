@@ -270,9 +270,16 @@ func (d *Declaration) Eval(context any) (any, error) {
 	}
 
 	// Create important scope
-	if ctx, ok := context.(map[string]any); ok {
+	if evalCtx, ok := context.(*Eval); ok {
+		// For *Eval context, append to ImportantScope directly
+		evalCtx.ImportantScope = append(evalCtx.ImportantScope, map[string]any{})
+	} else if ctx, ok := context.(map[string]any); ok {
+		// For map context, manage importantScope in the map
 		if importantScope, ok := ctx["importantScope"].([]any); ok {
 			ctx["importantScope"] = append(importantScope, map[string]any{})
+		} else {
+			// Initialize importantScope if it doesn't exist
+			ctx["importantScope"] = []any{map[string]any{}}
 		}
 	}
 
@@ -297,12 +304,26 @@ func (d *Declaration) Eval(context any) (any, error) {
 
 	// Handle important flag
 	important := d.important
-	if ctx, ok := context.(map[string]any); ok {
+	if evalCtx, ok := context.(*Eval); ok {
+		// For *Eval context, pop from ImportantScope directly
+		if len(evalCtx.ImportantScope) > 0 {
+			lastScope := evalCtx.ImportantScope[len(evalCtx.ImportantScope)-1]
+			evalCtx.ImportantScope = evalCtx.ImportantScope[:len(evalCtx.ImportantScope)-1]
+
+			// Check if we should use the important flag from the scope
+			if important == "" && lastScope != nil {
+				if imp, ok := lastScope["important"].(string); ok && imp != "" {
+					important = imp
+				}
+			}
+		}
+	} else if ctx, ok := context.(map[string]any); ok {
+		// For map context, pop from importantScope in the map
 		if importantScope, ok := ctx["importantScope"].([]any); ok && len(importantScope) > 0 {
 			// Pop the scope
 			lastScope := importantScope[len(importantScope)-1]
 			ctx["importantScope"] = importantScope[:len(importantScope)-1]
-			
+
 			// Check if we should use the important flag from the scope
 			if important == "" && lastScope != nil {
 				if scope, ok := lastScope.(map[string]any); ok {

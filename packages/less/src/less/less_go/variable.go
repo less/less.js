@@ -56,7 +56,6 @@ func (v *Variable) GetName() string {
 
 // Eval evaluates the variable
 func (v *Variable) Eval(context any) (any, error) {
-	
 	name := v.name
 	
 
@@ -155,10 +154,21 @@ func (v *Variable) Eval(context any) (any, error) {
 
 		for _, frame := range frames {
 			if varResult := frame.Variable(name); varResult != nil {
-				
 				// Handle important flag if present
 				if importantVal, exists := varResult["important"]; exists && importantVal != nil {
-					if ctx, ok := context.(map[string]any); ok {
+					// For interface context (*Eval), access ImportantScope directly
+					if evalCtx, ok := context.(*Eval); ok {
+						if len(evalCtx.ImportantScope) > 0 {
+							lastScope := evalCtx.ImportantScope[len(evalCtx.ImportantScope)-1]
+							// Convert boolean to appropriate string
+							if boolVal, ok := importantVal.(bool); ok && boolVal {
+								lastScope["important"] = "!important"
+							} else if strVal, ok := importantVal.(string); ok {
+								lastScope["important"] = strVal
+							}
+						}
+					} else if ctx, ok := context.(map[string]any); ok {
+						// For map context, access importantScope from map
 						if importantScopeAny, exists := ctx["importantScope"]; exists {
 							if importantScope, ok := importantScopeAny.([]any); ok && len(importantScope) > 0 {
 								lastScope := importantScope[len(importantScope)-1]
@@ -212,7 +222,7 @@ func (v *Variable) Eval(context any) (any, error) {
 		if !exists {
 			return nil, fmt.Errorf("no frames in evaluation context")
 		}
-		
+
 		frames, ok := framesAny.([]any)
 		if !ok {
 			return nil, fmt.Errorf("frames is not []any")
@@ -223,7 +233,6 @@ func (v *Variable) Eval(context any) (any, error) {
 			// Frames can be Rulesets that have Variable lookup methods
 			if frame, ok := frameAny.(interface{ Variable(string) map[string]any }); ok {
 				if varResult := frame.Variable(name); varResult != nil {
-					
 					// Handle important flag if present
 					if importantVal, exists := varResult["important"]; exists && importantVal != nil {
 						if importantScopeAny, exists := ctx["importantScope"]; exists {

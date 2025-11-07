@@ -835,10 +835,10 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 	if rules == nil {
 		return rules
 	}
-	
+
 	groups := make(map[string]*[]any)
 	var groupsArr []*[]any
-	
+
 	for i := 0; i < len(rules); i++ {
 		rule := rules[i]
 		if mergeNode, ok := rule.(interface{ GetMerge() any; GetName() string }); ok {
@@ -855,17 +855,33 @@ func (v *ToCSSVisitor) mergeRules(rules []any) []any {
 			default:
 				isTruthy = true // Other non-nil values are considered truthy
 			}
-			
+
 			if isTruthy {
 				key := mergeNode.GetName()
 				if groupPtr, exists := groups[key]; !exists {
-					// Create new group and add to groupsArr (first occurrence - keep in place)
-					newGroup := []any{rule}
+					// First rule with merge for this property - look backwards for previous rules with same name
+					newGroup := []any{}
+
+					// Search backwards for any previous rules with the same property name
+					for j := i - 1; j >= 0; j-- {
+						if prevRule, ok := rules[j].(interface{ GetName() string }); ok {
+							if prevRule.GetName() == key {
+								// Found a previous rule with same property - add it to the group
+								newGroup = append([]any{rules[j]}, newGroup...)
+								// Remove it from rules
+								rules = append(rules[:j], rules[j+1:]...)
+								i-- // Adjust index since we removed an element before current position
+							}
+						}
+					}
+
+					// Add current rule to the group
+					newGroup = append(newGroup, rule)
 					groups[key] = &newGroup
 					groupsArr = append(groupsArr, &newGroup)
-					// DON'T remove the first occurrence - keep it in place
+					// Keep the current rule in place (it will be updated with merged value later)
 				} else {
-					// Add to existing group (subsequent occurrence - remove from rules)
+					// Subsequent rule with merge for this property - add to existing group and remove
 					*groupPtr = append(*groupPtr, rule)
 					// Remove from rules array
 					rules = append(rules[:i], rules[i+1:]...)

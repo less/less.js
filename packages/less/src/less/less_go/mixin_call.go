@@ -313,7 +313,7 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 
 						// DEBUG: Print found mixins
 						if debug {
-							fmt.Printf("DEBUG: frame.Find returned %d mixins\n", len(foundMixins))
+							fmt.Printf("DEBUG: frame.Find returned %d mixins in frame %d\n", len(foundMixins), i)
 							for idx, fm := range foundMixins {
 								if fmMap, ok := fm.(map[string]any); ok {
 									rule := fmMap["rule"]
@@ -324,6 +324,9 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								}
 							}
 						}
+
+						// Capture the frame index where the mixin was found
+						frameIndexWhereFound := i
 
 						// Process each found mixin
 						for m = 0; m < len(mixins); m++ {
@@ -460,14 +463,21 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 								candidateGroup := candMap["group"].(int)
 								if candidateGroup == defNone || candidateGroup == defaultResult {
 									mixinCandidate := candMap["mixin"]
-									
+
 									if !isMixinDefinition(mixinCandidate) {
 										// mixinCandidate should be a *Ruleset - match JavaScript behavior
 										if ruleset, ok := mixinCandidate.(*Ruleset); ok {
 											originalRuleset = ruleset
-											// Create MixinDefinition wrapper - match JavaScript: 
-											// new MixinDefinition('', [], mixin.rules, null, false, null, originalRuleset.visibilityInfo())
-											if mixinDef, err := NewMixinDefinition("", []any{}, ruleset.Rules, nil, false, nil, getVisibilityInfo(originalRuleset)); err != nil {
+
+											// CRITICAL: Use frames up to (and including) where the mixin was found
+											// This preserves the closure so nested mixin calls can resolve
+											// For example, if .alias() is defined in the root scope and calls #ns.mixin(),
+											// it needs access to the root frame where #ns is defined
+											closureFrames := frames[0 : frameIndexWhereFound+1]
+
+											// Create MixinDefinition wrapper - match JavaScript:
+											// new MixinDefinition('', [], mixin.rules, null, false, frames, originalRuleset.visibilityInfo())
+											if mixinDef, err := NewMixinDefinition("", []any{}, ruleset.Rules, nil, false, closureFrames, getVisibilityInfo(originalRuleset)); err != nil {
 												return nil, err
 											} else {
 												mixinCandidate = mixinDef

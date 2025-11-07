@@ -511,7 +511,12 @@ func (md *MixinDefinition) MakeImportant() *MixinDefinition {
 func (md *MixinDefinition) Eval(context any) (*MixinDefinition, error) {
 	frames := md.Frames
 	if frames == nil {
-		if ctx, ok := context.(map[string]any); ok {
+		// Try *Eval context first (most common during evaluation)
+		if evalCtx, ok := context.(*Eval); ok {
+			if evalCtx.Frames != nil {
+				frames = CopyArray(evalCtx.Frames)
+			}
+		} else if ctx, ok := context.(map[string]any); ok {
 			if ctxFrames, ok := ctx["frames"].([]any); ok {
 				frames = CopyArray(ctxFrames)
 			}

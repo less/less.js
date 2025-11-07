@@ -44,18 +44,18 @@ When working on this project, please be aware of the following:
    - Go tests should verify ported functionality matches JavaScript behavior
 
 4. **Current Integration Test Status** (as of 2025-11-07 - Latest):
-   - **21 perfect CSS matches (11.4%)** - stable baseline ✅ ⬆️ +1 from last update!
-   - **2 real compilation failures (1.1%)** - extend-chaining, extend-media (both: "context must be a map" errors)
-   - **3 expected compilation failures (1.6%)** - network/path issues (bootstrap4, google, import-remote)
-   - **~45 tests with output differences** - compiles but CSS doesn't match
+   - **30 perfect CSS matches (16.3%)** - MAJOR PROGRESS! ✅ ⬆️ +9 from last update! (+43%)
+   - **0 real compilation failures** - ALL FIXED! 🎉 (extend issues now resolved)
+   - **4 expected compilation failures (2.2%)** - network/path issues (bootstrap4, google, import-module, import-interpolation)
+   - **~60 tests with output differences** - compiles but CSS doesn't match
    - **58+ correct error handling** - tests that should fail, do fail correctly
-   - **5 tests quarantined** (plugin system & JavaScript execution - punted for later)
-   - **Overall Success Rate: ~44%** ⬆️ (81/185 tests passing or correctly erroring)
+   - **7 tests quarantined** (plugin system & JavaScript execution - punted for later)
+   - **Overall Success Rate: ~48%** ⬆️ (89/184 tests passing or correctly erroring)
 
    **🎉 Parser Status: ALL BUGS FIXED!**
    - Parser correctly handles full LESS syntax
-   - **180/185 tests compile successfully (97.3% compilation rate)**
-   - Remaining work is in runtime evaluation and functional implementation
+   - **180/184 tests compile successfully (97.8% compilation rate)** ⬆️
+   - Remaining work is primarily CSS generation and output formatting
 
    **⚠️ Unit Test Status:**
    - **1 test fixed today**: TestQuoted_Eval (was panicking with MockDeclaration type assertion) ✅
@@ -99,20 +99,20 @@ When working on this project, please be aware of the following:
    - See `.claude/tasks/` for specific task specifications
 
    **Priority Order** (High to Low):
-   1. **HIGH**: Fix extend compilation failures (2 tests) - extend-chaining, extend-media ("context must be a map" errors)
-   2. **HIGH**: Extend functionality output differences (4 tests) - extend-exact, extend-nest, extend-selector + basic extend
-   3. **HIGH**: Math operations and expressions (10+ tests) - `.claude/tasks/output-differences/math-operations.md`
-   4. **MEDIUM**: Remaining namespacing issues (3 tests) - namespacing-4, namespacing-5, namespacing-8
-   5. **MEDIUM**: Guard conditionals (3 tests) - css-guards, mixins-guards-default-func, mixins-guards (main)
-   6. **MEDIUM**: Fix mixin output issues - mixins-closure has regressed
-   7. **MEDIUM**: Complete import-reference (2 tests) - import-reference, import-reference-issues
-   8. **LOW**: Fix TestMergeRulesTruthiness unit test (3 sub-tests failing)
+   1. **HIGH**: Math operations and expressions (10+ tests) - `.claude/tasks/output-differences/math-operations.md`
+   2. **HIGH**: Extend edge cases (2 tests) - extend-chaining, extend-media (output differences, complex nesting)
+   3. **MEDIUM**: Remaining namespacing issues (3 tests) - namespacing-3, namespacing-5, namespacing-8
+   4. **MEDIUM**: Guard conditionals (2 tests) - mixins-guards-default-func, mixins-guards (main has complex cases)
+   5. **MEDIUM**: Import functionality (3 tests) - import-reference, import-reference-issues, import-once
+   6. **MEDIUM**: CSS output formatting issues - comments2, media queries, directives-bubling
+   7. **LOW**: Fix TestMergeRulesTruthiness unit test (3 sub-tests failing)
 
    **Recently Completed** (Since last session):
-   - ✅ Namespace value evaluation - 5 tests now passing (namespacing-1, -2, -7, -functions, -operations)!
-   - ✅ Unit test panic fixed - TestQuoted_Eval now passes (property.go type assertion fix)
-   - ✅ mixins-guards test now passing
-   - ✅ mixins-named-args test now passing
+   - ✅ **MAJOR BREAKTHROUGH**: Extend functionality - 5 tests now passing! (extend, extend-exact, extend-nest, extend-selector, extend-clearfix)
+   - ✅ CSS guards now working - css-guards perfect match!
+   - ✅ Mixin guards working - math-always/mixins-guards passing
+   - ✅ Namespace value evaluation - namespacing-1, -2, -4, -6, -7, -functions, -operations all passing (7 tests!)
+   - ✅ Unit test panic fixed - TestQuoted_Eval now passes
 
 7. **Quarantined Features** (for future implementation):
    - Plugin system tests (`plugin`, `plugin-module`, `plugin-preeval`)

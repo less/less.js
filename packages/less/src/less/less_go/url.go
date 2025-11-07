@@ -1,8 +1,6 @@
 package less_go
 
 import (
-	"fmt"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -92,18 +90,15 @@ func (u *URL) GenCSS(context any, output *CSSOutput) {
 
 // Eval evaluates the URL - match JavaScript implementation closely
 func (u *URL) Eval(context any) (any, error) {
-	if os.Getenv("LESS_GO_DEBUG_URL") == "1" {
-		fmt.Printf("[URL.Eval] context type: %T\n", context)
-		if evalCtx, ok := context.(*Eval); ok {
-			fmt.Printf("[URL.Eval] *Eval context with %d frames, RewriteUrls=%v\n", len(evalCtx.Frames), evalCtx.RewriteUrls)
-		}
-	}
-
 	// Match JavaScript: const val = this.value.eval(context);
 	var val any
+	var err error
 	if u.Value != nil {
-		if hasEval, ok := u.Value.(interface{ Eval(any) any }); ok {
-			val = hasEval.Eval(context)
+		if hasEval, ok := u.Value.(interface{ Eval(any) (any, error) }); ok {
+			val, err = hasEval.Eval(context)
+			if err != nil {
+				return nil, err
+			}
 		} else {
 			val = u.Value
 		}
@@ -119,12 +114,15 @@ func (u *URL) Eval(context any) (any, error) {
 		}
 		// Match JavaScript URL rewriting logic
 
-		// Handle *Anonymous value (which may wrap a *Quoted)
+		// Handle *Anonymous value (which may wrap a *Quoted or contain a string)
 		var quoted *Quoted
 		if anon, ok := val.(*Anonymous); ok {
 			// Check if Anonymous.Value is a *Quoted
 			if q, ok := anon.Value.(*Quoted); ok {
 				quoted = q
+			} else if str, ok := anon.Value.(string); ok {
+				// Anonymous.Value is a plain string - create a Quoted without quotes (unquoted URL)
+				quoted = NewQuoted("", str, false, anon.Index, anon.FileInfo)
 			}
 		} else if q, ok := val.(*Quoted); ok {
 			// Direct *Quoted value
@@ -173,7 +171,14 @@ func (u *URL) Eval(context any) (any, error) {
 			}
 
 			// Create new Quoted with updated value (wrap back in Anonymous if needed)
-			newQuoted := NewQuoted(quoted.GetQuote()+value+quoted.GetQuote(), value, quoted.GetEscaped(), quoted.GetIndex(), quoted.FileInfo())
+			// For unquoted URLs, pass empty str so NewQuoted sets quote="". For quoted URLs, include quotes in str.
+			var str string
+			if quoted.GetQuote() == "" {
+				str = ""  // Unquoted: empty str means quote will be ""
+			} else {
+				str = quoted.GetQuote() + value + quoted.GetQuote()  // Quoted: str = 'value' or "value"
+			}
+			newQuoted := NewQuoted(str, value, quoted.GetEscaped(), quoted.GetIndex(), quoted.FileInfo())
 			if oldAnon, wasAnonymous := val.(*Anonymous); wasAnonymous {
 				val = &Anonymous{
 					Node:         NewNode(),

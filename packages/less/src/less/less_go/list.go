@@ -188,9 +188,23 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 
 	// Extract the actual eval context from the Context struct
 	// The Context struct contains Frames with EvalContext, but Variable.Eval expects the map-based context
-	var evalContext any = ctx
-	if ctx != nil && len(ctx.Frames) > 0 && ctx.Frames[0].EvalContext != nil {
-		evalContext = ctx.Frames[0].EvalContext
+	var evalContext any
+	if ctx != nil {
+		if len(ctx.Frames) > 0 {
+			rawContext := ctx.Frames[0].EvalContext
+			// Check if it's a MapEvalContext and extract the underlying map
+			if mapCtx, ok := rawContext.(*MapEvalContext); ok {
+				evalContext = mapCtx.ctx
+			} else {
+				evalContext = rawContext
+			}
+		} else {
+			// No frames, evalContext stays nil
+			evalContext = nil
+		}
+	} else {
+		// No context available
+		evalContext = nil
 	}
 
 	// tryEval function - evaluates nodes if they have an Eval method
@@ -332,8 +346,21 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 				if nameStr, ok := decl.name.(string); ok {
 					key = nameStr
 				} else if nameSlice, ok := decl.name.([]any); ok && len(nameSlice) > 0 {
-					// Handle array of names (first element)
-					key = nameSlice[0]
+					// Handle array of names (first element) - extract value like JavaScript does
+					// JavaScript: key = typeof item.name === 'string' ? item.name : item.name[0].value;
+					first := nameSlice[0]
+					// Try to extract value from Keyword or similar node
+					if keyword, ok := first.(*Keyword); ok {
+						key = keyword.value
+					} else if nodeMap, ok := first.(map[string]any); ok {
+						if val, exists := nodeMap["value"]; exists {
+							key = val
+						} else {
+							key = first
+						}
+					} else {
+						key = first
+					}
 				}
 			}
 			value = decl.Value
@@ -344,15 +371,32 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 			value = item
 		}
 
-		// Create new rules slice with copies of base rules
-		newRules := make([]any, len(targetRuleset.Rules))
-		copy(newRules, targetRuleset.Rules)
+		// Create new rules slice - start with variable declarations first
+		// so they're available when other rules are evaluated
+		newRules := make([]any, 0, len(targetRuleset.Rules)+3)
 
-		// Inject @value variable
+		// Inject @value variable first
 		if valueName != "" && value != nil {
-			valueDecl, err := NewDeclaration(valueName, value, false, false, 0, nil, false, true)
+			valueDecl, err := NewDeclaration(valueName, value, false, false, 0, nil, false, nil)
 			if err == nil {
 				newRules = append(newRules, valueDecl)
+			}
+		}
+
+		// Inject @key variable
+		if keyName != "" && key != nil {
+			// Wrap the key value in an Anonymous or Quoted node
+			var keyValue any
+			if keyStr, ok := key.(string); ok {
+				// For string keys, wrap in Anonymous to ensure proper output
+				keyValue = NewAnonymous(keyStr, 0, nil, false, false, nil)
+			} else {
+				// For non-string keys (e.g., Dimension), use as-is
+				keyValue = key
+			}
+			keyDecl, err := NewDeclaration(keyName, keyValue, false, false, 0, nil, false, nil)
+			if err == nil {
+				newRules = append(newRules, keyDecl)
 			}
 		}
 
@@ -360,20 +404,15 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 		if indexName != "" {
 			indexDim, err := NewDimension(float64(i+1), nil)
 			if err == nil {
-				indexDecl, err := NewDeclaration(indexName, indexDim, false, false, 0, nil, false, true)
+				indexDecl, err := NewDeclaration(indexName, indexDim, false, false, 0, nil, false, nil)
 				if err == nil {
 					newRules = append(newRules, indexDecl)
 				}
 			}
 		}
 
-		// Inject @key variable
-		if keyName != "" && key != nil {
-			keyDecl, err := NewDeclaration(keyName, key, false, false, 0, nil, false, true)
-			if err == nil {
-				newRules = append(newRules, keyDecl)
-			}
-		}
+		// Then append the original callback rules
+		newRules = append(newRules, targetRuleset.Rules...)
 
 		// Create new ruleset with ampersand selector
 		ampersandElement := NewElement(nil, "&", false, 0, nil, nil)

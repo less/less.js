@@ -43,6 +43,8 @@ func If(context *Context, condition any, trueValue any, falseValue any) any {
 	if evaluable, ok := condition.(interface{ Eval(any) (any, error) }); ok {
 		result, _ := evaluable.Eval(evalContext)
 		conditionResult = result
+	} else if evaluable, ok := condition.(interface{ Eval(any) any }); ok {
+		conditionResult = evaluable.Eval(evalContext)
 	} else {
 		conditionResult = condition
 	}
@@ -52,6 +54,8 @@ func If(context *Context, condition any, trueValue any, falseValue any) any {
 		if evaluable, ok := trueValue.(interface{ Eval(any) (any, error) }); ok {
 			result, _ := evaluable.Eval(evalContext)
 			return result
+		} else if evaluable, ok := trueValue.(interface{ Eval(any) any }); ok {
+			return evaluable.Eval(evalContext)
 		}
 		return trueValue
 	}
@@ -61,6 +65,8 @@ func If(context *Context, condition any, trueValue any, falseValue any) any {
 		if evaluable, ok := falseValue.(interface{ Eval(any) (any, error) }); ok {
 			result, _ := evaluable.Eval(evalContext)
 			return result
+		} else if evaluable, ok := falseValue.(interface{ Eval(any) any }); ok {
+			return evaluable.Eval(evalContext)
 		}
 		return falseValue
 	}

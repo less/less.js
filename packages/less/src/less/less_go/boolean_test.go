@@ -40,21 +40,22 @@ func TestBoolean(t *testing.T) {
 }
 
 func TestBooleanWithLessNodes(t *testing.T) {
-	// Test with Less.js node objects - they should all be truthy as objects
+	// Test with Less.js node objects
 	tests := []struct {
-		name  string
-		input any
+		name     string
+		input    any
+		expected *Keyword
 	}{
-		{"Keyword true", NewKeyword("true")},
-		{"Keyword false", NewKeyword("false")},
-		{"Anonymous", NewAnonymous("content", 0, nil, false, false, nil)},
+		{"Keyword true", NewKeyword("true"), KeywordTrue},
+		{"Keyword false", NewKeyword("false"), KeywordFalse}, // false keyword should be falsy
+		{"Anonymous", NewAnonymous("content", 0, nil, false, false, nil), KeywordTrue}, // objects are truthy
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := Boolean(tt.input)
-			if result != KeywordTrue {
-				t.Errorf("Boolean(%s) = %v, want %v (objects should be truthy)", tt.name, result, KeywordTrue)
+			if result != tt.expected {
+				t.Errorf("Boolean(%s) = %v, want %v", tt.name, result, tt.expected)
 			}
 		})
 	}

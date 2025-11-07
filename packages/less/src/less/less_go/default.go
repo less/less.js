@@ -75,7 +75,17 @@ func isTruthy(v any) bool {
 	if v == nil {
 		return false
 	}
-	
+
+	// Handle Keyword types first (true/false keywords)
+	if keyword, ok := v.(*Keyword); ok {
+		// Compare with the predefined false keyword
+		if keyword == KeywordFalse || (keyword.value == "false") {
+			return false
+		}
+		// Keywords are generally truthy (like objects in JavaScript)
+		return true
+	}
+
 	switch val := v.(type) {
 	case bool:
 		return val

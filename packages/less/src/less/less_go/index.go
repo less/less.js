@@ -405,6 +405,9 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 					if math, ok := opts["math"].(MathType); ok {
 						toCSSOptions.Math = math
 					}
+					if paths, ok := opts["paths"].([]string); ok {
+						toCSSOptions.Paths = paths
+					}
 				}
 				
 				// Call ToCSS which will run TransformTree and visitors

@@ -189,7 +189,8 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 			Frames: []*Frame{
 				{
 					FunctionRegistry: tempRegistry,
-					EvalContext:      c.context, // Pass the evaluation context for variable resolution
+					EvalContext:      c.context,   // Pass the evaluation context for variable resolution
+					CurrentFileInfo:  c.fileInfo,  // Pass the current file information
 				},
 			},
 		}

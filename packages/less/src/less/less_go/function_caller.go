@@ -33,6 +33,7 @@ type Frame struct {
 	FunctionRegistry FunctionRegistry
 	variables        map[string]any // Add variable storage
 	EvalContext      EvalContext    // Reference to the evaluation context
+	CurrentFileInfo  map[string]any // Current file information for this frame
 }
 
 // Variable gets a variable from the frame

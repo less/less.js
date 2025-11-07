@@ -53,6 +53,7 @@ type ToCSSOptions struct {
 	RewriteUrls      any      // Can be string ("all", "local", "off") or RewriteUrlsType
 	Rootpath         string   // Root path for URL rewriting
 	Math             MathType // Math mode for operations (ALWAYS, PARENS_DIVISION, PARENS)
+	Paths            []string // Include paths for resolving imports and file references
 }
 
 // ToCSS converts the parse tree to CSS
@@ -78,6 +79,7 @@ func (pt *ParseTree) ToCSS(options *ToCSSOptions) (*ToCSSResult, error) {
 			"rewriteUrls":      options.RewriteUrls,
 			"rootpath":         options.Rootpath,
 			"math":             options.Math,
+			"paths":            options.Paths,
 		}
 	} else {
 		optionsMap = make(map[string]any)

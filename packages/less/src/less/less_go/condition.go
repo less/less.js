@@ -99,53 +99,10 @@ func (c *Condition) EvalBool(context any) bool {
 		a := eval(c.Lvalue)
 		b := eval(c.Rvalue)
 
-		// Convert to nodes if necessary for comparison
-		// Handle types that embed *Node (like Dimension, Color, etc.)
-		var aNode, bNode *Node
-
-		// Check if a has a way to get its embedded Node
-		if nodeProvider, ok := a.(interface{ GetNode() *Node }); ok {
-			aNode = nodeProvider.GetNode()
-		} else if n, ok := a.(*Node); ok {
-			aNode = n
-		} else if dim, ok := a.(*Dimension); ok {
-			// Dimension embeds *Node, access it directly
-			aNode = dim.Node
-		} else if col, ok := a.(*Color); ok {
-			// Color embeds *Node
-			aNode = col.Node
-		} else if kw, ok := a.(*Keyword); ok {
-			// Keyword embeds *Node
-			aNode = kw.Node
-		} else if anon, ok := a.(*Anonymous); ok {
-			// Anonymous embeds *Node - use the Value field for comparison
-			aNode = &Node{Value: anon.Value}
-		} else {
-			// Wrap non-node values in a Node for comparison
-			aNode = &Node{Value: a}
-		}
-
-		// Same for b
-		if nodeProvider, ok := b.(interface{ GetNode() *Node }); ok {
-			bNode = nodeProvider.GetNode()
-		} else if n, ok := b.(*Node); ok {
-			bNode = n
-		} else if dim, ok := b.(*Dimension); ok {
-			bNode = dim.Node
-		} else if col, ok := b.(*Color); ok {
-			bNode = col.Node
-		} else if kw, ok := b.(*Keyword); ok {
-			// Keyword embeds *Node
-			bNode = kw.Node
-		} else if anon, ok := b.(*Anonymous); ok {
-			// Anonymous embeds *Node - use the Value field for comparison
-			bNode = &Node{Value: anon.Value}
-		} else {
-			bNode = &Node{Value: b}
-		}
-
-		// For types that have their own Compare method (like Dimension), call it directly
+		// For types that have their own Compare method, call it directly
 		var compareResult int
+
+		// Handle Dimension comparison
 		if dim, ok := a.(*Dimension); ok {
 			if otherDim, ok := b.(*Dimension); ok {
 				if cmpPtr := dim.Compare(otherDim); cmpPtr != nil {
@@ -157,13 +114,140 @@ func (c *Condition) EvalBool(context any) bool {
 				compareResult = 999
 			}
 		} else if col, ok := a.(*Color); ok {
+			// Handle Color comparison
 			if otherCol, ok := b.(*Color); ok {
 				compareResult = col.Compare(otherCol)
 			} else {
 				compareResult = 999
 			}
+		} else if quoted, ok := a.(*Quoted); ok {
+			// Handle Quoted comparison
+			cmpResult := quoted.Compare(b)
+			if cmpResult == nil {
+				compareResult = 999 // undefined
+			} else {
+				compareResult = *cmpResult
+			}
+		} else if anon, ok := a.(*Anonymous); ok {
+			// Handle Anonymous comparison
+			cmpResult := anon.Compare(b)
+			if cmpResult == nil {
+				compareResult = 999 // undefined
+			} else if cmpInt, ok := cmpResult.(int); ok {
+				compareResult = cmpInt
+			} else {
+				compareResult = 999
+			}
+		} else if expr, ok := a.(*Expression); ok {
+			// Handle Expression (space-separated list) comparison
+			if otherExpr, ok := b.(*Expression); ok {
+				// Compare expressions by comparing their value arrays
+				if len(expr.Value) != len(otherExpr.Value) {
+					compareResult = 999 // different lengths = not equal
+				} else {
+					// Compare each element - recursively handle nested expressions
+					allEqual := true
+					for i := range expr.Value {
+						// Evaluate elements before comparing
+						aElem := eval(expr.Value[i])
+						bElem := eval(otherExpr.Value[i])
+
+						if debug {
+							fmt.Printf("DEBUG:   Expression element %d: aElem=%T(%v), bElem=%T(%v)\n", i, aElem, aElem, bElem, bElem)
+						}
+
+						// Recursively compare using a new condition
+						elemCond := NewCondition("=", aElem, bElem, 0, false)
+						if !elemCond.EvalBool(context) {
+							allEqual = false
+							if debug {
+								fmt.Printf("DEBUG:   Expression element %d comparison failed\n", i)
+							}
+							break
+						}
+					}
+					if allEqual {
+						compareResult = 0
+					} else {
+						compareResult = 999
+					}
+				}
+			} else {
+				compareResult = 999
+			}
+		} else if val, ok := a.(*Value); ok {
+			// Handle Value (comma-separated list) comparison
+			if otherVal, ok := b.(*Value); ok {
+				// Compare values by comparing their value arrays
+				if len(val.Value) != len(otherVal.Value) {
+					compareResult = 999 // different lengths = not equal
+				} else {
+					// Compare each element
+					allEqual := true
+					for i := range val.Value {
+						// Evaluate elements before comparing
+						aElem := eval(val.Value[i])
+						bElem := eval(otherVal.Value[i])
+
+						if debug {
+							fmt.Printf("DEBUG:   Value element %d: aElem=%T(%v), bElem=%T(%v)\n", i, aElem, aElem, bElem, bElem)
+						}
+
+						// Recursively compare using a new condition
+						elemCond := NewCondition("=", aElem, bElem, 0, false)
+						if !elemCond.EvalBool(context) {
+							allEqual = false
+							if debug {
+								fmt.Printf("DEBUG:   Value element %d comparison failed\n", i)
+							}
+							break
+						}
+					}
+					if allEqual {
+						compareResult = 0
+					} else {
+						compareResult = 999
+					}
+				}
+			} else {
+				compareResult = 999
+			}
 		} else {
-			// Fall back to Node.Compare
+			// Fall back to Node.Compare for other types
+			// Convert to nodes if necessary for comparison
+			var aNode, bNode *Node
+
+			// Check if a has a way to get its embedded Node
+			if nodeProvider, ok := a.(interface{ GetNode() *Node }); ok {
+				aNode = nodeProvider.GetNode()
+			} else if n, ok := a.(*Node); ok {
+				aNode = n
+			} else if dim, ok := a.(*Dimension); ok {
+				aNode = dim.Node
+			} else if col, ok := a.(*Color); ok {
+				aNode = col.Node
+			} else if kw, ok := a.(*Keyword); ok {
+				aNode = kw.Node
+			} else {
+				// Wrap non-node values in a Node for comparison
+				aNode = &Node{Value: a}
+			}
+
+			// Same for b
+			if nodeProvider, ok := b.(interface{ GetNode() *Node }); ok {
+				bNode = nodeProvider.GetNode()
+			} else if n, ok := b.(*Node); ok {
+				bNode = n
+			} else if dim, ok := b.(*Dimension); ok {
+				bNode = dim.Node
+			} else if col, ok := b.(*Color); ok {
+				bNode = col.Node
+			} else if kw, ok := b.(*Keyword); ok {
+				bNode = kw.Node
+			} else {
+				bNode = &Node{Value: b}
+			}
+
 			compareResult = Compare(aNode, bNode)
 		}
 

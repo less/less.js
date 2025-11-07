@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+
 type ExtendFinderVisitor struct {
 	visitor          *Visitor
 	contexts         []any
@@ -396,6 +397,10 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 	selectorsToAdd := make([][]any, 0)
 	var selectorPath []any
 
+
+	// Track which rulesets have matches so we can mark all their paths as visible
+	hasAnyMatches := false
+
 	// look at each selector path in the ruleset, find any extend matches and then copy, find and replace
 	for extendIndex = 0; extendIndex < len(allExtends); extendIndex++ {
 		for pathIndex = 0; pathIndex < len(ruleset.Paths); pathIndex++ {
@@ -419,15 +424,7 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 
 			if len(matches) > 0 {
 				allExtends[extendIndex].HasFoundMatches = true
-
-				// IMPORTANT: When a selector path is matched by an extend, mark all selectors
-				// in that path as visible because they're being referenced/used.
-				// This ensures the original selectors appear in the output alongside the extended ones.
-				for _, pathSelector := range selectorPath {
-					if sel, ok := pathSelector.(*Selector); ok {
-						sel.EnsureVisibility()
-					}
-				}
+				hasAnyMatches = true
 
 				for _, selfSelector := range allExtends[extendIndex].SelfSelectors {
 					// Extended selectors should always be visible since they're being added to rulesets
@@ -435,6 +432,19 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 					// extended selectors are actual CSS selectors that should appear in the output.
 					extendedSelectors := pev.extendSelector(matches, selectorPath, selfSelector, true)
 					selectorsToAdd = append(selectorsToAdd, extendedSelectors)
+				}
+			}
+		}
+	}
+
+	// IMPORTANT: If ANY path in this ruleset was matched by an extend, mark ALL paths
+	// in the ruleset as visible. This is because the ruleset represents a single block
+	// of CSS rules, and all its selectors should be output together.
+	if hasAnyMatches {
+		for _, path := range ruleset.Paths {
+			for _, pathSelector := range path {
+				if sel, ok := pathSelector.(*Selector); ok {
+					sel.EnsureVisibility()
 				}
 			}
 		}

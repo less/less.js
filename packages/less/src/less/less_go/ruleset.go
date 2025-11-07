@@ -1405,7 +1405,7 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 			if !compress {
 				sep = ",\n" + tabSetStr
 			}
-			
+
 			for i, path := range r.Paths {
 				if len(path) == 0 {
 					continue

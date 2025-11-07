@@ -432,6 +432,11 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 					// extended selectors are actual CSS selectors that should appear in the output.
 					extendedSelectors := pev.extendSelector(matches, selectorPath, selfSelector, true)
 					selectorsToAdd = append(selectorsToAdd, extendedSelectors)
+
+					// DEBUG: Log extended selectors
+					if debugMode := false; debugMode {
+						fmt.Printf("DEBUG: Extended selector created: %d elements\n", len(extendedSelectors))
+					}
 				}
 			}
 		}
@@ -577,31 +582,48 @@ func (pev *ProcessExtendsVisitor) isElementValuesEqual(elementValue1, elementVal
 	// Handle Attribute comparison
 	if attr1, ok1 := elementValue1.(*Attribute); ok1 {
 		if attr2, ok2 := elementValue2.(*Attribute); ok2 {
-			if attr1.Op != attr2.Op || attr1.Key != attr2.Key {
+			// Compare operators
+			if attr1.Op != attr2.Op {
 				return false
 			}
+
+			// Compare keys - need to handle both string and node types
+			key1, key2 := attr1.Key, attr2.Key
+			if k1, ok := key1.(interface{ ToCSS(any) string }); ok {
+				key1 = k1.ToCSS(nil)
+			}
+			if k2, ok := key2.(interface{ ToCSS(any) string }); ok {
+				key2 = k2.ToCSS(nil)
+			}
+			if key1 != key2 {
+				return false
+			}
+
+			// Compare values
 			if attr1.Value == nil || attr2.Value == nil {
 				return attr1.Value == attr2.Value
 			}
-			
-			// Get the actual values
-			var val1, val2 any
-			if valueProvider1, ok := attr1.Value.(interface{ GetValue() any }); ok {
+
+			// Get the actual values (matching JavaScript: elementValue1.value.value || elementValue1.value)
+			// JavaScript uses: elementValue1 = elementValue1.value.value || elementValue1.value
+			// In Go, we need to check for both GetValue() string and GetValue() any
+			var val1, val2 any = attr1.Value, attr2.Value
+
+			// Try to extract value from Quoted or similar types
+			// Check for GetValue() string first (like Quoted)
+			if valueProvider1, ok := attr1.Value.(interface{ GetValue() string }); ok {
 				val1 = valueProvider1.GetValue()
-			} else {
-				val1 = attr1.Value
+			} else if valueProvider1, ok := attr1.Value.(interface{ GetValue() any }); ok {
+				val1 = valueProvider1.GetValue()
 			}
-			if valueProvider2, ok := attr2.Value.(interface{ GetValue() any }); ok {
+
+			if valueProvider2, ok := attr2.Value.(interface{ GetValue() string }); ok {
 				val2 = valueProvider2.GetValue()
-			} else {
-				val2 = attr2.Value
+			} else if valueProvider2, ok := attr2.Value.(interface{ GetValue() any }); ok {
+				val2 = valueProvider2.GetValue()
 			}
-			
-			if val1Str, ok := val1.(string); ok {
-				if val2Str, ok := val2.(string); ok {
-					return val1Str == val2Str
-				}
-			}
+
+			// Direct comparison
 			return val1 == val2
 		}
 		return false

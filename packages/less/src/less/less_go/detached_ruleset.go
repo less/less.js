@@ -57,57 +57,62 @@ func (dr *DetachedRuleset) Eval(context any) any {
 // CallEval calls eval on the ruleset with the appropriate context
 func (dr *DetachedRuleset) CallEval(context any) any {
 	// Match JavaScript: return this.ruleset.eval(this.frames ? new contexts.Eval(context, this.frames.concat(context.frames)) : context);
-	
+
 	var evalContext any = context
-	
+
 	if dr.frames != nil {
 		// Create concatenated frames: this.frames.concat(context.frames)
 		var contextFrames []any
+
 		switch ctx := context.(type) {
 		case *Eval:
 			contextFrames = ctx.Frames
+			// Create new Eval with concatenated frames and all properties copied
+			newEval := &Eval{
+				Frames:            append(dr.frames, contextFrames...),
+				Compress:          ctx.Compress,
+				Math:              ctx.Math,
+				StrictUnits:       ctx.StrictUnits,
+				Paths:             ctx.Paths,
+				SourceMap:         ctx.SourceMap,
+				ImportMultiple:    ctx.ImportMultiple,
+				UrlArgs:           ctx.UrlArgs,
+				JavascriptEnabled: ctx.JavascriptEnabled,
+				PluginManager:     ctx.PluginManager,
+				ImportantScope:    ctx.ImportantScope,
+				RewriteUrls:       ctx.RewriteUrls,
+				CalcStack:         ctx.CalcStack,
+				ParensStack:       ctx.ParensStack,
+				InCalc:            ctx.InCalc,
+				MathOn:            ctx.MathOn,
+				DefaultFunc:       ctx.DefaultFunc,
+			}
+			evalContext = newEval
 		case map[string]any:
+			// Copy all context keys to preserve mediaBlocks, mediaPath, etc.
+			contextMap := make(map[string]any, len(ctx))
+			for k, v := range ctx {
+				contextMap[k] = v
+			}
+
 			if frames, ok := ctx["frames"].([]any); ok {
 				contextFrames = frames
 			}
-		}
-		
-		newFrames := append(dr.frames, contextFrames...)
-		
-		// Create new Eval context with concatenated frames
-		if evalCtx, ok := context.(*Eval); ok {
-			// If context is already an Eval, create a new one based on it
-			evalContext = NewEval(nil, newFrames)
-			// Copy properties from original context
-			newEval := evalContext.(*Eval)
-			newEval.Compress = evalCtx.Compress
-			newEval.Math = evalCtx.Math
-			newEval.StrictUnits = evalCtx.StrictUnits
-		} else {
-			// Otherwise create new Eval context
-			evalContext = NewEval(nil, newFrames)
+			newFrames := append(dr.frames, contextFrames...)
+			contextMap["frames"] = newFrames
+			evalContext = contextMap
+		default:
+			// Fallback for unknown context types
+			evalContext = context
 		}
 	}
-	
+
 	// Call eval on the ruleset
 	if dr.ruleset != nil {
 		// Check if ruleset is a Ruleset
 		if ruleset, ok := dr.ruleset.(*Ruleset); ok {
-			// For Rulesets, ensure we have a map context
-			mapContext, ok := evalContext.(map[string]any)
-			if !ok {
-				// Convert Eval context to map context
-				if evalCtx, ok := evalContext.(*Eval); ok {
-					mapContext = map[string]any{
-						"frames": evalCtx.Frames,
-					}
-				} else {
-					// Fallback for unknown context types
-					mapContext = map[string]any{
-						"frames": []any{},
-					}
-				}
-			}
+			// Ruleset.Eval expects map[string]any, convert if needed
+			mapContext := evalContextToMap(evalContext)
 			result, err := ruleset.Eval(mapContext)
 			if err != nil {
 				// Match JavaScript behavior - throw the error
@@ -120,28 +125,15 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 		if node, ok := dr.ruleset.(*Node); ok && node.Value != nil {
 			// Check if the value is a Ruleset
 			if ruleset, ok := node.Value.(*Ruleset); ok {
-				// For Rulesets, ensure we have a map context
-				mapContext, ok := evalContext.(map[string]any)
-				if !ok {
-					// Convert Eval context to map context
-					if evalCtx, ok := evalContext.(*Eval); ok {
-						mapContext = map[string]any{
-							"frames": evalCtx.Frames,
-						}
-					} else {
-						// Fallback for unknown context types
-						mapContext = map[string]any{
-							"frames": []any{},
-						}
-					}
-				}
+				// Ruleset.Eval expects map[string]any, convert if needed
+				mapContext := evalContextToMap(evalContext)
 				result, err := ruleset.Eval(mapContext)
 				if err != nil {
 					panic(err)
 				}
 				return result
 			}
-			
+
 			// Try single-return eval first (matches most nodes)
 			if evaluator, ok := node.Value.(interface{ Eval(any) any }); ok {
 				return evaluator.Eval(evalContext)
@@ -156,7 +148,7 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 				return result
 			}
 		}
-		
+
 		// Try to eval the ruleset directly if it has an Eval method
 		if evaluator, ok := dr.ruleset.(interface{ Eval(any) (any, error) }); ok {
 			result, err := evaluator.Eval(evalContext)
@@ -165,12 +157,41 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 			}
 			return result
 		}
-		
+
 		// If nothing worked, return the ruleset itself
 		return dr.ruleset
 	}
-	
+
 	return nil
+}
+
+// evalContextToMap converts an evaluation context to map[string]any for Ruleset.Eval
+func evalContextToMap(context any) map[string]any {
+	switch ctx := context.(type) {
+	case map[string]any:
+		return ctx
+	case *Eval:
+		// Convert Eval to map, preserving all necessary properties
+		return map[string]any{
+			"frames":            ctx.Frames,
+			"compress":          ctx.Compress,
+			"math":              ctx.Math,
+			"strictUnits":       ctx.StrictUnits,
+			"paths":             ctx.Paths,
+			"sourceMap":         ctx.SourceMap,
+			"importMultiple":    ctx.ImportMultiple,
+			"urlArgs":           ctx.UrlArgs,
+			"javascriptEnabled": ctx.JavascriptEnabled,
+			"pluginManager":     ctx.PluginManager,
+			"importantScope":    ctx.ImportantScope,
+			"rewriteUrls":       ctx.RewriteUrls,
+		}
+	default:
+		// Fallback for unknown types
+		return map[string]any{
+			"frames": []any{},
+		}
+	}
 }
 
 // Type returns the type of the node

@@ -402,12 +402,39 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 				}
 				
 				// Call ToCSS which will run TransformTree and visitors
-				cssResult, err := parseTreeInstance.ToCSS(toCSSOptions)
-				if err != nil {
-					errorChan <- err
-				} else {
-					resultChan <- cssResult.CSS
-				}
+				// Add panic recovery to catch runtime errors during ToCSS
+				func() {
+					defer func() {
+						if r := recover(); r != nil {
+							// Get stack trace
+							buf := make([]byte, 8192)
+							n := runtime.Stack(buf, false)
+							stackTrace := string(buf[:n])
+
+							var errMsg string
+							if err, ok := r.(error); ok {
+								errMsg = err.Error()
+							} else {
+								errMsg = fmt.Sprintf("%v", r)
+							}
+
+							// Always log for debugging
+							if strings.Contains(errMsg, "index out of range") {
+								fmt.Fprintf(os.Stderr, "\n=== PANIC in ToCSS ===\nError: %s\nStack:\n%s\n===\n", errMsg, stackTrace)
+								fmt.Printf("\n=== PANIC in ToCSS ===\nError: %s\nStack:\n%s\n===\n", errMsg, stackTrace)
+							}
+
+							errorChan <- fmt.Errorf("%s", errMsg)
+						}
+					}()
+
+					cssResult, err := parseTreeInstance.ToCSS(toCSSOptions)
+					if err != nil {
+						errorChan <- err
+					} else {
+						resultChan <- cssResult.CSS
+					}
+				}()
 			}
 		})
 		

@@ -116,6 +116,11 @@ func (efv *ExtendFinderVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 			if j == 0 {
 				extend.FirstExtendOnThisSelectorPath = true
 			}
+			// Defensive bounds check - ensure stack is not empty
+			if len(efv.allExtendsStack) == 0 {
+				// Initialize stack with empty slice if needed
+				efv.allExtendsStack = append(efv.allExtendsStack, make([]any, 0))
+			}
 			efv.allExtendsStack[len(efv.allExtendsStack)-1] = append(efv.allExtendsStack[len(efv.allExtendsStack)-1], extend)
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -304,12 +305,23 @@ func createPromise(lessContext *LessContext, input string, options map[string]an
 		// Add panic recovery for goroutine - panics in goroutines need separate recovery
 		defer func() {
 			if r := recover(); r != nil {
+				// Get stack trace for debugging
+				buf := make([]byte, 4096)
+				n := runtime.Stack(buf, false)
+				stackTrace := string(buf[:n])
+
 				// Format error message
 				var errMsg string
 				if err, ok := r.(error); ok {
 					errMsg = err.Error()
 				} else {
 					errMsg = fmt.Sprintf("%v", r)
+				}
+
+				// Log stack trace for array bounds and nil pointer errors
+				if strings.Contains(errMsg, "index out of range") || strings.Contains(errMsg, "nil pointer") {
+					fmt.Fprintf(os.Stderr, "\n=== PANIC in parse goroutine ===\nError: %s\nStack:\n%s\n===\n", errMsg, stackTrace)
+					fmt.Printf("\n=== PANIC in parse goroutine ===\nError: %s\nStack:\n%s\n===\n", errMsg, stackTrace)
 				}
 
 				// Set error in promise

@@ -371,6 +371,17 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		}
 	}
 
+	// CRITICAL FIX: If the final result is a Value object, evaluate it to unwrap the actual value
+	// This is needed for guard conditions like `when (#ns.options[option])` where the lookup
+	// returns a Value containing a Keyword, but we need the Keyword itself for comparison
+	if value, ok := rules.(*Value); ok {
+		unwrapped, err := value.Eval(context)
+		if err != nil {
+			return nil, err
+		}
+		rules = unwrapped
+	}
+
 	return rules, nil
 }
 

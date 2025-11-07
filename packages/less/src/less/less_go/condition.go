@@ -104,6 +104,9 @@ func (c *Condition) EvalBool(context any) bool {
 		} else if kw, ok := a.(*Keyword); ok {
 			// Keyword embeds *Node
 			aNode = kw.Node
+		} else if anon, ok := a.(*Anonymous); ok {
+			// Anonymous embeds *Node - use the Value field for comparison
+			aNode = &Node{Value: anon.Value}
 		} else {
 			// Wrap non-node values in a Node for comparison
 			aNode = &Node{Value: a}
@@ -121,6 +124,9 @@ func (c *Condition) EvalBool(context any) bool {
 		} else if kw, ok := b.(*Keyword); ok {
 			// Keyword embeds *Node
 			bNode = kw.Node
+		} else if anon, ok := b.(*Anonymous); ok {
+			// Anonymous embeds *Node - use the Value field for comparison
+			bNode = &Node{Value: anon.Value}
 		} else {
 			bNode = &Node{Value: b}
 		}

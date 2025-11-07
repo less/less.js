@@ -70,7 +70,7 @@ func (efv *ExtendFinderVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitAr
 	if rules != nil {
 		ruleCnt = len(rules)
 	}
-	
+
 	for i = 0; i < ruleCnt; i++ {
 		if extendRule, ok := rules[i].(*Extend); ok {
 			allSelectorsExtendList = append(allSelectorsExtendList, extendRule)
@@ -141,31 +141,63 @@ func (efv *ExtendFinderVisitor) VisitRulesetOut(rulesetNode any) {
 }
 
 func (efv *ExtendFinderVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) {
-	if media, ok := mediaNode.(interface{ SetAllExtends([]any) }); ok {
-		media.SetAllExtends(make([]any, 0))
+	if media, ok := mediaNode.(interface{ SetAllExtends([]*Extend) }); ok {
+		media.SetAllExtends(make([]*Extend, 0))
 		efv.allExtendsStack = append(efv.allExtendsStack, make([]any, 0))
 	}
 }
 
 func (efv *ExtendFinderVisitor) VisitMediaOut(mediaNode any) {
-	// Match JavaScript: this.allExtendsStack.length = this.allExtendsStack.length - 1;
-	// But ensure we never go below 1 element (the root level)
+	// Before popping the stack, set the collected extends back onto the media node
 	if len(efv.allExtendsStack) > 1 {
+		// Get the extends collected for this media context
+		mediaExtends := efv.allExtendsStack[len(efv.allExtendsStack)-1]
+
+		// Convert []any to []*Extend
+		extends := make([]*Extend, 0, len(mediaExtends))
+		for _, ext := range mediaExtends {
+			if extend, ok := ext.(*Extend); ok {
+				extends = append(extends, extend)
+			}
+		}
+
+		// Set extends back onto the media node
+		if media, ok := mediaNode.(interface{ SetAllExtends([]*Extend) }); ok {
+			media.SetAllExtends(extends)
+		}
+
+		// Pop the stack
 		efv.allExtendsStack = efv.allExtendsStack[:len(efv.allExtendsStack)-1]
 	}
 }
 
 func (efv *ExtendFinderVisitor) VisitAtRule(atRuleNode any, visitArgs *VisitArgs) {
-	if atRule, ok := atRuleNode.(interface{ SetAllExtends([]any) }); ok {
-		atRule.SetAllExtends(make([]any, 0))
+	if atRule, ok := atRuleNode.(interface{ SetAllExtends([]*Extend) }); ok {
+		atRule.SetAllExtends(make([]*Extend, 0))
 		efv.allExtendsStack = append(efv.allExtendsStack, make([]any, 0))
 	}
 }
 
 func (efv *ExtendFinderVisitor) VisitAtRuleOut(atRuleNode any) {
-	// Match JavaScript: this.allExtendsStack.length = this.allExtendsStack.length - 1;
-	// But ensure we never go below 1 element (the root level)
+	// Before popping the stack, set the collected extends back onto the atrule node
 	if len(efv.allExtendsStack) > 1 {
+		// Get the extends collected for this atrule context
+		atRuleExtends := efv.allExtendsStack[len(efv.allExtendsStack)-1]
+
+		// Convert []any to []*Extend
+		extends := make([]*Extend, 0, len(atRuleExtends))
+		for _, ext := range atRuleExtends {
+			if extend, ok := ext.(*Extend); ok {
+				extends = append(extends, extend)
+			}
+		}
+
+		// Set extends back onto the atrule node
+		if atRule, ok := atRuleNode.(interface{ SetAllExtends([]*Extend) }); ok {
+			atRule.SetAllExtends(extends)
+		}
+
+		// Pop the stack
 		efv.allExtendsStack = efv.allExtendsStack[:len(efv.allExtendsStack)-1]
 	}
 }

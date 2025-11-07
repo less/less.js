@@ -92,7 +92,12 @@ func (m *Media) Accept(visitor any) {
 		}
 	}
 	if m.Rules != nil {
-		if v, ok := visitor.(interface{ VisitArray([]any) []any }); ok {
+		// Try variadic bool version first (like Ruleset.Accept)
+		if v, ok := visitor.(interface{ VisitArray([]any, ...bool) []any }); ok {
+			m.Rules = v.VisitArray(m.Rules)
+		} else if v, ok := visitor.(interface{ VisitArray([]any, bool) []any }); ok {
+			m.Rules = v.VisitArray(m.Rules, false)
+		} else if v, ok := visitor.(interface{ VisitArray([]any) []any }); ok {
 			m.Rules = v.VisitArray(m.Rules)
 		}
 	}

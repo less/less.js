@@ -185,6 +185,7 @@ func Each(list any, rs any) any {
 func EachWithContext(list any, rs any, ctx *Context) any {
 	rules := make([]any, 0)
 	var iterator []any
+	var sourceRuleset *Ruleset // Track the source ruleset for property resolution
 
 	// Extract the actual eval context from the Context struct
 	// The Context struct contains Frames with EvalContext, but Variable.Eval expects the map-based context
@@ -240,10 +241,13 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 		}
 	} else if detachedRuleset, ok := list.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil {
 		// list.ruleset case
+		// Store the source ruleset for property resolution
 		if rulesetNode, ok := detachedRuleset.ruleset.(*Ruleset); ok {
+			sourceRuleset = rulesetNode
 			iterator = rulesetNode.Rules
 		} else if node, ok := detachedRuleset.ruleset.(*Node); ok && node.Value != nil {
 			if rulesetNode, ok := node.Value.(*Ruleset); ok {
+				sourceRuleset = rulesetNode
 				iterator = rulesetNode.Rules
 			}
 		}
@@ -363,6 +367,7 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 					}
 				}
 			}
+
 			value = decl.Value
 		} else {
 			// For non-declaration items, use 1-based index as key
@@ -423,8 +428,60 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 
 	// The JavaScript version calls .eval(this.context) on the final result
 	if evalContext != nil {
+		// If we're iterating over a detached ruleset, we need to add it to the frames
+		// so that property references in declaration values can be resolved
+		finalEvalContext := evalContext
+		if sourceRuleset != nil {
+			// Add the source ruleset to the frames for property resolution
+			// This ensures that property references like $background-color can find
+			// the background-color property from the same detached ruleset
+			if contextMap, ok := evalContext.(map[string]any); ok {
+				// Create a new context with the source ruleset prepended to frames
+				newContextMap := make(map[string]any, len(contextMap))
+				for k, v := range contextMap {
+					newContextMap[k] = v
+				}
+
+				// Get existing frames or create empty slice
+				var existingFrames []any
+				if frames, ok := contextMap["frames"].([]any); ok {
+					existingFrames = frames
+				} else {
+					existingFrames = []any{}
+				}
+
+				// Prepend source ruleset to frames
+				newFrames := append([]any{sourceRuleset}, existingFrames...)
+				newContextMap["frames"] = newFrames
+				finalEvalContext = newContextMap
+			} else if evalCtx, ok := evalContext.(*Eval); ok {
+				// Handle *Eval context type
+				// Create a new Eval context with the source ruleset prepended to frames
+				newEvalCtx := &Eval{
+					Frames:            append([]any{sourceRuleset}, evalCtx.Frames...),
+					Compress:          evalCtx.Compress,
+					Math:              evalCtx.Math,
+					StrictUnits:       evalCtx.StrictUnits,
+					Paths:             evalCtx.Paths,
+					SourceMap:         evalCtx.SourceMap,
+					ImportMultiple:    evalCtx.ImportMultiple,
+					UrlArgs:           evalCtx.UrlArgs,
+					JavascriptEnabled: evalCtx.JavascriptEnabled,
+					PluginManager:     evalCtx.PluginManager,
+					ImportantScope:    evalCtx.ImportantScope,
+					RewriteUrls:       evalCtx.RewriteUrls,
+					CalcStack:         evalCtx.CalcStack,
+					ParensStack:       evalCtx.ParensStack,
+					InCalc:            evalCtx.InCalc,
+					MathOn:            evalCtx.MathOn,
+					DefaultFunc:       evalCtx.DefaultFunc,
+				}
+				finalEvalContext = newEvalCtx
+			}
+		}
+
 		// Evaluate the final ruleset with context
-		result, err := finalRuleset.Eval(evalContext)
+		result, err := finalRuleset.Eval(finalEvalContext)
 		if err != nil {
 			// If evaluation fails, return the unevaluated ruleset
 			return finalRuleset

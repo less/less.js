@@ -142,8 +142,17 @@ func (p *Property) Eval(context any) (any, error) {
 		}
 
 		// Evaluate and return the value
+		// Try single-return Eval first
 		if valueNode, ok := value.(Node); ok {
 			result := valueNode.Eval(context)
+			return result
+		}
+		// Try double-return Eval
+		if evalable, ok := value.(interface{ Eval(any) (any, error) }); ok {
+			result, err := evalable.Eval(context)
+			if err != nil {
+				return nil
+			}
 			return result
 		}
 

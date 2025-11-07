@@ -952,11 +952,34 @@ func (r *Ruleset) Properties() map[string][]any {
 		if decl, ok := rule.(*Declaration); ok && !decl.variable {
 			var name string
 			// Handle name like JavaScript: name.length === 1 && name[0] instanceof Keyword
-			if nameSlice, ok := decl.name.([]any); ok && len(nameSlice) == 1 {
-				if kw, ok := nameSlice[0].(*Keyword); ok {
-					name = kw.value
-				} else {
-					name = fmt.Sprintf("%v", nameSlice[0])
+			if nameSlice, ok := decl.name.([]any); ok {
+				if len(nameSlice) == 1 {
+					// Single element - extract value from it
+					if kw, ok := nameSlice[0].(*Keyword); ok {
+						name = kw.value
+					} else {
+						name = fmt.Sprintf("%v", nameSlice[0])
+					}
+				} else if len(nameSlice) > 1 {
+					// Multiple elements - concatenate their values
+					// This handles cases like compound property names
+					parts := make([]string, 0, len(nameSlice))
+					for _, elem := range nameSlice {
+						if kw, ok := elem.(*Keyword); ok {
+							parts = append(parts, kw.value)
+						} else if str, ok := elem.(string); ok {
+							parts = append(parts, str)
+						} else if anon, ok := elem.(*Anonymous); ok {
+							if val, ok := anon.Value.(string); ok {
+								parts = append(parts, val)
+							} else {
+								parts = append(parts, fmt.Sprintf("%v", anon.Value))
+							}
+						} else {
+							parts = append(parts, fmt.Sprintf("%v", elem))
+						}
+					}
+					name = strings.Join(parts, "")
 				}
 			} else if nameStr, ok := decl.name.(string); ok {
 				name = nameStr

@@ -698,7 +698,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 					rsRules = r.removeRuleAtIndex(rsRules, i)
 					ruleset.Rules = rsRules
 					i--
-					
+
 					// Add the sub rules
 					for _, subRule := range rs.Rules {
 						if r.shouldIncludeSubRule(subRule, rs) {
@@ -714,8 +714,16 @@ func (r *Ruleset) Eval(context any) (any, error) {
 	}
 
 	// Pop the stack
-	if frames, ok := ctx["frames"].([]any); ok && len(frames) > 0 {
-		ctx["frames"] = frames[1:]
+	if evalCtx != nil {
+		// Pop from *Eval context
+		if len(evalCtx.Frames) > 0 {
+			evalCtx.Frames = evalCtx.Frames[1:]
+		}
+	} else {
+		// Pop from map context
+		if frames, ok := ctx["frames"].([]any); ok && len(frames) > 0 {
+			ctx["frames"] = frames[1:]
+		}
 	}
 	if selectors, ok := ctx["selectors"].([]any); ok && len(selectors) > 0 {
 		ctx["selectors"] = selectors[1:]
@@ -890,12 +898,12 @@ func (r *Ruleset) Variables() map[string]any {
 	if r.variables != nil {
 		return r.variables
 	}
-	
+
 	if r.Rules == nil {
 		r.variables = make(map[string]any)
 		return r.variables
 	}
-	
+
 	// Use reduce-like pattern from JavaScript version
 	r.variables = make(map[string]any)
 	for _, rule := range r.Rules {
@@ -906,11 +914,11 @@ func (r *Ruleset) Variables() map[string]any {
 		}
 		// Handle import rules with variables like JavaScript version
 		if ruleType, ok := rule.(interface{ GetType() string }); ok && ruleType.GetType() == "Import" {
-			if importRule, ok := rule.(interface{ 
-				GetRoot() interface{ 
+			if importRule, ok := rule.(interface{
+				GetRoot() interface{
 					Variables() map[string]any
-					Variable(string) any 
-				} 
+					Variable(string) any
+				}
 			}); ok {
 				if root := importRule.GetRoot(); root != nil {
 					vars := root.Variables()
@@ -923,7 +931,7 @@ func (r *Ruleset) Variables() map[string]any {
 			}
 		}
 	}
-	
+
 	return r.variables
 }
 

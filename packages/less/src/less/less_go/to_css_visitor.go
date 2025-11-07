@@ -50,8 +50,9 @@ func (u *CSSVisitorUtils) KeepOnlyVisibleChilds(owner any) {
 				// Node.IsVisible() returns *bool, so we need to handle that
 				if visibleRule, hasVisible := rule.(interface{ IsVisible() *bool }); hasVisible {
 					vis := visibleRule.IsVisible()
-					// Keep only if explicitly visible (not nil and true)
-					if vis != nil && *vis {
+					// Match JavaScript: undefined/null means inherit parent's visibility (keep it)
+					// Only filter out if explicitly set to false
+					if vis == nil || *vis {
 						visibleRules = append(visibleRules, rule)
 					}
 				} else {

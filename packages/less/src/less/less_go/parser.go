@@ -2377,12 +2377,11 @@ func (p *Parsers) Addition() any {
 	isSpaced = p.parser.parserInput.IsWhitespace(-1)
 
 	for {
-		// Skip leading whitespace before looking for operator
-		for p.parser.parserInput.IsWhitespace(0) {
-			p.parser.parserInput.SetIndex(p.parser.parserInput.GetIndex() + 1)
-		}
-
-		opMatch := p.parser.parserInput.Re(regexp.MustCompile(`^[-+]\s*`))
+		// Match JavaScript: op = parserInput.$re(/^[-+]\s+/) || (!isSpaced && (parserInput.$char('+') || parserInput.$char('-')));
+		// The regex requires at least one space AFTER the operator
+		// If there was space before (isSpaced), we need space after too
+		// If no space before, we can match bare operator
+		opMatch := p.parser.parserInput.Re(regexp.MustCompile(`^[-+]\s+`))
 		if opMatch != nil {
 			// Handle both string and []string return types from parserInput.Re()
 			if matches, ok := opMatch.([]string); ok && len(matches) > 0 {
@@ -2390,7 +2389,8 @@ func (p *Parsers) Addition() any {
 			} else if matchStr, ok := opMatch.(string); ok {
 				op = strings.TrimSpace(matchStr)
 			}
-		} else {
+		} else if !isSpaced {
+			// Only match bare operator if there was no space before
 			if p.parser.parserInput.Char('+') != nil {
 				op = "+"
 			} else if p.parser.parserInput.Char('-') != nil {

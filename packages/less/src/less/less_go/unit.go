@@ -3,7 +3,6 @@ package less_go
 import (
 	"sort"
 	"strings"
-
 )
 
 // Unit represents a unit in the Less AST

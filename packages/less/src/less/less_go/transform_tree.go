@@ -154,7 +154,10 @@ func TransformTree(root any, options map[string]any) any {
 		NewJoinSelectorVisitor(),
 		NewSetTreeVisibilityVisitor(true), // This is MarkVisibleSelectorsVisitor in JS
 		NewExtendVisitor(),
-		NewToCSSVisitor(map[string]any{"compress": getBoolOption(options, "compress")}),
+		NewToCSSVisitor(map[string]any{
+			"compress":    getBoolOption(options, "compress"),
+			"strictUnits": getBoolOption(options, "strictUnits"),
+		}),
 	}
 
 	preEvalVisitors := make([]any, 0)

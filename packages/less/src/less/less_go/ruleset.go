@@ -136,7 +136,7 @@ func (r *Ruleset) IsRulesetLike() bool {
 // ToCSS converts the ruleset to CSS output (original signature)
 func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	var output strings.Builder
-	
+
 	// Create context map from options
 	contextMap := make(map[string]any)
 

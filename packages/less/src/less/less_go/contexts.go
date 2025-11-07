@@ -367,6 +367,8 @@ func copyFromOriginal(original map[string]any, destination any) {
 			case "parens", "strict":
 				d.Math = MathParens
 			}
+		} else if mathInt, ok := original["math"].(int); ok {
+			d.Math = MathType(mathInt)
 		}
 		if strictUnits, ok := original["strictUnits"].(bool); ok {
 			d.StrictUnits = strictUnits

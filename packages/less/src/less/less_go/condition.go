@@ -1,7 +1,9 @@
 package less_go
 
 import (
+	"fmt"
 	"math"
+	"os"
 	"strings"
 )
 
@@ -51,6 +53,11 @@ func (c *Condition) EvalBool(context any) bool {
 	// JavaScript implementation:
 	// Evaluates lvalue and rvalue, then uses Node.compare for comparison operators
 
+	debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
+	if debug {
+		fmt.Printf("DEBUG:   Condition.EvalBool: op=%s, lvalue=%T, rvalue=%T\n", c.Op, c.Lvalue, c.Rvalue)
+	}
+
 	// Helper to evaluate a node
 	eval := func(node any) any {
 		if evaluator, ok := node.(interface{ Eval(any) (any, error) }); ok {
@@ -72,6 +79,9 @@ func (c *Condition) EvalBool(context any) bool {
 		abool := toBool(a)
 		bbool := toBool(b)
 		result = abool && bbool
+		if debug {
+			fmt.Printf("DEBUG:   Condition.EvalBool AND: a=%v (%t), b=%v (%t), result=%t\n", a, abool, b, bbool, result)
+		}
 
 	case "or":
 		a := eval(c.Lvalue)
@@ -80,6 +90,9 @@ func (c *Condition) EvalBool(context any) bool {
 		abool := toBool(a)
 		bbool := toBool(b)
 		result = abool || bbool
+		if debug {
+			fmt.Printf("DEBUG:   Condition.EvalBool OR: a=%v (%t), b=%v (%t), result=%t\n", a, abool, b, bbool, result)
+		}
 
 	default:
 		// For comparison operators, use Node.compare

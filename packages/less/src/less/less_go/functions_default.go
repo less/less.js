@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 )
 
 // DefaultFunctionDefinition implements the default() function for mixin guards
@@ -31,12 +32,23 @@ func (d *DefaultFunctionDefinition) CallCtx(ctx *Context, args ...any) (any, err
 
 	// Try to get the default function from the context
 	var defaultFunc *DefaultFunc
-	
+
+	debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
+	if debug {
+		fmt.Printf("DEBUG:   default() CallCtx: looking through %d frames\n", len(ctx.Frames))
+	}
+
 	// Look through frames for eval context
 	for i := len(ctx.Frames) - 1; i >= 0; i-- {
 		frame := ctx.Frames[i]
+		if debug {
+			fmt.Printf("DEBUG:     Frame[%d]: EvalContext type=%T\n", i, frame.EvalContext)
+		}
 		if evalCtx, ok := frame.EvalContext.(EvalContext); ok {
 			defaultFunc = evalCtx.GetDefaultFunc()
+			if debug {
+				fmt.Printf("DEBUG:     Frame[%d]: GetDefaultFunc() returned %v\n", i, defaultFunc)
+			}
 			if defaultFunc != nil {
 				break
 			}
@@ -44,6 +56,9 @@ func (d *DefaultFunctionDefinition) CallCtx(ctx *Context, args ...any) (any, err
 	}
 
 	if defaultFunc == nil {
+		if debug {
+			fmt.Printf("DEBUG:   default() CallCtx: no defaultFunc found, returning nil\n")
+		}
 		// Return nil if no default function is available
 		return nil, nil
 	}

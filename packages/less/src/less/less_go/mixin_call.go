@@ -160,13 +160,12 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 			fmt.Printf("DEBUG: calcDefGroup for %s\n", mixinType)
 		}
 
+		// Reset conditionResult to exactly 2 elements for this calculation
+		// Match JavaScript: conditionResult[f] = true (array is reused but values are set)
+		conditionResult = []bool{false, false}
+
 		for f = 0; f < 2; f++ {
-			conditionResult = append(conditionResult, true)
-			if len(conditionResult) <= f {
-				conditionResult = append(conditionResult, true)
-			} else {
-				conditionResult[f] = true
-			}
+			conditionResult[f] = true
 			defaultFunc.Value(f)
 
 			for p = 0; p < len(mixinPath) && conditionResult[f]; p++ {

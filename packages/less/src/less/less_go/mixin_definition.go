@@ -645,7 +645,37 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 	}
 
 	// Create evaluation context similar to JavaScript version
-	paramFrame, err := md.EvalParams(context, map[string]any{"frames": md.Frames}, args, []any{})
+	// Match JavaScript: new contexts.Eval(context, this.frames ? this.frames.concat(context.frames) : context.frames)
+	// This preserves all context properties (including defaultFunc) while updating frames
+	var mixinFrames []any
+	if md.Frames != nil {
+		if ctx, ok := context.(map[string]any); ok {
+			if ctxFrames, ok := ctx["frames"].([]any); ok {
+				mixinFrames = append(md.Frames, ctxFrames...)
+			} else {
+				mixinFrames = md.Frames
+			}
+		} else {
+			mixinFrames = md.Frames
+		}
+	} else {
+		if ctx, ok := context.(map[string]any); ok {
+			if ctxFrames, ok := ctx["frames"].([]any); ok {
+				mixinFrames = ctxFrames
+			}
+		}
+	}
+
+	// Create new context preserving all properties from original context
+	mixinEnv := make(map[string]any)
+	if ctx, ok := context.(map[string]any); ok {
+		for k, v := range ctx {
+			mixinEnv[k] = v
+		}
+	}
+	mixinEnv["frames"] = mixinFrames
+
+	paramFrame, err := md.EvalParams(context, mixinEnv, args, []any{})
 	if err != nil {
 		return false
 	}
@@ -676,7 +706,11 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 
 		debug := os.Getenv("LESS_DEBUG_GUARDS") == "1"
 		if debug {
-			fmt.Printf("DEBUG:  MatchCondition for '%s': result=%v (%T)\n", md.Name, result, result)
+			condType := fmt.Sprintf("%T", md.Condition)
+			if cond, ok := md.Condition.(*Condition); ok {
+				condType = fmt.Sprintf("*Condition(op=%s)", cond.Op)
+			}
+			fmt.Printf("DEBUG:  MatchCondition for '%s': condition type=%s, result=%v (%T)\n", md.Name, condType, result, result)
 		}
 
 		// Check if result is falsy

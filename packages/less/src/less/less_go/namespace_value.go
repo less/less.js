@@ -55,7 +55,7 @@ func (nv *NamespaceValue) FileInfo() map[string]any {
 // Eval evaluates the namespace value
 func (nv *NamespaceValue) Eval(context any) (any, error) {
 	var name string
-	
+
 	// Start by evaluating the initial value - matches JavaScript: rules = this.value.eval(context)
 	var rules any
 	// Handle MixinCall which has Eval(any) ([]any, error) signature
@@ -305,6 +305,26 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 				}
 				if evalDecl, ok := evalResult.(*Declaration); ok {
 					rules = evalDecl.Value
+					// Now evaluate the Value to get the actual value node (e.g., *Dimension)
+					if valueEvaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
+						valueResult, err := valueEvaluator.Eval(context)
+						if err != nil {
+							return nil, err
+						}
+						rules = valueResult
+
+						// If the result is still an Anonymous with a string value, try to parse it
+						// This handles cases where ValueParseFunc is not available on the ruleset
+						if anon, ok := rules.(*Anonymous); ok {
+							if str, ok := anon.Value.(string); ok {
+								// Try to parse dimension strings like "10px" into *Dimension
+								// Use a simple regex-like check for dimension patterns
+								if parsed := TryParseDimensionString(str); parsed != nil {
+									rules = parsed
+								}
+							}
+						}
+					}
 				}
 			} else if evaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
 				// Evaluate the value if it's evaluable
@@ -350,7 +370,7 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			}
 		}
 	}
-	
+
 	return rules, nil
 }
 
@@ -364,4 +384,54 @@ func (nv *NamespaceValue) getFilename() string {
 	return ""
 }
 
-// Note: LessError is now defined in less_error.go with full implementation 
+// TryParseDimensionString attempts to parse a string like "10px" into a *Dimension
+// Returns nil if parsing fails
+func TryParseDimensionString(str string) any {
+	// Try to parse as a dimension (number + unit)
+	// Simple implementation: extract number and unit parts
+	if len(str) == 0 {
+		return nil
+	}
+
+	// Find where the unit starts (first non-digit, non-dot, non-minus character)
+	numEnd := 0
+	hasDigit := false
+	hasDot := false
+	for i, ch := range str {
+		if ch >= '0' && ch <= '9' {
+			hasDigit = true
+			numEnd = i + 1
+		} else if ch == '.' && !hasDot {
+			hasDot = true
+			numEnd = i + 1
+		} else if ch == '-' && i == 0 {
+			numEnd = 1
+		} else {
+			break
+		}
+	}
+
+	// Must have at least one digit
+	if !hasDigit {
+		return nil
+	}
+
+	numStr := str[:numEnd]
+	unit := str[numEnd:]
+
+	// Try to parse the number
+	var value float64
+	_, err := fmt.Sscanf(numStr, "%f", &value)
+	if err != nil {
+		return nil
+	}
+
+	// Create a Dimension node
+	dim, err := NewDimension(value, unit)
+	if err != nil {
+		return nil
+	}
+	return dim
+}
+
+// Note: LessError is now defined in less_error.go with full implementation

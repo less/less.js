@@ -976,7 +976,13 @@ func (r *Ruleset) Variable(name string) map[string]any {
 func (r *Ruleset) Property(name string) []any {
 	props := r.Properties()
 	if decl, exists := props[name]; exists {
-		return decl
+		// Transform declarations to parse Anonymous values into proper nodes (e.g., "10px" -> *Dimension)
+		// This matches what Variable() does and is needed for namespace lookups in operations
+		transformed := make([]any, len(decl))
+		for i, d := range decl {
+			transformed[i] = r.transformDeclaration(d)
+		}
+		return transformed
 	}
 	return nil
 }

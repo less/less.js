@@ -164,4 +164,12 @@ func (e *Extend) IsVisible() bool {
     // If nodeVisible is not set, return true if there are no visibility blocks
     // This matches JavaScript behavior where undefined nodeVisible with no blocks = visible
     return !e.BlocksVisibility()
+}
+
+// GenCSS outputs nothing for Extend nodes - they are processed by ExtendVisitor
+// and don't generate any CSS output themselves.
+// This matches JavaScript behavior where Extend has no genCSS method.
+func (e *Extend) GenCSS(context any, output *CSSOutput) {
+    // Extend nodes produce no CSS output
+    // They are used only during the extend processing phase
 } 

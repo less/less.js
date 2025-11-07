@@ -1536,15 +1536,6 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		output.Add(tabRuleStr, nil, nil)
 	}
 
-	// Save the lastRule flag set by parent before processing rules
-	// This determines if we should add a newline after this ruleset's closing brace
-	parentLastRule := false
-	if lr, ok := ctx["lastRule"].(bool); ok {
-		parentLastRule = lr
-		// Clear lastRule so it doesn't affect internal rule processing
-		ctx["lastRule"] = false
-	}
-
 	// Generate CSS for rules
 	// Note: Silent comments have been filtered out above, so we only process rules that generate output
 	for i, rule := range ruleNodes {
@@ -1584,6 +1575,13 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		}
 	}
 	
+	// Save the lastRule flag set by parent before processing rules
+	// This determines if we should add a newline after this ruleset's closing brace
+	parentLastRule := false
+	if lr, ok := ctx["lastRule"].(bool); ok {
+		parentLastRule = lr
+	}
+
 	// Add closing brace
 	if !r.Root && !isMediaEmpty {
 		if compress {
@@ -1595,13 +1593,12 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		ctx["tabLevel"] = tabLevel
 
 		// Add newline after ruleset to separate from next ruleset
-		// Check if we're not the last rule and not in compressed mode
-		// Use parentLastRule saved before the property loop, not the current ctx["lastRule"]
-		// which may have been modified by the property loop
-		if !compress {
-			if !parentLastRule {
-				output.Add("\n", nil, nil)
-			}
+		// Only add if we're not the last rule and not inside an at-rule container
+		// At-rule containers (Media, etc.) handle their own spacing via OutputRuleset
+		if !compress && !parentLastRule && tabLevel == 0 {
+			// We're a top-level ruleset (tabLevel was 1, now 0 after decrement)
+			// Add newline to separate from next top-level ruleset
+			output.Add("\n", nil, nil)
 		}
 	}
 	

@@ -431,7 +431,6 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 
 
 	// Track which rulesets have matches so we can mark all their paths as visible
-	hasAnyMatches := false
 
 	// look at each selector path in the ruleset, find any extend matches and then copy, find and replace
 	for extendIndex = 0; extendIndex < len(allExtends); extendIndex++ {
@@ -456,32 +455,29 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 
 			if len(matches) > 0 {
 				allExtends[extendIndex].HasFoundMatches = true
-				hasAnyMatches = true
 
+				// Match JavaScript: use the extend's visibility to determine if created selectors should be visible
+				// This ensures that extends from reference imports don't create visible selectors
+				// unless they've been explicitly made visible by being used/extended from outside the reference
+				isVisible := allExtends[extendIndex].IsVisible()
+
+				// Mark the matched selector path as visible only if the extend itself is visible
+				// This ensures that selectors matched by visible extends become visible in the output
+				if isVisible {
+					for _, pathSelector := range selectorPath {
+						if sel, ok := pathSelector.(*Selector); ok {
+							sel.EnsureVisibility()
+						}
+					}
+				}
 				for _, selfSelector := range allExtends[extendIndex].SelfSelectors {
-					// Extended selectors should always be visible since they're being added to rulesets
-					// that will be output. The extend itself may be invisible (it's not CSS), but the
-					// extended selectors are actual CSS selectors that should appear in the output.
-					extendedSelectors := pev.extendSelector(matches, selectorPath, selfSelector, true)
+					extendedSelectors := pev.extendSelector(matches, selectorPath, selfSelector, isVisible)
 					selectorsToAdd = append(selectorsToAdd, extendedSelectors)
 
 					// DEBUG: Log extended selectors
 					if debugMode := false; debugMode {
 						fmt.Printf("DEBUG: Extended selector created: %d elements\n", len(extendedSelectors))
 					}
-				}
-			}
-		}
-	}
-
-	// IMPORTANT: If ANY path in this ruleset was matched by an extend, mark ALL paths
-	// in the ruleset as visible. This is because the ruleset represents a single block
-	// of CSS rules, and all its selectors should be output together.
-	if hasAnyMatches {
-		for _, path := range ruleset.Paths {
-			for _, pathSelector := range path {
-				if sel, ok := pathSelector.(*Selector); ok {
-					sel.EnsureVisibility()
 				}
 			}
 		}

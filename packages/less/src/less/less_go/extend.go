@@ -155,7 +155,13 @@ func (e *Extend) FindSelfSelectors(selectors []any) {
 }
 
 // IsVisible returns whether the extend is visible (compatibility method for JS API)
+// Match JavaScript: if nodeVisible is explicitly set, use that; otherwise check visibilityBlocks
 func (e *Extend) IsVisible() bool {
     visible := e.Node.IsVisible()
-    return visible != nil && *visible
+    if visible != nil {
+        return *visible
+    }
+    // If nodeVisible is not set, return true if there are no visibility blocks
+    // This matches JavaScript behavior where undefined nodeVisible with no blocks = visible
+    return !e.BlocksVisibility()
 } 

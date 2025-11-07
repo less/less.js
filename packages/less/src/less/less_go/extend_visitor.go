@@ -285,8 +285,8 @@ func (pev *ProcessExtendsVisitor) doExtendChaining(extendsList []*Extend, extend
 						info = targetExtend.VisibilityInfo()
 
 						// process the extend as usual
-						// Extended selectors should always be visible (same logic as in VisitRuleset)
-						newSelector = pev.extendSelector(matches, selectorPath, selfSelector, true)
+						// Match JavaScript: use extend.isVisible() to preserve visibility in chaining
+						newSelector = pev.extendSelector(matches, selectorPath, selfSelector, extend.IsVisible())
 
 						// but now we create a new extend from it
 						var infoMap map[string]any

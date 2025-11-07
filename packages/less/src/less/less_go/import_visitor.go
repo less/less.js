@@ -313,13 +313,9 @@ func (iv *ImportVisitor) onImported(importNode any, context *Eval, args ...any) 
 		if !inlineCSS && !isPlugin && (context.ImportMultiple || !duplicateImport) {
 			iv.recursionDetector[fullPath] = true
 
-			// Save and restore context - matches JavaScript
+			// Save context - matches JavaScript
 			oldContext := iv.context
 			iv.context = context
-			
-			defer func() {
-				iv.context = oldContext
-			}()
 
 			defer func() {
 				if r := recover(); r != nil {
@@ -330,6 +326,25 @@ func (iv *ImportVisitor) onImported(importNode any, context *Eval, args ...any) 
 			}()
 
 			iv.visitor.Visit(root)
+
+			// Add the imported file's root to the frames for variable hoisting
+			// This allows variables from imported files to be available to subsequent imports
+			// Only add if it's a ruleset and not already in frames
+			if rootRuleset, ok := root.(*Ruleset); ok {
+				// Check if this ruleset is already in the frames
+				alreadyInFrames := false
+				for _, frame := range oldContext.Frames {
+					if frame == rootRuleset {
+						alreadyInFrames = true
+						break
+					}
+				}
+				if !alreadyInFrames {
+					// Add the imported file's ruleset to the frames
+					oldContext.Frames = append(oldContext.Frames, rootRuleset)
+				}
+			}
+			iv.context = oldContext
 		}
 	}
 

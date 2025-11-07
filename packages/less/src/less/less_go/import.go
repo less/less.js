@@ -248,7 +248,20 @@ func (i *Import) EvalForImport(context any) *Import {
 
 	var evaluatedPath any
 	if pathEval, ok := path.(interface{ Eval(any) (any, error) }); ok {
-		result, err := pathEval.Eval(context)
+		// Convert context to map with frames for Eval
+		// This ensures that Quoted.Eval can access the frames for variable interpolation
+		contextMap := make(map[string]any)
+		if evalCtx, ok := context.(*Eval); ok {
+			contextMap["frames"] = evalCtx.Frames
+			// Copy other properties that might be needed during evaluation
+			contextMap["compress"] = evalCtx.Compress
+			contextMap["math"] = evalCtx.Math
+			contextMap["strictUnits"] = evalCtx.StrictUnits
+		} else if ctxMap, ok := context.(map[string]any); ok {
+			contextMap = ctxMap
+		}
+
+		result, err := pathEval.Eval(contextMap)
 		if err != nil {
 			// In JS version, eval doesn't return error, so we use the original path
 			evaluatedPath = path

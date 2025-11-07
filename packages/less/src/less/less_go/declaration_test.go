@@ -412,7 +412,11 @@ func TestDeclaration(t *testing.T) {
 	t.Run("makeImportant", func(t *testing.T) {
 		t.Run("creates a new declaration with important flag", func(t *testing.T) {
 			decl, _ := NewDeclaration("color", "red", nil, false, 0, nil, false, nil)
-			important := decl.MakeImportant()
+			importantAny := decl.MakeImportant()
+			important, ok := importantAny.(*Declaration)
+			if !ok {
+				t.Fatal("expected MakeImportant to return *Declaration")
+			}
 
 			if important.name != "color" {
 				t.Errorf("expected name to be 'color', got %v", important.name)
@@ -428,7 +432,11 @@ func TestDeclaration(t *testing.T) {
 		t.Run("preserves other properties", func(t *testing.T) {
 			fileInfo := map[string]any{"filename": "test.less"}
 			decl, _ := NewDeclaration("color", "red", nil, true, 1, fileInfo, true, nil)
-			important := decl.MakeImportant()
+			importantAny := decl.MakeImportant()
+			important, ok := importantAny.(*Declaration)
+			if !ok {
+				t.Fatal("expected MakeImportant to return *Declaration")
+			}
 
 			if important.merge != true {
 				t.Error("expected merge to be preserved")

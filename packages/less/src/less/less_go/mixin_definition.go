@@ -672,13 +672,24 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 	}
 
 	// Create new context preserving all properties from original context
-	mixinEnv := make(map[string]any)
-	if ctx, ok := context.(map[string]any); ok {
-		for k, v := range ctx {
-			mixinEnv[k] = v
+	var mixinEnv any
+	if evalCtx, ok := context.(*Eval); ok {
+		// Preserve *Eval context with DefaultFunc
+		newEvalCtx := &Eval{}
+		*newEvalCtx = *evalCtx
+		newEvalCtx.Frames = mixinFrames
+		mixinEnv = newEvalCtx
+	} else {
+		// Map context - copy properties
+		mixinEnvMap := make(map[string]any)
+		if ctx, ok := context.(map[string]any); ok {
+			for k, v := range ctx {
+				mixinEnvMap[k] = v
+			}
 		}
+		mixinEnvMap["frames"] = mixinFrames
+		mixinEnv = mixinEnvMap
 	}
-	mixinEnv["frames"] = mixinFrames
 
 	paramFrame, err := md.EvalParams(context, mixinEnv, args, []any{})
 	if err != nil {
@@ -689,21 +700,39 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 	if md.Frames != nil {
 		evalFrames = append(evalFrames, md.Frames...)
 	}
-	if ctx, ok := context.(map[string]any); ok {
+
+	// Get additional frames from context
+	if evalCtx, ok := context.(*Eval); ok {
+		if evalCtx.Frames != nil {
+			evalFrames = append(evalFrames, evalCtx.Frames...)
+		}
+	} else if ctx, ok := context.(map[string]any); ok {
 		if ctxFrames, ok := ctx["frames"].([]any); ok {
 			evalFrames = append(evalFrames, ctxFrames...)
 		}
 	}
 
-	evalContext := map[string]any{
-		"frames": evalFrames,
-	}
-	if ctx, ok := context.(map[string]any); ok {
-		for k, v := range ctx {
-			if k != "frames" {
-				evalContext[k] = v
+	// Create evaluation context preserving type
+	var evalContext any
+	if evalCtx, ok := context.(*Eval); ok {
+		// Preserve *Eval context with DefaultFunc
+		newEvalCtx := &Eval{}
+		*newEvalCtx = *evalCtx
+		newEvalCtx.Frames = evalFrames
+		evalContext = newEvalCtx
+	} else {
+		// Map context
+		evalContextMap := map[string]any{
+			"frames": evalFrames,
+		}
+		if ctx, ok := context.(map[string]any); ok {
+			for k, v := range ctx {
+				if k != "frames" {
+					evalContextMap[k] = v
+				}
 			}
 		}
+		evalContext = evalContextMap
 	}
 
 	if condEval, ok := md.Condition.(interface{ Eval(any) any }); ok {

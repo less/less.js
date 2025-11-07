@@ -38,7 +38,7 @@ func (d *DefaultFunctionDefinition) CallCtx(ctx *Context, args ...any) (any, err
 		fmt.Printf("DEBUG:   default() CallCtx: looking through %d frames\n", len(ctx.Frames))
 	}
 
-	// Look through frames for eval context
+	// First check if any frame has an EvalContext with defaultFunc
 	for i := len(ctx.Frames) - 1; i >= 0; i-- {
 		frame := ctx.Frames[i]
 		if debug {
@@ -48,6 +48,16 @@ func (d *DefaultFunctionDefinition) CallCtx(ctx *Context, args ...any) (any, err
 			defaultFunc = evalCtx.GetDefaultFunc()
 			if debug {
 				fmt.Printf("DEBUG:     Frame[%d]: GetDefaultFunc() returned %v\n", i, defaultFunc)
+			}
+			if defaultFunc != nil {
+				break
+			}
+		}
+		// Also check if the frame itself is an *Eval with DefaultFunc
+		if evalCtx, ok := frame.EvalContext.(*Eval); ok {
+			defaultFunc = evalCtx.DefaultFunc
+			if debug {
+				fmt.Printf("DEBUG:     Frame[%d]: Direct DefaultFunc found: %v\n", i, defaultFunc)
 			}
 			if defaultFunc != nil {
 				break
@@ -74,7 +84,7 @@ func (d *DefaultFunctionDefinition) CallCtx(ctx *Context, args ...any) (any, err
 			panic(r)
 		}
 	}()
-	
+
 	result := defaultFunc.Eval()
 	return result, nil
 }

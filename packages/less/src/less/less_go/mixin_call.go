@@ -168,35 +168,44 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 			conditionResult[f] = true
 			defaultFunc.Value(f)
 
+			// Create context with defaultFunc for condition evaluation
+			// The defaultFunc needs to be accessible via EvalContext for the default() function to find it
+			condContext := context
+			if evalCtx, ok := context.(*Eval); ok {
+				// Clone the Eval context and set DefaultFunc
+				newEvalCtx := &Eval{}
+				*newEvalCtx = *evalCtx
+				newEvalCtx.DefaultFunc = defaultFunc
+				condContext = newEvalCtx
+			} else if ctxMap, ok := context.(map[string]any); ok {
+				// Convert map context to Eval context with defaultFunc
+				var frames []any
+				if framesVal, ok := ctxMap["frames"].([]any); ok {
+					frames = framesVal
+				}
+				newEvalCtx := &Eval{
+					Frames:      frames,
+					DefaultFunc: defaultFunc,
+				}
+				// Copy other relevant fields from map context
+				if mathOn, ok := ctxMap["mathOn"].(bool); ok {
+					newEvalCtx.MathOn = mathOn
+				} else {
+					newEvalCtx.MathOn = true
+				}
+				if funcRegistry, ok := ctxMap["functionRegistry"].(*Registry); ok {
+					newEvalCtx.FunctionRegistry = funcRegistry
+				}
+				condContext = newEvalCtx
+			}
+
 			for p = 0; p < len(mixinPath) && conditionResult[f]; p++ {
 				namespace = mixinPath[p]
 				if ns, ok := namespace.(interface{ MatchCondition(any, any) bool }); ok {
-					// Create context with defaultFunc for condition evaluation
-					condContext := context
-					if ctxMap, ok := context.(map[string]any); ok {
-						// Make a copy and add defaultFunc
-						newCtx := make(map[string]any)
-						for k, v := range ctxMap {
-							newCtx[k] = v
-						}
-						newCtx["defaultFunc"] = defaultFunc
-						condContext = newCtx
-					}
 					conditionResult[f] = conditionResult[f] && ns.MatchCondition(nil, condContext)
 				}
 			}
 			if mix, ok := mixin.(interface{ MatchCondition([]any, any) bool }); ok {
-				// Create context with defaultFunc for condition evaluation
-				condContext := context
-				if ctxMap, ok := context.(map[string]any); ok {
-					// Make a copy and add defaultFunc
-					newCtx := make(map[string]any)
-					for k, v := range ctxMap {
-						newCtx[k] = v
-					}
-					newCtx["defaultFunc"] = defaultFunc
-					condContext = newCtx
-				}
 				conditionResult[f] = conditionResult[f] && mix.MatchCondition(args, condContext)
 			}
 		}

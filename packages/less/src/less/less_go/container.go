@@ -95,9 +95,20 @@ func (c *Container) GenCSS(context any, output *CSSOutput) {
 
 // Eval evaluates the container at-rule
 func (c *Container) Eval(context any) (*Container, error) {
-	ctx, ok := context.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("context must be a map[string]any")
+	// Accept both *Eval and map[string]any contexts
+	var ctx map[string]any
+	var evalCtx *Eval
+
+	if ec, ok := context.(*Eval); ok {
+		evalCtx = ec
+		// Create a map that wraps the *Eval context for media-specific state
+		ctx = map[string]any{
+			"frames": ec.Frames,
+		}
+	} else if mapCtx, ok := context.(map[string]any); ok {
+		ctx = mapCtx
+	} else {
+		return nil, fmt.Errorf("context must be *Eval or map[string]any, got %T", context)
 	}
 
 	// Initialize mediaBlocks and mediaPath if not present (like JavaScript !context.mediaBlocks)
@@ -144,7 +155,16 @@ func (c *Container) Eval(context any) (*Container, error) {
 
 	// Set up function registry inheritance
 	firstRuleset := c.Rules[0].(*Ruleset)
-	if frames, ok := ctx["frames"].([]any); ok && len(frames) > 0 {
+
+	// Get frames from the appropriate source
+	var frames []any
+	if evalCtx != nil {
+		frames = evalCtx.Frames
+	} else if f, ok := ctx["frames"].([]any); ok {
+		frames = f
+	}
+
+	if len(frames) > 0 {
 		if firstFrame, ok := frames[0].(*Ruleset); ok && firstFrame.FunctionRegistry != nil {
 			// Create a mock function registry with inherit method
 			firstRuleset.FunctionRegistry = map[string]any{
@@ -155,12 +175,15 @@ func (c *Container) Eval(context any) (*Container, error) {
 		}
 	}
 
-	// Evaluate rules
-	frames := []any{firstRuleset}
-	if existingFrames, ok := ctx["frames"].([]any); ok {
-		frames = append(frames, existingFrames...)
+	// Evaluate rules - add current ruleset to frames
+	newFrames := append([]any{firstRuleset}, frames...)
+
+	// Update frames in the appropriate location
+	if evalCtx != nil {
+		evalCtx.Frames = newFrames
+	} else {
+		ctx["frames"] = newFrames
 	}
-	ctx["frames"] = frames
 
 	evaluatedRuleset, err := firstRuleset.Eval(context)
 	if err != nil {
@@ -169,7 +192,11 @@ func (c *Container) Eval(context any) (*Container, error) {
 	media.Rules = []any{evaluatedRuleset}
 
 	// Remove current ruleset from frames
-	if framesList, ok := ctx["frames"].([]any); ok && len(framesList) > 0 {
+	if evalCtx != nil {
+		if len(evalCtx.Frames) > 0 {
+			evalCtx.Frames = evalCtx.Frames[1:]
+		}
+	} else if framesList, ok := ctx["frames"].([]any); ok && len(framesList) > 0 {
 		ctx["frames"] = framesList[1:]
 	}
 

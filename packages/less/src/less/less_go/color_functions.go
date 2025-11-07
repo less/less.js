@@ -1118,8 +1118,20 @@ func (w *ColorFunctionWrapper) Call(args ...any) (any, error) {
 		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
 	case "contrast":
 		if len(args) >= 1 && len(args) <= 4 {
-			if fn, ok := w.fn.(func(...any) any); ok {
-				return fn(args...), nil
+			if fn, ok := w.fn.(func(any, any, any, any) any); ok {
+				// Fill in nil for missing optional arguments
+				var color, dark, light, threshold any
+				color = args[0]
+				if len(args) > 1 {
+					dark = args[1]
+				}
+				if len(args) > 2 {
+					light = args[2]
+				}
+				if len(args) > 3 {
+					threshold = args[3]
+				}
+				return fn(color, dark, light, threshold), nil
 			}
 		}
 		return nil, fmt.Errorf("function %s expects 1-4 arguments, got %d", w.name, len(args))

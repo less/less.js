@@ -11,16 +11,31 @@ import (
 func formatNumber(n float64) string {
 	// Round to 8 decimal places to avoid floating point precision issues
 	rounded := math.Round(n*100000000) / 100000000
-	
+
 	// If the number is effectively an integer, return it without decimals
 	if rounded == math.Floor(rounded) {
 		return fmt.Sprintf("%.0f", rounded)
 	}
-	
+
 	// Otherwise, format with up to 8 decimal places, trimming trailing zeros
 	s := fmt.Sprintf("%.8f", rounded)
 	s = strings.TrimRight(s, "0")
 	s = strings.TrimRight(s, ".")
+	return s
+}
+
+// formatNumberForCSS formats a number for CSS output
+// This is used after Fround has already applied precision formatting
+// Match JavaScript behavior: just convert to string, removing trailing zeros
+func formatNumberForCSS(n float64) string {
+	// If the number is effectively an integer, return it without decimals
+	if n == math.Floor(n) {
+		return fmt.Sprintf("%.0f", n)
+	}
+
+	// Convert to string using %g which automatically removes trailing zeros
+	// but doesn't use scientific notation for reasonable values
+	s := fmt.Sprintf("%g", n)
 	return s
 }
 
@@ -252,16 +267,17 @@ func (c *Color) ToCSS(context any) string {
 		fallthrough
 	case "hsl":
 		hsl := c.ToHSL()
-		// Format HSL values with proper precision
+		// Format HSL values with proper precision using Fround
 		h := c.Fround(context, hsl.H)
 		s := c.Fround(context, hsl.S*100)
 		l := c.Fround(context, hsl.L*100)
-		
-		// Format numbers to remove unnecessary decimals
-		hStr := formatNumber(h)
-		sStr := formatNumber(s) + "%"
-		lStr := formatNumber(l) + "%"
-		
+
+		// Convert to string with % suffix for saturation and lightness
+		// Match JavaScript: just convert fround result to string, don't apply additional formatting
+		hStr := formatNumberForCSS(h)
+		sStr := formatNumberForCSS(s) + "%"
+		lStr := formatNumberForCSS(l) + "%"
+
 		args = append([]any{hStr, sStr, lStr}, args...)
 	}
 
@@ -383,11 +399,11 @@ func (c *Color) ToHSL() HSL {
 		h /= 6
 	}
 
-	// Round values to match JavaScript precision (6 decimal places)
+	// Return HSL values without rounding - Fround will apply precision when needed
 	return HSL{
-		H: math.Round(h*360*1000000) / 1000000,
-		S: math.Round(s*1000000) / 1000000,
-		L: math.Round(l*1000000) / 1000000,
+		H: h * 360,
+		S: s,
+		L: l,
 		A: a,
 	}
 }

@@ -51,6 +51,7 @@ type Eval struct {
 	PluginManager   any
 	ImportantScope  []map[string]any
 	RewriteUrls     RewriteUrlsType
+	NumPrecision    int
 
 	// Internal state
 	Frames           []any
@@ -67,9 +68,10 @@ type Eval struct {
 // NewEval creates a new Eval context with the given options and frames
 func NewEval(options map[string]any, frames []any) *Eval {
 	e := &Eval{
-		Frames:      frames,
-		MathOn:      true,
+		Frames:       frames,
+		MathOn:       true,
 		ImportantScope: []map[string]any{},
+		NumPrecision: 8, // Default to 8 like JavaScript
 	}
 	copyFromOriginal(options, e)
 	if paths, ok := options["paths"].(string); ok {
@@ -129,6 +131,7 @@ func (e *Eval) ToMap() map[string]any {
 		"pluginManager":     e.PluginManager,
 		"importantScope":    e.ImportantScope,
 		"rewriteUrls":       e.RewriteUrls,
+		"numPrecision":      e.NumPrecision,
 	}
 }
 
@@ -406,6 +409,9 @@ func copyFromOriginal(original map[string]any, destination any) {
 			case "off", "false":
 				d.RewriteUrls = RewriteUrlsOff
 			}
+		}
+		if numPrecision, ok := original["numPrecision"].(int); ok {
+			d.NumPrecision = numPrecision
 		}
 	}
 } 

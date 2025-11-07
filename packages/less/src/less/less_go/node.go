@@ -205,12 +205,16 @@ func (n *Node) Operate(context any, op string, a, b float64) float64 {
 // Fround rounds a float value based on context precision
 func (n *Node) Fround(context any, value float64) float64 {
 	var precision int
+
+	// Handle both map and *Eval contexts
 	if ctx, ok := context.(map[string]any); ok {
 		if p, ok := ctx["numPrecision"].(int); ok {
 			precision = p
 		}
+	} else if evalCtx, ok := context.(*Eval); ok {
+		precision = evalCtx.NumPrecision
 	}
-	
+
 	if precision > 0 {
 		// Match JavaScript: add "epsilon" to ensure proper rounding
 		// Number((value + 2e-16).toFixed(precision))
@@ -221,7 +225,7 @@ func (n *Node) Fround(context any, value float64) float64 {
 		result, _ := strconv.ParseFloat(formatted, 64)
 		return result
 	}
-	
+
 	return value
 }
 

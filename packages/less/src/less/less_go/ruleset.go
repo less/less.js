@@ -137,16 +137,19 @@ func (r *Ruleset) IsRulesetLike() bool {
 func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	var output strings.Builder
 	
-	// Create context map with default values
-	contextMap := map[string]any{
-		"compress": false,
-	}
-	
-	// Apply options if provided
+	// Create context map from options
+	contextMap := make(map[string]any)
+
+	// Copy all options to the context map
 	if options != nil {
-		if compress, ok := options["compress"].(bool); ok {
-			contextMap["compress"] = compress
+		for k, v := range options {
+			contextMap[k] = v
 		}
+	}
+
+	// Ensure compress has a default value if not set
+	if _, hasCompress := contextMap["compress"]; !hasCompress {
+		contextMap["compress"] = false
 	}
 	
 	// Create CSS output implementation

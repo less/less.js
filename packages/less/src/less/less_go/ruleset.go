@@ -1521,7 +1521,16 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		}
 		output.Add(tabRuleStr, nil, nil)
 	}
-	
+
+	// Save the lastRule flag set by parent before processing rules
+	// This determines if we should add a newline after this ruleset's closing brace
+	parentLastRule := false
+	if lr, ok := ctx["lastRule"].(bool); ok {
+		parentLastRule = lr
+		// Clear lastRule so it doesn't affect internal rule processing
+		ctx["lastRule"] = false
+	}
+
 	// Generate CSS for rules
 	for i, rule := range ruleNodes {
 		if i+1 == len(ruleNodes) {
@@ -1573,13 +1582,10 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 
 		// Add newline after ruleset to separate from next ruleset
 		// Check if we're not the last rule and not in compressed mode
+		// Use parentLastRule saved before the property loop, not the current ctx["lastRule"]
+		// which may have been modified by the property loop
 		if !compress {
-			// Check if this is part of a parent's rules and not the last one
-			isLastRule := false
-			if lr, ok := ctx["lastRule"].(bool); ok {
-				isLastRule = lr
-			}
-			if !isLastRule {
+			if !parentLastRule {
 				output.Add("\n", nil, nil)
 			}
 		}

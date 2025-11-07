@@ -282,21 +282,36 @@ func (a *AtRule) OutputRuleset(context any, output *CSSOutput, rules []any) {
 	// JavaScript: Array(context.tabLevel).join('  ') creates (tabLevel-1) pairs of spaces
 	tabSetStr := "\n" + strings.Repeat("  ", tabLevel-1)
 	tabRuleStr := tabSetStr + "  "
-	
+
 	if ruleCnt == 0 {
 		output.Add(" {"+tabSetStr+"}", nil, nil)
 	} else {
 		output.Add(" {"+tabRuleStr, nil, nil)
-		if gen, ok := rules[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
-			gen.GenCSS(context, output)
-		}
-		for i := 1; i < ruleCnt; i++ {
-			output.Add(tabRuleStr, nil, nil)
+
+		// Process rules, setting lastRule for the final rule
+		for i := 0; i < ruleCnt; i++ {
+			if i > 0 {
+				output.Add(tabRuleStr, nil, nil)
+			}
+
+			// Set lastRule flag for the last rule (similar to JavaScript ruleset.js line 533)
+			if i+1 == ruleCnt {
+				ctx["lastRule"] = true
+			}
+
 			if gen, ok := rules[i].(interface{ GenCSS(any, *CSSOutput) }); ok {
 				gen.GenCSS(context, output)
 			}
+
+			// Clear lastRule after processing
+			if i+1 == ruleCnt {
+				ctx["lastRule"] = false
+			}
 		}
+
 		output.Add(tabSetStr+"}", nil, nil)
+		// Add newline after closing brace to separate from next top-level rule
+		output.Add("\n", nil, nil)
 	}
 
 	ctx["tabLevel"] = tabLevel - 1

@@ -1,6 +1,9 @@
 package less_go
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func init() {
 	// Register boolean functions in DefaultRegistry so they're available even when
@@ -23,6 +26,7 @@ func init() {
 }
 
 // Boolean function implementation
+// The boolean() function uses isTruthy to check truthiness
 func Boolean(condition any) *Keyword {
 	if isTruthy(condition) {
 		return KeywordTrue
@@ -47,6 +51,14 @@ func If(context *Context, condition any, trueValue any, falseValue any) any {
 		conditionResult = evaluable.Eval(evalContext)
 	} else {
 		conditionResult = condition
+	}
+
+	// Debug output
+	debug := os.Getenv("LESS_DEBUG_IF") == "1"
+	if debug {
+		fmt.Printf("[If] condition=%v (type: %T)\n", condition, condition)
+		fmt.Printf("[If] conditionResult=%v (type: %T)\n", conditionResult, conditionResult)
+		fmt.Printf("[If] isTruthy(conditionResult)=%v\n", isTruthy(conditionResult))
 	}
 
 	if isTruthy(conditionResult) {

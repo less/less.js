@@ -1,6 +1,9 @@
 package less_go
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // Paren represents a parenthesized value in the Less AST
 type Paren struct {
@@ -41,17 +44,36 @@ func (p *Paren) GenCSS(context any, output *CSSOutput) {
 // Eval evaluates the node and returns a new Paren with the evaluated value
 func (p *Paren) Eval(context any) any {
 	// Match JavaScript: return new Paren(this.value.eval(context));
-	// Note: parensStack is managed by Expression, not Paren
+	// Push to parensStack before evaluating (so operations inside know they're in parens)
+	debug := os.Getenv("LESS_DEBUG_PAREN") == "1"
+	if evalCtx, ok := context.(*Eval); ok {
+		if debug {
+			fmt.Printf("[Paren.Eval] Pushing to parensStack, value type: %T\n", p.Value)
+		}
+		evalCtx.InParenthesis()
+		defer evalCtx.OutOfParenthesis()
+	} else {
+		if debug {
+			fmt.Printf("[Paren.Eval] Context is not *Eval (type: %T)\n", context)
+		}
+	}
+
 	var evaluatedValue any = p.Value
 
 	// Try single-return eval first (matches most nodes)
 	if valueWithEval, ok := p.Value.(interface{ Eval(any) any }); ok {
 		evaluatedValue = valueWithEval.Eval(context)
+		if debug {
+			fmt.Printf("[Paren.Eval] Evaluated value (no error): %T\n", evaluatedValue)
+		}
 	} else if valueWithEval, ok := p.Value.(interface{ Eval(any) (any, error) }); ok {
 		// Handle nodes that return errors
 		result, _ := valueWithEval.Eval(context)
 		if result != nil {
 			evaluatedValue = result
+		}
+		if debug {
+			fmt.Printf("[Paren.Eval] Evaluated value (with error): %T\n", evaluatedValue)
 		}
 	}
 

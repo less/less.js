@@ -288,6 +288,9 @@ func (v *ToCSSVisitor) VisitMixinDefinition(mixinNode any, visitArgs *VisitArgs)
 	if framesNode, hasFrames := mixinNode.(interface{ SetFrames([]any) }); hasFrames {
 		framesNode.SetFrames([]any{})
 	}
+	// Don't visit nested rules inside mixin definitions - they should only be output when the mixin is called
+	// Match JoinSelectorVisitor behavior
+	visitArgs.VisitDeeper = false
 	return nil
 }
 

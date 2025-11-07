@@ -293,8 +293,17 @@ func (mc *MixinCall) Eval(context any) ([]any, error) {
 	}
 
 	// Find mixins in context frames
-	if ctx, ok := context.(map[string]any); ok {
-		if frames, ok := ctx["frames"].([]any); ok {
+	var frames []any
+	if evalCtx, ok := context.(*Eval); ok {
+		frames = evalCtx.Frames
+	} else if ctx, ok := context.(map[string]any); ok {
+		if framesVal, ok := ctx["frames"].([]any); ok {
+			frames = framesVal
+		}
+	}
+
+	if frames != nil {
+		if len(frames) > 0 {
 			for i = 0; i < len(frames); i++ {
 				if frame, ok := frames[i].(interface{ Find(any, any, func(any) bool) []any }); ok {
 					foundMixins := frame.Find(mc.Selector, nil, noArgumentsFilter)

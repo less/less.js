@@ -50,15 +50,32 @@ func (e *Expression) Eval(context any) (any, error) {
 		return e, nil
 	}
 
-	ctx, ok := SafeTypeAssertion[map[string]any](context)
-	if !ok {
-		return e, nil
-	}
-	
-
 	mathOn := false
-	if m, exists := SafeMapAccess(ctx, "isMathOn"); exists {
-		if mathFunc, ok := SafeTypeAssertion[func(string) bool](m); ok {
+	// Check if context is *Eval and use the method directly
+	if evalCtx, ok := context.(*Eval); ok {
+		// Check if any operation in this expression would have math on
+		hasOp := false
+		for _, val := range e.Value {
+			if anon, ok := val.(*Anonymous); ok {
+				if op, ok := anon.Value.(string); ok {
+					if op == "+" || op == "-" || op == "*" || op == "/" {
+						hasOp = true
+						if evalCtx.IsMathOnWithOp(op) {
+							mathOn = true
+							break
+						}
+					}
+				}
+			}
+		}
+		// If we don't have operations, still check for general math mode
+		if !hasOp {
+			mathOn = evalCtx.IsMathOn()
+		}
+	} else if ctx, ok := context.(map[string]any); ok {
+		// Fallback for map-based context
+		if m, exists := SafeMapAccess(ctx, "isMathOn"); exists {
+			if mathFunc, ok := SafeTypeAssertion[func(string) bool](m); ok {
 			// Check if any operation in this expression would have math on
 			// This is needed because we need to know if math will be on
 			// before we create Operations
@@ -80,8 +97,9 @@ func (e *Expression) Eval(context any) (any, error) {
 			if !hasOp {
 				mathOn = mathFunc("")
 			}
-		} else if mathVal, ok := SafeTypeAssertion[bool](m); ok {
-			mathOn = mathVal
+			} else if mathVal, ok := SafeTypeAssertion[bool](m); ok {
+				mathOn = mathVal
+			}
 		}
 	}
 
@@ -89,9 +107,15 @@ func (e *Expression) Eval(context any) (any, error) {
 	doubleParen := false
 
 	if inParenthesis {
-		if inParenFunc, ok := SafeMapAccess(ctx, "inParenthesis"); ok {
-			if parenthesisFunc, ok := SafeTypeAssertion[func()](inParenFunc); ok {
-				parenthesisFunc()
+		// Check if context is *Eval and use the method directly
+		if evalCtx, ok := context.(*Eval); ok {
+			evalCtx.InParenthesis()
+		} else if ctx, ok := context.(map[string]any); ok {
+			// Fallback for map-based context
+			if inParenFunc, ok := SafeMapAccess(ctx, "inParenthesis"); ok {
+				if parenthesisFunc, ok := SafeTypeAssertion[func()](inParenFunc); ok {
+					parenthesisFunc()
+				}
 			}
 		}
 	}
@@ -135,10 +159,17 @@ func (e *Expression) Eval(context any) (any, error) {
 			}
 			
 			if hasParens && !hasParensInOp {
-				if inCalc, exists := SafeMapAccess(ctx, "inCalc"); !exists {
-					doubleParen = true
-				} else if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); !ok || !inCalcVal {
-					doubleParen = true
+				// Check if we're in calc
+				if evalCtx, ok := context.(*Eval); ok {
+					if !evalCtx.IsInCalc() {
+						doubleParen = true
+					}
+				} else if ctx, ok := context.(map[string]any); ok {
+					if inCalc, exists := SafeMapAccess(ctx, "inCalc"); !exists {
+						doubleParen = true
+					} else if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); !ok || !inCalcVal {
+						doubleParen = true
+					}
 				}
 			}
 			
@@ -149,9 +180,15 @@ func (e *Expression) Eval(context any) (any, error) {
 	}
 
 	if inParenthesis {
-		if outParenFunc, ok := SafeMapAccess(ctx, "outOfParenthesis"); ok {
-			if parenthesisFunc, ok := SafeTypeAssertion[func()](outParenFunc); ok {
-				parenthesisFunc()
+		// Check if context is *Eval and use the method directly
+		if evalCtx, ok := context.(*Eval); ok {
+			evalCtx.OutOfParenthesis()
+		} else if ctx, ok := context.(map[string]any); ok {
+			// Fallback for map-based context
+			if outParenFunc, ok := SafeMapAccess(ctx, "outOfParenthesis"); ok {
+				if parenthesisFunc, ok := SafeTypeAssertion[func()](outParenFunc); ok {
+					parenthesisFunc()
+				}
 			}
 		}
 	}
@@ -164,11 +201,20 @@ func (e *Expression) Eval(context any) (any, error) {
 	} else if e.Parens && !mathOn && !doubleParen {
 		// Special case for calc(): preserve parentheses even without ParensInOp
 		// Check if we're in calc context
-		if inCalc, exists := SafeMapAccess(ctx, "inCalc"); exists {
-			if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); ok && inCalcVal {
+		if evalCtx, ok := context.(*Eval); ok {
+			if evalCtx.IsInCalc() {
 				// In calc context, wrap operations and expressions in parentheses
 				if _, isOp := SafeTypeAssertion[*Operation](returnValue); isOp {
 					returnValue = NewParen(returnValue)
+				}
+			}
+		} else if ctx, ok := context.(map[string]any); ok {
+			if inCalc, exists := SafeMapAccess(ctx, "inCalc"); exists {
+				if inCalcVal, ok := SafeTypeAssertion[bool](inCalc); ok && inCalcVal {
+					// In calc context, wrap operations and expressions in parentheses
+					if _, isOp := SafeTypeAssertion[*Operation](returnValue); isOp {
+						returnValue = NewParen(returnValue)
+					}
 				}
 			}
 		}

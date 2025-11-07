@@ -168,7 +168,12 @@ func createFallbackURL(context map[string]any, node any) any {
 	}
 	
 	urlNode := NewURL(node, index, currentFileInfo, false)
-	return urlNode.Eval(context)
+	evaluated, err := urlNode.Eval(context)
+	if err != nil {
+		// Return nil on error - caller will handle appropriately
+		return nil
+	}
+	return evaluated
 }
 
 // logWarningAndFallback logs a warning and creates a fallback URL

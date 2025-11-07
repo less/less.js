@@ -299,9 +299,20 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		return nil, fmt.Errorf("context is required for Ruleset.Eval")
 	}
 
-	ctx, ok := context.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("context must be a map")
+	// Accept both *Eval and map[string]any contexts
+	// For circular dependency tracking, we need access to a map
+	var ctx map[string]any
+	var evalCtx *Eval
+
+	if ec, ok := context.(*Eval); ok {
+		evalCtx = ec
+		// Create a minimal map for state tracking (circular dependency, etc.)
+		// We'll pass the *Eval context to child evaluations
+		ctx = make(map[string]any)
+	} else if mapCtx, ok := context.(map[string]any); ok {
+		ctx = mapCtx
+	} else {
+		return nil, fmt.Errorf("context must be *Eval or map[string]any, got %T", context)
 	}
 
 	// Check for circular dependency to prevent infinite recursion
@@ -343,16 +354,21 @@ func (r *Ruleset) Eval(context any) (any, error) {
 	if len(r.Selectors) > 0 {
 		selCnt = len(r.Selectors)
 		selectors = make([]any, selCnt)
-		
+
 		// Match JavaScript: defaultFunc.error({type: 'Syntax', message: 'it is currently only allowed in parametric mixin guards,'});
-		if defaultFunc, ok := ctx["defaultFunc"].(interface{ Error(map[string]any) }); ok {
-			defaultFunc.Error(map[string]any{
-				"type":    "Syntax", 
+		if evalCtx != nil && evalCtx.DefaultFunc != nil {
+			evalCtx.DefaultFunc.Error(map[string]any{
+				"type":    "Syntax",
+				"message": "it is currently only allowed in parametric mixin guards,",
+			})
+		} else if df, ok := ctx["defaultFunc"].(interface{ Error(map[string]any) }); ok {
+			df.Error(map[string]any{
+				"type":    "Syntax",
 				"message": "it is currently only allowed in parametric mixin guards,",
 			})
 		}
-		
-		// Evaluate selectors
+
+		// Evaluate selectors - pass the original context (either *Eval or map)
 		for i := 0; i < selCnt; i++ {
 			if sel, ok := r.Selectors[i].(interface{ Eval(any) (any, error) }); ok {
 				evaluated, err := sel.Eval(context)
@@ -360,7 +376,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 					return nil, err
 				}
 				selectors[i] = evaluated
-				
+
 				// Check for variables in elements
 				if selector, ok := evaluated.(*Selector); ok {
 					for _, elem := range selector.Elements {
@@ -369,7 +385,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 							break
 						}
 					}
-					
+
 					// Check for passing condition
 					if selector.EvaldCondition {
 						hasOnePassingSelector = true
@@ -410,8 +426,10 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		}
 		
 		// Match JavaScript: defaultFunc.reset();
-		if defaultFunc, ok := ctx["defaultFunc"].(interface{ Reset() }); ok {
-			defaultFunc.Reset()
+		if evalCtx != nil && evalCtx.DefaultFunc != nil {
+			evalCtx.DefaultFunc.Reset()
+		} else if df, ok := ctx["defaultFunc"].(interface{ Reset() }); ok {
+			df.Reset()
 		}
 	} else {
 		hasOnePassingSelector = true
@@ -444,7 +462,20 @@ func (r *Ruleset) Eval(context any) (any, error) {
 	// otherwise from the global registry
 	// Match JavaScript: ruleset.functionRegistry = (function (frames) {...}(context.frames)).inherit();
 	var functionRegistry any
-	if frames, ok := ctx["frames"].([]any); ok {
+	var frames []any
+
+	// Get frames from the appropriate context type
+	if evalCtx != nil {
+		frames = evalCtx.Frames
+	} else if framesVal, ok := ctx["frames"].([]any); ok {
+		frames = framesVal
+	}
+
+	// Check evalCtx for FunctionRegistry first
+	if evalCtx != nil && evalCtx.FunctionRegistry != nil {
+		functionRegistry = evalCtx.FunctionRegistry
+	} else if len(frames) > 0 {
+		// Fall back to checking frames
 		for _, frame := range frames {
 			if f, ok := frame.(*Ruleset); ok {
 				if f.FunctionRegistry != nil {
@@ -454,8 +485,8 @@ func (r *Ruleset) Eval(context any) (any, error) {
 			}
 		}
 	}
-	
-	// Apply .inherit() pattern like JavaScript  
+
+	// Apply .inherit() pattern like JavaScript
 	if functionRegistry != nil {
 		if inheritRegistry, ok := functionRegistry.(interface{ Inherit() any }); ok {
 			ruleset.FunctionRegistry = inheritRegistry.Inherit()
@@ -467,16 +498,18 @@ func (r *Ruleset) Eval(context any) (any, error) {
 	// If no function registry found in frames, leave it nil for now
 
 	// Push current ruleset to frames stack
-	if frames, ok := ctx["frames"].([]any); ok {
-		newFrames := make([]any, len(frames)+1)
-		newFrames[0] = ruleset
-		copy(newFrames[1:], frames)
-		ctx["frames"] = newFrames
+	newFrames := make([]any, len(frames)+1)
+	newFrames[0] = ruleset
+	copy(newFrames[1:], frames)
+
+	// Update frames in the appropriate context type
+	if evalCtx != nil {
+		evalCtx.Frames = newFrames
 	} else {
-		ctx["frames"] = []any{ruleset}
+		ctx["frames"] = newFrames
 	}
 
-	// Current selectors
+	// Current selectors - store in map for both context types
 	if selectors := ctx["selectors"]; selectors == nil {
 		ctx["selectors"] = []any{r.Selectors}
 	} else if sels, ok := selectors.([]any); ok {
@@ -485,10 +518,20 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		copy(newSelectors[1:], sels)
 		ctx["selectors"] = newSelectors
 	}
-	
+
 	// Ensure function registry is available in context
-	if _, exists := ctx["functionRegistry"]; !exists && ruleset.FunctionRegistry != nil {
-		ctx["functionRegistry"] = ruleset.FunctionRegistry
+	if evalCtx != nil {
+		// For *Eval context, set FunctionRegistry if not already set
+		if evalCtx.FunctionRegistry == nil && ruleset.FunctionRegistry != nil {
+			if registry, ok := ruleset.FunctionRegistry.(*Registry); ok {
+				evalCtx.FunctionRegistry = registry
+			}
+		}
+	} else {
+		// For map context, set functionRegistry if not already set
+		if _, exists := ctx["functionRegistry"]; !exists && ruleset.FunctionRegistry != nil {
+			ctx["functionRegistry"] = ruleset.FunctionRegistry
+		}
 	}
 
 	// Evaluate imports

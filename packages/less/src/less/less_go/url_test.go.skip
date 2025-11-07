@@ -190,7 +190,10 @@ func TestURL(t *testing.T) {
 			}
 
 			url := NewURL(value, 0, map[string]any{"rootpath": "/assets/"}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if result.Value.(map[string]any)["value"] != "/assets/test.png" {
 				t.Errorf("Expected value to be '/assets/test.png', got '%v'", result.Value.(map[string]any)["value"])
@@ -225,7 +228,10 @@ func TestURL(t *testing.T) {
 				}
 
 				url := NewURL(value, 0, map[string]any{"rootpath": tc.rootpath}, false)
-				result := url.Eval(context)
+				result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 				if result.Value.(map[string]any)["value"] != tc.expected {
 					t.Errorf("Expected value to be '%s', got '%v'", tc.expected, result.Value.(map[string]any)["value"])
@@ -249,7 +255,10 @@ func TestURL(t *testing.T) {
 			}
 
 			url := NewURL(value, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if result.Value.(map[string]any)["value"] != "test.png?v=1.0.0" {
 				t.Errorf("Expected value to be 'test.png?v=1.0.0', got '%v'", result.Value.(map[string]any)["value"])
@@ -272,7 +281,10 @@ func TestURL(t *testing.T) {
 			}
 
 			url := NewURL(value, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if result.Value.(map[string]any)["value"] != "test.png?param=1&v=1.0.0" {
 				t.Errorf("Expected value to be 'test.png?param=1&v=1.0.0', got '%v'", result.Value.(map[string]any)["value"])
@@ -295,7 +307,10 @@ func TestURL(t *testing.T) {
 			}
 
 			url := NewURL(value, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if result.Value.(map[string]any)["value"] != "test.png?v=1.0.0#section" {
 				t.Errorf("Expected value to be 'test.png?v=1.0.0#section', got '%v'", result.Value.(map[string]any)["value"])
@@ -318,7 +333,10 @@ func TestURL(t *testing.T) {
 			}
 
 			url := NewURL(value, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if result.Value.(map[string]any)["value"] != "data:image/png;base64,test" {
 				t.Errorf("Expected value to be 'data:image/png;base64,test', got '%v'", result.Value.(map[string]any)["value"])
@@ -341,7 +359,10 @@ func TestURL(t *testing.T) {
 			}
 
 			url := NewURL(value, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if !result.IsEvald {
 				t.Error("Expected isEval to be true after evaluation")
@@ -357,7 +378,10 @@ func TestURL(t *testing.T) {
 
 			testObj := &TestObject{value: "eval-test.png"}
 			url := NewURL(testObj, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if _, ok := result.Value.(*TestObject); !ok {
 				t.Errorf("Expected value to be a *TestObject, got %T", result.Value)
@@ -367,7 +391,10 @@ func TestURL(t *testing.T) {
 		t.Run("should handle nil value", func(t *testing.T) {
 			context := map[string]any{}
 			url := NewURL(nil, 0, map[string]any{}, false)
-			result := url.Eval(context)
+			result, err := url.Eval(context)
+			if err != nil {
+				t.Fatalf("URL.Eval failed: %v", err)
+			}
 
 			if result.Value != nil {
 				t.Errorf("Expected value to be nil, got %v", result.Value)

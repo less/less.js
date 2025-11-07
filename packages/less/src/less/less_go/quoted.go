@@ -75,6 +75,16 @@ func (q *Quoted) GetValue() string {
 	return q.value
 }
 
+// GetQuote returns the quote character used
+func (q *Quoted) GetQuote() string {
+	return q.quote
+}
+
+// GetEscaped returns whether the quoted string is escaped
+func (q *Quoted) GetEscaped() bool {
+	return q.escaped
+}
+
 // FileInfo returns the node's file information
 func (q *Quoted) FileInfo() map[string]any {
 	return q._fileInfo

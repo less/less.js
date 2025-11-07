@@ -40,10 +40,14 @@ func (n *Negative) Eval(context any) any {
 		return n.evalValue(context)
 	}
 
-	// Match JavaScript: if (context.isMathOn()) 
-	// Check if math is on - check parameterless version first (matches JavaScript)
+	// Match JavaScript: if (context.isMathOn())
+	// Check if math is on
 	mathOn := false
-	if mathOnFunc, ok := ctx["isMathOn"].(func() bool); ok {
+	if evalCtx, ok := context.(*Eval); ok {
+		// Check if context is *Eval and use the method directly
+		mathOn = evalCtx.IsMathOn()
+	} else if mathOnFunc, ok := ctx["isMathOn"].(func() bool); ok {
+		// Fallback for map-based context - check parameterless version first (matches JavaScript)
 		mathOn = mathOnFunc()
 	} else if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
 		mathOn = mathOnFunc("*") // For multiplication which is what negative uses

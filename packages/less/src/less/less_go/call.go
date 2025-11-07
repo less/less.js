@@ -396,7 +396,22 @@ func (c *Call) Eval(context any) (any, error) {
 
 	// Set up CallerFactory from context if not already set
 	if c.CallerFactory == nil {
-		if ctxMap, ok := context.(map[string]any); ok {
+		if evalCtx, ok := context.(*Eval); ok {
+			// Try to get function registry from *Eval context
+			if evalCtx.FunctionRegistry != nil {
+				c.CallerFactory = NewDefaultFunctionCallerFactory(evalCtx.FunctionRegistry)
+			} else if len(evalCtx.Frames) > 0 {
+				// Try to get from frames
+				for _, frame := range evalCtx.Frames {
+					if ruleset, ok := frame.(*Ruleset); ok && ruleset.FunctionRegistry != nil {
+						if registry, ok := ruleset.FunctionRegistry.(*Registry); ok {
+							c.CallerFactory = NewDefaultFunctionCallerFactory(registry)
+							break
+						}
+					}
+				}
+			}
+		} else if ctxMap, ok := context.(map[string]any); ok {
 			// Try to get function registry from context
 			if funcRegistry, exists := ctxMap["functionRegistry"]; exists {
 				if registry, ok := funcRegistry.(*Registry); ok {

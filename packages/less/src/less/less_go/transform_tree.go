@@ -16,20 +16,12 @@ func TransformTree(root any, options map[string]any) any {
 
 	var evaldRoot any
 	variables := options["variables"]
-	
-	// Create evaluation context as a map, matching JavaScript's plain object approach
-	evalEnv := make(map[string]any)
-	// Copy options to evalEnv
-	for k, v := range options {
-		evalEnv[k] = v
-	}
-	// Initialize required fields
-	evalEnv["frames"] = []any{}
-	evalEnv["importantScope"] = []any{}  // Changed from []map[string]bool{} to []any{}
-	evalEnv["mathOn"] = true
-	
+
+	// Create evaluation context as an *Eval struct
+	evalEnv := NewEval(options, []any{})
+
 	// Initialize defaultFunc for mixin guards
-	evalEnv["defaultFunc"] = NewDefaultFunc()
+	evalEnv.DefaultFunc = NewDefaultFunc()
 	
 	// Add function registry support - check if functions are provided in options
 	var functionRegistry *Registry
@@ -92,94 +84,16 @@ func TransformTree(root any, options map[string]any) any {
 			}
 		}
 	}
-	evalEnv["functionRegistry"] = functionRegistry
+	evalEnv.FunctionRegistry = functionRegistry
 	// Set default math mode to ALWAYS for now (can be overridden by options)
-	if _, exists := evalEnv["math"]; !exists {
-		evalEnv["math"] = Math.Always
+	if evalEnv.Math == 0 {
+		evalEnv.Math = Math.Always
 	}
 	if os.Getenv("LESS_GO_TRACE") == "1" {
-		fmt.Printf("[TRANSFORM-TREE-DEBUG] Initial math mode: %v\n", evalEnv["math"])
+		fmt.Printf("[TRANSFORM-TREE-DEBUG] Initial math mode: %v, evalEnv type: *Eval\n", evalEnv.Math)
 	}
-	// Set mathOn to true by default, matching JavaScript contexts.js
-	evalEnv["mathOn"] = true
-	// Initialize parensStack for tracking parenthesis context
-	evalEnv["parensStack"] = []bool{}
-	// Add inParenthesis function to push to parensStack
-	evalEnv["inParenthesis"] = func() {
-		stack, _ := evalEnv["parensStack"].([]bool)
-		evalEnv["parensStack"] = append(stack, true)
-	}
-	// Add outOfParenthesis function to pop from parensStack
-	evalEnv["outOfParenthesis"] = func() {
-		stack, _ := evalEnv["parensStack"].([]bool)
-		if len(stack) > 0 {
-			evalEnv["parensStack"] = stack[:len(stack)-1]
-		}
-	}
-	// Add isMathOn function that matches JavaScript contexts.js implementation
-	evalEnv["isMathOn"] = func(op string) bool {
-		debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
-
-		mathOn, exists := evalEnv["mathOn"]
-		if !exists || !mathOn.(bool) {
-			if debugTrace {
-				fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(%s): mathOn not set or false\n", op)
-			}
-			return false
-		}
-
-		// Check for division operator with math mode restrictions
-		if op == "/" {
-			math, mathExists := evalEnv["math"]
-			if debugTrace {
-				fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(/): math=%v, mathExists=%v\n", math, mathExists)
-			}
-			if mathExists && math != Math.Always {
-				// Check if we're in parentheses
-				parensStack, parensExists := evalEnv["parensStack"]
-				if !parensExists {
-					if debugTrace {
-						fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(/): no parensStack, returning false\n")
-					}
-					return false
-				}
-				if stack, ok := parensStack.([]bool); ok && len(stack) == 0 {
-					if debugTrace {
-						fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(/): empty parensStack (len=%d), math=%v, returning false\n", len(stack), math)
-					}
-					return false
-				} else if debugTrace {
-					fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(/): parensStack type assertion failed or non-empty, stack=%v\n", parensStack)
-				}
-			}
-		}
-
-		// Check if math is disabled for everything except in parentheses
-		if math, mathExists := evalEnv["math"]; mathExists {
-			if mathType, ok := math.(MathType); ok && mathType > Math.ParensDivision {
-				parensStack, parensExists := evalEnv["parensStack"]
-				if !parensExists {
-					if debugTrace {
-						fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(%s): PARENS mode, no parensStack, returning false\n", op)
-					}
-					return false
-				}
-				if stack, ok := parensStack.([]bool); ok {
-					result := len(stack) > 0
-					if debugTrace {
-						fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(%s): PARENS mode, parensStack len=%d, returning %v\n", op, len(stack), result)
-					}
-					return result
-				}
-				return false
-			}
-		}
-
-		if debugTrace {
-			fmt.Printf("[MATH-DEBUG-TRANSFORM] isMathOn(%s): returning true (default)\n", op)
-		}
-		return true
-	}
+	// MathOn is already set to true in NewEval
+	// ParensStack, InParenthesis, OutOfParenthesis, IsMathOnWithOp are all methods on *Eval
 
 	//
 	// Allows setting variables with a hash, so:
@@ -231,7 +145,7 @@ func TransformTree(root any, options map[string]any) any {
 			}
 			declarations = append(declarations, decl)
 		}
-		evalEnv["frames"] = []any{NewRuleset(nil, declarations, false, nil)}
+		evalEnv.Frames = []any{NewRuleset(nil, declarations, false, nil)}
 	}
 
 	// Create visitors exactly like JavaScript

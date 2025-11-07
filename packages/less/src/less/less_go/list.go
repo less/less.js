@@ -371,32 +371,16 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 			value = item
 		}
 
-		// Create new rules slice - start with variable declarations first
-		// so they're available when other rules are evaluated
-		newRules := make([]any, 0, len(targetRuleset.Rules)+3)
+		// Create new rules slice - copy template rules first, then add variables
+		// This matches JavaScript: newRules = rs.rules.slice(0); newRules.push(...)
+		newRules := make([]any, len(targetRuleset.Rules), len(targetRuleset.Rules)+3)
+		copy(newRules, targetRuleset.Rules)
 
-		// Inject @value variable first
+		// Inject @value variable
 		if valueName != "" && value != nil {
 			valueDecl, err := NewDeclaration(valueName, value, false, false, 0, nil, false, nil)
 			if err == nil {
 				newRules = append(newRules, valueDecl)
-			}
-		}
-
-		// Inject @key variable
-		if keyName != "" && key != nil {
-			// Wrap the key value in an Anonymous or Quoted node
-			var keyValue any
-			if keyStr, ok := key.(string); ok {
-				// For string keys, wrap in Anonymous to ensure proper output
-				keyValue = NewAnonymous(keyStr, 0, nil, false, false, nil)
-			} else {
-				// For non-string keys (e.g., Dimension), use as-is
-				keyValue = key
-			}
-			keyDecl, err := NewDeclaration(keyName, keyValue, false, false, 0, nil, false, nil)
-			if err == nil {
-				newRules = append(newRules, keyDecl)
 			}
 		}
 
@@ -411,8 +395,13 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 			}
 		}
 
-		// Then append the original callback rules
-		newRules = append(newRules, targetRuleset.Rules...)
+		// Inject @key variable
+		if keyName != "" && key != nil {
+			keyDecl, err := NewDeclaration(keyName, key, false, false, 0, nil, false, nil)
+			if err == nil {
+				newRules = append(newRules, keyDecl)
+			}
+		}
 
 		// Create new ruleset with ampersand selector
 		ampersandElement := NewElement(nil, "&", false, 0, nil, nil)

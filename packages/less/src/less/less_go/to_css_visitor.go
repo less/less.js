@@ -436,31 +436,10 @@ func (v *ToCSSVisitor) VisitAtRuleWithoutBody(atRuleNode any, visitArgs *VisitAr
 	
 	if nameNode, hasName := atRuleNode.(interface{ GetName() string }); hasName {
 		if nameNode.GetName() == "@charset" {
-			// Only output the debug info together with subsequent @charset definitions
-			// a comment (or @media statement) before the actual @charset atrule would
-			// be considered illegal css as it has to be on the first line
+			// CSS spec: only the first @charset declaration should be output
+			// Any subsequent @charset declarations should be completely removed (not even as comments)
 			if v.charset {
-				if debugNode, hasDebug := atRuleNode.(interface{ GetDebugInfo() any }); hasDebug {
-					if debugNode.GetDebugInfo() != nil {
-						if cssNode, hasCSS := atRuleNode.(interface{ ToCSS(any) string }); hasCSS {
-							cssStr := cssNode.ToCSS(v.context)
-							// Remove newlines for comment
-							commentValue := "/* " + cssStr
-							for i := 0; i < len(commentValue); i++ {
-								if commentValue[i] == '\n' {
-									commentValue = commentValue[:i] + commentValue[i+1:]
-									i--
-								}
-							}
-							commentValue += " */\n"
-							
-							comment := NewComment(commentValue, false, 0, nil)
-							// Try to get debug info from the node
-							// Skip type assertion and just pass the node to DebugInfo function
-							return v.visitor.Visit(comment)
-						}
-					}
-				}
+				// Already seen a @charset, skip this one entirely
 				return nil
 			}
 			v.charset = true

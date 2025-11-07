@@ -323,7 +323,7 @@ func (v *Variable) ToCSS(context any) string {
 		// Return the variable name as fallback, similar to how failed evaluation might be handled
 		return v.name
 	}
-	
+
 	// Convert result to CSS string
 	if cssObj, ok := result.(interface{ ToCSS(any) string }); ok {
 		return cssObj.ToCSS(context)
@@ -334,4 +334,24 @@ func (v *Variable) ToCSS(context any) string {
 	}
 }
 
- 
+// GenCSS generates CSS output by evaluating the variable and delegating to the result's GenCSS
+func (v *Variable) GenCSS(context any, output *CSSOutput) {
+	result, err := v.Eval(context)
+	if err != nil {
+		// On error, output the variable name as fallback
+		output.Add(v.name, v.FileInfo(), v.GetIndex())
+		return
+	}
+
+	// If result has GenCSS, delegate to it
+	if gen, ok := result.(interface{ GenCSS(any, *CSSOutput) }); ok {
+		gen.GenCSS(context, output)
+	} else if str, ok := result.(string); ok {
+		output.Add(str, v.FileInfo(), v.GetIndex())
+	} else if cssObj, ok := result.(interface{ ToCSS(any) string }); ok {
+		output.Add(cssObj.ToCSS(context), v.FileInfo(), v.GetIndex())
+	} else {
+		output.Add(fmt.Sprintf("%v", result), v.FileInfo(), v.GetIndex())
+	}
+}
+

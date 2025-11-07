@@ -1396,13 +1396,19 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 	// Organize rules by type like JavaScript version
 	var charsetRuleNodes []any
 	var ruleNodes []any
-	
+
 	var charsetNodeIndex int = 0
 	var importNodeIndex int = 0
-	
+
 	if r.Rules != nil {
 		for i, rule := range r.Rules {
-			if _, ok := rule.(*Comment); ok {
+			// Skip silent comments entirely - they don't generate output
+			// This prevents extra blank lines from being added after the last visible rule
+			if comment, ok := rule.(*Comment); ok {
+				if comment.IsSilent(ctx) {
+					continue // Skip silent comments
+				}
+				// Non-silent comments are included
 				if importNodeIndex == i {
 					importNodeIndex++
 				}
@@ -1429,7 +1435,7 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 			}
 		}
 	}
-	
+
 	// ruleNodes = charsetRuleNodes.concat(ruleNodes);
 	ruleNodes = append(charsetRuleNodes, ruleNodes...)
 	
@@ -1532,31 +1538,31 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 	}
 
 	// Generate CSS for rules
+	// Note: Silent comments have been filtered out above, so we only process rules that generate output
 	for i, rule := range ruleNodes {
 		if i+1 == len(ruleNodes) {
 			ctx["lastRule"] = true
 		}
-		
+
 		currentLastRule := false
 		if lr, ok := ctx["lastRule"].(bool); ok {
 			currentLastRule = lr
 		}
-		
+
 		if rulesetLike, ok := rule.(interface{ IsRulesetLike() bool }); ok && rulesetLike.IsRulesetLike() {
 			ctx["lastRule"] = false
 		}
-		
-		// Check if this is a silent comment
-		if comment, isComment := rule.(*Comment); isComment && comment.IsSilent(ctx) {
-			// Skip silent comments
-		} else if gen, ok := rule.(interface{ GenCSS(any, *CSSOutput) }); ok {
+
+		// Generate CSS for the rule
+		if gen, ok := rule.(interface{ GenCSS(any, *CSSOutput) }); ok {
 			gen.GenCSS(ctx, output)
 		} else if val, ok := rule.(interface{ GetValue() any }); ok {
 			output.Add(fmt.Sprintf("%v", val.GetValue()), nil, nil)
 		}
-		
+
 		ctx["lastRule"] = currentLastRule
-		
+
+		// Add newline after rule if it's not the last rule
 		if !currentLastRule {
 			if vis, ok := rule.(interface{ IsVisible() bool }); ok && vis.IsVisible() {
 				if compress {

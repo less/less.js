@@ -1,8 +1,6 @@
 package less_go
 
 import (
-	"fmt"
-	"os"
 	"reflect"
 	"strings"
 )
@@ -102,25 +100,11 @@ func (o *Operation) Eval(context any) (any, error) {
 	// First try the proper Eval context
 	if evalCtx, ok := context.(*Eval); ok {
 		mathOn = evalCtx.IsMathOnWithOp(o.Op)
-		if os.Getenv("LESS_GO_TRACE") == "1" && o.Op == "/" {
-			fmt.Printf("[OPERATION-DEBUG] Operation.Eval: op=/, using Eval context, mathOn=%v\n", mathOn)
-		}
 	} else if ctx, ok := context.(map[string]any); ok {
 		// Fallback to map-based context for compatibility
 		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
 			mathOn = mathOnFunc(o.Op)
-			if os.Getenv("LESS_GO_TRACE") == "1" && o.Op == "/" {
-				fmt.Printf("[OPERATION-DEBUG] Operation.Eval: op=/, using map context with isMathOn func, mathOn=%v\n", mathOn)
-			}
-		} else if os.Getenv("LESS_GO_TRACE") == "1" && o.Op == "/" {
-			fmt.Printf("[OPERATION-DEBUG] Operation.Eval: op=/, using map context but NO isMathOn func, mathOn=%v\n", mathOn)
 		}
-	} else if os.Getenv("LESS_GO_TRACE") == "1" && o.Op == "/" {
-		fmt.Printf("[OPERATION-DEBUG] Operation.Eval: op=/, unknown context type %T, mathOn=%v\n", context, mathOn)
-	}
-
-	if os.Getenv("LESS_GO_TRACE") == "1" && o.Op == "/" {
-		fmt.Printf("[OPERATION-DEBUG] Operation.Eval: op=/, mathOn=%v, a=%v, b=%v\n", mathOn, a, b)
 	}
 
 	if mathOn {
@@ -223,7 +207,7 @@ func (o *Operation) GenCSS(context any, output *CSSOutput) {
 	if operand0, ok := o.Operands[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
 		operand0.GenCSS(context, output)
 	}
-	
+
 	if o.IsSpaced {
 		output.Add(" ", nil, nil)
 	}
@@ -231,7 +215,7 @@ func (o *Operation) GenCSS(context any, output *CSSOutput) {
 	if o.IsSpaced {
 		output.Add(" ", nil, nil)
 	}
-	
+
 	if operand1, ok := o.Operands[1].(interface{ GenCSS(any, *CSSOutput) }); ok {
 		operand1.GenCSS(context, output)
 	}

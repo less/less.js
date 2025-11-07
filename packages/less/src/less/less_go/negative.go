@@ -34,38 +34,30 @@ func (n *Negative) GenCSS(context any, output *CSSOutput) {
 
 // Eval evaluates the negative node - matching JavaScript implementation closely
 func (n *Negative) Eval(context any) any {
-	ctx, ok := context.(map[string]any)
-	if !ok {
-		// Fall back to simple evaluation if context is not a map
-		return n.evalValue(context)
-	}
-
 	// Match JavaScript: if (context.isMathOn())
 	// Check if math is on
 	mathOn := false
 	if evalCtx, ok := context.(*Eval); ok {
 		// Check if context is *Eval and use the method directly
 		mathOn = evalCtx.IsMathOn()
-	} else if mathOnFunc, ok := ctx["isMathOn"].(func() bool); ok {
-		// Fallback for map-based context - check parameterless version first (matches JavaScript)
-		mathOn = mathOnFunc()
-	} else if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
-		mathOn = mathOnFunc("*") // For multiplication which is what negative uses
+	} else if ctx, ok := context.(map[string]any); ok {
+		// Fallback for map-based context
+		if mathOnFunc, ok := ctx["isMathOn"].(func() bool); ok {
+			// Fallback for map-based context - check parameterless version first (matches JavaScript)
+			mathOn = mathOnFunc()
+		} else if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {
+			mathOn = mathOnFunc("*") // For multiplication which is what negative uses
+		}
 	}
-	
+
 	if mathOn {
 		// Match JavaScript: return (new Operation('*', [new Dimension(-1), this.value])).eval(context);
 		dim, _ := NewDimension(-1, nil)
-		
-		// Actually, JavaScript would pass the unevaluated value and let Operation handle it
-		// But our test assumes it's pre-evaluated, so let's keep it for now
-		var evaluatedValue any = n.Value
-		if valOp, ok := n.Value.(*Operation); ok {
-			evaluatedValue, _ = valOp.Eval(context)
-		}
-		
-		op := NewOperation("*", []any{dim, evaluatedValue}, false)
-		
+
+		// Pass the unevaluated value and let Operation.Eval handle the evaluation
+		// This matches JavaScript behavior exactly
+		op := NewOperation("*", []any{dim, n.Value}, false)
+
 		// Operation.Eval returns (any, error) but JavaScript just returns the result
 		result, _ := op.Eval(context)
 		return result

@@ -60,6 +60,8 @@ type Eval struct {
 	MathOn           bool
 	DefaultFunc      *DefaultFunc // For default() function in mixin guards
 	FunctionRegistry *Registry    // Function registry for built-in and custom functions
+	MediaBlocks      []any        // Stack of media blocks for media query merging
+	MediaPath        []any        // Path of nested media queries for merging
 }
 
 // NewEval creates a new Eval context with the given options and frames

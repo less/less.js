@@ -107,14 +107,52 @@ func (m *Media) Accept(visitor any) {
 func (m *Media) EvalTop(context any) any {
 	var result any = m
 
-	// Handle context
+	// Handle both *Eval and map[string]any contexts
+	var mediaBlocks []any
+	var hasMediaBlocks bool
+
+	if evalCtx, ok := context.(*Eval); ok {
+		mediaBlocks = evalCtx.MediaBlocks
+		hasMediaBlocks = len(mediaBlocks) > 0
+
+		// Render all dependent Media blocks
+		if hasMediaBlocks && len(mediaBlocks) > 1 {
+			// Create empty selectors
+			selector, err := NewSelector(nil, nil, nil, m.GetIndex(), m.FileInfo(), nil)
+			if err != nil {
+				return result
+			}
+			emptySelectors, err := selector.CreateEmptySelectors()
+			if err != nil {
+				return result
+			}
+
+			// Create new Ruleset - convert selectors to []any
+			selectors := make([]any, len(emptySelectors))
+			for i, sel := range emptySelectors {
+				selectors[i] = sel
+			}
+			ruleset := NewRuleset(selectors, mediaBlocks, false, m.VisibilityInfo())
+			ruleset.MultiMedia = true // Set MultiMedia to true for multiple media blocks
+			ruleset.CopyVisibilityInfo(m.VisibilityInfo())
+			m.SetParent(ruleset.Node, m.Node)
+			result = ruleset
+		}
+
+		// Clear mediaBlocks and mediaPath from context
+		evalCtx.MediaBlocks = nil
+		evalCtx.MediaPath = nil
+
+		return result
+	}
+
+	// Handle map[string]any context (for backward compatibility)
 	ctx, ok := context.(map[string]any)
 	if !ok {
 		return result
 	}
 
-	// Render all dependent Media blocks
-	mediaBlocks, hasMediaBlocks := ctx["mediaBlocks"].([]any)
+	mediaBlocks, hasMediaBlocks = ctx["mediaBlocks"].([]any)
 	if hasMediaBlocks && len(mediaBlocks) > 1 {
 		// Create empty selectors
 		selector, err := NewSelector(nil, nil, nil, m.GetIndex(), m.FileInfo(), nil)
@@ -147,12 +185,19 @@ func (m *Media) EvalTop(context any) any {
 
 // EvalNested evaluates the media rule in a nested context (implementing NestableAtRulePrototype)
 func (m *Media) EvalNested(context any) any {
-	ctx, ok := context.(map[string]any)
-	if !ok {
+	// Handle both *Eval and map[string]any contexts
+	var mediaPath []any
+	var hasMediaPath bool
+
+	if evalCtx, ok := context.(*Eval); ok {
+		mediaPath = evalCtx.MediaPath
+		hasMediaPath = len(mediaPath) > 0
+	} else if ctx, ok := context.(map[string]any); ok {
+		mediaPath, hasMediaPath = ctx["mediaPath"].([]any)
+	} else {
 		return m
 	}
 
-	mediaPath, hasMediaPath := ctx["mediaPath"].([]any)
 	if !hasMediaPath {
 		mediaPath = []any{}
 	}
@@ -173,21 +218,27 @@ func (m *Media) EvalNested(context any) any {
 		}
 
 		if pathType != m.GetType() {
-			if mediaBlocks, hasMediaBlocks := ctx["mediaBlocks"].([]any); hasMediaBlocks && i < len(mediaBlocks) {
-				// Remove element at index i
-				ctx["mediaBlocks"] = append(mediaBlocks[:i], mediaBlocks[i+1:]...)
+			// Remove from mediaBlocks if types don't match
+			if evalCtx, ok := context.(*Eval); ok {
+				if i < len(evalCtx.MediaBlocks) {
+					evalCtx.MediaBlocks = append(evalCtx.MediaBlocks[:i], evalCtx.MediaBlocks[i+1:]...)
+				}
+			} else if ctx, ok := context.(map[string]any); ok {
+				if mediaBlocks, hasMediaBlocks := ctx["mediaBlocks"].([]any); hasMediaBlocks && i < len(mediaBlocks) {
+					ctx["mediaBlocks"] = append(mediaBlocks[:i], mediaBlocks[i+1:]...)
+				}
 			}
 			return m
 		}
 
 		var value any
 		var features any
-		
+
 		// Get features from the path item
 		if media, ok := path[i].(*Media); ok {
 			features = media.Features
 		}
-		
+
 		if valueNode, ok := features.(*Value); ok {
 			value = valueNode.Value
 		} else {
@@ -351,31 +402,27 @@ func (m *Media) Eval(context any) (any, error) {
 		return nil, fmt.Errorf("context is required for Media.Eval")
 	}
 
-	// Accept both *Eval and map[string]any contexts
-	var ctx map[string]any
+	// Convert to *Eval context if needed
 	var evalCtx *Eval
-
 	if ec, ok := context.(*Eval); ok {
 		evalCtx = ec
-		// Create a map that wraps the *Eval context for media-specific state
-		ctx = map[string]any{
-			"frames": ec.Frames,
-		}
 	} else if mapCtx, ok := context.(map[string]any); ok {
-		ctx = mapCtx
+		// For backward compatibility with map-based contexts
+		// This path is used by EvalTop and EvalNested
+		return m.evalWithMapContext(mapCtx)
 	} else {
 		return nil, fmt.Errorf("context must be *Eval or map[string]any, got %T", context)
 	}
 
 	// Match JavaScript: if (!context.mediaBlocks) { context.mediaBlocks = []; context.mediaPath = []; }
-	if ctx["mediaBlocks"] == nil {
-		ctx["mediaBlocks"] = []any{}
-		ctx["mediaPath"] = []any{}
+	if evalCtx.MediaBlocks == nil {
+		evalCtx.MediaBlocks = []any{}
+		evalCtx.MediaPath = []any{}
 	}
 
 	// Match JavaScript: const media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo())
 	media := NewMedia(nil, []any{}, m.GetIndex(), m.FileInfo(), m.VisibilityInfo())
-	
+
 	// Match JavaScript: if (this.debugInfo) { this.rules[0].debugInfo = this.debugInfo; media.debugInfo = this.debugInfo; }
 	if m.DebugInfo != nil {
 		if len(m.Rules) > 0 {
@@ -400,6 +447,89 @@ func (m *Media) Eval(context any) (any, error) {
 	}
 
 	// Match JavaScript: context.mediaPath.push(media); context.mediaBlocks.push(media);
+	evalCtx.MediaPath = append(evalCtx.MediaPath, media)
+	evalCtx.MediaBlocks = append(evalCtx.MediaBlocks, media)
+
+	// Match JavaScript: this.rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
+	if len(m.Rules) > 0 {
+		if ruleset, ok := m.Rules[0].(*Ruleset); ok {
+			// Handle function registry inheritance if frames exist
+			if len(evalCtx.Frames) > 0 {
+				if frameRuleset, ok := evalCtx.Frames[0].(*Ruleset); ok && frameRuleset.FunctionRegistry != nil {
+					// Stub: ruleset.FunctionRegistry = frameRuleset.FunctionRegistry.Inherit()
+					ruleset.FunctionRegistry = frameRuleset.FunctionRegistry
+				}
+			}
+
+			// Match JavaScript: context.frames.unshift(this.rules[0]);
+			newFrames := make([]any, len(evalCtx.Frames)+1)
+			newFrames[0] = ruleset
+			copy(newFrames[1:], evalCtx.Frames)
+			evalCtx.Frames = newFrames
+
+			// Match JavaScript: media.rules = [this.rules[0].eval(context)];
+			evaluated, err := ruleset.Eval(context)
+			if err != nil {
+				return nil, err
+			}
+			media.Rules = []any{evaluated}
+
+			// Match JavaScript: context.frames.shift();
+			if len(evalCtx.Frames) > 0 {
+				evalCtx.Frames = evalCtx.Frames[1:]
+			}
+		}
+	}
+
+	// Match JavaScript: context.mediaPath.pop();
+	if len(evalCtx.MediaPath) > 0 {
+		evalCtx.MediaPath = evalCtx.MediaPath[:len(evalCtx.MediaPath)-1]
+	}
+
+	// Match JavaScript: return context.mediaPath.length === 0 ? media.evalTop(context) : media.evalNested(context);
+	if len(evalCtx.MediaPath) == 0 {
+		result := media.EvalTop(evalCtx)
+		return result, nil
+	} else {
+		return media.EvalNested(evalCtx), nil
+	}
+}
+
+// evalWithMapContext handles evaluation with map-based context (for backward compatibility)
+func (m *Media) evalWithMapContext(ctx map[string]any) (any, error) {
+	// Match JavaScript: if (!context.mediaBlocks) { context.mediaBlocks = []; context.mediaPath = []; }
+	if ctx["mediaBlocks"] == nil {
+		ctx["mediaBlocks"] = []any{}
+		ctx["mediaPath"] = []any{}
+	}
+
+	// Match JavaScript: const media = new Media(null, [], this._index, this._fileInfo, this.visibilityInfo())
+	media := NewMedia(nil, []any{}, m.GetIndex(), m.FileInfo(), m.VisibilityInfo())
+
+	// Match JavaScript: if (this.debugInfo) { this.rules[0].debugInfo = this.debugInfo; media.debugInfo = this.debugInfo; }
+	if m.DebugInfo != nil {
+		if len(m.Rules) > 0 {
+			if ruleset, ok := m.Rules[0].(*Ruleset); ok {
+				ruleset.DebugInfo = m.DebugInfo
+			}
+		}
+		media.DebugInfo = m.DebugInfo
+	}
+
+	// Match JavaScript: media.features = this.features.eval(context)
+	if m.Features != nil {
+		if eval, ok := m.Features.(interface{ Eval(any) (any, error) }); ok {
+			evaluated, err := eval.Eval(ctx)
+			if err != nil {
+				return nil, err
+			}
+			media.Features = evaluated
+		} else if eval, ok := m.Features.(interface{ Eval(any) any }); ok {
+			media.Features = eval.Eval(ctx)
+		}
+	}
+
+	// Match JavaScript: context.mediaPath.push(media); context.mediaBlocks.push(media);
 	if mediaPath, ok := ctx["mediaPath"].([]any); ok {
 		ctx["mediaPath"] = append(mediaPath, media)
 	}
@@ -410,11 +540,8 @@ func (m *Media) Eval(context any) (any, error) {
 	// Match JavaScript: this.rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
 	if len(m.Rules) > 0 {
 		if ruleset, ok := m.Rules[0].(*Ruleset); ok {
-			// Get frames from the appropriate source
 			var frames []any
-			if evalCtx != nil {
-				frames = evalCtx.Frames
-			} else if f, ok := ctx["frames"].([]any); ok {
+			if f, ok := ctx["frames"].([]any); ok {
 				frames = f
 			} else {
 				return nil, fmt.Errorf("frames is required for media evaluation")
@@ -423,7 +550,6 @@ func (m *Media) Eval(context any) (any, error) {
 			// Handle function registry inheritance if frames exist
 			if len(frames) > 0 {
 				if frameRuleset, ok := frames[0].(*Ruleset); ok && frameRuleset.FunctionRegistry != nil {
-					// Stub: ruleset.FunctionRegistry = frameRuleset.FunctionRegistry.Inherit()
 					ruleset.FunctionRegistry = frameRuleset.FunctionRegistry
 				}
 			}
@@ -432,27 +558,17 @@ func (m *Media) Eval(context any) (any, error) {
 			newFrames := make([]any, len(frames)+1)
 			newFrames[0] = ruleset
 			copy(newFrames[1:], frames)
-
-			// Update frames in the appropriate location
-			if evalCtx != nil {
-				evalCtx.Frames = newFrames
-			} else {
-				ctx["frames"] = newFrames
-			}
+			ctx["frames"] = newFrames
 
 			// Match JavaScript: media.rules = [this.rules[0].eval(context)];
-			evaluated, err := ruleset.Eval(context)
+			evaluated, err := ruleset.Eval(ctx)
 			if err != nil {
 				return nil, err
 			}
 			media.Rules = []any{evaluated}
 
 			// Match JavaScript: context.frames.shift();
-			if evalCtx != nil {
-				if len(evalCtx.Frames) > 0 {
-					evalCtx.Frames = evalCtx.Frames[1:]
-				}
-			} else if currentFrames, ok := ctx["frames"].([]any); ok && len(currentFrames) > 0 {
+			if currentFrames, ok := ctx["frames"].([]any); ok && len(currentFrames) > 0 {
 				ctx["frames"] = currentFrames[1:]
 			}
 		}
@@ -466,12 +582,12 @@ func (m *Media) Eval(context any) (any, error) {
 	// Match JavaScript: return context.mediaPath.length === 0 ? media.evalTop(context) : media.evalNested(context);
 	if mediaPath, ok := ctx["mediaPath"].([]any); ok {
 		if len(mediaPath) == 0 {
-			result := media.EvalTop(context)
+			result := media.EvalTop(ctx)
 			return result, nil
 		} else {
-			return media.EvalNested(context), nil
+			return media.EvalNested(ctx), nil
 		}
 	}
 
-	return media.EvalTop(context), nil
+	return media.EvalTop(ctx), nil
 } 

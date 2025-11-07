@@ -1413,6 +1413,11 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 					importNodeIndex++
 				}
 				ruleNodes = append(ruleNodes, rule)
+			} else if _, ok := rule.(*Extend); ok {
+				// Skip Extend rules entirely - they don't generate CSS output
+				// Extend rules are processed during the extend visitor phase and should not appear in CSS
+				// This prevents extra blank lines from being added
+				continue
 			} else if charset, ok := rule.(interface{ IsCharset() bool }); ok && charset.IsCharset() {
 				// ruleNodes.splice(charsetNodeIndex, 0, rule);
 				newRules := make([]any, len(ruleNodes)+1)
@@ -1438,7 +1443,7 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 
 	// ruleNodes = charsetRuleNodes.concat(ruleNodes);
 	ruleNodes = append(charsetRuleNodes, ruleNodes...)
-	
+
 	// Generate CSS for selectors if not root
 	// Check if this is a media-empty ruleset that should not generate selectors/braces
 	// This happens when media queries create wrapper rulesets with empty selectors

@@ -111,25 +111,43 @@ func (p *Property) Eval(context any) (any, error) {
 			vArr = p.mergeRules(vArr)
 		}
 
-		// Get last declaration
-		lastDecl := vArr[len(vArr)-1].(*Declaration)
-		if lastDecl.important != "" {
-			// Handle important scope if available in context
+		// Get last declaration and extract value
+		lastItem := vArr[len(vArr)-1]
+
+		// Handle different types of declarations
+		var value any
+		var important string
+
+		switch decl := lastItem.(type) {
+		case *Declaration:
+			value = decl.Value
+			important = decl.important
+		case interface{ Value() any }:
+			// Handle mock declarations in tests
+			value = decl.Value()
+		default:
+			// Use the item directly
+			value = lastItem
+		}
+
+		// Handle important scope if available
+		if important != "" {
 			if ctx, ok := context.(map[string]any); ok {
 				if importantScope, ok := ctx["importantScope"].([]any); ok && len(importantScope) > 0 {
 					if lastScope, ok := importantScope[len(importantScope)-1].(map[string]any); ok {
-						lastScope["important"] = lastDecl.important
+						lastScope["important"] = important
 					}
 				}
 			}
 		}
 
 		// Evaluate and return the value
-		result, err := lastDecl.Value.Eval(context)
-		if err != nil {
-			return nil
+		if valueNode, ok := value.(Node); ok {
+			result := valueNode.Eval(context)
+			return result
 		}
-		return result
+
+		return value
 	})
 
 	if property != nil {

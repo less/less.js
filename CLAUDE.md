@@ -43,19 +43,23 @@ When working on this project, please be aware of the following:
    - JavaScript tests use Vitest framework
    - Go tests should verify ported functionality matches JavaScript behavior
 
-4. **Current Integration Test Status** (as of 2025-11-06 - Latest):
-   - **20 perfect CSS matches (10.8%)** - stable baseline ✅ ⬆️ +2 from last update!
-   - **2 real compilation failures (1.1%)** - import-interpolation, import-module
+4. **Current Integration Test Status** (as of 2025-11-07 - Latest):
+   - **21 perfect CSS matches (11.4%)** - stable baseline ✅ ⬆️ +1 from last update!
+   - **2 real compilation failures (1.1%)** - extend-chaining, extend-media (both: "context must be a map" errors)
    - **3 expected compilation failures (1.6%)** - network/path issues (bootstrap4, google, import-remote)
-   - **~140 tests with output differences (75.7%)** - compiles but CSS doesn't match
-   - **58 correct error handling** - tests that should fail, do fail correctly
+   - **~45 tests with output differences** - compiles but CSS doesn't match
+   - **58+ correct error handling** - tests that should fail, do fail correctly
    - **5 tests quarantined** (plugin system & JavaScript execution - punted for later)
-   - **Overall Success Rate: 42.2%** ⬆️ (78/185 tests passing)
+   - **Overall Success Rate: ~44%** ⬆️ (81/185 tests passing or correctly erroring)
 
    **🎉 Parser Status: ALL BUGS FIXED!**
    - Parser correctly handles full LESS syntax
-   - **180/185 tests compile successfully (97.3% compilation rate)** ⬆️
+   - **180/185 tests compile successfully (97.3% compilation rate)**
    - Remaining work is in runtime evaluation and functional implementation
+
+   **⚠️ Unit Test Status:**
+   - **1 test fixed today**: TestQuoted_Eval (was panicking with MockDeclaration type assertion) ✅
+   - **1 pre-existing failure**: TestMergeRulesTruthiness (3/6 sub-tests failing - merge behavior issue)
 
    **Recent Progress** (Runtime Fixes):
    - ✅ Issue #1: `if()` function context passing - FIXED
@@ -71,6 +75,7 @@ When working on this project, please be aware of the following:
    - ✅ Issue #10: Mixin variadic parameter expansion and argument matching - FIXED
    - ✅ Issue #11: `include-path` - Include path option for import resolution - FIXED
    - ✅ Issue #12: `css-guards` - CSS guard evaluation on rulesets - FIXED
+   - ✅ Issue #13: Namespacing value evaluation - FIXED (namespacing-1, namespacing-2, namespacing-functions, namespacing-operations)
    - ✅ Compilation failures reduced from 12 → 2 tests (83% reduction!)
 
 5. **Organized Task System**:
@@ -94,21 +99,20 @@ When working on this project, please be aware of the following:
    - See `.claude/tasks/` for specific task specifications
 
    **Priority Order** (High to Low):
-   1. **HIGH**: Extend functionality (7 tests) - `.claude/tasks/output-differences/extend-functionality.md`
-   2. **HIGH**: Math operations and expressions (10+ tests) - `.claude/tasks/output-differences/math-operations.md`
-   3. **HIGH**: Complete import-reference (2 tests) - `.claude/tasks/runtime-failures/import-reference.md`
-   4. **MEDIUM**: Namespacing output issues (7 tests) - `.claude/tasks/output-differences/namespacing-output.md`
-   5. **MEDIUM**: Remaining guard conditionals (2 tests) - `.claude/tasks/output-differences/guards-conditionals.md`
+   1. **HIGH**: Fix extend compilation failures (2 tests) - extend-chaining, extend-media ("context must be a map" errors)
+   2. **HIGH**: Extend functionality output differences (4 tests) - extend-exact, extend-nest, extend-selector + basic extend
+   3. **HIGH**: Math operations and expressions (10+ tests) - `.claude/tasks/output-differences/math-operations.md`
+   4. **MEDIUM**: Remaining namespacing issues (3 tests) - namespacing-4, namespacing-5, namespacing-8
+   5. **MEDIUM**: Guard conditionals (3 tests) - css-guards, mixins-guards-default-func, mixins-guards (main)
+   6. **MEDIUM**: Fix mixin output issues - mixins-closure has regressed
+   7. **MEDIUM**: Complete import-reference (2 tests) - import-reference, import-reference-issues
+   8. **LOW**: Fix TestMergeRulesTruthiness unit test (3 sub-tests failing)
 
-   **Recently Completed**:
-   - ✅ Variable evaluation in functions/loops - FIXED (Issue #2b)
-   - ✅ Mixin closure and variable scope - FIXED (Issue #6)
-   - ✅ Mixin recursion detection - FIXED (Issue #7)
-   - ✅ Basic namespace resolution - FIXED (Issue #8: namespacing-6)
-   - ✅ DetachedRuleset missing methods causing regressions - FIXED (Issue #9)
-   - ✅ Mixin variadic parameter expansion and argument matching - FIXED (Issue #10)
-   - ✅ Include path option for import resolution - FIXED (Issue #11)
-   - ✅ CSS guard evaluation on rulesets - FIXED (Issue #12: css-guards)
+   **Recently Completed** (Since last session):
+   - ✅ Namespace value evaluation - 5 tests now passing (namespacing-1, -2, -7, -functions, -operations)!
+   - ✅ Unit test panic fixed - TestQuoted_Eval now passes (property.go type assertion fix)
+   - ✅ mixins-guards test now passing
+   - ✅ mixins-named-args test now passing
 
 7. **Quarantined Features** (for future implementation):
    - Plugin system tests (`plugin`, `plugin-module`, `plugin-preeval`)

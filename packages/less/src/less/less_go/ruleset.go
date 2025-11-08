@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
 )
 
 // SelectorsParseFunc is a function type for parsing selector strings into selectors

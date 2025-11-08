@@ -385,6 +385,17 @@ func (m *Media) BubbleSelectors(selectors any) {
 
 // GenCSS generates CSS representation
 func (m *Media) GenCSS(context any, output *CSSOutput) {
+	// Check visibility - skip if node blocks visibility and is not explicitly visible
+	// This implements the reference import functionality where nodes from referenced
+	// imports are hidden unless explicitly used (via extend or mixin call)
+	if m.AtRule != nil && m.AtRule.Node != nil && m.AtRule.Node.BlocksVisibility() {
+		nodeVisible := m.AtRule.Node.IsVisible()
+		if nodeVisible == nil || !*nodeVisible {
+			// Node blocks visibility and is not explicitly visible, skip output
+			return
+		}
+	}
+
 	output.Add("@media ", m.FileInfo(), m.GetIndex())
 
 	if m.Features != nil {

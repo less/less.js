@@ -156,8 +156,17 @@ func (u *CSSVisitorUtils) ResolveVisibility(node any) any {
 				return nil
 			}
 
-			if ensureVisNode, hasEnsure := node.(interface{ EnsureVisibility() }); hasEnsure {
-				ensureVisNode.EnsureVisibility()
+			// Only mark as visible if it doesn't block visibility (i.e., not from a reference import)
+			// Reference imports should remain hidden even if they have visible children (from mixin calls/extends)
+			blocksVis := false
+			if blocksNode, hasBlocks := node.(interface{ BlocksVisibility() bool }); hasBlocks {
+				blocksVis = blocksNode.BlocksVisibility()
+			}
+
+			if !blocksVis {
+				if ensureVisNode, hasEnsure := node.(interface{ EnsureVisibility() }); hasEnsure {
+					ensureVisNode.EnsureVisibility()
+				}
 			}
 
 			if removeVisNode, hasRemove := node.(interface{ RemoveVisibilityBlock() }); hasRemove {
@@ -681,8 +690,16 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 	}
 	
 	if keepRuleset {
-		if ensureVisNode, hasEnsure := rulesetNode.(interface{ EnsureVisibility() }); hasEnsure {
-			ensureVisNode.EnsureVisibility()
+		// Only mark as visible if it doesn't block visibility (reference imports)
+		blocksVis := false
+		if blocksNode, hasBlocks := rulesetNode.(interface{ BlocksVisibility() bool }); hasBlocks {
+			blocksVis = blocksNode.BlocksVisibility()
+		}
+
+		if !blocksVis {
+			if ensureVisNode, hasEnsure := rulesetNode.(interface{ EnsureVisibility() }); hasEnsure {
+				ensureVisNode.EnsureVisibility()
+			}
 		}
 		// Insert at beginning
 		rulesets = append([]any{rulesetNode}, rulesets...)

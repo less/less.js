@@ -444,16 +444,16 @@ func (i *Import) DoEval(context any) (any, error) {
 			"reference": i.pathFileInfoReference(),
 		}, true, true, nil)
 
-		if features != nil {
-			// Match JavaScript: new Media([contents], this.features.value)
-			// Use the unevaluated i.features.Value, not the evaluated features
+		// Match JavaScript: return this.features ? new Media([contents], this.features.value) : [contents];
+		// JavaScript uses this.features (not evaluated), and extracts .value property
+		if i.features != nil {
+			// Extract the value from i.features
+			// i.features is *Value with Value field containing the array of nodes
 			var featuresValue any
-
 			if val, ok := i.features.(*Value); ok {
 				featuresValue = val.Value
 			} else {
-				// Fallback to features if i.features is not *Value
-				featuresValue = features
+				featuresValue = i.features
 			}
 
 			return NewMedia([]any{contents}, featuresValue, i._index, i._fileInfo, nil), nil
@@ -484,16 +484,16 @@ func (i *Import) DoEval(context any) (any, error) {
 			return nil, err
 		}
 
-		if features != nil {
-			// Match JavaScript: new Media(ruleset.rules, this.features.value)
-			// Use the unevaluated i.features.Value, not the evaluated features
+		// Match JavaScript: return this.features ? new Media(ruleset.rules, this.features.value) : ruleset.rules;
+		// JavaScript uses this.features (not evaluated), and extracts .value property
+		if i.features != nil {
+			// Extract the value from i.features
+			// i.features is *Value with Value field containing the array of nodes
 			var featuresValue any
-
 			if val, ok := i.features.(*Value); ok {
 				featuresValue = val.Value
 			} else {
-				// Fallback to features if i.features is not *Value
-				featuresValue = features
+				featuresValue = i.features
 			}
 
 			return NewMedia(ruleset.Rules, featuresValue, i._index, i._fileInfo, nil), nil

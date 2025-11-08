@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -382,6 +383,10 @@ func (r *Ruleset) Eval(context any) (any, error) {
 				// Check for variables in elements
 				if selector, ok := evaluated.(*Selector); ok {
 					for _, elem := range selector.Elements {
+						if os.Getenv("LESS_GO_DEBUG") == "1" {
+							fmt.Printf("[DEBUG Eval] Element IsVariable=%v, Value type=%T, Value=%#v\n",
+								elem.IsVariable, elem.Value, elem.Value)
+						}
 						if elem.IsVariable {
 							hasVariable = true
 							break
@@ -397,6 +402,9 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		}
 
 		// Handle variables in selectors - parse using SelectorsParseFunc
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG Eval] hasVariable=%v, SelectorsParseFunc=%v\n", hasVariable, r.SelectorsParseFunc != nil)
+		}
 		if hasVariable && r.SelectorsParseFunc != nil {
 			// Convert selectors to CSS strings for parsing (like JavaScript toParseSelectors)
 			var toParseSelectors []string
@@ -406,7 +414,10 @@ func (r *Ruleset) Eval(context any) (any, error) {
 			for i, sel := range selectors {
 				if selector, ok := sel.(*Selector); ok {
 					// Get CSS representation of selector
-					cssStr := selector.ToCSS(ctx)
+					// Pass firstSelector=true to avoid leading spaces
+					toCSSCtx := make(map[string]any)
+					toCSSCtx["firstSelector"] = true
+					cssStr := selector.ToCSS(toCSSCtx)
 					toParseSelectors = append(toParseSelectors, cssStr)
 					
 					if i == 0 {
@@ -419,10 +430,27 @@ func (r *Ruleset) Eval(context any) (any, error) {
 			if len(toParseSelectors) > 0 {
 				// Parse the selectors string (equivalent to JS parseNode call)
 				selectorString := strings.Join(toParseSelectors, ",")
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG Eval] Re-parsing selectors: %s\n", selectorString)
+				}
 				parsedSelectors, err := r.SelectorsParseFunc(selectorString, r.ParseContext, r.ParseImports, selectorFileInfo, startingIndex)
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG Eval] ParseSelectors returned: err=%v, len=%d\n", err, len(parsedSelectors))
+				}
 				if err == nil && len(parsedSelectors) > 0 {
 					// Flatten the result (equivalent to utils.flattenArray in JS)
 					selectors = flattenArray(parsedSelectors)
+					if os.Getenv("LESS_GO_DEBUG") == "1" {
+						fmt.Printf("[DEBUG Eval] Parsed %d selectors after flatten\n", len(selectors))
+						for i, sel := range selectors {
+							if s, ok := sel.(*Selector); ok {
+								fmt.Printf("[DEBUG Eval]   Selector %d: %d elements\n", i, len(s.Elements))
+								for j, el := range s.Elements {
+									fmt.Printf("[DEBUG Eval]     Element %d: Value=%#v, Type=%T\n", j, el.Value, el.Value)
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -1781,6 +1809,12 @@ func (r *Ruleset) JoinSelector(paths *[][]any, context [][]any, selector any) {
 		newSelectors := [][]any{{}}
 
 		for _, el := range inSelector.Elements {
+			// Debug: log element value and type
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG replaceParentSelector] Element: Value=%#v, Type=%T, Combinator=%v\n",
+					el.Value, el.Value, el.Combinator)
+			}
+
 			// Non parent reference elements just get added
 			if valueStr, ok := el.Value.(string); !ok || valueStr != "&" {
 				nestedSelector := findNestedSelector(el)

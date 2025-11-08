@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -337,6 +338,8 @@ func (p *Parser) parseNode(str string, parseList []string, callback ParseNodeCal
 			result = p.parsers.Important()
 		case "selector":
 			result = p.parsers.Selector(true)
+		case "selectors":
+			result = p.parsers.Selectors()
 		case "expression":
 			result = p.parsers.Expression()
 		case "declaration":
@@ -2966,8 +2969,8 @@ func (p *Parsers) Element() any {
 	// Parse element value using patterns from JavaScript parser
 	e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:\d+\.\d+|\d+)%`))
 	if e == nil {
-		// Match the JavaScript regex pattern more closely, but also allow @{} for variable interpolation
-		e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:[.#]?|:*)(?:[\w-]|@\{[\w-]+\}|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+`))
+		// Match the JavaScript regex pattern - NOTE: @{} is NOT included here, it's handled by VariableCurly()
+		e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+`))
 	}
 	if e == nil {
 		e = p.parser.parserInput.Char('*')
@@ -3034,7 +3037,15 @@ func (p *Parsers) Element() any {
 
 	if e != nil {
 		combinator, _ := c.(*Combinator)
-		return NewElement(combinator, e, false, index+p.parser.currentIndex, p.parser.fileInfo, nil)
+		// Match JavaScript: isVariable is true if e is a Variable node
+		isVariable := false
+		if _, ok := e.(*Variable); ok {
+			isVariable = true
+		}
+		if os.Getenv("LESS_GO_DEBUG") == "1" && isVariable {
+			fmt.Printf("[DEBUG Parser Element] Created element with isVariable=true, value type=%T\n", e)
+		}
+		return NewElement(combinator, e, isVariable, index+p.parser.currentIndex, p.parser.fileInfo, nil)
 	}
 	return nil
 }

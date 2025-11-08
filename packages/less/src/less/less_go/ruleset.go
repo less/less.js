@@ -248,6 +248,11 @@ func (r *Ruleset) GetFirstRoot() bool {
 	return r.FirstRoot
 }
 
+// GetAllowImports returns the AllowImports value
+func (r *Ruleset) GetAllowImports() bool {
+	return r.AllowImports
+}
+
 // Accept visits the ruleset with a visitor
 func (r *Ruleset) Accept(visitor any) {
 	// Try the variadic bool version first (for the mock visitor)

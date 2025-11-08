@@ -87,7 +87,6 @@ func (u *CSSVisitorUtils) IsEmpty(owner any) bool {
 
 	if ownerWithRules, ok := owner.(interface{ GetRules() []any }); ok {
 		rules := ownerWithRules.GetRules()
-		// DEBUG: Check what rules remain
 		isEmpty := rules == nil || len(rules) == 0
 		if !isEmpty {
 			// Check if all rules are nil or invisible
@@ -205,6 +204,17 @@ func (u *CSSVisitorUtils) IsVisibleRuleset(rulesetNode any) bool {
 			if vis == nil || !*vis {
 				return false
 			}
+		}
+	}
+
+	// Special case: rulesets that are direct children of Media/AtRule nodes
+	// These rulesets have AllowImports == true and don't need visible selectors
+	// because their parent node provides the selector context
+	if allowImportsNode, ok := rulesetNode.(interface{ GetAllowImports() bool }); ok {
+		if allowImportsNode.GetAllowImports() {
+			// This is a wrapper ruleset inside a Media/AtRule node
+			// Keep it even if it has no visible selectors
+			return true
 		}
 	}
 
@@ -348,12 +358,12 @@ func (v *ToCSSVisitor) VisitMedia(mediaNode any, visitArgs *VisitArgs) any {
 	if mediaNode == nil {
 		return nil
 	}
-	
+
 	if acceptor, ok := mediaNode.(interface{ Accept(any) }); ok {
 		acceptor.Accept(v.visitor)
 	}
 	visitArgs.VisitDeeper = false
-	
+
 	return v.utils.ResolveVisibility(mediaNode)
 }
 
@@ -555,8 +565,7 @@ func (v *ToCSSVisitor) VisitRuleset(rulesetNode any, visitArgs *VisitArgs) any {
 	if rulesetNode == nil {
 		return nil
 	}
-	
-	
+
 	var rulesets []any
 	
 	

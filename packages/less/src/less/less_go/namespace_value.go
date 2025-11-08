@@ -90,10 +90,15 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		}
 	}
 
+	// Track variables from the last lookup iteration for context preservation
+	var parentRuleset any     // Track the ruleset that contains a variable
+	var valueFromRuleset any  // Track if the value came from a ruleset
+
 	// Process each lookup
 	for i := 0; i < len(nv.lookups); i++ {
 		name = nv.lookups[i]
-		var parentRuleset any // Track the ruleset that contains a variable
+		parentRuleset = nil       // Reset for each iteration
+		valueFromRuleset = nil    // Reset for each iteration
 
 		// CRITICAL: Array conversion must happen INSIDE the loop - matches JavaScript behavior
 		// Eval'd DRs return rulesets.
@@ -274,7 +279,6 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		// IMPORTANT: When extracting a variable value from a ruleset (e.g., mixin local scope),
 		// we need to preserve the ruleset as a frame for evaluating nested variables
 		// The parentRuleset was saved earlier when we called Variable()
-		var valueFromRuleset any
 		if rulesMap, ok := rules.(map[string]any); ok {
 			if value, exists := rulesMap["value"]; exists {
 				valueFromRuleset = value
@@ -390,6 +394,15 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		}
 	}
 
+	// CRITICAL: If we have a parentRuleset (value came from a mixin/namespace scope),
+	// ensure it's in the context BEFORE any final evaluations.
+	// This ensures that nested variables can be resolved from the mixin's scope.
+	// We only need parentRuleset to be non-nil; valueFromRuleset is just a marker that
+	// indicates the value came from a ruleset, but we should preserve the frame regardless.
+	if parentRuleset != nil {
+		context = nv.createContextWithFrame(context, parentRuleset)
+	}
+
 	// CRITICAL FIX: If the final result is a Value object, evaluate it to unwrap the actual value
 	// This is needed for guard conditions like `when (#ns.options[option])` where the lookup
 	// returns a Value containing a Keyword, but we need the Keyword itself for comparison
@@ -445,10 +458,24 @@ func (nv *NamespaceValue) deeplyEvaluateValue(value any, context any) any {
 		return NewParen(evaluatedValue)
 	}
 
+	// For Quoted nodes, try to evaluate them (they may contain variable interpolations)
+	if quotedNode, ok := value.(*Quoted); ok {
+		// Try to evaluate the quoted node - it may contain variable interpolations like @{var}
+		if evalNode, ok := value.(interface{ Eval(any) (any, error) }); ok {
+			result, err := evalNode.Eval(context)
+			if err == nil && result != nil {
+				// Recursively evaluate the result
+				return nv.deeplyEvaluateValue(result, context)
+			}
+		}
+		return quotedNode
+	}
+
 	// For Variable nodes, try to evaluate them
 	if _, ok := value.(*Variable); ok {
 		if evalNode, ok := value.(interface{ Eval(any) (any, error) }); ok {
-			if result, err := evalNode.Eval(context); err == nil && result != nil {
+			result, err := evalNode.Eval(context)
+			if err == nil && result != nil {
 				// Recursively evaluate the result in case it contains more variables
 				return nv.deeplyEvaluateValue(result, context)
 			}

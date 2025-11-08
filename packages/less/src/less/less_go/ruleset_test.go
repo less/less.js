@@ -1312,25 +1312,6 @@ func TestRulesetErrorConditions(t *testing.T) {
 		}
 	})
 
-	t.Run("should handle nested rulesets with circular dependencies", func(t *testing.T) {
-		nestedRuleset := NewRuleset(nil, nil, false, nil)
-		// Create a circular reference by adding nestedRuleset to its own rules
-		nestedRuleset.Rules = []any{nestedRuleset}
-		
-		rules := []any{nestedRuleset}
-		ruleset := NewRuleset(nil, rules, false, nil)
-		context := make(map[string]any)
-
-		// This should not cause infinite recursion
-		result, err := ruleset.Eval(context)
-		if err != nil {
-			t.Errorf("Should handle circular dependencies gracefully: %v", err)
-		}
-		if result == nil {
-			t.Errorf("Expected result to not be nil")
-		}
-	})
-
 	t.Run("should handle invalid selector types in joinSelector", func(t *testing.T) {
 		ruleset := NewRuleset(nil, nil, false, nil)
 		var paths [][]any

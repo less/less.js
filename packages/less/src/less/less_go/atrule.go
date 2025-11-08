@@ -69,9 +69,11 @@ func NewAtRule(name string, value any, rules any, index int, currentFileInfo map
 		}
 
 		// Set allowImports to true for all rules and parent relationships
+		// Also set Root = true for the ruleset (matches JavaScript atrule.js:91)
 		for _, rule := range atRule.Rules {
 			if ruleset, ok := rule.(*Ruleset); ok {
 				ruleset.AllowImports = true
+				ruleset.Root = true
 			}
 		}
 		atRule.SetParent(atRule.Rules, atRule.Node)

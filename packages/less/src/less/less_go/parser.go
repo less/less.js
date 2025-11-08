@@ -654,17 +654,13 @@ func (p *Parsers) Primary() []any {
 			break
 		}
 
-		// Check for closing brace - this is the key termination condition
-		if p.parser.parserInput.CurrentChar() == '}' {
-			break
-		}
-
 		// Additional safety check: if we're at the end of input, break
 		if p.parser.parserInput.GetIndex() >= len(p.parser.parserInput.GetInput()) {
 			break
 		}
 
-		// Collect comments first
+		// Collect comments BEFORE checking for closing brace
+		// This ensures comments in commentStore are collected even in empty blocks
 		commentCount := 0
 		for {
 			node = p.Comment()
@@ -680,11 +676,14 @@ func (p *Parsers) Primary() []any {
 			}
 		}
 
-		// Check termination conditions again after processing comments
-		if p.parser.parserInput.Finished() {
+		// Check for closing brace AFTER collecting comments
+		// This is the key termination condition
+		if p.parser.parserInput.CurrentChar() == '}' {
 			break
 		}
-		if p.parser.parserInput.CurrentChar() == '}' {
+
+		// Check termination conditions again after processing comments
+		if p.parser.parserInput.Finished() {
 			break
 		}
 

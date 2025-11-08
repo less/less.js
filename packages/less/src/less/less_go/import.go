@@ -454,7 +454,7 @@ func (i *Import) DoEval(context any) (any, error) {
 			} else if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
 				featuresValue = featuresWithValue.GetValue()
 			}
-			return NewMedia([]any{contents}, featuresValue, 0, nil, nil), nil
+			return NewMedia([]any{contents}, featuresValue, i._index, i._fileInfo, nil), nil
 		}
 		return []any{contents}, nil
 	}
@@ -492,7 +492,7 @@ func (i *Import) DoEval(context any) (any, error) {
 			} else if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
 				featuresValue = featuresWithValue.GetValue()
 			}
-			return NewMedia(ruleset.Rules, featuresValue, 0, nil, nil), nil
+			return NewMedia(ruleset.Rules, featuresValue, i._index, i._fileInfo, nil), nil
 		}
 		return ruleset.Rules, nil
 	}

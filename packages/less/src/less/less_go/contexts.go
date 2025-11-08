@@ -136,18 +136,25 @@ func (e *Eval) ToMap() map[string]any {
 }
 
 // IsMathOn determines if math operations are enabled (EvalContext interface)
+// Matches JavaScript: isMathOn() - when called without operator, still checks parens in PARENS mode
 func (e *Eval) IsMathOn() bool {
-	return e.MathOn
+	// Match JavaScript exactly: call isMathOnWithOp with empty operator
+	// In JavaScript, when op is undefined, the condition `op === '/'` is false,
+	// so it skips that check and proceeds to the parens check
+	return e.IsMathOnWithOp("")
 }
 
 // IsMathOnWithOp determines if math operations are enabled for the given operator
+// Matches JavaScript: isMathOn(op) with operator parameter
 func (e *Eval) IsMathOnWithOp(op string) bool {
 	if !e.MathOn {
 		return false
 	}
+	// Special handling for division operator
 	if op == "/" && e.Math != MathAlways && (len(e.ParensStack) == 0) {
 		return false
 	}
+	// In PARENS mode (Math > PARENS_DIVISION), all operations require parentheses
 	if e.Math > MathParensDivision {
 		return len(e.ParensStack) > 0
 	}

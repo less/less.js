@@ -2968,8 +2968,8 @@ func (p *Parsers) Element() any {
 	// Parse element value using patterns from JavaScript parser
 	e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:\d+\.\d+|\d+)%`))
 	if e == nil {
-		// Match the JavaScript regex pattern - NOTE: @{} is NOT included here, it's handled by VariableCurly()
-		e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:[.#]?|:*)(?:[\w-]|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+`))
+		// Match the JavaScript regex pattern, including @{} for variable interpolation
+		e = p.parser.parserInput.Re(regexp.MustCompile(`^(?:[.#]?|:*)(?:[\w-]|@\{[\w-]+\}|[^\x00-\x9f]|\\(?:[A-Fa-f0-9]{1,6} ?|[^A-Fa-f0-9]))+`))
 	}
 	if e == nil {
 		e = p.parser.parserInput.Char('*')

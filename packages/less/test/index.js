@@ -147,6 +147,8 @@ if (testFilter) {
 var globPatterns = [
     'tests-config/*/*.less',
     'tests-unit/*/*.less',
+    // Debug tests have nested subdirectories (comments/, mediaquery/, all/)
+    'tests-config/debug/*/linenumbers-*.less',
     '!tests-config/sourcemaps/**/*.less',   // Exclude sourcemaps (need special handling)
     '!tests-config/sourcemaps-empty/*',     // Exclude sourcemaps-empty (need special handling)
     '!tests-config/sourcemaps-disable-annotation/*', // Exclude sourcemaps-disable-annotation (need special handling)

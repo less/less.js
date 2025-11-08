@@ -417,9 +417,42 @@ module.exports = function(testFilter) {
 
     function globalReplacements(input, directory, filename) {
         var path = require('path');
-        var p = filename ? path.join(path.dirname(filename), '/') : directory,
-            pathimport = path.join(directory + 'import/'),
-            pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
+        var p = filename ? path.join(path.dirname(filename), '/') : directory;
+        
+        // For debug tests in subdirectories (comments/, mediaquery/, all/),
+        // the import/ directory and main linenumbers.less file are at the parent debug/ level, not in the subdirectory
+        var isDebugSubdirectory = false;
+        var debugParentPath = null;
+        
+        if (directory) {
+            // Normalize directory path separators for matching
+            var normalizedDir = directory.replace(/\\/g, '/');
+            // Check if we're in a debug subdirectory
+            if (normalizedDir.includes('/debug/') && (normalizedDir.includes('/comments/') || normalizedDir.includes('/mediaquery/') || normalizedDir.includes('/all/'))) {
+                isDebugSubdirectory = true;
+                // Extract the debug/ directory path (parent of the subdirectory)
+                // Match everything up to and including /debug/ (works with both absolute and relative paths)
+                var debugMatch = normalizedDir.match(/(.+\/debug)\//);
+                if (debugMatch) {
+                    debugParentPath = debugMatch[1];
+                }
+            }
+        }
+        
+        if (isDebugSubdirectory && debugParentPath) {
+            // For {path} placeholder, use the parent debug/ directory
+            // Convert back to native path format
+            p = debugParentPath.replace(/\//g, path.sep) + path.sep;
+        }
+        
+        var pathimport;
+        if (isDebugSubdirectory && debugParentPath) {
+            pathimport = path.join(debugParentPath.replace(/\//g, path.sep), 'import') + path.sep;
+        } else {
+            pathimport = path.join(directory + 'import/');
+        }
+        
+        var pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
             pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
         return input.replace(/\{path\}/g, p)
@@ -673,6 +706,10 @@ module.exports = function(testFilter) {
                     var replacementPath;
                     if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
                         replacementPath = path.dirname(fullPath);
+                        // Ensure replacementPath ends with a path separator for consistent matching
+                        if (!replacementPath.endsWith(path.sep)) {
+                            replacementPath += path.sep;
+                        }
                     } else {
                         replacementPath = path.join(baseFolder, relativePath);
                     }

@@ -28,6 +28,7 @@ export default function(SourceMapBuilder) {
 
                 const toCSSOptions = {
                     compress,
+                    // @deprecated The dumpLineNumbers option is deprecated. Use sourcemaps instead. All modes will be removed in a future version.
                     dumpLineNumbers: options.dumpLineNumbers,
                     strictUnits: Boolean(options.strictUnits),
                     numPrecision: 8};

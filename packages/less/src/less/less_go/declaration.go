@@ -424,8 +424,26 @@ func (d *Declaration) GenCSS(context any, output *CSSOutput) {
 			panic(fmt.Errorf("%s (index: %d, filename: %s)", errMsg, d.GetIndex(), filename))
 		}
 	}()
-	
-	d.Value.GenCSS(context, output)
+
+	// For inline declarations (e.g., in media features), ensure Variables are fully evaluated
+	// This handles cases where variables are nested in declarations within parens
+	if d.inline {
+		// Try to evaluate the value to resolve any nested variables
+		if evaluated, err := d.Value.Eval(context); err == nil && evaluated != nil {
+			// Use the evaluated value instead
+			if gen, ok := evaluated.(interface{ GenCSS(any, *CSSOutput) }); ok {
+				gen.GenCSS(context, output)
+			} else {
+				output.Add(fmt.Sprintf("%v", evaluated), d.FileInfo(), d.GetIndex())
+			}
+		} else {
+			// Fall back to normal GenCSS if evaluation fails
+			d.Value.GenCSS(context, output)
+		}
+	} else {
+		// Normal (non-inline) declarations use the standard GenCSS
+		d.Value.GenCSS(context, output)
+	}
 
 	// Add important and semicolon
 	if d.important != "" {

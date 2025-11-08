@@ -1540,6 +1540,9 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 	for i, rule := range ruleNodes {
 		if i+1 == len(ruleNodes) {
 			ctx["lastRule"] = true
+		} else {
+			// Explicitly set to false for non-last rules to override any parent context setting
+			ctx["lastRule"] = false
 		}
 
 		currentLastRule := false

@@ -93,6 +93,7 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 	// Process each lookup
 	for i := 0; i < len(nv.lookups); i++ {
 		name = nv.lookups[i]
+		var parentRuleset any // Track the ruleset that contains a variable
 
 		// CRITICAL: Array conversion must happen INSIDE the loop - matches JavaScript behavior
 		// Eval'd DRs return rulesets.
@@ -153,8 +154,10 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 				hasVariablesProperty = variableChecker.HasVariables()
 			}
 
+			// Save the ruleset before calling Variable() so we can use it as a frame later
 			if hasVariablesProperty {
 				if ruleset, ok := rules.(interface{ Variable(string) map[string]any }); ok {
+					parentRuleset = ruleset // Save the ruleset
 					rules = ruleset.Variable(name)
 				}
 			}
@@ -268,8 +271,13 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		}
 
 		// First, extract value from map if present (Variable() returns {"value": ...})
+		// IMPORTANT: When extracting a variable value from a ruleset (e.g., mixin local scope),
+		// we need to preserve the ruleset as a frame for evaluating nested variables
+		// The parentRuleset was saved earlier when we called Variable()
+		var valueFromRuleset any
 		if rulesMap, ok := rules.(map[string]any); ok {
 			if value, exists := rulesMap["value"]; exists {
+				valueFromRuleset = value
 				rules = value
 			}
 		}
@@ -299,7 +307,13 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		} else {
 			// No HasValue method - handle special types like Declaration
 			if decl, ok := rules.(*Declaration); ok {
-				evalResult, err := decl.Eval(context)
+				// Create evaluation context with parent ruleset as frame if available
+				evalContext := context
+				if valueFromRuleset != nil && parentRuleset != nil {
+					evalContext = nv.createContextWithFrame(context, parentRuleset)
+				}
+
+				evalResult, err := decl.Eval(evalContext)
 				if err != nil {
 					return nil, err
 				}
@@ -307,7 +321,7 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 					rules = evalDecl.Value
 					// Now evaluate the Value to get the actual value node (e.g., *Dimension)
 					if valueEvaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
-						valueResult, err := valueEvaluator.Eval(context)
+						valueResult, err := valueEvaluator.Eval(evalContext)
 						if err != nil {
 							return nil, err
 						}
@@ -328,7 +342,13 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 				}
 			} else if evaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
 				// Evaluate the value if it's evaluable
-				evalResult, err := evaluator.Eval(context)
+				// If this value came from a ruleset, create a context with that ruleset as a frame
+				evalContext := context
+				if valueFromRuleset != nil && parentRuleset != nil {
+					evalContext = nv.createContextWithFrame(context, parentRuleset)
+				}
+
+				evalResult, err := evaluator.Eval(evalContext)
 				if err != nil {
 					return nil, err
 				}
@@ -393,6 +413,48 @@ func (nv *NamespaceValue) getFilename() string {
 		}
 	}
 	return ""
+}
+
+// createContextWithFrame creates a new context with the given frame added
+// This is used to evaluate values from a ruleset with access to that ruleset's variables
+func (nv *NamespaceValue) createContextWithFrame(context any, frame any) any {
+	// Check if context is *Eval
+	if evalCtx, ok := context.(*Eval); ok {
+		// Create a copy with the frame prepended
+		newFrames := make([]any, len(evalCtx.Frames)+1)
+		newFrames[0] = frame
+		copy(newFrames[1:], evalCtx.Frames)
+
+		// Create a shallow copy of the Eval context with new frames
+		newEvalCtx := *evalCtx
+		newEvalCtx.Frames = newFrames
+		return &newEvalCtx
+	} else if ctx, ok := context.(map[string]any); ok {
+		// For map-based context
+		// Create a shallow copy of the context
+		newCtx := make(map[string]any)
+		for k, v := range ctx {
+			newCtx[k] = v
+		}
+
+		// Prepend the frame
+		if framesAny, exists := ctx["frames"]; exists {
+			if frames, ok := framesAny.([]any); ok {
+				newFrames := make([]any, len(frames)+1)
+				newFrames[0] = frame
+				copy(newFrames[1:], frames)
+				newCtx["frames"] = newFrames
+			}
+		} else {
+			// No frames exist, create new array with just this frame
+			newCtx["frames"] = []any{frame}
+		}
+
+		return newCtx
+	}
+
+	// If we can't modify the context, return it as-is
+	return context
 }
 
 // TryParseDimensionString attempts to parse a string like "10px" into a *Dimension

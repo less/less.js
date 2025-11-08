@@ -308,12 +308,12 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			// No HasValue method - handle special types like Declaration
 			if decl, ok := rules.(*Declaration); ok {
 				// Create evaluation context with parent ruleset as frame if available
-				evalContext := context
+				// Update the context parameter so it's available for deep evaluation later
 				if valueFromRuleset != nil && parentRuleset != nil {
-					evalContext = nv.createContextWithFrame(context, parentRuleset)
+					context = nv.createContextWithFrame(context, parentRuleset)
 				}
 
-				evalResult, err := decl.Eval(evalContext)
+				evalResult, err := decl.Eval(context)
 				if err != nil {
 					return nil, err
 				}
@@ -321,7 +321,7 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 					rules = evalDecl.Value
 					// Now evaluate the Value to get the actual value node (e.g., *Dimension)
 					if valueEvaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
-						valueResult, err := valueEvaluator.Eval(evalContext)
+						valueResult, err := valueEvaluator.Eval(context)
 						if err != nil {
 							return nil, err
 						}
@@ -343,12 +343,11 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 			} else if evaluator, ok := rules.(interface{ Eval(any) (any, error) }); ok {
 				// Evaluate the value if it's evaluable
 				// If this value came from a ruleset, create a context with that ruleset as a frame
-				evalContext := context
 				if valueFromRuleset != nil && parentRuleset != nil {
-					evalContext = nv.createContextWithFrame(context, parentRuleset)
-				}
+			context = nv.createContextWithFrame(context, parentRuleset)
+		}
 
-				evalResult, err := evaluator.Eval(evalContext)
+				evalResult, err := evaluator.Eval(context)
 				if err != nil {
 					return nil, err
 				}
@@ -402,7 +401,73 @@ func (nv *NamespaceValue) Eval(context any) (any, error) {
 		rules = unwrapped
 	}
 
+	// CRITICAL: Deeply evaluate the result to ensure all variables are fully resolved
+	// This is essential for media queries and other cases where namespace values contain
+	// variables that are only valid in the mixin/namespace scope
+	rules = nv.deeplyEvaluateValue(rules, context)
+
 	return rules, nil
+}
+
+// deeplyEvaluateValue recursively evaluates all nodes to ensure variables are fully resolved
+func (nv *NamespaceValue) deeplyEvaluateValue(value any, context any) any {
+	if value == nil {
+		return value
+	}
+
+	// For Value nodes, evaluate each value in the array
+	if valueNode, ok := value.(*Value); ok {
+		evaluatedValues := make([]any, len(valueNode.Value))
+		for i, val := range valueNode.Value {
+			evaluatedValues[i] = nv.deeplyEvaluateValue(val, context)
+		}
+		newValue, _ := NewValue(evaluatedValues)
+		return newValue
+	}
+
+	// For Expression nodes, evaluate each value
+	if exprNode, ok := value.(*Expression); ok {
+		evaluatedValues := make([]any, len(exprNode.Value))
+		for i, val := range exprNode.Value {
+			evaluatedValues[i] = nv.deeplyEvaluateValue(val, context)
+		}
+		newExpr, _ := NewExpression(evaluatedValues, exprNode.NoSpacing)
+		if newExpr != nil {
+			newExpr.Parens = exprNode.Parens
+			newExpr.ParensInOp = exprNode.ParensInOp
+		}
+		return newExpr
+	}
+
+	// For Paren nodes, evaluate the inner value
+	if parenNode, ok := value.(*Paren); ok {
+		evaluatedValue := nv.deeplyEvaluateValue(parenNode.Value, context)
+		return NewParen(evaluatedValue)
+	}
+
+	// For Variable nodes, try to evaluate them
+	if _, ok := value.(*Variable); ok {
+		if evalNode, ok := value.(interface{ Eval(any) (any, error) }); ok {
+			if result, err := evalNode.Eval(context); err == nil && result != nil {
+				// Recursively evaluate the result in case it contains more variables
+				return nv.deeplyEvaluateValue(result, context)
+			}
+		}
+		return value
+	}
+
+	// For any other Evaluable node, try to evaluate
+	if evalNode, ok := value.(interface{ Eval(any) (any, error) }); ok {
+		if result, err := evalNode.Eval(context); err == nil && result != nil {
+			return result
+		}
+	} else if evalNode, ok := value.(interface{ Eval(any) any }); ok {
+		if result := evalNode.Eval(context); result != nil {
+			return result
+		}
+	}
+
+	return value
 }
 
 // Helper method to get filename safely

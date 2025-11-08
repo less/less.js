@@ -455,6 +455,11 @@ func (m *Media) Eval(context any) (any, error) {
 		} else if eval, ok := m.Features.(interface{ Eval(any) any }); ok {
 			media.Features = eval.Eval(context)
 		}
+
+		// CRITICAL: After evaluating features, ensure we deeply evaluate all nested values
+		// This is necessary for media queries with namespace calls that return expressions
+		// containing variables from the mixin scope
+		media.Features = m.deeplyEvaluateFeatures(media.Features, context)
 	}
 
 	// Match JavaScript: context.mediaPath.push(media); context.mediaBlocks.push(media);
@@ -506,6 +511,84 @@ func (m *Media) Eval(context any) (any, error) {
 	}
 }
 
+// deeplyEvaluateFeatures recursively evaluates all nodes in features to ensure
+// variables are fully resolved. This is critical for media queries created from
+// namespace calls where variables from mixin scope need to be resolved.
+func (m *Media) deeplyEvaluateFeatures(features any, context any) any {
+	if features == nil {
+		return features
+	}
+
+	// For Value nodes, evaluate each value in the array
+	if valueNode, ok := features.(*Value); ok {
+		if len(valueNode.Value) == 0 {
+			return features
+		}
+		evaluatedValues := make([]any, len(valueNode.Value))
+		for i, val := range valueNode.Value {
+			evaluatedValues[i] = m.deeplyEvaluateFeatures(val, context)
+		}
+		newValue, _ := NewValue(evaluatedValues)
+		return newValue
+	}
+
+	// For Expression nodes, evaluate each value
+	if exprNode, ok := features.(*Expression); ok {
+		evaluatedValues := make([]any, len(exprNode.Value))
+		for i, val := range exprNode.Value {
+			evaluatedValues[i] = m.deeplyEvaluateFeatures(val, context)
+		}
+		newExpr, _ := NewExpression(evaluatedValues, exprNode.NoSpacing)
+		if newExpr != nil {
+			newExpr.Parens = exprNode.Parens
+			newExpr.ParensInOp = exprNode.ParensInOp
+		}
+		return newExpr
+	}
+
+	// For Paren nodes, evaluate the inner value
+	if parenNode, ok := features.(*Paren); ok {
+		evaluatedValue := m.deeplyEvaluateFeatures(parenNode.Value, context)
+		return NewParen(evaluatedValue)
+	}
+
+	// For Anonymous nodes, evaluate the inner value if it's evaluable
+	if anonNode, ok := features.(*Anonymous); ok {
+		if anonNode.Value != nil {
+			evaluatedValue := m.deeplyEvaluateFeatures(anonNode.Value, context)
+			// If the evaluation changed the value, create a new Anonymous with the evaluated value
+			if evaluatedValue != anonNode.Value {
+				return NewAnonymous(evaluatedValue, anonNode.Index, anonNode.FileInfo, anonNode.MapLines, anonNode.RulesetLike, anonNode.VisibilityInfo())
+			}
+		}
+		return features
+	}
+
+	// For Variable nodes, try to evaluate them
+	if _, ok := features.(*Variable); ok {
+		if evalNode, ok := features.(interface{ Eval(any) (any, error) }); ok {
+			if result, err := evalNode.Eval(context); err == nil && result != nil {
+				// Recursively evaluate the result in case it contains more variables
+				return m.deeplyEvaluateFeatures(result, context)
+			}
+		}
+		return features
+	}
+
+	// For any other Evaluable node, try to evaluate
+	if evalNode, ok := features.(interface{ Eval(any) (any, error) }); ok {
+		if result, err := evalNode.Eval(context); err == nil && result != nil {
+			return result
+		}
+	} else if evalNode, ok := features.(interface{ Eval(any) any }); ok {
+		if result := evalNode.Eval(context); result != nil {
+			return result
+		}
+	}
+
+	return features
+}
+
 // evalWithMapContext handles evaluation with map-based context (for backward compatibility)
 func (m *Media) evalWithMapContext(ctx map[string]any) (any, error) {
 	// Match JavaScript: if (!context.mediaBlocks) { context.mediaBlocks = []; context.mediaPath = []; }
@@ -538,6 +621,11 @@ func (m *Media) evalWithMapContext(ctx map[string]any) (any, error) {
 		} else if eval, ok := m.Features.(interface{ Eval(any) any }); ok {
 			media.Features = eval.Eval(ctx)
 		}
+
+		// CRITICAL: After evaluating features, ensure we deeply evaluate all nested values
+		// This is necessary for media queries with namespace calls that return expressions
+		// containing variables from the mixin scope
+		media.Features = m.deeplyEvaluateFeatures(media.Features, ctx)
 	}
 
 	// Match JavaScript: context.mediaPath.push(media); context.mediaBlocks.push(media);

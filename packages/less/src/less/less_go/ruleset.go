@@ -1498,7 +1498,7 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 			// This handles cases where JoinSelectorVisitor hasn't run yet (e.g., in media queries)
 
 			// Check if this is a media-empty selector (should not be output)
-			isMediaEmpty := false
+			// Use the outer isMediaEmpty variable (don't shadow it)
 			if len(r.Selectors) == 1 {
 				if sel, ok := r.Selectors[0].(*Selector); ok {
 					if sel.MediaEmpty {

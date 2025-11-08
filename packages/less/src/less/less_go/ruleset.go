@@ -1497,75 +1497,48 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 	}
 
 	if !r.Root && !isMediaEmpty && !hasOnlyExtends {
+		// Match JavaScript: paths must be set before genCSS
+		// Rulesets inside mixin definitions don't have Paths (JoinSelectorVisitor skips them)
+		// and should not generate output - they're only output when the mixin is called
+		if r.Paths == nil || len(r.Paths) == 0 {
+			return
+		}
+
 		// Generate debug info
 		if debugInfo := GetDebugInfo(ctx, r, tabSetStr); debugInfo != "" {
 			output.Add(debugInfo, nil, nil)
 			output.Add(tabSetStr, nil, nil)
 		}
 
-		// Generate selectors
-		if r.Paths != nil {
-			sep := ","
-			if !compress {
-				sep = ",\n" + tabSetStr
+		// Generate selectors from Paths
+		sep := ","
+		if !compress {
+			sep = ",\n" + tabSetStr
+		}
+
+		for i, path := range r.Paths {
+			if len(path) == 0 {
+				continue
+			}
+			if i > 0 {
+				output.Add(sep, nil, nil)
 			}
 
-			for i, path := range r.Paths {
-				if len(path) == 0 {
-					continue
-				}
-				if i > 0 {
-					output.Add(sep, nil, nil)
-				}
+			// Always set firstSelector to true for the first selector in a path
+			// This ensures no extra space is added at the beginning of selectors
+			ctx["firstSelector"] = true
+			if gen, ok := path[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
+				gen.GenCSS(ctx, output)
+			}
 
-				// Always set firstSelector to true for the first selector in a path
-				// This ensures no extra space is added at the beginning of selectors
-				ctx["firstSelector"] = true
-				if gen, ok := path[0].(interface{ GenCSS(any, *CSSOutput) }); ok {
+			ctx["firstSelector"] = false
+			for j := 1; j < len(path); j++ {
+				if gen, ok := path[j].(interface{ GenCSS(any, *CSSOutput) }); ok {
 					gen.GenCSS(ctx, output)
-				}
-
-				ctx["firstSelector"] = false
-				for j := 1; j < len(path); j++ {
-					if gen, ok := path[j].(interface{ GenCSS(any, *CSSOutput) }); ok {
-						gen.GenCSS(ctx, output)
-					}
-				}
-			}
-		} else if r.Selectors != nil && len(r.Selectors) > 0 {
-			// Fallback: if Paths is nil, use Selectors directly
-			// This handles cases where JoinSelectorVisitor hasn't run yet (e.g., in media queries)
-
-			// Check if this is a media-empty selector (should not be output)
-			// Use the outer isMediaEmpty variable (don't shadow it)
-			if len(r.Selectors) == 1 {
-				if sel, ok := r.Selectors[0].(*Selector); ok {
-					if sel.MediaEmpty {
-						isMediaEmpty = true
-					}
-				}
-			}
-
-			if !isMediaEmpty {
-				sep := ","
-				if !compress {
-					sep = ",\n" + tabSetStr
-				}
-
-				for i, selector := range r.Selectors {
-					if i > 0 {
-						output.Add(sep, nil, nil)
-					}
-
-					ctx["firstSelector"] = true
-					if gen, ok := selector.(interface{ GenCSS(any, *CSSOutput) }); ok {
-						gen.GenCSS(ctx, output)
-					}
-					ctx["firstSelector"] = false
 				}
 			}
 		}
-		
+
 		// Add opening brace
 		if compress {
 			output.Add("{", nil, nil)

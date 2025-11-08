@@ -220,10 +220,14 @@ func TestMultipleSamePropertyDeclarations(t *testing.T) {
 	// Create selector
 	elem := NewElement(nil, "foo", false, 0, nil, nil)
 	sel, _ := NewSelector([]*Element{elem}, nil, nil, 0, nil, nil)
-	
+
 	// Create ruleset
 	ruleset := NewRuleset([]any{sel}, []any{decl1, decl2, decl3}, false, nil)
-	
+
+	// Set Paths to match what JoinSelectorVisitor would create
+	// This is required for GenCSS to work (matching JavaScript behavior)
+	ruleset.Paths = [][]any{{sel}}
+
 	// Create context
 	ctx := map[string]any{"compress": false}
 	

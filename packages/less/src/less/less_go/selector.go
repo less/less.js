@@ -512,9 +512,20 @@ func (s *Selector) GetIsOutput() bool {
 // IsVisible returns whether the selector is visible (for path filtering)
 func (s *Selector) IsVisible() *bool {
 	if s.Node != nil {
-		return s.Node.IsVisible()
+		vis := s.Node.IsVisible()
+		// If visibility is explicitly set (non-nil), use that value
+		// If nil, check if node blocks visibility (from reference import)
+		if vis != nil {
+			return vis
+		}
+		// If visibility is nil and node blocks visibility, it's invisible
+		if s.Node.BlocksVisibility() {
+			invisible := false
+			return &invisible
+		}
 	}
 	// Default to true for selectors - they should be visible unless explicitly marked otherwise
+	// This matches JavaScript behavior where selectors are visible by default
 	defaultVisible := true
 	return &defaultVisible
 }

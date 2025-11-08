@@ -1446,6 +1446,10 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 	// ruleNodes = charsetRuleNodes.concat(ruleNodes);
 	ruleNodes = append(charsetRuleNodes, ruleNodes...)
 
+	// Check if this ruleset contains only extends (no actual CSS output)
+	// If so, we'll skip generating selectors/braces but still complete normally for proper spacing
+	hasOnlyExtends := !r.Root && len(r.Rules) > 0 && len(ruleNodes) == 0
+
 	// Generate CSS for selectors if not root
 	// Check if this is a media-empty ruleset that should not generate selectors/braces
 	// This happens when media queries create wrapper rulesets with empty selectors
@@ -1456,7 +1460,7 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		}
 	}
 
-	if !r.Root && !isMediaEmpty {
+	if !r.Root && !isMediaEmpty && !hasOnlyExtends {
 		// Generate debug info
 		if debugInfo := GetDebugInfo(ctx, r, tabSetStr); debugInfo != "" {
 			output.Add(debugInfo, nil, nil)
@@ -1535,8 +1539,9 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		output.Add(tabRuleStr, nil, nil)
 	}
 
-	// Generate CSS for rules
+	// Generate CSS for rules (skip if this ruleset contains only extends)
 	// Note: Silent comments have been filtered out above, so we only process rules that generate output
+	if !hasOnlyExtends {
 	for i, rule := range ruleNodes {
 		if i+1 == len(ruleNodes) {
 			ctx["lastRule"] = true
@@ -1576,7 +1581,8 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 			ctx["lastRule"] = false
 		}
 	}
-	
+	}
+
 	// Save the lastRule flag set by parent before processing rules
 	// This determines if we should add a newline after this ruleset's closing brace
 	parentLastRule := false
@@ -1584,15 +1590,20 @@ func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
 		parentLastRule = lr
 	}
 
-	// Add closing brace
-	if !r.Root && !isMediaEmpty {
+	// Decrement tab level FIRST for correct newline logic
+	// Do this for all non-root rulesets, even if we skip output (for extend-only rulesets)
+	if !r.Root {
+		tabLevel--
+		ctx["tabLevel"] = tabLevel
+	}
+
+	// Add closing brace (skip if this ruleset contains only extends)
+	if !r.Root && !isMediaEmpty && !hasOnlyExtends {
 		if compress {
 			output.Add("}", nil, nil)
 		} else {
 			output.Add("\n"+tabSetStr+"}", nil, nil)
 		}
-		tabLevel--
-		ctx["tabLevel"] = tabLevel
 
 		// Add newline after ruleset to separate from next ruleset
 		// Only add if we're not the last rule and not inside an at-rule container

@@ -68,6 +68,14 @@ func NewMixinDefinition(name string, params []any, rules []any, condition any, v
 	ruleset := NewRuleset([]any{selector}, rules, false, visibilityInfo)
 	ruleset.AllowRoot = true
 
+	// Mark all nested rulesets as being inside a mixin definition
+	// This prevents them from being output directly
+	for _, rule := range rules {
+		if nestedRuleset, ok := rule.(*Ruleset); ok {
+			nestedRuleset.InsideMixinDefinition = true
+		}
+	}
+
 	// Calculate arity
 	arity := 0
 	if params != nil {

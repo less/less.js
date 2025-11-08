@@ -46,6 +46,9 @@ type Ruleset struct {
 	DebugInfo any
 	// Multi-media flag for nested media queries
 	MultiMedia bool
+	// InsideMixinDefinition marks rulesets that are nested inside mixin definitions
+	// These should not be output directly, only when the mixin is called
+	InsideMixinDefinition bool
 }
 
 // NewRuleset creates a new Ruleset instance
@@ -1376,6 +1379,11 @@ func (r *Ruleset) Find(selector any, self any, filter func(any) bool) []any {
 
 // GenCSS generates CSS for the ruleset
 func (r *Ruleset) GenCSS(context any, output *CSSOutput) {
+	// Skip rulesets that are inside mixin definitions - they should only be output when the mixin is called
+	if r.InsideMixinDefinition {
+		return
+	}
+
 	// Check visibility - skip if node blocks visibility and is not explicitly visible
 	// This implements the reference import functionality where nodes from referenced
 	// imports are hidden unless explicitly used (via extend or mixin call)

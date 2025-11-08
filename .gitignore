@@ -12,3 +12,8 @@
 node_modules
 !package-lock.json
 npm-debug.log
+
+# Coverage
+.nyc_output
+coverage
+*.lcov

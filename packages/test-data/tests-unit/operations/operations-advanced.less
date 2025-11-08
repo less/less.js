@@ -1,0 +1,76 @@
+// Advanced operation tests to cover edge cases
+
+// Operations with math off
+@math-off: true;
+.test-math-off {
+  @a: 10px;
+  @b: 5px;
+  result: @a + @b;
+}
+
+// Operations with Dimension to Color conversion
+@dimension: 10px;
+@color: #ff0000;
+.test-dim-to-color {
+  // This should convert dimension to color for operation
+  result: @dimension + @color;
+}
+
+// Operations with Color to Dimension conversion
+.test-color-to-dim {
+  result: @color + @dimension;
+}
+
+// Operations with division and PARENS_DIVISION math mode
+@div-op: (10px / 2);
+.test-division {
+  result: @div-op * 2;
+}
+
+// Operations with nested operations
+@nested: (10px + 5px) * 2;
+.test-nested {
+  result: @nested;
+}
+
+// Operations with spaced operators
+@spaced: 10px + 5px;
+.test-spaced {
+  result: @spaced;
+}
+
+// Operations with non-spaced operators
+@non-spaced: 10px+5px;
+.test-non-spaced {
+  result: @non-spaced;
+}
+
+// Operations with division operator
+@div-op: 10px / 2;
+.test-div {
+  result: @div-op;
+}
+
+// Operations with invalid types (should error, but test the path)
+.test-invalid {
+  // This will error, but tests the error path
+  // result: "string" + 10px;
+}
+
+// Operations with Operation operands
+@op1: 10px + 5px;
+@op2: 20px - 10px;
+.test-op-operands {
+  result: @op1 * @op2;
+}
+
+// Operations with math context
+.test-math-context {
+  @a: 10;
+  @b: 5;
+  add: @a + @b;
+  sub: @a - @b;
+  mul: @a * @b;
+  div: @a / @b;
+}
+

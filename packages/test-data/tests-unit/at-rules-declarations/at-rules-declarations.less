@@ -1,0 +1,25 @@
+// Tests for atrule.js line 117 - genCSS with simpleBlock declarations
+// Covers parser + genCSS + outputRuleset with declarations path
+
+// @page with declarations (simpleBlock)
+@page {
+  margin: 2cm;
+  size: A4;
+  marks: crop cross;
+}
+
+// @font-face with declarations
+@font-face {
+  font-family: "MyFont";
+  src: url("myfont.woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+// @counter-style with declarations
+@counter-style my-counter {
+  system: fixed;
+  symbols: "A" "B" "C";
+  suffix: ". ";
+}
+

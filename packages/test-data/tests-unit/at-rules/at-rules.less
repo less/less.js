@@ -1,0 +1,154 @@
+// Test various @-rule types and structures
+
+// @page with simple block
+@page {
+  margin: 2cm;
+  @top-left {
+    content: "Page " counter(page);
+  }
+}
+
+// @page with nested rules
+@page :first {
+  margin: 3cm;
+  @top-center {
+    content: "First Page";
+  }
+}
+
+// @charset
+@charset "UTF-8";
+
+// @namespace
+@namespace url(http://www.w3.org/1999/xhtml);
+@namespace svg url(http://www.w3.org/2000/svg);
+
+// @viewport
+@viewport {
+  width: device-width;
+  initial-scale: 1.0;
+}
+
+// @keyframes with simple block
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+    width: 300%;
+  }
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+
+// @keyframes with nested rules (name can be a string)
+@keyframes "complex-animation" {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// @font-face with simple block
+@font-face {
+  font-family: "MyFont";
+  src: url("myfont.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+// @font-face with variables
+@font-family-name: "CustomFont";
+@font-face {
+  font-family: @font-family-name;
+  src: url("custom.woff") format("woff");
+}
+
+// @supports with simple block
+@supports (display: grid) {
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// @supports with nested @-rules
+@supports (transform-style: preserve-3d) {
+  @media (min-width: 768px) {
+    .card {
+      transform: rotateY(15deg);
+    }
+  }
+}
+
+// @media with simple block
+@media print {
+  body {
+    font-size: 12pt;
+    color: black;
+  }
+}
+
+// @media with nested @-rules
+@media screen {
+  @supports (display: flex) {
+    .container {
+      display: flex;
+    }
+  }
+}
+
+// @-rule with value (not simple block)
+@media (max-width: 600px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+// @-rule inside ruleset
+.container {
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+}
+
+// Multiple @-rules
+@page :left {
+  margin-left: 4cm;
+  margin-right: 3cm;
+}
+
+@page :right {
+  margin-left: 3cm;
+  margin-right: 4cm;
+}
+
+// @-rule with mixins
+.mixin-with-atrule() {
+  @media (max-width: 600px) {
+    .mobile-only {
+      display: block;
+    }
+  }
+}
+
+.wrapper {
+  .mixin-with-atrule();
+}
+
+// @-rule with variables in value
+@breakpoint: 1024px;
+@media (min-width: @breakpoint) {
+  .desktop {
+    display: block;
+  }
+}
+

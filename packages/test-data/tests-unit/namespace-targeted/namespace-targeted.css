@@ -1,0 +1,9 @@
+#namespace {
+  my-prop: prop-value;
+}
+.test-prop-interp {
+  value: prop-value;
+}
+#namespace-with-prop {
+  existing-prop: value;
+}

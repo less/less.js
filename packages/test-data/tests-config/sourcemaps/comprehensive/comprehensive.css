@@ -1,0 +1,85 @@
+.container {
+  padding: 20px;
+  background: #3498db;
+}
+.container .header {
+  color: white;
+  font-size: 24px;
+}
+.container .header .title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.container .content {
+  background: #2ecc71;
+  padding: 15px;
+}
+.container .content p {
+  margin: 0;
+  line-height: 1.5;
+}
+.calculated {
+  width: calc(100% - 20px * 2);
+  height: calc(50vh + 20px);
+  margin: 10px;
+}
+.functions {
+  color: #217dbb;
+  background: #7ee2a8;
+  border: 1px solid rgba(52, 152, 219, 0.5);
+}
+.card {
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  background: white;
+}
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  .container .header {
+    font-size: 18px;
+  }
+}
+@supports (display: grid) {
+  .grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+.button-base,
+.button-primary {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+.button-primary {
+  background: #3498db;
+  color: white;
+}
+.navigation ul {
+  list-style: none;
+}
+.navigation ul li {
+  display: inline-block;
+}
+.navigation ul li a {
+  text-decoration: none;
+}
+.navigation ul li a:hover {
+  color: #3498db;
+}
+.navigation ul li a:active {
+  color: #196090;
+}
+.my-component {
+  color: #3498db;
+}
+.level1 .level2 .level3 .level4 {
+  color: #2ecc71;
+}
+/*# sourceMappingURL=tests-config/sourcemaps-comprehensive/comprehensive.css.map */

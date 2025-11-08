@@ -25,9 +25,28 @@ export default function() {
         /* color output in the terminal */
         color: true,
 
-        /* The strictImports controls whether the compiler will allow an @import inside of either 
-         * @media blocks or (a later addition) other selector blocks.
-         * See: https://github.com/less/less.js/issues/656 */
+        /**
+         * @deprecated This option has confusing behavior and may be removed in a future version.
+         * 
+         * When true, prevents @import statements for .less files from being evaluated inside
+         * selector blocks (rulesets). The imports are silently ignored and not output.
+         * 
+         * Behavior:
+         * - @import at root level: Always processed
+         * - @import inside @-rules (@media, @supports, etc.): Processed (these are not selector blocks)
+         * - @import inside selector blocks (.class, #id, etc.): NOT processed (silently ignored)
+         * 
+         * When false (default): All @import statements are processed regardless of context.
+         * 
+         * Note: Despite the name "strict", this option does NOT throw an error when imports
+         * are used in selector blocks - it silently ignores them. This is confusing
+         * behavior that may catch users off guard.
+         * 
+         * Note: Only affects .less file imports. CSS imports (url(...) or .css files) are
+         * always output as CSS @import statements regardless of this setting.
+         * 
+         * @see https://github.com/less/less.js/issues/656
+         */
         strictImports: false,
 
         /* Allow Imports from Insecure HTTPS Hosts */

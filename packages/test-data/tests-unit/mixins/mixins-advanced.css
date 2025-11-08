@@ -1,0 +1,41 @@
+.test-expanded {
+  a: 1px;
+  b: 2px;
+}
+.test-multi-def {
+  small: 10;
+  large: 15;
+}
+.test-conditions {
+  large: 15;
+  small: 5;
+}
+.test-no-args-filter {
+  no-args: true;
+  with-args: 10;
+}
+.test-recursive {
+  level: 3;
+  level: 2;
+  level: 1;
+  done: true;
+}
+.test-namespace-path {
+  from-namespace: true;
+}
+.test-important {
+  important: true !important;
+}
+.test-multi {
+  value1: 1;
+  value2: 2;
+}
+.test-named {
+  a: A;
+  b: B;
+}
+.test-array-expand {
+  a: 1;
+  b: 2;
+  c: 3;
+}

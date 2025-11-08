@@ -1,0 +1,5 @@
+NameError: Recursive property reference for $color in {path}recursive-property.less on line 2, column 10:
+1 .test {
+2   color: darken($color, 10%);
+3 }
+

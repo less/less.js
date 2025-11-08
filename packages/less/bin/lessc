@@ -98,53 +98,48 @@ function render() {
   }
 
   if (options.sourceMap) {
-    sourceMapOptions.sourceMapInputFilename = input;
-
-    if (!sourceMapOptions.sourceMapFullFilename) {
-      if (!output && !sourceMapFileInline) {
-        console.error('the sourcemap option only has an optional filename if the css filename is given');
-        console.error('consider adding --source-map-map-inline which embeds the sourcemap into the css');
-        process.exitCode = 1;
-        return;
-      } // its in the same directory, so always just the basename
-
-
-      if (output) {
-        sourceMapOptions.sourceMapOutputFilename = path.basename(output);
-        sourceMapOptions.sourceMapFullFilename = ''.concat(output, '.map');
-      } // its in the same directory, so always just the basename
-
-
-      if ('sourceMapFullFilename' in sourceMapOptions) {
-        sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
-      }
-    } else if (options.sourceMap && !sourceMapFileInline) {
-      var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename);
-      var mapDir = path.dirname(mapFilename);
-      var outputDir = path.dirname(output); // find the path from the map to the output file
-
-      // eslint-disable-next-line max-len
-      sourceMapOptions.sourceMapOutputFilename = path.join(path.relative(mapDir, outputDir), path.basename(output)); // make the sourcemap filename point to the sourcemap relative to the css file output directory
-
-      sourceMapOptions.sourceMapFilename = path.join(path.relative(outputDir, mapDir), path.basename(sourceMapOptions.sourceMapFullFilename));
-    }
-
+    // Validate conflicting options
     if (sourceMapOptions.sourceMapURL && sourceMapOptions.disableSourcemapAnnotation) {
       console.error('You cannot provide flag --source-map-url with --source-map-no-annotation.');
       console.error('Please remove one of those flags.');
       process.exitcode = 1;
       return;
     }
-  }
 
-  if (sourceMapOptions.sourceMapBasepath === undefined) {
-    sourceMapOptions.sourceMapBasepath = input ? path.dirname(input) : process.cwd();
-  }
-
-  if (sourceMapOptions.sourceMapRootpath === undefined) {
-    var pathToMap = path.dirname((sourceMapFileInline ? output : sourceMapOptions.sourceMapFullFilename) || '.');
-    var pathToInput = path.dirname(sourceMapOptions.sourceMapInputFilename || '.');
-    sourceMapOptions.sourceMapRootpath = path.relative(pathToMap, pathToInput);
+    // Handle explicit sourceMapFullFilename (from --source-map=filename)
+    // Normalization of other options (sourceMapBasepath, sourceMapRootpath, etc.) 
+    // is handled automatically in parse-tree.js
+    if (sourceMapOptions.sourceMapFullFilename && !sourceMapFileInline) {
+      var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename);
+      var mapDir = path.dirname(mapFilename);
+      
+      if (output) {
+        var outputDir = path.dirname(output);
+        // Set sourceMapOutputFilename relative to map directory
+        sourceMapOptions.sourceMapOutputFilename = path.join(
+          path.relative(mapDir, outputDir), 
+          path.basename(output)
+        );
+        // Set sourceMapFilename relative to output directory (for sourceMappingURL comment)
+        sourceMapOptions.sourceMapFilename = path.join(
+          path.relative(outputDir, mapDir), 
+          path.basename(sourceMapOptions.sourceMapFullFilename)
+        );
+      } else {
+        // No output filename, just use basename
+        sourceMapOptions.sourceMapOutputFilename = path.basename(output || 'output.css');
+        sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+      }
+    } else if (!sourceMapOptions.sourceMapFullFilename && output && !sourceMapFileInline) {
+      // No explicit sourcemap filename, derive from output
+      sourceMapOptions.sourceMapOutputFilename = path.basename(output);
+      sourceMapOptions.sourceMapFullFilename = ''.concat(output, '.map');
+    } else if (!output && !sourceMapFileInline) {
+      console.error('the sourcemap option only has an optional filename if the css filename is given');
+      console.error('consider adding --source-map-map-inline which embeds the sourcemap into the css');
+      process.exitCode = 1;
+      return;
+    }
   }
 
   if (!input) {

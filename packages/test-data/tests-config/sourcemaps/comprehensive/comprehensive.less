@@ -1,0 +1,142 @@
+// Comprehensive sourcemap test covering various Less.js features
+// This test exercises sourcemap generation for different code structures
+
+// Variables
+@primary-color: #3498db;
+@secondary-color: #2ecc71;
+@spacing: 20px;
+
+// Mixins
+.border-radius(@radius: 5px) {
+  border-radius: @radius;
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
+}
+
+.box-shadow(@x: 0, @y: 0, @blur: 10px, @color: rgba(0,0,0,0.5)) {
+  box-shadow: @x @y @blur @color;
+}
+
+// Nested rules
+.container {
+  padding: @spacing;
+  background: @primary-color;
+  
+  .header {
+    color: white;
+    font-size: 24px;
+    
+    .title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  }
+  
+  .content {
+    background: @secondary-color;
+    padding: 15px;
+    
+    p {
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Operations
+.calculated {
+  width: calc(100% - @spacing * 2);
+  height: calc(50vh + 20px);
+  margin: (@spacing / 2);
+}
+
+// Functions
+.functions {
+  color: darken(@primary-color, 10%);
+  background: lighten(@secondary-color, 20%);
+  border: 1px solid fade(@primary-color, 50%);
+}
+
+// Mixins
+.card {
+  .border-radius(10px);
+  .box-shadow(0, 2px, 15px, rgba(0,0,0,0.1));
+  padding: @spacing;
+  background: white;
+}
+
+// @-rules
+@media (max-width: 768px) {
+  .container {
+    padding: (@spacing / 2);
+    
+    .header {
+      font-size: 18px;
+    }
+  }
+}
+
+@supports (display: grid) {
+  .grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: @spacing;
+  }
+}
+
+// Extend
+.button-base {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.button-primary {
+  &:extend(.button-base);
+  background: @primary-color;
+  color: white;
+}
+
+// Selectors with &
+.navigation {
+  ul {
+    list-style: none;
+    
+    li {
+      display: inline-block;
+      
+      a {
+        text-decoration: none;
+        
+        &:hover {
+          color: @primary-color;
+        }
+        
+        &:active {
+          color: darken(@primary-color, 20%);
+        }
+      }
+    }
+  }
+}
+
+// Import (if we have imported files)
+// @import "imported.less";
+
+// Variables in selectors
+@selector-name: my-component;
+.@{selector-name} {
+  color: @primary-color;
+}
+
+// Multiple levels of nesting
+.level1 {
+  .level2 {
+    .level3 {
+      .level4 {
+        color: @secondary-color;
+      }
+    }
+  }
+}
+

@@ -31,6 +31,9 @@ const LessError = function(e, fileContentMap, currentFilename) {
 
     this.message = e.message;
     this.stack = e.stack;
+    
+    // Set type early so it's always available, even if fileContentMap is missing
+    this.type = e.type || 'Syntax';
 
     if (fileContentMap && filename) {
         const input = fileContentMap.contents[filename];
@@ -40,7 +43,6 @@ const LessError = function(e, fileContentMap, currentFilename) {
         const callLine = e.call && utils.getLocation(e.call, input).line;
         const lines = input ? input.split('\n') : '';
 
-        this.type = e.type || 'Syntax';
         this.filename = filename;
         this.index = e.index;
         this.line = typeof line === 'number' ? line + 1 : null;

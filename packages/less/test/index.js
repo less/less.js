@@ -147,7 +147,7 @@ if (testFilter) {
 var globPatterns = [
     'tests-config/*/*.less',
     'tests-unit/*/*.less',
-    '!tests-config/sourcemaps/*',           // Exclude sourcemaps (need special handling)
+    '!tests-config/sourcemaps/**/*.less',   // Exclude sourcemaps (need special handling)
     '!tests-config/sourcemaps-empty/*',     // Exclude sourcemaps-empty (need special handling)
     '!tests-config/sourcemaps-disable-annotation/*', // Exclude sourcemaps-disable-annotation (need special handling)
     '!tests-config/sourcemaps-variable-selector/*',  // Exclude sourcemaps-variable-selector (need special handling)
@@ -188,13 +188,25 @@ var testMap = [
 
     // Sourcemap tests with special handling
     {
-        patterns: ['tests-config/sourcemaps/*.less'],
+        patterns: [
+            'tests-config/sourcemaps/**/*.less',
+            'tests-config/sourcemaps-url/**/*.less',
+            'tests-config/sourcemaps-rootpath/**/*.less',
+            'tests-config/sourcemaps-basepath/**/*.less',
+            'tests-config/sourcemaps-include-source/**/*.less'
+        ],
         verifyFunction: lessTester.testSourcemap,
         getFilename: function(filename, type, baseFolder) {
             if (type === 'vars') {
                 return path.join(baseFolder, filename) + '.json';
             }
-            return path.join('test/sourcemaps', filename) + '.json';
+            // Extract just the filename (without directory) for the JSON file
+            var jsonFilename = path.basename(filename);
+            // For sourcemap type, return path relative to test directory
+            if (type === 'sourcemap') {
+                return path.join('test/sourcemaps', jsonFilename) + '.json';
+            }
+            return path.join('test/sourcemaps', jsonFilename) + '.json';
         }
     },
     {

@@ -1,0 +1,11 @@
+.imported {
+  background: green;
+}
+@media (max-width: 768px) {
+  .mobile {
+    color: red;
+  }
+}
+.container .nested {
+  color: blue;
+}

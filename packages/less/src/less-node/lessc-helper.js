@@ -34,7 +34,7 @@ const lessc_helper = {
         console.log('  -l, --lint                   Syntax check only (lint).');
         console.log('  -s, --silent                 Suppresses output of error messages.');
         console.log('  --quiet                      Suppresses output of warnings.');
-        console.log('  --strict-imports             Forces evaluation of imports.');
+        console.log('  --strict-imports             (DEPRECATED) Ignores .less imports inside selector blocks. Has confusing behavior.');
         console.log('  --insecure                   Allows imports from insecure https hosts.');
         console.log('  -v, --version                Prints version number and exit.');
         console.log('  --verbose                    Be verbose.');

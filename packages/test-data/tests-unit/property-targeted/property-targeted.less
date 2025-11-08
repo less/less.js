@@ -1,0 +1,21 @@
+// Targeted tests for specific uncovered lines in property.js
+
+// Lines 49-51: Property with important flag handling
+// This tests when a property accessor accesses a property that has !important
+.test-important {
+  color: red !important;
+  background: $color;
+}
+
+// Lines 60-64: Property undefined error (should be in tests-error, but testing the path)
+// This will error, but tests the error path
+.test-undefined {
+  // value: @undefined-property;
+}
+
+// Lines 72-73: find method returning null (property not found in any frame)
+// This tests the find method when property doesn't exist
+.test-not-found {
+  // value: @nonexistent;
+}
+

@@ -37,6 +37,7 @@
 	"scripts": {
 		"quicktest": "grunt quicktest",
 		"test": "grunt test",
+		"test:coverage": "c8 -r lcov -r json-summary -r text-summary -r html --include=\"lib/**/*.js\" --include=\"bin/**/*.js\" --exclude=\"dist/**\" --exclude=\"**/*.test.js\" --exclude=\"**/*.spec.js\" --exclude=\"test/**\" --exclude=\"tmp/**\" --exclude=\"**/abstract-file-manager.js\" --exclude=\"**/abstract-plugin-loader.js\" grunt shell:test && node scripts/coverage-report.js && node scripts/coverage-lines.js",
 		"grunt": "grunt",
 		"lint": "eslint '**/*.{ts,js}'",
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
@@ -67,6 +68,7 @@
 		"benny": "^3.6.12",
 		"bootstrap-less-port": "0.3.0",
 		"chai": "^4.2.0",
+		"c8": "^10.1.3",
 		"chalk": "^4.1.2",
 		"cosmiconfig": "~9.0.0",
 		"cross-env": "^7.0.3",

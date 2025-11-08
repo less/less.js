@@ -72,14 +72,34 @@ func TransformTree(root any, options map[string]any) any {
 					})
 				}
 			case "each":
-				if eachFn, ok := fn.(func(any, any) any); ok {
+				// Register the EachFunctionDef which supports context (required for proper evaluation)
+				functionRegistry.Add(name, &EachFunctionDef{
+					name: name,
+				})
+			case "length":
+				if lengthFn, ok := fn.(func(any) *Dimension); ok {
+					functionRegistry.Add(name, &FlexibleFunctionDef{
+						name:      name,
+						minArgs:   1,
+						maxArgs:   1,
+						variadic:  false,
+						fn:        func(args ...any) any {
+							return lengthFn(args[0])
+						},
+						needsEval: true,
+					})
+				}
+			case "extract":
+				if extractFn, ok := fn.(func(any, any) any); ok {
 					functionRegistry.Add(name, &FlexibleFunctionDef{
 						name:      name,
 						minArgs:   2,
 						maxArgs:   2,
 						variadic:  false,
-						fn:        eachFn,
-						needsEval: false, // 'each' needs unevaluated args
+						fn:        func(args ...any) any {
+							return extractFn(args[0], args[1])
+						},
+						needsEval: true,
 					})
 				}
 			}

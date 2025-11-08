@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -183,6 +184,11 @@ func Each(list any, rs any) any {
 
 // EachWithContext is the actual implementation that accepts context
 func EachWithContext(list any, rs any, ctx *Context) any {
+	// DEBUG: Log function entry
+	if os.Getenv("LESS_GO_TRACE") == "1" {
+		fmt.Printf("[EACH-DEBUG] EachWithContext called with list type: %T, rs type: %T\n", list, rs)
+	}
+
 	rules := make([]any, 0)
 	var iterator []any
 	var sourceRuleset *Ruleset // Track the source ruleset for property resolution
@@ -229,6 +235,11 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 	// This ensures we get the actual value before type-checking
 	list = tryEval(list)
 
+	// DEBUG: Log what type list is after evaluation
+	if os.Getenv("LESS_GO_TRACE") == "1" {
+		fmt.Printf("[EACH-DEBUG] After tryEval, list type: %T, value: %+v\n", list, list)
+	}
+
 	// Handle different list types following JavaScript logic
 	if valueNode, ok := list.(*Value); ok && valueNode.Value != nil {
 		// Check if it's a Quoted type (has quote property in JavaScript)
@@ -238,6 +249,12 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 			for i, item := range valueNode.Value {
 				iterator[i] = tryEval(item)
 			}
+		}
+	} else if exprNode, ok := list.(*Expression); ok && exprNode.Value != nil {
+		// Expression is similar to Value - extract items from Value field
+		iterator = make([]any, len(exprNode.Value))
+		for i, item := range exprNode.Value {
+			iterator[i] = tryEval(item)
 		}
 	} else if detachedRuleset, ok := list.(*DetachedRuleset); ok && detachedRuleset.ruleset != nil {
 		// list.ruleset case
@@ -331,6 +348,11 @@ func EachWithContext(list any, rs any, ctx *Context) any {
 
 	if targetRuleset == nil {
 		return createEmptyRuleset()
+	}
+
+	// DEBUG: Log iterator details
+	if os.Getenv("LESS_GO_TRACE") == "1" {
+		fmt.Printf("[EACH-DEBUG] Iterator length: %d, items: %+v\n", len(iterator), iterator)
 	}
 
 	// Iterate through items

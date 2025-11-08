@@ -165,6 +165,26 @@ func (a *Anonymous) ToCSS(context any) string {
 	return result
 }
 
+// IsVisible returns whether the node is visible for spacing purposes
+// This is used by Ruleset.GenCSS to determine if a newline should be added after this node
+func (a *Anonymous) IsVisible() bool {
+	// Anonymous nodes are visible if they have a non-empty value
+	// This matches the logic in GenCSS where nodeVisible is set based on value truthiness
+	if a.Value != nil {
+		switch v := a.Value.(type) {
+		case string:
+			return v != ""
+		case bool:
+			return v
+		case int, int64, float64:
+			return true
+		default:
+			return true
+		}
+	}
+	return false
+}
+
 // CopyVisibilityInfo copies visibility information from another node
 func (a *Anonymous) CopyVisibilityInfo(info map[string]any) {
 	if info == nil {

@@ -32,11 +32,14 @@ func NewAtRule(name string, value any, rules any, index int, currentFileInfo map
 
 	// Handle value - convert to Anonymous if string/non-Node
 	if value != nil {
-		// Check if value is already a Node-based type (Anonymous, etc.)
-		switch value.(type) {
-		case *Anonymous, *Node:
+		// Check if value is already a Node-based type
+		// This matches JavaScript: (value instanceof Node) ? value : (value ? new Anonymous(value) : value)
+		// Preserve Anonymous nodes and any node that has a GetType() method (Quoted, Variable, Expression, etc.)
+		if _, ok := value.(*Anonymous); ok {
 			atRule.Value = value
-		default:
+		} else if _, ok := value.(interface{ GetType() string }); ok {
+			atRule.Value = value
+		} else {
 			atRule.Value = NewAnonymous(value, index, currentFileInfo, false, false, nil)
 		}
 	} else {
@@ -166,7 +169,7 @@ func (a *AtRule) GenCSS(context any, output *CSSOutput) {
 }
 
 // Eval evaluates the at-rule
-func (a *AtRule) Eval(context any) (*AtRule, error) {
+func (a *AtRule) Eval(context any) (any, error) {
 	var mediaPathBackup, mediaBlocksBackup any
 	var value any = a.Value
 	var rules []any = a.Rules

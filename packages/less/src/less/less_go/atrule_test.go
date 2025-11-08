@@ -445,9 +445,14 @@ func TestAtRule(t *testing.T) {
 				"mediaBlocks": []any{"existing"},
 			}
 
-			result, err := atRule.Eval(context)
+			resultAny, err := atRule.Eval(context)
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			result, ok := resultAny.(*AtRule)
+			if !ok {
+				t.Fatalf("Expected result to be *AtRule, got %T", resultAny)
 			}
 
 			// For now, just check that eval runs without error
@@ -467,9 +472,14 @@ func TestAtRule(t *testing.T) {
 				"mediaBlocks": []any{"existing"},
 			}
 
-			result, err := atRule.Eval(context)
+			resultAny, err := atRule.Eval(context)
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			result, ok := resultAny.(*AtRule)
+			if !ok {
+				t.Fatalf("Expected result to be *AtRule, got %T", resultAny)
 			}
 
 			if !rule.evalCalled {
@@ -517,9 +527,14 @@ func TestAtRule(t *testing.T) {
 			}
 
 			atRule := NewAtRule("@media", nil, nil, 5, fileInfo, debugInfo, true, visibilityInfo)
-			result, err := atRule.Eval(map[string]any{})
+			resultAny, err := atRule.Eval(map[string]any{})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
+			}
+
+			result, ok := resultAny.(*AtRule)
+			if !ok {
+				t.Fatalf("Expected result to be *AtRule, got %T", resultAny)
 			}
 
 			if result == atRule {

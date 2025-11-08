@@ -96,6 +96,12 @@ func (c *Comment) Eval(context any) any {
 	return c
 }
 
+// IsVisible returns true for comments to ensure proper newline spacing
+// Comments need to be treated as visible for the ruleset newline logic to work correctly
+func (c *Comment) IsVisible() bool {
+	return true
+}
+
 // DebugInfo formats debug info for a comment node
 func DebugInfo(context map[string]any, node any, separator string) string {
 	if context == nil || node == nil {

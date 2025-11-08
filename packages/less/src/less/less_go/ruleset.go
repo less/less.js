@@ -170,15 +170,9 @@ func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	// Generate CSS using the GenCSS method
 	r.GenCSS(contextMap, cssOutput)
 	
-	// Fix trailing spaces before semicolons to match JavaScript Less.js behavior exactly
+	// Return the generated CSS output
 	result := output.String()
-	
-	// Remove trailing spaces before semicolons (e.g., "red ;" -> "red;")
-	// This ensures our Go output matches JavaScript Less.js exactly
-	for strings.Contains(result, " ;") {
-		result = strings.ReplaceAll(result, " ;", ";")
-	}
-	
+
 	return result, nil
 }
 

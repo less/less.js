@@ -446,14 +446,16 @@ func (i *Import) DoEval(context any) (any, error) {
 
 		if features != nil {
 			// Match JavaScript: new Media([contents], this.features.value)
-			var featuresValue any = features
-			if featuresMap, ok := features.(map[string]any); ok {
-				if val, exists := featuresMap["value"]; exists {
-					featuresValue = val
-				}
-			} else if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
-				featuresValue = featuresWithValue.GetValue()
+			// Use the unevaluated i.features.Value, not the evaluated features
+			var featuresValue any
+
+			if val, ok := i.features.(*Value); ok {
+				featuresValue = val.Value
+			} else {
+				// Fallback to features if i.features is not *Value
+				featuresValue = features
 			}
+
 			return NewMedia([]any{contents}, featuresValue, i._index, i._fileInfo, nil), nil
 		}
 		return []any{contents}, nil
@@ -484,14 +486,16 @@ func (i *Import) DoEval(context any) (any, error) {
 
 		if features != nil {
 			// Match JavaScript: new Media(ruleset.rules, this.features.value)
-			var featuresValue any = features
-			if featuresMap, ok := features.(map[string]any); ok {
-				if val, exists := featuresMap["value"]; exists {
-					featuresValue = val
-				}
-			} else if featuresWithValue, ok := features.(interface{ GetValue() any }); ok {
-				featuresValue = featuresWithValue.GetValue()
+			// Use the unevaluated i.features.Value, not the evaluated features
+			var featuresValue any
+
+			if val, ok := i.features.(*Value); ok {
+				featuresValue = val.Value
+			} else {
+				// Fallback to features if i.features is not *Value
+				featuresValue = features
 			}
+
 			return NewMedia(ruleset.Rules, featuresValue, i._index, i._fileInfo, nil), nil
 		}
 		return ruleset.Rules, nil

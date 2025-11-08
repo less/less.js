@@ -689,7 +689,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		if r, ok := rule.(interface{ EvalFirst() bool }); ok && r.EvalFirst() {
 			continue // Already evaluated
 		}
-		
+
 		// Try different Eval signatures
 		switch evalRule := rule.(type) {
 		case interface{ Eval(any) (*MixinDefinition, error) }:

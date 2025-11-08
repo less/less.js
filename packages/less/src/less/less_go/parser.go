@@ -2280,17 +2280,65 @@ func (p *Parsers) Sub() any {
 
 	p.parser.parserInput.Save()
 	if p.parser.parserInput.Char('(') != nil {
+		// Try Addition first for mathematical expressions like (2 + 3)
 		a = p.Addition()
 		if a != nil && p.parser.parserInput.Char(')') != nil {
 			p.parser.parserInput.Forget()
+			// Create Expression with Parens=true (like JavaScript)
+			// This allows math operations to collapse during evaluation
 			expr, err := NewExpression([]any{a}, false)
 			if err == nil {
-				// Mark as having parentheses - this is equivalent to e.parens = true in JavaScript
 				expr.Parens = true
 				e = expr
 			}
 			return e
 		}
+
+		// If Addition failed, try parsing as a general expression with colon support
+		// for media queries like (min-width: 480px)
+		p.parser.parserInput.Restore("")
+		p.parser.parserInput.Save()
+		if p.parser.parserInput.Char('(') != nil {
+			entities := make([]any, 0)
+			index := p.parser.parserInput.GetIndex()
+			hasColon := false
+
+			// Parse entities until we hit ')'
+			for p.parser.parserInput.CurrentChar() != ')' && p.parser.parserInput.CurrentChar() != 0 {
+				// Try to parse an entity
+				ent := p.Addition()
+				if ent == nil {
+					ent = p.Entity()
+				}
+				if ent != nil {
+					entities = append(entities, ent)
+					// Check for colon after entity (for media query features)
+					if p.parser.parserInput.Char(':') != nil {
+						entities = append(entities, NewAnonymous(":", index+p.parser.currentIndex, p.parser.fileInfo, false, false, nil))
+						hasColon = true
+					}
+				} else {
+					// Couldn't parse, bail out
+					break
+				}
+			}
+
+			if len(entities) > 0 && p.parser.parserInput.Char(')') != nil {
+				p.parser.parserInput.Forget()
+				expr, err := NewExpression(entities, false)
+				if err == nil {
+					// Only wrap in Paren if it contains a colon (media query feature)
+					// Otherwise use Expression with Parens=true (for math)
+					if hasColon {
+						return NewParen(expr)
+					} else {
+						expr.Parens = true
+						return expr
+					}
+				}
+			}
+		}
+
 		p.parser.parserInput.Restore("Expected ')'")
 		return nil
 	}

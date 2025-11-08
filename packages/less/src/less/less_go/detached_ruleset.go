@@ -1,6 +1,8 @@
 package less_go
 
 import (
+	"fmt"
+	"os"
 )
 
 // DetachedRuleset represents a detached ruleset in the Less AST
@@ -111,12 +113,26 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 	if dr.ruleset != nil {
 		// Check if ruleset is a Ruleset
 		if ruleset, ok := dr.ruleset.(*Ruleset); ok {
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Fprintf(os.Stderr, "[DEBUG DetachedRuleset.CallEval] Evaluating Ruleset with %d selectors, %d rules\n", len(ruleset.Selectors), len(ruleset.Rules))
+				for i, r := range ruleset.Rules {
+					fmt.Fprintf(os.Stderr, "[DEBUG DetachedRuleset.CallEval]   Rule %d: type=%T\n", i, r)
+					if gt, ok := r.(interface{ GetType() string }); ok {
+						fmt.Fprintf(os.Stderr, "[DEBUG DetachedRuleset.CallEval]     GetType=%s\n", gt.GetType())
+					}
+				}
+			}
 			// Ruleset.Eval expects map[string]any, convert if needed
 			mapContext := evalContextToMap(evalContext)
 			result, err := ruleset.Eval(mapContext)
 			if err != nil {
 				// Match JavaScript behavior - throw the error
 				panic(err)
+			}
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				if rs, ok := result.(*Ruleset); ok {
+					fmt.Fprintf(os.Stderr, "[DEBUG DetachedRuleset.CallEval] Result Ruleset has %d selectors, %d rules\n", len(rs.Selectors), len(rs.Rules))
+				}
 			}
 			return result
 		}
@@ -125,11 +141,19 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 		if node, ok := dr.ruleset.(*Node); ok && node.Value != nil {
 			// Check if the value is a Ruleset
 			if ruleset, ok := node.Value.(*Ruleset); ok {
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Fprintf(os.Stderr, "[DEBUG DetachedRuleset.CallEval] Evaluating Node.Value Ruleset with %d selectors, %d rules\n", len(ruleset.Selectors), len(ruleset.Rules))
+				}
 				// Ruleset.Eval expects map[string]any, convert if needed
 				mapContext := evalContextToMap(evalContext)
 				result, err := ruleset.Eval(mapContext)
 				if err != nil {
 					panic(err)
+				}
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					if rs, ok := result.(*Ruleset); ok {
+						fmt.Fprintf(os.Stderr, "[DEBUG DetachedRuleset.CallEval] Result Ruleset has %d selectors, %d rules\n", len(rs.Selectors), len(rs.Rules))
+					}
 				}
 				return result
 			}

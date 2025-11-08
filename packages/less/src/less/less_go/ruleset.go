@@ -315,36 +315,10 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		return nil, fmt.Errorf("context must be *Eval or map[string]any, got %T", context)
 	}
 
-	// Check for circular dependency to prevent infinite recursion
-	visitedKey := "_evaluatingRulesets"
-	if visiting, exists := ctx[visitedKey]; exists {
-		if visitedMap, ok := visiting.(map[*Ruleset]bool); ok {
-			if visitedMap[r] {
-				// Already evaluating this ruleset, return early to prevent infinite recursion
-				return NewRuleset(nil, nil, false, nil), nil
-			}
-			visitedMap[r] = true
-		} else {
-			// Initialize the visited map
-			visitedMap := make(map[*Ruleset]bool)
-			visitedMap[r] = true
-			ctx[visitedKey] = visitedMap
-		}
-	} else {
-		// Initialize the visited map
-		visitedMap := make(map[*Ruleset]bool)
-		visitedMap[r] = true
-		ctx[visitedKey] = visitedMap
-	}
-
-	// Ensure we clean up after evaluation
-	defer func() {
-		if visiting, exists := ctx[visitedKey]; exists {
-			if visitedMap, ok := visiting.(map[*Ruleset]bool); ok {
-				delete(visitedMap, r)
-			}
-		}
-	}()
+	// NOTE: JavaScript does not have circular dependency checking for ruleset evaluation.
+	// Recursive mixin calls are valid and should be allowed. The check was removed because
+	// it was causing false positives for valid recursive calls where the same mixin definition
+	// is called multiple times with different parameters (e.g., .mixin -> .passthrough -> .mixin).
 
 	var selectors []any
 	var selCnt int
@@ -652,7 +626,7 @@ func (r *Ruleset) Eval(context any) (any, error) {
 						} else if rs, ok := evaluated.(*Ruleset); ok {
 							evalRules = rs.Rules
 						}
-						
+
 						if evalRules != nil {
 							// Match JavaScript: filter out all variable declarations
 							rules := make([]any, 0)

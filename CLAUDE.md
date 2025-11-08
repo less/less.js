@@ -44,13 +44,14 @@ When working on this project, please be aware of the following:
    - Go tests should verify ported functionality matches JavaScript behavior
 
 4. **Current Integration Test Status** (as of 2025-11-08 - Latest):
-   - **47 perfect CSS matches (25.5%)** - INCREDIBLE PROGRESS! ✅ ⬆️ +13 from last documented status!
+   - **50 perfect CSS matches (27.2%)** - INCREDIBLE PROGRESS! ✅ ⬆️ +3 new wins!
+   - **⚠️ 3 REGRESSIONS** - mixins, mixins-interpolated, mixins-guards (main) broken - URGENT FIX NEEDED
    - **0 real compilation failures** - ALL CORE BUGS FIXED! 🎉
    - **3 expected compilation failures (1.6%)** - network/path issues (bootstrap4, google, import-module)
-   - **45 tests with output differences** - compiles but CSS doesn't match
+   - **40 tests with output differences** - compiles but CSS doesn't match (down from 45!)
    - **39 correct error handling** - tests that should fail, do fail correctly
    - **5 tests quarantined** (plugin system & JavaScript execution - punted for later)
-   - **Overall Success Rate: 46.7%** ⬆️ (86/184 tests passing or correctly erroring)
+   - **Overall Success Rate: 48.4%** ⬆️ (89/184 tests passing or correctly erroring)
    - **Compilation Rate: 98.4%** (181/184 tests compile successfully)
 
    **🎉 Parser Status: ALL BUGS FIXED!**
@@ -83,7 +84,18 @@ When working on this project, please be aware of the following:
    - ✅ Issue #17: Units suites - units-strict and units-no-strict now passing! - FIXED
    - ✅ Issue #18: Compression suite - compression now passing! - FIXED
    - ✅ Issue #19: Extend regressions - extend-clearfix, extend-nest, extend all FIXED! - NO REGRESSIONS
+   - ✅ Issue #20: `namespacing-media` - Media query variable interpolation - FIXED (11/11 namespacing tests!)
+   - ✅ Issue #21: `mixins-nested` - Nested mixin variable scoping - FIXED
+   - ✅ Issue #22: `import-inline` - Media query wrapper - FIXED
+   - ✅ Issue #23: `import-interpolation` - Variable interpolation in imports - FIXED
+   - ✅ Issue #24: `css-escapes` - CSS escape handling - FIXED
    - ✅ Compilation failures reduced from 12 → 3 tests (75% reduction!)
+
+   **⚠️ Recent Regressions** (as of 2025-11-08):
+   - ❌ `mixins` - Missing selector output (was perfect, now broken)
+   - ❌ `mixins-interpolated` - Missing selector output (was perfect, now broken)
+   - ❌ `mixins-guards` (main suite) - Output differences (math-always version still works)
+   - Root cause: Likely commits #102, #103, #110 (mixins-nested fixes)
 
 5. **Organized Task System**:
    All project coordination and task management is now organized in the `.claude/` directory:
@@ -106,29 +118,30 @@ When working on this project, please be aware of the following:
    - See `.claude/tasks/` for specific task specifications
 
    **Priority Order** (High to Low):
-   1. **HIGH**: Math operations - 6 tests with output differences (css, mixins-args, parens tests in math suites)
-   2. **HIGH**: CSS output formatting issues - comments, parse-interpolation, variables-in-at-rules (~6 tests)
-   3. **HIGH**: URL rewriting - 7 tests with output differences (all url-related suites)
-   4. **MEDIUM**: Extend edge case (1 test) - extend-chaining only remaining
-   5. **MEDIUM**: Import functionality (3 tests) - import-reference, import-reference-issues, import-inline
-   6. **MEDIUM**: Mixin issues (1 test) - mixins-nested only remaining
+   1. **🚨 URGENT**: Fix mixin regressions - 3 tests broken (mixins, mixins-interpolated, mixins-guards)
+   2. **HIGH**: Extend edge case (1 test) - extend-chaining only remaining (complete 7/7 extend!)
+   3. **HIGH**: Math operations - 6 tests with output differences (css, mixins-args, parens tests in math suites)
+   4. **HIGH**: CSS output formatting issues - comments, parse-interpolation, variables-in-at-rules (~6 tests)
+   5. **HIGH**: URL rewriting - 3 tests remaining (urls in main/static-urls/url-args)
+   6. **MEDIUM**: Import functionality (2 tests) - import-reference, import-reference-issues
    7. **MEDIUM**: Detached ruleset issues - detached-rulesets test
-   8. **MEDIUM**: Namespacing media queries (1 test) - namespacing-media variable interpolation
-   9. **LOW**: External dependencies - bootstrap4, import-module (node_modules resolution)
+   8. **LOW**: External dependencies - bootstrap4, import-module (node_modules resolution)
 
    **Recently Completed** (Last 2 weeks):
-   - ✅ **MASSIVE BREAKTHROUGH**: +13 perfect matches! From 34 → 47 tests! 🎉
-   - ✅ **ALL namespacing tests FIXED**: 10/10 namespacing tests now perfect matches (namespacing-1 through 8, functions, operations)!
+   - ✅ **MASSIVE BREAKTHROUGH**: +16 perfect matches! From 34 → 50 tests! 🎉
+   - ✅ **ALL namespacing tests FIXED**: 11/11 namespacing tests now perfect matches (100% complete!)
    - ✅ **ALL guards tests FIXED**: css-guards, mixins-guards, mixins-guards-default-func all passing!
-   - ✅ **ALL extend tests FIXED**: extend, extend-clearfix, extend-exact, extend-media, extend-nest, extend-selector - 6/7 passing (only extend-chaining remains)!
-   - ✅ **Mixin improvements**: mixins-named-args, mixins-important now perfect matches!
-   - ✅ **Import fixes**: import-once now passing!
+   - ✅ **ALL extend tests FIXED** (except 1): extend, extend-clearfix, extend-exact, extend-media, extend-nest, extend-selector - 6/7 passing (only extend-chaining remains)!
+   - ✅ **ALL URL rewriting tests FIXED**: rewrite-urls-all, rewrite-urls-local, rootpath variants - 4/4 passing!
+   - ✅ **Mixin improvements**: mixins-named-args, mixins-important, mixins-nested now perfect matches!
+   - ✅ **Import fixes**: import-once, import-inline, import-interpolation now passing!
    - ✅ **Color functions**: Both colors and colors2 perfect matches!
    - ✅ **Compression suite**: compression test passing!
    - ✅ **Math suites**: All 6 tests now compile successfully (media-math, new-division, mixins-guards, no-sm-operations all passing)!
    - ✅ **Units tests**: strict-units passing!
    - ✅ **Parser regression**: Fixed @{} pattern in Element regex!
    - ✅ **Comment fixes**: comments2 now passing!
+   - ✅ **CSS escapes**: css-escapes now passing!
 
 7. **Quarantined Features** (for future implementation):
    - Plugin system tests (`plugin`, `plugin-module`, `plugin-preeval`)

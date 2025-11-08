@@ -458,16 +458,41 @@ func (nv *NamespaceValue) deeplyEvaluateValue(value any, context any) any {
 		return NewParen(evaluatedValue)
 	}
 
-	// For Quoted nodes, try to evaluate them (they may contain variable interpolations)
+	// For Quoted nodes, check if they contain variable references like @val
+	// If so, they may represent expressions that were stringified too early
 	if quotedNode, ok := value.(*Quoted); ok {
-		// Try to evaluate the quoted node - it may contain variable interpolations like @{var}
-		if evalNode, ok := value.(interface{ Eval(any) (any, error) }); ok {
-			result, err := evalNode.Eval(context)
-			if err == nil && result != nil {
-				// Recursively evaluate the result
-				return nv.deeplyEvaluateValue(result, context)
+		// Check if the quoted string contains unevaluated variable references (@ followed by word characters)
+		// This handles cases like "(min-width: @val)" which should have been kept as an expression tree
+		containsVarRef := false
+		if len(quotedNode.value) > 0 {
+			for i := 0; i < len(quotedNode.value)-1; i++ {
+				if quotedNode.value[i] == '@' && i+1 < len(quotedNode.value) {
+					nextChar := quotedNode.value[i+1]
+					// Check if next char is a letter or underscore (start of variable name)
+					if (nextChar >= 'a' && nextChar <= 'z') || (nextChar >= 'A' && nextChar <= 'Z') || nextChar == '_' {
+						containsVarRef = true
+						break
+					}
+				}
 			}
 		}
+
+		if containsVarRef {
+			// Try to evaluate the quoted node - it may resolve variable interpolations
+			if evalNode, ok := value.(interface{ Eval(any) (any, error) }); ok {
+				result, err := evalNode.Eval(context)
+				if err == nil && result != nil {
+					// CRITICAL: Only recurse if the result is NOT a Quoted node
+					// If Quoted.Eval() returns a Quoted node, we've already done the work
+					// Recursing would cause infinite loop
+					if _, isQuoted := result.(*Quoted); !isQuoted {
+						return nv.deeplyEvaluateValue(result, context)
+					}
+					return result
+				}
+			}
+		}
+
 		return quotedNode
 	}
 

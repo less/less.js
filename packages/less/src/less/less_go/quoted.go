@@ -283,7 +283,17 @@ func (q *Quoted) Eval(context any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
+	// WORKAROUND: Also handle bare variable references like @var (not just @{var})
+	// This is needed for media queries where expressions containing variables
+	// get stringified prematurely, e.g., "(min-width: @val)" instead of keeping
+	// the expression tree with a Variable node
+	bareVarRegex := regexp.MustCompile(`@([\w-]+)`)
+	value, err = iterativeReplace(value, bareVarRegex, variableReplacement)
+	if err != nil {
+		return nil, err
+	}
+
 	value, err = iterativeReplace(value, propRegex, propertyReplacement)
 	if err != nil {
 		return nil, err

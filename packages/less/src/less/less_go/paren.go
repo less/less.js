@@ -2,7 +2,6 @@ package less_go
 
 import (
 	"fmt"
-	"os"
 )
 
 // Paren represents a parenthesized value in the Less AST
@@ -48,24 +47,16 @@ func (p *Paren) Eval(context any) any {
 	// NOT for mathematical grouping. Mathematical parentheses are handled by
 	// Expression nodes with Parens=true. Therefore, we should NOT call
 	// InParenthesis() here as it would incorrectly affect math evaluation.
-	debug := os.Getenv("LESS_DEBUG_PAREN") == "1"
-
 	var evaluatedValue any = p.Value
 
 	// Try single-return eval first (matches most nodes)
 	if valueWithEval, ok := p.Value.(interface{ Eval(any) any }); ok {
 		evaluatedValue = valueWithEval.Eval(context)
-		if debug {
-			fmt.Printf("[Paren.Eval] Evaluated value (no error): %T\n", evaluatedValue)
-		}
 	} else if valueWithEval, ok := p.Value.(interface{ Eval(any) (any, error) }); ok {
 		// Handle nodes that return errors
 		result, _ := valueWithEval.Eval(context)
 		if result != nil {
 			evaluatedValue = result
-		}
-		if debug {
-			fmt.Printf("[Paren.Eval] Evaluated value (with error): %T\n", evaluatedValue)
 		}
 	}
 

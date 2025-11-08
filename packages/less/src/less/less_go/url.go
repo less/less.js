@@ -1,6 +1,8 @@
 package less_go
 
 import (
+	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -112,6 +114,9 @@ func (u *URL) Eval(context any) (any, error) {
 		if rp, ok := fileInfo["rootpath"].(string); ok {
 			rootpath = rp
 		}
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG URL.Eval] rootpath=%q, fileInfo=%+v\n", rootpath, fileInfo)
+		}
 		// Match JavaScript URL rewriting logic
 
 		// Handle *Anonymous value (which may wrap a *Quoted or contain a string)
@@ -136,7 +141,11 @@ func (u *URL) Eval(context any) (any, error) {
 			if evalCtx, ok := context.(*Eval); ok {
 				// Match JavaScript: if (typeof rootpath === 'string' && typeof val.value === 'string' && context.pathRequiresRewrite(val.value))
 				// Note: in JavaScript, typeof "" === "string" is true, so we check PathRequiresRewrite regardless of rootpath being empty
-				if evalCtx.PathRequiresRewrite(value) {
+				requiresRewrite := evalCtx.PathRequiresRewrite(value)
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG URL.Eval] value=%q, PathRequiresRewrite=%v\n", value, requiresRewrite)
+				}
+				if requiresRewrite {
 					// Match JavaScript: if (!val.quote) { rootpath = escapePath(rootpath); }
 					if quoted.GetQuote() == "" && rootpath != "" {
 						rootpath = escapePath(rootpath)

@@ -268,8 +268,17 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 
 	// Get rewriteUrls from context
 	if rewriteUrls, exists := im.context["rewriteUrls"]; exists {
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG ImportManager.Push] context rewriteUrls value=%v (type=%T)\n", rewriteUrls, rewriteUrls)
+		}
 		if rwUrls, ok := rewriteUrls.(bool); ok {
 			newFileInfo.RewriteUrls = rwUrls
+		} else if rwType, ok := rewriteUrls.(RewriteUrlsType); ok {
+			// Convert RewriteUrlsType to bool: anything except Off means true
+			newFileInfo.RewriteUrls = rwType != RewriteUrlsOff
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG ImportManager.Push] converted RewriteUrlsType %d to bool %v\n", rwType, newFileInfo.RewriteUrls)
+			}
 		}
 	}
 
@@ -299,6 +308,11 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 		// Update newFileInfo with file manager results
 		newFileInfo.CurrentDirectory = fileManager.GetPath(resolvedFilename)
 
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG ImportManager.loadFileCallback] newFileInfo.RewriteUrls=%v, currentDir=%q, entryPath=%q\n",
+				newFileInfo.RewriteUrls, newFileInfo.CurrentDirectory, newFileInfo.EntryPath)
+		}
+
 		if newFileInfo.RewriteUrls {
 			rootpath := ""
 			if contextRootpath, exists := im.context["rootpath"]; exists {
@@ -307,13 +321,19 @@ func (im *ImportManager) Push(path string, tryAppendExtension bool, currentFileI
 				}
 			}
 
-			newFileInfo.Rootpath = fileManager.Join(
-				rootpath,
-				fileManager.PathDiff(newFileInfo.CurrentDirectory, newFileInfo.EntryPath),
-			)
+			pathDiff := fileManager.PathDiff(newFileInfo.CurrentDirectory, newFileInfo.EntryPath)
+			newFileInfo.Rootpath = fileManager.Join(rootpath, pathDiff)
+
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG ImportManager.loadFileCallback] Calculating rootpath: contextRootpath=%q, pathDiff=%q, result=%q\n",
+					rootpath, pathDiff, newFileInfo.Rootpath)
+			}
 
 			if !fileManager.IsPathAbsolute(newFileInfo.Rootpath) && fileManager.AlwaysMakePathsAbsolute() {
 				newFileInfo.Rootpath = fileManager.Join(newFileInfo.EntryPath, newFileInfo.Rootpath)
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG ImportManager.loadFileCallback] Made absolute: %q\n", newFileInfo.Rootpath)
+				}
 			}
 		}
 

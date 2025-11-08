@@ -1,6 +1,8 @@
 package less_go
 
 import (
+	"fmt"
+	"os"
 	"strings"
 )
 
@@ -27,7 +29,9 @@ type Parse struct {
 
 // NewParse creates a new Parse context with the given options
 func NewParse(options map[string]any) *Parse {
-	p := &Parse{}
+	p := &Parse{
+		RewriteUrls: RewriteUrlsAll, // Default to ALL for backwards compatibility when not explicitly set
+	}
 	copyFromOriginal(options, p)
 	if paths, ok := options["paths"].(string); ok {
 		p.Paths = []string{paths}
@@ -72,6 +76,7 @@ func NewEval(options map[string]any, frames []any) *Eval {
 		MathOn:       true,
 		ImportantScope: []map[string]any{},
 		NumPrecision: 8, // Default to 8 like JavaScript
+		RewriteUrls: RewriteUrlsAll, // Default to ALL for backwards compatibility when not explicitly set
 	}
 	copyFromOriginal(options, e)
 	if paths, ok := options["paths"].(string); ok {
@@ -206,12 +211,18 @@ func (e *Eval) GetDefaultFunc() *DefaultFunc {
 // PathRequiresRewrite determines if a path needs to be rewritten
 // Match JavaScript: const isRelative = this.rewriteUrls === Constants.RewriteUrls.LOCAL ? isPathLocalRelative : isPathRelative;
 func (e *Eval) PathRequiresRewrite(path string) bool {
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG PathRequiresRewrite] path=%s, e.RewriteUrls=%d (Off=0, Local=1, All=2)\n", path, e.RewriteUrls)
+	}
+	// If rewriteUrls is OFF, don't rewrite any paths
+	if e.RewriteUrls == RewriteUrlsOff {
+		return false
+	}
 	// If set to local, only rewrite paths that start with .
 	if e.RewriteUrls == RewriteUrlsLocal {
 		return isPathLocalRelative(path)
 	}
-	// Otherwise (including ALL, OFF, or unset), use isPathRelative
-	// Note: JavaScript doesn't explicitly check for OFF - it uses isPathRelative for all non-LOCAL cases
+	// For ALL or unset, use isPathRelative
 	return isPathRelative(path)
 }
 

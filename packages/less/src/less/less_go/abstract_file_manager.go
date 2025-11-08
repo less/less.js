@@ -1,6 +1,8 @@
 package less_go
 
 import (
+	"fmt"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -71,15 +73,29 @@ func (afm *AbstractFileManager) Join(basePath, laterPath string) string {
 func (afm *AbstractFileManager) PathDiff(url, baseURL string) string {
 	urlParts, err := afm.ExtractURLParts(url, "")
 	if err != nil {
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG PathDiff] ExtractURLParts(url) error: %v\n", err)
+		}
 		return ""
 	}
 
 	baseURLParts, err := afm.ExtractURLParts(baseURL, "")
 	if err != nil {
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG PathDiff] ExtractURLParts(baseURL) error: %v\n", err)
+		}
 		return ""
 	}
 
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG PathDiff] urlParts.Directories=%v, baseURLParts.Directories=%v\n",
+			urlParts.Directories, baseURLParts.Directories)
+	}
+
 	if urlParts.HostPart != baseURLParts.HostPart {
+		if os.Getenv("LESS_GO_DEBUG") == "1" {
+			fmt.Printf("[DEBUG PathDiff] HostPart mismatch: %q != %q\n", urlParts.HostPart, baseURLParts.HostPart)
+		}
 		return ""
 	}
 
@@ -100,12 +116,21 @@ func (afm *AbstractFileManager) PathDiff(url, baseURL string) string {
 	baseURLDirectories := baseURLParts.Directories[i:]
 	urlDirectories := urlParts.Directories[i:]
 
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG PathDiff] i=%d, baseURLDirectories=%v, urlDirectories=%v\n",
+			i, baseURLDirectories, urlDirectories)
+	}
+
 	diff := ""
 	for j := 0; j < len(baseURLDirectories)-1; j++ {
 		diff += "../"
 	}
 	for j := 0; j < len(urlDirectories)-1; j++ {
 		diff += urlDirectories[j] + "/"
+	}
+
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG PathDiff] diff=%q\n", diff)
 	}
 
 	return diff

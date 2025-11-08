@@ -289,32 +289,37 @@ func (fm *FileSystemFileManager) LoadFile(filename, currentDirectory string, con
 
 // GetPath returns the directory of a filename
 func (fm *FileSystemFileManager) GetPath(filename string) string {
-	return filepath.Dir(filename)
+	// Return directory with trailing slash for PathDiff compatibility
+	dir := filepath.Dir(filename)
+	// Convert backslashes to forward slashes for consistency
+	dir = strings.ReplaceAll(dir, "\\", "/")
+	// Ensure trailing slash
+	if !strings.HasSuffix(dir, "/") {
+		dir += "/"
+	}
+	return dir
 }
 
 // Join joins two paths
 func (fm *FileSystemFileManager) Join(basePath, relativePath string) string {
-	return filepath.Join(basePath, relativePath)
+	// Use AbstractFileManager's Join for URL-safe path joining
+	afm := NewAbstractFileManager()
+	return afm.Join(basePath, relativePath)
 }
 
 // PathDiff returns the relative path between two directories
+// This matches the JavaScript AbstractFileManager.pathDiff behavior:
+// - Always uses forward slashes (/)
+// - Adds trailing slash for directories
+// - Input paths should be directories ending with /
 func (fm *FileSystemFileManager) PathDiff(url, baseUrl string) string {
-	// Clean paths
-	url = filepath.Clean(url)
-	baseUrl = filepath.Clean(baseUrl)
-	
-	// If they're the same, return empty
-	if url == baseUrl {
-		return ""
+	// Use the AbstractFileManager implementation which handles URL-style paths correctly
+	afm := NewAbstractFileManager()
+	result := afm.PathDiff(url, baseUrl)
+	if os.Getenv("LESS_GO_DEBUG") == "1" {
+		fmt.Printf("[DEBUG FileSystemFileManager.PathDiff] url=%q, baseUrl=%q, result=%q\n", url, baseUrl, result)
 	}
-	
-	// Try to get relative path
-	rel, err := filepath.Rel(baseUrl, url)
-	if err != nil {
-		return url
-	}
-	
-	return rel
+	return result
 }
 
 // IsPathAbsolute checks if a path is absolute

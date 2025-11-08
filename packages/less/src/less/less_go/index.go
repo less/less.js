@@ -356,6 +356,26 @@ func createRender(env any, parseTree any, importManager any) func(string, ...any
 				}
 			}
 
+			// Copy other important options from Parse context to ImportManager context
+			if context != nil {
+				// Copy rewriteUrls - this is critical for URL rewriting in imported files
+				contextMap["rewriteUrls"] = context.RewriteUrls
+				// Copy rootpath - needed for URL path calculation
+				if context.Rootpath != "" {
+					contextMap["rootpath"] = context.Rootpath
+				}
+				// Copy syncImport - determines sync vs async file loading
+				contextMap["syncImport"] = context.SyncImport
+				// Copy other relevant options
+				contextMap["strictImports"] = context.StrictImports
+				contextMap["insecure"] = context.Insecure
+
+				if os.Getenv("LESS_GO_DEBUG") == "1" {
+					fmt.Printf("[DEBUG createRender ImportManagerFactory] Copied options: rewriteUrls=%v, rootpath=%q, syncImport=%v\n",
+						context.RewriteUrls, context.Rootpath, context.SyncImport)
+				}
+			}
+
 			result := factory(environment, contextMap, fileInfo)
 			if os.Getenv("LESS_GO_DEBUG") == "1" {
 				fmt.Printf("[DEBUG createRender ImportManagerFactory] Created ImportManager with paths: %v\n", result.paths)
@@ -507,6 +527,26 @@ func createParse(env any, parseTree any, importManager any) func(string, ...any)
 			contextMap["paths"] = []string{}
 			if os.Getenv("LESS_GO_DEBUG") == "1" {
 				fmt.Printf("[DEBUG ImportManagerFactory] Setting empty paths\n")
+			}
+		}
+
+		// Copy other important options from Parse context to ImportManager context
+		if context != nil {
+			// Copy rewriteUrls - this is critical for URL rewriting in imported files
+			contextMap["rewriteUrls"] = context.RewriteUrls
+			// Copy rootpath - needed for URL path calculation
+			if context.Rootpath != "" {
+				contextMap["rootpath"] = context.Rootpath
+			}
+			// Copy syncImport - determines sync vs async file loading
+			contextMap["syncImport"] = context.SyncImport
+			// Copy other relevant options
+			contextMap["strictImports"] = context.StrictImports
+			contextMap["insecure"] = context.Insecure
+
+			if os.Getenv("LESS_GO_DEBUG") == "1" {
+				fmt.Printf("[DEBUG ImportManagerFactory] Copied options: rewriteUrls=%v, rootpath=%q, syncImport=%v\n",
+					context.RewriteUrls, context.Rootpath, context.SyncImport)
 			}
 		}
 
@@ -791,7 +831,15 @@ func (s *SimpleImportManagerEnvironment) GetFileManager(path, currentDirectory s
 }
 
 // SimpleFileManager provides a basic implementation for testing
-type SimpleFileManager struct{}
+type SimpleFileManager struct{
+	*AbstractFileManager
+}
+
+func NewSimpleFileManager() *SimpleFileManager {
+	return &SimpleFileManager{
+		AbstractFileManager: NewAbstractFileManager(),
+	}
+}
 
 func (s *SimpleFileManager) LoadFileSync(path, currentDirectory string, context map[string]any, environment ImportManagerEnvironment) *LoadedFile {
 	return &LoadedFile{
@@ -816,9 +864,7 @@ func (s *SimpleFileManager) Join(path1, path2 string) string {
 	return path1 + "/" + path2
 }
 
-func (s *SimpleFileManager) PathDiff(currentDirectory, entryPath string) string {
-	return ""
-}
+// PathDiff is inherited from AbstractFileManager
 
 func (s *SimpleFileManager) IsPathAbsolute(path string) bool {
 	return path[0] == '/'

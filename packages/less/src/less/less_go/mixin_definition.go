@@ -68,13 +68,12 @@ func NewMixinDefinition(name string, params []any, rules []any, condition any, v
 	ruleset := NewRuleset([]any{selector}, rules, false, visibilityInfo)
 	ruleset.AllowRoot = true
 
-	// Mark all nested rulesets as being inside a mixin definition
-	// This prevents them from being output directly
-	for _, rule := range rules {
-		if nestedRuleset, ok := rule.(*Ruleset); ok {
-			nestedRuleset.InsideMixinDefinition = true
-		}
-	}
+	// NOTE: We do NOT mark nested rulesets as InsideMixinDefinition here.
+	// This is because NewMixinDefinition is used for two cases:
+	// 1. Creating real mixin definitions from source (parser.go) - needs marking
+	// 2. Wrapping existing rulesets to call them as mixins (mixin_call.go) - should NOT be marked
+	//
+	// The marking is done in the parser where the mixin definition is created from source.
 
 	// Calculate arity
 	arity := 0

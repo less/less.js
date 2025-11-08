@@ -1152,6 +1152,15 @@ func (p *Parsers) DetachedRuleset() any {
 				}
 				return nil
 			}
+
+			// Mark all nested rulesets as being inside a mixin definition
+			// This prevents them from being output directly - they should only be output when the mixin is called
+			for _, rule := range rules {
+				if nestedRuleset, ok := rule.(*Ruleset); ok {
+					nestedRuleset.InsideMixinDefinition = true
+				}
+			}
+
 			if tracer.IsEnabled() {
 				tracer.TraceResult("DetachedRuleset", mixinDef, "mixin definition with params")
 			}
@@ -3096,10 +3105,20 @@ func (m *MixinParsers) Definition() any {
 
 		if ruleset != nil {
 			m.parsers.parser.parserInput.Forget()
-			mixinDef, err := NewMixinDefinition(name, params, ruleset.([]any), cond, variadic, nil, nil)
+			rules := ruleset.([]any)
+			mixinDef, err := NewMixinDefinition(name, params, rules, cond, variadic, nil, nil)
 			if err != nil {
 				return nil
 			}
+
+			// Mark all nested rulesets as being inside a mixin definition
+			// This prevents them from being output directly - they should only be output when the mixin is called
+			for _, rule := range rules {
+				if nestedRuleset, ok := rule.(*Ruleset); ok {
+					nestedRuleset.InsideMixinDefinition = true
+				}
+			}
+
 			return mixinDef
 		} else {
 			m.parsers.parser.parserInput.Restore("")

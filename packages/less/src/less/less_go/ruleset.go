@@ -682,7 +682,11 @@ func (r *Ruleset) Eval(context any) (any, error) {
 			rsRules[i] = evalRule.Eval(context)
 		}
 	}
-	
+
+	// CRITICAL FIX: Store evaluated rules back to ruleset
+	// Without this, all rule modifications during evaluation (including Media nodes from inline imports) are lost
+	ruleset.Rules = rsRules
+
 	// Reset cache after evaluating rules since variable values may have changed
 	ruleset.ResetCache()
 

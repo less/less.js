@@ -313,9 +313,14 @@ func TestMixinDefinition_MakeImportant(t *testing.T) {
 		rules := []any{rule}
 		definition, _ := NewMixinDefinition("test", []any{}, rules, nil, false, nil, nil)
 
-		result := definition.MakeImportant()
-		if result == nil {
+		resultAny := definition.MakeImportant()
+		if resultAny == nil {
 			t.Errorf("Expected result to be a MixinDefinition")
+			return
+		}
+		result, ok := resultAny.(*MixinDefinition)
+		if !ok {
+			t.Errorf("Expected result to be a *MixinDefinition, got %T", resultAny)
 			return
 		}
 		if result.Name != "test" {

@@ -790,7 +790,7 @@ func (r *Ruleset) EvalImports(context any) error {
 }
 
 // MakeImportant creates a new Ruleset with all rules marked as important
-func (r *Ruleset) MakeImportant() *Ruleset {
+func (r *Ruleset) MakeImportant() any {
 	var newRules []any
 	if r.Rules != nil {
 		newRules = make([]any, len(r.Rules))

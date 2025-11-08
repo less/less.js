@@ -490,7 +490,7 @@ func (md *MixinDefinition) EvalParams(context any, mixinEnv any, args []any, eva
 }
 
 // MakeImportant creates a new MixinDefinition with important rules
-func (md *MixinDefinition) MakeImportant() *MixinDefinition {
+func (md *MixinDefinition) MakeImportant() any {
 	var rules []any
 	if md.Rules != nil {
 		rules = make([]any, len(md.Rules))
@@ -637,7 +637,12 @@ func (md *MixinDefinition) EvalCall(context any, args []any, important bool) (*R
 	}
 
 	if important {
-		evaluatedRuleset = evaluatedRuleset.MakeImportant()
+		importantResult := evaluatedRuleset.MakeImportant()
+		if importantRuleset, ok := importantResult.(*Ruleset); ok {
+			evaluatedRuleset = importantRuleset
+		} else {
+			return nil, fmt.Errorf("expected *Ruleset from MakeImportant, got %T", importantResult)
+		}
 	}
 
 	return evaluatedRuleset, nil

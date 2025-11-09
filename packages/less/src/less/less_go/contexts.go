@@ -108,16 +108,24 @@ func (e *Eval) ExitCalc() {
 
 // InParenthesis enters a parenthesis context
 func (e *Eval) InParenthesis() {
+	debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
 	if e.ParensStack == nil {
 		e.ParensStack = make([]bool, 0)
 	}
 	e.ParensStack = append(e.ParensStack, true)
+	if debugTrace {
+		fmt.Printf("[TRACE] InParenthesis: stack len now %d\n", len(e.ParensStack))
+	}
 }
 
 // OutOfParenthesis exits a parenthesis context
 func (e *Eval) OutOfParenthesis() {
+	debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
 	if len(e.ParensStack) > 0 {
 		e.ParensStack = e.ParensStack[:len(e.ParensStack)-1]
+	}
+	if debugTrace {
+		fmt.Printf("[TRACE] OutOfParenthesis: stack len now %d\n", len(e.ParensStack))
 	}
 }
 
@@ -152,16 +160,30 @@ func (e *Eval) IsMathOn() bool {
 // IsMathOnWithOp determines if math operations are enabled for the given operator
 // Matches JavaScript: isMathOn(op) with operator parameter
 func (e *Eval) IsMathOnWithOp(op string) bool {
+	debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
+	if debugTrace {
+		fmt.Printf("[TRACE] IsMathOnWithOp(%s): MathOn=%v, Math=%d, ParensStack len=%d\n", op, e.MathOn, e.Math, len(e.ParensStack))
+	}
 	if !e.MathOn {
 		return false
 	}
 	// Special handling for division operator
 	if op == "/" && e.Math != MathAlways && (len(e.ParensStack) == 0) {
+		if debugTrace {
+			fmt.Printf("[TRACE] IsMathOnWithOp(%s): division without parens, returning false\n", op)
+		}
 		return false
 	}
 	// In PARENS mode (Math > PARENS_DIVISION), all operations require parentheses
 	if e.Math > MathParensDivision {
-		return len(e.ParensStack) > 0
+		result := len(e.ParensStack) > 0
+		if debugTrace {
+			fmt.Printf("[TRACE] IsMathOnWithOp(%s): PARENS mode, stack len=%d, returning %v\n", op, len(e.ParensStack), result)
+		}
+		return result
+	}
+	if debugTrace {
+		fmt.Printf("[TRACE] IsMathOnWithOp(%s): returning true (default)\n", op)
 	}
 	return true
 }

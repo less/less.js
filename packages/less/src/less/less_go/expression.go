@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"os"
 )
 
 // Expression represents a list of values with optional spacing in the Less AST
@@ -50,53 +51,15 @@ func (e *Expression) Eval(context any) (any, error) {
 		return e, nil
 	}
 
+	// Match JavaScript: const mathOn = context.isMathOn();
+	// Just call isMathOn() without any pre-checking
 	mathOn := false
-	// Check if context is *Eval and use the method directly
 	if evalCtx, ok := context.(*Eval); ok {
-		// Check if any operation in this expression would have math on
-		hasOp := false
-		for _, val := range e.Value {
-			if anon, ok := val.(*Anonymous); ok {
-				if op, ok := anon.Value.(string); ok {
-					if op == "+" || op == "-" || op == "*" || op == "/" {
-						hasOp = true
-						if evalCtx.IsMathOnWithOp(op) {
-							mathOn = true
-							break
-						}
-					}
-				}
-			}
-		}
-		// If we don't have operations, still check for general math mode
-		if !hasOp {
-			mathOn = evalCtx.IsMathOn()
-		}
+		mathOn = evalCtx.IsMathOn()
 	} else if ctx, ok := context.(map[string]any); ok {
-		// Fallback for map-based context
 		if m, exists := SafeMapAccess(ctx, "isMathOn"); exists {
 			if mathFunc, ok := SafeTypeAssertion[func(string) bool](m); ok {
-			// Check if any operation in this expression would have math on
-			// This is needed because we need to know if math will be on
-			// before we create Operations
-			hasOp := false
-			for _, val := range e.Value {
-				if anon, ok := val.(*Anonymous); ok {
-					if op, ok := anon.Value.(string); ok {
-						if op == "+" || op == "-" || op == "*" || op == "/" {
-							hasOp = true
-							if mathFunc(op) {
-								mathOn = true
-								break
-							}
-						}
-					}
-				}
-			}
-			// If we don't have operations, still check for general math mode
-			if !hasOp {
 				mathOn = mathFunc("")
-			}
 			} else if mathVal, ok := SafeTypeAssertion[bool](m); ok {
 				mathOn = mathVal
 			}
@@ -193,12 +156,24 @@ func (e *Expression) Eval(context any) (any, error) {
 		}
 	}
 
+	debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
+	if debugTrace {
+		fmt.Printf("[TRACE] Expression.Eval: Parens=%v, ParensInOp=%v, mathOn=%v, doubleParen=%v, returnValue type=%T\n",
+			e.Parens, e.ParensInOp, mathOn, doubleParen, returnValue)
+	}
+
 	// Match JavaScript: if (this.parens && this.parensInOp && !mathOn && !doubleParen && (!(returnValue instanceof Dimension)))
 	if e.Parens && e.ParensInOp && !mathOn && !doubleParen {
 		if _, isDimension := SafeTypeAssertion[*Dimension](returnValue); !isDimension {
 			returnValue = NewParen(returnValue)
+			if debugTrace {
+				fmt.Printf("[TRACE] Expression.Eval: wrapped in Paren (ParensInOp case)\n")
+			}
 		}
 	} else if e.Parens && !mathOn && !doubleParen {
+		if debugTrace {
+			fmt.Printf("[TRACE] Expression.Eval: checking if should wrap in Paren (!mathOn case)\n")
+		}
 		// Special case for calc(): preserve parentheses even without ParensInOp
 		// Check if we're in calc context
 		if evalCtx, ok := context.(*Eval); ok {
@@ -217,6 +192,14 @@ func (e *Expression) Eval(context any) (any, error) {
 					}
 				}
 			}
+		}
+	}
+
+	if debugTrace {
+		if dim, ok := returnValue.(*Dimension); ok {
+			fmt.Printf("[TRACE] Expression.Eval: returning Dimension value=%v unit=%v\n", dim.Value, dim.Unit)
+		} else {
+			fmt.Printf("[TRACE] Expression.Eval: returning %T\n", returnValue)
 		}
 	}
 

@@ -74,11 +74,24 @@ func If(context *Context, condition any, trueValue any, falseValue any) any {
 
 	if falseValue != nil {
 		// Evaluate and return false value
+		debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
+		if debugTrace {
+			if evalCtx, ok := evalContext.(*Eval); ok {
+				fmt.Printf("[TRACE] If: about to eval falseValue with ParensStack len=%d\n", len(evalCtx.ParensStack))
+			}
+		}
 		if evaluable, ok := falseValue.(interface{ Eval(any) (any, error) }); ok {
 			result, _ := evaluable.Eval(evalContext)
+			if debugTrace {
+				fmt.Printf("[TRACE] If: falseValue evaluated to %T\n", result)
+			}
 			return result
 		} else if evaluable, ok := falseValue.(interface{ Eval(any) any }); ok {
-			return evaluable.Eval(evalContext)
+			result := evaluable.Eval(evalContext)
+			if debugTrace {
+				fmt.Printf("[TRACE] If: falseValue evaluated to %T\n", result)
+			}
+			return result
 		}
 		return falseValue
 	}

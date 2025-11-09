@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"strings"
 )
 
 // ValueError represents a Less value error
@@ -174,9 +175,5 @@ func (v *Value) ToCSS(context any) string {
 		},
 	}
 	v.GenCSS(context, output)
-	result := ""
-	for _, s := range strs {
-		result += s
-	}
-	return result
+	return strings.Join(strs, "")
 } 

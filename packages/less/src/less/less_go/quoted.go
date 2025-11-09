@@ -190,7 +190,7 @@ func (q *Quoted) Eval(context any) (any, error) {
 						if str, ok := anon.Value.(string); ok {
 							result = str
 						} else if cssable, ok := anon.Value.(interface{ ToCSS(any) string }); ok {
-							result = cssable.ToCSS(nil)
+							result = cssable.ToCSS(make(map[string]any))
 						} else {
 							result = fmt.Sprintf("%v", anon.Value)
 						}
@@ -204,7 +204,7 @@ func (q *Quoted) Eval(context any) (any, error) {
 							if str, ok := anon.Value.(string); ok {
 								result = str
 							} else if cssable, ok := anon.Value.(interface{ ToCSS(any) string }); ok {
-								result = cssable.ToCSS(nil)
+								result = cssable.ToCSS(make(map[string]any))
 							} else {
 								result = fmt.Sprintf("%v", anon.Value)
 							}
@@ -213,23 +213,19 @@ func (q *Quoted) Eval(context any) (any, error) {
 							result = quoted.value
 						} else if expr, ok := evaluated.(*Expression); ok {
 							// Handle Expression results from Value eval
-							// Expression may contain multiple values, take the first one
-							if len(expr.Value) > 0 {
-								if quoted, ok := expr.Value[0].(*Quoted); ok {
-									result = quoted.value
-								} else if cssable, ok := expr.Value[0].(interface{ ToCSS(any) string }); ok {
-									result = cssable.ToCSS(nil)
-								} else {
-									result = fmt.Sprintf("%v", expr.Value[0])
-								}
-							}
+							// Use ToCSS to get the full expression (e.g., "Arial, Verdana, San-Serif")
+							result = expr.ToCSS(make(map[string]any))
+						} else if evalValue, ok := evaluated.(*Value); ok {
+							// Handle Value results (e.g., comma-separated lists like "Arial, Verdana, San-Serif")
+							// Use ToCSS to get the full value list
+							result = evalValue.ToCSS(make(map[string]any))
 						} else if cssable, ok := evaluated.(interface{ ToCSS(any) string }); ok {
-							result = cssable.ToCSS(nil)
+							result = cssable.ToCSS(make(map[string]any))
 						} else {
 							result = fmt.Sprintf("%v", evaluated)
 						}
 					} else if cssable, ok := val.(interface{ ToCSS(any) string }); ok {
-						result = cssable.ToCSS(nil)
+						result = cssable.ToCSS(make(map[string]any))
 					} else {
 						result = fmt.Sprintf("%v", val)
 					}
@@ -244,13 +240,13 @@ func (q *Quoted) Eval(context any) (any, error) {
 		if err != nil {
 			return "", fmt.Errorf("variable @%s is undefined", name)
 		}
-		
+
 		if quoted, ok := result.(*Quoted); ok {
 			return quoted.value, nil
 		}
-		
+
 		if cssable, ok := result.(interface{ ToCSS(any) string }); ok {
-			return cssable.ToCSS(nil), nil
+			return cssable.ToCSS(make(map[string]any)), nil
 		}
 		
 		return fmt.Sprintf("%v", result), nil
@@ -271,7 +267,7 @@ func (q *Quoted) Eval(context any) (any, error) {
 		}
 
 		if cssable, ok := result.(interface{ ToCSS(any) string }); ok {
-			return cssable.ToCSS(nil), nil
+			return cssable.ToCSS(make(map[string]any)), nil
 		}
 
 		return fmt.Sprintf("%v", result), nil

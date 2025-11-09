@@ -167,6 +167,24 @@ func (e *Element) Eval(context any) (any, error) {
 		}
 	}
 
+	// Unwrap Paren nodes that contain simple values (fixes double parentheses in selectors like :nth-child(@{num}))
+	if paren, ok := evaluatedValue.(*Paren); ok && paren != nil {
+		if innerValue := paren.Value; innerValue != nil {
+			// Check if it's a simple value type or a Quoted string - these don't need explicit Paren wrapping in selectors
+			switch v := innerValue.(type) {
+			case *Dimension, *Keyword, *Anonymous, string, int, float64:
+				evaluatedValue = innerValue
+			case *Quoted:
+				// For Quoted nodes, unwrap to the string value if it's escaped (unquoted)
+				if v.GetEscaped() {
+					evaluatedValue = v.GetValue()
+				} else {
+					evaluatedValue = innerValue
+				}
+			}
+		}
+	}
+
 	// Handle potential nil Node
 	index := 0
 	if e.Node != nil {
@@ -231,7 +249,7 @@ func (e *Element) ToCSS(context any) string {
 	}
 
 	// If value is a Paren, set firstSelector to true
-	if paren, ok := value.(*Paren); ok && paren != nil {
+	if _, ok := value.(*Paren); ok {
 		// selector in parens should not be affected by outer selector
 		// flags (breaks only interpolated selectors - see #1973)
 		ctx["firstSelector"] = true

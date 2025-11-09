@@ -177,7 +177,20 @@ func (a *AtRule) GenCSS(context any, output *CSSOutput) {
 	if a.Rules != nil {
 		a.OutputRuleset(context, output, a.Rules)
 	} else {
-		output.Add(";", nil, nil)
+		// Check if compress mode is enabled
+		compress := false
+		if ctx, ok := context.(map[string]any); ok {
+			if c, ok := ctx["compress"].(bool); ok {
+				compress = c
+			}
+		}
+
+		// Add semicolon and newline (except in compress mode)
+		if compress {
+			output.Add(";", nil, nil)
+		} else {
+			output.Add(";\n", nil, nil)
+		}
 	}
 }
 

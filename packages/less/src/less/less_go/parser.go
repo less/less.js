@@ -996,15 +996,35 @@ func (p *Parsers) RuleProperty() any {
 
 	p.parser.parserInput.Save()
 
-	// Simple property match first
-	simpleProperty := p.parser.parserInput.Re(regexp.MustCompile(`^([_a-zA-Z0-9-]+)\s*:`))
+	// Simple property match first (without colon to allow for comments)
+	simpleProperty := p.parser.parserInput.Re(regexp.MustCompile(`^([_a-zA-Z0-9-]+)`))
 	if simpleProperty != nil {
 		if matches, ok := simpleProperty.([]string); ok && len(matches) > 1 {
-			name = append(name, NewKeyword(matches[1]))
-			p.parser.parserInput.Forget()
-			return name
+			// Skip any comments between property name and colon
+			for {
+				p.parser.parserInput.Save()
+				comment := p.Comment()
+				if comment == nil {
+					p.parser.parserInput.Restore("")
+					break
+				}
+				// Comment consumed, discard it and continue
+				p.parser.parserInput.Forget()
+			}
+
+			// Now check for colon (with optional whitespace)
+			if p.parser.parserInput.Re(regexp.MustCompile(`^\s*:`)) != nil {
+				name = append(name, NewKeyword(matches[1]))
+				p.parser.parserInput.Forget()
+				return name
+			}
+			// No colon found, fall through to complex matching
 		}
 	}
+
+	// Restore for complex matching
+	p.parser.parserInput.Restore("")
+	p.parser.parserInput.Save()
 
 	// Complex property matching function
 	match := func(re *regexp.Regexp) bool {
@@ -1027,6 +1047,20 @@ func (p *Parsers) RuleProperty() any {
 	for {
 		if !match(regexp.MustCompile(`^((?:[\w-]+)|(?:[@$]\{[\w-]+\}))`)) {
 			break
+		}
+	}
+
+	// Skip any comments between property name and colon
+	if len(name) > 1 {
+		for {
+			p.parser.parserInput.Save()
+			comment := p.Comment()
+			if comment == nil {
+				p.parser.parserInput.Restore("")
+				break
+			}
+			// Comment consumed, discard it and continue
+			p.parser.parserInput.Forget()
 		}
 	}
 

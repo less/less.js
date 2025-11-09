@@ -136,6 +136,12 @@ func (r *Ruleset) IsRulesetLike() bool {
 	return true
 }
 
+// IsVisible returns true if the ruleset should be visible in CSS output
+// Rulesets are visible by default unless explicitly hidden
+func (r *Ruleset) IsVisible() bool {
+	return true
+}
+
 // ToCSS converts the ruleset to CSS output (original signature)
 func (r *Ruleset) ToCSS(options map[string]any) (string, error) {
 	var output strings.Builder

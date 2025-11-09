@@ -121,5 +121,13 @@ func (c *Combinator) GenCSS(context any, output *CSSOutput) {
 	} else {
 		spaceOrEmpty = " "
 	}
+
+	// For space combinators (" ") in no-space contexts (like keyframe selectors),
+	// don't output anything. The indentation is already handled by the parent at-rule.
+	// For empty combinators (""), always output nothing.
+	if c.Value == "" || (c.Value == " " && spaceOrEmpty == "") {
+		return
+	}
+
 	output.Add(spaceOrEmpty+c.Value+spaceOrEmpty, nil, nil)
 } 

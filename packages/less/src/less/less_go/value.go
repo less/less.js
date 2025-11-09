@@ -160,4 +160,23 @@ func (v *Value) GenCSS(context any, output *CSSOutput) {
 			}
 		}
 	}
+}
+
+// ToCSS generates CSS string representation
+func (v *Value) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	v.GenCSS(context, output)
+	result := ""
+	for _, s := range strs {
+		result += s
+	}
+	return result
 } 

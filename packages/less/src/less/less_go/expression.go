@@ -269,6 +269,25 @@ func (e *Expression) GenCSS(context any, output *CSSOutput) {
 	}
 }
 
+// ToCSS generates CSS string representation
+func (e *Expression) ToCSS(context any) string {
+	var strs []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			strs = append(strs, fmt.Sprintf("%v", chunk))
+		},
+		IsEmpty: func() bool {
+			return len(strs) == 0
+		},
+	}
+	e.GenCSS(context, output)
+	result := ""
+	for _, s := range strs {
+		result += s
+	}
+	return result
+}
+
 // ThrowAwayComments removes Comment nodes from the value array
 func (e *Expression) ThrowAwayComments() {
 	var filtered []any

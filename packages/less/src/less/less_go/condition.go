@@ -100,10 +100,49 @@ func (c *Condition) EvalBool(context any) bool {
 		b := eval(c.Rvalue)
 
 		// For types that have their own Compare method, call it directly
+		// IMPORTANT: Check Quoted and Anonymous first for "symmetric results"
+		// This matches JavaScript: if either value is Quoted or Anonymous, use their toCSS-based comparison
 		var compareResult int
 
-		// Handle Dimension comparison
-		if dim, ok := a.(*Dimension); ok {
+		// Check if either operand is Quoted or Anonymous (for symmetric results)
+		if quoted, ok := a.(*Quoted); ok {
+			// Handle Quoted comparison (has priority for symmetric results)
+			cmpResult := quoted.Compare(b)
+			if cmpResult == nil {
+				compareResult = 999 // undefined
+			} else {
+				compareResult = *cmpResult
+			}
+		} else if quoted, ok := b.(*Quoted); ok {
+			// b is Quoted, so use -b.compare(a) for symmetry
+			cmpResult := quoted.Compare(a)
+			if cmpResult == nil {
+				compareResult = 999 // undefined
+			} else {
+				compareResult = -*cmpResult // negate for reversed operands
+			}
+		} else if anon, ok := a.(*Anonymous); ok {
+			// Handle Anonymous comparison (has priority for symmetric results)
+			cmpResult := anon.Compare(b)
+			if cmpResult == nil {
+				compareResult = 999 // undefined
+			} else if cmpInt, ok := cmpResult.(int); ok {
+				compareResult = cmpInt
+			} else {
+				compareResult = 999
+			}
+		} else if anon, ok := b.(*Anonymous); ok {
+			// b is Anonymous, so use -b.compare(a) for symmetry
+			cmpResult := anon.Compare(a)
+			if cmpResult == nil {
+				compareResult = 999 // undefined
+			} else if cmpInt, ok := cmpResult.(int); ok {
+				compareResult = -cmpInt // negate for reversed operands
+			} else {
+				compareResult = 999
+			}
+		} else if dim, ok := a.(*Dimension); ok {
+			// Handle Dimension comparison
 			if otherDim, ok := b.(*Dimension); ok {
 				if cmpPtr := dim.Compare(otherDim); cmpPtr != nil {
 					compareResult = *cmpPtr
@@ -117,24 +156,6 @@ func (c *Condition) EvalBool(context any) bool {
 			// Handle Color comparison
 			if otherCol, ok := b.(*Color); ok {
 				compareResult = col.Compare(otherCol)
-			} else {
-				compareResult = 999
-			}
-		} else if quoted, ok := a.(*Quoted); ok {
-			// Handle Quoted comparison
-			cmpResult := quoted.Compare(b)
-			if cmpResult == nil {
-				compareResult = 999 // undefined
-			} else {
-				compareResult = *cmpResult
-			}
-		} else if anon, ok := a.(*Anonymous); ok {
-			// Handle Anonymous comparison
-			cmpResult := anon.Compare(b)
-			if cmpResult == nil {
-				compareResult = 999 // undefined
-			} else if cmpInt, ok := cmpResult.(int); ok {
-				compareResult = cmpInt
 			} else {
 				compareResult = 999
 			}
@@ -208,6 +229,19 @@ func (c *Condition) EvalBool(context any) bool {
 					} else {
 						compareResult = 999
 					}
+				}
+			} else {
+				compareResult = 999
+			}
+		} else if kw, ok := a.(*Keyword); ok {
+			// Handle Keyword comparison
+			// Keywords only support equality checks, not ordering (< or >)
+			// Match JavaScript: a === b ? 0 : undefined
+			if otherKw, ok := b.(*Keyword); ok {
+				if kw.ToCSS(nil) == otherKw.ToCSS(nil) {
+					compareResult = 0
+				} else {
+					compareResult = 999 // undefined - keywords don't have ordering
 				}
 			} else {
 				compareResult = 999

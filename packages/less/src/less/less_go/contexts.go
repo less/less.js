@@ -30,7 +30,7 @@ type Parse struct {
 // NewParse creates a new Parse context with the given options
 func NewParse(options map[string]any) *Parse {
 	p := &Parse{
-		RewriteUrls: RewriteUrlsAll, // Default to ALL for backwards compatibility when not explicitly set
+		RewriteUrls: RewriteUrlsOff, // Default to OFF to match JavaScript default (false)
 	}
 	copyFromOriginal(options, p)
 	if paths, ok := options["paths"].(string); ok {
@@ -76,7 +76,7 @@ func NewEval(options map[string]any, frames []any) *Eval {
 		MathOn:       true,
 		ImportantScope: []map[string]any{},
 		NumPrecision: 8, // Default to 8 like JavaScript
-		RewriteUrls: RewriteUrlsAll, // Default to ALL for backwards compatibility when not explicitly set
+		RewriteUrls: RewriteUrlsOff, // Default to OFF to match JavaScript default (false)
 	}
 	copyFromOriginal(options, e)
 	if paths, ok := options["paths"].(string); ok {
@@ -214,15 +214,13 @@ func (e *Eval) PathRequiresRewrite(path string) bool {
 	if os.Getenv("LESS_GO_DEBUG") == "1" {
 		fmt.Printf("[DEBUG PathRequiresRewrite] path=%s, e.RewriteUrls=%d (Off=0, Local=1, All=2)\n", path, e.RewriteUrls)
 	}
-	// If rewriteUrls is OFF, don't rewrite any paths
-	if e.RewriteUrls == RewriteUrlsOff {
-		return false
-	}
-	// If set to local, only rewrite paths that start with .
+	// Match JavaScript logic: if rewriteUrls === LOCAL, use isPathLocalRelative, otherwise use isPathRelative
+	// Note: In JavaScript, boolean false (default) is not equal to LOCAL, so it uses isPathRelative
+	// This means paths are rewritten even when rewriteUrls is OFF/false!
 	if e.RewriteUrls == RewriteUrlsLocal {
 		return isPathLocalRelative(path)
 	}
-	// For ALL or unset, use isPathRelative
+	// For OFF, ALL, or any other value, use isPathRelative
 	return isPathRelative(path)
 }
 

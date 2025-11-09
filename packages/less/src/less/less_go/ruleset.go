@@ -571,7 +571,9 @@ func (r *Ruleset) Eval(context any) (any, error) {
 
 	// Track media blocks
 	mediaBlockCount := 0
-	if mediaBlocks, ok := ctx["mediaBlocks"].([]any); ok {
+	if evalCtx != nil && evalCtx.MediaBlocks != nil {
+		mediaBlockCount = len(evalCtx.MediaBlocks)
+	} else if mediaBlocks, ok := ctx["mediaBlocks"].([]any); ok {
 		mediaBlockCount = len(mediaBlocks)
 	}
 
@@ -739,10 +741,17 @@ func (r *Ruleset) Eval(context any) (any, error) {
 		ctx["selectors"] = selectors[1:]
 	}
 
-	// Handle media blocks
-	if mediaBlocks, ok := ctx["mediaBlocks"].([]any); ok {
+	// Handle media blocks - check both *Eval and map contexts
+	var mediaBlocks []any
+	if evalCtx != nil && evalCtx.MediaBlocks != nil {
+		mediaBlocks = evalCtx.MediaBlocks
+	} else if mb, ok := ctx["mediaBlocks"].([]any); ok {
+		mediaBlocks = mb
+	}
+
+	if mediaBlocks != nil {
 		for i := mediaBlockCount; i < len(mediaBlocks); i++ {
-			if mb, ok := mediaBlocks[i].(interface{ BubbleSelectors([]any) }); ok {
+			if mb, ok := mediaBlocks[i].(interface{ BubbleSelectors(any) }); ok {
 				mb.BubbleSelectors(selectors)
 			}
 		}

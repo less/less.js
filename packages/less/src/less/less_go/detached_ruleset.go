@@ -88,6 +88,8 @@ func (dr *DetachedRuleset) CallEval(context any) any {
 				InCalc:            ctx.InCalc,
 				MathOn:            ctx.MathOn,
 				DefaultFunc:       ctx.DefaultFunc,
+				MediaBlocks:       ctx.MediaBlocks,
+				MediaPath:         ctx.MediaPath,
 			}
 			evalContext = newEval
 		case map[string]any:
@@ -209,6 +211,8 @@ func evalContextToMap(context any) map[string]any {
 			"pluginManager":     ctx.PluginManager,
 			"importantScope":    ctx.ImportantScope,
 			"rewriteUrls":       ctx.RewriteUrls,
+			"mediaBlocks":       ctx.MediaBlocks,
+			"mediaPath":         ctx.MediaPath,
 		}
 	default:
 		// Fallback for unknown types

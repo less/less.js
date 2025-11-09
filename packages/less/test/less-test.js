@@ -206,6 +206,11 @@ module.exports = function(testFilter) {
                 fail('ERROR: Could not read expected sourcemap file: ' + jsonPath + ' - ' + e.message);
                 return;
             }
+            
+            // Apply doReplacements to the expected sourcemap to handle {path} placeholders
+            // This normalizes absolute paths that differ between environments
+            expectedSourcemap = doReplacements(expectedSourcemap, baseFolder, path.join(baseFolder, name) + '.less');
+            
             if (sourcemap === expectedSourcemap) {
                 // Validate the sourcemap mappings are correct
                 // Find the actual LESS file - it might be in a subdirectory

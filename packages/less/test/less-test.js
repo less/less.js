@@ -209,9 +209,15 @@ module.exports = function(testFilter) {
             
             // Apply doReplacements to the expected sourcemap to handle {path} placeholders
             // This normalizes absolute paths that differ between environments
+            // For sourcemaps, we need to ensure paths use forward slashes (web-compatible)
             expectedSourcemap = doReplacements(expectedSourcemap, baseFolder, path.join(baseFolder, name) + '.less');
+            // Normalize paths in sourcemap JSON to use forward slashes (web-compatible)
+            // Replace any backslashes that might have been introduced by path.join or path operations
+            expectedSourcemap = expectedSourcemap.replace(/\\/g, '/');
+            // Also normalize the actual sourcemap to ensure consistency
+            var normalizedSourcemap = sourcemap.replace(/\\/g, '/');
             
-            if (sourcemap === expectedSourcemap) {
+            if (normalizedSourcemap === expectedSourcemap) {
                 // Validate the sourcemap mappings are correct
                 // Find the actual LESS file - it might be in a subdirectory
                 var nameParts = name.split('/');
@@ -222,7 +228,8 @@ module.exports = function(testFilter) {
                 // Only validate if the LESS file exists
                 if (fs.existsSync(lessFile)) {
                     try {
-                        var validation = validateSourcemapMappings(sourcemap, lessFile, compiledLess);
+                        // Use normalized sourcemap for validation (forward slashes)
+                        var validation = validateSourcemapMappings(normalizedSourcemap, lessFile, compiledLess);
                         if (!validation.valid) {
                             fail('ERROR: Sourcemap validation failed:\n' + validation.errors.join('\n'));
                             return;
@@ -246,7 +253,7 @@ module.exports = function(testFilter) {
                     process.stdout.write(err.stack + '\n');
                 }
             } else {
-                difference('FAIL', expectedSourcemap, sourcemap);
+                difference('FAIL', expectedSourcemap, normalizedSourcemap);
             }
         });
     }

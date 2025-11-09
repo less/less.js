@@ -8,7 +8,7 @@ export default function (environment) {
             if (options.sourceMapFilename) {
                 this._sourceMapFilename = options.sourceMapFilename.replace(/\\/g, '/');
             }
-            this._outputFilename = options.outputFilename;
+            this._outputFilename = options.outputFilename ? options.outputFilename.replace(/\\/g, '/') : options.outputFilename;
             this.sourceMapURL = options.sourceMapURL;
             if (options.sourceMapBasepath) {
                 this._sourceMapBasepath = options.sourceMapBasepath.replace(/\\/g, '/');

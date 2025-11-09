@@ -653,10 +653,11 @@ func (c *Call) preprocessArgs(args []any) []any {
 
 			if len(subNodes) == 1 {
 				// Special handling for parens and division (JavaScript logic)
-				// JavaScript: if (a.parens && a.value[0].op === '/' && !a.value[0].parensInOp)
+				// JavaScript: if (a.parens && a.value[0].op === '/')
+				// See: https://github.com/less/less.js/issues/3616
 				if expr.Parens {
-					if op, ok := subNodes[0].(*Operation); ok && op.Op == "/" && !op.Node.ParensInOp {
-						// Keep the expression with parens for division without parensInOp
+					if op, ok := subNodes[0].(*Operation); ok && op.Op == "/" {
+						// Keep the expression with parens for division
 						processed = append(processed, arg)
 						continue
 					}

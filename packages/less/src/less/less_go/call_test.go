@@ -742,7 +742,7 @@ func TestCallArgumentPreprocessing_JavaScriptConsistency(t *testing.T) {
 			input: []any{
 				&Expression{
 					Node:   NewNode(),
-					Value:  []any{&MockOperation{op: "/", left: "10", right: "2"}},
+					Value:  []any{NewOperation("/", []any{"10", "2"}, false)},
 					Parens: true,
 				},
 			},
@@ -750,7 +750,7 @@ func TestCallArgumentPreprocessing_JavaScriptConsistency(t *testing.T) {
 			expected: []any{
 				&Expression{
 					Node:   NewNode(),
-					Value:  []any{&MockOperation{op: "/", left: "10", right: "2"}},
+					Value:  []any{NewOperation("/", []any{"10", "2"}, false)},
 					Parens: true,
 				},
 			},

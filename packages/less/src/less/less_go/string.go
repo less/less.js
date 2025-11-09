@@ -161,7 +161,7 @@ func Replace(stringArg, pattern, replacement interface{}, flags ...interface{}) 
 	var stringVal string
 	var quote string
 	var escaped bool
-	
+
 	if quotedStr, ok := stringArg.(*Quoted); ok {
 		stringVal = quotedStr.value
 		quote = quotedStr.quote
@@ -170,6 +170,9 @@ func Replace(stringArg, pattern, replacement interface{}, flags ...interface{}) 
 		if strVal, ok := valuer.GetValue().(string); ok {
 			stringVal = strVal
 		}
+	} else if cssable, ok := stringArg.(interface{ ToCSS(interface{}) string }); ok {
+		// Handle Keyword, Anonymous, etc. by calling ToCSS
+		stringVal = cssable.ToCSS(nil)
 	}
 	
 	// Get the pattern
@@ -221,12 +224,17 @@ func Replace(stringArg, pattern, replacement interface{}, flags ...interface{}) 
 	if strings.Contains(flagsStr, "g") {
 		result = regex.ReplaceAllString(stringVal, replacementStr)
 	} else {
-		// Replace only the first occurrence
-		if loc := regex.FindStringIndex(stringVal); loc != nil {
-			result = stringVal[:loc[0]] + replacementStr + stringVal[loc[1]:]
-		} else {
-			result = stringVal
-		}
+		// Replace only the first occurrence, with capture group expansion
+		// Go doesn't have ReplaceString, so use ReplaceAllStringFunc with a counter
+		replaced := false
+		result = regex.ReplaceAllStringFunc(stringVal, func(match string) string {
+			if replaced {
+				return match // Keep subsequent matches unchanged
+			}
+			replaced = true
+			// Expand capture groups manually
+			return regex.ReplaceAllString(match, replacementStr)
+		})
 	}
 	
 	return NewQuoted(quote, result, escaped, 0, nil), nil
@@ -269,9 +277,13 @@ func Format(stringArg interface{}, args ...interface{}) (*Quoted, error) {
 		
 		// Get the value based on placeholder type - matches JS exactly
 		if strings.Contains(placeholder, "s") {
-			// String value - use .value for Quoted types (matches JS: args[i].value)
+			// String value - use .value for Quoted types, otherwise toCSS
+			// Matches JS: args[i].type === 'Quoted' && token.match(/s/i) ? args[i].value : args[i].toCSS()
 			if quotedArg, ok := arg.(*Quoted); ok {
 				value = quotedArg.value
+			} else if cssable, ok := arg.(interface{ ToCSS(interface{}) string }); ok {
+				// For non-Quoted types (Color, Dimension, etc.), use ToCSS
+				value = cssable.ToCSS(nil)
 			} else if valuer, ok := arg.(interface{ GetValue() interface{} }); ok {
 				if strVal, ok := valuer.GetValue().(string); ok {
 					value = strVal

@@ -474,24 +474,40 @@ func ColorARGB(color any) any {
 	return nil
 }
 
-// ColorFunction parses a color from a hex string
+// ColorFunction parses a color from a hex string or keyword
 func ColorFunction(colorStr any) any {
-	if quoted, ok := colorStr.(*Quoted); ok {
-		colorStr = quoted.GetValue()
+	// If it's already a Color, return it with value cleared
+	if c, ok := colorStr.(*Color); ok {
+		result := NewColor(c.RGB, c.Alpha, "")
+		return result
 	}
 
-	if str, ok := colorStr.(string); ok {
-		// Remove quotes if present
-		str = strings.Trim(str, "\"'")
+	// Get the string value
+	var str string
+	if quoted, ok := colorStr.(*Quoted); ok {
+		str = quoted.GetValue()
+	} else if s, ok := colorStr.(string); ok {
+		str = s
+	} else {
+		return nil
+	}
 
-		// Try to parse as hex color
-		if strings.HasPrefix(str, "#") {
-			hexStr := str[1:] // Remove the #
-			// Pass the full hex string (with #) as the Value so it's preserved in output
-			// Use a sentinel alpha value (-1) to indicate "don't override alpha from hex"
-			c := NewColor(hexStr, -1, str)
-			return c
-		}
+	// Remove quotes if present
+	str = strings.Trim(str, "\"'")
+
+	// Try to parse as hex color
+	if strings.HasPrefix(str, "#") {
+		hexStr := str[1:] // Remove the #
+		// Pass the full hex string (with #) as the Value so it's preserved in output
+		// Use a sentinel alpha value (-1) to indicate "don't override alpha from hex"
+		c := NewColor(hexStr, -1, str)
+		return c
+	}
+
+	// Try to parse as keyword
+	if c := FromKeyword(str); c != nil {
+		c.Value = ""
+		return c
 	}
 
 	return nil
@@ -599,9 +615,17 @@ func ColorLuma(color any) any {
 	return nil
 }
 
-// ColorLuminance is an alias for luma
+// ColorLuminance calculates the luminance value using the standard formula
 func ColorLuminance(color any) any {
-	return ColorLuma(color)
+	if c, ok := color.(*Color); ok {
+		// Standard luminance formula: 0.2126*R + 0.7152*G + 0.0722*B
+		luminance := (0.2126 * c.RGB[0] / 255) +
+			(0.7152 * c.RGB[1] / 255) +
+			(0.0722 * c.RGB[2] / 255)
+		// Convert to percentage
+		return makeDimension(luminance*100, NewUnit([]string{"%"}, nil, ""))
+	}
+	return nil
 }
 
 // Color manipulation functions
@@ -623,10 +647,12 @@ func ColorSaturate(color, amount any, method ...any) any {
 		}
 		
 		hsl := c.ToHSL()
-		if methodStr == "absolute" {
-			hsl.S = hsl.S + amountVal
-		} else {
+		if methodStr == "relative" {
+			// Relative: multiply by current value
 			hsl.S = hsl.S + hsl.S*amountVal
+		} else {
+			// Default is absolute: add to current value
+			hsl.S = hsl.S + amountVal
 		}
 		hsl.S = clampUnit(hsl.S)
 		
@@ -652,10 +678,12 @@ func ColorDesaturate(color, amount any, method ...any) any {
 		}
 		
 		hsl := c.ToHSL()
-		if methodStr == "absolute" {
-			hsl.S = hsl.S - amountVal
-		} else {
+		if methodStr == "relative" {
+			// Relative: multiply by current value
 			hsl.S = hsl.S - hsl.S*amountVal
+		} else {
+			// Default is absolute: subtract from current value
+			hsl.S = hsl.S - amountVal
 		}
 		hsl.S = clampUnit(hsl.S)
 		
@@ -741,10 +769,12 @@ func ColorFadeIn(color, amount any, method ...any) any {
 		}
 		
 		alpha := c.Alpha
-		if methodStr == "absolute" {
-			alpha = alpha + amountVal
-		} else {
+		if methodStr == "relative" {
+			// Relative: multiply by current value
 			alpha = alpha + alpha*amountVal
+		} else {
+			// Default is absolute: add to current value
+			alpha = alpha + amountVal
 		}
 		alpha = clampUnit(alpha)
 		
@@ -770,10 +800,12 @@ func ColorFadeOut(color, amount any, method ...any) any {
 		}
 		
 		alpha := c.Alpha
-		if methodStr == "absolute" {
-			alpha = alpha - amountVal
-		} else {
+		if methodStr == "relative" {
+			// Relative: multiply by current value
 			alpha = alpha - alpha*amountVal
+		} else {
+			// Default is absolute: subtract from current value
+			alpha = alpha - amountVal
 		}
 		alpha = clampUnit(alpha)
 		
@@ -878,11 +910,11 @@ func ColorContrast(color, dark, light, threshold any) any {
 	if !ok {
 		return nil
 	}
-	
+
 	// Default colors
 	lightColor := NewColor([]float64{255, 255, 255}, 1.0, "")
 	darkColor := NewColor([]float64{0, 0, 0}, 1.0, "")
-	
+
 	if light != nil {
 		if lc, ok := light.(*Color); ok {
 			lightColor = lc
@@ -893,7 +925,13 @@ func ColorContrast(color, dark, light, threshold any) any {
 			darkColor = dc
 		}
 	}
-	
+
+	// Figure out which is actually light and dark (auto-swap if needed)
+	// This matches JavaScript behavior
+	if darkColor.Luma() > lightColor.Luma() {
+		darkColor, lightColor = lightColor, darkColor
+	}
+
 	// Default threshold
 	t := 0.43
 	if threshold != nil {
@@ -901,7 +939,7 @@ func ColorContrast(color, dark, light, threshold any) any {
 			t = tVal
 		}
 	}
-	
+
 	// Compare luma
 	if c.Luma() < t {
 		return lightColor
@@ -1073,25 +1111,60 @@ func (w *ColorFunctionWrapper) Call(args ...any) (any, error) {
 		}
 		return nil, fmt.Errorf("function %s expects 1 argument, got %d", w.name, len(args))
 	case "saturate", "desaturate", "lighten", "darken", "spin":
-		if len(args) == 1 || len(args) == 2 {
+		if len(args) >= 1 && len(args) <= 3 {
 			// These functions have variadic signature for the optional method parameter
 			if fn, ok := w.fn.(func(any, any, ...any) any); ok {
 				var amount any
-				if len(args) == 2 {
+				var method []any
+				if len(args) >= 2 {
 					amount = args[1]
 				}
-				return fn(args[0], amount), nil
+				if len(args) >= 3 {
+					// Pass the third argument as the method parameter
+					// Need to extract the value if it's a Keyword
+					methodArg := args[2]
+					if keyword, ok := methodArg.(*Keyword); ok {
+						method = []any{keyword.value}
+					} else if quoted, ok := methodArg.(*Quoted); ok {
+						method = []any{quoted.value}
+					} else {
+						method = []any{methodArg}
+					}
+				}
+				return fn(args[0], amount, method...), nil
 			} else if fn, ok := w.fn.(func(any, any) any); ok {
 				// Fallback to non-variadic signature
 				var amount any
-				if len(args) == 2 {
+				if len(args) >= 2 {
 					amount = args[1]
 				}
 				return fn(args[0], amount), nil
 			}
 		}
-		return nil, fmt.Errorf("function %s expects 1 or 2 arguments, got %d", w.name, len(args))
-	case "fadein", "fadeout", "fade":
+		return nil, fmt.Errorf("function %s expects 1-3 arguments, got %d", w.name, len(args))
+	case "fadein", "fadeout":
+		if len(args) >= 2 && len(args) <= 3 {
+			if fn, ok := w.fn.(func(any, any, ...any) any); ok {
+				var method []any
+				if len(args) >= 3 {
+					// Pass the third argument as the method parameter
+					methodArg := args[2]
+					if keyword, ok := methodArg.(*Keyword); ok {
+						method = []any{keyword.value}
+					} else if quoted, ok := methodArg.(*Quoted); ok {
+						method = []any{quoted.value}
+					} else {
+						method = []any{methodArg}
+					}
+				}
+				return fn(args[0], args[1], method...), nil
+			} else if fn, ok := w.fn.(func(any, any) any); ok {
+				// Fallback to non-variadic signature
+				return fn(args[0], args[1]), nil
+			}
+		}
+		return nil, fmt.Errorf("function %s expects 2-3 arguments, got %d", w.name, len(args))
+	case "fade":
 		if len(args) == 2 {
 			if fn, ok := w.fn.(func(any, any) any); ok {
 				return fn(args[0], args[1]), nil

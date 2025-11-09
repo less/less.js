@@ -142,9 +142,8 @@ func DataURI(context map[string]any, mimetypeNode, filePathNode any) any {
 		}
 		buf = encodeBase64(buf)
 	} else {
-		// URL encode the content to match JavaScript's encodeURIComponent
-		// JavaScript uses %20 for spaces, while url.QueryEscape uses +
-		buf = strings.ReplaceAll(url.QueryEscape(buf), "+", "%20")
+		// URL encode to match JavaScript's encodeURIComponent exactly
+		buf = encodeURIComponent(buf)
 	}
 	
 	// Create data URI
@@ -480,4 +479,29 @@ func getCharset(mimeType string) string {
 // encodeBase64 encodes a string to base64
 func encodeBase64(data string) string {
 	return base64.StdEncoding.EncodeToString([]byte(data))
+}
+
+// encodeURIComponent encodes a string to match JavaScript's encodeURIComponent
+// JavaScript's encodeURIComponent does NOT encode: A-Z a-z 0-9 - _ . ! ~ * ' ( )
+// This differs from Go's url.QueryEscape which:
+//   - Uses + for spaces (we need %20)
+//   - Encodes ! * ' ( ) (JavaScript doesn't)
+func encodeURIComponent(s string) string {
+	// Start with QueryEscape which handles most characters correctly
+	encoded := url.QueryEscape(s)
+
+	// Fix space encoding: JavaScript uses %20, not +
+	encoded = strings.ReplaceAll(encoded, "+", "%20")
+
+	// Unescape characters that JavaScript's encodeURIComponent leaves unencoded
+	encoded = strings.ReplaceAll(encoded, "%21", "!") // !
+	encoded = strings.ReplaceAll(encoded, "%2A", "*") // *
+	encoded = strings.ReplaceAll(encoded, "%27", "'") // '
+	encoded = strings.ReplaceAll(encoded, "%28", "(") // (
+	encoded = strings.ReplaceAll(encoded, "%29", ")") // )
+
+	// Note: url.QueryEscape already leaves these unencoded: - _ . ~
+	// which matches JavaScript's behavior
+
+	return encoded
 }

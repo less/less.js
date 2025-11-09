@@ -344,18 +344,37 @@ func (i *Import) Eval(context any) (any, error) {
 	if i.getBoolOption("reference") || i.BlocksVisibility() {
 		if resultSlice, ok := result.([]any); ok {
 			for _, node := range resultSlice {
-				if nodeWithVisibility, ok := node.(interface{ AddVisibilityBlock() }); ok {
-					nodeWithVisibility.AddVisibilityBlock()
-				}
+				addVisibilityBlockRecursive(node)
 			}
 		} else {
-			if nodeWithVisibility, ok := result.(interface{ AddVisibilityBlock() }); ok {
-				nodeWithVisibility.AddVisibilityBlock()
-			}
+			addVisibilityBlockRecursive(result)
 		}
 	}
 
 	return result, nil
+}
+
+// addVisibilityBlockRecursive adds visibility blocks to a node and all descendants
+// This ensures that all nodes from a reference import are marked as invisible by default
+func addVisibilityBlockRecursive(node any) {
+	if node == nil {
+		return
+	}
+
+	// Add visibility block to this node
+	if nodeWithVisibility, ok := node.(interface{ AddVisibilityBlock() }); ok {
+		nodeWithVisibility.AddVisibilityBlock()
+	}
+
+	// Recursively add to all nested nodes
+	// This is necessary because Media/AtRule nodes contain wrapper Rulesets
+	// which in turn contain the actual content nodes
+	if nodeWithRules, ok := node.(interface{ GetRules() []any }); ok {
+		rules := nodeWithRules.GetRules()
+		for _, rule := range rules {
+			addVisibilityBlockRecursive(rule)
+		}
+	}
 }
 
 // DoEval performs the actual evaluation logic

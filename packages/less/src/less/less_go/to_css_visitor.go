@@ -155,19 +155,12 @@ func (u *CSSVisitorUtils) ResolveVisibility(node any) any {
 				return nil
 			}
 
-			// Only mark as visible if it doesn't block visibility (i.e., not from a reference import)
-			// Reference imports should remain hidden even if they have visible children (from mixin calls/extends)
-			blocksVis := false
-			if blocksNode, hasBlocks := node.(interface{ BlocksVisibility() bool }); hasBlocks {
-				blocksVis = blocksNode.BlocksVisibility()
+			// Match JavaScript: node.ensureVisibility(); node.removeVisibilityBlock();
+			// When a node from a reference import has visible children (e.g., from mixin calls/extends),
+			// we make the node visible and remove the visibility block so it outputs
+			if ensureVisNode, hasEnsure := node.(interface{ EnsureVisibility() }); hasEnsure {
+				ensureVisNode.EnsureVisibility()
 			}
-
-			if !blocksVis {
-				if ensureVisNode, hasEnsure := node.(interface{ EnsureVisibility() }); hasEnsure {
-					ensureVisNode.EnsureVisibility()
-				}
-			}
-
 			if removeVisNode, hasRemove := node.(interface{ RemoveVisibilityBlock() }); hasRemove {
 				removeVisNode.RemoveVisibilityBlock()
 			}

@@ -88,6 +88,7 @@ module.exports = function(testFilter) {
     function validateSourcemapMappings(sourcemap, lessFile, compiledCSS) {
         // Validate sourcemap mappings using SourceMapConsumer
         var SourceMapConsumer = require('source-map').SourceMapConsumer;
+        // sourcemap can be either a string or already parsed object
         var sourceMapObj = typeof sourcemap === 'string' ? JSON.parse(sourcemap) : sourcemap;
         var consumer = new SourceMapConsumer(sourceMapObj);
         
@@ -128,9 +129,14 @@ module.exports = function(testFilter) {
                 if (mapping.line && mapping.line > 0) {
                     // If we can find the source file, validate the line exists
                     var sourceIndex = sourceMapObj.sources.indexOf(mapping.source);
-                    if (sourceIndex >= 0 && sourceMapObj.sourcesContent && sourceMapObj.sourcesContent[sourceIndex]) {
+                    if (sourceIndex >= 0 && sourceMapObj.sourcesContent && sourceMapObj.sourcesContent[sourceIndex] !== undefined && sourceMapObj.sourcesContent[sourceIndex] !== null) {
                         var sourceContent = sourceMapObj.sourcesContent[sourceIndex];
-                        var sourceLines = sourceContent.split('\n');
+                        // Ensure sourceContent is a string (it should be, but be defensive)
+                        if (typeof sourceContent !== 'string') {
+                            sourceContent = String(sourceContent);
+                        }
+                        // Split by newline - handle both \n and \r\n
+                        var sourceLines = sourceContent.split(/\r?\n/);
                         if (mapping.line > sourceLines.length) {
                             errors.push('Line ' + cssLine + ': mapped to line ' + mapping.line + ' in "' + mapping.source + '" but source only has ' + sourceLines.length + ' lines');
                         }
@@ -209,15 +215,34 @@ module.exports = function(testFilter) {
             
             // Apply doReplacements to the expected sourcemap to handle {path} placeholders
             // This normalizes absolute paths that differ between environments
-            // For sourcemaps, we need to ensure paths use forward slashes (web-compatible)
             expectedSourcemap = doReplacements(expectedSourcemap, baseFolder, path.join(baseFolder, name) + '.less');
-            // Normalize paths in sourcemap JSON to use forward slashes (web-compatible)
-            // Replace any backslashes that might have been introduced by path.join or path operations
-            expectedSourcemap = expectedSourcemap.replace(/\\/g, '/');
-            // Also normalize the actual sourcemap to ensure consistency
-            var normalizedSourcemap = sourcemap.replace(/\\/g, '/');
             
-            if (normalizedSourcemap === expectedSourcemap) {
+            // Normalize paths in sourcemap JSON to use forward slashes (web-compatible)
+            // We need to parse the JSON, normalize the file property, then stringify for comparison
+            // This avoids breaking escape sequences like \n in the JSON string
+            function normalizeSourcemapPaths(sm) {
+                try {
+                    var parsed = typeof sm === 'string' ? JSON.parse(sm) : sm;
+                    if (parsed.file) {
+                        parsed.file = parsed.file.replace(/\\/g, '/');
+                    }
+                    // Also normalize paths in sources array
+                    if (parsed.sources && Array.isArray(parsed.sources)) {
+                        parsed.sources = parsed.sources.map(function(src) {
+                            return src.replace(/\\/g, '/');
+                        });
+                    }
+                    return JSON.stringify(parsed, null, 0);
+                } catch (parseErr) {
+                    // If parsing fails, return original (shouldn't happen)
+                    return sm;
+                }
+            }
+            
+            var normalizedSourcemap = normalizeSourcemapPaths(sourcemap);
+            var normalizedExpected = normalizeSourcemapPaths(expectedSourcemap);
+            
+            if (normalizedSourcemap === normalizedExpected) {
                 // Validate the sourcemap mappings are correct
                 // Find the actual LESS file - it might be in a subdirectory
                 var nameParts = name.split('/');
@@ -228,8 +253,10 @@ module.exports = function(testFilter) {
                 // Only validate if the LESS file exists
                 if (fs.existsSync(lessFile)) {
                     try {
-                        // Use normalized sourcemap for validation (forward slashes)
-                        var validation = validateSourcemapMappings(normalizedSourcemap, lessFile, compiledLess);
+                        // Parse the sourcemap once for validation (avoid re-parsing)
+                        // Use the original sourcemap string, not the normalized one
+                        var sourceMapObjForValidation = typeof sourcemap === 'string' ? JSON.parse(sourcemap) : sourcemap;
+                        var validation = validateSourcemapMappings(sourceMapObjForValidation, lessFile, compiledLess);
                         if (!validation.valid) {
                             fail('ERROR: Sourcemap validation failed:\n' + validation.errors.join('\n'));
                             return;
@@ -253,7 +280,7 @@ module.exports = function(testFilter) {
                     process.stdout.write(err.stack + '\n');
                 }
             } else {
-                difference('FAIL', expectedSourcemap, normalizedSourcemap);
+                difference('FAIL', normalizedExpected, normalizedSourcemap);
             }
         });
     }

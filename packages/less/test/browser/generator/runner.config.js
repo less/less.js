@@ -20,7 +20,9 @@ module.exports = {
             `!${testsUnitFolder}/javascript/javascript.less`,
             `!${testsUnitFolder}/urls/urls.less`,
             `!${testsUnitFolder}/empty/empty.less`,
-            `!${testsUnitFolder}/color-functions/operations.less` // conflicts with operations/operations.less
+            `!${testsUnitFolder}/color-functions/operations.less`, // conflicts with operations/operations.less
+            // Exclude debug line numbers tests - these are Node.js only (dumpLineNumbers is deprecated)
+            `!${testsConfigFolder}/debug/**/*.less`
         ],
         options: {
             helpers: 'test/browser/runner-main-options.js',

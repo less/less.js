@@ -691,6 +691,10 @@ func (md *MixinDefinition) MatchCondition(args []any, context any) bool {
 		*newEvalCtx = *evalCtx
 		newEvalCtx.Frames = mixinFrames
 		mixinEnv = newEvalCtx
+		debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
+		if debugTrace {
+			fmt.Printf("[TRACE] MixinDefinition.Eval: cloned Eval context, MathOn=%v\n", newEvalCtx.MathOn)
+		}
 	} else {
 		// Map context - copy properties
 		mixinEnvMap := make(map[string]any)

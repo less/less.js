@@ -393,8 +393,18 @@ func copyFromOriginal(original map[string]any, destination any) {
 		if compress, ok := original["compress"].(bool); ok {
 			d.Compress = compress
 		}
+		debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
 		if math, ok := original["math"].(MathType); ok {
 			d.Math = math
+			// When Math mode is set, enable MathOn unless explicitly disabled
+			if mathOn, hasMathOn := original["mathOn"].(bool); hasMathOn {
+				d.MathOn = mathOn
+			} else {
+				d.MathOn = true
+			}
+			if debugTrace {
+				fmt.Printf("[TRACE] copyFromOriginal: MathType case, Math=%d, MathOn=%v\n", d.Math, d.MathOn)
+			}
 		} else if mathStr, ok := original["math"].(string); ok {
 			// Convert string values to MathType enum
 			switch mathStr {
@@ -405,8 +415,27 @@ func copyFromOriginal(original map[string]any, destination any) {
 			case "parens", "strict":
 				d.Math = MathParens
 			}
+			// When Math mode is set, enable MathOn unless explicitly disabled
+			if mathOn, hasMathOn := original["mathOn"].(bool); hasMathOn {
+				d.MathOn = mathOn
+			} else {
+				d.MathOn = true
+			}
+			debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
+			if debugTrace {
+				fmt.Printf("[TRACE] copyFromOriginal: set Math=%d, MathOn=%v\n", d.Math, d.MathOn)
+			}
 		} else if mathInt, ok := original["math"].(int); ok {
 			d.Math = MathType(mathInt)
+			// When Math mode is set, enable MathOn unless explicitly disabled
+			if mathOn, hasMathOn := original["mathOn"].(bool); hasMathOn {
+				d.MathOn = mathOn
+			} else {
+				d.MathOn = true
+			}
+		} else if mathOn, ok := original["mathOn"].(bool); ok {
+			// If only mathOn is specified without math mode, just set it
+			d.MathOn = mathOn
 		}
 		if strictUnits, ok := original["strictUnits"].(bool); ok {
 			d.StrictUnits = strictUnits

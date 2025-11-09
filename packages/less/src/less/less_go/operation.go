@@ -1,6 +1,8 @@
 package less_go
 
 import (
+	"fmt"
+	"os"
 	"reflect"
 	"strings"
 )
@@ -98,8 +100,12 @@ func (o *Operation) Eval(context any) (any, error) {
 	// Match JavaScript: if (context.isMathOn(this.op))
 	mathOn := false
 	// First try the proper Eval context
+	debugTrace := os.Getenv("LESS_GO_TRACE") == "1"
 	if evalCtx, ok := context.(*Eval); ok {
 		mathOn = evalCtx.IsMathOnWithOp(o.Op)
+		if debugTrace {
+			fmt.Printf("[TRACE] Operation.Eval: op=%s, mathOn=%v, ParensStack len=%d\n", o.Op, mathOn, len(evalCtx.ParensStack))
+		}
 	} else if ctx, ok := context.(map[string]any); ok {
 		// Fallback to map-based context for compatibility
 		if mathOnFunc, ok := ctx["isMathOn"].(func(string) bool); ok {

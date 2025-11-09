@@ -632,9 +632,9 @@ func (c *Call) preprocessArgs(args []any) []any {
 	if args == nil {
 		return []any{}
 	}
-	
+
 	processed := make([]any, 0, len(args))
-	
+
 	for _, arg := range args {
 		// Filter out comments (JavaScript uses commentFilter)
 		if c.isComment(arg) {
@@ -650,12 +650,13 @@ func (c *Call) preprocessArgs(args []any) []any {
 					subNodes = append(subNodes, subNode)
 				}
 			}
-			
+
 			if len(subNodes) == 1 {
 				// Special handling for parens and division (JavaScript logic)
+				// JavaScript: if (a.parens && a.value[0].op === '/' && !a.value[0].parensInOp)
 				if expr.Parens {
-					if op, ok := subNodes[0].(interface{ GetOp() string }); ok && op.GetOp() == "/" {
-						// Keep the expression with parens for division
+					if op, ok := subNodes[0].(*Operation); ok && op.Op == "/" && !op.Node.ParensInOp {
+						// Keep the expression with parens for division without parensInOp
 						processed = append(processed, arg)
 						continue
 					}

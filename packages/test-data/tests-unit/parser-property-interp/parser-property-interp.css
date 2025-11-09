@@ -1,0 +1,9 @@
+.test {
+  prop-name: color;
+  my: background;
+  value: width;
+  color: red;
+  border-color-width: 2px;
+  *-z-color: 1px dashed blue;
+  background-color-width: green;
+}

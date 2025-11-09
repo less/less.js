@@ -124,12 +124,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
         const parser = parserInput;
 
         try {
-            parser.start(str, false, function fail(msg, index) {
-                callback({
-                    message: msg,
-                    index: index + currentIndex
-                });
-            });
+            parser.start(str);
             for (let x = 0, p; (p = parseList[x]); x++) {
                 result = parsers[p]();
                 returnNodes.push(result || null);
@@ -209,14 +204,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             // with the `root` property set to true, so no `{}` are
             // output. The callback is called when the input is parsed.
             try {
-                parserInput.start(str, context.chunkInput, function fail(msg, index) {
-                    throw new LessError({
-                        index,
-                        type: 'Parse',
-                        message: msg,
-                        filename: fileInfo.filename
-                    }, imports);
-                });
+                parserInput.start(str);
 
                 tree.Node.prototype.parse = this;
                 root = new tree.Ruleset(null, this.parsers.primary());

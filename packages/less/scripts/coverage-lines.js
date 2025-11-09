@@ -203,5 +203,5 @@ const jsonOutput = {
 };
 
 fs.writeFileSync(jsonOutputPath, JSON.stringify(jsonOutput, null, 2), 'utf8');
-console.log(`\n📄 Uncovered lines data written to: coverage/uncovered-lines.json\n`);
+console.log('\n📄 Uncovered lines data written to: coverage/uncovered-lines.json\n');
 

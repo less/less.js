@@ -215,6 +215,15 @@ module.exports = function(testFilter) {
             
             // Apply doReplacements to the expected sourcemap to handle {path} placeholders
             // This normalizes absolute paths that differ between environments
+            // For sourcemaps, we need to ensure {path} uses forward slashes to avoid breaking JSON
+            // (backslashes in JSON strings need escaping, and sourcemaps should use forward slashes anyway)
+            var replacementPath = path.join(path.dirname(path.join(baseFolder, name) + '.less'), '/');
+            // Normalize to forward slashes for sourcemap JSON (web-compatible)
+            replacementPath = replacementPath.replace(/\\/g, '/');
+            // Replace {path} with normalized forward-slash path BEFORE calling doReplacements
+            // This ensures the JSON is always valid and uses web-compatible paths
+            expectedSourcemap = expectedSourcemap.replace(/\{path\}/g, replacementPath);
+            // Also handle other placeholders that might be in the sourcemap (but {path} is already done)
             expectedSourcemap = doReplacements(expectedSourcemap, baseFolder, path.join(baseFolder, name) + '.less');
             
             // Normalize paths in sourcemap JSON to use forward slashes (web-compatible)

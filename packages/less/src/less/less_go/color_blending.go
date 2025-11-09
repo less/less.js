@@ -170,7 +170,40 @@ func GetColorBlendingFunctions() map[string]any {
 	}
 }
 
+// Wrapper functions that convert any to *Color for blend functions
+func wrapBlendFunc(fn func(*Color, *Color) *Color) func(any, any) any {
+	return func(color1, color2 any) any {
+		// Convert first color
+		c1 := toColor(color1)
+		if c1 == nil {
+			return nil
+		}
+
+		// Convert second color
+		c2 := toColor(color2)
+		if c2 == nil {
+			return nil
+		}
+
+		return fn(c1, c2)
+	}
+}
+
 // GetWrappedColorBlendingFunctions returns color blending functions for registry
+// These need to be wrapped to handle type conversion from any to *Color
 func GetWrappedColorBlendingFunctions() map[string]interface{} {
-	return GetColorBlendingFunctions()
+	// Get the raw blend functions
+	blendFuncs := GetColorBlendingFunctions()
+
+	// Wrap each blend function to handle any -> *Color conversion
+	wrapped := make(map[string]interface{})
+	for name, fn := range blendFuncs {
+		if blendFn, ok := fn.(func(*Color, *Color) *Color); ok {
+			wrapped[name] = &ColorFunctionWrapper{
+				name: name,
+				fn:   wrapBlendFunc(blendFn),
+			}
+		}
+	}
+	return wrapped
 }

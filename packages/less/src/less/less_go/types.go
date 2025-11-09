@@ -155,6 +155,9 @@ func (tf *TypesFunctions) isunit(n any, unit any) (*Keyword, error) {
 		}
 	case *Quoted:
 		unitStr = u.value
+	case *Keyword:
+		// Handle keyword arguments (e.g., isunit(32ex, ex))
+		unitStr = u.value
 	default:
 		return nil, fmt.Errorf("Argument: Second argument to isunit should be a unit or a string.")
 	}

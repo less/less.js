@@ -1634,7 +1634,9 @@ func (e *EntityParsers) Dimension() any {
 		return nil
 	}
 
-	value := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^([+-]?\d*\.?\d+)(%|[a-z_]+)?`))
+	// Match JavaScript: /^([+-]?\d*\.?\d+)(%|[a-z_]+)?/i
+	// The /i flag makes it case-insensitive, so we use [a-zA-Z_] in Go
+	value := e.parsers.parser.parserInput.Re(regexp.MustCompile(`^([+-]?\d*\.?\d+)(%|[a-zA-Z_]+)?`))
 	if value != nil {
 		matches := value.([]string)
 		var unit string

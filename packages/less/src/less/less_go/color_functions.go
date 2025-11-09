@@ -752,66 +752,98 @@ func ColorDarken(color, amount any, method ...any) any {
 	return nil
 }
 
+// toColor converts various color representations to *Color
+// Handles Color, Keyword (e.g., "red", "blue"), Quoted, and string types
+func toColor(input any) *Color {
+	// Already a Color
+	if c, ok := input.(*Color); ok {
+		return c
+	}
+
+	// Keyword (e.g., "red", "blue")
+	if kw, ok := input.(*Keyword); ok {
+		return FromKeyword(kw.value)
+	}
+
+	// Quoted string
+	if q, ok := input.(*Quoted); ok {
+		str := q.GetValue()
+		str = strings.Trim(str, "\"'")
+		return FromKeyword(str)
+	}
+
+	// Plain string
+	if s, ok := input.(string); ok {
+		return FromKeyword(s)
+	}
+
+	return nil
+}
+
 // ColorFadeIn increases opacity
 func ColorFadeIn(color, amount any, method ...any) any {
-	if c, ok := color.(*Color); ok {
-		amountVal, err := number(amount)
-		if err != nil {
-			return nil
-		}
-		
-		// Default to relative method
-		var methodStr string
-		if len(method) > 0 {
-			if s, ok := method[0].(string); ok {
-				methodStr = s
-			}
-		}
-		
-		alpha := c.Alpha
-		if methodStr == "relative" {
-			// Relative: multiply by current value
-			alpha = alpha + alpha*amountVal
-		} else {
-			// Default is absolute: add to current value
-			alpha = alpha + amountVal
-		}
-		alpha = clampUnit(alpha)
-		
-		return NewColor(c.RGB, alpha, c.Value)
+	c := toColor(color)
+	if c == nil {
+		return nil
 	}
-	return nil
+
+	amountVal, err := number(amount)
+	if err != nil {
+		return nil
+	}
+
+	// Default to relative method
+	var methodStr string
+	if len(method) > 0 {
+		if s, ok := method[0].(string); ok {
+			methodStr = s
+		}
+	}
+
+	alpha := c.Alpha
+	if methodStr == "relative" {
+		// Relative: multiply by current value
+		alpha = alpha + alpha*amountVal
+	} else {
+		// Default is absolute: add to current value
+		alpha = alpha + amountVal
+	}
+	alpha = clampUnit(alpha)
+
+	return NewColor(c.RGB, alpha, "")
 }
 
 // ColorFadeOut decreases opacity
 func ColorFadeOut(color, amount any, method ...any) any {
-	if c, ok := color.(*Color); ok {
-		amountVal, err := number(amount)
-		if err != nil {
-			return nil
-		}
-		
-		// Default to relative method
-		var methodStr string
-		if len(method) > 0 {
-			if s, ok := method[0].(string); ok {
-				methodStr = s
-			}
-		}
-		
-		alpha := c.Alpha
-		if methodStr == "relative" {
-			// Relative: multiply by current value
-			alpha = alpha - alpha*amountVal
-		} else {
-			// Default is absolute: subtract from current value
-			alpha = alpha - amountVal
-		}
-		alpha = clampUnit(alpha)
-		
-		return NewColor(c.RGB, alpha, c.Value)
+	c := toColor(color)
+	if c == nil {
+		return nil
 	}
-	return nil
+
+	amountVal, err := number(amount)
+	if err != nil {
+		return nil
+	}
+
+	// Default to relative method
+	var methodStr string
+	if len(method) > 0 {
+		if s, ok := method[0].(string); ok {
+			methodStr = s
+		}
+	}
+
+	alpha := c.Alpha
+	if methodStr == "relative" {
+		// Relative: multiply by current value
+		alpha = alpha - alpha*amountVal
+	} else {
+		// Default is absolute: subtract from current value
+		alpha = alpha - amountVal
+	}
+	alpha = clampUnit(alpha)
+
+	return NewColor(c.RGB, alpha, "")
 }
 
 // ColorFade sets opacity to a specific value
@@ -856,20 +888,26 @@ func ColorMix(color1, color2, weight any) any {
 	if !ok1 || !ok2 {
 		return nil
 	}
-	
+
 	// Default weight is 50%
-	w := 0.5
+	// Note: Unlike other color functions, mix always treats weight as a percentage
+	// and divides by 100, matching JavaScript behavior
+	p := 0.5
 	if weight != nil {
-		if wVal, err := number(weight); err == nil {
-			w = wVal
+		if dim, ok := weight.(*Dimension); ok {
+			// Always divide by 100, regardless of unit
+			// In LESS, mix() treats all weight values as percentages
+			p = dim.Value / 100.0
+		} else if wVal, err := number(weight); err == nil {
+			// For non-Dimension values, still divide by 100
+			p = wVal / 100.0
 		}
 	}
-	
+
 	// Calculate weight considering alpha
-	p := w
-	w1 := w * 2 - 1
+	w1 := p * 2 - 1
 	a := c1.Alpha - c2.Alpha
-	
+
 	var w2 float64
 	if w1*a == -1 {
 		w2 = w1
@@ -878,16 +916,16 @@ func ColorMix(color1, color2, weight any) any {
 	}
 	w2 = (w2 + 1) / 2
 	w1 = 1 - w2
-	
+
 	// Mix RGB values
 	rgb := make([]float64, 3)
 	for i := 0; i < 3; i++ {
 		rgb[i] = c1.RGB[i]*w2 + c2.RGB[i]*w1
 	}
-	
+
 	// Mix alpha
 	alpha := c1.Alpha*p + c2.Alpha*(1-p)
-	
+
 	return NewColor(rgb, alpha, "")
 }
 

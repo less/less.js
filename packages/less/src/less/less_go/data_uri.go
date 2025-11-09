@@ -142,8 +142,9 @@ func DataURI(context map[string]any, mimetypeNode, filePathNode any) any {
 		}
 		buf = encodeBase64(buf)
 	} else {
-		// URL encode the content
-		buf = url.QueryEscape(buf)
+		// URL encode the content to match JavaScript's encodeURIComponent
+		// JavaScript uses %20 for spaces, while url.QueryEscape uses +
+		buf = strings.ReplaceAll(url.QueryEscape(buf), "+", "%20")
 	}
 	
 	// Create data URI

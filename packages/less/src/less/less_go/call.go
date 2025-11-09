@@ -92,6 +92,17 @@ func (c *DefaultParserFunctionCaller) IsValid() bool {
 // This matches JavaScript behavior where mathOn is set to true (for non-calc functions)
 // but the math mode and parensStack logic is still respected
 func (c *DefaultParserFunctionCaller) createMathEnabledContext() any {
+	// Handle *Eval context (the most common case)
+	if evalCtx, ok := c.context.(*Eval); ok {
+		// Clone the Eval context and enable math
+		newCtx := *evalCtx // Shallow copy
+		newCtx.MathOn = true
+		// Set Math to ALWAYS to ensure operations are evaluated in function arguments
+		// This matches JavaScript behavior where function arguments are always evaluated
+		newCtx.Math = MathAlways
+		return &newCtx
+	}
+
 	// Try to create a map context with math enabled
 	if mapCtx, ok := c.context.(*MapEvalContext); ok {
 		// Clone the context and enable math
@@ -165,6 +176,14 @@ func (c *DefaultParserFunctionCaller) createMathEnabledContext() any {
 
 		return newCtx
 	}
+
+	// For other EvalContext implementations, try to enable math if possible
+	if evalCtx, ok := c.context.(EvalContext); ok && evalCtx != nil {
+		// Can't clone easily, but we can try to modify if it's a mutable reference
+		// For now, just return the original - this is a fallback case
+		return evalCtx
+	}
+
 	// Fallback: return the original context
 	return c.context
 }
@@ -207,19 +226,12 @@ func (c *DefaultParserFunctionCaller) Call(args []any) (any, error) {
 	for i, arg := range args {
 		var evalResult any
 
-		// First try the EvalContext interface
+		// Try all Eval signatures, always using mathCtx for consistent math evaluation
+		// This ensures that function arguments are evaluated with math enabled
 		if evalable, ok := arg.(interface {
-			Eval(EvalContext) (any, error)
-		}); ok {
-			var err error
-			evalResult, err = evalable.Eval(c.context)
-			if err != nil {
-				return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
-			}
-		} else if evalable, ok := arg.(interface {
 			Eval(any) (any, error)
 		}); ok {
-			// Use the math-enabled context for map-based Eval
+			// Use the math-enabled context for all evaluations
 			var err error
 			evalResult, err = evalable.Eval(mathCtx)
 			if err != nil {

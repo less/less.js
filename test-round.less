@@ -1,0 +1,13 @@
+.test {
+  @r: 32.5;
+  rounded-simple: round(@r);
+  rounded-no-paren: round(@r/3);
+  rounded: round((@r/3));
+  rounded-two: round((@r/3), 2);
+  ceil-test: ceil(10.1px);
+  ceil-div: ceil(@r / 3);
+
+  // Direct operation test
+  @test-div: @r / 3;
+  test-var: @test-div;
+}

@@ -1,0 +1,300 @@
+================================================================================
+LESS FUNCTION EVALUATION INVESTIGATION - FINDINGS SUMMARY
+================================================================================
+
+PROBLEM:
+Many LESS functions are not being evaluated during compilation. Functions like:
+- round(@r/3) outputs as-is instead of evaluating to a number
+- percentage(10px / 50) outputs as-is instead of converting to percentage
+- color("plum") outputs as-is instead of converting to hex color
+- lighten(#ff0000, 40%, relative) outputs as-is instead of lighter red
+- Similar issues with isunit(), blend mode functions, etc.
+
+================================================================================
+HOW FUNCTION EVALUATION WORKS (Flow Diagram)
+================================================================================
+
+Call.js (Eval method at line 386)
+    ↓
+Creates FunctionCallerFactory (lines 398-441)
+    ↓ (tries to find registry in: Eval context → frames → map context → DefaultRegistry)
+    ↓
+NewFunctionCaller (line 479)
+    ↓ (gets function via registry.Get(name))
+    ↓
+IsValid() check (line 485) - does function exist?
+    ↓ YES
+DefaultParserFunctionCaller.Call() (line 488)
+    ↓
+Check NeedsEvalArgs() (line 179 in function_caller.go)
+    ↓
+    ├─ If TRUE:  Evaluate arguments → Call function with evaluated args
+    └─ If FALSE: Pass context + unevaluated args to CallCtx()
+    ↓
+Return result (or fall back to unevaluated Call if result is nil)
+
+================================================================================
+REGISTERED FUNCTIONS (All Present in DefaultRegistry)
+================================================================================
+
+MATH FUNCTIONS (math.go):
+✅ ceil, floor, sqrt, abs, tan, sin, cos, atan, asin, acos, round
+
+NUMBER FUNCTIONS (number.go):
+✅ min, max, convert, pi, mod, pow, percentage
+
+COLOR FUNCTIONS (color_functions.go):
+✅ rgb, rgba, hsl, hsla, hsv, hsva, argb, color
+✅ lighten, darken, saturate, desaturate, fadein, fadeout, fade, spin
+✅ mix, greyscale, grayscale, contrast, tint, shade
+✅ red, green, blue, alpha, hue, saturation, lightness, luma, luminance
+
+TYPE FUNCTIONS (types.go):
+✅ isruleset, iscolor, isnumber, isstring, iskeyword, isurl
+✅ ispixel, ispercentage, isem, isunit, unit, get-unit
+
+BOOLEAN FUNCTIONS (boolean.go):
+✅ if, isdefined, boolean
+
+Other function groups also registered: list, string, svg, data-uri, etc.
+
+================================================================================
+FIVE ROOT CAUSES IDENTIFIED
+================================================================================
+
+ROOT CAUSE 1: FunctionRegistry Not in Evaluation Context [SEVERITY: 🔴 HIGH]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: call.go (lines 398-441)
+
+When Call.Eval() executes, it looks for FunctionRegistry in multiple places:
+1. Eval context → FunctionRegistry field
+2. frames list → Ruleset.FunctionRegistry
+3. map context → "functionRegistry" key
+4. FALLBACK: DefaultRegistry
+
+PROBLEM: If none of 1-3 provide a registry, it falls back to DefaultRegistry.
+But DefaultRegistry is a global created at package init that might not be fully
+populated at eval time!
+
+Evidence:
+- createFunctions() in index.go creates a NEW inherited registry
+- This registry is wrapped in DefaultFunctions object
+- But it's unclear if this registry is passed to eval contexts!
+
+FILE LOCATION: /home/user/less.go/packages/less/src/less/less_go/call.go:398-441
+
+ROOT CAUSE 2: Silent Argument Evaluation Failures [SEVERITY: 🔴 HIGH]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: function_caller.go (lines 206-245)
+
+Arguments are evaluated by trying multiple Eval() signatures:
+1. Eval(EvalContext) (any, error) - for types with EvalContext method
+2. Eval(any) (any, error) - for types with generic eval
+3. Eval(any) any - for types with single-return eval
+4. FALLBACK: Use argument as-is if no Eval found
+
+PROBLEM: The fallback case silently passes unevaluated arguments! If an
+argument doesn't implement any Eval method, it's passed as-is without error.
+
+This could mean:
+- Operation nodes not evaluating
+- Dimension nodes not evaluating
+- Unknown node types passed through silently
+
+FILE LOCATION: /home/user/less.go/packages/less/src/less/less_go/function_caller.go:206-245
+
+ROOT CAUSE 3: DefaultRegistry vs Context Registry Mismatch [SEVERITY: 🔴 HIGH]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: index.go (lines 651-748) + function_registry.go (line 70)
+
+Two separate registries:
+1. DefaultRegistry (global) - created at package init, functions added via init()
+2. createFunctions() registry - created during compilation setup
+
+PROBLEM: createFunctions() creates a NEW inherited registry rather than
+populating DefaultRegistry. If eval contexts don't get this new registry,
+functions won't be found!
+
+The flow:
+- Each function file (math.go, number.go, etc.) has init() that calls:
+  - DefaultRegistry.Add("round", wrapper)
+  - DefaultRegistry.Add("ceil", wrapper)
+  - etc.
+- THEN createFunctions() inherits from DefaultRegistry and adds MORE functions
+- But the returned registry from createFunctions() might not be used!
+
+Evidence:
+- createFunctions() returns &DefaultFunctions{registry: registry}
+- But this registry is not necessarily passed to eval contexts
+- Fall back to DefaultRegistry happens at call.go:439
+
+FILE LOCATION:
+- /home/user/less.go/packages/less/src/less/less_go/index.go:651-748
+- /home/user/less.go/packages/less/src/less/less_go/function_registry.go:70
+
+ROOT CAUSE 4: Function Wrapper Type Mismatches [SEVERITY: 🟡 MEDIUM]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: Various wrapper implementations
+
+Different wrappers have different Call() implementations and type assertions:
+- MathFunctionWrapper: Simple delegation (math.go:29-31)
+- NumberFunctionWrapper: Simple delegation (number.go:26-28)
+- ColorFunctionWrapper: Extensive type matching (color_functions.go:975-1172)
+- TypeFunctionDef: Multiple signature matching (types.go:63-99)
+
+PROBLEM: Some wrappers might:
+- Type-assert incorrectly and return nil
+- Not handle optional arguments properly
+- Fail silently when signatures don't match
+
+Example (color_functions.go:975-988):
+    case "rgb":
+        if len(args) == 1 || len(args) == 3 {
+            if fn, ok := w.fn.(func(any, any, any) any); ok {
+                if len(args) == 1 {
+                    return fn(args[0], nil, nil), nil
+                }
+                return fn(args[0], args[1], args[2]), nil
+            }
+        }
+        return nil, fmt.Errorf("function %s expects...", w.name)
+
+If type assertion fails, returns error. But earlier code might suppress it!
+
+FILE LOCATIONS:
+- /home/user/less.go/packages/less/src/less/less_go/color_functions.go:1179-1189
+- /home/user/less.go/packages/less/src/less/less_go/math.go:38-41
+- /home/user/less.go/packages/less/src/less/less_go/types.go:63-99
+
+ROOT CAUSE 5: CSS-Native vs LESS Function Distinction [SEVERITY: 🟡 MEDIUM]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: call.go (lines 485-520) + color_functions.go (lines 1179-1189)
+
+CSS-native functions like rgb(), hsl(), calc(), var() should NOT always be
+evaluated. But the current code doesn't distinguish them properly.
+
+PROBLEM: ColorFunctionWrapper.NeedsEvalArgs() returns false for rgb, rgba,
+hsl, hsla specifically for handling comma-less syntax like rgb(0 128 255 / 50%).
+
+This means these functions DON'T evaluate their arguments! Which might be wrong.
+
+Code:
+    func (w *ColorFunctionWrapper) NeedsEvalArgs() bool {
+        switch w.name {
+        case "rgb", "rgba", "hsl", "hsla":
+            return false  // ⚠️ Arguments NOT evaluated
+        default:
+            return true   // Other color functions evaluated
+        }
+    }
+
+This might cause:
+- rgb() receiving unevaluated Operation nodes instead of evaluated values
+- Variables in rgb() not being substituted
+- Complex expressions in rgb() not being evaluated
+
+FILE LOCATION:
+- /home/user/less.go/packages/less/src/less/less_go/color_functions.go:1179-1189
+- /home/user/less.go/packages/less/src/less/less_go/call.go:485-520
+
+================================================================================
+KEY FILES TO INVESTIGATE
+================================================================================
+
+PRIMARY (Where the issue likely is):
+1. /home/user/less.go/packages/less/src/less/less_go/call.go (lines 398-441, 485-520)
+   → FunctionRegistry lookup and function calling
+
+2. /home/user/less.go/packages/less/src/less/less_go/function_caller.go (lines 173-248)
+   → Argument evaluation and function execution
+
+3. /home/user/less.go/packages/less/src/less/less_go/index.go (lines 651-748)
+   → Function registration setup
+
+SECONDARY (Function implementations):
+4. /home/user/less.go/packages/less/src/less/less_go/color_functions.go (lines 1179-1189)
+   → ColorFunctionWrapper.NeedsEvalArgs() implementation
+
+5. /home/user/less.go/packages/less/src/less/less_go/math.go (lines 38-41)
+   → MathFunctionWrapper.NeedsEvalArgs() implementation
+
+6. /home/user/less.go/packages/less/src/less/less_go/types.go (lines 63-99, 105-107)
+   → TypeFunctionDef.Call() and NeedsEvalArgs() implementations
+
+================================================================================
+JAVASCRIPT COMPARISON
+================================================================================
+
+JavaScript Implementation (Reference for correct behavior):
+1. /home/user/less.go/packages/less/src/less/functions/function-caller.js
+   → Shows how arguments are evaluated (line 22: const evalArgs = this.func.evalArgs)
+   → Shows how functions are called (line 51: return this.func(...args))
+
+2. /home/user/less.go/packages/less/src/less/tree/call.js
+   → Shows complete Call.eval() logic (lines 36-97)
+   → Falls back to unevaluated Call if function not found (line 96)
+
+Key JavaScript behavior:
+- Functions have evalArgs property (default: true, unless explicitly set false)
+- if evalArgs !== false: evaluate arguments before calling function
+- if evalArgs === false: pass context as first argument, don't evaluate
+
+Go equivalent: NeedsEvalArgs() method
+
+================================================================================
+RECOMMENDED NEXT STEPS
+================================================================================
+
+1. ADD TRACING LOGS
+   Add to function_caller.go::Call() method:
+   - Log when function is found/not found
+   - Log evaluated argument values and types
+   - Log function return values
+   - Log any errors
+
+2. TEST WITH MINIMAL CASE
+   Create simple LESS file:
+   ```less
+   .test {
+     value: round(3.5);      // Should compile to: value: 4;
+     color: lighten(#f00, 20%);  // Should compile to lighter red
+   }
+   ```
+   Trace what happens during eval
+
+3. VERIFY FUNCTION REGISTRY
+   Add debug code to print:
+   - All functions in DefaultRegistry at init time
+   - Registry used during eval for specific function calls
+   - Whether createFunctions() registry is being used
+
+4. CHECK CONTEXT FLOW
+   Trace how FunctionRegistry gets to Call.Eval():
+   - What context is passed to Call.Eval()?
+   - Does it have functionRegistry key?
+   - Does it fall back to DefaultRegistry?
+
+5. VERIFY ARGUMENT EVALUATION
+   Add logging in function_caller.go:206-245 to show:
+   - What type each argument is
+   - Whether it implements Eval()
+   - What value it evaluates to
+   - If it falls back to using as-is
+
+================================================================================
+CONCLUSION
+================================================================================
+
+The architecture is sound. All functions ARE registered and the call chain is
+well-designed. The issue is likely ONE of:
+
+1. FunctionRegistry not being passed in eval context (most likely)
+2. Arguments failing to evaluate silently due to missing Eval() methods
+3. DefaultRegistry not being used properly in the inheritance chain
+
+The fix should be surgical - probably just ensuring the right registry is passed
+through the context, or adding proper error handling for argument evaluation.
+
+See detailed analysis: /home/user/less.go/.claude/FUNCTION_EVALUATION_ANALYSIS.md
+
+================================================================================

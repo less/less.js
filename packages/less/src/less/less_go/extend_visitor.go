@@ -2,6 +2,7 @@ package less_go
 
 import (
 	"fmt"
+	"strings"
 )
 
 
@@ -305,6 +306,14 @@ func (pev *ProcessExtendsVisitor) doExtendChaining(extendsList []*Extend, extend
 
 			// find a match in the target extends self selector (the bit before :extend)
 			if len(targetExtend.SelfSelectors) > 0 {
+				// Skip if the target extend's self selector has extends (same logic as VisitRuleset)
+				// This prevents matching against selectors that were created by extending
+				if selectorWithExtends, ok := targetExtend.SelfSelectors[0].(interface{ GetExtendList() []*Extend }); ok {
+					if extendList := selectorWithExtends.GetExtendList(); extendList != nil && len(extendList) > 0 {
+						continue
+					}
+				}
+
 				selectorPath = []any{targetExtend.SelfSelectors[0]}
 				matches = pev.findMatch(extend, selectorPath)
 
@@ -348,7 +357,10 @@ func (pev *ProcessExtendsVisitor) doExtendChaining(extendsList []*Extend, extend
 						// we know that any others will be duplicates in terms of what is added to the css
 						if targetExtend.FirstExtendOnThisSelectorPath {
 							newExtend.FirstExtendOnThisSelectorPath = true
-							targetExtend.Ruleset.Paths = append(targetExtend.Ruleset.Paths, newSelector)
+							// Check if this selector already exists before adding it
+							if !pev.selectorExists(targetExtend.Ruleset.Paths, newSelector) {
+								targetExtend.Ruleset.Paths = append(targetExtend.Ruleset.Paths, newSelector)
+							}
 						}
 					}
 				}
@@ -429,12 +441,15 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 	selectorsToAdd := make([][]any, 0)
 	var selectorPath []any
 
+	// Cache the original paths length to avoid processing paths added during extend chaining
+	// Paths added during chaining have extends and should not be extended again
+	originalPathsLength := len(ruleset.Paths)
 
 	// Track which rulesets have matches so we can mark all their paths as visible
 
 	// look at each selector path in the ruleset, find any extend matches and then copy, find and replace
 	for extendIndex = 0; extendIndex < len(allExtends); extendIndex++ {
-		for pathIndex = 0; pathIndex < len(ruleset.Paths); pathIndex++ {
+		for pathIndex = 0; pathIndex < originalPathsLength; pathIndex++ {
 			selectorPath = ruleset.Paths[pathIndex]
 
 			// extending extends happens initially, before the main pass
@@ -442,12 +457,21 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 				continue
 			}
 
+			// Skip selectors that have extends or that were created during chaining
+			// This prevents over-extension issues like .v.w.v becoming .v.v.w.v.v
 			if len(selectorPath) > 0 {
-				if selectorWithExtends, ok := selectorPath[len(selectorPath)-1].(interface{ GetExtendList() []*Extend }); ok {
-					extendList := selectorWithExtends.GetExtendList()
-					if extendList != nil && len(extendList) > 0 {
-						continue
+				hasExtends := false
+				// Check all elements in the path for extends, not just the last one
+				for _, pathElem := range selectorPath {
+					if selectorWithExtends, ok := pathElem.(interface{ GetExtendList() []*Extend }); ok {
+						if extendList := selectorWithExtends.GetExtendList(); extendList != nil && len(extendList) > 0 {
+							hasExtends = true
+							break
+						}
 					}
+				}
+				if hasExtends {
+					continue
 				}
 			}
 
@@ -483,6 +507,79 @@ func (pev *ProcessExtendsVisitor) VisitRuleset(rulesetNode any, visitArgs *Visit
 		}
 	}
 	ruleset.Paths = append(ruleset.Paths, selectorsToAdd...)
+
+	// Deduplicate paths based on CSS output
+	ruleset.Paths = pev.deduplicatePaths(ruleset.Paths)
+}
+
+// selectorExists checks if a selector path already exists in the paths list
+func (pev *ProcessExtendsVisitor) selectorExists(paths [][]any, newPath []any) bool {
+	newCSS := pev.pathToCSS(newPath)
+	for _, path := range paths {
+		if pev.pathToCSS(path) == newCSS {
+			return true
+		}
+	}
+	return false
+}
+
+// deduplicatePaths removes duplicate selector paths based on their CSS output
+func (pev *ProcessExtendsVisitor) deduplicatePaths(paths [][]any) [][]any {
+	if len(paths) == 0 {
+		return paths
+	}
+
+	// Use a map to track CSS strings we've seen
+	seen := make(map[string]bool)
+	unique := make([][]any, 0, len(paths))
+
+	for _, path := range paths {
+		// Generate CSS for this path
+		css := pev.pathToCSS(path)
+
+		// Only add if we haven't seen this CSS before
+		if !seen[css] {
+			seen[css] = true
+			unique = append(unique, path)
+		}
+	}
+
+	return unique
+}
+
+// pathToCSS converts a selector path to CSS string for comparison
+func (pev *ProcessExtendsVisitor) pathToCSS(path []any) string {
+	if len(path) == 0 {
+		return ""
+	}
+
+	var chunks []string
+	output := &CSSOutput{
+		Add: func(chunk any, fileInfo any, index any) {
+			if chunk != nil {
+				chunks = append(chunks, fmt.Sprintf("%v", chunk))
+			}
+		},
+		IsEmpty: func() bool {
+			return len(chunks) == 0
+		},
+	}
+
+	ctx := make(map[string]any)
+	ctx["compress"] = true // Use compressed output for comparison
+	ctx["firstSelector"] = true
+
+	for i, pathElement := range path {
+		if i > 0 {
+			ctx["firstSelector"] = false
+		}
+
+		if gen, ok := pathElement.(interface{ GenCSS(any, *CSSOutput) }); ok {
+			gen.GenCSS(ctx, output)
+		}
+	}
+
+	return strings.Join(chunks, "")
 }
 
 func (pev *ProcessExtendsVisitor) findMatch(extend *Extend, haystackSelectorPath []any) []any {

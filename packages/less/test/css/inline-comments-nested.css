@@ -1,0 +1,4 @@
+/* inline-comments-nested.css — expected compiled result */
+.container .item { // inline comment should be preserved
+  color: red;
+}

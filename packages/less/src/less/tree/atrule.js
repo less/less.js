@@ -135,9 +135,6 @@ AtRule.prototype = Object.assign(new Node(), {
 
         if (value) {
             value = value.eval(context);
-            if (value.value && this.keywordList(value.value)) {
-                value = new Anonymous(value.value.map(keyword => keyword.value).join(', '), this.getIndex(), this.fileInfo());
-            }
         }
 
         if (rules) {

@@ -91,3 +91,43 @@
     color: #555;
   }
 }
+@layer theme;
+@layer layout, utilities;
+body {
+  color: black;
+}
+@layer components {
+  .btn {
+    color: red;
+  }
+  .btn:hover {
+    color: blue;
+  }
+}
+@layer {
+  p {
+    margin-block: 1rem;
+  }
+}
+@layer framework.buttons.primary {
+  .btn-primary {
+    background: dodgerblue;
+    color: white;
+  }
+}
+.feature {
+  color: gray;
+}
+@layer component {
+  .feature h2 {
+    font-size: 1.5rem;
+  }
+}
+@layer ui {
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background: rebeccapurple;
+    color: white;
+  }
+}

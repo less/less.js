@@ -1,0 +1,112 @@
+// Test at-rule evaluation paths (eval, evalRoot, genCSS, accept, etc.)
+
+// Test keywordList - @media with keyword list
+@media screen, print, handheld {
+  body {
+    font-size: 12pt;
+  }
+}
+
+// Test declarationsBlock with mergeable=true (nested ruleset with declarations)
+@media screen {
+  .container {
+    color: red;
+    background: blue;
+  }
+}
+
+// Test simpleBlock optimization with allRulesetDeclarations (single ruleset)
+@media screen {
+  .test {
+    color: red;
+    background: blue;
+  }
+}
+
+// Test eval with value evaluation and keywordList conversion
+@breakpoint: screen;
+@media @breakpoint, print {
+  body {
+    margin: 0;
+  }
+}
+
+// Test evalRoot with ampersand handling
+.container {
+  @media screen {
+    & {
+      color: red;
+    }
+    .child {
+      color: blue;
+    }
+  }
+}
+
+// Test evalRoot with mixed ampersands
+.wrapper {
+  .inner {
+    @media screen {
+      & {
+        color: green;
+      }
+    }
+  }
+}
+
+// Test genCSS with value
+@charset "UTF-8";
+
+// Test genCSS with simpleBlock
+@page {
+  margin: 2cm;
+  size: A4;
+}
+
+// Test genCSS with rules (non-simpleBlock)
+@supports (display: grid) {
+  .grid {
+    display: grid;
+  }
+  .flex {
+    display: flex;
+  }
+}
+
+// Test isCharset
+@charset "UTF-8";
+
+// Test isRulesetLike (non-charset)
+@media screen {
+  body {
+    color: black;
+  }
+}
+
+// Test compressed output (outputRuleset compressed path)
+@layer base {
+  body {
+    margin: 0;
+  }
+  p {
+    padding: 0;
+  }
+}
+
+// Test variable/find/rulesets delegation
+@media screen {
+  @var: value;
+  .test {
+    color: @var;
+  }
+}
+
+// Test eval with media bubbling
+@media screen {
+  @media print {
+    body {
+      color: black;
+    }
+  }
+}
+

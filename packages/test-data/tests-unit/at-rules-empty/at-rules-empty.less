@@ -1,0 +1,15 @@
+// Tests for atrule.js line 121 - genCSS with no rules or declarations
+// Covers parser + genCSS path
+
+// @charset without block
+@charset "UTF-8";
+
+// @import (will be processed separately, but tests the path)
+@import url("test.css");
+
+// @namespace
+@namespace "http://www.w3.org/1999/xhtml";
+
+// @namespace with prefix
+@namespace svg "http://www.w3.org/2000/svg";
+

@@ -1,0 +1,28 @@
+// Test for ruleProperty parser with ${prop} interpolation (line 2640)
+// This tests complex property names using ${property} interpolation in property NAMES
+// ${prop} uses the VALUE of a plain property (not a variable) as the property name
+// Note: This is different from @{var} which uses variables
+
+.test {
+  // Define properties - their VALUES will be used as property names
+  prop-name: color;
+  my: background;
+  value: width;
+  
+  // Simple ${prop} interpolation in property name (ruleProperty parser line 2640)
+  // ${prop-name} uses the value of prop-name ("color") as the property name
+  // This triggers the branch at line 2640: new(tree.Property)(`$${s.slice(2, -1)}`, ...)
+  ${prop-name}: red;
+  
+  // Multiple interpolations with literal parts
+  // border-${prop-name} becomes "border-color" (since prop-name's value is "color")
+  border-${prop-name}-width: 2px;
+  
+  // Complex property name with ${prop}
+  *-z-${prop-name}: 1px dashed blue;
+  
+  // Multiple ${prop} in same property name
+  // ${my}-${prop-name}-${value} becomes "background-color-width"
+  ${my}-${prop-name}-${value}: green;
+}
+

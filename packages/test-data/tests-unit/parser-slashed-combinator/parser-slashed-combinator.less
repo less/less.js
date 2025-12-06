@@ -1,0 +1,20 @@
+// Test for slashedCombinator parser (lines 1392-1399)
+// This tests /deep/ and /shadow/ combinators
+// NOTE: These combinators are DEPRECATED in CSS and should not be used in new code
+// They were part of the Shadow DOM specification but have been removed
+
+// /deep/ combinator (deprecated)
+.parent /deep/ .child {
+  color: red;
+}
+
+// /shadow/ combinator (deprecated)
+.container /shadow/ .content {
+  background: blue;
+}
+
+// Test with nested selectors
+.wrapper /deep/ .inner /deep/ .deepest {
+  padding: 10px;
+}
+

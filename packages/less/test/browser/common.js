@@ -99,6 +99,18 @@ testSheet = function (sheet) {
                             window.navigator.userAgent.indexOf('Trident/') >= 0) {
                             text = ieFormat(text);
                         }
+                        
+                        // Normalize URLs: convert absolute URLs back to relative for comparison
+                        // The browser resolves relative URLs when reading from DOM, but we want to compare against the original relative URLs
+                        lessOutput = lessOutput.replace(/url\("http:\/\/localhost:8081\/packages\/less\/node_modules\/@less\/test-data\/tests-unit\/([^"]+)"\)/g, 'url("$1")');
+                        // Also normalize directory-prefixed relative URLs (e.g., "at-rules/myfont.woff2" -> "myfont.woff2")
+                        // This happens because the browser resolves URLs relative to the HTML document location
+                        lessOutput = lessOutput.replace(/url\("([a-z-]+\/)([^"]+)"\)/g, 'url("$2")');
+                        // Also normalize @import statements that get resolved to absolute URLs
+                        lessOutput = lessOutput.replace(/@import "http:\/\/localhost:8081\/packages\/less\/node_modules\/@less\/test-data\/tests-unit\/([^"]+)"(.*);/g, '@import "$1"$2;');
+                        // Also normalize @import with directory prefix (e.g., "at-rules-keyword-comments/test.css" -> "test.css")
+                        lessOutput = lessOutput.replace(/@import "([a-z-]+\/)([^"]+)"(.*);/g, '@import "$2"$3;');
+                        
                         expect(lessOutput).to.equal(text);
                         done();
                     })
@@ -164,12 +176,21 @@ testErrorSheet = function (sheet) {
                 .replace(/\nStack Trace\n[\s\S]*/i, '')
                 .replace(/\n$/, '')
                 .trim();
+            actualErrorMsg = actualErrorMsg
+                .replace(/ in [\w\-]+\.less( on line \d+, column \d+)?:?$/, '')  // Remove filename and optional line/column from end of error message
+                .replace(/\{path\}/g, '')
+                .replace(/\{pathrel\}/g, '')
+                .replace(/\{pathhref\}/g, 'http://localhost:8081/packages/less/node_modules/@less/test-data/tests-error/eval/')
+                .replace(/\{404status\}/g, ' (404)')
+                .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
+                .replace(/\n$/, '')
+                .trim();
             errorFile
                 .then(function (errorTxt) {
                     errorTxt = errorTxt
                         .replace(/\{path\}/g, '')
                         .replace(/\{pathrel\}/g, '')
-                        .replace(/\{pathhref\}/g, 'http://localhost:8081/test/less/errors/')
+                        .replace(/\{pathhref\}/g, 'http://localhost:8081/packages/less/node_modules/@less/test-data/tests-error/eval/')
                         .replace(/\{404status\}/g, ' (404)')
                         .replace(/\{node\}[\s\S]*\{\/node\}/g, '')
                         .replace(/\n$/, '')

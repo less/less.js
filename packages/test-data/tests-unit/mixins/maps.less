@@ -1,0 +1,15 @@
+.maps {
+    @a: 10;
+    h2 { width: unit(@a, px); }
+
+    .mk-map() {
+        text: white;
+        background: black;
+    }
+
+    @p: .mk-map();
+
+    h1 { color: @p[text]; }
+}
+
+

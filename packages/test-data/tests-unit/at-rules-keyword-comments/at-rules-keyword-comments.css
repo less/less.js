@@ -1,0 +1,9 @@
+@import "test.css" screen, print;
+@media screen, print, handheld {
+  /* comment */
+  /* another */
+  body {
+    font-size: 12pt;
+  }
+}
+/* comment */

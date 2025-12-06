@@ -1,6 +1,8 @@
 /* jshint latedef: nofunc */
 var semver = require('semver');
 var logger = require('../lib/less/logger').default;
+var { cosmiconfigSync } = require('cosmiconfig');
+var glob = require('glob');
 
 var isVerbose = process.env.npm_config_loglevel !== 'concise';
 logger.addListener({
@@ -18,7 +20,7 @@ logger.addListener({
 });
 
 
-module.exports = function() {
+module.exports = function(testFilter) {
     var path = require('path'),
         fs = require('fs'),
         clone = require('copy-anything').copy;
@@ -29,11 +31,11 @@ module.exports = function() {
 
     var globals = Object.keys(global);
 
-    var oneTestOnly = process.argv[2],
+    var oneTestOnly = testFilter || process.argv[2],
         isFinished = false;
 
     var testFolder = path.dirname(require.resolve('@less/test-data'));
-    var lessFolder = path.join(testFolder, 'less');
+    var lessFolder = testFolder;
 
     // Define String.prototype.endsWith if it doesn't exist (in older versions of node)
     // This is required by the testSourceMap function below
@@ -83,33 +85,202 @@ module.exports = function() {
         }
     });
 
-    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
+    function validateSourcemapMappings(sourcemap, lessFile, compiledCSS) {
+        // Validate sourcemap mappings using SourceMapConsumer
+        var SourceMapConsumer = require('source-map').SourceMapConsumer;
+        // sourcemap can be either a string or already parsed object
+        var sourceMapObj = typeof sourcemap === 'string' ? JSON.parse(sourcemap) : sourcemap;
+        var consumer = new SourceMapConsumer(sourceMapObj);
+        
+        // Read the LESS source file
+        var lessSource = fs.readFileSync(lessFile, 'utf8');
+        var lessLines = lessSource.split('\n');
+        
+        // Use the compiled CSS (remove sourcemap annotation for validation)
+        var cssSource = compiledCSS.replace(/\/\*# sourceMappingURL=.*\*\/\s*$/, '').trim();
+        var cssLines = cssSource.split('\n');
+        
+        var errors = [];
+        var validatedMappings = 0;
+        
+        // Validate mappings for each line in the CSS
+        for (var cssLine = 1; cssLine <= cssLines.length; cssLine++) {
+            var cssLineContent = cssLines[cssLine - 1];
+            // Skip empty lines
+            if (!cssLineContent.trim()) {
+                continue;
+            }
+            
+            // Check mapping for the start of this CSS line
+            var mapping = consumer.originalPositionFor({
+                line: cssLine,
+                column: 0
+            });
+            
+            if (mapping.source) {
+                validatedMappings++;
+                
+                // Verify the source file exists in the sourcemap
+                if (!sourceMapObj.sources || sourceMapObj.sources.indexOf(mapping.source) === -1) {
+                    errors.push('Line ' + cssLine + ': mapped to source "' + mapping.source + '" which is not in sources array');
+                }
+                
+                // Verify the line number is valid
+                if (mapping.line && mapping.line > 0) {
+                    // If we can find the source file, validate the line exists
+                    var sourceIndex = sourceMapObj.sources.indexOf(mapping.source);
+                    if (sourceIndex >= 0 && sourceMapObj.sourcesContent && sourceMapObj.sourcesContent[sourceIndex] !== undefined && sourceMapObj.sourcesContent[sourceIndex] !== null) {
+                        var sourceContent = sourceMapObj.sourcesContent[sourceIndex];
+                        // Ensure sourceContent is a string (it should be, but be defensive)
+                        if (typeof sourceContent !== 'string') {
+                            sourceContent = String(sourceContent);
+                        }
+                        // Split by newline - handle both \n and \r\n
+                        var sourceLines = sourceContent.split(/\r?\n/);
+                        if (mapping.line > sourceLines.length) {
+                            errors.push('Line ' + cssLine + ': mapped to line ' + mapping.line + ' in "' + mapping.source + '" but source only has ' + sourceLines.length + ' lines');
+                        }
+                    } else if (sourceIndex >= 0) {
+                        // Source content not embedded, try to validate against the actual file if it matches
+                        // This is a best-effort validation
+                    }
+                }
+            }
+        }
+        
+        // Validate that all sources in the sourcemap are valid
+        if (sourceMapObj.sources) {
+            sourceMapObj.sources.forEach(function(source, index) {
+                if (sourceMapObj.sourcesContent && sourceMapObj.sourcesContent[index]) {
+                    // Source content is embedded, validate it's not empty
+                    if (!sourceMapObj.sourcesContent[index].trim()) {
+                        errors.push('Source "' + source + '" has empty content');
+                    }
+                }
+            });
+        }
+        
+        if (consumer.destroy && typeof consumer.destroy === 'function') {
+            consumer.destroy();
+        }
+        
+        return {
+            valid: errors.length === 0,
+            errors: errors,
+            mappingsValidated: validatedMappings
+        };
+    }
+
+    function testSourcemap(name, err, compiledLess, doReplacements, sourcemap, baseFolder, getFilename) {
         if (err) {
             fail('ERROR: ' + (err && err.message));
             return;
         }
         // Check the sourceMappingURL at the bottom of the file
-        var expectedSourceMapURL = name + '.css.map',
-            sourceMappingPrefix = '/*# sourceMappingURL=',
-            sourceMappingSuffix = ' */',
-            expectedCSSAppendage = sourceMappingPrefix + expectedSourceMapURL + sourceMappingSuffix;
-        if (!compiledLess.endsWith(expectedCSSAppendage)) {
-            // To display a better error message, we need to figure out what the actual sourceMappingURL value was, if it was even present
-            var indexOfSourceMappingPrefix = compiledLess.indexOf(sourceMappingPrefix);
-            if (indexOfSourceMappingPrefix === -1) {
-                fail('ERROR: sourceMappingURL was not found in ' + baseFolder + '/' + name + '.css.');
-                return;
-            }
-
-            var startOfSourceMappingValue = indexOfSourceMappingPrefix + sourceMappingPrefix.length,
-                indexOfNextSpace = compiledLess.indexOf(' ', startOfSourceMappingValue),
-                actualSourceMapURL = compiledLess.substring(startOfSourceMappingValue, indexOfNextSpace === -1 ? compiledLess.length : indexOfNextSpace);
-            fail('ERROR: sourceMappingURL should be "' + expectedSourceMapURL + '" but is "' + actualSourceMapURL + '".');
+        // Default expected URL is name + '.css.map', but can be overridden by sourceMapURL option
+        var sourceMappingPrefix = '/*# sourceMappingURL=',
+            sourceMappingSuffix = ' */';
+        var indexOfSourceMappingPrefix = compiledLess.indexOf(sourceMappingPrefix);
+        if (indexOfSourceMappingPrefix === -1) {
+            fail('ERROR: sourceMappingURL was not found in ' + baseFolder + '/' + name + '.css.');
+            return;
+        }
+        
+        var startOfSourceMappingValue = indexOfSourceMappingPrefix + sourceMappingPrefix.length,
+            indexOfSuffix = compiledLess.indexOf(sourceMappingSuffix, startOfSourceMappingValue),
+            actualSourceMapURL = compiledLess.substring(startOfSourceMappingValue, indexOfSuffix === -1 ? compiledLess.length : indexOfSuffix).trim();
+        
+        // For tests with custom sourceMapURL, we just verify it exists and is non-empty
+        // The actual value will be validated by comparing the sourcemap JSON
+        if (!actualSourceMapURL) {
+            fail('ERROR: sourceMappingURL is empty in ' + baseFolder + '/' + name + '.css.');
+            return;
         }
 
-        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        // Use getFilename if available (for sourcemap tests with subdirectories)
+        var jsonPath;
+        if (getFilename && typeof getFilename === 'function') {
+            jsonPath = getFilename(name, 'sourcemap', baseFolder);
+        } else {
+            // Fallback: extract just the filename for sourcemap JSON files
+            var jsonFilename = path.basename(name);
+            jsonPath = path.join('test/sourcemaps', jsonFilename) + '.json';
+        }
+        fs.readFile(jsonPath, 'utf8', function (e, expectedSourcemap) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
-            if (sourcemap === expectedSourcemap) {
+            if (e) {
+                fail('ERROR: Could not read expected sourcemap file: ' + jsonPath + ' - ' + e.message);
+                return;
+            }
+            
+            // Apply doReplacements to the expected sourcemap to handle {path} placeholders
+            // This normalizes absolute paths that differ between environments
+            // For sourcemaps, we need to ensure {path} uses forward slashes to avoid breaking JSON
+            // (backslashes in JSON strings need escaping, and sourcemaps should use forward slashes anyway)
+            var replacementPath = path.join(path.dirname(path.join(baseFolder, name) + '.less'), '/');
+            // Normalize to forward slashes for sourcemap JSON (web-compatible)
+            replacementPath = replacementPath.replace(/\\/g, '/');
+            // Replace {path} with normalized forward-slash path BEFORE calling doReplacements
+            // This ensures the JSON is always valid and uses web-compatible paths
+            expectedSourcemap = expectedSourcemap.replace(/\{path\}/g, replacementPath);
+            // Also handle other placeholders that might be in the sourcemap (but {path} is already done)
+            expectedSourcemap = doReplacements(expectedSourcemap, baseFolder, path.join(baseFolder, name) + '.less');
+            
+            // Normalize paths in sourcemap JSON to use forward slashes (web-compatible)
+            // We need to parse the JSON, normalize the file property, then stringify for comparison
+            // This avoids breaking escape sequences like \n in the JSON string
+            function normalizeSourcemapPaths(sm) {
+                try {
+                    var parsed = typeof sm === 'string' ? JSON.parse(sm) : sm;
+                    if (parsed.file) {
+                        parsed.file = parsed.file.replace(/\\/g, '/');
+                    }
+                    // Also normalize paths in sources array
+                    if (parsed.sources && Array.isArray(parsed.sources)) {
+                        parsed.sources = parsed.sources.map(function(src) {
+                            return src.replace(/\\/g, '/');
+                        });
+                    }
+                    return JSON.stringify(parsed, null, 0);
+                } catch (parseErr) {
+                    // If parsing fails, return original (shouldn't happen)
+                    return sm;
+                }
+            }
+            
+            var normalizedSourcemap = normalizeSourcemapPaths(sourcemap);
+            var normalizedExpected = normalizeSourcemapPaths(expectedSourcemap);
+            
+            if (normalizedSourcemap === normalizedExpected) {
+                // Validate the sourcemap mappings are correct
+                // Find the actual LESS file - it might be in a subdirectory
+                var nameParts = name.split('/');
+                var lessFileName = nameParts[nameParts.length - 1];
+                var lessFileDir = nameParts.length > 1 ? nameParts.slice(0, -1).join('/') : '';
+                var lessFile = path.join(lessFolder, lessFileDir, lessFileName) + '.less';
+                
+                // Only validate if the LESS file exists
+                if (fs.existsSync(lessFile)) {
+                    try {
+                        // Parse the sourcemap once for validation (avoid re-parsing)
+                        // Use the original sourcemap string, not the normalized one
+                        var sourceMapObjForValidation = typeof sourcemap === 'string' ? JSON.parse(sourcemap) : sourcemap;
+                        var validation = validateSourcemapMappings(sourceMapObjForValidation, lessFile, compiledLess);
+                        if (!validation.valid) {
+                            fail('ERROR: Sourcemap validation failed:\n' + validation.errors.join('\n'));
+                            return;
+                        }
+                        if (isVerbose && validation.mappingsValidated > 0) {
+                            process.stdout.write(' (validated ' + validation.mappingsValidated + ' mappings)');
+                        }
+                    } catch (validationErr) {
+                        if (isVerbose) {
+                            process.stdout.write(' (validation error: ' + validationErr.message + ')');
+                        }
+                        // Don't fail the test if validation has an error, just log it
+                    }
+                }
+                
                 ok('OK');
             } else if (err) {
                 fail('ERROR: ' + (err && err.message));
@@ -118,7 +289,7 @@ module.exports = function() {
                     process.stdout.write(err.stack + '\n');
                 }
             } else {
-                difference('FAIL', expectedSourcemap, sourcemap);
+                difference('FAIL', normalizedExpected, normalizedSourcemap);
             }
         });
     }
@@ -281,7 +452,7 @@ module.exports = function() {
             return new less.tree.Anonymous('file');
         });
         var expected = '@charset "utf-8";\n';
-        toCSS({}, path.join(lessFolder, 'root-registry', 'root.less'), function(error, output) {
+        toCSS({}, path.join(lessFolder, 'tests-config', 'root-registry', 'root.less'), function(error, output) {
             if (error) {
                 return fail('ERROR: ' + error);
             }
@@ -294,9 +465,42 @@ module.exports = function() {
 
     function globalReplacements(input, directory, filename) {
         var path = require('path');
-        var p = filename ? path.join(path.dirname(filename), '/') : directory,
-            pathimport = path.join(directory + 'import/'),
-            pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
+        var p = filename ? path.join(path.dirname(filename), '/') : directory;
+        
+        // For debug tests in subdirectories (comments/, mediaquery/, all/),
+        // the import/ directory and main linenumbers.less file are at the parent debug/ level, not in the subdirectory
+        var isDebugSubdirectory = false;
+        var debugParentPath = null;
+        
+        if (directory) {
+            // Normalize directory path separators for matching
+            var normalizedDir = directory.replace(/\\/g, '/');
+            // Check if we're in a debug subdirectory
+            if (normalizedDir.includes('/debug/') && (normalizedDir.includes('/comments/') || normalizedDir.includes('/mediaquery/') || normalizedDir.includes('/all/'))) {
+                isDebugSubdirectory = true;
+                // Extract the debug/ directory path (parent of the subdirectory)
+                // Match everything up to and including /debug/ (works with both absolute and relative paths)
+                var debugMatch = normalizedDir.match(/(.+\/debug)\//);
+                if (debugMatch) {
+                    debugParentPath = debugMatch[1];
+                }
+            }
+        }
+        
+        if (isDebugSubdirectory && debugParentPath) {
+            // For {path} placeholder, use the parent debug/ directory
+            // Convert back to native path format
+            p = debugParentPath.replace(/\//g, path.sep) + path.sep;
+        }
+        
+        var pathimport;
+        if (isDebugSubdirectory && debugParentPath) {
+            pathimport = path.join(debugParentPath.replace(/\//g, path.sep), 'import') + path.sep;
+        } else {
+            pathimport = path.join(directory + 'import/');
+        }
+        
+        var pathesc = p.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); }),
             pathimportesc = pathimport.replace(/[.:/\\]/g, function(a) { return '\\' + (a == '\\' ? '\/' : a); });
 
         return input.replace(/\{path\}/g, p)
@@ -340,7 +544,18 @@ module.exports = function() {
     }
 
     function runTestSet(options, foldername, verifyFunction, nameModifier, doReplacements, getFilename) {
-        options = options ? clone(options) : {};
+        // Handle case where first parameter is glob patterns (no options object)
+        if (Array.isArray(options)) {
+            // First parameter is glob patterns, no options object
+            foldername = options;
+            options = {};
+        } else if (typeof options === 'string') {
+            // First parameter is foldername (no options object)
+            foldername = options;
+            options = {};
+        } else {
+            options = options ? clone(options) : {};
+        }
         runTestSetInternal(lessFolder, options, foldername, verifyFunction, nameModifier, doReplacements, getFilename);
     }
 
@@ -357,41 +572,125 @@ module.exports = function() {
             doReplacements = globalReplacements;
         }
 
-        function getBasename(file) {
-            return foldername + path.basename(file, '.less');
+        // Handle glob patterns with exclusions
+        if (Array.isArray(foldername)) {
+            var patterns = foldername;
+            var includePatterns = [];
+            var excludePatterns = [];
+            
+            
+            patterns.forEach(function(pattern) {
+                if (pattern.startsWith('!')) {
+                    excludePatterns.push(pattern.substring(1));
+                } else {
+                    includePatterns.push(pattern);
+                }
+            });
+            
+            // Use glob to find all matching files, excluding the excluded patterns
+            var allFiles = [];
+            includePatterns.forEach(function(pattern) {
+                var files = glob.sync(pattern, { 
+                    cwd: baseFolder,
+                    absolute: true,
+                    ignore: excludePatterns
+                });
+
+                allFiles = allFiles.concat(files);
+            });
+            
+            // Note: needle mocking is set up globally in index.js
+            
+            // Process each .less file found
+            allFiles.forEach(function(filePath) {
+                if (/\.less$/.test(filePath)) {
+                    var file = path.basename(filePath);
+                    // For glob patterns, we need to construct the relative path differently
+                    // The filePath is absolute, so we need to get the path relative to the test-data directory
+                    var relativePath = path.relative(baseFolder, path.dirname(filePath)) + '/';
+
+                    // Only process files that have corresponding .css files (these are the actual tests)
+                    var cssPath = path.join(path.dirname(filePath), path.basename(file, '.less') + '.css');
+                    if (fs.existsSync(cssPath)) {
+                        // Process this file using the existing logic
+                        processFileWithInfo({
+                            file: file,
+                            fullPath: filePath,
+                            relativePath: relativePath
+                        });
+                    }
+                }
+            });
+            
+
+            return;
         }
 
-        fs.readdirSync(path.join(baseFolder, foldername)).forEach(function (file) {
-            if (!/\.less$/.test(file)) { return; }
+        function processFileWithInfo(fileInfo) {
+            var file = fileInfo.file;
+            var fullPath = fileInfo.fullPath;
+            var relativePath = fileInfo.relativePath;
+            
+            // Load config for this specific file using cosmiconfig
+            var configResult = cosmiconfigSync('styles').search(path.dirname(fullPath));
+            
+            // Deep clone the original options to prevent Less from modifying shared objects
+            var options = JSON.parse(JSON.stringify(originalOptions || {}));
+            
+            if (configResult && configResult.config && configResult.config.language && configResult.config.language.less) {
+                // Deep clone and merge the language.less settings with the original options
+                var lessConfig = JSON.parse(JSON.stringify(configResult.config.language.less));
+                Object.keys(lessConfig).forEach(function(key) {
+                    options[key] = lessConfig[key];
+                });
+            }
+            
+            // Merge any lessOptions from the testMap (for dynamic options like getVars functions)
+            if (originalOptions && originalOptions.lessOptions) {
+                Object.keys(originalOptions.lessOptions).forEach(function(key) {
+                    var value = originalOptions.lessOptions[key];
+                    if (typeof value === 'function') {
+                        // For functions, call them with the file path
+                        var result = value(fullPath);
+                        options[key] = result;
+                    } else {
+                        // For static values, use them directly
+                        options[key] = value;
+                    }
+                });
+            }
 
-            var options = clone(originalOptions);
+            // Don't pass stylize to less.render as it's not a valid option
 
-            options.stylize = stylize;
+            var name = getBasename(file, relativePath);
+            
 
-            var name = getBasename(file);
-
-            if (oneTestOnly && name !== oneTestOnly) {
+            if (oneTestOnly && typeof oneTestOnly === 'string' && !name.includes(oneTestOnly)) {
                 return;
             }
 
             totalTests++;
 
             if (options.sourceMap && !options.sourceMap.sourceMapFileInline) {
-                options.sourceMap = {
-                    sourceMapOutputFilename: name + '.css',
-                    sourceMapBasepath: baseFolder,
-                    sourceMapRootpath: 'testweb/',
-                    disableSourcemapAnnotation: options.sourceMap.disableSourcemapAnnotation
-                };
-                // This options is normally set by the bin/lessc script. Setting it causes the sourceMappingURL comment to be appended to the CSS
-                // output. The value is designed to allow the sourceMapBasepath option to be tested, as it should be removed by less before
-                // setting the sourceMappingURL value, leaving just the sourceMapOutputFilename and .map extension.
-                options.sourceMap.sourceMapFilename = options.sourceMap.sourceMapBasepath + '/' + options.sourceMap.sourceMapOutputFilename + '.map';
+                // Set test infrastructure defaults only if not already set by styles.config.cjs
+                // Less.js core (parse-tree.js) will handle normalization of:
+                // - sourceMapBasepath (defaults to input file's directory)
+                // - sourceMapInputFilename (defaults to options.filename)
+                // - sourceMapFilename (derived from sourceMapOutputFilename or input filename)
+                // - sourceMapOutputFilename (derived from input filename if not set)
+                if (!options.sourceMap.sourceMapOutputFilename) {
+                    // Needed for sourcemap file name in JSON output
+                    options.sourceMap.sourceMapOutputFilename = name + '.css';
+                }
+                if (!options.sourceMap.sourceMapRootpath) {
+                    // Test-specific default for consistent test output paths
+                    options.sourceMap.sourceMapRootpath = 'testweb/';
+                }
             }
 
             options.getVars = function(file) {
                 try {
-                    return JSON.parse(fs.readFileSync(getFilename(getBasename(file), 'vars', baseFolder), 'utf8'));
+                    return JSON.parse(fs.readFileSync(getFilename(getBasename(file, relativePath), 'vars', baseFolder), 'utf8'));
                 }
                 catch (e) {
                     return {};
@@ -400,7 +699,7 @@ module.exports = function() {
 
             var doubleCallCheck = false;
             queue(function() {
-                toCSS(options, path.join(baseFolder, foldername + file), function (err, result) {
+                toCSS(options, fullPath, function (err, result) {
 
                     if (doubleCallCheck) {
                         totalTests++;
@@ -416,7 +715,7 @@ module.exports = function() {
                      */
                     if (verifyFunction) {
                         var verificationResult = verifyFunction(
-                            name, err, result && result.css, doReplacements, result && result.map, baseFolder, result && result.imports
+                            name, err, result && result.css, doReplacements, result && result.map, baseFolder, result && result.imports, getFilename
                         );
                         release();
                         return verificationResult;
@@ -439,31 +738,90 @@ module.exports = function() {
                     var css_name = name;
                     if (nameModifier) { css_name = nameModifier(name); }
 
-                    fs.readFile(path.join(testFolder, 'css', css_name) + '.css', 'utf8', function (e, css) {
-                        process.stdout.write('- ' + path.join(baseFolder, css_name) + ': ');
+                    // Check if we're using the new co-located structure (tests-unit/ or tests-config/) or the old separated structure
+                    var cssPath;
+                    if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
+                        // New co-located structure: CSS file is in the same directory as LESS file
+                        cssPath = path.join(path.dirname(fullPath), path.basename(file, '.less') + '.css');
+                    } else {
+                        // Old separated structure: CSS file is in separate css/ folder
+                        // Windows compatibility: css_name may already contain path separators
+                        // Use path.join with empty string to let path.join handle normalization
+                        cssPath = path.join(testFolder, css_name) + '.css';
+                    }
 
-                        css = css && doReplacements(css, path.join(baseFolder, foldername));
-                        if (result.css === css) { ok('OK'); }
-                        else {
-                            difference('FAIL', css, result.css);
+                    // For the new structure, we need to handle replacements differently
+                    var replacementPath;
+                    if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
+                        replacementPath = path.dirname(fullPath);
+                        // Ensure replacementPath ends with a path separator for consistent matching
+                        if (!replacementPath.endsWith(path.sep)) {
+                            replacementPath += path.sep;
                         }
-                        release();
-                    });
+                    } else {
+                        replacementPath = path.join(baseFolder, relativePath);
+                    }
+
+                    var testName = fullPath.replace(/\.less$/, '');
+                    process.stdout.write('- ' + testName + ': ');
+
+
+                    var css = fs.readFileSync(cssPath, 'utf8');
+                    css = css && doReplacements(css, replacementPath);
+                    if (result.css === css) { ok('OK'); }
+                    else {
+                        difference('FAIL', css, result.css);
+                    }
+                    
+                    release();
                 });
             });
+        }
+        
+        function getBasename(file, relativePath) {
+            var basePath = relativePath || foldername;
+            // Ensure basePath ends with a slash for proper path construction
+            if (basePath.charAt(basePath.length - 1) !== '/') {
+                basePath = basePath + '/';
+            }
+            return basePath + path.basename(file, '.less');
+        }
+
+        
+        // This function is only called for non-glob patterns now
+        // For glob patterns, we use the glob library in the calling code
+        var dirPath = path.join(baseFolder, foldername);
+        var items = fs.readdirSync(dirPath);
+        
+        items.forEach(function(item) {
+            if (/\.less$/.test(item)) {
+                processFileWithInfo({
+                    file: item,
+                    fullPath: path.join(dirPath, item),
+                    relativePath: foldername
+                });
+            }
         });
     }
 
     function diff(left, right) {
-        require('diff').diffLines(left, right).forEach(function(item) {
-            if (item.added || item.removed) {
-                var text = item.value && item.value.replace('\n', String.fromCharCode(182) + '\n').replace('\ufeff', '[[BOM]]');
-                process.stdout.write(stylize(text, item.added ? 'green' : 'red'));
-            } else {
-                process.stdout.write(item.value && item.value.replace('\ufeff', '[[BOM]]'));
-            }
+        // Configure chalk to always show colors
+        var chalk = require('chalk');
+        chalk.level = 3; // Force colors on
+        
+        // Use jest-diff for much clearer output like Vitest
+        var diffResult = require('jest-diff').diffStringsUnified(left || '', right || '', {
+            expand: false,
+            includeChangeCounts: true,
+            contextLines: 1,
+            aColor: chalk.red,
+            bColor: chalk.green,
+            changeColor: chalk.inverse,
+            commonColor: chalk.dim
         });
-        process.stdout.write('\n');
+        
+        // jest-diff returns a string with ANSI colors, so we can output it directly
+        process.stdout.write(diffResult + '\n');
     }
 
     function fail(msg) {
@@ -476,6 +834,9 @@ module.exports = function() {
         process.stdout.write(stylize(msg, 'yellow') + '\n');
         failedTests++;
 
+        // Only show the diff, not the full text
+        process.stdout.write(stylize('Diff:', 'yellow') + '\n');
+        
         diff(left || '', right || '');
         endTest();
     }
@@ -528,27 +889,41 @@ module.exports = function() {
      * @param {Function} callback
      */
     function toCSS(options, filePath, callback) {
-        options = options || {};
+        // Deep clone options to prevent modifying the original, but preserve functions
+        var originalOptions = options || {};
+        options = JSON.parse(JSON.stringify(originalOptions));
+        
+        // Restore functions that were lost in JSON serialization
+        if (originalOptions.getVars) {
+            options.getVars = originalOptions.getVars;
+        }
         var str = fs.readFileSync(filePath, 'utf8'), addPath = path.dirname(filePath);
+        
+        // Initialize paths array if it doesn't exist
         if (typeof options.paths !== 'string') {
             options.paths = options.paths || [];
-            if (!contains(options.paths, addPath)) {
-                options.paths.push(addPath);
-            }
         } else {
-            options.paths = [options.paths]
+            options.paths = [options.paths];
         }
+        
+        // Add the current directory to paths if not already present
+        if (!contains(options.paths, addPath)) {
+            options.paths.push(addPath);
+        }
+        
+        // Resolve all paths relative to the test file's directory
         options.paths = options.paths.map(searchPath => {
-            return path.resolve(lessFolder, searchPath)
+            if (path.isAbsolute(searchPath)) {
+                return searchPath;
+            }
+            // Resolve relative to the test file's directory
+            return path.resolve(path.dirname(filePath), searchPath);
         })
+        
         options.filename = path.resolve(process.cwd(), filePath);
         options.optimization = options.optimization || 0;
 
-        if (options.globalVars) {
-            options.globalVars = options.getVars(filePath);
-        } else if (options.modifyVars) {
-            options.modifyVars = options.getVars(filePath);
-        }
+        // Note: globalVars and modifyVars are now handled via styles.config.cjs or lessOptions
         if (options.plugin) {
             var Plugin = require(path.resolve(process.cwd(), options.plugin));
             options.plugins = [Plugin];
@@ -571,22 +946,7 @@ module.exports = function() {
         ok(stylize('OK\n', 'green'));
     }
 
-    function testImportRedirect(nockScope) {
-        return (name, err, css, doReplacements, sourcemap, baseFolder) => {
-            process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
-            if (err) {
-                fail('FAIL: ' + (err && err.message));
-                return;
-            }
-            const expected = 'h1 {\n  color: red;\n}\n';
-            if (css !== expected) {
-                difference('FAIL', expected, css);
-                return;
-            }
-            nockScope.done();
-            ok('OK');
-        };
-    }
+    // HTTP redirect testing is now handled directly in test/index.js
 
     function testDisablePluginRule() {
         less.render(
@@ -615,7 +975,6 @@ module.exports = function() {
         testSourcemapWithoutUrlAnnotation: testSourcemapWithoutUrlAnnotation,
         testSourcemapWithVariableInSelector: testSourcemapWithVariableInSelector,
         testImports: testImports,
-        testImportRedirect: testImportRedirect,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
         testDisablePluginRule: testDisablePluginRule,

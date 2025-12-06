@@ -1,5 +1,3 @@
-import chunker from './chunker';
-
 export default () => {
     let // Less input string
         input;
@@ -351,26 +349,11 @@ export default () => {
         return (c > CHARCODE_9 || c < CHARCODE_PLUS) || c === CHARCODE_FORWARD_SLASH || c === CHARCODE_COMMA;
     };
 
-    parserInput.start = (str, chunkInput, failFunction) => {
+    parserInput.start = (str) => {
         input = str;
         parserInput.i = j = currentPos = furthest = 0;
 
-        // chunking apparently makes things quicker (but my tests indicate
-        // it might actually make things slower in node at least)
-        // and it is a non-perfect parse - it can't recognise
-        // unquoted urls, meaning it can't distinguish comments
-        // meaning comments with quotes or {}() in them get 'counted'
-        // and then lead to parse errors.
-        // In addition if the chunking chunks in the wrong place we might
-        // not be able to parse a parser statement in one go
-        // this is officially deprecated but can be switched on via an option
-        // in the case it causes too much performance issues.
-        if (chunkInput) {
-            chunks = chunker(str, failFunction);
-        } else {
-            chunks = [str];
-        }
-
+        chunks = [str];
         current = chunks[0];
 
         skipWhitespace(0);

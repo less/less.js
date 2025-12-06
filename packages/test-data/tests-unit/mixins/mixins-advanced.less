@@ -1,0 +1,109 @@
+// Advanced mixin call tests to cover edge cases
+
+// Mixin call with expanded arguments
+.mixin(@a, @b) {
+  a: @a;
+  b: @b;
+}
+@args: 1px, 2px;
+.test-expanded {
+  .mixin(@args...);
+}
+
+// Mixin call with condition matching and multiple definitions
+.mixin-multi-def(@x: 10) when (@x > 10) {
+  large: @x;
+}
+.mixin-multi-def(@x: 10) when (@x <= 10) {
+  small: @x;
+}
+.test-multi-def {
+  .mixin-multi-def();
+  .mixin-multi-def(15);
+}
+
+// Mixin call with condition matching
+.mixin-guarded(@x) when (@x > 10) {
+  large: @x;
+}
+.mixin-guarded(@x) when (@x <= 10) {
+  small: @x;
+}
+.test-conditions {
+  .mixin-guarded(15);
+  .mixin-guarded(5);
+}
+
+// Mixin call with no arguments filter
+.mixin-no-args() {
+  no-args: true;
+}
+.mixin-no-args(@x) {
+  with-args: @x;
+}
+.test-no-args-filter {
+  .mixin-no-args();
+  .mixin-no-args(10);
+}
+
+// Mixin call with recursive mixin
+.mixin-recursive(@n) when (@n > 0) {
+  level: @n;
+  .mixin-recursive(@n - 1);
+}
+.mixin-recursive(@n) when (@n <= 0) {
+  done: true;
+}
+.test-recursive {
+  .mixin-recursive(3);
+}
+
+// Mixin call with namespace path
+#namespace {
+  .mixin() {
+    from-namespace: true;
+  }
+}
+.test-namespace-path {
+  #namespace > .mixin();
+}
+
+// Mixin call with important flag
+.mixin-important() {
+  important: true;
+}
+.test-important {
+  .mixin-important() !important;
+}
+
+// Mixin call with multiple candidates
+.mixin-multi(@x: 1) {
+  value1: @x;
+}
+.mixin-multi(@x: 2) {
+  value2: @x;
+}
+.test-multi {
+  .mixin-multi();
+}
+
+// Mixin call with named arguments
+.mixin-named(@a: a, @b: b) {
+  a: @a;
+  b: @b;
+}
+.test-named {
+  .mixin-named(@b: B, @a: A);
+}
+
+// Mixin call with expanded array
+.mixin-array(@a, @b, @c) {
+  a: @a;
+  b: @b;
+  c: @c;
+}
+@array: 1, 2, 3;
+.test-array-expand {
+  .mixin-array(@array...);
+}
+

@@ -1,0 +1,13 @@
+// Tests for atrule.js keywordList method with Comments (line 84)
+// Covers parser + eval + keywordList path
+// This tests when a keyword list contains Comments
+
+@media screen /* comment */, print /* another */, handheld {
+  body {
+    font-size: 12pt;
+  }
+}
+
+// @import with media queries containing comments
+@import "test.css" screen /* comment */, print;
+

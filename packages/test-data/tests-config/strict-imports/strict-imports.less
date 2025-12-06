@@ -1,0 +1,19 @@
+// Test that strictImports: true allows @import at root level
+@import "imported.less";
+
+// Test that strictImports: true allows @import inside @media blocks
+@media (max-width: 768px) {
+  @import "imported.less";
+  .mobile {
+    color: red;
+  }
+}
+
+// Test that strictImports: true skips @import inside selector blocks (import is not processed)
+.container {
+  @import "imported.less";
+  .nested {
+    color: blue;
+  }
+}
+

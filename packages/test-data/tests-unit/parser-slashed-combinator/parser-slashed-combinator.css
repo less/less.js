@@ -1,0 +1,9 @@
+.parent /deep/ .child {
+  color: red;
+}
+.container /shadow/ .content {
+  background: blue;
+}
+.wrapper /deep/ .inner /deep/ .deepest {
+  padding: 10px;
+}

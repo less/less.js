@@ -1,0 +1,34 @@
+// Tests for atrule.js coverage - compressed output path (lines 243-250)
+// Also covers parser + genCSS + outputRuleset
+
+// Compressed @media with rules
+@media screen {
+  body { margin: 0; }
+  p { padding: 0; }
+}
+
+// Compressed @layer with multiple rules
+@layer base {
+  body { margin: 0; }
+  p { padding: 0; }
+  div { border: 0; }
+}
+
+// Compressed @supports
+@supports (display: grid) {
+  .grid { display: grid; }
+  .item { grid-column: 1; }
+}
+
+// Compressed @page
+@page {
+  margin: 2cm;
+  size: A4;
+}
+
+// Compressed @keyframes
+@keyframes slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(100px); }
+}
+

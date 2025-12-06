@@ -1,0 +1,2 @@
+NameError: variable @nonexistent-var not found
+

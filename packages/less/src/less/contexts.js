@@ -22,10 +22,9 @@ const parseCopyProperties = [
     'rootpath',         // option - rootpath to append to URL's
     'strictImports',    // option -
     'insecure',         // option - whether to allow imports from insecure ssl hosts
-    'dumpLineNumbers',  // option - whether to dump line numbers
+    'dumpLineNumbers',  // option - @deprecated The dumpLineNumbers option is deprecated. Use sourcemaps instead. All modes ('comments', 'mediaquery', 'all') will be removed in a future version.
     'compress',         // option - whether to compress
     'syncImport',       // option - whether to import synchronously
-    'chunkInput',       // option - whether to chunk input. more performant but causes parse issues.
     'mime',             // browser only - mime type for sheet import
     'useFileCache',     // browser only - whether to use the per file session cache
     // context

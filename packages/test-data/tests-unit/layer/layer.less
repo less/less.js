@@ -1,0 +1,114 @@
+.main {
+    @layer {
+        &::before {
+            color: #f00;
+        }
+    }
+}
+
+@layer legacy {
+    @import "./import/layer-import.less";
+}
+
+@import url("/import/layer-import-2.css") layer(foo);
+@import url("/import/layer-import-3.css") layer(responsive) supports(display: flex) screen and (max-width: 768px);
+@import url("/import/layer-import-4.css") layer(print) print;
+@import url("/import/layer-import-4.css") layer(print) print, (max-width: 600px);
+@import url("/import/layer-import-5.css") layer(features) supports(display: grid);
+
+@layer-name: primevue;
+
+@layer @layer-name {
+    .test {
+        foo: bar;
+    }
+}
+
+@layer reset, base, components, utilities;
+
+@layer reset {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+}
+
+@layer base {
+    body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+
+        header {
+            background-color: #f0f0f0;
+            padding: 1rem;
+        }
+    }
+}
+
+@layer components {
+    .button {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: blue;
+        color: white;
+
+        &:hover {
+            background-color: darkblue;
+        }
+    }
+}
+
+@layer utilities {
+    .text-center {
+        text-align: center;
+    }
+
+    .responsive {
+        width: 100%;
+
+        @media (min-width: 768px) {
+            width: 50%;
+        }
+    }
+}
+
+.parent {
+    color: black;
+
+    .child {
+        color: red;
+    }
+
+    &:hover {
+        background: lightgray;
+    }
+}
+
+@layer foo.baz {
+   .bar {
+       font-weight: bold;
+   }
+}
+
+@layer framework {
+    @layer layout {
+        .container {
+            display: grid;
+            gap: 2rem;
+        }
+    }
+}
+
+@layer framework.layout {
+    main {
+        padding: 2rem;
+    }
+    p {
+        margin-block: 1rem;
+        color: #555;
+    }
+}
+
+

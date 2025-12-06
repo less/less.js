@@ -1,0 +1,19 @@
+// Tests for atrule.js lines 255-256 - empty rules block in non-compressed mode
+// Covers parser + genCSS + outputRuleset with empty rules
+
+// @media with empty block
+@media screen {
+}
+
+// @supports with empty block  
+@supports (display: grid) {
+}
+
+// @layer with empty block
+@layer base {
+}
+
+// @page with empty block
+@page {
+}
+

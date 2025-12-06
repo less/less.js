@@ -1,0 +1,81 @@
+// Targeted tests for specific uncovered lines in atrule.js
+
+// Line 35-36: Single ruleset with declarations (allRulesetDeclarations path)
+@media screen {
+  .test {
+    color: red;
+  }
+}
+
+// Line 138-140: Value that evaluates to keyword list (keywordList method)
+@media screen, print, handheld {
+  body {
+    font-size: 12pt;
+  }
+}
+
+// Line 146-154: rules[0].rules path with mergeable declarations
+@supports (display: grid) {
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// Line 155-158: simpleBlock with rules evaluation
+@page {
+  margin: 2cm;
+  size: A4;
+}
+
+// Line 172-174: Non-simpleBlock rules evaluation (evalRoot)
+@media screen {
+  @media (max-width: 768px) {
+    .nested {
+      display: block;
+    }
+  }
+}
+
+// Line 203-215: evalRoot with ampersand counting
+.container {
+  @media screen {
+    & {
+      color: red;
+    }
+    .child {
+      color: blue;
+    }
+  }
+}
+
+// Line 217-236: variable, find, rulesets methods
+// These methods are called when accessing variables/properties from within at-rule scope
+@media screen {
+  @var: value;
+  .test-var-access {
+    color: @var;
+  }
+}
+
+// Line 238-270: outputRuleset (compressed and non-compressed)
+@layer base {
+  body {
+    margin: 0;
+  }
+  p {
+    padding: 0;
+  }
+}
+
+// Line 121: At-rule without rules or declarations
+@charset "UTF-8";
+
+// Line 103-105: isRulesetLike and isCharset
+@charset "UTF-8";
+@media screen {
+  body {
+    color: black;
+  }
+}
+

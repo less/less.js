@@ -1,0 +1,52 @@
+@charset "UTF-8";
+@media screen {
+  .test {
+    color: red;
+  }
+}
+@media screen, print, handheld {
+  body {
+    font-size: 12pt;
+  }
+}
+@supports (display: grid) {
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@page {
+  margin: 2cm;
+  size: A4;
+}
+@media screen and (max-width: 768px) {
+  .nested {
+    display: block;
+  }
+}
+@media screen {
+  .container {
+    color: red;
+  }
+  .container .child {
+    color: blue;
+  }
+}
+@media screen {
+  .test-var-access {
+    color: value;
+  }
+}
+@layer base {
+  body {
+    margin: 0;
+  }
+  p {
+    padding: 0;
+  }
+}
+@media screen {
+  body {
+    color: black;
+  }
+}

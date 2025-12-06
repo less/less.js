@@ -1,0 +1,56 @@
+.alpha {
+  filter: alpha(opacity=42);
+}
+.units-extended {
+  width: 1px;
+  same-unit-as-previously: 1px;
+  square-pixel-divided: 1px;
+  odd-unit: 2;
+  percentage: 500%;
+  pixels: 500px;
+  conversion-metric-a: 30mm;
+  conversion-metric-b: 3cm;
+  conversion-imperial: 3in;
+  custom-unit: 420octocats;
+  custom-unit-cancelling: 18dogs;
+  mix-units: 2px;
+  invalid-units: 1px;
+}
+.units-extended .fallback {
+  div-px-1: 10px;
+  div-px-2: 1px;
+  sub-px-1: 12.6px;
+  sub-cm-1: 9.666625cm;
+  mul-px-1: 19.6px;
+  mul-em-1: 19.6em;
+  mul-em-2: 196em;
+  mul-cm-1: 196cm;
+  add-px-1: 15.4px;
+  add-px-2: 393.35275591px;
+  mul-px-2: 140px;
+  mul-px-3: 140px;
+}
+.css-custom-properties {
+  --tw-pan-x: ;
+  --tw-pan-y: ;
+  --tw-pinch-zoom: ;
+  --tw-scroll-snap-strictness: proximity;
+}
+.variable-interpolation .radio_checked {
+  border-color: #fff;
+}
+.each-with-variables div#apple {
+  color: blue;
+}
+.each-with-variables div#banana {
+  color: blue;
+}
+.each-with-variables div#cherry {
+  color: blue;
+}
+.each-with-variables div#carrot {
+  color: blue;
+}
+.each-with-variables div#potato {
+  color: blue;
+}

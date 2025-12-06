@@ -1,0 +1,33 @@
+.test-math-off {
+  result: 15px;
+}
+.test-dim-to-color {
+  result: #ff0a0a;
+}
+.test-color-to-dim {
+  result: #ff0a0a;
+}
+.test-division {
+  result: 10px / 2 * 2;
+}
+.test-nested {
+  result: 30px;
+}
+.test-spaced {
+  result: 15px;
+}
+.test-non-spaced {
+  result: 15px;
+}
+.test-div {
+  result: 10px / 2;
+}
+.test-op-operands {
+  result: 150px;
+}
+.test-math-context {
+  add: 15;
+  sub: 5;
+  mul: 50;
+  div: 10 / 5;
+}

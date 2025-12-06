@@ -34,7 +34,7 @@ const lessc_helper = {
         console.log('  -l, --lint                   Syntax check only (lint).');
         console.log('  -s, --silent                 Suppresses output of error messages.');
         console.log('  --quiet                      Suppresses output of warnings.');
-        console.log('  --strict-imports             Forces evaluation of imports.');
+        console.log('  --strict-imports             (DEPRECATED) Ignores .less imports inside selector blocks. Has confusing behavior.');
         console.log('  --insecure                   Allows imports from insecure https hosts.');
         console.log('  -v, --version                Prints version number and exit.');
         console.log('  --verbose                    Be verbose.');
@@ -74,12 +74,13 @@ const lessc_helper = {
         console.log('  -sm=on|off               Legacy parens-only math. Use --math');
         console.log('  --strict-math=on|off     ');
         console.log('');
-        console.log('  --line-numbers=TYPE      Outputs filename and line numbers.');
-        console.log('                           TYPE can be either \'comments\', which will output');
-        console.log('                           the debug info within comments, \'mediaquery\'');
-        console.log('                           that will output the information within a fake');
-        console.log('                           media query which is compatible with the SASS');
-        console.log('                           format, and \'all\' which will do both.');
+        console.log('  --line-numbers=TYPE      (DEPRECATED) Outputs filename and line numbers.');
+        console.log('                           TYPE can be either \'comments\', \'mediaquery\', or \'all\'.');
+        console.log('                           The entire dumpLineNumbers option is deprecated.');
+        console.log('                           Use sourcemaps (--source-map) instead.');
+        console.log('                           All modes will be removed in a future version.');
+        console.log('                           Note: \'mediaquery\' and \'all\' modes generate @media -sass-debug-info');
+        console.log('                           which had short-lived usage and is no longer recommended.');
         console.log('  -x, --compress           Compresses output by removing some whitespaces.');
         console.log('                           We recommend you use a dedicated minifer like less-plugin-clean-css');
         console.log('');

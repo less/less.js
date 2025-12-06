@@ -1,0 +1,39 @@
+#yelow #short {
+  color: #fea;
+}
+#yelow #long {
+  color: #ffeeaa;
+}
+#yelow #rgba {
+  color: rgba(255, 238, 170, 0.1);
+}
+#yelow #argb {
+  color: #1affeeaa;
+}
+#blue #short {
+  color: #00f;
+}
+#blue #long {
+  color: #0000ff;
+}
+#blue #rgba {
+  color: rgba(0, 0, 255, 0.1);
+}
+#blue #argb {
+  color: #1a0000ff;
+}
+#alpha #hsla {
+  color: hsla(11, 20%, 20%, 0.6);
+}
+#grey {
+  color: #c8c8c8;
+}
+#aa3333 {
+  color: #aa3333;
+}
+#bb8080 {
+  color: hsl(0, 30%, 62%);
+}
+#ccff00 {
+  color: hsl(72, 100%, 50%);
+}

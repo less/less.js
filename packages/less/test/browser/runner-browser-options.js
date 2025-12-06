@@ -6,7 +6,7 @@ var less = {
 };
 
 // test inline less in style tags by grabbing an assortment of less files and doing `@import`s
-var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 'mixins'],
+var testFiles = ['charsets/charsets', 'color-functions/basic', 'comments/comments', 'css-3/css-3', 'strings/strings', 'media/media', 'mixins/mixins'],
     testSheets = [];
 
 // setup style tags with less and link tags pointing to expected css output
@@ -14,13 +14,13 @@ var testFiles = ['charsets', 'colors', 'comments', 'css-3', 'strings', 'media', 
 /**
  * @todo - generate the node_modules path for this file and in templates
  */
-var lessFolder = '../../node_modules/@less/test-data/less'
-var cssFolder = '../../node_modules/@less/test-data/css'
+var lessFolder = '../../node_modules/@less/test-data/tests-unit'
+var cssFolder = '../../node_modules/@less/test-data/tests-unit'
 
 for (var i = 0; i < testFiles.length; i++) {
     var file = testFiles[i],
-        lessPath  = lessFolder + '/_main/' + file + '.less',
-        cssPath   = cssFolder + '/_main/' + file + '.css',
+        lessPath  = lessFolder + '/' + file + '.less',
+        cssPath   = cssFolder + '/' + file + '.css',
         lessStyle = document.createElement('style'),
         cssLink   = document.createElement('link'),
         lessText  = '@import "' + lessPath + '";';

@@ -4,21 +4,25 @@ var { forceCovertToBrowserPath } = require('./utils');
 
 /** Root of repo */
 var testFolder = forceCovertToBrowserPath(path.dirname(resolve.sync('@less/test-data')));
-var lessFolder = forceCovertToBrowserPath(path.join(testFolder, 'less'));
+var testsUnitFolder = forceCovertToBrowserPath(path.join(testFolder, 'tests-unit'));
+var testsConfigFolder = forceCovertToBrowserPath(path.join(testFolder, 'tests-config'));
 var localTests = forceCovertToBrowserPath(path.resolve(__dirname, '..'));
 
 module.exports = {
     main: {
     // src is used to build list of less files to compile
         src: [
-            `${lessFolder}/_main/*.less`,
-            `!${lessFolder}/_main/plugin-preeval.less`, // uses ES6 syntax
+            `${testsUnitFolder}/*/*.less`,
+            `!${testsUnitFolder}/plugin-preeval/plugin-preeval.less`, // uses ES6 syntax
             // Don't test NPM import, obviously
-            `!${lessFolder}/_main/plugin-module.less`,
-            `!${lessFolder}/_main/import-module.less`,
-            `!${lessFolder}/_main/javascript.less`,
-            `!${lessFolder}/_main/urls.less`,
-            `!${lessFolder}/_main/empty.less`
+            `!${testsUnitFolder}/plugin-module/plugin-module.less`,
+            `!${testsUnitFolder}/import/import-module.less`,
+            `!${testsUnitFolder}/javascript/javascript.less`,
+            `!${testsUnitFolder}/urls/urls.less`,
+            `!${testsUnitFolder}/empty/empty.less`,
+            `!${testsUnitFolder}/color-functions/operations.less`, // conflicts with operations/operations.less
+            // Exclude debug line numbers tests - these are Node.js only (dumpLineNumbers is deprecated)
+            `!${testsConfigFolder}/debug/**/*.less`
         ],
         options: {
             helpers: 'test/browser/runner-main-options.js',
@@ -26,16 +30,8 @@ module.exports = {
             outfile: 'tmp/browser/test-runner-main.html'
         }
     },
-    legacy: {
-        src: [`${lessFolder}/legacy/*.less`],
-        options: {
-            helpers: 'test/browser/runner-legacy-options.js',
-            specs: 'test/browser/runner-legacy-spec.js',
-            outfile: 'tmp/browser/test-runner-legacy.html'
-        }
-    },
     strictUnits: {
-        src: [`${lessFolder}/units/strict/*.less`],
+        src: [`${testsConfigFolder}/units/strict/*.less`],
         options: {
             helpers: 'test/browser/runner-strict-units-options.js',
             specs: 'test/browser/runner-strict-units-spec.js',
@@ -44,8 +40,8 @@ module.exports = {
     },
     errors: {
         src: [
-            `${lessFolder}/errors/*.less`,
-            `${testFolder}/errors/javascript-error.less`,
+            `${testFolder}/tests-error/eval/*.less`,
+            `${testFolder}/tests-error/parse/*.less`,
             `${localTests}/less/errors/*.less`
         ],
         options: {
@@ -56,7 +52,7 @@ module.exports = {
         }
     },
     noJsErrors: {
-        src: [`${lessFolder}/no-js-errors/*.less`],
+        src: [`${testsConfigFolder}/no-js-errors/*.less`],
         options: {
             helpers: 'test/browser/runner-no-js-errors-options.js',
             specs: 'test/browser/runner-no-js-errors-spec.js',
@@ -141,7 +137,7 @@ module.exports = {
         }
     },
     postProcessorPlugin: {
-        src: [`${lessFolder}/postProcessorPlugin/*.less`],
+        src: [`${testsConfigFolder}/postProcessorPlugin/*.less`],
         options: {
             helpers: [
                 'test/plugins/postprocess/index.js',
@@ -153,7 +149,7 @@ module.exports = {
         }
     },
     preProcessorPlugin: {
-        src: [`${lessFolder}/preProcessorPlugin/*.less`],
+        src: [`${testsConfigFolder}/preProcessorPlugin/*.less`],
         options: {
             helpers: [
                 'test/plugins/preprocess/index.js',
@@ -164,7 +160,7 @@ module.exports = {
         }
     },
     visitorPlugin: {
-        src: [`${lessFolder}/visitorPlugin/*.less`],
+        src: [`${testsConfigFolder}/visitorPlugin/*.less`],
         options: {
             helpers: [
                 'test/plugins/visitor/index.js',
@@ -175,7 +171,7 @@ module.exports = {
         }
     },
     filemanagerPlugin: {
-        src: [`${lessFolder}/filemanagerPlugin/*.less`],
+        src: [`${testsConfigFolder}/filemanagerPlugin/*.less`],
         options: {
             helpers: [
                 'test/plugins/filemanager/index.js',

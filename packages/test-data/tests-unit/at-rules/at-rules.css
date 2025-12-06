@@ -1,0 +1,107 @@
+@charset "UTF-8";
+@page {
+  margin: 2cm;
+  @top-left {
+    content: "Page " counter(page);
+  }
+}
+@page :first {
+  margin: 3cm;
+  @top-center {
+    content: "First Page";
+  }
+}
+@namespace url(http://www.w3.org/1999/xhtml);
+@namespace svg url(http://www.w3.org/2000/svg);
+@viewport {
+  width: device-width;
+  initial-scale: 1;
+}
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+    width: 300%;
+  }
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+@keyframes "complex-animation" {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@font-face {
+  font-family: "MyFont";
+  src: url("myfont.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: "CustomFont";
+  src: url("custom.woff") format("woff");
+}
+@supports (display: grid) {
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@supports (transform-style: preserve-3d) {
+  @media (min-width: 768px) {
+    .card {
+      transform: rotateY(15deg);
+    }
+  }
+}
+@media print {
+  body {
+    font-size: 12pt;
+    color: black;
+  }
+}
+@media screen {
+  @supports (display: flex) {
+    .container {
+      display: flex;
+    }
+  }
+}
+@media (max-width: 600px) {
+  .sidebar {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+}
+@page :left {
+  margin-left: 4cm;
+  margin-right: 3cm;
+}
+@page :right {
+  margin-left: 3cm;
+  margin-right: 4cm;
+}
+@media (max-width: 600px) {
+  .wrapper .mobile-only {
+    display: block;
+  }
+}
+@media (min-width: 1024px) {
+  .desktop {
+    display: block;
+  }
+}

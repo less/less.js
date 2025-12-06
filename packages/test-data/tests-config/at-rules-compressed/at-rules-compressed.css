@@ -1,0 +1,1 @@
+@media screen{body{margin:0}p{padding:0}}@layer base{body{margin:0}p{padding:0}div{border:0}}@supports (display: grid){.grid{display:grid}.item{grid-column:1}}@page{margin:2cm;size:A4}@keyframes slide{from{transform:translateX(0)}to{transform:translateX(100px)}}

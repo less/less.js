@@ -1,0 +1,87 @@
+@a: 2;
+@x: (@a * @a);
+@y: (@x + 1);
+@z: (@x * 2 + @y);
+@var: -1;
+@b: @a * 10;
+@c: #888;
+@fonts: "Trebuchet MS", Verdana, sans-serif;
+@f: @fonts;
+@quotes: "~" "~";
+@q: @quotes;
+@onePixel: 1px;
+
+.variables-basic {
+  width: (@z + 1cm);
+  height: (@b + @x + 0px);
+  color: @c;
+  font-family: @f;
+  quotes: @q;
+}
+
+.variable-dash {
+  @jumbotron-padding: 30px;
+  padding: @jumbotron-padding (@jumbotron-padding/2);
+}
+
+.variable-redefinition {
+  @var: 0;
+  zero: @var;
+}
+
+.variable-scope {
+  @var: 4;
+  @var: 2;
+  three: @var;
+  @var: 3;
+}
+
+.variable-important {
+  @important-var: @c !important;
+  @important-var-two: @a !important;
+  minus-one: @var;
+  @a: 'Trebuchet';
+  @multi: 'A', B, C;
+  font-family: @a, @a, @a;
+  color: @c !important;
+  same-color: @important-var;
+  same-again: @important-var !important;
+  multi-important: @important-var @important-var, @important-var-two;
+  multi: something @multi, @a;
+}
+
+.variable-names-quoted {
+  @var: 'hello';
+  @name: 'var';
+  name: @@name;
+}
+
+.variable-names-unquoted {
+  @var: 'hello';
+  @name: var;
+  name: @@name;
+}
+
+.variable-names-color-keyword {
+  @red: 'hello';
+  @name: red;
+  name: @@name;
+}
+
+.variable-units {
+  width: @onePixel;
+  same-unit-as-previously: (@onePixel / @onePixel);
+  square-pixel-divided: (@onePixel * @onePixel / @onePixel);
+  odd-unit: unit((@onePixel * 4em / 2cm));
+}
+
+.variable-pollution {
+  @a: 'no-pollution';
+  a: @a;
+}
+
+.polluteMixin() {
+  @a: 'pollution';
+}
+
+

@@ -1,0 +1,46 @@
+@val: 10px;
+@var: 50vh/2;
+
+.calc-basic {
+  width: calc(100% - 30px);
+  height: calc(50% + 20px);
+  margin: calc(10px * 2);
+  padding: calc(100vh - 50px);
+}
+
+.calc-variables {
+  @c: 10px + 20px;
+  @calc: (@val + 30px);
+  root: calc(100% - @c);
+  root2: calc(100% - @calc);
+  width: calc(50% + (@var - 20px));
+  height: calc(50% + ((@var - 20px)));
+}
+
+.calc-nested {
+  min-height: calc(((10vh)) + calc((5vh)));
+  nested: calc(calc(2.25rem + 2px) - 1px * 2);
+}
+
+.calc-functions {
+  @a: 10px;
+  @b: 10px;
+  @floor: floor(1 + .1);
+  
+  one: calc(100% - ((min(@a + @b))));
+  two: calc(100% - (((@a + @b))));
+  bar: calc(@floor + 20%);
+}
+
+.calc-escape {
+  three: calc(e('100%') - (3 * 1));
+  four: calc(~'100%' - (3 * 1));
+}
+
+.calc-mixed {
+  foo: 1 + 2 calc(3 + 4) 5 + 6;
+  @v: 10px;
+  height: calc(100% - ((@v * 3) + (@v * 2)));
+}
+
+

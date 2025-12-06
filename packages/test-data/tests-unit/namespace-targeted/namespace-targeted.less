@@ -1,0 +1,33 @@
+// Targeted tests for specific uncovered lines in namespace-value.js
+
+// Lines 51-52: $@var interpolation (property interpolation with variable)
+// This tests: name.substring(0, 2) === '$@'
+// The syntax is #namespace[$@var-name] where @var-name contains the property name
+@prop-name: my-prop;
+#namespace {
+  my-prop: prop-value;
+}
+.test-prop-interp {
+  value: #namespace[$@prop-name];
+}
+
+// Lines 43-47: Variable not found error path
+// Access a variable that doesn't exist in the namespace
+#namespace-with-var {
+  @existing-var: value;
+}
+.test-var-not-found {
+  // This will error: variable @nonexistent-var not found
+  // color: #namespace-with-var[@nonexistent-var];
+}
+
+// Lines 61-65: Property not found error path
+// Access a property that doesn't exist in the namespace
+#namespace-with-prop {
+  existing-prop: value;
+}
+.test-prop-not-found {
+  // This will error: property "nonexistent-prop" not found
+  // value: #namespace-with-prop[$nonexistent-prop];
+}
+

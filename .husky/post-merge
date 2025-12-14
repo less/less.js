@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Post-merge hook to preserve alpha versions when merging master into alpha
+node scripts/post-merge-version-fix.js

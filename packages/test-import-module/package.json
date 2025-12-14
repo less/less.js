@@ -1,11 +1,11 @@
 {
-  "name": "@less/test-import-module",
-  "private": true,
-  "version": "4.0.0",
-  "description": "Less files to be included in node_modules directory for testing import from node_modules",
-  "author": "Alexis Sellier <self@cloudhead.net>",
-  "contributors": [
-    "The Core Less Team"
-  ],
-  "license": "Apache-2.0"
+	"name": "@less/test-import-module",
+	"private": true,
+	"version": "4.5.0",
+	"description": "Less files to be included in node_modules directory for testing import from node_modules",
+	"author": "Alexis Sellier <self@cloudhead.net>",
+	"contributors": [
+		"The Core Less Team"
+	],
+	"license": "Apache-2.0"
 }

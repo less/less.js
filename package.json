@@ -1,31 +1,35 @@
 {
-  "name": "@less/root",
-  "private": true,
-  "version": "4.4.2",
-  "description": "Less monorepo",
-  "homepage": "http://lesscss.org",
-  "scripts": {
-    "publish": "lerna publish from-package --no-private",
-    "changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
-    "test": "cd packages/less && npm test",
-    "postinstall": "npx only-allow pnpm"
-  },
-  "author": "Alexis Sellier <self@cloudhead.net>",
-  "contributors": [
-    "The Core Less Team"
-  ],
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/less/less.js/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/less/less.js.git"
-  },
-  "devDependencies": {
-    "all-contributors-cli": "~6.26.1",
-    "github-changes": "^1.1.2",
-    "lerna": "^3.22.1",
-    "npm-run-all": "^4.1.5"
-  }
+	"name": "@less/root",
+	"private": true,
+	"version": "4.5.0",
+	"description": "Less monorepo",
+	"homepage": "http://lesscss.org",
+	"scripts": {
+		"publish": "node scripts/bump-and-publish.js",
+		"publish:dry-run": "DRY_RUN=true node scripts/bump-and-publish.js",
+		"prepare": "husky",
+		"changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
+		"test": "cd packages/less && npm test",
+		"postinstall": "npx only-allow pnpm"
+	},
+	"author": "Alexis Sellier <self@cloudhead.net>",
+	"contributors": [
+		"The Core Less Team"
+	],
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/less/less.js/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/less/less.js.git"
+	},
+	"devDependencies": {
+		"all-contributors-cli": "~6.26.1",
+		"github-changes": "^1.1.2",
+		"husky": "~9.1.7",
+		"npm-run-all": "^4.1.5",
+		"semver": "^6.3.1"
+	},
+	"packageManager": "pnpm@8.15.0"
 }

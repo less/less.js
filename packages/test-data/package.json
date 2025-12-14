@@ -9,6 +9,13 @@
 	"contributors": [
 		"The Core Less Team"
 	],
+	"bugs": {
+		"url": "https://github.com/less/less.js/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/less/less.js.git"
+	},
 	"license": "Apache-2.0",
 	"gitHead": "1df9072ee9ebdadc791bf35dfb1dbc3ef9f1948f"
 }

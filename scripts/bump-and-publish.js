@@ -417,6 +417,8 @@ function main() {
   
   console.log(`\n📦 Publishing packages to NPM with tag: ${npmTag}...`);
   
+  const publishErrors = [];
+  
   for (const pkg of publishable) {
     console.log(`\n📤 Publishing ${pkg.name}...`);
     if (dryRun) {
@@ -424,17 +426,32 @@ function main() {
       console.log(`   [DRY RUN] Command: npm publish --tag ${npmTag}`);
     } else {
       try {
-        execSync(`npm publish --tag ${npmTag}`, { 
+        // For scoped packages, ensure access is set correctly
+        const publishCmd = `npm publish --tag ${npmTag} --access public`;
+        execSync(publishCmd, { 
           cwd: pkg.dir, 
           stdio: 'inherit',
           env: { ...process.env, NODE_AUTH_TOKEN: process.env.NPM_TOKEN }
         });
         console.log(`✅ Successfully published ${pkg.name}@${nextVersion}`);
       } catch (e) {
-        console.error(`❌ Failed to publish ${pkg.name}:`, e.message);
-        process.exit(1);
+        const errorMsg = e.message || String(e);
+        console.error(`❌ Failed to publish ${pkg.name}: ${errorMsg}`);
+        publishErrors.push({ name: pkg.name, error: errorMsg });
+        // Continue with other packages instead of exiting immediately
       }
     }
+  }
+  
+  // Report any publish errors at the end
+  if (publishErrors.length > 0) {
+    console.error(`\n❌ Publishing completed with ${publishErrors.length} error(s):`);
+    publishErrors.forEach(({ name, error }) => {
+      console.error(`   - ${name}: ${error}`);
+    });
+    console.error(`\n⚠️  Note: Version bump and commit were successful.`);
+    console.error(`   Some packages failed to publish. You may need to publish them manually.`);
+    process.exit(1);
   }
   
   if (dryRun) {

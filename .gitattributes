@@ -1,0 +1,14 @@
+*.js text eol=lf
+*.svg text eol=lf
+lessc text eol=lf
+*.less text eol=lf
+*.css text eol=lf
+*.htm text eol=lf
+*.html text eol=lf
+*.jpg binary
+*.png binary
+*.jpeg binary
+
+# From https://github.com/alexkaratarakis/gitattributes/blob/master/Web.gitattributes
+*.lock            text -diff
+package-lock.json text -diff

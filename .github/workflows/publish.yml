@@ -1,0 +1,194 @@
+name: Publish to NPM
+
+on:
+  push:
+    branches:
+      - master
+      - alpha
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'docs/**'
+
+permissions:
+  id-token: write  # Required for OIDC trusted publishing
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Build
+        run: |
+          cd packages/less
+          pnpm run build
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine branch and tag type
+        id: branch-info
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          if [ "$BRANCH" = "alpha" ]; then
+            echo "is_alpha=true" >> $GITHUB_OUTPUT
+            echo "npm_tag=alpha" >> $GITHUB_OUTPUT
+            echo "release_type=prerelease" >> $GITHUB_OUTPUT
+          else
+            echo "is_alpha=false" >> $GITHUB_OUTPUT
+            echo "npm_tag=latest" >> $GITHUB_OUTPUT
+            echo "release_type=release" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate alpha branch requirements
+        if: steps.branch-info.outputs.is_alpha == 'true'
+        run: |
+          # Fetch master branch
+          git fetch origin master:master || true
+          
+          # Check 1: Alpha branch must not be behind master
+          echo "🔍 Checking if alpha branch is up to date with master..."
+          MASTER_COMMITS=$(git rev-list --count alpha..master 2>/dev/null || echo "0")
+          
+          if [ "$MASTER_COMMITS" -gt 0 ]; then
+            echo "❌ ERROR: Alpha branch is behind master by $MASTER_COMMITS commit(s)"
+            echo "   Alpha branch must include all commits from master before publishing"
+            exit 1
+          fi
+          echo "✅ Alpha branch is up to date with master"
+          
+          # Check 2: Get current version and validate it contains 'alpha'
+          CURRENT_VERSION=$(node -p "require('./packages/less/package.json').version")
+          echo "📦 Current version: $CURRENT_VERSION"
+          
+          if [[ ! "$CURRENT_VERSION" =~ -alpha\. ]]; then
+            echo "❌ ERROR: Alpha branch version must contain '-alpha.'"
+            echo "   Current version: $CURRENT_VERSION"
+            echo "   Expected format: X.Y.Z-alpha.N"
+            exit 1
+          fi
+          echo "✅ Version contains 'alpha' suffix"
+          
+          # Check 3: Alpha base version must be >= master version
+          echo "🔍 Comparing alpha base version with master version..."
+          MASTER_VERSION=$(git show master:packages/less/package.json 2>/dev/null | node -p "try { JSON.parse(require('fs').readFileSync(0, 'utf-8')).version } catch(e) { '0.0.0' }" || echo "0.0.0")
+          
+          if [ "$MASTER_VERSION" = "0.0.0" ]; then
+            echo "⚠️  Could not determine master version, skipping comparison"
+          else
+            echo "📦 Master version: $MASTER_VERSION"
+            
+            # Extract base version (remove -alpha.X suffix)
+            ALPHA_BASE=$(echo "$CURRENT_VERSION" | sed 's/-alpha\.[0-9]*$//')
+            echo "📦 Alpha base version: $ALPHA_BASE"
+            
+            # Compare versions using semver from root workspace
+            COMPARE_RESULT=$(node -e "
+              const semver = require('semver');
+              const alphaBase = process.argv[1];
+              const master = process.argv[2];
+              if (semver.lt(alphaBase, master)) {
+                console.log('ERROR');
+              } else {
+                console.log('OK');
+              }
+            " "$ALPHA_BASE" "$MASTER_VERSION" 2>/dev/null || echo "ERROR")
+            
+            if [ "$COMPARE_RESULT" = "ERROR" ]; then
+              echo "❌ ERROR: Alpha base version ($ALPHA_BASE) is lower than master version ($MASTER_VERSION)"
+              echo "   According to semver, alpha base version must be >= master version"
+              exit 1
+            fi
+            echo "✅ Alpha base version is >= master version"
+          fi
+
+      - name: Ensure npm 11.5.1 or later for trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Bump version and publish
+        id: publish
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: |
+          pnpm run publish
+          
+          # Extract version from package.json
+          VERSION=$(node -p "require('./packages/less/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release (Master)
+        if: steps.branch-info.outputs.is_alpha != 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.publish.outputs.tag }}
+          release_name: Release ${{ steps.publish.outputs.tag }}
+          body: |
+            ## Changes
+            
+            See [CHANGELOG.md](https://github.com/less/less.js/blob/master/CHANGELOG.md) for details.
+            
+            ## Installation
+            
+            ```bash
+            npm install less@${{ steps.publish.outputs.version }}
+            ```
+          draft: false
+          prerelease: false
+
+      - name: Create GitHub Pre-Release (Alpha)
+        if: steps.branch-info.outputs.is_alpha == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.publish.outputs.tag }}
+          release_name: Alpha Release ${{ steps.publish.outputs.tag }}
+          body: |
+            ## Alpha Release
+            
+            This is an alpha release from the alpha branch.
+            
+            ## Installation
+            
+            ```bash
+            npm install less@${{ steps.publish.outputs.version }} --tag alpha
+            ```
+            
+            Or:
+            
+            ```bash
+            npm install less@alpha
+            ```
+          draft: false
+          prerelease: true

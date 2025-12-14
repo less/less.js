@@ -1,54 +1,128 @@
 # Contributing to Less.js
 
-> We welcome feature requests and bug reports. Please read these guidelines before submitting one.
+Thank you for your interest in contributing to Less.js! Contributions come in many forms—fixing bugs, improving code quality, enhancing tooling, updating documentation, and occasionally adding new features. This guide will help you get started.
 
+## Getting Started
 
-<span class="warning">**Words that begin with the at sign (`@`) must be wrapped in backticks!** </span>. As a courtesy to avoid sending notifications to any user that might have the `@username` being referenced, please remember that GitHub usernames also start with the at sign. If you don't wrap them in backticks, users will get unintended notifications from you.
+Before you begin, please note: **Words that begin with the at sign (`@`) must be wrapped in backticks!** This prevents unintended notifications to GitHub users. For example, use `` `@username` `` instead of `@username`.
 
-GitHub has other great markdown features as well, [go here to learn more about them](https://help.github.com/articles/github-flavored-markdown).
-
+GitHub has many great markdown features—[learn more about them here](https://help.github.com/articles/github-flavored-markdown).
 
 ## Reporting Issues
 
-We only accept issues that are bug reports or feature requests. Bugs must be isolated and reproducible problems that we can fix within the Less.js core. Please read the following guidelines before opening any issue.
+We welcome bug reports and feature requests! To help us help you, please follow these guidelines:
 
-1. **Search for existing issues.** We get a lot of duplicate issues, and you'd help us out a lot by first checking if someone else has reported the same issue. Moreover, the issue may have already been resolved with a fix available.
-2. **Create an isolated and reproducible test case.** Be sure the problem exists in Less.js's code with [reduced test cases](http://css-tricks.com/reduced-test-cases/) that should be included in each bug report.
-3. **Test with the latest version**. We get a lot of issues that could be resolved by updating your version of Less.js.
-4. **Include an example with source.** E.g. You can use [Less Preview](http://lesscss.org/less-preview/) to create a short test case.
-5. **Share as much information as possible.** Include operating system and version. Describe how you use Less. If you use it in the browser, please include browser and version, and the version of Less.js you're using. Let us know if you're using the command line (`lessc`) or an external tool. And try to include steps to reproduce the bug.
-6. If you have a solution or suggestion for how to fix the bug you're reporting, please include it, or make a pull request - don't assume the maintainers know how to fix it just because you do.
+1. **Search for existing issues first.** Many issues have already been reported or resolved. Checking first saves everyone time.
+2. **Create an isolated and reproducible test case.** Include [reduced test cases](http://css-tricks.com/reduced-test-cases/) that demonstrate the problem clearly.
+3. **Test with the latest version.** Many issues are resolved in newer versions—please update first.
+4. **Include examples with source code.** You can use [Less Preview](http://lesscss.org/less-preview/) to create a short test case.
+5. **Share as much information as possible.** Include:
+   - Operating system and version
+   - How you're using Less (browser, command line, build tool, etc.)
+   - Browser and version (if applicable)
+   - Version of Less.js you're using
+   - Clear steps to reproduce the issue
+6. **Suggest solutions if you have them.** If you know how to fix it, share your approach or submit a pull request!
 
 Please report documentation issues in [the documentation project](https://github.com/less/less-docs).
 
 ## Feature Requests
 
-* Please search for existing feature requests first to see if something similar already exists.
-* Include a clear and specific use-case. We love new ideas, but we do not add language features without a reason.
-* Consider whether or not your language feature would be better as a function or implemented in a 3rd-party build system
+When suggesting features:
 
+* **Search existing feature requests first** to see if something similar already exists. Many features are already planned or under consideration.
+* **Include a clear and specific use-case.** Help us understand the practical need and how it would be used.
+* **Consider alternatives.** Sometimes a function or a 3rd-party build system might be a better fit than a core language feature.
+
+**Note:** Most helpful contributions to Less.js are organizational—addressing bugs, improving code quality, enhancing tooling, and updating documentation. The language features are generally stable, even if not all planned features have been implemented yet.
 
 ## Pull Requests
 
-_Pull requests are encouraged!_
+Pull requests are welcome! Here's how to make them go smoothly:
 
-* Start by adding a feature request to get feedback and see how your idea is received.
-* If your pull request solves an existing issue, but it's different in some way, _please create a new issue_ and make sure to discuss it with the core contributors. Otherwise you risk your hard work being rejected.
-* Do not change the **./dist/** folder, we do this when releasing
-* _Please add tests_ for your work. Tests are invoked using `npm test` command. It will run both node.js tests and browser (Headless Chrome) tests.
+* **For new features, start with a feature request** to get feedback and see how your idea is received.
+* **If your PR solves an existing issue**, but approaches it differently, please create a new issue first and discuss it with core contributors. This helps avoid wasted effort.
+* **Don't modify the `./dist/` folder**—we handle that during releases.
+* **Please add tests** for your work. Run tests using `npm test`, which runs both Node.js and browser (Headless Chrome) tests.
 
 ### Coding Standards
 
 * Always use spaces, never tabs
-* End lines in semi-colons.
-* Loosely aim towards eslint standards
-
+* End lines with semicolons
+* Aim for ESLint standards
 
 ## Developing
-If you want to take an issue just add a small comment saying you are having a go at something, so we don't get duplication.
+
+If you want to work on an issue, add a comment saying you're taking it on—this helps prevent duplicate work.
 
 Learn more about [developing Less.js](http://lesscss.org/usage/#developing-less).
 
 ## Releases
 
-Releases are managed using PNPM. Instructions TBD
+Releases are fully automated! Here's how it works:
+
+### Automated Publishing
+
+When code is pushed to specific branches, GitHub Actions automatically:
+
+1. **Runs tests and builds** the project
+2. **Bumps the version** automatically
+3. **Publishes to npm** with the appropriate tag
+4. **Creates a GitHub release**
+
+### Release Branches
+
+- **`master` branch**: 
+  - Publishes regular releases (e.g., `4.4.2` → `4.4.3`)
+  - Published to npm with `latest` tag
+  - Creates regular GitHub releases
+  - Version auto-increments by patch unless explicitly set
+
+- **`alpha` branch**:
+  - Publishes alpha releases (e.g., `5.0.0-alpha.1` → `5.0.0-alpha.2`)
+  - Published to npm with `alpha` tag
+  - Creates GitHub pre-releases
+  - Version auto-increments alpha suffix
+
+### How to Publish
+
+**For regular releases:**
+1. Update version in `packages/less/package.json` (or let it auto-increment)
+2. Commit and push to `master`
+3. The workflow automatically publishes if the version changed
+
+**For alpha releases:**
+1. Make your changes on the `alpha` branch
+2. Commit and push
+3. The workflow automatically increments the alpha version and publishes
+
+### Version Override
+
+You can override auto-increment by including a version in your commit message:
+
+```
+feat: new feature
+
+version: 4.5.0
+```
+
+### Security
+
+We use npm's [trusted publishing](https://docs.npmjs.com/trusted-publishers) with OIDC authentication. This means:
+- No long-lived tokens needed
+- Automatic provenance generation
+- Enhanced security through short-lived, workflow-specific credentials
+
+The publishing workflow (`.github/workflows/publish.yml`) handles both release types automatically.
+
+### Important Notes
+
+- Publishing only works from `master` or `alpha` branches
+- Alpha versions must contain `-alpha.` and are published to the `alpha` tag
+- Regular versions are published to the `latest` tag
+- Alpha branch must be up-to-date with master before publishing
+- Alpha base version must be >= master version (semver)
+
+---
+
+Thank you for contributing to Less.js!

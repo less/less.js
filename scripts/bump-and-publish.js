@@ -159,8 +159,78 @@ function main() {
   console.log(`🚀 Starting publish process for branch: ${branch}`);
   
   // Get current version
-  const currentVersion = getCurrentVersion();
+  let currentVersion = getCurrentVersion();
   console.log(`📦 Current version: ${currentVersion}`);
+  
+  // Protection: If on alpha branch and version was overwritten by a merge from master
+  if (isAlpha && !currentVersion.includes('-alpha.')) {
+    console.log(`\n⚠️  WARNING: Alpha branch version (${currentVersion}) doesn't contain '-alpha.'`);
+    console.log(`   This likely happened due to merging master into alpha.`);
+    console.log(`   Attempting to restore alpha version...`);
+    
+    // Try to find the last alpha version from alpha branch history
+    let restoredVersion = null;
+    try {
+      // Get recent commits on alpha that modified package.json
+      const commits = execSync(
+        'git log alpha --oneline -20 -- packages/less/package.json',
+        { cwd: ROOT_DIR, encoding: 'utf8' }
+      ).trim().split('\n');
+      
+      // Search through commits to find the last alpha version
+      for (const commitLine of commits) {
+        const commitHash = commitLine.split(' ')[0];
+        try {
+          const pkgContent = execSync(
+            `git show ${commitHash}:packages/less/package.json 2>/dev/null`,
+            { cwd: ROOT_DIR, encoding: 'utf8' }
+          );
+          const pkg = JSON.parse(pkgContent);
+          if (pkg.version && pkg.version.includes('-alpha.')) {
+            restoredVersion = pkg.version;
+            console.log(`   Found previous alpha version in commit ${commitHash}: ${restoredVersion}`);
+            break;
+          }
+        } catch (e) {
+          // Continue to next commit
+        }
+      }
+      
+      if (restoredVersion) {
+        // Increment the alpha number from the restored version
+        const alphaMatch = restoredVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
+        if (alphaMatch) {
+          const alphaNum = parseInt(alphaMatch[2], 10);
+          const newAlphaVersion = `${alphaMatch[1]}-alpha.${alphaNum + 1}`;
+          console.log(`   Restoring and incrementing to: ${newAlphaVersion}`);
+          currentVersion = newAlphaVersion;
+          updateAllVersions(newAlphaVersion);
+        } else {
+          console.log(`   Restoring to: ${restoredVersion}`);
+          currentVersion = restoredVersion;
+          updateAllVersions(restoredVersion);
+        }
+      } else {
+        // No previous alpha version found, create one from current version
+        const parsed = parseVersion(currentVersion);
+        const nextMajor = parsed.major + 1;
+        const newAlphaVersion = `${nextMajor}.0.0-alpha.1`;
+        console.log(`   No previous alpha version found. Creating new: ${newAlphaVersion}`);
+        currentVersion = newAlphaVersion;
+        updateAllVersions(newAlphaVersion);
+      }
+    } catch (e) {
+      // If we can't find previous version, create a new alpha version
+      const parsed = parseVersion(currentVersion);
+      const nextMajor = parsed.major + 1;
+      const newAlphaVersion = `${nextMajor}.0.0-alpha.1`;
+      console.log(`   Could not find previous alpha version. Creating: ${newAlphaVersion}`);
+      currentVersion = newAlphaVersion;
+      updateAllVersions(newAlphaVersion);
+    }
+    
+    console.log(`✅ Restored/created alpha version: ${currentVersion}\n`);
+  }
   
   // Determine next version
   const explicitVersion = getExplicitVersion();

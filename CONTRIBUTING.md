@@ -123,6 +123,23 @@ The publishing workflow (`.github/workflows/publish.yml`) handles both release t
 - Alpha branch must be up-to-date with master before publishing
 - Alpha base version must be >= master version (semver)
 
+### Merging Master into Alpha
+
+When merging `master` into `alpha`, the version in `package.json` might be overwritten. We have two layers of protection:
+
+1. **Post-merge git hook** (automatic): Automatically restores alpha versions after merges
+   - Installed automatically via husky when you run `pnpm install`
+   - Runs automatically after `git merge`
+   - Restores and increments the alpha version if it was overwritten
+   - Prompts you to commit the restored version
+
+2. **Publishing script detection** (safety net): The publishing script also detects overwritten versions
+   - Searches git history for the last alpha version
+   - Restores and increments it (e.g., if it was `5.0.0-alpha.3`, it becomes `5.0.0-alpha.4`)
+   - Updates all package.json files accordingly
+
+**Note**: The git hook is managed by husky and installs automatically. The publishing script protection works as a backup even if the hook isn't installed.
+
 ---
 
 Thank you for contributing to Less.js!

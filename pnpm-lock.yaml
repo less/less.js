@@ -14,6 +14,9 @@ importers:
       github-changes:
         specifier: ^1.1.2
         version: 1.1.2
+      husky:
+        specifier: ~9.1.7
+        version: 9.1.7
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -1630,6 +1633,11 @@ packages:
   https-proxy-agent@2.2.4:
     resolution: {integrity: sha512-OmvfoQ53WLjtA9HeYP9RNrWMJzzAz1JGaSFr1nijg0PVR1JaD/xbJq1mdEIIlxGpXp9eSe/O2LgU9DJmTPd0Eg==}
     engines: {node: '>= 4.5.0'}
+
+  husky@9.1.7:
+    resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   hyperquest@1.2.0:
     resolution: {integrity: sha512-N6QwIYr/ENmsE3+0aNA/x8M+jHF0wedvc9ZiGAhg7KK6TxwtJTSR95b0invqaLFPqUrsngYUrc4LVmLtrl7kvw==}
@@ -4980,6 +4988,8 @@ snapshots:
       debug: 3.2.7
     transitivePeerDependencies:
       - supports-color
+
+  husky@9.1.7: {}
 
   hyperquest@1.2.0:
     dependencies:

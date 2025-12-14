@@ -18,6 +18,8 @@ jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
+    # Only run on push events, not pull requests
+    if: github.event_name == 'push'
     
     steps:
       - name: Checkout code
@@ -28,8 +30,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - uses: actions/setup-node@v4
         with:

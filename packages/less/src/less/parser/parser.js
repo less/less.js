@@ -959,8 +959,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     if (elements) {
                         parensIndex = parserInput.i;
-                        if (parserInput.$char('(')) {
-                            parensWS = parserInput.isWhitespace(-2);
+                        parensWS = parserInput.isWhitespace(-1);
+                        if (parserInput.$char('(')) { 
                             args = this.args(true).args;
                             expectChar(')');
                             hasParens = true;

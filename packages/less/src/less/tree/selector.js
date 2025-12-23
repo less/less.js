@@ -62,7 +62,8 @@ Selector.prototype = Object.assign(new Node(), {
     },
 
     createEmptySelectors() {
-        const el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
+        const el = new Element('', '&', false, this._index, this._fileInfo);
+        const sels = [new Selector([el], null, null, this._index, this._fileInfo)];
         sels[0].mediaEmpty = true;
         return sels;
     },
@@ -70,22 +71,37 @@ Selector.prototype = Object.assign(new Node(), {
     match(other) {
         const elements = this.elements;
         const len = elements.length;
-        let olen;
-        let i;
 
         other = other.mixinElements();
-        olen = other.length;
+        const olen = other.length;
+
         if (olen === 0 || len < olen) {
             return 0;
-        } else {
-            for (i = 0; i < olen; i++) {
-                if (elements[i].value !== other[i]) {
+        }
+
+        for (let i = 0; i < olen; i++) {
+            const el = elements[i];
+            const val = el.value;
+
+            // If value is a pseudo class like :not(...)
+            if (val && typeof val === 'object' && val.type === 'Pseudo' && val.name === ':not') {
+                if (val.value && typeof val.value.mixinElements === 'function') {
+                    const innerElements = val.value.mixinElements();
+                    if (!innerElements.includes(other[i])) {
+                        return 0;
+                    }
+                } else {
+                    return 0;
+                }
+            } else {
+                const comp = (val && val.value) || val;
+                if (comp !== other[i]) {
                     return 0;
                 }
             }
         }
 
-        return olen; // return number of matched elements
+        return olen;
     },
 
     mixinElements() {
@@ -93,8 +109,18 @@ Selector.prototype = Object.assign(new Node(), {
             return this.mixinElements_;
         }
 
-        let elements = this.elements.map( function(v) {
-            return v.combinator.value + (v.value.value || v.value);
+        let elements = this.elements.map(function(v) {
+            const val = v.value;
+
+            // Handle pseudo class like :not(...)
+            if (val && typeof val === 'object' && val.type === 'Pseudo' && val.name === ':not') {
+                if (val.value && typeof val.value.mixinElements === 'function') {
+                    return v.combinator.value + val.value.mixinElements().join('');
+                }
+                return v.combinator.value + val.name; // fallback
+            }
+
+            return v.combinator.value + ((val && val.value) || val);
         }).join('').match(/[,&#*.\w-]([\w-]|(\\.))*/g);
 
         if (elements) {

@@ -254,8 +254,9 @@ class ProcessExtendsVisitor {
     }
 
     visitSelector(selectorNode, visitArgs) {
-        visitArgs.visitDeeper = false;
+    visitArgs.visitDeeper = true;
     }
+
 
     visitRuleset(rulesetNode, visitArgs) {
         if (rulesetNode.root) {

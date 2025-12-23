@@ -1,21 +1,21 @@
 {
   "compilerOptions": {
-    "outDir": "./lib",
-    "moduleResolution": "node",
-    "rootDir": ".",
-    "allowJs": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "esModuleInterop": true,
-    "importHelpers": true,
-    "noImplicitAny": true,
-    "target": "ES5"
+    "outDir": "./lib",                  // Ensure the lib folder exists
+    "moduleResolution": "node",          // Correct module resolution strategy
+    "rootDir": ".",                      // Make sure this points to the correct source directory
+    "allowJs": true,                     // Allows JavaScript files in the project (if needed)
+    "sourceMap": true,                   // Generates source maps for debugging
+    "esModuleInterop": true,             // Enables compatibility for CommonJS and ES module interoperability
+    "resolveJsonModule": true,           // If you're working with JSON files, add this option
+    "noImplicitAny": true,               // Disallows 'any' type by default
+    "strict": true,                      // Enables all strict type-checking options
+    "target": "ES5"                      // Set target to ES5 (change to ES6 or ESNext for newer features)
   },
   "ts-node": {
     "compilerOptions": {
       "rootDir": "."
-    }
-  },
-  "include": ["**/*"],
-  "exclude": ["node_modules", "lib/**/*"]
+    },
+    "include": ["**/*"],                  // Ensures all files under the project folder are included
+    "exclude": ["node_modules", "lib/**/*"] // Excludes node_modules and lib folders from compilation
+  }
 }

@@ -268,3 +268,8 @@
     font-size: 75%;
   }
 }
+@container foo (min-width: 400px) {
+  #sticky-child {
+    font-size: 75%;
+  }
+}

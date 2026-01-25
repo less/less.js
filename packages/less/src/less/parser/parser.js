@@ -654,7 +654,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     parserInput.save();
                     if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^@@?[\w-]+/))) {
                         ch = parserInput.currentChar();
-                        if (ch === '(' || ch === '[' && !parserInput.prevChar().match(/^\s/)) {
+                        if ((ch === '(' && !parserInput.prevChar().match(/^\s/))
+                            || (ch === '[' && !parserInput.prevChar().match(/^\s/))) {
                             // this may be a VariableCall lookup
                             const result = parsers.variableCall(name);
                             if (result) {
@@ -1884,6 +1885,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
+                        if (e.type === 'Variable') {
+                            spacing = true;
+                        }
                     } else if (parserInput.$char('(')) {
                         p = this.property();
                         parserInput.save();

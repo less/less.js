@@ -319,4 +319,10 @@
     }
 }
 
-
+@varfoo: foo;
+@threshold: 400px;
+@container @varfoo (min-width: @threshold) {
+    #sticky-child {
+      font-size: 75%;
+    }
+}

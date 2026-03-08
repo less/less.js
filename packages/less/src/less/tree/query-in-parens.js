@@ -1,5 +1,4 @@
 import { copy } from 'copy-anything';
-import Declaration from './declaration';
 import Node from './node';
 
 const QueryInParens = function (op, l, m, op2, r, i) {
@@ -26,36 +25,13 @@ QueryInParens.prototype = Object.assign(new Node(), {
     eval(context) {
         this.lvalue = this.lvalue.eval(context);
         
-        let variableDeclaration;
-        let rule;
-
-        for (let i = 0; (rule = context.frames[i]); i++) {
-            if (rule.type === 'Ruleset') {
-                variableDeclaration = rule.rules.find(function (r) {
-                    if ((r instanceof Declaration) && r.variable) {
-                        return true;
-                    }
-
-                    return false;
-                });
-                
-                if (variableDeclaration) {
-                    break;
-                }
-            }
-        }
-
         if (!this.mvalueCopy) {
             this.mvalueCopy = copy(this.mvalue);
         }
-        
-        if (variableDeclaration) {
-            this.mvalue = this.mvalueCopy;
-            this.mvalue = this.mvalue.eval(context);
-            this.mvalues.push(this.mvalue);
-        } else {
-            this.mvalue = this.mvalue.eval(context);
-        }
+
+        this.mvalue = copy(this.mvalueCopy);
+        this.mvalue = this.mvalue.eval(context);
+        this.mvalues.push(this.mvalue);
 
         if (this.rvalue) {
             this.rvalue = this.rvalue.eval(context);

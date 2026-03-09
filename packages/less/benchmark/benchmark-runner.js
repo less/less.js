@@ -32,7 +32,8 @@ var tryPaths = [
 for (var i = 0; i < tryPaths.length; i++) {
   try {
     var p = tryPaths[i];
-    var mod = require(path.resolve(p));
+    // Use path.resolve for relative paths, but keep bare package names for Node resolution
+    var mod = require(p.startsWith('.') ? path.resolve(p) : p);
     // Handle both direct export and .default (ESM interop)
     less = mod && mod.default ? mod.default : mod;
     if (less && (less.render || less.parse)) {

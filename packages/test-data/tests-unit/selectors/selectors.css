@@ -174,7 +174,7 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 .foo.nestend-and-non-nested:not(.tst.nestend-and-non-nested:hover) {
   test: nestend-and-non-nested;
 }
-.selector:not(:hover) {
+.selector:not(.selector:hover) {
   test: global scope;
 }
 .extend-this,

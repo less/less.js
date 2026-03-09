@@ -164,7 +164,6 @@ AtRule.prototype = Object.assign(new Node(), {
         let ampersandCount = 0;
         let noAmpersandCount = 0;
         let noAmpersands = true;
-        let allAmpersands = false;
 
         if (!this.simpleBlock) {
             rules = [rules[0].eval(context)];
@@ -184,25 +183,24 @@ AtRule.prototype = Object.assign(new Node(), {
                     }
                 }
                 if (precedingSelectors.length > 0) {
-                    let value = '';
-                    const output = { add: function (s) { value += s; } };
-                    for (let i = 0; i < precedingSelectors.length; i++) {
-                        precedingSelectors[i].genCSS(context, output);
-                    }
-                    if (/^&+$/.test(value.replace(/\s+/g, ''))) {
+                    const allAmpersandElements = precedingSelectors.every(
+                        sel => sel.elements && sel.elements.length > 0 && sel.elements.every(
+                            el => el.value === '&'
+                        )
+                    );
+                    if (allAmpersandElements) {
                         noAmpersands = false;
                         noAmpersandCount++;
                     } else {
-                        allAmpersands = false;
                         ampersandCount++;
                     }
                 }
             }
         }
 
-        const mixedAmpersands = ampersandCount > 0 && noAmpersandCount > 0 && !allAmpersands && !noAmpersands;
+        const mixedAmpersands = ampersandCount > 0 && noAmpersandCount > 0 && !noAmpersands;
         if (
-            (this.isRooted && ampersandCount > 0 && noAmpersandCount === 0 && !allAmpersands && noAmpersands)
+            (this.isRooted && ampersandCount > 0 && noAmpersandCount === 0 && noAmpersands)
             || !mixedAmpersands
         ) {
             rules[0].root = true;

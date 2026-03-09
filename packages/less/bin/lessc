@@ -408,6 +408,10 @@ function processPluginQueue() {
         options.quiet = quiet = true;
         break;
 
+      case 'quiet-deprecations':
+        options.quietDeprecations = true;
+        break;
+
       case 'l':
       case 'lint':
         options.lint = true;
@@ -453,6 +457,7 @@ function processPluginQueue() {
 
       case 'js':
         options.javascriptEnabled = true;
+        console.warn('Warning: Inline JavaScript (--js) is deprecated and will be removed in Less 5.x. Use Less functions or custom plugins instead. (js-eval)');
         break;
 
       case 'no-js':
@@ -476,6 +481,7 @@ function processPluginQueue() {
       case 'line-numbers':
         if (checkArgFunc(arg, match[2])) {
           options.dumpLineNumbers = match[2];
+          console.warn('Warning: The --line-numbers option is deprecated and will be removed in Less 5.x. Use source maps instead (--source-map). (dump-line-numbers)');
         }
 
         break;
@@ -581,7 +587,7 @@ function processPluginQueue() {
         let m = match[2];
         if (checkArgFunc(arg, m)) {
           if (m === 'always') {
-            console.warn('--math=always is deprecated and will be removed in the future.');
+            console.warn('Warning: --math=always is deprecated and will be removed in Less 5.x. Use --math=parens-division (default) or --math=parens. (math-always)');
             options.math = Constants.Math.ALWAYS;
           } else if (m === 'parens-division') {
             options.math = Constants.Math.PARENS_DIVISION;

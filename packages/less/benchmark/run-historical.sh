@@ -23,11 +23,15 @@ NODE_FOR_OLD="v18.20.8"  # v2.x/v3.x
 NODE_FOR_NEW="v20.19.6"  # v4.x
 NODE_DEFAULT=""           # will be set to current
 
-# Last patch of each major/minor release (no betas/RCs)
+# Versions chosen to capture significant performance changes.
+# Pruned from full v2.0–v4.5 benchmark data (2026-03-09, M4 Pro):
+#   Dropped v2.1 (broken), v2.5 (<1% from v2.4), v2.7 (<2% from v2.6),
+#   v3.6–v3.9 (all within 1ms of each other), v4.1 (<1% from v4.0).
+#   Use --versions to override with the full set if needed.
 ALL_VERSIONS=(
-  v2.0.0 v2.1.2 v2.2.0 v2.3.1 v2.4.0 v2.5.3 v2.6.1 v2.7.3
-  v3.0.4 v3.5.3 v3.6.0 v3.7.1 v3.8.1 v3.9.0 v3.10.3 v3.11.3 v3.12.2
-  v4.0.0 v4.1.3 v4.2.2 v4.3.0 v4.4.2 v4.5.1
+  v2.0.0 v2.2.0 v2.3.1 v2.4.0 v2.6.1
+  v3.0.4 v3.5.3 v3.10.3 v3.11.3 v3.12.2
+  v4.0.0 v4.2.2 v4.3.0 v4.4.2 v4.5.1
 )
 
 VERSIONS=("${ALL_VERSIONS[@]}")

@@ -132,8 +132,8 @@ SYSTEM_INFO_JSON="$(get_system_info)"
 echo "$SYSTEM_INFO_JSON"
 
 SYSTEM_ID="$(echo "$SYSTEM_INFO_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['system_id'])")"
-RUN_DATE="$(date -u +%Y-%m-%d)"
-RUN_FILE="$RUNS_DIR/${RUN_DATE}_${SYSTEM_ID}.json"
+RUN_STAMP="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+RUN_FILE="$RUNS_DIR/${RUN_STAMP}_${SYSTEM_ID}.json"
 LATEST_FILE="$LATEST_DIR/${SYSTEM_ID}.json"
 
 log "System ID: $SYSTEM_ID"

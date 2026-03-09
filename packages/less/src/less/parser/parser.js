@@ -2262,10 +2262,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             },
             colorOperand: function () {
                 parserInput.save();
-                         
+
                 // hsl or rgb or lch operand
                 const match = parserInput.$re(/^[lchrgbs]\s+/);
                 if (match) {
+                    parserInput.forget();
                     return new tree.Keyword(match[0]);
                 }
 

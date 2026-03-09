@@ -202,6 +202,13 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
   }
 }
 
+// https://github.com/less/less.js/issues/4358
+.x {
+    &:is(&.a) { color: red; }
+    &:not(&.b, &.c) { color: green; }
+    &:is(&.d, &.e, &.f) { color: blue; }
+}
+
 a:is(.b, :is(.c)) {
   color: blue;
 }

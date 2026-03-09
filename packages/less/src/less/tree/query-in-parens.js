@@ -1,4 +1,3 @@
-import { copy } from 'copy-anything';
 import Node from './node';
 
 const QueryInParens = function (op, l, m, op2, r, i) {
@@ -8,7 +7,6 @@ const QueryInParens = function (op, l, m, op2, r, i) {
     this.op2 = op2 ? op2.trim() : null;
     this.rvalue = r;
     this._index = i;
-    this.mvalues = [];
 };
 
 QueryInParens.prototype = Object.assign(new Node(), {
@@ -23,28 +21,20 @@ QueryInParens.prototype = Object.assign(new Node(), {
     },
 
     eval(context) {
-        this.lvalue = this.lvalue.eval(context);
-        
-        if (!this.mvalueCopy) {
-            this.mvalueCopy = copy(this.mvalue);
-        }
-
-        this.mvalue = copy(this.mvalueCopy);
-        this.mvalue = this.mvalue.eval(context);
-        this.mvalues.push(this.mvalue);
-
-        if (this.rvalue) {
-            this.rvalue = this.rvalue.eval(context);
-        }
-        return this;
+        const node = new QueryInParens(
+            this.op,
+            this.lvalue.eval(context),
+            this.mvalue.eval(context),
+            this.op2,
+            this.rvalue ? this.rvalue.eval(context) : null,
+            this._index
+        );
+        return node;
     },
 
     genCSS(context, output) {
         this.lvalue.genCSS(context, output);
         output.add(' ' + this.op + ' ');
-        if (this.mvalues.length > 0) {
-            this.mvalue = this.mvalues.shift();
-        }
         this.mvalue.genCSS(context, output);
         if (this.rvalue) {
             output.add(' ' + this.op2 + ' ');

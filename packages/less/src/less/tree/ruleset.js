@@ -291,8 +291,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 if (r.type === 'Import' && r.root && r.root.variables) {
                     const vars = r.root.variables();
                     for (const name in vars) {
-                        // eslint-disable-next-line no-prototype-builtins
-                        if (vars.hasOwnProperty(name)) {
+                        if (Object.prototype.hasOwnProperty.call(vars, name)) {
                             hash[name] = r.root.variable(name);
                         }
                     }
@@ -737,12 +736,40 @@ Ruleset.prototype = Object.assign(new Node(), {
                         const nestedPaths = [];
                         let replaced;
                         const replacedNewSelectors = [];
-                        replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
-                        hadParentSelector = hadParentSelector || replaced;
-                        // the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
-                        for (k = 0; k < nestedPaths.length; k++) {
-                            const replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
+
+                        // Check if this is a comma-separated selector list inside the paren
+                        // e.g. :not(&.a, &.b) produces Selector([Selector, Anonymous(','), Selector])
+                        const hasSubSelectors = nestedSelector.elements.some(e => e instanceof Selector);
+
+                        if (hasSubSelectors) {
+                            // Process each sub-selector individually
+                            const resolvedElements = [];
+                            for (const subEl of nestedSelector.elements) {
+                                if (subEl instanceof Selector) {
+                                    const subPaths = [];
+                                    const subReplaced = replaceParentSelector(subPaths, context, subEl);
+                                    replaced = replaced || subReplaced;
+                                    if (subPaths.length > 0 && subPaths[0].length > 0) {
+                                        resolvedElements.push(subPaths[0][0]);
+                                    } else {
+                                        resolvedElements.push(subEl);
+                                    }
+                                } else {
+                                    resolvedElements.push(subEl);
+                                }
+                            }
+                            hadParentSelector = hadParentSelector || replaced;
+                            const resolvedNestedSelector = new Selector(resolvedElements);
+                            const replacementSelector = createSelector(createParenthesis([resolvedNestedSelector], el), el);
                             addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
+                        } else {
+                            replaced = replaceParentSelector(nestedPaths, context, nestedSelector);
+                            hadParentSelector = hadParentSelector || replaced;
+                            // the nestedPaths array should have only one member - replaceParentSelector does not multiply selectors
+                            for (k = 0; k < nestedPaths.length; k++) {
+                                const replacementSelector = createSelector(createParenthesis(nestedPaths[k], el), el);
+                                addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
+                            }
                         }
                         newSelectors = replacedNewSelectors;
                         currentElements = [];

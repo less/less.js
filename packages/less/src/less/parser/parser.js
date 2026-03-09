@@ -484,6 +484,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     validCall = validCall.substring(0, validCall.length - 1);
 
+                    // CSS at-rule keywords should never be parsed as declaration calls
+                    if (/^(and|or|not|only|layer)$/i.test(validCall)) {
+                        parserInput.restore();
+                        return;
+                    }
+
                     let rule = this.ruleProperty();
                     let value;
                   
@@ -1880,7 +1886,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
-                        if (e.type === 'Variable') {
+                        if (e.type === 'Variable' ||
+                            (e.type === 'Keyword' && /^(and|or|not|only)$/i.test(e.value))) {
                             spacing = true;
                         }
                     } else if (parserInput.$char('(')) {
@@ -2262,10 +2269,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             },
             colorOperand: function () {
                 parserInput.save();
-                         
+
                 // hsl or rgb or lch operand
                 const match = parserInput.$re(/^[lchrgbs]\s+/);
                 if (match) {
+                    parserInput.forget();
                     return new tree.Keyword(match[0]);
                 }
 

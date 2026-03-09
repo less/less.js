@@ -137,7 +137,7 @@
 	"rawcurrent": "https://raw.github.com/less/less.js/v",
 	"sourcearchive": "https://github.com/less/less.js/archive/v",
 	"dependencies": {
-		"copy-anything": "^2.0.1",
+		"copy-anything": "^3.0.5",
 		"parse-node-version": "^1.0.1"
 	},
 	"gitHead": "1df9072ee9ebdadc791bf35dfb1dbc3ef9f1948f"

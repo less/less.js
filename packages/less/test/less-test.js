@@ -34,7 +34,7 @@ export default function(testFilter) {
     var oneTestOnly = testFilter || process.argv[2],
         isFinished = false;
 
-    var testFolder = path.relative(process.cwd(), path.dirname(require.resolve('@less/test-data')));
+    var testFolder = path.dirname(require.resolve('@less/test-data'));
     var lessFolder = testFolder;
 
     var queueList = [],

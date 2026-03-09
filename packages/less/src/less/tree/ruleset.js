@@ -379,9 +379,9 @@ Ruleset.prototype = Object.assign(new Node(), {
         }
         else {
             const nodes = [];
-            toParse.forEach(function(n) {
-                nodes.push(transformDeclaration.call(self, n));
-            });
+            for (let ti = 0; ti < toParse.length; ti++) {
+                nodes.push(transformDeclaration.call(self, toParse[ti]));
+            }
             return nodes;
         }
     },

@@ -120,8 +120,20 @@ Selector.prototype = Object.assign(new Node(), {
         let elements = this.elements;
         let extendList = this.extendList;
 
-        elements = elements && elements.map(function (e) { return e.eval(context); });
-        extendList = extendList && extendList.map(function(extend) { return extend.eval(context); });
+        if (elements) {
+            const evaldElements = new Array(elements.length);
+            for (let i = 0; i < elements.length; i++) {
+                evaldElements[i] = elements[i].eval(context);
+            }
+            elements = evaldElements;
+        }
+        if (extendList) {
+            const evaldExtends = new Array(extendList.length);
+            for (let i = 0; i < extendList.length; i++) {
+                evaldExtends[i] = extendList[i].eval(context);
+            }
+            extendList = evaldExtends;
+        }
 
         return this.createDerived(elements, extendList, evaldCondition);
     },

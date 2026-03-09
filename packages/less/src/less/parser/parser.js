@@ -406,7 +406,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     parserInput.forget();
 
-                    return new(tree.Quoted)(str.charAt(0), str.substr(1, str.length - 2), isEscaped, index + currentIndex, fileInfo);
+                    return new(tree.Quoted)(str.charAt(0), str.slice(1, -1), isEscaped, index + currentIndex, fileInfo);
                 },
 
                 //
@@ -697,15 +697,6 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                 },
 
-                // A property entity useing the protective {} e.g. ${prop}
-                propertyCurly: function () {
-                    let curly;
-                    const index = parserInput.i;
-
-                    if (parserInput.currentChar() === '$' && (curly = parserInput.$re(/^\$\{([\w-]+)\}/))) {
-                        return new(tree.Property)(`$${curly[1]}`, index + currentIndex, fileInfo);
-                    }
-                },
                 //
                 // A Hexadecimal color
                 //
@@ -797,7 +788,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (js) {
                         warn('Inline JavaScript evaluation (backtick expressions) is deprecated and will be removed in Less 5.x. Use Less functions or custom plugins instead.', index, 'DEPRECATED', 'js-eval');
                         parserInput.forget();
-                        return new(tree.JavaScript)(js.substr(0, js.length - 1), Boolean(escape), index + currentIndex, fileInfo);
+                        return new(tree.JavaScript)(js.slice(0, -1), Boolean(escape), index + currentIndex, fileInfo);
                     }
                     parserInput.restore('invalid javascript definition');
                 }
@@ -1538,11 +1529,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
             blockRuleset: function() {
                 let block = this.block();
-
                 if (block) {
-                    block = new tree.Ruleset(null, block);
+                    return new tree.Ruleset(null, block);
                 }
-                return block;
             },
 
             detachedRuleset: function() {
@@ -1912,7 +1901,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         }
                         if (parserInput.$char(')')) {
                             if (p && !e) {
-                                nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index)));				 
+                                nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index)));
                                 e = p;
                             } else if (p && e) {
                                 nodes.push(new (tree.Paren)(new (tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
@@ -1997,12 +1986,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (parserInput.$str('@media')) {
                         return this.prepareAndGetNestableAtRule(tree.Media, index, debugInfo, MediaSyntaxOptions);
                     }
-                    
+
                     if (parserInput.$str('@container')) {
                         return this.prepareAndGetNestableAtRule(tree.Container, index, debugInfo, ContainerSyntaxOptions);
                     }
                 }
-                
+
                 parserInput.restore();
             },
 

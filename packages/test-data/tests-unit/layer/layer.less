@@ -112,3 +112,56 @@
 }
 
 
+@layer theme;
+@layer layout, utilities;
+
+body {
+  color: black;
+}
+
+@layer components {
+  .btn {
+    color: red;
+    &:hover {
+      color: blue;
+    }
+  }
+}
+
+@layer {
+  p {
+    margin-block: 1rem;
+  }
+}
+
+@layer framework.buttons.primary {
+  .btn-primary {
+    background: dodgerblue;
+    color: white;
+  }
+}
+
+.feature {
+  color: gray;
+
+  @layer component {
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+@primary-color: rebeccapurple;
+
+.button-styles() {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+@layer ui {
+  .btn {
+    .button-styles();
+    background: @primary-color;
+    color: white;
+  }
+}

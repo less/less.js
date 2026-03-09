@@ -1,0 +1,84 @@
+// Benchmark for Less v3.9+ features: range()
+// Standalone file.
+
+// --- range() basic ---
+@columns: range(1, 12);
+
+each(@columns, {
+  .col-@{value} {
+    flex: 0 0 percentage(@value / 12);
+    max-width: percentage(@value / 12);
+  }
+});
+
+// --- range() for spacing scale ---
+@spacing-steps: range(0, 20);
+
+each(@spacing-steps, {
+  .gap-@{value} {
+    gap: (@value * 4px);
+  }
+  .space-x-@{value} > * + * {
+    margin-left: (@value * 4px);
+  }
+  .space-y-@{value} > * + * {
+    margin-top: (@value * 4px);
+  }
+});
+
+// --- range() with step for font sizes ---
+@font-sizes: range(10px, 48px, 2);
+
+each(@font-sizes, .(@size, @idx) {
+  .text-size-@{idx} {
+    font-size: @size;
+    line-height: @size * 1.5;
+  }
+});
+
+// --- range() for generating a color palette ---
+@hue-steps: range(0, 350, 30);
+
+each(@hue-steps, .(@hue, @idx) {
+  .hue-@{idx} {
+    color: hsl(@hue, 70%, 50%);
+    background: hsl(@hue, 70%, 95%);
+    border-color: hsl(@hue, 70%, 80%);
+  }
+});
+
+// --- range() for grid system ---
+@grid-cols: range(1, 24);
+
+each(@grid-cols, {
+  .grid-span-@{value} {
+    grid-column: span @value;
+  }
+});
+
+// --- range() for z-index layers ---
+@layers: range(1, 10);
+
+each(@layers, {
+  .z-@{value} {
+    z-index: @value * 100;
+  }
+});
+
+// --- range() for opacity scale ---
+@opacity-steps: range(0, 100, 5);
+
+each(@opacity-steps, .(@val) {
+  .o-@{val} {
+    opacity: @val / 100;
+  }
+});
+
+// --- range() for border-radius scale ---
+@radius-steps: range(0, 24, 2);
+
+each(@radius-steps, .(@val) {
+  .rounded-@{val} {
+    border-radius: (@val * 1px);
+  }
+});

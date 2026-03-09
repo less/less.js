@@ -1,0 +1,82 @@
+// Target for @import (reference) benchmarking
+// These should NOT appear in output unless extended
+
+.ref-button {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #f0f0f0;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  vertical-align: middle;
+  &:hover {
+    background: #e0e0e0;
+    border-color: #999;
+  }
+  &:active {
+    background: #d0d0d0;
+  }
+  &.primary {
+    background: #3498db;
+    color: #fff;
+    border-color: #2980b9;
+    &:hover {
+      background: #2980b9;
+    }
+  }
+  &.danger {
+    background: #e74c3c;
+    color: #fff;
+    border-color: #c0392b;
+    &:hover {
+      background: #c0392b;
+    }
+  }
+}
+
+.ref-alert {
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  &.success {
+    color: #155724;
+    background: #d4edda;
+    border-color: #c3e6cb;
+  }
+  &.warning {
+    color: #856404;
+    background: #fff3cd;
+    border-color: #ffeeba;
+  }
+  &.error {
+    color: #721c24;
+    background: #f8d7da;
+    border-color: #f5c6cb;
+  }
+}
+
+.ref-grid-system {
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -15px;
+  }
+  .col {
+    flex: 1;
+    padding: 0 15px;
+  }
+  .generate-cols(@n, @i: 1) when (@i =< @n) {
+    .col-@{i} {
+      flex: 0 0 percentage(@i / @n);
+      max-width: percentage(@i / @n);
+    }
+    .generate-cols(@n, (@i + 1));
+  }
+  .generate-cols(12);
+}

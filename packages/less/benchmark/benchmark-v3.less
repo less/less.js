@@ -1,0 +1,134 @@
+// Benchmark for Less v3.0+ features: if(), boolean(), $prop accessor, @plugin
+// This file is standalone and does NOT import the base benchmark.
+
+// --- if() function ---
+@mode: dark;
+@size: large;
+
+.if-card {
+  background: if((@mode = dark), #1a1a2e, #ffffff);
+  color: if((@mode = dark), #eaeaea, #333333);
+  font-size: if((@size = large), 18px, 14px);
+  padding: if((@size = large), 24px, 12px);
+  border: 1px solid if((@mode = dark), #444, #ddd);
+}
+
+// if() in loops
+.gen-if-variants(@n, @i: 1) when (@i =< @n) {
+  .variant-@{i} {
+    color: if((@i > 5), #ff0000, #0000ff);
+    font-weight: if((mod(@i, 2) = 0), bold, normal);
+    opacity: if((@i > 8), 0.5, 1);
+    display: if((@i = @n), none, block);
+  }
+  .gen-if-variants(@n, (@i + 1));
+}
+.gen-if-variants(12);
+
+// --- boolean() function (added v3.6.0) ---
+@is-dark: boolean(@mode = dark);
+@is-large: boolean(@size = large);
+@is-rtl: boolean(1 = 0);
+
+.boolean-test {
+  .responsive(@flag) when (@flag) {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .responsive(@flag) when not (@flag) {
+    width: 100%;
+  }
+  .responsive(@is-large);
+}
+
+// --- Property accessor $prop ---
+.color-definitions {
+  primary: #3498db;
+  secondary: #2ecc71;
+  accent: #e74c3c;
+  neutral: #95a5a6;
+  warning: #f39c12;
+}
+
+.prop-button {
+  color: .color-definitions[primary];
+  border-color: .color-definitions[secondary];
+}
+
+.prop-alert-success {
+  background: .color-definitions[secondary];
+  border-color: darken(.color-definitions[secondary], 10%);
+}
+
+.prop-alert-danger {
+  background: .color-definitions[accent];
+  border-color: darken(.color-definitions[accent], 10%);
+}
+
+.prop-alert-warning {
+  background: .color-definitions[warning];
+  border-color: darken(.color-definitions[warning], 10%);
+}
+
+// Spacing scale via property accessor
+.spacing-scale {
+  xs: 4px;
+  sm: 8px;
+  md: 16px;
+  lg: 24px;
+  xl: 32px;
+  xxl: 48px;
+}
+
+.card-compact {
+  padding: .spacing-scale[sm];
+  margin: .spacing-scale[xs];
+}
+.card-normal {
+  padding: .spacing-scale[md];
+  margin: .spacing-scale[sm];
+}
+.card-spacious {
+  padding: .spacing-scale[xl];
+  margin: .spacing-scale[lg];
+}
+
+// --- Complex guard + if combos ---
+.button-variant(@bg, @border: darken(@bg, 10%), @color: #fff) {
+  background: @bg;
+  border-color: @border;
+  color: if((lightness(@bg) > 60%), #333, @color);
+  &:hover {
+    background: darken(@bg, 8%);
+    border-color: darken(@border, 12%);
+  }
+  &:active {
+    background: darken(@bg, 12%);
+  }
+}
+
+.btn-primary { .button-variant(#3498db); }
+.btn-success { .button-variant(#2ecc71); }
+.btn-warning { .button-variant(#f1c40f); }
+.btn-danger { .button-variant(#e74c3c); }
+.btn-light { .button-variant(#f8f9fa); }
+.btn-dark { .button-variant(#343a40); }
+
+// --- Stress: many property lookups in a loop ---
+.z-index-scale {
+  dropdown: 1000;
+  sticky: 1020;
+  fixed: 1030;
+  modal-backdrop: 1040;
+  modal: 1050;
+  popover: 1060;
+  tooltip: 1070;
+}
+
+.dropdown { z-index: .z-index-scale[dropdown]; }
+.sticky-top { z-index: .z-index-scale[sticky]; }
+.fixed-top { z-index: .z-index-scale[fixed]; }
+.modal-backdrop { z-index: .z-index-scale[modal-backdrop]; }
+.modal { z-index: .z-index-scale[modal]; }
+.popover { z-index: .z-index-scale[popover]; }
+.tooltip { z-index: .z-index-scale[tooltip]; }

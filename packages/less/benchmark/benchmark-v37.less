@@ -1,0 +1,108 @@
+// Benchmark for Less v3.7+ features: each()
+// Standalone file.
+
+// --- each() with lists ---
+@breakpoints: xs, sm, md, lg, xl;
+
+each(@breakpoints, {
+  .container-@{value} {
+    max-width: if((@value = xs), 100%, if((@value = sm), 540px, if((@value = md), 720px, if((@value = lg), 960px, 1140px))));
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+});
+
+// --- each() with maps ---
+@colors: {
+  primary: #3498db;
+  secondary: #2ecc71;
+  success: #27ae60;
+  danger: #e74c3c;
+  warning: #f39c12;
+  info: #17a2b8;
+  light: #f8f9fa;
+  dark: #343a40;
+};
+
+each(@colors, {
+  .text-@{key} { color: @value; }
+  .bg-@{key} { background-color: @value; }
+  .border-@{key} { border-color: @value; }
+  .btn-@{key} {
+    background: @value;
+    border: 1px solid darken(@value, 10%);
+    color: if((lightness(@value) > 60%), #333, #fff);
+    &:hover {
+      background: darken(@value, 8%);
+    }
+  }
+});
+
+// --- each() generating utility classes ---
+@spacings: {
+  0: 0;
+  1: 4px;
+  2: 8px;
+  3: 16px;
+  4: 24px;
+  5: 32px;
+};
+
+@directions: top, right, bottom, left;
+
+each(@spacings, .(@size, @key) {
+  each(@directions, .(@dir) {
+    .m@{dir}-@{key} {
+      margin-@{dir}: @size;
+    }
+    .p@{dir}-@{key} {
+      padding-@{dir}: @size;
+    }
+  });
+});
+
+// --- each() with display properties ---
+@displays: block, inline, inline-block, flex, inline-flex, grid, none;
+
+each(@displays, {
+  .d-@{value} { display: @value; }
+});
+
+// --- each() generating component sizes ---
+@sm-font: 12px; @sm-pad: 4px 8px; @sm-radius: 2px;
+@md-font: 14px; @md-pad: 8px 16px; @md-radius: 4px;
+@lg-font: 18px; @lg-pad: 12px 24px; @lg-radius: 6px;
+@component-size-names: sm, md, lg;
+
+each(@component-size-names, {
+  .input-@{value} {
+    border: 1px solid #ccc;
+    line-height: 1.5;
+  }
+  .badge-@{value} {
+    display: inline-block;
+  }
+});
+
+// --- each() with float utilities ---
+@positions: static, relative, absolute, fixed, sticky;
+each(@positions, {
+  .position-@{value} { position: @value; }
+});
+
+// --- Nested each() stress ---
+@font-weights: 100, 200, 300, 400, 500, 600, 700, 800, 900;
+each(@font-weights, {
+  .fw-@{value} { font-weight: @value; }
+});
+
+@opacities: {
+  0: 0;
+  25: 0.25;
+  50: 0.5;
+  75: 0.75;
+  100: 1;
+};
+each(@opacities, .(@val, @key) {
+  .opacity-@{key} { opacity: @val; }
+});

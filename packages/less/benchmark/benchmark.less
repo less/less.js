@@ -3978,5 +3978,470 @@ body {
   left: 1;
 }
 
-// add extend
-.btn:extend(.button all) {}
+// ============================================================================
+// v2.0+ Features: Extend, Guards, Imports, Property Merging, Detached Rulesets
+// ============================================================================
+
+// --- Imports ---
+@import "benchmark-import-target.less";
+@import (reference) "benchmark-import-reference-target.less";
+
+// --- Extend ---
+// Basic extend
+.base-button {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
+}
+
+.action-button:extend(.base-button) {
+  background: #3498db;
+  color: #fff;
+}
+
+.cancel-button:extend(.base-button) {
+  background: #e74c3c;
+  color: #fff;
+}
+
+// Extend all
+.nav-base {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  li {
+    display: inline-block;
+    a {
+      text-decoration: none;
+      padding: 8px 12px;
+      color: #333;
+    }
+  }
+}
+
+.main-nav:extend(.nav-base all) {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.side-nav:extend(.nav-base all) {
+  background: #343a40;
+  li a {
+    color: #fff;
+  }
+}
+
+// Extend from imported reference
+.my-button:extend(.ref-button) {}
+.my-primary-button:extend(.ref-button all) {}
+.my-alert:extend(.ref-alert all) {}
+.my-grid:extend(.ref-grid-system all) {}
+
+// Nested extend
+.panel {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  .panel-heading {
+    padding: 10px 15px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+  .panel-body {
+    padding: 15px;
+  }
+  .panel-footer {
+    padding: 10px 15px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+  }
+}
+
+.card {
+  &:extend(.panel all);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.widget {
+  &:extend(.panel all);
+  margin-bottom: 20px;
+}
+
+// Extend with pseudo-classes
+.link-base {
+  color: #3498db;
+  text-decoration: none;
+  &:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }
+  &:visited {
+    color: #8e44ad;
+  }
+  &:active {
+    color: #e74c3c;
+  }
+}
+
+.nav-link:extend(.link-base all) {
+  font-weight: bold;
+}
+
+// --- Guards ---
+.generate-spacing(@n, @i: 1) when (@i =< @n) {
+  .m-@{i} { margin: (@i * 4px); }
+  .p-@{i} { padding: (@i * 4px); }
+  .mt-@{i} { margin-top: (@i * 4px); }
+  .mb-@{i} { margin-bottom: (@i * 4px); }
+  .ml-@{i} { margin-left: (@i * 4px); }
+  .mr-@{i} { margin-right: (@i * 4px); }
+  .pt-@{i} { padding-top: (@i * 4px); }
+  .pb-@{i} { padding-bottom: (@i * 4px); }
+  .pl-@{i} { padding-left: (@i * 4px); }
+  .pr-@{i} { padding-right: (@i * 4px); }
+  .generate-spacing(@n, (@i + 1));
+}
+.generate-spacing(10);
+
+.generate-font-sizes(@n, @i: 1) when (@i =< @n) {
+  .fs-@{i} { font-size: (10px + @i * 2); }
+  .generate-font-sizes(@n, (@i + 1));
+}
+.generate-font-sizes(12);
+
+.generate-widths(@n, @i: 1) when (@i =< @n) {
+  .w-@{i} { width: percentage(@i / @n); }
+  .generate-widths(@n, (@i + 1));
+}
+.generate-widths(12);
+
+// Guards with multiple conditions
+.responsive-mixin(@size) when (@size < 576px) {
+  font-size: 12px;
+  padding: 4px;
+}
+.responsive-mixin(@size) when (@size >= 576px) and (@size < 768px) {
+  font-size: 14px;
+  padding: 8px;
+}
+.responsive-mixin(@size) when (@size >= 768px) and (@size < 992px) {
+  font-size: 16px;
+  padding: 12px;
+}
+.responsive-mixin(@size) when (@size >= 992px) {
+  font-size: 18px;
+  padding: 16px;
+}
+
+.sm { .responsive-mixin(400px); }
+.md { .responsive-mixin(700px); }
+.lg { .responsive-mixin(800px); }
+.xl { .responsive-mixin(1200px); }
+
+// Type-checking guards
+.type-guard(@val) when (isnumber(@val)) {
+  width: @val;
+}
+.type-guard(@val) when (iscolor(@val)) {
+  color: @val;
+}
+.type-guard(@val) when (isstring(@val)) {
+  content: @val;
+}
+
+.guard-number { .type-guard(100px); }
+.guard-color { .type-guard(#ff0000); }
+.guard-string { .type-guard("hello"); }
+
+// --- Property Merging ---
+.shadow-base {
+  box-shadow+: 0 1px 3px rgba(0,0,0,0.12);
+}
+.shadow-elevated {
+  .shadow-base();
+  box-shadow+: 0 4px 6px rgba(0,0,0,0.1);
+}
+.shadow-floating {
+  .shadow-elevated();
+  box-shadow+: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.transform-base {
+  transform+_: translateX(10px);
+}
+.transform-combo {
+  .transform-base();
+  transform+_: rotate(45deg);
+  transform+_: scale(1.2);
+}
+
+.transition-multi {
+  transition+: color 0.3s ease;
+  transition+: background 0.3s ease;
+  transition+: border-color 0.3s ease;
+  transition+: box-shadow 0.3s ease;
+}
+
+.font-stack {
+  font-family+: "Helvetica Neue";
+  font-family+: Arial;
+  font-family+: sans-serif;
+}
+
+// --- Detached Rulesets ---
+@media-mobile: {
+  font-size: 14px;
+  padding: 8px;
+  margin: 4px;
+};
+
+@media-desktop: {
+  font-size: 16px;
+  padding: 16px;
+  margin: 8px;
+};
+
+@theme-light: {
+  background: #ffffff;
+  color: #333333;
+  border-color: #dddddd;
+};
+
+@theme-dark: {
+  background: #1a1a2e;
+  color: #eaeaea;
+  border-color: #444444;
+};
+
+.mobile-component {
+  @media-mobile();
+  border: 1px solid #ccc;
+}
+
+.desktop-component {
+  @media-desktop();
+  border: 1px solid #999;
+}
+
+.light-section {
+  @theme-light();
+  .heading { font-weight: bold; }
+}
+
+.dark-section {
+  @theme-dark();
+  .heading { font-weight: bold; }
+}
+
+// Detached rulesets passed as arguments
+.apply-theme(@theme) {
+  @theme();
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.themed-card-light {
+  .apply-theme(@theme-light);
+}
+.themed-card-dark {
+  .apply-theme(@theme-dark);
+}
+
+// --- Complex Nesting & Selectors ---
+.component {
+  display: block;
+  & + & { margin-top: 16px; }
+  & > &-inner { padding: 8px; }
+  &&-active { background: #e8f4fd; }
+  &-header, &-footer { padding: 12px; }
+  &-body {
+    padding: 16px;
+    &--large { padding: 24px; }
+    &--compact { padding: 8px; }
+  }
+}
+
+// --- Color Functions Stress ---
+@base-hue: 210;
+.color-gen(@i) when (@i > 0) {
+  .color-@{i} {
+    color: hsl(@base-hue, percentage(@i / 20), 50%);
+    background: lighten(hsl(@base-hue, 80%, 50%), @i * 2%);
+    border-color: darken(hsl(@base-hue, 80%, 50%), @i * 2%);
+    outline-color: spin(hsl(@base-hue, 80%, 50%), @i * 15);
+    text-shadow: 0 1px 0 fade(#000, @i * 5%);
+    box-shadow: 0 0 (@i * 1px) saturate(hsl(@base-hue, 50%, 50%), @i * 3%);
+  }
+  .color-gen((@i - 1));
+}
+.color-gen(20);
+
+// --- String Interpolation & Escaping ---
+@base-url: "/assets/images";
+@icon-prefix: "icon";
+.generate-icons(@n, @i: 1) when (@i =< @n) {
+  .@{icon-prefix}-@{i} {
+    background-image: url("@{base-url}/@{icon-prefix}-@{i}.svg");
+    width: (16px + @i * 2);
+    height: (16px + @i * 2);
+  }
+  .generate-icons(@n, (@i + 1));
+}
+.generate-icons(20);
+
+// --- Namespaces ---
+#util {
+  .clearfix() {
+    &::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  }
+  .ellipsis() {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .visually-hidden() {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+  .center-block() {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.container { #util > .clearfix(); }
+.title { #util > .ellipsis(); }
+.sr-only { #util > .visually-hidden(); }
+.image { #util > .center-block(); }
+
+// --- Math & Unit Functions ---
+.math-stress {
+  a: ceil(4.3px);
+  b: floor(4.7px);
+  c: round(4.567px, 2);
+  d: percentage(0.5);
+  e: sqrt(25px);
+  f: abs(-18px);
+  g: min(3px, 42px, 1px, 16px);
+  h: max(3px, 42px, 1px, 16px);
+  i: mod(11px, 3);
+  j: convert(1s, ms);
+  k: unit(5em, px);
+  l: unit(100px);
+}
+
+// --- Large Loop Stress (recursive mixin) ---
+.gen-grid(@cols, @i: 1) when (@i =< @cols) {
+  .grid-col-@{i}-of-@{cols} {
+    width: percentage(@i / @cols);
+    float: left;
+    padding: 0 15px;
+    box-sizing: border-box;
+  }
+  .grid-push-@{i}-of-@{cols} {
+    margin-left: percentage(@i / @cols);
+  }
+  .grid-pull-@{i}-of-@{cols} {
+    margin-right: percentage(@i / @cols);
+  }
+  .grid-offset-@{i}-of-@{cols} {
+    margin-left: percentage(@i / @cols);
+  }
+  .gen-grid(@cols, (@i + 1));
+}
+.gen-grid(24);
+
+// --- Deeply Nested Extend Chains ---
+.typography-base {
+  font-family: sans-serif;
+  line-height: 1.6;
+}
+.heading-base:extend(.typography-base) {
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+h1:extend(.heading-base) { font-size: 2.5em; }
+h2:extend(.heading-base) { font-size: 2em; }
+h3:extend(.heading-base) { font-size: 1.75em; }
+h4:extend(.heading-base) { font-size: 1.5em; }
+h5:extend(.heading-base) { font-size: 1.25em; }
+h6:extend(.heading-base) { font-size: 1em; }
+
+.prose {
+  h1:extend(h1) {}
+  h2:extend(h2) {}
+  h3:extend(h3) {}
+  p:extend(.typography-base) {
+    margin-bottom: 1em;
+  }
+}
+
+// --- Mixin with Variable Argument Lists ---
+.multi-bg(@bgs...) {
+  background: @bgs;
+}
+.hero-section {
+  .multi-bg(
+    linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+    url("/images/hero.jpg") center/cover no-repeat
+  );
+  min-height: 400px;
+}
+
+// --- Scope & Variable Hoisting Stress ---
+.scope-outer {
+  @var: outer;
+  .scope-inner {
+    @var: inner;
+    .scope-deepest {
+      content: @var;
+      @var: deepest;
+    }
+    content: @var;
+  }
+  content: @var;
+}
+
+// --- Guard + Extend Combo ---
+.status-mixin(@type) when (@type = success) {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+.status-mixin(@type) when (@type = warning) {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+.status-mixin(@type) when (@type = danger) {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+.status-mixin(@type) when (@type = info) {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+.alert-success { .status-mixin(success); }
+.alert-warning { .status-mixin(warning); }
+.alert-danger { .status-mixin(danger); }
+.alert-info { .status-mixin(info); }
+.toast-success:extend(.alert-success all) {}
+.toast-warning:extend(.alert-warning all) {}
+.toast-danger:extend(.alert-danger all) {}
+.toast-info:extend(.alert-info all) {}

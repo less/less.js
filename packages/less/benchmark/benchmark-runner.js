@@ -10,6 +10,13 @@ var path = require('path');
 var file = process.argv[2];
 var totalRuns = parseInt(process.argv[3]) || 30;
 var warmupRuns = parseInt(process.argv[4]) || 5;
+var extraOpts = {};
+
+// Parse --key=value options from remaining args
+for (var ai = 5; ai < process.argv.length; ai++) {
+  var optMatch = process.argv[ai].match(/^--([a-z-]+)=(.*)$/);
+  if (optMatch) { extraOpts[optMatch[1]] = optMatch[2]; }
+}
 
 if (!file) {
   console.error('Usage: node benchmark-runner.js <file.less> [runs] [warmup]');
@@ -78,10 +85,13 @@ function hrNow() {
 
 function runOnce(callback) {
   var start = hrNow();
-  less.render(data, {
+  var opts = {
     filename: filePath,
     paths: [fileDir]
-  }, function (err, output) {
+  };
+  // Forward extra options (e.g. --math=always)
+  for (var key in extraOpts) { opts[key] = extraOpts[key]; }
+  less.render(data, opts, function (err, output) {
     var end = hrNow();
     if (err) {
       errors.push({ run: completed, error: err.message || String(err) });

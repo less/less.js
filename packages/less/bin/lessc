@@ -65,6 +65,7 @@ var parseVariableOption = function parseVariableOption(option, variables) {
 };
 
 var sourceMapFileInline = false;
+var pendingDeprecations = [];
 
 function printUsage() {
   less.lesscHelper.printUsage();
@@ -457,7 +458,7 @@ function processPluginQueue() {
 
       case 'js':
         options.javascriptEnabled = true;
-        console.warn('Warning: Inline JavaScript (--js) is deprecated and will be removed in Less 5.x. Use Less functions or custom plugins instead. (js-eval)');
+        pendingDeprecations.push('Warning: Inline JavaScript (--js) is deprecated and will be removed in Less 5.x. Use Less functions or custom plugins instead. (js-eval)');
         break;
 
       case 'no-js':
@@ -481,7 +482,7 @@ function processPluginQueue() {
       case 'line-numbers':
         if (checkArgFunc(arg, match[2])) {
           options.dumpLineNumbers = match[2];
-          console.warn('Warning: The --line-numbers option is deprecated and will be removed in Less 5.x. Use source maps instead (--source-map). (dump-line-numbers)');
+          pendingDeprecations.push('Warning: The --line-numbers option is deprecated and will be removed in Less 5.x. Use source maps instead (--source-map). (dump-line-numbers)');
         }
 
         break;
@@ -540,11 +541,11 @@ function processPluginQueue() {
         break;
       
       case 'ie-compat':
-        console.warn('The --ie-compat option is deprecated, as it has no effect on compilation.');
+        pendingDeprecations.push('Warning: The --ie-compat option is deprecated, as it has no effect on compilation.');
         break;
 
       case 'relative-urls':
-        console.warn('The --relative-urls option has been deprecated. Use --rewrite-urls=all.');
+        pendingDeprecations.push('Warning: The --relative-urls option has been deprecated. Use --rewrite-urls=all.');
         options.rewriteUrls = Constants.RewriteUrls.ALL;
         break;
 
@@ -572,7 +573,7 @@ function processPluginQueue() {
 
       case 'sm':
       case 'strict-math':
-        console.warn('The --strict-math option has been deprecated. Use --math=strict.');
+        pendingDeprecations.push('Warning: The --strict-math option has been deprecated. Use --math=strict.');
 
         if (checkArgFunc(arg, match[2])) {
           if (checkBooleanArg(match[2])) {
@@ -587,14 +588,14 @@ function processPluginQueue() {
         let m = match[2];
         if (checkArgFunc(arg, m)) {
           if (m === 'always') {
-            console.warn('Warning: --math=always is deprecated and will be removed in Less 5.x. Use --math=parens-division (default) or --math=parens. (math-always)');
+            pendingDeprecations.push('Warning: --math=always is deprecated and will be removed in Less 5.x. Use --math=parens-division (default) or --math=parens. (math-always)');
             options.math = Constants.Math.ALWAYS;
           } else if (m === 'parens-division') {
             options.math = Constants.Math.PARENS_DIVISION;
           } else if (m === 'parens' || m === 'strict') {
             options.math = Constants.Math.PARENS;
           } else if (m === 'strict-legacy') {
-            console.warn('--math=strict-legacy has been removed. Defaulting to --math=strict');
+            pendingDeprecations.push('Warning: --math=strict-legacy has been removed. Defaulting to --math=strict.');
             options.math = Constants.Math.PARENS;
           }
         }
@@ -661,6 +662,13 @@ function processPluginQueue() {
         break;
     }
   });
+
+  // Flush queued deprecation warnings (respects --silent, --quiet, --quiet-deprecations)
+  if (!silent && !quiet && !options.quietDeprecations) {
+    pendingDeprecations.forEach(function (msg) {
+      console.warn(msg);
+    });
+  }
 
   if (queuePlugins.length > 0) {
     processPluginQueue();

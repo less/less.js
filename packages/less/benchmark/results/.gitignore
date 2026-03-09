@@ -1,0 +1,8 @@
+# Track latest results per system, but not every historical run
+# To include a specific run, use: git add -f runs/specific-file.json
+runs/
+
+# Legacy flat files (migrated to runs/ + latest/)
+system-info.json
+benchmark-results.json
+v*.json

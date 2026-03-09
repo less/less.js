@@ -32,6 +32,7 @@ const parseCopyProperties = [
     // Used by the import manager to stop multiple import visitors being created.
     'pluginManager',    // Used as the plugin manager for the session
     'quiet',            // option - whether to log warnings
+    'quietDeprecations', // option - whether to suppress deprecation warnings only
 ];
 
 contexts.Parse = function(options) {

@@ -70,6 +70,8 @@ const lessc_helper = {
         console.log('                               or --clean-css="advanced"');
         console.log('  --disable-plugin-rule        Disallow @plugin statements');
         console.log('');
+        console.log('  --quiet-deprecations         Suppress deprecation warnings only (keeps other warnings).');
+        console.log('');
         console.log('-------------------------- Deprecated ----------------');
         console.log('  -sm=on|off               Legacy parens-only math. Use --math');
         console.log('  --strict-math=on|off     ');

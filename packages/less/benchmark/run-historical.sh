@@ -23,11 +23,15 @@ NODE_FOR_OLD="v18.20.8"  # v2.x/v3.x
 NODE_FOR_NEW="v20.19.6"  # v4.x
 NODE_DEFAULT=""           # will be set to current
 
-# All major/minor releases (no patches, no betas/RCs)
+# Versions chosen to capture significant performance changes.
+# Pruned from full v2.0–v4.5 benchmark data (2026-03-09, M4 Pro):
+#   Dropped v2.1 (broken), v2.5 (<1% from v2.4), v2.7 (<2% from v2.6),
+#   v3.6–v3.9 (all within 1ms of each other), v4.1 (<1% from v4.0).
+#   Use --versions to override with the full set if needed.
 ALL_VERSIONS=(
-  v2.0.0 v2.1.0 v2.2.0 v2.3.0 v2.4.0 v2.5.0 v2.6.0 v2.7.0
-  v3.0.0 v3.5.0 v3.6.0 v3.7.0 v3.8.0 v3.9.0 v3.10.0 v3.11.0 v3.12.0 v3.13.0
-  v4.0.0 v4.1.0 v4.2.0 v4.3.0 v4.4.0
+  v2.0.0 v2.2.0 v2.3.1 v2.4.0 v2.6.1
+  v3.0.4 v3.5.3 v3.10.3 v3.11.3 v3.12.2
+  v4.0.0 v4.2.2 v4.3.0 v4.4.2 v4.5.1
 )
 
 VERSIONS=("${ALL_VERSIONS[@]}")
@@ -126,6 +130,25 @@ print(json.dumps(info, indent=2))
 mkdir -p "$RUNS_DIR" "$LATEST_DIR" "$WORKTREE_BASE"
 NODE_DEFAULT="$(node -v)"
 
+# Shared TypeScript compiler fallback (for versions where npm install can't get tsc)
+TSC_FALLBACK_DIR="$WORKTREE_BASE/.tsc-fallback"
+TSC_FALLBACK=""
+ensure_tsc_fallback() {
+  if [[ -n "$TSC_FALLBACK" ]] && [[ -x "$TSC_FALLBACK" ]]; then
+    return 0
+  fi
+  log "Installing shared TypeScript compiler fallback..."
+  mkdir -p "$TSC_FALLBACK_DIR"
+  (cd "$TSC_FALLBACK_DIR" && npm install typescript@4.9.5 2>/dev/null) || true
+  TSC_FALLBACK="$TSC_FALLBACK_DIR/node_modules/.bin/tsc"
+  if [[ -x "$TSC_FALLBACK" ]]; then
+    log "Fallback tsc ready: $TSC_FALLBACK"
+    return 0
+  fi
+  err "Could not install fallback tsc"
+  return 1
+}
+
 # Record system info and derive system ID + run filename
 log "Recording system info..."
 SYSTEM_INFO_JSON="$(get_system_info)"
@@ -192,33 +215,104 @@ for tag in "${VERSIONS[@]}"; do
     LESS_DIR="$WORKTREE/packages/less"
     BENCH_TARGET="$LESS_DIR/benchmark"
 
-    # Try npm install at root first (for lerna bootstrap)
-    npm install --ignore-scripts --legacy-peer-deps 2>/dev/null || true
-
-    # Install in packages/less specifically
-    pushd "$LESS_DIR" > /dev/null
-    npm install --ignore-scripts --legacy-peer-deps 2>/dev/null || true
+    # v4.3+ uses workspace: protocol requiring pnpm; earlier v4.x uses npm
+    if grep -q '"workspace:' "$LESS_DIR/package.json" 2>/dev/null || \
+       grep -q '"workspace:' "$WORKTREE/package.json" 2>/dev/null; then
+      log "Detected workspace: protocol, using pnpm..."
+      if command -v pnpm &>/dev/null; then
+        (cd "$WORKTREE" && pnpm install --ignore-scripts 2>/dev/null) || true
+      else
+        err "pnpm not available but needed for $tag workspace: deps"
+        # Fallback: install just typescript in packages/less
+        (cd "$LESS_DIR" && npm install typescript --no-save 2>/dev/null) || true
+      fi
+    else
+      # npm-based install for older v4.x / v3.12+
+      npm install --ignore-scripts --legacy-peer-deps 2>/dev/null || true
+      pushd "$LESS_DIR" > /dev/null
+      npm install --ignore-scripts --legacy-peer-deps 2>/dev/null || {
+        # npm install often fails on monorepo versions due to unpublished workspace
+        # packages (e.g. @less/test-import-module). Install runtime deps separately.
+        log "npm install failed, installing runtime deps separately..."
+        runtime_deps=$(python3 -c "
+import json
+with open('package.json') as f:
+    d = json.load(f)
+deps = d.get('dependencies', {})
+# Print package@range pairs
+for name, ver in deps.items():
+    if not name.startswith('@less/'):
+        print(name + '@' + ver.lstrip('^~'))
+" 2>/dev/null)
+        if [[ -n "$runtime_deps" ]]; then
+          deps_temp="$WORKTREE_BASE/.deps-temp"
+          mkdir -p "$deps_temp"
+          (cd "$deps_temp" && npm install $runtime_deps 2>/dev/null) || true
+          mkdir -p node_modules
+          # Copy all installed packages (including transitive deps) into node_modules
+          if [[ -d "$deps_temp/node_modules" ]]; then
+            cp -r "$deps_temp"/node_modules/* node_modules/ 2>/dev/null || true
+            # Also copy @scoped packages
+            for scope_dir in "$deps_temp"/node_modules/@*/; do
+              if [[ -d "$scope_dir" ]]; then
+                scope_name="$(basename "$scope_dir")"
+                mkdir -p "node_modules/$scope_name"
+                cp -r "$scope_dir"*/ "node_modules/$scope_name/" 2>/dev/null || true
+              fi
+            done
+          fi
+        fi
+      }
+      popd > /dev/null
+    fi
 
     # Build TypeScript
+    pushd "$LESS_DIR" > /dev/null
     log "Building TypeScript..."
-    if [[ -f "tsconfig.json" ]] || [[ -f "tsconfig.build.json" ]]; then
-      # Install typescript directly (npx tsc is intercepted by a placeholder package)
-      npm install typescript --no-save 2>/dev/null || true
-      TSC="./node_modules/.bin/tsc"
-      if [[ ! -x "$TSC" ]]; then
-        # Try parent node_modules
-        TSC="$WORKTREE/node_modules/.bin/tsc"
+    if [[ -f "tsconfig.build.json" ]] || [[ -f "tsconfig.json" ]]; then
+      # Find tsc: check local, root, system, then shared fallback
+      TSC=""
+      for tsc_path in \
+        "./node_modules/.bin/tsc" \
+        "$WORKTREE/node_modules/.bin/tsc"; do
+        if [[ -x "$tsc_path" ]]; then
+          TSC="$tsc_path"
+          break
+        fi
+      done
+
+      if [[ -z "$TSC" ]]; then
+        # Try installing locally first
+        npm install typescript --no-save 2>/dev/null || true
+        if [[ -x "./node_modules/.bin/tsc" ]]; then
+          TSC="./node_modules/.bin/tsc"
+        else
+          # Use shared fallback tsc
+          ensure_tsc_fallback && TSC="$TSC_FALLBACK"
+        fi
       fi
-      $TSC -p tsconfig.build.json 2>/dev/null || $TSC -p tsconfig.json 2>/dev/null || {
-        err "TypeScript build failed for $tag, trying with skipLibCheck"
-        $TSC --skipLibCheck -p tsconfig.build.json 2>/dev/null || $TSC --skipLibCheck -p tsconfig.json 2>/dev/null || {
-          err "Build failed completely for $tag, skipping"
-          popd > /dev/null
-          popd > /dev/null
-          git -C "$REPO_ROOT" worktree remove --force "$WORKTREE" 2>/dev/null || true
-          continue
+
+      if [[ -n "$TSC" ]] && [[ -x "$TSC" ]]; then
+        TSCONFIG="tsconfig.build.json"
+        [[ -f "$TSCONFIG" ]] || TSCONFIG="tsconfig.json"
+
+        $TSC -p "$TSCONFIG" 2>/dev/null || {
+          log "Retrying tsc with --skipLibCheck..."
+          $TSC --skipLibCheck -p "$TSCONFIG" 2>/dev/null || {
+            err "Build failed completely for $tag, skipping"
+            popd > /dev/null
+            popd > /dev/null
+            git -C "$REPO_ROOT" worktree remove --force "$WORKTREE" 2>/dev/null || true
+            continue
+          }
         }
-      }
+      else
+        err "No tsc available for $tag, skipping"
+        popd > /dev/null
+        popd > /dev/null
+        git -C "$REPO_ROOT" worktree remove --force "$WORKTREE" 2>/dev/null || true
+        continue
+      fi
     fi
     popd > /dev/null
   else
@@ -276,7 +370,9 @@ print(json.dumps({
     # Run from the Less package directory so require() finds the compiler
     # Save result to temp file to avoid shell quoting issues
     result_file=$(mktemp)
-    (cd "$LESS_DIR" && node "$BENCH_TARGET/benchmark-runner.js" "$bench_path" "$RUNS" "$WARMUP" > "$result_file" 2>&1) || true
+    # Pass --math=always for consistent cross-version results
+    # (v4+ defaults to parens-division which changes evaluation behavior)
+    (cd "$LESS_DIR" && node "$BENCH_TARGET/benchmark-runner.js" "$bench_path" "$RUNS" "$WARMUP" --math=always > "$result_file" 2>&1) || true
 
     # Use python to safely merge results
     tag_json=$(python3 -c "

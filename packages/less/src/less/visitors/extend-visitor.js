@@ -262,38 +262,37 @@ class ProcessExtendsVisitor {
             return;
         }
         let matches;
-        let pathIndex;
-        let extendIndex;
         const allExtends = this.allExtendsStack[this.allExtendsStack.length - 1];
         const selectorsToAdd = [];
-        const extendVisitor = this;
-        let selectorPath;
+        const paths = rulesetNode.paths;
+        const pathCount = paths.length;
 
         // look at each selector path in the ruleset, find any extend matches and then copy, find and replace
 
-        for (extendIndex = 0; extendIndex < allExtends.length; extendIndex++) {
-            for (pathIndex = 0; pathIndex < rulesetNode.paths.length; pathIndex++) {
-                selectorPath = rulesetNode.paths[pathIndex];
+        for (let extendIndex = 0; extendIndex < allExtends.length; extendIndex++) {
+            const extend = allExtends[extendIndex];
+            for (let pathIndex = 0; pathIndex < pathCount; pathIndex++) {
+                const selectorPath = paths[pathIndex];
 
                 // extending extends happens initially, before the main pass
                 if (rulesetNode.extendOnEveryPath) { continue; }
                 const extendList = selectorPath[selectorPath.length - 1].extendList;
                 if (extendList && extendList.length) { continue; }
 
-                matches = this.findMatch(allExtends[extendIndex], selectorPath);
+                matches = this.findMatch(extend, selectorPath);
 
                 if (matches.length) {
-                    allExtends[extendIndex].hasFoundMatches = true;
+                    extend.hasFoundMatches = true;
 
-                    allExtends[extendIndex].selfSelectors.forEach(function(selfSelector) {
-                        let extendedSelectors;
-                        extendedSelectors = extendVisitor.extendSelector(matches, selectorPath, selfSelector, allExtends[extendIndex].isVisible());
-                        selectorsToAdd.push(extendedSelectors);
-                    });
+                    const selfSelectors = extend.selfSelectors;
+                    const isVisible = extend.isVisible();
+                    for (let si = 0; si < selfSelectors.length; si++) {
+                        selectorsToAdd.push(this.extendSelector(matches, selectorPath, selfSelectors[si], isVisible));
+                    }
                 }
             }
         }
-        rulesetNode.paths = rulesetNode.paths.concat(selectorsToAdd);
+        rulesetNode.paths = paths.concat(selectorsToAdd);
     }
 
     findMatch(extend, haystackSelectorPath) {
@@ -308,7 +307,6 @@ class ProcessExtendsVisitor {
         let haystackElement;
         let targetCombinator;
         let i;
-        const extendVisitor = this;
         const needleElements = extend.selector.elements;
         const potentialMatches = [];
         let potentialMatch;
@@ -340,7 +338,7 @@ class ProcessExtendsVisitor {
                     }
 
                     // if we don't match, null our match to indicate failure
-                    if (!extendVisitor.isElementValuesEqual(needleElements[potentialMatch.matched].value, haystackElement.value) ||
+                    if (!this.isElementValuesEqual(needleElements[potentialMatch.matched].value, haystackElement.value) ||
                         (potentialMatch.matched > 0 && needleElements[potentialMatch.matched].combinator.value !== targetCombinator)) {
                         potentialMatch = null;
                     } else {

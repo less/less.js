@@ -4113,7 +4113,7 @@ body {
 .generate-font-sizes(12);
 
 .generate-widths(@n, @i: 1) when (@i =< @n) {
-  .w-@{i} { width: percentage(@i / @n); }
+  .w-@{i} { width: percentage((@i / @n)); }
   .generate-widths(@n, (@i + 1));
 }
 .generate-widths(12);
@@ -4268,7 +4268,7 @@ body {
 @base-hue: 210;
 .color-gen(@i) when (@i > 0) {
   .color-@{i} {
-    color: hsl(@base-hue, percentage(@i / 20), 50%);
+    color: hsl(@base-hue, percentage((@i / 20)), 50%);
     background: lighten(hsl(@base-hue, 80%, 50%), @i * 2%);
     border-color: darken(hsl(@base-hue, 80%, 50%), @i * 2%);
     outline-color: spin(hsl(@base-hue, 80%, 50%), @i * 15);
@@ -4347,19 +4347,19 @@ body {
 // --- Large Loop Stress (recursive mixin) ---
 .gen-grid(@cols, @i: 1) when (@i =< @cols) {
   .grid-col-@{i}-of-@{cols} {
-    width: percentage(@i / @cols);
+    width: percentage((@i / @cols));
     float: left;
     padding: 0 15px;
     box-sizing: border-box;
   }
   .grid-push-@{i}-of-@{cols} {
-    margin-left: percentage(@i / @cols);
+    margin-left: percentage((@i / @cols));
   }
   .grid-pull-@{i}-of-@{cols} {
-    margin-right: percentage(@i / @cols);
+    margin-right: percentage((@i / @cols));
   }
   .grid-offset-@{i}-of-@{cols} {
-    margin-left: percentage(@i / @cols);
+    margin-left: percentage((@i / @cols));
   }
   .gen-grid(@cols, (@i + 1));
 }

@@ -74,10 +74,12 @@ const NestableAtRulePrototype = {
 
         // Extract the media-query conditions separated with `,` (OR).
         for (i = 0; i < path.length; i++) {
-            if (path[i].type !== this.type) { 
-                context.mediaBlocks.splice(i, 1); 
-                
-                return this; 
+            if (path[i].type !== this.type) {
+                const blockIndex = context.mediaBlocks.indexOf(this);
+                if (blockIndex > -1) {
+                    context.mediaBlocks.splice(blockIndex, 1);
+                }
+                return this;
             }
             
             value = path[i].features instanceof Value ?

@@ -120,19 +120,19 @@ function analyze(times, skipWarmup) {
     max = Math.max(max, effective[i]);
   }
   var avg = total / effective.length;
-  var variance = ((max - min) / avg) * 100;
 
   // Median
   var sorted = effective.slice().sort(function (a, b) { return a - b; });
   var mid = Math.floor(sorted.length / 2);
   var median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 
-  // Standard deviation
+  // Standard deviation and coefficient of variation
   var sumSqDiff = 0;
   for (var i = 0; i < effective.length; i++) {
     sumSqDiff += (effective[i] - avg) * (effective[i] - avg);
   }
   var stddev = Math.sqrt(sumSqDiff / effective.length);
+  var variancePct = avg === 0 ? 0 : (stddev / avg) * 100;
 
   return {
     min: Math.round(min * 100) / 100,
@@ -140,7 +140,7 @@ function analyze(times, skipWarmup) {
     avg: Math.round(avg * 100) / 100,
     median: Math.round(median * 100) / 100,
     stddev: Math.round(stddev * 100) / 100,
-    variance_pct: Math.round(variance * 100) / 100,
+    variance_pct: Math.round(variancePct * 100) / 100,
     samples: effective.length,
     throughput_kbs: Math.round(1000 / avg * data.length / 1024)
   };

@@ -1,2 +1,2 @@
-const runner = require('./generate')
-runner()
+import generate from './generate.js';
+generate();

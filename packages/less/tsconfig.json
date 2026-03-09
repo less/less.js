@@ -1,21 +1,17 @@
 {
   "compilerOptions": {
-    "outDir": "./lib",
+    "target": "ES2022",
+    "module": "ES2022",
     "moduleResolution": "node",
-    "rootDir": ".",
     "allowJs": true,
-    "sourceMap": true,
-    "inlineSources": true,
+    "checkJs": false,
+    "noEmit": true,
     "esModuleInterop": true,
-    "importHelpers": true,
     "noImplicitAny": true,
-    "target": "ES5"
+    "strict": false,
+    "skipLibCheck": true,
+    "rootDir": "."
   },
-  "ts-node": {
-    "compilerOptions": {
-      "rootDir": "."
-    }
-  },
-  "include": ["**/*"],
-  "exclude": ["node_modules", "lib/**/*"]
+  "include": ["lib/**/*"],
+  "exclude": ["node_modules"]
 }

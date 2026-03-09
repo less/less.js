@@ -1,8 +1,6 @@
-'use strict';
-
-const path = require('path');
-const util = require('util');
-const { chromium } = require('playwright');
+import path from 'path';
+import util from 'util';
+import { chromium } from 'playwright';
 const TIMEOUT_MILLISECONDS = 60000;
 
 function initMocha(reporter) {
@@ -155,7 +153,7 @@ function prepareUrl(filePath) {
     return `file://${resolvedPath}`;
 }
 
-exports.runner = function ({ file, reporter, timeout, width, height, args, executablePath, visible, polling }) {
+export function runner({ file, reporter, timeout, width, height, args, executablePath, visible, polling }) {
     return new Promise(resolve => {
 
         // validate options

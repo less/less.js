@@ -845,4 +845,4 @@ export default function(testFilter) {
         testJSImport: testJSImport,
         finished: finished
     };
-};
+}

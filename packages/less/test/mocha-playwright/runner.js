@@ -205,4 +205,4 @@ export function runner({ file, reporter, timeout, width, height, args, executabl
 
         resolve(result);
     });
-};
+}

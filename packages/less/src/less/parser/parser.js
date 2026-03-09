@@ -484,6 +484,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     validCall = validCall.substring(0, validCall.length - 1);
 
+                    // CSS at-rule keywords should never be parsed as declaration calls
+                    if (/^(and|or|not|only|layer)$/i.test(validCall)) {
+                        parserInput.restore();
+                        return;
+                    }
+
                     let rule = this.ruleProperty();
                     let value;
                   

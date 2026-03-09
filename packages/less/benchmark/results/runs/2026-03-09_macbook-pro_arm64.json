@@ -531,34 +531,6 @@
           ]
         }
       }
-    },
-    {
-      "tag": "v4.5.0-dev",
-      "version": "4.5.0",
-      "node_version": "v24.11.1",
-      "date": "2026-03-09T21:24:00Z",
-      "note": "with hot-path optimizations (PR #4410)",
-      "benchmarks": {
-        "benchmark.less": {
-          "version": "4.5.0",
-          "file": "benchmark.less",
-          "fileSize": 106724,
-          "fileSizeKB": 104.2,
-          "totalRuns": 30,
-          "warmupRuns": 5,
-          "completedRuns": 30,
-          "render": {
-            "min": 31.74,
-            "max": 67.05,
-            "avg": 36.85,
-            "median": 34.32,
-            "stddev": 6.84,
-            "variance_pct": 18.55,
-            "samples": 25,
-            "throughput_kbs": 2828
-          }
-        }
-      }
     }
   ]
 }

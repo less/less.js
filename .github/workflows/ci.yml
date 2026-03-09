@@ -42,6 +42,6 @@ jobs:
       - name: Print put node & npm version
         run: node --version && pnpm --version 
       - name: Install chromium
-        run: pnpm --filter less exec playwright install chromium
+        run: pnpm exec playwright install chromium
       - name: Run unit test
         run: pnpm run test

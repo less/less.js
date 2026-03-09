@@ -1886,7 +1886,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
-                        if (e.type === 'Variable') {
+                        if (e.type === 'Variable' ||
+                            (e.type === 'Keyword' && /^(and|or|not|only)$/i.test(e.value))) {
                             spacing = true;
                         }
                     } else if (parserInput.$char('(')) {

@@ -114,21 +114,17 @@ Ruleset.prototype = Object.assign(new Node(), {
             rules.length = 0;
         }
 
-        // inherit a function registry from the frames stack when possible;
-        // otherwise from the global registry
-        ruleset.functionRegistry = (function (frames) {
-            let i = 0;
-            const n = frames.length;
-            let found;
-            for ( ; i !== n ; ++i ) {
-                found = frames[ i ].functionRegistry;
-                if ( found ) { return found; }
-            }
-            return globalFunctionRegistry;
-        }(context.frames)).inherit();
-
         // push the current ruleset to the frames stack
         const ctxFrames = context.frames;
+
+        // inherit a function registry from the frames stack when possible;
+        // otherwise from the global registry
+        let foundRegistry;
+        for (let fi = 0, fn = ctxFrames.length; fi !== fn; ++fi) {
+            foundRegistry = ctxFrames[fi].functionRegistry;
+            if (foundRegistry) { break; }
+        }
+        ruleset.functionRegistry = (foundRegistry || globalFunctionRegistry).inherit();
         ctxFrames.unshift(ruleset);
 
         // currrent selectors

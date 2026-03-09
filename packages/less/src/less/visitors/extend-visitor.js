@@ -308,7 +308,6 @@ class ProcessExtendsVisitor {
         let haystackElement;
         let targetCombinator;
         let i;
-        const extendVisitor = this;
         const needleElements = extend.selector.elements;
         const potentialMatches = [];
         let potentialMatch;
@@ -340,7 +339,7 @@ class ProcessExtendsVisitor {
                     }
 
                     // if we don't match, null our match to indicate failure
-                    if (!extendVisitor.isElementValuesEqual(needleElements[potentialMatch.matched].value, haystackElement.value) ||
+                    if (!this.isElementValuesEqual(needleElements[potentialMatch.matched].value, haystackElement.value) ||
                         (potentialMatch.matched > 0 && needleElements[potentialMatch.matched].combinator.value !== targetCombinator)) {
                         potentialMatch = null;
                     } else {

@@ -12,6 +12,7 @@ jobs:
   test:
     name: 'Tests on ${{matrix.os}} with Node "${{matrix.node}}"'
     strategy:
+      fail-fast: false
       matrix:
         # Test all mainstream operating systems
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -41,6 +42,6 @@ jobs:
       - name: Print put node & npm version
         run: node --version && pnpm --version 
       - name: Install chromium
-        run: pnpm exec playwright install chromium
+        run: pnpm --filter less exec playwright install chromium
       - name: Run unit test
         run: pnpm run test

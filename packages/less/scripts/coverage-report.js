@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Generates a per-file coverage report table for src/ directories
+ * Generates a per-file coverage report table for lib/ directories
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const coverageSummaryPath = path.join(__dirname, '..', 'coverage', 'coverage-summary.json');
 
@@ -16,8 +19,8 @@ if (!fs.existsSync(coverageSummaryPath)) {
 
 const coverage = JSON.parse(fs.readFileSync(coverageSummaryPath, 'utf8'));
 
-// Filter to only src/ files (less, less-node) and bin/ files
-// Note: src/less-browser/ is excluded because browser tests aren't included in coverage
+// Filter to only lib/ files (less, less-node) and bin/ files
+// Note: lib/less-browser/ is excluded because browser tests aren't included in coverage
 // Abstract base classes are excluded as they're meant to be overridden by implementations
 const abstractClasses = [
     'abstract-file-manager',
@@ -31,17 +34,17 @@ const srcFiles = Object.entries(coverage)
         if (abstractClasses.some(abstract => normalized.includes(abstract))) {
             return false;
         }
-        return (normalized.includes('/src/less/') && !normalized.includes('/src/less-browser/')) || 
-               normalized.includes('/src/less-node/') ||
+        return (normalized.includes('/lib/less/') && !normalized.includes('/lib/less-browser/')) ||
+               normalized.includes('/lib/less-node/') ||
                normalized.includes('/bin/');
     })
     .map(([filePath, data]) => {
         // Extract relative path from absolute path
         const normalized = filePath.replace(/\\/g, '/');
-        // Match src/ paths or bin/ paths
-        const match = normalized.match(/((?:src\/[^/]+\/[^/]+\/|bin\/).+)$/);
+        // Match lib/ paths or bin/ paths
+        const match = normalized.match(/((?:lib\/[^/]+\/[^/]+\/|bin\/).+)$/);
         const relativePath = match ? match[1] : path.basename(filePath);
-        
+
         return {
             path: relativePath,
             statements: data.statements,
@@ -58,22 +61,22 @@ const srcFiles = Object.entries(coverage)
     });
 
 if (srcFiles.length === 0) {
-    console.log('No src/ files found in coverage report.');
+    console.log('No lib/ files found in coverage report.');
     process.exit(0);
 }
 
 // Group by directory
 const grouped = {
-    'src/less/': [],
-    'src/less-node/': [],
+    'lib/less/': [],
+    'lib/less-node/': [],
     'bin/': []
 };
 
 srcFiles.forEach(file => {
-    if (file.path.startsWith('src/less/')) {
-        grouped['src/less/'].push(file);
-    } else if (file.path.startsWith('src/less-node/')) {
-        grouped['src/less-node/'].push(file);
+    if (file.path.startsWith('lib/less/')) {
+        grouped['lib/less/'].push(file);
+    } else if (file.path.startsWith('lib/less-node/')) {
+        grouped['lib/less-node/'].push(file);
     } else if (file.path.startsWith('bin/')) {
         grouped['bin/'].push(file);
     }
@@ -81,29 +84,29 @@ srcFiles.forEach(file => {
 
 // Print table
 console.log('\n' + '='.repeat(100));
-console.log('Per-File Coverage Report (src/less/, src/less-node/, and bin/)');
+console.log('Per-File Coverage Report (lib/less/, lib/less-node/, and bin/)');
 console.log('='.repeat(100));
 console.log('For line-by-line coverage details, open coverage/index.html in your browser.');
 console.log('='.repeat(100) + '\n');
 
 Object.entries(grouped).forEach(([dir, files]) => {
     if (files.length === 0) return;
-    
+
     console.log(`\n${dir.toUpperCase()}`);
     console.log('-'.repeat(100));
     console.log(
-        'File'.padEnd(50) + 
-        'Statements'.padStart(12) + 
-        'Branches'.padStart(12) + 
-        'Functions'.padStart(12) + 
+        'File'.padEnd(50) +
+        'Statements'.padStart(12) +
+        'Branches'.padStart(12) +
+        'Functions'.padStart(12) +
         'Lines'.padStart(12)
     );
     console.log('-'.repeat(100));
-    
+
     files.forEach(file => {
         const filename = file.path.replace(dir, '');
         const truncated = filename.length > 48 ? '...' + filename.slice(-45) : filename;
-        
+
         console.log(
             truncated.padEnd(50) +
             `${file.statements.pct.toFixed(1)}%`.padStart(12) +
@@ -112,7 +115,7 @@ Object.entries(grouped).forEach(([dir, files]) => {
             `${file.lines.pct.toFixed(1)}%`.padStart(12)
         );
     });
-    
+
     // Summary for this directory
     const totals = files.reduce((acc, file) => {
         acc.statements.total += file.statements.total;
@@ -130,8 +133,8 @@ Object.entries(grouped).forEach(([dir, files]) => {
         functions: { total: 0, covered: 0 },
         lines: { total: 0, covered: 0 }
     });
-    
-    const stmtPct = totals.statements.total > 0 
+
+    const stmtPct = totals.statements.total > 0
         ? (totals.statements.covered / totals.statements.total * 100).toFixed(1)
         : '0.0';
     const branchPct = totals.branches.total > 0
@@ -143,7 +146,7 @@ Object.entries(grouped).forEach(([dir, files]) => {
     const linePct = totals.lines.total > 0
         ? (totals.lines.covered / totals.lines.total * 100).toFixed(1)
         : '0.0';
-    
+
     console.log('-'.repeat(100));
     console.log(
         'TOTAL'.padEnd(50) +
@@ -155,4 +158,3 @@ Object.entries(grouped).forEach(([dir, files]) => {
 });
 
 console.log('\n' + '='.repeat(100) + '\n');
-

@@ -1,7 +1,7 @@
 module.exports = {
   language: {
     less: {
-      "plugin": "test/plugins/filemanager/"
+      "plugin": "test/plugins/filemanager/index.cjs"
 }
   }
 };

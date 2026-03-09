@@ -12,6 +12,7 @@ jobs:
   test:
     name: 'Tests on ${{matrix.os}} with Node "${{matrix.node}}"'
     strategy:
+      fail-fast: false
       matrix:
         # Test all mainstream operating systems
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -40,8 +41,7 @@ jobs:
         run: pnpm install
       - name: Print put node & npm version
         run: node --version && pnpm --version 
-      # Pin the version of Playwright to match package.json to avoid installing a newer version which may expect different binaries
       - name: Install chromium
-        run: npx playwright@1.50.1 install chromium
+        run: pnpm exec playwright install chromium
       - name: Run unit test
         run: pnpm run test

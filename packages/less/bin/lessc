@@ -2,18 +2,17 @@
 
 /* eslint indent: [2, 2, {"SwitchCase": 1}] */
 
-'use strict';
+import path from 'path';
+import os from 'os';
+import { createRequire } from 'module';
+import fs from '../lib/less-node/fs.js';
+import * as utils from '../lib/less/utils.js';
+import * as Constants from '../lib/less/constants.js';
+import less from '../lib/less-node/index.js';
 
-var path = require('path');
-var fs = require('../lib/less-node/fs').default;
-var os = require('os');
-var utils = require('../lib/less/utils');
-var Constants = require('../lib/less/constants');
-
-var less = require('../lib/less-node').default;
+const require = createRequire(import.meta.url);
 
 var errno;
-var mkdirp;
 
 try {
   errno = require('errno');
@@ -108,22 +107,22 @@ function render() {
     }
 
     // Handle explicit sourceMapFullFilename (from --source-map=filename)
-    // Normalization of other options (sourceMapBasepath, sourceMapRootpath, etc.) 
+    // Normalization of other options (sourceMapBasepath, sourceMapRootpath, etc.)
     // is handled automatically in parse-tree.js
     if (sourceMapOptions.sourceMapFullFilename && !sourceMapFileInline) {
       var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename);
       var mapDir = path.dirname(mapFilename);
-      
+
       if (output) {
         var outputDir = path.dirname(output);
         // Set sourceMapOutputFilename relative to map directory
         sourceMapOptions.sourceMapOutputFilename = path.join(
-          path.relative(mapDir, outputDir), 
+          path.relative(mapDir, outputDir),
           path.basename(output)
         );
         // Set sourceMapFilename relative to output directory (for sourceMappingURL comment)
         sourceMapOptions.sourceMapFilename = path.join(
-          path.relative(outputDir, mapDir), 
+          path.relative(outputDir, mapDir),
           path.basename(sourceMapOptions.sourceMapFullFilename)
         );
       } else {
@@ -151,6 +150,7 @@ function render() {
     return;
   }
 
+  var mkdirp;
   var ensureDirectory = function ensureDirectory(filepath) {
     var dir = path.dirname(filepath);
     var cmd;
@@ -189,7 +189,7 @@ function render() {
 
       // To fix https://github.com/less/less.js/issues/3646
       output = output.toString();
-      
+
       fs.writeFile(filename, output, 'utf8', function (err) {
         if (err) {
           var description = 'Error: ';
@@ -404,7 +404,7 @@ function processPluginQueue() {
       case 'silent':
         options.silent = silent = true;
         break;
-      
+
       case 'quiet':
         options.quiet = quiet = true;
         break;
@@ -539,7 +539,7 @@ function processPluginQueue() {
         }
 
         break;
-      
+
       case 'ie-compat':
         pendingDeprecations.push('Warning: The --ie-compat option is deprecated, as it has no effect on compilation.');
         break;
@@ -652,7 +652,7 @@ function processPluginQueue() {
       case 'disable-plugin-rule':
         options.disablePluginRule = true;
         break;
-  
+
       default:
         queuePlugins.push({
           name: arg,

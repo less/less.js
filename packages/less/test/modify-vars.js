@@ -1,14 +1,5 @@
-var less;
-
-// Dist fallback for NPM-installed Less (for plugins that do testing)
-try {
-    less = require('../tmp/less.cjs.js');
-}
-catch (e) {
-    less = require('../dist/less.cjs.js');
-}
-
-var fs = require('fs');
+import less from '../lib/less-node/index.js';
+import fs from 'fs';
 
 var input = fs.readFileSync('./test/less/modifyVars/extended.less', 'utf8');
 var expectedCss = fs.readFileSync('./test/css/modifyVars/extended.css', 'utf8');

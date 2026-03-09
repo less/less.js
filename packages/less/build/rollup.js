@@ -1,21 +1,23 @@
-const rollup = require('rollup');
-const typescript = require('rollup-plugin-typescript2');
-const commonjs = require('@rollup/plugin-commonjs');
-const json = require('@rollup/plugin-json');
-const resolve = require('@rollup/plugin-node-resolve').nodeResolve;
-const terser = require('rollup-plugin-terser').terser;
-const banner = require('./banner');
-const path = require('path');
+import { rollup } from 'rollup';
+import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
+import { nodeResolve as resolve } from '@rollup/plugin-node-resolve';
+import { terser } from 'rollup-plugin-terser';
+import banner from './banner.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import minimist from 'minimist';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootPath = path.join(__dirname, '..');
 
-const args = require('minimist')(process.argv.slice(2));
+const args = minimist(process.argv.slice(2));
 
 let outDir = args.dist ? './dist' : './tmp';
 
 async function buildBrowser() {
-    let bundle = await rollup.rollup({
-        input: './src/less-browser/bootstrap.js',
+    let bundle = await rollup({
+        input: './lib/less-browser/bootstrap.js',
         output: [
             {
                 file: 'less.js',
@@ -30,18 +32,6 @@ async function buildBrowser() {
             resolve(),
             commonjs(),
             json(),
-            typescript({
-                verbosity: 2,
-                tsconfigDefaults: {
-                    compilerOptions: {
-                        allowJs: true,
-                        sourceMap: true,
-                        target: 'ES5'
-                    }
-                },
-                include: [ '*.ts', '**/*.ts', '*.js', '**/*.js' ],
-                exclude: ['node_modules'] // only transpile our source code
-            }),
             terser({
                 compress: true,
                 include: [/^.+\.min\.js$/],
@@ -65,7 +55,7 @@ async function buildBrowser() {
             format: 'umd',
             name: 'less',
             banner
-        }); 
+        });
     }
 
     if (!args.out || args.out.indexOf('less.min.js') > -1) {

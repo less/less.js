@@ -34,6 +34,14 @@
 	"directories": {
 		"test": "./test"
 	},
+	"files": [
+		"bin",
+		"lib",
+		"!lib/**/*.map",
+		"dist",
+		"index.js",
+		"README.md"
+	],
 	"browser": "./dist/less.js",
 	"engines": {
 		"node": ">=18"
@@ -47,8 +55,7 @@
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"typecheck": "tsc",
 		"build": "node build/rollup.js --dist",
-		"prepublishOnly": "grunt dist",
-		"postinstall": "node scripts/postinstall.js"
+		"prepublishOnly": "grunt dist"
 	},
 	"optionalDependencies": {
 		"errno": "^0.1.1",

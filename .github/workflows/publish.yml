@@ -184,9 +184,14 @@ jobs:
           \`\`\`"
           fi
 
-          gh release create "$TAG" \
-            --title "$TITLE" \
-            $PRERELEASE \
-            --notes "$BODY" \
-            packages/less/dist/less.js \
-            packages/less/dist/less.min.js
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists, uploading assets to existing release"
+            gh release upload "$TAG" packages/less/dist/less.js packages/less/dist/less.min.js --clobber
+          else
+            gh release create "$TAG" \
+              --title "$TITLE" \
+              $PRERELEASE \
+              --notes "$BODY" \
+              packages/less/dist/less.js \
+              packages/less/dist/less.min.js
+          fi

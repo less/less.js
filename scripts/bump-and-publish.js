@@ -87,12 +87,24 @@ function getExplicitVersion() {
     return process.env.EXPLICIT_VERSION;
   }
 
-  // Check git commit message for version bump instruction
+  // Check git commit message for version bump instruction.
+  // Skip if the version is already published (tag exists at or above it).
   try {
     const commitMsg = execSync('git log -1 --pretty=%B', { encoding: 'utf8' });
     const versionMatch = commitMsg.match(/version[:\s]+v?(\d+\.\d+\.\d+(?:-[a-z]+\.\d+)?)/i);
     if (versionMatch) {
-      return versionMatch[1];
+      const requestedVersion = versionMatch[1];
+      try {
+        const lastTag = execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim();
+        const lastTagVersion = lastTag.replace(/^v/, '');
+        if (semver.valid(requestedVersion) && semver.valid(lastTagVersion) && semver.lte(requestedVersion, lastTagVersion)) {
+          console.log(`⚠️  Commit message requests version ${requestedVersion}, but tag ${lastTag} already exists. Skipping.`);
+        } else {
+          return requestedVersion;
+        }
+      } catch (e) {
+        return requestedVersion;
+      }
     }
   } catch (e) {
     // Ignore errors

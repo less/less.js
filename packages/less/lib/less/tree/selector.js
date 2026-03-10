@@ -74,8 +74,9 @@ class Selector extends Node {
             return [new Element('', '&', false, this._index, this._fileInfo)];
         }
         if (typeof els === 'string') {
+            const fileInfo = this._fileInfo;
             const parse = this.parse;
-            new (/** @type {new (...args: unknown[]) => { parseNode: Function }} */ (/** @type {unknown} */ (Parser)))(parse.context, parse.importManager, this._fileInfo, this._index).parseNode(
+            new (/** @type {new (...args: unknown[]) => { parseNode: Function }} */ (/** @type {unknown} */ (Parser)))(parse.context, parse.importManager, fileInfo, this._index).parseNode(
                 els,
                 ['selector'],
                 function(/** @type {{ index: number, message: string } | null} */ err, /** @type {Selector[]} */ result) {
@@ -83,7 +84,7 @@ class Selector extends Node {
                         throw new LessError({
                             index: err.index,
                             message: err.message
-                        }, parse.imports, /** @type {string} */ (/** @type {FileInfo} */ (this._fileInfo).filename));
+                        }, parse.imports, /** @type {string} */ (/** @type {FileInfo} */ (fileInfo).filename));
                     }
                     els = result[0].elements;
                 });

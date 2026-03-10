@@ -224,8 +224,7 @@ class MixinCall extends Node {
                             this._setVisibilityToReplacement(newRules);
                             Array.prototype.push.apply(rules, newRules);
                         } catch (e) {
-                            const err = /** @type {{ message?: string, stack?: string }} */ (e);
-                            throw { message: err.message, index: this.getIndex(), filename: this.fileInfo().filename, stack: err.stack };
+                            throw { .../** @type {object} */ (e), index: this.getIndex(), filename: this.fileInfo().filename };
                         }
                     }
                 }

@@ -49,7 +49,9 @@ class Color extends Node {
             });
         }
         /** @type {number} */
-        this.alpha = this.alpha || (typeof a === 'number' ? a : 1);
+        if (typeof this.alpha === 'undefined') {
+            this.alpha = (typeof a === 'number') ? a : 1;
+        }
         if (typeof originalForm !== 'undefined') {
             this.value = originalForm;
         }

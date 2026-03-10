@@ -69,7 +69,10 @@ class Media extends AtRule {
         context.mediaPath.push(/** @type {Node} */ (/** @type {unknown} */ (media)));
         context.mediaBlocks.push(/** @type {Node} */ (/** @type {unknown} */ (media)));
 
-        /** @type {RulesetLikeNode} */ (this.rules[0]).functionRegistry = /** @type {RulesetLikeNode} */ (context.frames[0]).functionRegistry.inherit();
+        const fr = /** @type {RulesetLikeNode} */ (context.frames[0]).functionRegistry;
+        if (fr) {
+            /** @type {RulesetLikeNode} */ (this.rules[0]).functionRegistry = fr.inherit();
+        }
         context.frames.unshift(this.rules[0]);
         media.rules = [/** @type {RulesetLikeNode} */ (this.rules[0].eval(context))];
         context.frames.shift();

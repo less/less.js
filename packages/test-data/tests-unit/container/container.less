@@ -326,3 +326,27 @@
       font-size: 75%;
     }
 }
+
+// Regression test: mixin with variable container name and variable query condition
+// Issue: mixins with parameters using @container @name (condition < @var) failed
+// with "variable @bp is undefined" error in older versions
+@issue-width: 125px;
+
+.container-query-mixin(@container-name; @bp) {
+    @container @container-name (width < @bp) {
+        display: none;
+    }
+}
+
+.mixin-container-test {
+    .container-query-mixin(name, @issue-width);
+    color: red;
+}
+
+// Verify multiple calls with different params produce correct output
+.sidebar-test {
+    .container-query-mixin(sidebar, 500px);
+}
+.header-test {
+    .container-query-mixin(header, 800px);
+}

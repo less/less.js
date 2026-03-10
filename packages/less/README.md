@@ -34,10 +34,10 @@ npm install less
 ### Node.js
 
 ```js
-const less = require('less');
+import less from 'less';
 
-less.render('.class { width: (1 + 1) }')
-  .then(output => console.log(output.css));
+const output = await less.render('.class { width: (1 + 1) }');
+console.log(output.css);
 ```
 
 ### Command Line

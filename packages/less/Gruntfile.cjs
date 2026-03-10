@@ -202,7 +202,7 @@ module.exports = function(grunt) {
                 command: "node build/rollup.js --browser --out=./tmp/browser/less.min.js"
             },
             test: {
-                command: 'node test/test-es6.js && node test/index.js'
+                command: 'node test/test-es6.js && node test/test-cjs.cjs && node test/index.js'
             },
             generatebrowser: {
                 command: 'node test/browser/generator/generate.js'

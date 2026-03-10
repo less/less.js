@@ -2423,7 +2423,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             },
             negatedCondition: function (needsParens) {
                 if (parserInput.$str('not')) {
-                    const result = this.parenthesisCondition(needsParens);
+                    const result = this.parenthesisCondition(needsParens) || this.atomicCondition(needsParens);
                     if (result) {
                         result.negate = !result.negate;
                     }

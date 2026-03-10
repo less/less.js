@@ -256,6 +256,10 @@ html {
   a: boolean(not(2 < 1));
   b: boolean(not(2 > 1) and (true));
   c: boolean(not(boolean(true)));
+  // not without parentheses (should behave the same as with parentheses)
+  d: boolean(not false);
+  e: boolean(not true);
+  f: boolean(not 2 < 1);
 }
 
 #if {
@@ -271,6 +275,9 @@ html {
   i: if(true and isnumber(6), 6, 8);
   j: if(not(true) and true, 6, 8);
   k: if(true or true, 1);
+  // not without parentheses
+  m: if(not false, 1, 2);
+  n: if(not true, 1, 2);
 
   // see: https://github.com/less/less.js/issues/3371
   @some: foo;

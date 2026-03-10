@@ -224,6 +224,9 @@ html {
   a: true;
   b: false;
   c: false;
+  d: true;
+  e: false;
+  f: true;
 }
 #if {
   a: 1;
@@ -236,6 +239,8 @@ html {
   i: 6;
   j: 8;
   k: 1;
+  m: 1;
+  n: 2;
   l: black;
   /* results in void */
   color: green;

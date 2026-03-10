@@ -79,13 +79,14 @@ function getCurrentVersion() {
   return pkg.version;
 }
 
-// Check if version was explicitly set (via environment variable or git commit message)
+// Check if version was explicitly set (via environment variable, git commit message,
+// or package.json already bumped beyond the last tag)
 function getExplicitVersion() {
   // Check for explicit version in environment
   if (process.env.EXPLICIT_VERSION) {
     return process.env.EXPLICIT_VERSION;
   }
-  
+
   // Check git commit message for version bump instruction
   try {
     const commitMsg = execSync('git log -1 --pretty=%B', { encoding: 'utf8' });
@@ -96,7 +97,23 @@ function getExplicitVersion() {
   } catch (e) {
     // Ignore errors
   }
-  
+
+  // Check if package.json version is already ahead of the last git tag.
+  // This handles squash merges from release branches where the version
+  // was bumped in package.json but the commit message may not contain
+  // the "version: X.Y.Z" marker.
+  try {
+    const lastTag = execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim();
+    const lastTagVersion = lastTag.replace(/^v/, '');
+    const currentVersion = getCurrentVersion();
+    if (semver.valid(currentVersion) && semver.valid(lastTagVersion) && semver.gt(currentVersion, lastTagVersion)) {
+      console.log(`📦 package.json version (${currentVersion}) is ahead of last tag (${lastTag}), using it directly`);
+      return currentVersion;
+    }
+  } catch (e) {
+    // No tags exist or git describe failed, fall through to auto-increment
+  }
+
   return null;
 }
 

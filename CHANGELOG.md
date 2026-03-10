@@ -1,5 +1,43 @@
 ## Change Log
 
+### v4.6.0 (2026-03-09)
+
+#### Bug Fixes
+
+- [#4414](https://github.com/less/less.js/pull/4414) Fix pre-existing bugs in tree nodes: selector `this` binding, atrule parenting, mixin-call error propagation, container/media functionRegistry guard (@matthew-dean)
+- [#4408](https://github.com/less/less.js/pull/4408) Fix [#4358](https://github.com/less/less.js/issues/4358) Resolve parent selectors in comma-separated pseudo-selector lists (@matthew-dean)
+- [#4407](https://github.com/less/less.js/pull/4407) Fix [#4331](https://github.com/less/less.js/issues/4331) Exclude CSS at-rule keywords from declarationCall parsing (@matthew-dean)
+- [#4389](https://github.com/less/less.js/pull/4389) Fix [#4354](https://github.com/less/less.js/issues/4354) Unknown at-rule expression commas (@puckowski)
+- [#4404](https://github.com/less/less.js/pull/4404) Fix no-prototype-builtins issues in Ruleset and ToCSSVisitor (@matthew-dean)
+- [#4236](https://github.com/less/less.js/pull/4236) Fix import subpath module bug (@nicolo-ribaudo)
+- [#4327](https://github.com/less/less.js/pull/4327) Remove duplicate length check from expression.genCSS() (@nicolo-ribaudo)
+- [#3791](https://github.com/less/less.js/pull/3791) Handle the lack of optional dependencies (@nicolo-ribaudo)
+
+#### Features & Improvements
+
+- [#4413](https://github.com/less/less.js/pull/4413) Add JSDoc type annotations for all tree node files (@matthew-dean)
+- [#4412](https://github.com/less/less.js/pull/4412) Convert prototype-based tree nodes to ES6 classes (@matthew-dean)
+- [#4411](https://github.com/less/less.js/pull/4411) Migrate to native ESM with no build step (@matthew-dean)
+- [#4410](https://github.com/less/less.js/pull/4410) Optimize hot paths and fix benchmark infrastructure (@matthew-dean)
+- [#4409](https://github.com/less/less.js/pull/4409) Code quality cleanup for container queries and related code (@matthew-dean)
+
+#### Deprecation Warnings
+
+- [#4402](https://github.com/less/less.js/pull/4402) Add deprecation warnings for features removed in Less 5.x, container query variable name fix, deprecation notice fix (@matthew-dean, @puckowski)
+
+#### Chores
+
+- [#4406](https://github.com/less/less.js/pull/4406) Add test for number with underscore parsing (@matthew-dean)
+- [#4386](https://github.com/less/less.js/pull/4386) Update README.md copyright (@matthew-dean)
+- [#3782](https://github.com/less/less.js/pull/3782) Remove phantom stuff (@nicolo-ribaudo)
+- [#3702](https://github.com/less/less.js/pull/3702) Replace deprecated String.prototype.substr() (@nicolo-ribaudo)
+- [#4265](https://github.com/less/less.js/pull/4265) Remove redundant return from parsers.blockRuleset() (@nicolo-ribaudo)
+- [#4271](https://github.com/less/less.js/pull/4271) Remove unused parsers.entities.propertyCurly() (@nicolo-ribaudo)
+
+### v4.5.1 (2025-12-28)
+
+_Automated patch release — no user-facing changes._
+
 ### v4.4.2 (2025-08-27)
 
 - [#4357](https://github.com/less/less.js/pull/4357) Migrate Less test data to use valid CSS (@matthew-dean)

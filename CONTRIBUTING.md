@@ -42,8 +42,8 @@ Pull requests are welcome! Here's how to make them go smoothly:
 
 * **For new features, start with a feature request** to get feedback and see how your idea is received.
 * **If your PR solves an existing issue**, but approaches it differently, please create a new issue first and discuss it with core contributors. This helps avoid wasted effort.
-* **Don't modify the `./dist/` folder**—we handle that during releases.
-* **Please add tests** for your work. Run tests using `npm test`, which runs both Node.js and browser (Headless Chrome) tests.
+* The `dist/` folder is gitignored—builds happen automatically during releases.
+* **Please add tests** for your work. Run tests using `pnpm test`, which runs both Node.js and browser (Headless Chrome) tests.
 
 ### Coding Standards
 
@@ -86,10 +86,16 @@ When code is pushed to specific branches, GitHub Actions automatically:
 
 ### How to Publish
 
-**For regular releases:**
-1. Update version in `packages/less/package.json` (or let it auto-increment)
-2. Commit and push to `master`
-3. The workflow automatically publishes if the version changed
+**For patch releases (automatic):**
+1. Merge your PR into `master`
+2. The workflow auto-increments the patch version (e.g., `4.6.0` → `4.6.1`)
+3. Publishes to npm and creates a GitHub release with `less.js` and `less.min.js` attached
+
+**For minor/major releases (explicit version):**
+1. Create a release branch (e.g., `release/v4.6.0`)
+2. Update version in all `package.json` files, update `CHANGELOG.md`
+3. Merge into `master` with a commit message containing the version (see below)
+4. The workflow picks up the explicit version instead of auto-incrementing
 
 **For alpha releases:**
 1. Make your changes on the `alpha` branch
@@ -98,13 +104,29 @@ When code is pushed to specific branches, GitHub Actions automatically:
 
 ### Version Override
 
-You can override auto-increment by including a version in your commit message:
+The publish script (`scripts/bump-and-publish.js`) auto-increments the patch version by default. To set a specific version (e.g., for minor or major releases), use one of these methods:
+
+**Option 1: Commit message** — include `version: X.Y.Z` in the commit body:
 
 ```
 feat: new feature
 
-version: 4.5.0
+version: 4.6.0
 ```
+
+**Option 2: Environment variable** — set `EXPLICIT_VERSION` (useful for CI or manual runs):
+
+```bash
+EXPLICIT_VERSION=4.6.0 pnpm run publish
+```
+
+### Release Assets
+
+Each GitHub release automatically includes:
+- `less.js` — the full browser build
+- `less.min.js` — the minified browser build
+
+These are built during the workflow and attached to the release. They are not committed to git (the `dist/` directory is gitignored).
 
 ### Security
 

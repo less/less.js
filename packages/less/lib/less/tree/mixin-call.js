@@ -162,7 +162,7 @@ class MixinCall extends Node {
                             this._setVisibilityToReplacement(newRules);
                             Array.prototype.push.apply(rules, newRules);
                         } catch (e) {
-                            throw { message: e.message, index: this.getIndex(), filename: this.fileInfo().filename, stack: e.stack };
+                            throw { ...e, index: this.getIndex(), filename: this.fileInfo().filename };
                         }
                     }
                 }

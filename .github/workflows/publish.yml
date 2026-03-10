@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
+      - '.gitignore'
+      - '.claude/**'
 
 permissions:
   id-token: write  # Required for OIDC trusted publishing

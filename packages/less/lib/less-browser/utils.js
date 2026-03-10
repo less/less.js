@@ -1,4 +1,5 @@
 
+/** @param {string} href */
 export function extractId(href) {
     return href.replace(/^[a-z-]+:\/+?[^/]+/, '')  // Remove protocol & domain
         .replace(/[?&]livereload=\w+/, '')        // Remove LiveReload cachebuster
@@ -8,6 +9,10 @@ export function extractId(href) {
         .replace(/\./g, ':');                       // Replace dots with colons(for valid id)
 }
 
+/**
+ * @param {Record<string, *>} options
+ * @param {HTMLElement | null} tag
+ */
 export function addDataAttr(options, tag) {
     if (!tag) {return;} // in case of tag is null or undefined
     for (const opt in tag.dataset) {

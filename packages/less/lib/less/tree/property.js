@@ -1,14 +1,15 @@
 import Node from './node.js';
 import Declaration from './declaration.js';
 
-const Property = function(name, index, currentFileInfo) {
-    this.name = name;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-};
+class Property extends Node {
+    get type() { return 'Property'; }
 
-Property.prototype = Object.assign(new Node(), {
-    type: 'Property',
+    constructor(name, index, currentFileInfo) {
+        super();
+        this.name = name;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    }
 
     eval(context) {
         let property;
@@ -62,7 +63,7 @@ Property.prototype = Object.assign(new Node(), {
                 filename: this.currentFileInfo.filename,
                 index: this.index };
         }
-    },
+    }
 
     find(obj, fun) {
         for (let i = 0, r; i < obj.length; i++) {
@@ -71,6 +72,6 @@ Property.prototype = Object.assign(new Node(), {
         }
         return null;
     }
-});
+}
 
 export default Property;

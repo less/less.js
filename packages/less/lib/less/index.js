@@ -61,10 +61,8 @@ export default function(environment, fileManagers, version = '0.0.0') {
     // Create a public API
 
     const ctor = function(t) {
-        return function() {
-            const obj = Object.create(t.prototype);
-            t.apply(obj, Array.prototype.slice.call(arguments, 0));
-            return obj;
+        return function(...args) {
+            return new t(...args);
         };
     };
     let t;

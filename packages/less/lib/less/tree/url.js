@@ -4,25 +4,26 @@ function escapePath(path) {
     return path.replace(/[()'"\s]/g, function(match) { return `\\${match}`; });
 }
 
-const URL = function(val, index, currentFileInfo, isEvald) {
-    this.value = val;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.isEvald = isEvald;
-};
+class URL extends Node {
+    get type() { return 'Url'; }
 
-URL.prototype = Object.assign(new Node(), {
-    type: 'Url',
+    constructor(val, index, currentFileInfo, isEvald) {
+        super();
+        this.value = val;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.isEvald = isEvald;
+    }
 
     accept(visitor) {
         this.value = visitor.visit(this.value);
-    },
+    }
 
     genCSS(context, output) {
         output.add('url(');
         this.value.genCSS(context, output);
         output.add(')');
-    },
+    }
 
     eval(context) {
         const val = this.value.eval(context);
@@ -58,6 +59,6 @@ URL.prototype = Object.assign(new Node(), {
 
         return new URL(val, this.getIndex(), this.fileInfo(), true);
     }
-});
+}
 
 export default URL;

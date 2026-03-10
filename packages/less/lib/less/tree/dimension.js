@@ -7,32 +7,33 @@ import Color from './color.js';
 //
 // A number with a unit
 //
-const Dimension = function(value, unit) {
-    this.value = parseFloat(value);
-    if (isNaN(this.value)) {
-        throw new Error('Dimension is not a number.');
-    }
-    this.unit = (unit && unit instanceof Unit) ? unit :
-        new Unit(unit ? [unit] : undefined);
-    this.setParent(this.unit, this);
-};
+class Dimension extends Node {
+    get type() { return 'Dimension'; }
 
-Dimension.prototype = Object.assign(new Node(), {
-    type: 'Dimension',
+    constructor(value, unit) {
+        super();
+        this.value = parseFloat(value);
+        if (isNaN(this.value)) {
+            throw new Error('Dimension is not a number.');
+        }
+        this.unit = (unit && unit instanceof Unit) ? unit :
+            new Unit(unit ? [unit] : undefined);
+        this.setParent(this.unit, this);
+    }
 
     accept(visitor) {
         this.unit = visitor.visit(this.unit);
-    },
+    }
 
     // remove when Nodes have JSDoc types
     // eslint-disable-next-line no-unused-vars
     eval(context) {
         return this;
-    },
+    }
 
     toColor() {
         return new Color([this.value, this.value, this.value]);
-    },
+    }
 
     genCSS(context, output) {
         if ((context && context.strictUnits) && !this.unit.isSingular()) {
@@ -62,7 +63,7 @@ Dimension.prototype = Object.assign(new Node(), {
 
         output.add(strValue);
         this.unit.genCSS(context, output);
-    },
+    }
 
     // In an operation between two Dimensions,
     // we default to the first Dimension's unit,
@@ -100,7 +101,7 @@ Dimension.prototype = Object.assign(new Node(), {
             unit.cancel();
         }
         return new Dimension(value, unit);
-    },
+    }
 
     compare(other) {
         let a, b;
@@ -121,11 +122,11 @@ Dimension.prototype = Object.assign(new Node(), {
         }
 
         return Node.numericCompare(a.value, b.value);
-    },
+    }
 
     unify() {
         return this.convertTo({ length: 'px', duration: 's', angle: 'rad' });
-    },
+    }
 
     convertTo(conversions) {
         let value = this.value;
@@ -173,6 +174,6 @@ Dimension.prototype = Object.assign(new Node(), {
 
         return new Dimension(value, unit);
     }
-});
+}
 
 export default Dimension;

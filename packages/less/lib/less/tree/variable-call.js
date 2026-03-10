@@ -4,15 +4,16 @@ import Ruleset from './ruleset.js';
 import DetachedRuleset from './detached-ruleset.js';
 import LessError from '../less-error.js';
 
-const VariableCall = function(variable, index, currentFileInfo) {
-    this.variable = variable;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.allowRoot = true;
-};
+class VariableCall extends Node {
+    get type() { return 'VariableCall'; }
 
-VariableCall.prototype = Object.assign(new Node(), {
-    type: 'VariableCall',
+    constructor(variable, index, currentFileInfo) {
+        super();
+        this.variable = variable;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.allowRoot = true;
+    }
 
     eval(context) {
         let rules;
@@ -40,6 +41,6 @@ VariableCall.prototype = Object.assign(new Node(), {
         }
         throw error;
     }
-});
+}
 
 export default VariableCall;

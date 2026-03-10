@@ -1,6 +1,10 @@
 import {addDataAttr} from './utils.js';
 import browser from './browser.js';
 
+/**
+ * @param {Window} window
+ * @param {Record<string, *>} options
+ */
 export default (window, options) => {
 
     // use options from the current script tag data attribues

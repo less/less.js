@@ -40,9 +40,11 @@ const MAX_REPETITIONS = 5;
 
 class DeprecationHandler {
     constructor() {
+        /** @type {Record<string, number>} */
         this._counts = {};
     }
 
+    /** @param {string} deprecationId */
     shouldWarn(deprecationId) {
         if (!deprecationId) { return true; }
         const count = (this._counts[deprecationId] || 0) + 1;
@@ -50,6 +52,7 @@ class DeprecationHandler {
         return count <= MAX_REPETITIONS;
     }
 
+    /** @param {{ warn: (msg: string) => void }} logger */
     summarize(logger) {
         for (const id of Object.keys(this._counts)) {
             const omitted = this._counts[id] - MAX_REPETITIONS;

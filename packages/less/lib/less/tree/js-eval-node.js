@@ -1,9 +1,7 @@
 import Node from './node.js';
 import Variable from './variable.js';
 
-const JsEvalNode = function() {};
-
-JsEvalNode.prototype = Object.assign(new Node(), {
+class JsEvalNode extends Node {
     evaluateJavaScript(expression, context) {
         let result;
         const that = this;
@@ -48,7 +46,7 @@ JsEvalNode.prototype = Object.assign(new Node(), {
                 index: this.getIndex() };
         }
         return result;
-    },
+    }
 
     jsify(obj) {
         if (Array.isArray(obj.value) && (obj.value.length > 1)) {
@@ -57,6 +55,6 @@ JsEvalNode.prototype = Object.assign(new Node(), {
             return obj.toCSS();
         }
     }
-});
+}
 
 export default JsEvalNode;

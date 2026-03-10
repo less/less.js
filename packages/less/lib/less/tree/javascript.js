@@ -3,15 +3,16 @@ import Dimension from './dimension.js';
 import Quoted from './quoted.js';
 import Anonymous from './anonymous.js';
 
-const JavaScript = function(string, escaped, index, currentFileInfo) {
-    this.escaped = escaped;
-    this.expression = string;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-}
+class JavaScript extends JsEvalNode {
+    get type() { return 'JavaScript'; }
 
-JavaScript.prototype = Object.assign(new JsEvalNode(), {
-    type: 'JavaScript',
+    constructor(string, escaped, index, currentFileInfo) {
+        super();
+        this.escaped = escaped;
+        this.expression = string;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    }
 
     eval(context) {
         const result = this.evaluateJavaScript(this.expression, context);
@@ -27,6 +28,6 @@ JavaScript.prototype = Object.assign(new JsEvalNode(), {
             return new Anonymous(result);
         }
     }
-});
+}
 
 export default JavaScript;

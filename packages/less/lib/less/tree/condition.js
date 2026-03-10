@@ -1,20 +1,21 @@
 import Node from './node.js';
 
-const Condition = function(op, l, r, i, negate) {
-    this.op = op.trim();
-    this.lvalue = l;
-    this.rvalue = r;
-    this._index = i;
-    this.negate = negate;
-};
+class Condition extends Node {
+    get type() { return 'Condition'; }
 
-Condition.prototype = Object.assign(new Node(), {
-    type: 'Condition',
+    constructor(op, l, r, i, negate) {
+        super();
+        this.op = op.trim();
+        this.lvalue = l;
+        this.rvalue = r;
+        this._index = i;
+        this.negate = negate;
+    }
 
     accept(visitor) {
         this.lvalue = visitor.visit(this.lvalue);
         this.rvalue = visitor.visit(this.rvalue);
-    },
+    }
 
     eval(context) {
         const result = (function (op, a, b) {
@@ -37,6 +38,6 @@ Condition.prototype = Object.assign(new Node(), {
 
         return this.negate ? !result : result;
     }
-});
+}
 
 export default Condition;

@@ -4,19 +4,19 @@ import Dimension from './dimension.js';
 import * as Constants from '../constants.js';
 const MATH = Constants.Math;
 
+class Operation extends Node {
+    get type() { return 'Operation'; }
 
-const Operation = function(op, operands, isSpaced) {
-    this.op = op.trim();
-    this.operands = operands;
-    this.isSpaced = isSpaced;
-};
-
-Operation.prototype = Object.assign(new Node(), {
-    type: 'Operation',
+    constructor(op, operands, isSpaced) {
+        super();
+        this.op = op.trim();
+        this.operands = operands;
+        this.isSpaced = isSpaced;
+    }
 
     accept(visitor) {
         this.operands = visitor.visitArray(this.operands);
-    },
+    }
 
     eval(context) {
         let a = this.operands[0].eval(context), b = this.operands[1].eval(context), op;
@@ -44,7 +44,7 @@ Operation.prototype = Object.assign(new Node(), {
         } else {
             return new Operation(this.op, [a, b], this.isSpaced);
         }
-    },
+    }
 
     genCSS(context, output) {
         this.operands[0].genCSS(context, output);
@@ -57,6 +57,6 @@ Operation.prototype = Object.assign(new Node(), {
         }
         this.operands[1].genCSS(context, output);
     }
-});
+}
 
 export default Operation;

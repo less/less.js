@@ -4,32 +4,31 @@ import Selector from './selector.js';
 import AtRule from './atrule.js';
 import NestableAtRulePrototype from './nested-at-rule.js';
 
-const Media = function(value, features, index, currentFileInfo, visibilityInfo) {
-    this._index = index;
-    this._fileInfo = currentFileInfo;
+class Media extends AtRule {
+    get type() { return 'Media'; }
 
-    const selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
+    constructor(value, features, index, currentFileInfo, visibilityInfo) {
+        super();
+        this._index = index;
+        this._fileInfo = currentFileInfo;
 
-    this.features = new Value(features);
-    this.rules = [new Ruleset(selectors, value)];
-    this.rules[0].allowImports = true;
-    this.copyVisibilityInfo(visibilityInfo);
-    this.allowRoot = true;
-    this.setParent(selectors, this);
-    this.setParent(this.features, this);
-    this.setParent(this.rules, this);
-};
+        const selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
 
-Media.prototype = Object.assign(new AtRule(), {
-    type: 'Media',
-
-    ...NestableAtRulePrototype,
+        this.features = new Value(features);
+        this.rules = [new Ruleset(selectors, value)];
+        this.rules[0].allowImports = true;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+        this.setParent(selectors, this);
+        this.setParent(this.features, this);
+        this.setParent(this.rules, this);
+    }
 
     genCSS(context, output) {
         output.add('@media ', this._fileInfo, this._index);
         this.features.genCSS(context, output);
         this.outputRuleset(context, output, this.rules);
-    },
+    }
 
     eval(context) {
         if (!context.mediaBlocks) {
@@ -42,7 +41,7 @@ Media.prototype = Object.assign(new AtRule(), {
             this.rules[0].debugInfo = this.debugInfo;
             media.debugInfo = this.debugInfo;
         }
-        
+
         media.features = this.features.eval(context);
 
         context.mediaPath.push(media);
@@ -58,6 +57,9 @@ Media.prototype = Object.assign(new AtRule(), {
         return context.mediaPath.length === 0 ? media.evalTop(context) :
             media.evalNested(context);
     }
-});
+}
+
+// Apply NestableAtRulePrototype methods (accept, isRulesetLike override AtRule's versions)
+Object.assign(Media.prototype, NestableAtRulePrototype);
 
 export default Media;

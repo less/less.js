@@ -1,11 +1,12 @@
 import Node from './node.js';
 
-const UnicodeDescriptor = function(value) {
-    this.value = value;
-}
+class UnicodeDescriptor extends Node {
+    get type() { return 'UnicodeDescriptor'; }
 
-UnicodeDescriptor.prototype = Object.assign(new Node(), {
-    type: 'UnicodeDescriptor'
-})
+    constructor(value) {
+        super();
+        this.value = value;
+    }
+}
 
 export default UnicodeDescriptor;

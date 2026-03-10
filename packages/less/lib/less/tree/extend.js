@@ -1,46 +1,47 @@
 import Node from './node.js';
 import Selector from './selector.js';
 
-const Extend = function(selector, option, index, currentFileInfo, visibilityInfo) {
-    this.selector = selector;
-    this.option = option;
-    this.object_id = Extend.next_id++;
-    this.parent_ids = [this.object_id];
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.copyVisibilityInfo(visibilityInfo);
-    this.allowRoot = true;
+class Extend extends Node {
+    get type() { return 'Extend'; }
 
-    switch (option) {
-        case '!all':
-        case 'all':
-            this.allowBefore = true;
-            this.allowAfter = true;
-            break;
-        default:
-            this.allowBefore = false;
-            this.allowAfter = false;
-            break;
+    constructor(selector, option, index, currentFileInfo, visibilityInfo) {
+        super();
+        this.selector = selector;
+        this.option = option;
+        this.object_id = Extend.next_id++;
+        this.parent_ids = [this.object_id];
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+
+        switch (option) {
+            case '!all':
+            case 'all':
+                this.allowBefore = true;
+                this.allowAfter = true;
+                break;
+            default:
+                this.allowBefore = false;
+                this.allowAfter = false;
+                break;
+        }
+        this.setParent(this.selector, this);
     }
-    this.setParent(this.selector, this);
-};
-
-Extend.prototype = Object.assign(new Node(), {
-    type: 'Extend',
 
     accept(visitor) {
         this.selector = visitor.visit(this.selector);
-    },
+    }
 
     eval(context) {
         return new Extend(this.selector.eval(context), this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-    },
+    }
 
     // remove when Nodes have JSDoc types
     // eslint-disable-next-line no-unused-vars
     clone(context) {
         return new Extend(this.selector, this.option, this.getIndex(), this.fileInfo(), this.visibilityInfo());
-    },
+    }
 
     // it concatenates (joins) all selectors in selector array
     findSelfSelectors(selectors) {
@@ -59,7 +60,7 @@ Extend.prototype = Object.assign(new Node(), {
         this.selfSelectors = [new Selector(selfElements)];
         this.selfSelectors[0].copyVisibilityInfo(this.visibilityInfo());
     }
-});
+}
 
 Extend.next_id = 0;
 export default Extend;

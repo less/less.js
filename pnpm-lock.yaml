@@ -73,6 +73,9 @@ importers:
       '@rollup/plugin-node-resolve':
         specifier: ^11.0.0
         version: 11.2.1(rollup@2.79.2)
+      '@types/node':
+        specifier: ~25.4.0
+        version: 25.4.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^4.28.0
         version: 4.33.0(@typescript-eslint/parser@4.33.0)(eslint@7.32.0)(typescript@5.9.3)
@@ -470,7 +473,7 @@ packages:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 6.0.0
-      '@types/node': 25.0.2
+      '@types/node': 25.4.0
     dev: true
 
   /@types/istanbul-lib-coverage@2.0.6:
@@ -488,16 +491,16 @@ packages:
       minimatch: 10.1.1
     dev: true
 
-  /@types/node@25.0.2:
-    resolution: {integrity: sha512-gWEkeiyYE4vqjON/+Obqcoeffmk0NF15WSBwSs7zwVA2bAbTaE0SJ7P0WNGoJn8uE7fiaV5a7dKYIJriEqOrmA==}
+  /@types/node@25.4.0:
+    resolution: {integrity: sha512-9wLpoeWuBlcbBpOY3XmzSTG3oscB6xjBEEtn+pYXTfhyXhIxC5FsBer2KTopBlvKEiW9l13po9fq+SJY/5lkhw==}
     dependencies:
-      undici-types: 7.16.0
+      undici-types: 7.18.2
     dev: true
 
   /@types/resolve@1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
     dependencies:
-      '@types/node': 25.0.2
+      '@types/node': 25.4.0
     dev: true
 
   /@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0)(eslint@7.32.0)(typescript@5.9.3):
@@ -5553,8 +5556,8 @@ packages:
     resolution: {integrity: sha512-ZqGrAgaqqZM7LGRzNjLnw5elevWb5M8LEoDMadxIW3OWbcv72wMMgKdwOKpd5Fqxe8choLD8HN3iSj3TUh/giQ==}
     dev: true
 
-  /undici-types@7.16.0:
-    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+  /undici-types@7.18.2:
+    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
     dev: true
 
   /universalify@0.1.2:

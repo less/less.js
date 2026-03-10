@@ -88,14 +88,15 @@ When code is pushed to specific branches, GitHub Actions automatically:
 
 **For patch releases (automatic):**
 1. Merge your PR into `master`
-2. The workflow auto-increments the patch version (e.g., `4.6.0` → `4.6.1`)
-3. Publishes to npm and creates a GitHub release with `less.js` and `less.min.js` attached
+2. The workflow compares `package.json` against the latest npm version
+3. If `package.json` is ahead, it uses that version; otherwise it bumps to the next patch
+4. Publishes to npm and creates a GitHub release with `less.js` and `less.min.js` attached
 
-**For minor/major releases (explicit version):**
-1. Create a release branch (e.g., `release/v4.6.0`)
-2. Update version in all `package.json` files, update `CHANGELOG.md`
-3. Merge into `master` with a commit message containing the version (see below)
-4. The workflow picks up the explicit version instead of auto-incrementing
+**For minor/major releases:**
+1. Create a release branch (e.g., `release/v4.7.0`)
+2. Update `version` in all `package.json` files and update `CHANGELOG.md`
+3. Merge into `master`
+4. The workflow detects the version is ahead of npm and publishes it directly
 
 **For alpha releases:**
 1. Make your changes on the `alpha` branch
@@ -104,20 +105,10 @@ When code is pushed to specific branches, GitHub Actions automatically:
 
 ### Version Override
 
-The publish script (`scripts/bump-and-publish.js`) auto-increments the patch version by default. To set a specific version (e.g., for minor or major releases), use one of these methods:
-
-**Option 1: Commit message** — include `version: X.Y.Z` in the commit body:
-
-```text
-feat: new feature
-
-version: 4.6.0
-```
-
-**Option 2: Environment variable** — set `EXPLICIT_VERSION` (useful for CI or manual runs):
+To force a specific version (useful for CI or manual runs), set the `EXPLICIT_VERSION` environment variable:
 
 ```bash
-EXPLICIT_VERSION=4.6.0 pnpm run publish
+EXPLICIT_VERSION=4.7.0 pnpm run publish
 ```
 
 ### Release Assets

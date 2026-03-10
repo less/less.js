@@ -2016,7 +2016,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 const dir   = parserInput.$re(/^@plugin\s+/);
 
                 if (dir) {
-                    warn('The @plugin directive is deprecated and will be removed in Less 5.x. Use --plugin CLI option or the programmatic plugin API instead.', index, 'DEPRECATED', 'at-plugin');
+                    warn('The @plugin directive is deprecated and will be replaced in Less 5.x. Use --plugin CLI option or the programmatic plugin API instead.', index, 'DEPRECATED', 'at-plugin');
                     args = this.pluginArgs();
 
                     if (args) {

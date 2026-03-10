@@ -26,7 +26,7 @@ const deprecations = {
         description: 'Inline JavaScript evaluation (backtick expressions) is deprecated and will be removed in Less 5.x.'
     },
     'at-plugin': {
-        description: 'The @plugin directive is deprecated and will be removed in Less 5.x.'
+        description: 'The @plugin directive is deprecated and will be replaced in Less 5.x.'
     },
     'dump-line-numbers': {
         description: 'The dumpLineNumbers option is deprecated and will be removed in Less 5.x.'

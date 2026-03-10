@@ -145,7 +145,7 @@ class AtRule extends Node {
             if (allMergeableDeclarations && !this.isRooted && !value) {
                 mergeRules(rules[0].rules);
                 rules = rules[0].rules;
-                rules.forEach(rule => rule.merge = false);
+                rules.forEach(rule => { rule.merge = false; });
             }
         }
         if (this.simpleBlock && rules) {

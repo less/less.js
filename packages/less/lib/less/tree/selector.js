@@ -46,7 +46,9 @@ class Selector extends Node {
             return [new Element('', '&', false, this._index, this._fileInfo)];
         }
         if (typeof els === 'string') {
-            new Parser(this.parse.context, this.parse.importManager, this._fileInfo, this._index).parseNode(
+            const fileInfo = this._fileInfo;
+            const imports = this.parse.imports;
+            new Parser(this.parse.context, this.parse.importManager, fileInfo, this._index).parseNode(
                 els,
                 ['selector'],
                 function(err, result) {
@@ -54,7 +56,7 @@ class Selector extends Node {
                         throw new LessError({
                             index: err.index,
                             message: err.message
-                        }, this.parse.imports, this._fileInfo.filename);
+                        }, imports, fileInfo.filename);
                     }
                     els = result[0].elements;
                 });

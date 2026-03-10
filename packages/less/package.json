@@ -28,7 +28,10 @@
 	},
 	"main": "./lib/less-node/index.js",
 	"exports": {
-		".": "./lib/less-node/index.js",
+		".": {
+			"import": "./lib/less-node/index.js",
+			"require": "./index.cjs"
+		},
 		"./lib/*": "./lib/*"
 	},
 	"directories": {
@@ -40,6 +43,7 @@
 		"!lib/**/*.map",
 		"dist",
 		"index.js",
+		"index.cjs",
 		"README.md"
 	],
 	"browser": "./dist/less.js",

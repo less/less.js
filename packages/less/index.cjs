@@ -1,10 +1,10 @@
 // CJS compatibility wrapper.
-// Node 22+ can require() ESM natively. For Node 18-20, we use a
-// lazy Proxy with dynamic import() — works because render()/parse()
+// Node 20.19+ and 22+ can require() ESM natively. For Node 18, we use
+// a lazy Proxy with dynamic import() — works because render()/parse()
 // already return promises, so the async layer is invisible.
-const [major] = process.versions.node.split('.').map(Number);
+const [major, minor] = process.versions.node.split('.').map(Number);
 
-if (major >= 22) {
+if (major >= 22 || (major === 20 && minor >= 19)) {
     module.exports = require('./lib/less-node/index.js').default;
 } else {
     let _less;

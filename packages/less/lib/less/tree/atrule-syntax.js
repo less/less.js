@@ -1,3 +1,4 @@
+// @ts-check
 export const MediaSyntaxOptions = {
     queryInParens: true
 };

@@ -1,5 +1,9 @@
+// @ts-check
 import Node from './node.js';
 
+/** @import { EvalContext, CSSOutput } from './node.js' */
+
+/** @type {Record<string, boolean>} */
 const _noSpaceCombinators = {
     '': true,
     ' ': true,
@@ -9,6 +13,7 @@ const _noSpaceCombinators = {
 class Combinator extends Node {
     get type() { return 'Combinator'; }
 
+    /** @param {string} value */
     constructor(value) {
         super();
         if (value === ' ') {
@@ -20,8 +25,12 @@ class Combinator extends Node {
         }
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
-        const spaceOrEmpty = (context.compress || _noSpaceCombinators[this.value]) ? '' : ' ';
+        const spaceOrEmpty = (context.compress || _noSpaceCombinators[/** @type {string} */ (this.value)]) ? '' : ' ';
         output.add(spaceOrEmpty + this.value + spaceOrEmpty);
     }
 }

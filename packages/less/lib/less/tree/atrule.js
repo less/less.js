@@ -1,3 +1,6 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, TreeVisitor, FileInfo, VisibilityInfo } from './node.js' */
+/** @import { FunctionRegistry } from './nested-at-rule.js' */
 import Node from './node.js';
 import Selector from './selector.js';
 import Ruleset from './ruleset.js';
@@ -5,9 +8,32 @@ import Anonymous from './anonymous.js';
 import NestableAtRulePrototype from './nested-at-rule.js';
 import mergeRules from './merge-rules.js';
 
+/**
+ * @typedef {Node & {
+ *   rules?: Node[],
+ *   selectors?: Selector[],
+ *   root?: boolean,
+ *   allowImports?: boolean,
+ *   functionRegistry?: FunctionRegistry,
+ *   merge?: boolean,
+ *   debugInfo?: { lineNumber: number, fileName: string },
+ *   elements?: import('./element.js').default[]
+ * }} RulesetLikeNode
+ */
+
 class AtRule extends Node {
     get type() { return 'AtRule'; }
 
+    /**
+     * @param {string} [name]
+     * @param {Node | string} [value]
+     * @param {Node[] | Ruleset} [rules]
+     * @param {number} [index]
+     * @param {FileInfo} [currentFileInfo]
+     * @param {{ lineNumber: number, fileName: string }} [debugInfo]
+     * @param {boolean} [isRooted]
+     * @param {VisibilityInfo} [visibilityInfo]
+     */
     constructor(
         name,
         value,
@@ -22,15 +48,22 @@ class AtRule extends Node {
         let i;
         var selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
 
+        /** @type {string | undefined} */
         this.name  = name;
         this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);
+        /** @type {boolean | undefined} */
+        this.simpleBlock = undefined;
+        /** @type {RulesetLikeNode[] | undefined} */
+        this.declarations = undefined;
+        /** @type {RulesetLikeNode[] | undefined} */
+        this.rules = undefined;
         if (rules) {
             if (Array.isArray(rules)) {
                 const allDeclarations = this.declarationsBlock(rules);
 
                 let allRulesetDeclarations = true;
                 rules.forEach(rule => {
-                    if (rule.type === 'Ruleset' && rule.rules) allRulesetDeclarations = allRulesetDeclarations && this.declarationsBlock(rule.rules, true);
+                    if (rule.type === 'Ruleset' && /** @type {RulesetLikeNode} */ (rule).rules) allRulesetDeclarations = allRulesetDeclarations && this.declarationsBlock(/** @type {Node[]} */ (/** @type {RulesetLikeNode} */ (rule).rules), true);
                 });
 
                 if (allDeclarations && !isRooted) {
@@ -38,53 +71,65 @@ class AtRule extends Node {
                     this.declarations = rules;
                 } else if (allRulesetDeclarations && rules.length === 1 && !isRooted && !value) {
                     this.simpleBlock = true;
-                    this.declarations = rules[0].rules ? rules[0].rules : rules;
+                    this.declarations = /** @type {RulesetLikeNode} */ (rules[0]).rules ? /** @type {RulesetLikeNode} */ (rules[0]).rules : rules;
                 } else {
                     this.rules = rules;
                 }
             } else {
-                const allDeclarations = this.declarationsBlock(rules.rules);
+                const allDeclarations = this.declarationsBlock(/** @type {Node[]} */ (rules.rules));
 
                 if (allDeclarations && !isRooted && !value) {
                     this.simpleBlock = true;
                     this.declarations = rules.rules;
                 } else {
                     this.rules = [rules];
-                    this.rules[0].selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
+                    /** @type {RulesetLikeNode} */ (this.rules[0]).selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
                 }
             }
             if (!this.simpleBlock) {
                 for (i = 0; i < this.rules.length; i++) {
-                    this.rules[i].allowImports = true;
+                    /** @type {RulesetLikeNode} */ (this.rules[i]).allowImports = true;
                 }
             }
-            this.setParent(selectors, this);
-            this.setParent(this.rules, this);
+            this.setParent(selectors, /** @type {Node} */ (/** @type {unknown} */ (this)));
+            this.setParent(this.rules, /** @type {Node} */ (/** @type {unknown} */ (this)));
         }
         this._index = index;
         this._fileInfo = currentFileInfo;
+        /** @type {{ lineNumber: number, fileName: string } | undefined} */
         this.debugInfo = debugInfo;
+        /** @type {boolean} */
         this.isRooted = isRooted || false;
         this.copyVisibilityInfo(visibilityInfo);
         this.allowRoot = true;
     }
 
+    /**
+     * @param {Node[]} rules
+     * @param {boolean} [mergeable]
+     * @returns {boolean}
+     */
     declarationsBlock(rules, mergeable = false) {
         if (!mergeable) {
-            return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge}).length === rules.length;
+            return rules.filter(function (/** @type {Node & { merge?: boolean }} */ node) { return (node.type === 'Declaration' || node.type === 'Comment') && !node.merge}).length === rules.length;
         } else {
-            return rules.filter(function (node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules.length;
+            return rules.filter(function (/** @type {Node} */ node) { return (node.type === 'Declaration' || node.type === 'Comment'); }).length === rules.length;
         }
     }
 
+    /**
+     * @param {Node[]} rules
+     * @returns {boolean}
+     */
     keywordList(rules) {
         if (!Array.isArray(rules)) {
             return false;
         } else {
-            return rules.filter(function (node) { return (node.type === 'Keyword' || node.type === 'Comment'); }).length === rules.length;
+            return rules.filter(function (/** @type {Node} */ node) { return (node.type === 'Keyword' || node.type === 'Comment'); }).length === rules.length;
         }
     }
 
+    /** @param {TreeVisitor} visitor */
     accept(visitor) {
         const value = this.value, rules = this.rules, declarations = this.declarations;
 
@@ -94,27 +139,32 @@ class AtRule extends Node {
             this.declarations = visitor.visitArray(declarations);
         }
         if (value) {
-            this.value = visitor.visit(value);
+            this.value = visitor.visit(/** @type {Node} */ (value));
         }
     }
 
+    /** @override @returns {boolean} */
     isRulesetLike() {
-        return this.rules || !this.isCharset();
+        return /** @type {boolean} */ (/** @type {unknown} */ (this.rules || !this.isCharset()));
     }
 
     isCharset() {
         return '@charset' === this.name;
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         const value = this.value, rules = this.rules || this.declarations;
-        output.add(this.name, this.fileInfo(), this.getIndex());
+        output.add(/** @type {string} */ (this.name), this.fileInfo(), this.getIndex());
         if (value) {
             output.add(' ');
-            value.genCSS(context, output);
+            /** @type {Node} */ (value).genCSS(context, output);
         }
         if (this.simpleBlock) {
-            this.outputRuleset(context, output, this.declarations);
+            this.outputRuleset(context, output, /** @type {Node[]} */ (this.declarations));
         } else if (rules) {
             this.outputRuleset(context, output, rules);
         } else {
@@ -122,6 +172,10 @@ class AtRule extends Node {
         }
     }
 
+    /**
+     * @param {EvalContext} context
+     * @returns {Node}
+     */
     eval(context) {
         let mediaPathBackup, mediaBlocksBackup, value = this.value, rules = this.rules || this.declarations;
 
@@ -134,31 +188,36 @@ class AtRule extends Node {
         context.mediaBlocks = [];
 
         if (value) {
-            value = value.eval(context);
+            value = /** @type {Node} */ (value).eval(context);
         }
 
         if (rules) {
             rules = this.evalRoot(context, rules);
         }
-        if (Array.isArray(rules) && rules[0].rules && Array.isArray(rules[0].rules) && rules[0].rules.length) {
-            const allMergeableDeclarations = this.declarationsBlock(rules[0].rules, true);
+        if (Array.isArray(rules) && /** @type {RulesetLikeNode} */ (rules[0]).rules && Array.isArray(/** @type {RulesetLikeNode} */ (rules[0]).rules) && /** @type {Node[]} */ (/** @type {RulesetLikeNode} */ (rules[0]).rules).length) {
+            const allMergeableDeclarations = this.declarationsBlock(/** @type {Node[]} */ (/** @type {RulesetLikeNode} */ (rules[0]).rules), true);
             if (allMergeableDeclarations && !this.isRooted && !value) {
-                mergeRules(rules[0].rules);
-                rules = rules[0].rules;
-                rules.forEach(rule => rule.merge = false);
+                mergeRules(/** @type {Node[]} */ (/** @type {RulesetLikeNode} */ (rules[0]).rules));
+                rules = /** @type {RulesetLikeNode[]} */ (/** @type {RulesetLikeNode} */ (rules[0]).rules);
+                rules.forEach(/** @param {RulesetLikeNode} rule */ rule => { rule.merge = false; });
             }
         }
         if (this.simpleBlock && rules) {
-            rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
-            rules = rules.map(function (rule) { return rule.eval(context); });
+            /** @type {RulesetLikeNode} */ (rules[0]).functionRegistry = /** @type {RulesetLikeNode} */ (context.frames[0]).functionRegistry.inherit();
+            rules = rules.map(function (/** @type {Node} */ rule) { return rule.eval(context); });
         }
 
         // restore media bubbling information
         context.mediaPath = mediaPathBackup;
         context.mediaBlocks = mediaBlocksBackup;
-        return new AtRule(this.name, value, rules, this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo());
+        return /** @type {Node} */ (/** @type {unknown} */ (new AtRule(this.name, value, rules, this.getIndex(), this.fileInfo(), this.debugInfo, this.isRooted, this.visibilityInfo())));
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {Node[]} rules
+     * @returns {Node[]}
+     */
     evalRoot(context, rules) {
         let ampersandCount = 0;
         let noAmpersandCount = 0;
@@ -168,10 +227,11 @@ class AtRule extends Node {
             rules = [rules[0].eval(context)];
         }
 
+        /** @type {Selector[]} */
         let precedingSelectors = [];
         if (context.frames.length > 0) {
             for (let index = 0; index < context.frames.length; index++) {
-                const frame = context.frames[index];
+                const frame = /** @type {RulesetLikeNode} */ (context.frames[index]);
                 if (
                     frame.type === 'Ruleset' &&
                     frame.rules &&
@@ -184,6 +244,7 @@ class AtRule extends Node {
                 if (precedingSelectors.length > 0) {
                     const allAmpersandElements = precedingSelectors.every(
                         sel => sel.elements && sel.elements.length > 0 && sel.elements.every(
+                            /** @param {import('./element.js').default} el */
                             el => el.value === '&'
                         )
                     );
@@ -202,11 +263,12 @@ class AtRule extends Node {
             (this.isRooted && ampersandCount > 0 && noAmpersandCount === 0 && noAmpersands)
             || !mixedAmpersands
         ) {
-            rules[0].root = true;
+            /** @type {RulesetLikeNode} */ (rules[0]).root = true;
         }
         return rules;
     }
 
+    /** @param {string} name */
     variable(name) {
         if (this.rules) {
             // assuming that there is only one rule at this point - that is how parser constructs the rule
@@ -228,6 +290,11 @@ class AtRule extends Node {
         }
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     * @param {Node[]} rules
+     */
     outputRuleset(context, output, rules) {
         const ruleCnt = rules.length;
         let i;

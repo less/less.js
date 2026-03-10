@@ -1,1 +1,2 @@
+cd packages/less && npm run typecheck && cd ../..
 pnpm test

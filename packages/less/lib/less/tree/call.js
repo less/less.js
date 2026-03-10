@@ -1,3 +1,5 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, TreeVisitor, FileInfo } from './node.js' */
 import Node from './node.js';
 import Anonymous from './anonymous.js';
 import FunctionCaller from '../functions/function-caller.js';
@@ -8,6 +10,12 @@ import FunctionCaller from '../functions/function-caller.js';
 class Call extends Node {
     get type() { return 'Call'; }
 
+    /**
+     * @param {string} name
+     * @param {Node[]} args
+     * @param {number} index
+     * @param {FileInfo} currentFileInfo
+     */
     constructor(name, args, index, currentFileInfo) {
         super();
         this.name = name;
@@ -17,6 +25,7 @@ class Call extends Node {
         this._fileInfo = currentFileInfo;
     }
 
+    /** @param {TreeVisitor} visitor */
     accept(visitor) {
         if (this.args) {
             this.args = visitor.visitArray(this.args);
@@ -34,6 +43,10 @@ class Call extends Node {
     // we try to pass a variable to a function, like: `saturate(@color)`.
     // The function should receive the value, not the variable.
     //
+    /**
+     * @param {EvalContext} context
+     * @returns {Node}
+     */
     eval(context) {
         /**
          * Turn off math for calc(), and switch back on for evaluating nested functions
@@ -51,6 +64,7 @@ class Call extends Node {
             context.mathOn = currentMathContext;
         };
 
+        /** @type {Node | string | boolean | null | undefined} */
         let result;
         const funcCaller = new FunctionCaller(this.name, context, this.getIndex(), this.fileInfo());
 
@@ -60,16 +74,16 @@ class Call extends Node {
                 exitCalc();
             } catch (e) {
                 // eslint-disable-next-line no-prototype-builtins
-                if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
+                if (/** @type {Record<string, unknown>} */ (e).hasOwnProperty('line') && /** @type {Record<string, unknown>} */ (e).hasOwnProperty('column')) {
                     throw e;
                 }
                 throw {
-                    type: e.type || 'Runtime',
-                    message: `Error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
+                    type: /** @type {Record<string, string>} */ (e).type || 'Runtime',
+                    message: `Error evaluating function \`${this.name}\`${/** @type {Error} */ (e).message ? `: ${/** @type {Error} */ (e).message}` : ''}`,
                     index: this.getIndex(),
                     filename: this.fileInfo().filename,
-                    line: e.lineNumber,
-                    column: e.columnNumber
+                    line: /** @type {Record<string, number>} */ (e).lineNumber,
+                    column: /** @type {Record<string, number>} */ (e).columnNumber
                 };
             }
         }
@@ -97,6 +111,10 @@ class Call extends Node {
         return new Call(this.name, args, this.getIndex(), this.fileInfo());
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         output.add(`${this.name}(`, this.fileInfo(), this.getIndex());
 

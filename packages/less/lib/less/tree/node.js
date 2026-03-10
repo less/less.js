@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * @typedef {object} FileInfo
  * @property {string} [filename]
@@ -16,17 +17,47 @@
 
 /**
  * @typedef {object} CSSOutput
- * @property {(chunk: string, fileInfo?: FileInfo, index?: number) => void} add
+ * @property {(chunk: string, fileInfo?: FileInfo, index?: number, mapLines?: boolean) => void} add
  * @property {() => boolean} isEmpty
  */
 
 /**
  * @typedef {object} EvalContext
  * @property {number} [numPrecision]
- * @property {boolean} [isMathOn]
- * @property {string} [math]
- * @property {Array<object>} [frames]
- * @property {boolean} [importantScope]
+ * @property {(op?: string) => boolean} [isMathOn]
+ * @property {number} [math]
+ * @property {Node[]} [frames]
+ * @property {Array<{important?: string}>} [importantScope]
+ * @property {string[]} [paths]
+ * @property {boolean} [compress]
+ * @property {boolean} [strictUnits]
+ * @property {boolean} [sourceMap]
+ * @property {boolean} [importMultiple]
+ * @property {string} [urlArgs]
+ * @property {boolean} [javascriptEnabled]
+ * @property {object} [pluginManager]
+ * @property {number} [rewriteUrls]
+ * @property {boolean} [inCalc]
+ * @property {boolean} [mathOn]
+ * @property {boolean[]} [calcStack]
+ * @property {boolean[]} [parensStack]
+ * @property {Node[]} [mediaBlocks]
+ * @property {Node[]} [mediaPath]
+ * @property {() => void} [inParenthesis]
+ * @property {() => void} [outOfParenthesis]
+ * @property {() => void} [enterCalc]
+ * @property {() => void} [exitCalc]
+ * @property {(path: string) => boolean} [pathRequiresRewrite]
+ * @property {(path: string, rootpath?: string) => string} [rewritePath]
+ * @property {(path: string) => string} [normalizePath]
+ * @property {number} [tabLevel]
+ * @property {boolean} [lastRule]
+ */
+
+/**
+ * @typedef {object} TreeVisitor
+ * @property {(node: Node) => Node} visit
+ * @property {(nodes: Node[], nonReplacing?: boolean) => Node[]} visitArray
  */
 
 /**
@@ -47,10 +78,10 @@ class Node {
         this.nodeVisible = undefined;
         /** @type {Node | null} */
         this.rootNode = null;
-        /** @type {object | null} */
+        /** @type {Node | null} */
         this.parsed = null;
 
-        /** @type {*} */
+        /** @type {Node | Node[] | string | number | undefined} */
         this.value = undefined;
         /** @type {number | undefined} */
         this._index = undefined;
@@ -121,18 +152,18 @@ class Node {
      * @param {CSSOutput} output
      */
     genCSS(context, output) {
-        output.add(this.value);
+        output.add(/** @type {string} */ (this.value));
     }
 
     /**
-     * @param {{ visit: (node: *) => * }} visitor
+     * @param {TreeVisitor} visitor
      */
     accept(visitor) {
-        this.value = visitor.visit(this.value);
+        this.value = visitor.visit(/** @type {Node} */ (this.value));
     }
 
     /**
-     * @param {*} [context]
+     * @param {EvalContext} [context]
      * @returns {Node}
      */
     eval(context) { return this; }
@@ -187,12 +218,13 @@ class Node {
             return undefined;
         }
 
-        /** @type {*} */
         let aVal = a.value;
-        /** @type {*} */
         let bVal = b.value;
         if (!Array.isArray(aVal)) {
             return aVal === bVal ? 0 : undefined;
+        }
+        if (!Array.isArray(bVal)) {
+            return undefined;
         }
         if (aVal.length !== bVal.length) {
             return undefined;
@@ -206,8 +238,8 @@ class Node {
     }
 
     /**
-     * @param {number} a
-     * @param {number} b
+     * @param {number | string} a
+     * @param {number | string} b
      * @returns {number | undefined}
      */
     static numericCompare(a, b) {
@@ -268,5 +300,11 @@ class Node {
         this.nodeVisible = info.nodeVisible;
     }
 }
+
+/**
+ * Set by the parser at runtime on Node.prototype.
+ * @type {{ context: EvalContext, importManager: object, imports: object } | undefined}
+ */
+Node.prototype.parse = undefined;
 
 export default Node;

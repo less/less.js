@@ -1,3 +1,6 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, TreeVisitor, FileInfo, VisibilityInfo } from './node.js' */
+/** @import { FunctionRegistry } from './nested-at-rule.js' */
 import Node from './node.js';
 import Declaration from './declaration.js';
 import Keyword from './keyword.js';
@@ -13,43 +16,101 @@ import getDebugInfo from './debug-info.js';
 import * as utils from '../utils.js';
 import Parser from '../parser/parser.js';
 
+/**
+ * @typedef {Node & {
+ *   rules?: Node[],
+ *   selectors?: Selector[],
+ *   root?: boolean,
+ *   firstRoot?: boolean,
+ *   allowImports?: boolean,
+ *   functionRegistry?: FunctionRegistry,
+ *   originalRuleset?: Node,
+ *   debugInfo?: { lineNumber: number, fileName: string },
+ *   evalFirst?: boolean,
+ *   isRuleset?: boolean,
+ *   isCharset?: () => boolean,
+ *   merge?: boolean | string,
+ *   multiMedia?: boolean,
+ *   parse?: { context: EvalContext, importManager: object },
+ *   bubbleSelectors?: (selectors: Selector[]) => void
+ * }} RuleNode
+ */
+
 class Ruleset extends Node {
     get type() { return 'Ruleset'; }
 
+    /**
+     * @param {Selector[] | null} selectors
+     * @param {Node[] | null} rules
+     * @param {boolean} [strictImports]
+     * @param {VisibilityInfo} [visibilityInfo]
+     */
     constructor(selectors, rules, strictImports, visibilityInfo) {
         super();
+        /** @type {Selector[] | null} */
         this.selectors = selectors;
+        /** @type {Node[] | null} */
         this.rules = rules;
+        /** @type {Object<string, { rule: Node, path: Node[] }[]>} */
         this._lookups = {};
+        /** @type {Object<string, Declaration> | null} */
         this._variables = null;
+        /** @type {Object<string, Declaration[]> | null} */
         this._properties = null;
+        /** @type {boolean | undefined} */
         this.strictImports = strictImports;
         this.copyVisibilityInfo(visibilityInfo);
         this.allowRoot = true;
+        /** @type {boolean} */
         this.isRuleset = true;
 
+        /** @type {boolean | undefined} */
+        this.root = undefined;
+        /** @type {boolean | undefined} */
+        this.firstRoot = undefined;
+        /** @type {boolean | undefined} */
+        this.allowImports = undefined;
+        /** @type {FunctionRegistry | undefined} */
+        this.functionRegistry = undefined;
+        /** @type {Node | undefined} */
+        this.originalRuleset = undefined;
+        /** @type {{ lineNumber: number, fileName: string } | undefined} */
+        this.debugInfo = undefined;
+        /** @type {Selector[][] | undefined} */
+        this.paths = undefined;
+        /** @type {Ruleset[] | null | undefined} */
+        this._rulesets = undefined;
+        /** @type {boolean | undefined} */
+        this.evalFirst = undefined;
         this.setParent(this.selectors, this);
         this.setParent(this.rules, this);
     }
 
     isRulesetLike() { return true; }
 
+    /** @param {TreeVisitor} visitor */
     accept(visitor) {
         if (this.paths) {
-            this.paths = visitor.visitArray(this.paths, true);
+            this.paths = /** @type {Selector[][]} */ (/** @type {unknown} */ (visitor.visitArray(/** @type {Node[]} */ (/** @type {unknown} */ (this.paths)), true)));
         } else if (this.selectors) {
-            this.selectors = visitor.visitArray(this.selectors);
+            this.selectors = /** @type {Selector[]} */ (visitor.visitArray(this.selectors));
         }
         if (this.rules && this.rules.length) {
             this.rules = visitor.visitArray(this.rules);
         }
     }
 
+    /** @param {EvalContext} context */
     eval(context) {
+        /** @type {Selector[] | undefined} */
         let selectors;
+        /** @type {number} */
         let selCnt;
+        /** @type {Selector} */
         let selector;
+        /** @type {number} */
         let i;
+        /** @type {boolean | undefined} */
         let hasVariable;
         let hasOnePassingSelector = false;
 
@@ -61,7 +122,7 @@ class Ruleset extends Node {
             });
 
             for (i = 0; i < selCnt; i++) {
-                selector = this.selectors[i].eval(context);
+                selector = /** @type {Selector} */ (this.selectors[i].eval(context));
                 for (let j = 0; j < selector.elements.length; j++) {
                     if (selector.elements[j].isVariable) {
                         hasVariable = true;
@@ -82,12 +143,12 @@ class Ruleset extends Node {
                 }
                 const startingIndex = selectors[0].getIndex();
                 const selectorFileInfo = selectors[0].fileInfo();
-                new Parser(context, this.parse.importManager, selectorFileInfo, startingIndex).parseNode(
+                new (/** @type {new (...args: [EvalContext, object, FileInfo, number]) => { parseNode: Function }} */ (/** @type {unknown} */ (Parser)))(context, /** @type {{ context: EvalContext, importManager: object }} */ (this.parse).importManager, selectorFileInfo, startingIndex).parseNode(
                     toParseSelectors.join(','),
                     ['selectors'],
-                    function(err, result) {
+                    function(/** @type {Error | null} */ err, /** @type {Node[]} */ result) {
                         if (result) {
-                            selectors = utils.flattenArray(result);
+                            selectors = /** @type {Selector[]} */ (utils.flattenArray(result));
                         }
                     });
             }
@@ -99,7 +160,9 @@ class Ruleset extends Node {
 
         let rules = this.rules ? utils.copyArray(this.rules) : null;
         const ruleset = new Ruleset(selectors, rules, this.strictImports, this.visibilityInfo());
+        /** @type {Node} */
         let rule;
+        /** @type {Node} */
         let subRule;
 
         ruleset.originalRuleset = this;
@@ -112,7 +175,7 @@ class Ruleset extends Node {
         }
 
         if (!hasOnePassingSelector) {
-            rules.length = 0;
+            /** @type {Node[]} */ (rules).length = 0;
         }
 
         // push the current ruleset to the frames stack
@@ -120,18 +183,20 @@ class Ruleset extends Node {
 
         // inherit a function registry from the frames stack when possible;
         // otherwise from the global registry
+        /** @type {FunctionRegistry | undefined} */
         let foundRegistry;
         for (let fi = 0, fn = ctxFrames.length; fi !== fn; ++fi) {
-            foundRegistry = ctxFrames[fi].functionRegistry;
+            foundRegistry = /** @type {RuleNode} */ (ctxFrames[fi]).functionRegistry;
             if (foundRegistry) { break; }
         }
         ruleset.functionRegistry = (foundRegistry || globalFunctionRegistry).inherit();
         ctxFrames.unshift(ruleset);
 
         // currrent selectors
-        let ctxSelectors = context.selectors;
+        /** @type {Selector[][] | undefined} */
+        let ctxSelectors = /** @type {EvalContext & { selectors?: Selector[][] }} */ (context).selectors;
         if (!ctxSelectors) {
-            context.selectors = ctxSelectors = [];
+            /** @type {EvalContext & { selectors?: Selector[][] }} */ (context).selectors = ctxSelectors = [];
         }
         ctxSelectors.unshift(this.selectors);
 
@@ -142,9 +207,9 @@ class Ruleset extends Node {
 
         // Store the frames around mixin definitions,
         // so they can be evaluated like closures when the time comes.
-        const rsRules = ruleset.rules;
+        const rsRules = /** @type {Node[]} */ (ruleset.rules);
         for (i = 0; (rule = rsRules[i]); i++) {
-            if (rule.evalFirst) {
+            if (/** @type {RuleNode} */ (rule).evalFirst) {
                 rsRules[i] = rule.eval(context);
             }
         }
@@ -155,28 +220,28 @@ class Ruleset extends Node {
         for (i = 0; (rule = rsRules[i]); i++) {
             if (rule.type === 'MixinCall') {
                 /* jshint loopfunc:true */
-                rules = rule.eval(context).filter(function(r) {
+                rules = /** @type {Node[]} */ (/** @type {unknown} */ (rule.eval(context))).filter(function(/** @type {Node & { variable?: boolean }} */ r) {
                     if ((r instanceof Declaration) && r.variable) {
                         // do not pollute the scope if the variable is
                         // already there. consider returning false here
                         // but we need a way to "return" variable from mixins
-                        return !(ruleset.variable(r.name));
+                        return !(ruleset.variable(/** @type {string} */ (r.name)));
                     }
                     return true;
                 });
-                rsRules.splice.apply(rsRules, [i, 1].concat(rules));
+                rsRules.splice.apply(rsRules, /** @type {[number, number, ...Node[]]} */ ([i, 1].concat(rules)));
                 i += rules.length - 1;
                 ruleset.resetCache();
             } else if (rule.type ===  'VariableCall') {
                 /* jshint loopfunc:true */
-                rules = rule.eval(context).rules.filter(function(r) {
+                rules = /** @type {Node[]} */ (/** @type {RuleNode} */ (rule.eval(context)).rules).filter(function(/** @type {Node & { variable?: boolean }} */ r) {
                     if ((r instanceof Declaration) && r.variable) {
                         // do not pollute the scope at all
                         return false;
                     }
                     return true;
                 });
-                rsRules.splice.apply(rsRules, [i, 1].concat(rules));
+                rsRules.splice.apply(rsRules, /** @type {[number, number, ...Node[]]} */ ([i, 1].concat(rules)));
                 i += rules.length - 1;
                 ruleset.resetCache();
             }
@@ -184,7 +249,7 @@ class Ruleset extends Node {
 
         // Evaluate everything else
         for (i = 0; (rule = rsRules[i]); i++) {
-            if (!rule.evalFirst) {
+            if (!/** @type {RuleNode} */ (rule).evalFirst) {
                 rsRules[i] = rule = rule.eval ? rule.eval(context) : rule;
             }
         }
@@ -215,25 +280,29 @@ class Ruleset extends Node {
 
         if (context.mediaBlocks) {
             for (i = mediaBlockCount; i < context.mediaBlocks.length; i++) {
-                context.mediaBlocks[i].bubbleSelectors(selectors);
+                /** @type {RuleNode} */ (context.mediaBlocks[i]).bubbleSelectors(selectors);
             }
         }
 
         return ruleset;
     }
 
+    /** @param {EvalContext} context */
     evalImports(context) {
         const rules = this.rules;
+        /** @type {number} */
         let i;
+        /** @type {Node | Node[]} */
         let importRules;
         if (!rules) { return; }
 
         for (i = 0; i < rules.length; i++) {
             if (rules[i].type === 'Import') {
                 importRules = rules[i].eval(context);
-                if (importRules && (importRules.length || importRules.length === 0)) {
-                    rules.splice.apply(rules, [i, 1].concat(importRules));
-                    i += importRules.length - 1;
+                if (importRules && (/** @type {Node[]} */ (/** @type {unknown} */ (importRules)).length || /** @type {Node[]} */ (/** @type {unknown} */ (importRules)).length === 0)) {
+                    const importArr = /** @type {Node[]} */ (/** @type {unknown} */ (importRules));
+                    rules.splice(i, 1, ...importArr);
+                    i += importArr.length - 1;
                 } else {
                     rules.splice(i, 1, importRules);
                 }
@@ -243,7 +312,7 @@ class Ruleset extends Node {
     }
 
     makeImportant() {
-        const result = new Ruleset(this.selectors, this.rules.map(function (r) {
+        const result = new Ruleset(this.selectors, /** @type {Node[]} */ (this.rules).map(function (/** @type {Node & { makeImportant?: () => Node }} */ r) {
             if (r.makeImportant) {
                 return r.makeImportant();
             } else {
@@ -254,13 +323,17 @@ class Ruleset extends Node {
         return result;
     }
 
+    /** @param {Node[] | object[] | null} [args] */
     matchArgs(args) {
         return !args || args.length === 0;
     }
 
-    // lets you call a css selector with a guard
+    /**
+     * @param {Node[] | object[] | null} args
+     * @param {EvalContext} context
+     */
     matchCondition(args, context) {
-        const lastSelector = this.selectors[this.selectors.length - 1];
+        const lastSelector = /** @type {Selector[]} */ (this.selectors)[/** @type {Selector[]} */ (this.selectors).length - 1];
         if (!lastSelector.evaldCondition) {
             return false;
         }
@@ -282,18 +355,18 @@ class Ruleset extends Node {
 
     variables() {
         if (!this._variables) {
-            this._variables = !this.rules ? {} : this.rules.reduce(function (hash, r) {
+            this._variables = !this.rules ? {} : this.rules.reduce(function (/** @type {Object<string, Declaration>} */ hash, /** @type {Node} */ r) {
                 if (r instanceof Declaration && r.variable === true) {
-                    hash[r.name] = r;
+                    hash[/** @type {string} */ (r.name)] = r;
                 }
                 // when evaluating variables in an import statement, imports have not been eval'd
                 // so we need to go inside import statements.
                 // guard against root being a string (in the case of inlined less)
-                if (r.type === 'Import' && r.root && r.root.variables) {
-                    const vars = r.root.variables();
+                if (r.type === 'Import' && /** @type {RuleNode} */ (r).root && /** @type {RuleNode & { root: Ruleset }} */ (r).root.variables) {
+                    const vars = /** @type {RuleNode & { root: Ruleset }} */ (r).root.variables();
                     for (const name in vars) {
                         if (Object.prototype.hasOwnProperty.call(vars, name)) {
-                            hash[name] = r.root.variable(name);
+                            hash[name] = /** @type {Declaration} */ (/** @type {RuleNode & { root: Ruleset }} */ (r).root.variable(name));
                         }
                     }
                 }
@@ -305,10 +378,10 @@ class Ruleset extends Node {
 
     properties() {
         if (!this._properties) {
-            this._properties = !this.rules ? {} : this.rules.reduce(function (hash, r) {
+            this._properties = !this.rules ? {} : this.rules.reduce(function (/** @type {Object<string, Declaration[]>} */ hash, /** @type {Node} */ r) {
                 if (r instanceof Declaration && r.variable !== true) {
-                    const name = (r.name.length === 1) && (r.name[0] instanceof Keyword) ?
-                        r.name[0].value : r.name;
+                    const name = (/** @type {Node[]} */ (r.name).length === 1) && (/** @type {Node[]} */ (r.name)[0] instanceof Keyword) ?
+                        /** @type {string} */ (/** @type {Node[]} */ (r.name)[0].value) : /** @type {string} */ (r.name);
                     // Properties don't overwrite as they can merge
                     if (!hash[`$${name}`]) {
                         hash[`$${name}`] = [ r ];
@@ -323,6 +396,7 @@ class Ruleset extends Node {
         return this._properties;
     }
 
+    /** @param {string} name */
     variable(name) {
         const decl = this.variables()[name];
         if (decl) {
@@ -330,6 +404,7 @@ class Ruleset extends Node {
         }
     }
 
+    /** @param {string} name */
     property(name) {
         const decl = this.properties()[name];
         if (decl) {
@@ -338,34 +413,36 @@ class Ruleset extends Node {
     }
 
     lastDeclaration() {
-        for (let i = this.rules.length; i > 0; i--) {
-            const decl = this.rules[i - 1];
+        for (let i = /** @type {Node[]} */ (this.rules).length; i > 0; i--) {
+            const decl = /** @type {Node[]} */ (this.rules)[i - 1];
             if (decl instanceof Declaration) {
                 return this.parseValue(decl);
             }
         }
     }
 
+    /** @param {Declaration | Declaration[]} toParse */
     parseValue(toParse) {
         const self = this;
+        /** @param {Declaration} decl */
         function transformDeclaration(decl) {
-            if (decl.value instanceof Anonymous && !decl.parsed) {
+            if (decl.value instanceof Anonymous && !/** @type {Declaration & { parsed?: boolean }} */ (decl).parsed) {
                 if (typeof decl.value.value === 'string') {
-                    new Parser(this.parse.context, this.parse.importManager, decl.fileInfo(), decl.value.getIndex()).parseNode(
+                    new (/** @type {new (...args: [EvalContext, object, FileInfo, number]) => { parseNode: Function }} */ (/** @type {unknown} */ (Parser)))(/** @type {{ context: EvalContext, importManager: object }} */ (/** @type {Ruleset} */ (this).parse).context, /** @type {{ context: EvalContext, importManager: object }} */ (/** @type {Ruleset} */ (this).parse).importManager, decl.fileInfo(), decl.value.getIndex()).parseNode(
                         decl.value.value,
                         ['value', 'important'],
-                        function(err, result) {
+                        function(/** @type {Error | null} */ err, /** @type {Node[]} */ result) {
                             if (err) {
-                                decl.parsed = true;
+                                decl.parsed = /** @type {Node} */ (/** @type {unknown} */ (true));
                             }
                             if (result) {
                                 decl.value = result[0];
-                                decl.important = result[1] || '';
-                                decl.parsed = true;
+                                /** @type {Declaration & { important?: string }} */ (decl).important = /** @type {string} */ (/** @type {unknown} */ (result[1])) || '';
+                                decl.parsed = /** @type {Node} */ (/** @type {unknown} */ (true));
                             }
                         });
                 } else {
-                    decl.parsed = true;
+                    decl.parsed = /** @type {Node} */ (/** @type {unknown} */ (true));
                 }
 
                 return decl;
@@ -378,6 +455,7 @@ class Ruleset extends Node {
             return transformDeclaration.call(self, toParse);
         }
         else {
+            /** @type {Declaration[]} */
             const nodes = [];
             for (let ti = 0; ti < toParse.length; ti++) {
                 nodes.push(transformDeclaration.call(self, toParse[ti]));
@@ -389,13 +467,16 @@ class Ruleset extends Node {
     rulesets() {
         if (!this.rules) { return []; }
 
+        /** @type {Node[]} */
         const filtRules = [];
         const rules = this.rules;
+        /** @type {number} */
         let i;
+        /** @type {Node} */
         let rule;
 
         for (i = 0; (rule = rules[i]); i++) {
-            if (rule.isRuleset) {
+            if (/** @type {RuleNode} */ (rule).isRuleset) {
                 filtRules.push(rule);
             }
         }
@@ -403,6 +484,7 @@ class Ruleset extends Node {
         return filtRules;
     }
 
+    /** @param {Node} rule */
     prependRule(rule) {
         const rules = this.rules;
         if (rules) {
@@ -413,23 +495,32 @@ class Ruleset extends Node {
         this.setParent(rule, this);
     }
 
+    /**
+     * @param {Selector} selector
+     * @param {Ruleset | null} [self]
+     * @param {((rule: Node) => boolean)} [filter]
+     * @returns {{ rule: Node, path: Node[] }[]}
+     */
     find(selector, self, filter) {
         self = self || this;
+        /** @type {{ rule: Node, path: Node[] }[]} */
         const rules = [];
+        /** @type {number | undefined} */
         let match;
+        /** @type {{ rule: Node, path: Node[] }[]} */
         let foundMixins;
-        const key = selector.toCSS();
+        const key = selector.toCSS(/** @type {EvalContext} */ ({}));
 
-        if (key in this._lookups) { return this._lookups[key]; }
+        if (key in this._lookups) { return /** @type {{ rule: Node, path: Node[] }[]} */ (this._lookups[key]); }
 
         this.rulesets().forEach(function (rule) {
             if (rule !== self) {
-                for (let j = 0; j < rule.selectors.length; j++) {
-                    match = selector.match(rule.selectors[j]);
+                for (let j = 0; j < /** @type {RuleNode} */ (rule).selectors.length; j++) {
+                    match = selector.match(/** @type {RuleNode} */ (rule).selectors[j]);
                     if (match) {
                         if (selector.elements.length > match) {
                             if (!filter || filter(rule)) {
-                                foundMixins = rule.find(new Selector(selector.elements.slice(match)), self, filter);
+                                foundMixins = /** @type {Ruleset} */ (/** @type {unknown} */ (rule)).find(new Selector(selector.elements.slice(match)), self, filter);
                                 for (let i = 0; i < foundMixins.length; ++i) {
                                     foundMixins[i].path.push(rule);
                                 }
@@ -447,16 +538,26 @@ class Ruleset extends Node {
         return rules;
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
+        /** @type {number} */
         let i;
+        /** @type {number} */
         let j;
+        /** @type {Node[]} */
         const charsetRuleNodes = [];
+        /** @type {Node[]} */
         let ruleNodes = [];
 
         let // Line number debugging
             debugInfo;
 
+        /** @type {Node} */
         let rule;
+        /** @type {Selector[]} */
         let path;
 
         context.tabLevel = (context.tabLevel || 0);
@@ -467,17 +568,18 @@ class Ruleset extends Node {
 
         const tabRuleStr = context.compress ? '' : Array(context.tabLevel + 1).join('  ');
         const tabSetStr = context.compress ? '' : Array(context.tabLevel).join('  ');
+        /** @type {string} */
         let sep;
 
         let charsetNodeIndex = 0;
         let importNodeIndex = 0;
-        for (i = 0; (rule = this.rules[i]); i++) {
+        for (i = 0; (rule = /** @type {Node[]} */ (this.rules)[i]); i++) {
             if (rule instanceof Comment) {
                 if (importNodeIndex === i) {
                     importNodeIndex++;
                 }
                 ruleNodes.push(rule);
-            } else if (rule.isCharset && rule.isCharset()) {
+            } else if (/** @type {RuleNode} */ (rule).isCharset && /** @type {RuleNode} */ (rule).isCharset()) {
                 ruleNodes.splice(charsetNodeIndex, 0, rule);
                 charsetNodeIndex++;
                 importNodeIndex++;
@@ -493,15 +595,16 @@ class Ruleset extends Node {
         // If this is the root node, we don't render
         // a selector, or {}.
         if (!this.root) {
-            debugInfo = getDebugInfo(context, this, tabSetStr);
+            debugInfo = getDebugInfo(context, /** @type {{ debugInfo: { lineNumber: number, fileName: string } }} */ (/** @type {unknown} */ (this)), tabSetStr);
 
             if (debugInfo) {
                 output.add(debugInfo);
                 output.add(tabSetStr);
             }
 
-            const paths = this.paths;
+            const paths = /** @type {Selector[][]} */ (this.paths);
             const pathCnt = paths.length;
+            /** @type {number} */
             let pathSubCnt;
 
             sep = context.compress ? ',' : (`,\n${tabSetStr}`);
@@ -511,10 +614,10 @@ class Ruleset extends Node {
                 if (!(pathSubCnt = path.length)) { continue; }
                 if (i > 0) { output.add(sep); }
 
-                context.firstSelector = true;
+                /** @type {EvalContext & { firstSelector?: boolean }} */ (context).firstSelector = true;
                 path[0].genCSS(context, output);
 
-                context.firstSelector = false;
+                /** @type {EvalContext & { firstSelector?: boolean }} */ (context).firstSelector = false;
                 for (j = 1; j < pathSubCnt; j++) {
                     path[j].genCSS(context, output);
                 }
@@ -531,14 +634,14 @@ class Ruleset extends Node {
             }
 
             const currentLastRule = context.lastRule;
-            if (rule.isRulesetLike(rule)) {
+            if (rule.isRulesetLike()) {
                 context.lastRule = false;
             }
 
             if (rule.genCSS) {
                 rule.genCSS(context, output);
             } else if (rule.value) {
-                output.add(rule.value.toString());
+                output.add(/** @type {string} */ (rule.value).toString());
             }
 
             context.lastRule = currentLastRule;
@@ -560,16 +663,34 @@ class Ruleset extends Node {
         }
     }
 
+    /**
+     * @param {Selector[][]} paths
+     * @param {Selector[][]} context
+     * @param {Selector[]} selectors
+     */
     joinSelectors(paths, context, selectors) {
         for (let s = 0; s < selectors.length; s++) {
             this.joinSelector(paths, context, selectors[s]);
         }
     }
 
+    /**
+     * @param {Selector[][]} paths
+     * @param {Selector[][]} context
+     * @param {Selector} selector
+     */
     joinSelector(paths, context, selector) {
 
+        /**
+         * @param {Selector[]} elementsToPak
+         * @param {Element} originalElement
+         * @returns {Paren}
+         */
         function createParenthesis(elementsToPak, originalElement) {
-            let replacementParen, j;
+            /** @type {Paren} */
+            let replacementParen;
+            /** @type {number} */
+            let j;
             if (elementsToPak.length === 0) {
                 replacementParen = new Paren(elementsToPak[0]);
             } else {
@@ -588,18 +709,35 @@ class Ruleset extends Node {
             return replacementParen;
         }
 
+        /**
+         * @param {Paren | Selector} containedElement
+         * @param {Element} originalElement
+         * @returns {Selector}
+         */
         function createSelector(containedElement, originalElement) {
-            let element, selector;
+            /** @type {Element} */
+            let element;
+            /** @type {Selector} */
+            let selector;
             element = new Element(null, containedElement, originalElement.isVariable, originalElement._index, originalElement._fileInfo);
             selector = new Selector([element]);
             return selector;
         }
 
-        // joins selector path from `beginningPath` with selector path in `addPath`
-        // `replacedElement` contains element that is being replaced by `addPath`
-        // returns concatenated path
+        /**
+         * @param {Selector[]} beginningPath
+         * @param {Selector[]} addPath
+         * @param {Element} replacedElement
+         * @param {Selector} originalSelector
+         * @returns {Selector[]}
+         */
         function addReplacementIntoPath(beginningPath, addPath, replacedElement, originalSelector) {
-            let newSelectorPath, lastSelector, newJoinedSelector;
+            /** @type {Selector[]} */
+            let newSelectorPath;
+            /** @type {Selector} */
+            let lastSelector;
+            /** @type {Selector} */
+            let newJoinedSelector;
             // our new selector path
             newSelectorPath = [];
 
@@ -645,7 +783,7 @@ class Ruleset extends Node {
             // put together the parent selectors after the join (e.g. the rest of the parent)
             if (addPath.length > 1) {
                 let restOfPath = addPath.slice(1);
-                restOfPath = restOfPath.map(function (selector) {
+                restOfPath = restOfPath.map(function (/** @type {Selector} */ selector) {
                     return selector.createDerived(selector.elements, []);
                 });
                 newSelectorPath = newSelectorPath.concat(restOfPath);
@@ -653,10 +791,16 @@ class Ruleset extends Node {
             return newSelectorPath;
         }
 
-        // joins selector path from `beginningPath` with every selector path in `addPaths` array
-        // `replacedElement` contains element that is being replaced by `addPath`
-        // returns array with all concatenated paths
+        /**
+         * @param {Selector[][]} beginningPath
+         * @param {Selector[]} addPaths
+         * @param {Element} replacedElement
+         * @param {Selector} originalSelector
+         * @param {Selector[][]} result
+         * @returns {Selector[][]}
+         */
         function addAllReplacementsIntoPath( beginningPath, addPaths, replacedElement, originalSelector, result) {
+            /** @type {number} */
             let j;
             for (j = 0; j < beginningPath.length; j++) {
                 const newSelectorPath = addReplacementIntoPath(beginningPath[j], addPaths, replacedElement, originalSelector);
@@ -665,8 +809,15 @@ class Ruleset extends Node {
             return result;
         }
 
+        /**
+         * @param {Element[]} elements
+         * @param {Selector[][]} selectors
+         */
         function mergeElementsOnToSelectors(elements, selectors) {
-            let i, sel;
+            /** @type {number} */
+            let i;
+            /** @type {Selector[]} */
+            let sel;
 
             if (elements.length === 0) {
                 return ;
@@ -687,9 +838,12 @@ class Ruleset extends Node {
             }
         }
 
-        // replace all parent selectors inside `inSelector` by content of `context` array
-        // resulting selectors are returned inside `paths` array
-        // returns true if `inSelector` contained at least one parent selector
+        /**
+         * @param {Selector[][]} paths
+         * @param {Selector[][]} context
+         * @param {Selector} inSelector
+         * @returns {boolean}
+         */
         function replaceParentSelector(paths, context, inSelector) {
             // The paths are [[Selector]]
             // The first list is a list of comma separated selectors
@@ -701,14 +855,40 @@ class Ruleset extends Node {
             // }
             // == [[.a] [.c]] [[.b] [.c]]
             //
-            let i, j, k, currentElements, newSelectors, selectorsMultiplied, sel, el, hadParentSelector = false, length, lastSelector;
+            /** @type {number} */
+            let i;
+            /** @type {number} */
+            let j;
+            /** @type {number} */
+            let k;
+            /** @type {Element[]} */
+            let currentElements;
+            /** @type {Selector[][]} */
+            let newSelectors;
+            /** @type {Selector[][]} */
+            let selectorsMultiplied;
+            /** @type {Selector[]} */
+            let sel;
+            /** @type {Element} */
+            let el;
+            let hadParentSelector = false;
+            /** @type {number} */
+            let length;
+            /** @type {Selector} */
+            let lastSelector;
+
+            /**
+             * @param {Element} element
+             * @returns {Selector | null}
+             */
             function findNestedSelector(element) {
+                /** @type {Node} */
                 let maybeSelector;
                 if (!(element.value instanceof Paren)) {
                     return null;
                 }
 
-                maybeSelector = element.value.value;
+                maybeSelector = /** @type {Node} */ (element.value.value);
                 if (!(maybeSelector instanceof Selector)) {
                     return null;
                 }
@@ -734,8 +914,11 @@ class Ruleset extends Node {
                         // on to the current list of selectors to add
                         mergeElementsOnToSelectors(currentElements, newSelectors);
 
+                        /** @type {Selector[][]} */
                         const nestedPaths = [];
+                        /** @type {boolean | undefined} */
                         let replaced;
+                        /** @type {Selector[][]} */
                         const replacedNewSelectors = [];
 
                         // Check if this is a comma-separated selector list inside the paren
@@ -744,9 +927,11 @@ class Ruleset extends Node {
 
                         if (hasSubSelectors) {
                             // Process each sub-selector individually
+                            /** @type {(Element | Selector)[]} */
                             const resolvedElements = [];
                             for (const subEl of nestedSelector.elements) {
                                 if (subEl instanceof Selector) {
+                                    /** @type {Selector[][]} */
                                     const subPaths = [];
                                     const subReplaced = replaceParentSelector(subPaths, context, subEl);
                                     replaced = replaced || subReplaced;
@@ -759,7 +944,7 @@ class Ruleset extends Node {
                                     resolvedElements.push(subEl);
                                 }
                             }
-                            hadParentSelector = hadParentSelector || replaced;
+                            hadParentSelector = hadParentSelector || /** @type {boolean} */ (replaced);
                             const resolvedNestedSelector = new Selector(resolvedElements);
                             const replacementSelector = createSelector(createParenthesis([resolvedNestedSelector], el), el);
                             addAllReplacementsIntoPath(newSelectors, [replacementSelector], el, inSelector, replacedNewSelectors);
@@ -834,6 +1019,10 @@ class Ruleset extends Node {
             return hadParentSelector;
         }
 
+        /**
+         * @param {VisibilityInfo} visibilityInfo
+         * @param {Selector} deriveFrom
+         */
         function deriveSelector(visibilityInfo, deriveFrom) {
             const newSelector = deriveFrom.createDerived(deriveFrom.elements, deriveFrom.extendList, deriveFrom.evaldCondition);
             newSelector.copyVisibilityInfo(visibilityInfo);
@@ -841,7 +1030,12 @@ class Ruleset extends Node {
         }
 
         // joinSelector code follows
-        let i, newPaths, hadParentSelector;
+        /** @type {number} */
+        let i;
+        /** @type {Selector[][]} */
+        let newPaths;
+        /** @type {boolean} */
+        let hadParentSelector;
 
         newPaths = [];
         hadParentSelector = replaceParentSelector(newPaths, context, selector);

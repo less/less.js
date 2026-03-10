@@ -1,3 +1,5 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, TreeVisitor } from './node.js' */
 import Node from './node.js';
 import Paren from './paren.js';
 import Comment from './comment.js';
@@ -7,21 +9,33 @@ import Anonymous from './anonymous.js';
 class Expression extends Node {
     get type() { return 'Expression'; }
 
+    /**
+     * @param {Node[]} value
+     * @param {boolean} [noSpacing]
+     */
     constructor(value, noSpacing) {
         super();
         this.value = value;
+        /** @type {boolean | undefined} */
         this.noSpacing = noSpacing;
+        /** @type {boolean | undefined} */
+        this.parens = undefined;
+        /** @type {boolean | undefined} */
+        this.parensInOp = undefined;
         if (!value) {
             throw new Error('Expression requires an array parameter');
         }
     }
 
+    /** @param {TreeVisitor} visitor */
     accept(visitor) {
-        this.value = visitor.visitArray(this.value);
+        this.value = visitor.visitArray(/** @type {Node[]} */ (this.value));
     }
 
+    /** @param {EvalContext} context */
     eval(context) {
         const noSpacing = this.noSpacing;
+        /** @type {Node | Expression} */
         let returnValue;
         const mathOn = context.isMathOn();
         const inParenthesis = this.parens;
@@ -30,18 +44,20 @@ class Expression extends Node {
         if (inParenthesis) {
             context.inParenthesis();
         }
-        if (this.value.length > 1) {
-            returnValue = new Expression(this.value.map(function (e) {
+        const value = /** @type {Node[]} */ (this.value);
+        if (value.length > 1) {
+            returnValue = new Expression(value.map(function (e) {
                 if (!e.eval) {
                     return e;
                 }
                 return e.eval(context);
             }), this.noSpacing);
-        } else if (this.value.length === 1) {
-            if (this.value[0].parens && !this.value[0].parensInOp && !context.inCalc) {
+        } else if (value.length === 1) {
+            const first = /** @type {Expression} */ (value[0]);
+            if (first.parens && !first.parensInOp && !context.inCalc) {
                 doubleParen = true;
             }
-            returnValue = this.value[0].eval(context);
+            returnValue = value[0].eval(context);
         } else {
             returnValue = this;
         }
@@ -52,16 +68,22 @@ class Expression extends Node {
             && (!(returnValue instanceof Dimension))) {
             returnValue = new Paren(returnValue);
         }
-        returnValue.noSpacing = returnValue.noSpacing || noSpacing;
+        /** @type {Expression} */ (returnValue).noSpacing =
+            /** @type {Expression} */ (returnValue).noSpacing || noSpacing;
         return returnValue;
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
-        for (let i = 0; i < this.value.length; i++) {
-            this.value[i].genCSS(context, output);
-            if (!this.noSpacing && i + 1 < this.value.length) {
-                if (!(this.value[i + 1] instanceof Anonymous) ||
-                    this.value[i + 1] instanceof Anonymous && this.value[i + 1].value !== ',') {
+        const value = /** @type {Node[]} */ (this.value);
+        for (let i = 0; i < value.length; i++) {
+            value[i].genCSS(context, output);
+            if (!this.noSpacing && i + 1 < value.length) {
+                if (!(value[i + 1] instanceof Anonymous) ||
+                    value[i + 1] instanceof Anonymous && /** @type {string} */ (value[i + 1].value) !== ',') {
                     output.add(' ');
                 }
             }
@@ -69,7 +91,7 @@ class Expression extends Node {
     }
 
     throwAwayComments() {
-        this.value = this.value.filter(function(v) {
+        this.value = /** @type {Node[]} */ (this.value).filter(function(v) {
             return !(v instanceof Comment);
         });
     }

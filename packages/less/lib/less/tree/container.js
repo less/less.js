@@ -51,7 +51,10 @@ class Container extends AtRule {
         context.mediaPath.push(media);
         context.mediaBlocks.push(media);
 
-        this.rules[0].functionRegistry = context.frames[0].functionRegistry.inherit();
+        const fr = context.frames[0].functionRegistry;
+        if (fr) {
+            this.rules[0].functionRegistry = fr.inherit();
+        }
         context.frames.unshift(this.rules[0]);
         media.rules = [this.rules[0].eval(context)];
         context.frames.shift();

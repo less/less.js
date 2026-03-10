@@ -58,8 +58,12 @@ class AtRule extends Node {
                     this.rules[i].allowImports = true;
                 }
             }
-            this.setParent(selectors, this);
-            this.setParent(this.rules, this);
+            if (this.declarations) {
+                this.setParent(this.declarations, this);
+            }
+            if (this.rules) {
+                this.setParent(this.rules, this);
+            }
         }
         this._index = index;
         this._fileInfo = currentFileInfo;

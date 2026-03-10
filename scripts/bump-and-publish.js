@@ -66,12 +66,6 @@ function parseVersion(version) {
   };
 }
 
-// Increment patch version
-function incrementPatch(version) {
-  const parsed = parseVersion(version);
-  return `${parsed.major}.${parsed.minor}.${parsed.patch + 1}`;
-}
-
 // Get current version from main package
 function getCurrentVersion() {
   const lessPkgPath = path.join(PACKAGES_DIR, 'less', 'package.json');
@@ -79,42 +73,36 @@ function getCurrentVersion() {
   return pkg.version;
 }
 
-// Check if version was explicitly set (via environment variable, git commit message,
-// or package.json already bumped beyond the last tag)
-function getExplicitVersion() {
-  // Check for explicit version in environment
+// Get the latest published version from NPM
+function getNpmVersion(packageName) {
+  try {
+    return execSync(`npm view ${packageName} version`, { encoding: 'utf8' }).trim();
+  } catch (e) {
+    // Package not yet published
+    return null;
+  }
+}
+
+// Determine the target version for publishing.
+// Priority: EXPLICIT_VERSION env > package.json (if ahead of NPM) > NPM patch bump
+function getTargetVersion(currentVersion, npmVersion) {
+  // 1. Explicit override via environment variable
   if (process.env.EXPLICIT_VERSION) {
+    console.log(`✨ Using explicit version from env: ${process.env.EXPLICIT_VERSION}`);
     return process.env.EXPLICIT_VERSION;
   }
 
-  // Check git commit message for version bump instruction
-  try {
-    const commitMsg = execSync('git log -1 --pretty=%B', { encoding: 'utf8' });
-    const versionMatch = commitMsg.match(/version[:\s]+v?(\d+\.\d+\.\d+(?:-[a-z]+\.\d+)?)/i);
-    if (versionMatch) {
-      return versionMatch[1];
-    }
-  } catch (e) {
-    // Ignore errors
+  // 2. If package.json is ahead of NPM, use it
+  if (npmVersion && semver.valid(currentVersion) && semver.gt(currentVersion, npmVersion)) {
+    console.log(`📦 package.json (${currentVersion}) is ahead of NPM (${npmVersion}), using it`);
+    return currentVersion;
   }
 
-  // Check if package.json version is already ahead of the last git tag.
-  // This handles squash merges from release branches where the version
-  // was bumped in package.json but the commit message may not contain
-  // the "version: X.Y.Z" marker.
-  try {
-    const lastTag = execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim();
-    const lastTagVersion = lastTag.replace(/^v/, '');
-    const currentVersion = getCurrentVersion();
-    if (semver.valid(currentVersion) && semver.valid(lastTagVersion) && semver.gt(currentVersion, lastTagVersion)) {
-      console.log(`📦 package.json version (${currentVersion}) is ahead of last tag (${lastTag}), using it directly`);
-      return currentVersion;
-    }
-  } catch (e) {
-    // No tags exist or git describe failed, fall through to auto-increment
-  }
-
-  return null;
+  // 3. Otherwise, bump from the latest NPM version
+  const base = npmVersion || currentVersion;
+  const next = semver.inc(base, 'patch');
+  console.log(`🔢 Auto-incrementing patch: ${base} → ${next}`);
+  return next;
 }
 
 // Update all package.json files with new version
@@ -250,13 +238,9 @@ function main() {
   }
   
   // Determine next version
-  const explicitVersion = getExplicitVersion();
   let nextVersion;
-  
-  if (explicitVersion) {
-    nextVersion = explicitVersion;
-    console.log(`✨ Using explicit version: ${nextVersion}`);
-  } else if (isAlpha) {
+
+  if (isAlpha) {
     // For alpha branch, use alpha versions
     const parsed = parseVersion(currentVersion);
     if (parsed.prerelease) {
@@ -278,9 +262,10 @@ function main() {
     }
     console.log(`🔢 Auto-incrementing alpha version: ${nextVersion}`);
   } else {
-    // For master, increment patch
-    nextVersion = incrementPatch(currentVersion);
-    console.log(`🔢 Auto-incrementing patch version: ${nextVersion}`);
+    // For master: compare package.json vs NPM, bump accordingly
+    const npmVersion = getNpmVersion('less');
+    console.log(`📦 NPM version: ${npmVersion || '(not published)'}`);
+    nextVersion = getTargetVersion(currentVersion, npmVersion);
   }
   
   // Update all package.json files

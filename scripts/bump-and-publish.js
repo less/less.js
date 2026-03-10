@@ -485,7 +485,6 @@ function main() {
   
   // Output version for GitHub Actions
   if (process.env.GITHUB_OUTPUT) {
-    const fs = require('fs');
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${nextVersion}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tagName}\n`);
   }

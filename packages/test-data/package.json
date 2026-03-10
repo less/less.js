@@ -10,5 +10,10 @@
 		"The Core Less Team"
 	],
 	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/less/less.js.git",
+		"directory": "packages/test-data"
+	},
 	"gitHead": "1df9072ee9ebdadc791bf35dfb1dbc3ef9f1948f"
 }

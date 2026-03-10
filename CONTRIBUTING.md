@@ -108,7 +108,7 @@ The publish script (`scripts/bump-and-publish.js`) auto-increments the patch ver
 
 **Option 1: Commit message** — include `version: X.Y.Z` in the commit body:
 
-```
+```text
 feat: new feature
 
 version: 4.6.0

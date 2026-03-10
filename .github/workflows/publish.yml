@@ -17,8 +17,8 @@ jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    # Only run on push events, not pull requests
-    if: github.event_name == 'push'
+    # Only run on the upstream repo, not forks
+    if: github.repository == 'less/less.js'
     
     steps:
       - name: Checkout code

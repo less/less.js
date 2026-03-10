@@ -1,16 +1,61 @@
 /**
+ * @typedef {object} FileInfo
+ * @property {string} [filename]
+ * @property {string} [rootpath]
+ * @property {string} [currentDirectory]
+ * @property {string} [rootFilename]
+ * @property {string} [entryPath]
+ * @property {boolean} [reference]
+ */
+
+/**
+ * @typedef {object} VisibilityInfo
+ * @property {number} [visibilityBlocks]
+ * @property {boolean} [nodeVisible]
+ */
+
+/**
+ * @typedef {object} CSSOutput
+ * @property {(chunk: string, fileInfo?: FileInfo, index?: number) => void} add
+ * @property {() => boolean} isEmpty
+ */
+
+/**
+ * @typedef {object} EvalContext
+ * @property {number} [numPrecision]
+ * @property {boolean} [isMathOn]
+ * @property {string} [math]
+ * @property {Array<object>} [frames]
+ * @property {boolean} [importantScope]
+ */
+
+/**
  * The reason why Node is a class and other nodes simply do not extend
  * from Node (since we're transpiling) is due to this issue:
- * 
+ *
  * @see https://github.com/less/less.js/issues/3434
  */
 class Node {
+    get type() { return ''; }
+
     constructor() {
+        /** @type {Node | null} */
         this.parent = null;
+        /** @type {number | undefined} */
         this.visibilityBlocks = undefined;
+        /** @type {boolean | undefined} */
         this.nodeVisible = undefined;
+        /** @type {Node | null} */
         this.rootNode = null;
+        /** @type {object | null} */
         this.parsed = null;
+
+        /** @type {*} */
+        this.value = undefined;
+        /** @type {number | undefined} */
+        this._index = undefined;
+        /** @type {FileInfo | undefined} */
+        this._fileInfo = undefined;
     }
 
     get currentFileInfo() {
@@ -21,7 +66,12 @@ class Node {
         return this.getIndex();
     }
 
+    /**
+     * @param {Node | Node[]} nodes
+     * @param {Node} parent
+     */
     setParent(nodes, parent) {
+        /** @param {Node} node */
         function set(node) {
             if (node && node instanceof Node) {
                 node.parent = parent;
@@ -35,21 +85,27 @@ class Node {
         }
     }
 
+    /** @returns {number} */
     getIndex() {
         return this._index || (this.parent && this.parent.getIndex()) || 0;
     }
 
+    /** @returns {FileInfo} */
     fileInfo() {
         return this._fileInfo || (this.parent && this.parent.fileInfo()) || {};
     }
 
+    /** @returns {boolean} */
     isRulesetLike() { return false; }
 
+    /**
+     * @param {EvalContext} context
+     * @returns {string}
+     */
     toCSS(context) {
+        /** @type {string[]} */
         const strs = [];
         this.genCSS(context, {
-            // remove when genCSS has JSDoc types
-            // eslint-disable-next-line no-unused-vars
             add: function(chunk, fileInfo, index) {
                 strs.push(chunk);
             },
@@ -60,16 +116,34 @@ class Node {
         return strs.join('');
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         output.add(this.value);
     }
 
+    /**
+     * @param {{ visit: (node: *) => * }} visitor
+     */
     accept(visitor) {
         this.value = visitor.visit(this.value);
     }
 
-    eval() { return this; }
+    /**
+     * @param {*} [context]
+     * @returns {Node}
+     */
+    eval(context) { return this; }
 
+    /**
+     * @param {EvalContext} context
+     * @param {string} op
+     * @param {number} a
+     * @param {number} b
+     * @returns {number | undefined}
+     */
     _operate(context, op, a, b) {
         switch (op) {
             case '+': return a + b;
@@ -79,12 +153,22 @@ class Node {
         }
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {number} value
+     * @returns {number}
+     */
     fround(context, value) {
         const precision = context && context.numPrecision;
         // add "epsilon" to ensure numbers like 1.000000005 (represented as 1.000000004999...) are properly rounded:
         return (precision) ? Number((value + 2e-16).toFixed(precision)) : value;
     }
 
+    /**
+     * @param {Node & { compare?: (other: Node) => number | undefined }} a
+     * @param {Node & { compare?: (other: Node) => number | undefined }} b
+     * @returns {number | undefined}
+     */
     static compare(a, b) {
         /* returns:
          -1: a < b
@@ -103,29 +187,36 @@ class Node {
             return undefined;
         }
 
-        a = a.value;
-        b = b.value;
-        if (!Array.isArray(a)) {
-            return a === b ? 0 : undefined;
+        /** @type {*} */
+        let aVal = a.value;
+        /** @type {*} */
+        let bVal = b.value;
+        if (!Array.isArray(aVal)) {
+            return aVal === bVal ? 0 : undefined;
         }
-        if (a.length !== b.length) {
+        if (aVal.length !== bVal.length) {
             return undefined;
         }
-        for (let i = 0; i < a.length; i++) {
-            if (Node.compare(a[i], b[i]) !== 0) {
+        for (let i = 0; i < aVal.length; i++) {
+            if (Node.compare(aVal[i], bVal[i]) !== 0) {
                 return undefined;
             }
         }
         return 0;
     }
 
+    /**
+     * @param {number} a
+     * @param {number} b
+     * @returns {number | undefined}
+     */
     static numericCompare(a, b) {
         return a  <  b ? -1
             : a === b ?  0
                 : a  >  b ?  1 : undefined;
     }
 
-    // Returns true if this node represents root of ast imported by reference
+    /** @returns {boolean} */
     blocksVisibility() {
         if (this.visibilityBlocks === undefined) {
             this.visibilityBlocks = 0;
@@ -147,26 +238,20 @@ class Node {
         this.visibilityBlocks = this.visibilityBlocks - 1;
     }
 
-    // Turns on node visibility - if called node will be shown in output regardless
-    // of whether it comes from import by reference or not
     ensureVisibility() {
         this.nodeVisible = true;
     }
 
-    // Turns off node visibility - if called node will NOT be shown in output regardless
-    // of whether it comes from import by reference or not
     ensureInvisibility() {
         this.nodeVisible = false;
     }
 
-    // return values:
-    // false - the node must not be visible
-    // true - the node must be visible
-    // undefined or null - the node has the same visibility as its parent
+    /** @returns {boolean | undefined} */
     isVisible() {
         return this.nodeVisible;
     }
 
+    /** @returns {VisibilityInfo} */
     visibilityInfo() {
         return {
             visibilityBlocks: this.visibilityBlocks,
@@ -174,6 +259,7 @@ class Node {
         };
     }
 
+    /** @param {VisibilityInfo} info */
     copyVisibilityInfo(info) {
         if (!info) {
             return;

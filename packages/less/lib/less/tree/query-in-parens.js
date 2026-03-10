@@ -1,16 +1,17 @@
 import Node from './node.js';
 
-const QueryInParens = function (op, l, m, op2, r, i) {
-    this.op = op.trim();
-    this.lvalue = l;
-    this.mvalue = m;
-    this.op2 = op2 ? op2.trim() : null;
-    this.rvalue = r;
-    this._index = i;
-};
+class QueryInParens extends Node {
+    get type() { return 'QueryInParens'; }
 
-QueryInParens.prototype = Object.assign(new Node(), {
-    type: 'QueryInParens',
+    constructor(op, l, m, op2, r, i) {
+        super();
+        this.op = op.trim();
+        this.lvalue = l;
+        this.mvalue = m;
+        this.op2 = op2 ? op2.trim() : null;
+        this.rvalue = r;
+        this._index = i;
+    }
 
     accept(visitor) {
         this.lvalue = visitor.visit(this.lvalue);
@@ -18,7 +19,7 @@ QueryInParens.prototype = Object.assign(new Node(), {
         if (this.rvalue) {
             this.rvalue = visitor.visit(this.rvalue);
         }
-    },
+    }
 
     eval(context) {
         const node = new QueryInParens(
@@ -30,7 +31,7 @@ QueryInParens.prototype = Object.assign(new Node(), {
             this._index
         );
         return node;
-    },
+    }
 
     genCSS(context, output) {
         this.lvalue.genCSS(context, output);
@@ -40,7 +41,7 @@ QueryInParens.prototype = Object.assign(new Node(), {
             output.add(' ' + this.op2 + ' ');
             this.rvalue.genCSS(context, output);
         }
-    },
-});
+    }
+}
 
 export default QueryInParens;

@@ -3,15 +3,16 @@ import Variable from './variable.js';
 import Ruleset from './ruleset.js';
 import Selector from './selector.js';
 
-const NamespaceValue = function(ruleCall, lookups, index, fileInfo) {
-    this.value = ruleCall;
-    this.lookups = lookups;
-    this._index = index;
-    this._fileInfo = fileInfo;
-};
+class NamespaceValue extends Node {
+    get type() { return 'NamespaceValue'; }
 
-NamespaceValue.prototype = Object.assign(new Node(), {
-    type: 'NamespaceValue',
+    constructor(ruleCall, lookups, index, fileInfo) {
+        super();
+        this.value = ruleCall;
+        this.lookups = lookups;
+        this._index = index;
+        this._fileInfo = fileInfo;
+    }
 
     eval(context) {
         let i, name, rules = this.value.eval(context);
@@ -19,11 +20,6 @@ NamespaceValue.prototype = Object.assign(new Node(), {
         for (i = 0; i < this.lookups.length; i++) {
             name = this.lookups[i];
 
-            /**
-             * Eval'd DRs return rulesets.
-             * Eval'd mixins return rules, so let's make a ruleset if we need it.
-             * We need to do this because of late parsing of values
-             */
             if (Array.isArray(rules)) {
                 rules = new Ruleset([new Selector()], rules);
             }
@@ -63,8 +59,6 @@ NamespaceValue.prototype = Object.assign(new Node(), {
                         filename: this.fileInfo().filename,
                         index: this.getIndex() };
                 }
-                // Properties are an array of values, since a ruleset can have multiple props.
-                // We pick the last one (the "cascaded" value)
                 rules = rules[rules.length - 1];
             }
 
@@ -77,6 +71,6 @@ NamespaceValue.prototype = Object.assign(new Node(), {
         }
         return rules;
     }
-});
+}
 
 export default NamespaceValue;

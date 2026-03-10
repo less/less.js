@@ -1,6 +1,7 @@
 import Variable from '../tree/variable.js';
 import Anonymous from '../tree/anonymous.js';
 
+/** @param {*[]} args */
 const styleExpression = function (args) {
     args = Array.prototype.slice.call(args);
     if (args.length === 0) {
@@ -9,12 +10,13 @@ const styleExpression = function (args) {
 
     const entityList = [new Variable(args[0].value, this.index, this.currentFileInfo).eval(this.context)];
 
-    args = entityList.map(a => { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
+    const result = entityList.map(a => { return a.toCSS(this.context); }).join(this.context.compress ? ',' : ', ');
 
-    return new Anonymous(`style(${args})`);
+    return new Anonymous(`style(${result})`);
 };
 
 export default {
+    /** @param {...*} args */
     style: function(...args) {
         try {
             return styleExpression.call(this, args);

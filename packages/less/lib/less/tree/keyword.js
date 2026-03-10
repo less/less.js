@@ -1,17 +1,18 @@
 import Node from './node.js';
 
-const Keyword = function(value) {
-    this.value = value;
-};
+class Keyword extends Node {
+    get type() { return 'Keyword'; }
 
-Keyword.prototype = Object.assign(new Node(), {
-    type: 'Keyword',
+    constructor(value) {
+        super();
+        this.value = value;
+    }
 
     genCSS(context, output) {
         if (this.value === '%') { throw { type: 'Syntax', message: 'Invalid % without number' }; }
         output.add(this.value);
     }
-});
+}
 
 Keyword.True = new Keyword('true');
 Keyword.False = new Keyword('false');

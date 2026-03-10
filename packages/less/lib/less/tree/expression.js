@@ -4,20 +4,21 @@ import Comment from './comment.js';
 import Dimension from './dimension.js';
 import Anonymous from './anonymous.js';
 
-const Expression = function(value, noSpacing) {
-    this.value = value;
-    this.noSpacing = noSpacing;
-    if (!value) {
-        throw new Error('Expression requires an array parameter');
-    }
-};
+class Expression extends Node {
+    get type() { return 'Expression'; }
 
-Expression.prototype = Object.assign(new Node(), {
-    type: 'Expression',
+    constructor(value, noSpacing) {
+        super();
+        this.value = value;
+        this.noSpacing = noSpacing;
+        if (!value) {
+            throw new Error('Expression requires an array parameter');
+        }
+    }
 
     accept(visitor) {
         this.value = visitor.visitArray(this.value);
-    },
+    }
 
     eval(context) {
         const noSpacing = this.noSpacing;
@@ -53,7 +54,7 @@ Expression.prototype = Object.assign(new Node(), {
         }
         returnValue.noSpacing = returnValue.noSpacing || noSpacing;
         return returnValue;
-    },
+    }
 
     genCSS(context, output) {
         for (let i = 0; i < this.value.length; i++) {
@@ -65,13 +66,13 @@ Expression.prototype = Object.assign(new Node(), {
                 }
             }
         }
-    },
+    }
 
     throwAwayComments() {
         this.value = this.value.filter(function(v) {
             return !(v instanceof Comment);
         });
     }
-});
+}
 
 export default Expression;

@@ -2,6 +2,11 @@ import contexts from './contexts.js';
 import visitor from './visitors/index.js';
 import tree from './tree/index.js';
 
+/**
+ * @param {import('./tree/node.js').default} root
+ * @param {{ variables?: Record<string, *>, compress?: boolean, pluginManager?: *, frames?: *[] }} options
+ * @returns {import('./tree/node.js').default}
+ */
 export default function(root, options) {
     options = options || {};
     let evaldRoot;

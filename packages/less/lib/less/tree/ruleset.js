@@ -13,25 +13,26 @@ import getDebugInfo from './debug-info.js';
 import * as utils from '../utils.js';
 import Parser from '../parser/parser.js';
 
-const Ruleset = function(selectors, rules, strictImports, visibilityInfo) {
-    this.selectors = selectors;
-    this.rules = rules;
-    this._lookups = {};
-    this._variables = null;
-    this._properties = null;
-    this.strictImports = strictImports;
-    this.copyVisibilityInfo(visibilityInfo);
-    this.allowRoot = true;
+class Ruleset extends Node {
+    get type() { return 'Ruleset'; }
 
-    this.setParent(this.selectors, this);
-    this.setParent(this.rules, this);
-}
+    constructor(selectors, rules, strictImports, visibilityInfo) {
+        super();
+        this.selectors = selectors;
+        this.rules = rules;
+        this._lookups = {};
+        this._variables = null;
+        this._properties = null;
+        this.strictImports = strictImports;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.allowRoot = true;
+        this.isRuleset = true;
 
-Ruleset.prototype = Object.assign(new Node(), {
-    type: 'Ruleset',
-    isRuleset: true,
+        this.setParent(this.selectors, this);
+        this.setParent(this.rules, this);
+    }
 
-    isRulesetLike() { return true; },
+    isRulesetLike() { return true; }
 
     accept(visitor) {
         if (this.paths) {
@@ -42,7 +43,7 @@ Ruleset.prototype = Object.assign(new Node(), {
         if (this.rules && this.rules.length) {
             this.rules = visitor.visitArray(this.rules);
         }
-    },
+    }
 
     eval(context) {
         let selectors;
@@ -219,7 +220,7 @@ Ruleset.prototype = Object.assign(new Node(), {
         }
 
         return ruleset;
-    },
+    }
 
     evalImports(context) {
         const rules = this.rules;
@@ -239,7 +240,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 this.resetCache();
             }
         }
-    },
+    }
 
     makeImportant() {
         const result = new Ruleset(this.selectors, this.rules.map(function (r) {
@@ -251,11 +252,11 @@ Ruleset.prototype = Object.assign(new Node(), {
         }), this.strictImports, this.visibilityInfo());
 
         return result;
-    },
+    }
 
     matchArgs(args) {
         return !args || args.length === 0;
-    },
+    }
 
     // lets you call a css selector with a guard
     matchCondition(args, context) {
@@ -270,14 +271,14 @@ Ruleset.prototype = Object.assign(new Node(), {
             return false;
         }
         return true;
-    },
+    }
 
     resetCache() {
         this._rulesets = null;
         this._variables = null;
         this._properties = null;
         this._lookups = {};
-    },
+    }
 
     variables() {
         if (!this._variables) {
@@ -300,7 +301,7 @@ Ruleset.prototype = Object.assign(new Node(), {
             }, {});
         }
         return this._variables;
-    },
+    }
 
     properties() {
         if (!this._properties) {
@@ -320,21 +321,21 @@ Ruleset.prototype = Object.assign(new Node(), {
             }, {});
         }
         return this._properties;
-    },
+    }
 
     variable(name) {
         const decl = this.variables()[name];
         if (decl) {
             return this.parseValue(decl);
         }
-    },
+    }
 
     property(name) {
         const decl = this.properties()[name];
         if (decl) {
             return this.parseValue(decl);
         }
-    },
+    }
 
     lastDeclaration() {
         for (let i = this.rules.length; i > 0; i--) {
@@ -343,7 +344,7 @@ Ruleset.prototype = Object.assign(new Node(), {
                 return this.parseValue(decl);
             }
         }
-    },
+    }
 
     parseValue(toParse) {
         const self = this;
@@ -383,7 +384,7 @@ Ruleset.prototype = Object.assign(new Node(), {
             }
             return nodes;
         }
-    },
+    }
 
     rulesets() {
         if (!this.rules) { return []; }
@@ -400,7 +401,7 @@ Ruleset.prototype = Object.assign(new Node(), {
         }
 
         return filtRules;
-    },
+    }
 
     prependRule(rule) {
         const rules = this.rules;
@@ -410,7 +411,7 @@ Ruleset.prototype = Object.assign(new Node(), {
             this.rules = [ rule ];
         }
         this.setParent(rule, this);
-    },
+    }
 
     find(selector, self, filter) {
         self = self || this;
@@ -444,7 +445,7 @@ Ruleset.prototype = Object.assign(new Node(), {
         });
         this._lookups[key] = rules;
         return rules;
-    },
+    }
 
     genCSS(context, output) {
         let i;
@@ -557,13 +558,13 @@ Ruleset.prototype = Object.assign(new Node(), {
         if (!output.isEmpty() && !context.compress && this.firstRoot) {
             output.add('\n');
         }
-    },
+    }
 
     joinSelectors(paths, context, selectors) {
         for (let s = 0; s < selectors.length; s++) {
             this.joinSelector(paths, context, selectors[s]);
         }
-    },
+    }
 
     joinSelector(paths, context, selector) {
 
@@ -866,6 +867,6 @@ Ruleset.prototype = Object.assign(new Node(), {
         }
 
     }
-});
+}
 
 export default Ruleset;

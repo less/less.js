@@ -2,19 +2,20 @@ import Node from './node.js';
 import Variable from './variable.js';
 import Property from './property.js';
 
-const Quoted = function(str, content, escaped, index, currentFileInfo) {
-    this.escaped = (escaped === undefined) ? true : escaped;
-    this.value = content || '';
-    this.quote = str.charAt(0);
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.variableRegex = /@\{([\w-]+)\}/g;
-    this.propRegex = /\$\{([\w-]+)\}/g;
-    this.allowRoot = escaped;
-};
+class Quoted extends Node {
+    get type() { return 'Quoted'; }
 
-Quoted.prototype = Object.assign(new Node(), {
-    type: 'Quoted',
+    constructor(str, content, escaped, index, currentFileInfo) {
+        super();
+        this.escaped = (escaped === undefined) ? true : escaped;
+        this.value = content || '';
+        this.quote = str.charAt(0);
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.variableRegex = /@\{([\w-]+)\}/g;
+        this.propRegex = /\$\{([\w-]+)\}/g;
+        this.allowRoot = escaped;
+    }
 
     genCSS(context, output) {
         if (!this.escaped) {
@@ -24,11 +25,11 @@ Quoted.prototype = Object.assign(new Node(), {
         if (!this.escaped) {
             output.add(this.quote);
         }
-    },
+    }
 
     containsVariables() {
         return this.value.match(this.variableRegex);
-    },
+    }
 
     eval(context) {
         const that = this;
@@ -52,7 +53,7 @@ Quoted.prototype = Object.assign(new Node(), {
         value = iterativeReplace(value, this.variableRegex, variableReplacement);
         value = iterativeReplace(value, this.propRegex, propertyReplacement);
         return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
-    },
+    }
 
     compare(other) {
         // when comparing quoted strings allow the quote to differ
@@ -62,6 +63,6 @@ Quoted.prototype = Object.assign(new Node(), {
             return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
         }
     }
-});
+}
 
 export default Quoted;

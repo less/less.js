@@ -4,20 +4,21 @@ import LessError from '../less-error.js';
 import * as utils from '../utils.js';
 import Parser from '../parser/parser.js';
 
-const Selector = function(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
-    this.extendList = extendList;
-    this.condition = condition;
-    this.evaldCondition = !condition;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.elements = this.getElements(elements);
-    this.mixinElements_ = undefined;
-    this.copyVisibilityInfo(visibilityInfo);
-    this.setParent(this.elements, this);
-};
+class Selector extends Node {
+    get type() { return 'Selector'; }
 
-Selector.prototype = Object.assign(new Node(), {
-    type: 'Selector',
+    constructor(elements, extendList, condition, index, currentFileInfo, visibilityInfo) {
+        super();
+        this.extendList = extendList;
+        this.condition = condition;
+        this.evaldCondition = !condition;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.elements = this.getElements(elements);
+        this.mixinElements_ = undefined;
+        this.copyVisibilityInfo(visibilityInfo);
+        this.setParent(this.elements, this);
+    }
 
     accept(visitor) {
         if (this.elements) {
@@ -29,7 +30,7 @@ Selector.prototype = Object.assign(new Node(), {
         if (this.condition) {
             this.condition = visitor.visit(this.condition);
         }
-    },
+    }
 
     createDerived(elements, extendList, evaldCondition) {
         elements = this.getElements(elements);
@@ -38,7 +39,7 @@ Selector.prototype = Object.assign(new Node(), {
         newSelector.evaldCondition = (!utils.isNullOrUndefined(evaldCondition)) ? evaldCondition : this.evaldCondition;
         newSelector.mediaEmpty = this.mediaEmpty;
         return newSelector;
-    },
+    }
 
     getElements(els) {
         if (!els) {
@@ -59,13 +60,13 @@ Selector.prototype = Object.assign(new Node(), {
                 });
         }
         return els;
-    },
+    }
 
     createEmptySelectors() {
         const el = new Element('', '&', false, this._index, this._fileInfo), sels = [new Selector([el], null, null, this._index, this._fileInfo)];
         sels[0].mediaEmpty = true;
         return sels;
-    },
+    }
 
     match(other) {
         const elements = this.elements;
@@ -86,7 +87,7 @@ Selector.prototype = Object.assign(new Node(), {
         }
 
         return olen; // return number of matched elements
-    },
+    }
 
     mixinElements() {
         if (this.mixinElements_) {
@@ -106,14 +107,14 @@ Selector.prototype = Object.assign(new Node(), {
         }
 
         return (this.mixinElements_ = elements);
-    },
+    }
 
     isJustParentSelector() {
         return !this.mediaEmpty &&
             this.elements.length === 1 &&
             this.elements[0].value === '&' &&
             (this.elements[0].combinator.value === ' ' || this.elements[0].combinator.value === '');
-    },
+    }
 
     eval(context) {
         const evaldCondition = this.condition && this.condition.eval(context);
@@ -136,7 +137,7 @@ Selector.prototype = Object.assign(new Node(), {
         }
 
         return this.createDerived(elements, extendList, evaldCondition);
-    },
+    }
 
     genCSS(context, output) {
         let i, element;
@@ -147,11 +148,11 @@ Selector.prototype = Object.assign(new Node(), {
             element = this.elements[i];
             element.genCSS(context, output);
         }
-    },
+    }
 
     getIsOutput() {
         return this.evaldCondition;
     }
-});
+}
 
 export default Selector;

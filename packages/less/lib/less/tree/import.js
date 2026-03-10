@@ -20,29 +20,30 @@ import Expression from './expression.js';
 // `import,push`, we also pass it a callback, which it'll call once
 // the file has been fetched, and parsed.
 //
-const Import = function(path, features, options, index, currentFileInfo, visibilityInfo) {
-    this.options = options;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.path = path;
-    this.features = features;
-    this.allowRoot = true;
+class Import extends Node {
+    get type() { return 'Import'; }
 
-    if (this.options.less !== undefined || this.options.inline) {
-        this.css = !this.options.less || this.options.inline;
-    } else {
-        const pathValue = this.getPath();
-        if (pathValue && /[#.&?]css([?;].*)?$/.test(pathValue)) {
-            this.css = true;
+    constructor(path, features, options, index, currentFileInfo, visibilityInfo) {
+        super();
+        this.options = options;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.path = path;
+        this.features = features;
+        this.allowRoot = true;
+
+        if (this.options.less !== undefined || this.options.inline) {
+            this.css = !this.options.less || this.options.inline;
+        } else {
+            const pathValue = this.getPath();
+            if (pathValue && /[#.&?]css([?;].*)?$/.test(pathValue)) {
+                this.css = true;
+            }
         }
+        this.copyVisibilityInfo(visibilityInfo);
+        this.setParent(this.features, this);
+        this.setParent(this.path, this);
     }
-    this.copyVisibilityInfo(visibilityInfo);
-    this.setParent(this.features, this);
-    this.setParent(this.path, this);
-};
-
-Import.prototype = Object.assign(new Node(), {
-    type: 'Import',
 
     accept(visitor) {
         if (this.features) {
@@ -52,7 +53,7 @@ Import.prototype = Object.assign(new Node(), {
         if (!this.options.isPlugin && !this.options.inline && this.root) {
             this.root = visitor.visit(this.root);
         }
-    },
+    }
 
     genCSS(context, output) {
         if (this.css && this.path._fileInfo.reference === undefined) {
@@ -64,12 +65,12 @@ Import.prototype = Object.assign(new Node(), {
             }
             output.add(';');
         }
-    },
+    }
 
     getPath() {
         return (this.path instanceof URL) ?
             this.path.value.value : this.path.value;
-    },
+    }
 
     isVariableImport() {
         let path = this.path;
@@ -81,7 +82,7 @@ Import.prototype = Object.assign(new Node(), {
         }
 
         return true;
-    },
+    }
 
     evalForImport(context) {
         let path = this.path;
@@ -91,7 +92,7 @@ Import.prototype = Object.assign(new Node(), {
         }
 
         return new Import(path.eval(context), this.features, this.options, this._index, this._fileInfo, this.visibilityInfo());
-    },
+    }
 
     evalPath(context) {
         const path = this.path.eval(context);
@@ -110,7 +111,7 @@ Import.prototype = Object.assign(new Node(), {
         }
 
         return path;
-    },
+    }
 
     eval(context) {
         const result = this.doEval(context);
@@ -125,7 +126,7 @@ Import.prototype = Object.assign(new Node(), {
             }
         }
         return result;
-    },
+    }
 
     doEval(context) {
         let ruleset;
@@ -234,6 +235,6 @@ Import.prototype = Object.assign(new Node(), {
             return [];
         }
     }
-});
+}
 
 export default Import;

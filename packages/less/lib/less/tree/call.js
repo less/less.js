@@ -5,22 +5,23 @@ import FunctionCaller from '../functions/function-caller.js';
 //
 // A function call node.
 //
-const Call = function(name, args, index, currentFileInfo) {
-    this.name = name;
-    this.args = args;
-    this.calc = name === 'calc';
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-}
+class Call extends Node {
+    get type() { return 'Call'; }
 
-Call.prototype = Object.assign(new Node(), {
-    type: 'Call',
+    constructor(name, args, index, currentFileInfo) {
+        super();
+        this.name = name;
+        this.args = args;
+        this.calc = name === 'calc';
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    }
 
     accept(visitor) {
         if (this.args) {
             this.args = visitor.visitArray(this.args);
         }
-    },
+    }
 
     //
     // When evaluating a function call,
@@ -62,10 +63,10 @@ Call.prototype = Object.assign(new Node(), {
                 if (e.hasOwnProperty('line') && e.hasOwnProperty('column')) {
                     throw e;
                 }
-                throw { 
+                throw {
                     type: e.type || 'Runtime',
                     message: `Error evaluating function \`${this.name}\`${e.message ? `: ${e.message}` : ''}`,
-                    index: this.getIndex(), 
+                    index: this.getIndex(),
                     filename: this.fileInfo().filename,
                     line: e.lineNumber,
                     column: e.columnNumber
@@ -78,12 +79,12 @@ Call.prototype = Object.assign(new Node(), {
             // Falsy values or booleans are returned as empty nodes
             if (!(result instanceof Node)) {
                 if (!result || result === true) {
-                    result = new Anonymous(null); 
+                    result = new Anonymous(null);
                 }
                 else {
-                    result = new Anonymous(result.toString()); 
+                    result = new Anonymous(result.toString());
                 }
-                
+
             }
             result._index = this._index;
             result._fileInfo = this._fileInfo;
@@ -94,7 +95,7 @@ Call.prototype = Object.assign(new Node(), {
         exitCalc();
 
         return new Call(this.name, args, this.getIndex(), this.fileInfo());
-    },
+    }
 
     genCSS(context, output) {
         output.add(`${this.name}(`, this.fileInfo(), this.getIndex());
@@ -108,6 +109,6 @@ Call.prototype = Object.assign(new Node(), {
 
         output.add(')');
     }
-});
+}
 
 export default Call;

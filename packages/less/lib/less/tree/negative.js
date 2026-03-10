@@ -2,17 +2,18 @@ import Node from './node.js';
 import Operation from './operation.js';
 import Dimension from './dimension.js';
 
-const Negative = function(node) {
-    this.value = node;
-};
+class Negative extends Node {
+    get type() { return 'Negative'; }
 
-Negative.prototype = Object.assign(new Node(), {
-    type: 'Negative',
+    constructor(node) {
+        super();
+        this.value = node;
+    }
 
     genCSS(context, output) {
         output.add('-');
         this.value.genCSS(context, output);
-    },
+    }
 
     eval(context) {
         if (context.isMathOn()) {
@@ -20,6 +21,6 @@ Negative.prototype = Object.assign(new Node(), {
         }
         return new Negative(this.value.eval(context));
     }
-});
+}
 
 export default Negative;

@@ -3,18 +3,19 @@ import Selector from './selector.js';
 import MixinDefinition from './mixin-definition.js';
 import defaultFunc from '../functions/default.js';
 
-const MixinCall = function(elements, args, index, currentFileInfo, important) {
-    this.selector = new Selector(elements);
-    this.arguments = args || [];
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-    this.important = important;
-    this.allowRoot = true;
-    this.setParent(this.selector, this);
-};
+class MixinCall extends Node {
+    get type() { return 'MixinCall'; }
 
-MixinCall.prototype = Object.assign(new Node(), {
-    type: 'MixinCall',
+    constructor(elements, args, index, currentFileInfo, important) {
+        super();
+        this.selector = new Selector(elements);
+        this.arguments = args || [];
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+        this.important = important;
+        this.allowRoot = true;
+        this.setParent(this.selector, this);
+    }
 
     accept(visitor) {
         if (this.selector) {
@@ -23,7 +24,7 @@ MixinCall.prototype = Object.assign(new Node(), {
         if (this.arguments.length) {
             this.arguments = visitor.visitArray(this.arguments);
         }
-    },
+    }
 
     eval(context) {
         let mixins;
@@ -180,7 +181,7 @@ MixinCall.prototype = Object.assign(new Node(), {
                 message: `${this.selector.toCSS().trim()} is undefined`,
                 index:   this.getIndex(), filename: this.fileInfo().filename };
         }
-    },
+    }
 
     _setVisibilityToReplacement(replacement) {
         let i, rule;
@@ -190,7 +191,7 @@ MixinCall.prototype = Object.assign(new Node(), {
                 rule.addVisibilityBlock();
             }
         }
-    },
+    }
 
     format(args) {
         return `${this.selector.toCSS().trim()}(${args ? args.map(function (a) {
@@ -206,6 +207,6 @@ MixinCall.prototype = Object.assign(new Node(), {
             return argValue;
         }).join(', ') : ''})`;
     }
-});
+}
 
 export default MixinCall;

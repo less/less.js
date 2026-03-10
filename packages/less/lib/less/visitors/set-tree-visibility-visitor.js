@@ -1,12 +1,20 @@
+import Node from '../tree/node.js';
+
 class SetTreeVisibilityVisitor {
+    /** @param {boolean} visible */
     constructor(visible) {
         this.visible = visible;
     }
 
+    /** @param {Node} root */
     run(root) {
         this.visit(root);
     }
 
+    /**
+     * @param {Node[]} nodes
+     * @returns {Node[]}
+     */
     visitArray(nodes) {
         if (!nodes) {
             return nodes;
@@ -20,6 +28,10 @@ class SetTreeVisibilityVisitor {
         return nodes;
     }
 
+    /**
+     * @param {*} node
+     * @returns {*}
+     */
     visit(node) {
         if (!node) {
             return node;

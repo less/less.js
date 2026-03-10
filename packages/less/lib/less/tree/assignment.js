@@ -1,23 +1,24 @@
 import Node from './node.js';
 
-const Assignment = function(key, val) {
-    this.key = key;
-    this.value = val;
-}
+class Assignment extends Node {
+    get type() { return 'Assignment'; }
 
-Assignment.prototype = Object.assign(new Node(), {
-    type: 'Assignment',
+    constructor(key, val) {
+        super();
+        this.key = key;
+        this.value = val;
+    }
 
     accept(visitor) {
         this.value = visitor.visit(this.value);
-    },
+    }
 
     eval(context) {
         if (this.value.eval) {
             return new Assignment(this.key, this.value.eval(context));
         }
         return this;
-    },
+    }
 
     genCSS(context, output) {
         output.add(`${this.key}=`);
@@ -27,6 +28,6 @@ Assignment.prototype = Object.assign(new Node(), {
             output.add(this.value);
         }
     }
-});
+}
 
 export default Assignment;

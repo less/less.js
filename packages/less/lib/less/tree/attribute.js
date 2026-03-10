@@ -1,14 +1,15 @@
 import Node from './node.js';
 
-const Attribute = function(key, op, value, cif) {
-    this.key = key;
-    this.op = op;
-    this.value = value;
-    this.cif = cif;
-}
+class Attribute extends Node {
+    get type() { return 'Attribute'; }
 
-Attribute.prototype = Object.assign(new Node(), {
-    type: 'Attribute',
+    constructor(key, op, value, cif) {
+        super();
+        this.key = key;
+        this.op = op;
+        this.value = value;
+        this.cif = cif;
+    }
 
     eval(context) {
         return new Attribute(
@@ -17,11 +18,11 @@ Attribute.prototype = Object.assign(new Node(), {
             (this.value && this.value.eval) ? this.value.eval(context) : this.value,
             this.cif
         );
-    },
+    }
 
     genCSS(context, output) {
         output.add(this.toCSS(context));
-    },
+    }
 
     toCSS(context) {
         let value = this.key.toCSS ? this.key.toCSS(context) : this.key;
@@ -37,6 +38,6 @@ Attribute.prototype = Object.assign(new Node(), {
 
         return `[${value}]`;
     }
-});
+}
 
 export default Attribute;

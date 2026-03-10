@@ -1,14 +1,15 @@
 import Node from './node.js';
 import Call from './call.js';
 
-const Variable = function(name, index, currentFileInfo) {
-    this.name = name;
-    this._index = index;
-    this._fileInfo = currentFileInfo;
-};
+class Variable extends Node {
+    get type() { return 'Variable'; }
 
-Variable.prototype = Object.assign(new Node(), {
-    type: 'Variable',
+    constructor(name, index, currentFileInfo) {
+        super();
+        this.name = name;
+        this._index = index;
+        this._fileInfo = currentFileInfo;
+    }
 
     eval(context) {
         let variable, name = this.name;
@@ -51,7 +52,7 @@ Variable.prototype = Object.assign(new Node(), {
                 filename: this.fileInfo().filename,
                 index: this.getIndex() };
         }
-    },
+    }
 
     find(obj, fun) {
         for (let i = 0, r; i < obj.length; i++) {
@@ -60,6 +61,6 @@ Variable.prototype = Object.assign(new Node(), {
         }
         return null;
     }
-});
+}
 
 export default Variable;

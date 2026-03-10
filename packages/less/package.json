@@ -53,9 +53,9 @@
 		"grunt": "grunt",
 		"lint": "eslint '**/*.{ts,js}'",
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
-		"typecheck": "tsc",
+		"typecheck": "tsc --noEmit",
 		"build": "node build/rollup.js --dist",
-		"prepublishOnly": "grunt dist"
+		"prepublishOnly": "npm run typecheck && grunt dist"
 	},
 	"optionalDependencies": {
 		"errno": "^0.1.1",

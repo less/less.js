@@ -1,8 +1,18 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, FileInfo, VisibilityInfo } from './node.js' */
 import Node from './node.js';
 
 class Anonymous extends Node {
     get type() { return 'Anonymous'; }
 
+    /**
+     * @param {string | null} value
+     * @param {number} [index]
+     * @param {FileInfo} [currentFileInfo]
+     * @param {boolean} [mapLines]
+     * @param {boolean} [rulesetLike]
+     * @param {VisibilityInfo} [visibilityInfo]
+     */
     constructor(value, index, currentFileInfo, mapLines, rulesetLike, visibilityInfo) {
         super();
         this.value = value;
@@ -14,22 +24,32 @@ class Anonymous extends Node {
         this.copyVisibilityInfo(visibilityInfo);
     }
 
+    /** @returns {Anonymous} */
     eval() {
-        return new Anonymous(this.value, this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
+        return new Anonymous(/** @type {string | null} */ (this.value), this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
     }
 
+    /**
+     * @param {Node} other
+     * @returns {number | undefined}
+     */
     compare(other) {
-        return other.toCSS && this.toCSS() === other.toCSS() ? 0 : undefined;
+        return other.toCSS && this.toCSS(/** @type {EvalContext} */ ({})) === other.toCSS(/** @type {EvalContext} */ ({})) ? 0 : undefined;
     }
 
+    /** @returns {boolean} */
     isRulesetLike() {
         return this.rulesetLike;
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         this.nodeVisible = Boolean(this.value);
         if (this.nodeVisible) {
-            output.add(this.value, this._fileInfo, this._index, this.mapLines);
+            output.add(/** @type {string} */ (this.value), this._fileInfo, this._index, this.mapLines);
         }
     }
 }

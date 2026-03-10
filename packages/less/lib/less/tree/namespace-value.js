@@ -1,3 +1,5 @@
+// @ts-check
+/** @import { EvalContext, FileInfo } from './node.js' */
 import Node from './node.js';
 import Variable from './variable.js';
 import Ruleset from './ruleset.js';
@@ -6,6 +8,12 @@ import Selector from './selector.js';
 class NamespaceValue extends Node {
     get type() { return 'NamespaceValue'; }
 
+    /**
+     * @param {Node} ruleCall
+     * @param {string[]} lookups
+     * @param {number} index
+     * @param {FileInfo} fileInfo
+     */
     constructor(ruleCall, lookups, index, fileInfo) {
         super();
         this.value = ruleCall;
@@ -14,8 +22,14 @@ class NamespaceValue extends Node {
         this._fileInfo = fileInfo;
     }
 
+    /**
+     * @param {EvalContext} context
+     * @returns {Node}
+     */
     eval(context) {
-        let i, name, rules = this.value.eval(context);
+        let i, name;
+        /** @type {Ruleset | Node | Node[]} */
+        let rules = this.value.eval(context);
 
         for (i = 0; i < this.lookups.length; i++) {
             name = this.lookups[i];
@@ -24,15 +38,17 @@ class NamespaceValue extends Node {
                 rules = new Ruleset([new Selector()], rules);
             }
 
+            const rs = /** @type {Ruleset} */ (rules);
+
             if (name === '') {
-                rules = rules.lastDeclaration();
+                rules = rs.lastDeclaration();
             }
             else if (name.charAt(0) === '@') {
                 if (name.charAt(1) === '@') {
                     name = `@${new Variable(name.slice(1)).eval(context).value}`;
                 }
-                if (rules.variables) {
-                    rules = rules.variable(name);
+                if (rs.variables) {
+                    rules = rs.variable(name);
                 }
 
                 if (!rules) {
@@ -49,8 +65,8 @@ class NamespaceValue extends Node {
                 else {
                     name = name.charAt(0) === '$' ? name : `$${name}`;
                 }
-                if (rules.properties) {
-                    rules = rules.property(name);
+                if (rs.properties) {
+                    rules = rs.property(name);
                 }
 
                 if (!rules) {
@@ -59,17 +75,20 @@ class NamespaceValue extends Node {
                         filename: this.fileInfo().filename,
                         index: this.getIndex() };
                 }
-                rules = rules[rules.length - 1];
+                const rulesArr = /** @type {Node[]} */ (rules);
+                rules = rulesArr[rulesArr.length - 1];
             }
 
-            if (rules.value) {
-                rules = rules.eval(context).value;
+            const current = /** @type {Node} */ (rules);
+            if (current.value) {
+                rules = /** @type {Node} */ (current.eval(context).value);
             }
-            if (rules.ruleset) {
-                rules = rules.ruleset.eval(context);
+            const currentNode = /** @type {Node & { ruleset?: Node }} */ (rules);
+            if (currentNode.ruleset) {
+                rules = currentNode.ruleset.eval(context);
             }
         }
-        return rules;
+        return /** @type {Node} */ (rules);
     }
 }
 

@@ -1,9 +1,41 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, TreeVisitor, FileInfo, VisibilityInfo } from './node.js' */
 import Ruleset from './ruleset.js';
 import Value from './value.js';
 import Selector from './selector.js';
 import Anonymous from './anonymous.js';
 import Expression from './expression.js';
 import * as utils from '../utils.js';
+import Node from './node.js';
+
+/**
+ * @typedef {object} FunctionRegistry
+ * @property {(name: string, func: Function) => void} add
+ * @property {(functions: Object) => void} addMultiple
+ * @property {(name: string) => Function} get
+ * @property {() => Object} getLocalFunctions
+ * @property {() => FunctionRegistry} inherit
+ * @property {(base: FunctionRegistry) => FunctionRegistry} create
+ */
+
+/**
+ * @typedef {Node & {
+ *   features: Value,
+ *   rules: Ruleset[],
+ *   type: string,
+ *   functionRegistry?: FunctionRegistry,
+ *   multiMedia?: boolean,
+ *   debugInfo?: { lineNumber: number, fileName: string },
+ *   allowRoot?: boolean,
+ *   _evaluated?: boolean,
+ *   evalFunction: () => void,
+ *   evalTop: (context: EvalContext) => Node | Ruleset,
+ *   evalNested: (context: EvalContext) => Node | Ruleset,
+ *   permute: (arr: Node[][]) => Node[][],
+ *   bubbleSelectors: (selectors: Selector[] | undefined) => void,
+ *   outputRuleset: (context: EvalContext, output: CSSOutput, rules: Node[]) => void
+ * }} NestableAtRuleThis
+ */
 
 const NestableAtRulePrototype = {
 
@@ -11,52 +43,64 @@ const NestableAtRulePrototype = {
         return true;
     },
 
+    /** @param {TreeVisitor} visitor */
     accept(visitor) {
-        if (this.features) {
-            this.features = visitor.visit(this.features);
+        /** @type {NestableAtRuleThis} */
+        const self = /** @type {NestableAtRuleThis} */ (/** @type {unknown} */ (this));
+        if (self.features) {
+            self.features = /** @type {Value} */ (visitor.visit(self.features));
         }
-        if (this.rules) {
-            this.rules = visitor.visitArray(this.rules);
+        if (self.rules) {
+            self.rules = /** @type {Ruleset[]} */ (visitor.visitArray(self.rules));
         }
     },
 
     evalFunction: function () {
-        if (!this.features || !Array.isArray(this.features.value) || this.features.value.length < 1) {
+        /** @type {NestableAtRuleThis} */
+        const self = /** @type {NestableAtRuleThis} */ (/** @type {unknown} */ (this));
+        if (!self.features || !Array.isArray(self.features.value) || self.features.value.length < 1) {
             return;
         }
 
-        const exprValues = this.features.value;
-        let expr, paren;
+        const exprValues = /** @type {Node[]} */ (self.features.value);
+        /** @type {Node | undefined} */
+        let expr;
+        /** @type {Node | undefined} */
+        let paren;
 
         for (let index = 0; index < exprValues.length; ++index) {
             expr = exprValues[index];
 
             if ((expr.type === 'Keyword' || expr.type === 'Variable')
                 && index + 1 < exprValues.length
-                && (expr.noSpacing || expr.noSpacing == null)) {
+                && (/** @type {Node & { noSpacing?: boolean }} */ (expr).noSpacing || /** @type {Node & { noSpacing?: boolean }} */ (expr).noSpacing == null)) {
                 paren =  exprValues[index + 1];
-                
-                if (paren.type ===  'Paren' && paren.noSpacing) {
+
+                if (paren.type ===  'Paren' && /** @type {Node & { noSpacing?: boolean }} */ (paren).noSpacing) {
                     exprValues[index]= new Expression([expr, paren]);
                     exprValues.splice(index + 1, 1);
-                    exprValues[index].noSpacing = true;
+                    /** @type {Node & { noSpacing?: boolean }} */ (exprValues[index]).noSpacing = true;
                 }
             }
         }
     },
 
+    /** @param {EvalContext} context */
     evalTop(context) {
-        this.evalFunction();
+        /** @type {NestableAtRuleThis} */
+        const self = /** @type {NestableAtRuleThis} */ (/** @type {unknown} */ (this));
+        self.evalFunction();
 
-        let result = this;
+        /** @type {Node | Ruleset} */
+        let result = self;
 
         // Render all dependent Media blocks.
         if (context.mediaBlocks.length > 1) {
-            const selectors = (new Selector([], null, null, this.getIndex(), this.fileInfo())).createEmptySelectors();
+            const selectors = (new Selector([], null, null, self.getIndex(), self.fileInfo())).createEmptySelectors();
             result = new Ruleset(selectors, context.mediaBlocks);
-            result.multiMedia = true;
-            result.copyVisibilityInfo(this.visibilityInfo());
-            this.setParent(result, this);
+            /** @type {Ruleset & { multiMedia?: boolean }} */ (result).multiMedia = true;
+            result.copyVisibilityInfo(self.visibilityInfo());
+            self.setParent(result, self);
         }
 
         delete context.mediaBlocks;
@@ -65,26 +109,30 @@ const NestableAtRulePrototype = {
         return result;
     },
 
+    /** @param {EvalContext} context */
     evalNested(context) {
-        this.evalFunction();
+        /** @type {NestableAtRuleThis} */
+        const self = /** @type {NestableAtRuleThis} */ (/** @type {unknown} */ (this));
+        self.evalFunction();
 
         let i;
+        /** @type {Node | Node[]} */
         let value;
-        const path = context.mediaPath.concat([this]);
+        const path = context.mediaPath.concat([self]);
 
         // Extract the media-query conditions separated with `,` (OR).
         for (i = 0; i < path.length; i++) {
-            if (path[i].type !== this.type) {
-                const blockIndex = context.mediaBlocks.indexOf(this);
+            if (path[i].type !== self.type) {
+                const blockIndex = context.mediaBlocks.indexOf(self);
                 if (blockIndex > -1) {
                     context.mediaBlocks.splice(blockIndex, 1);
                 }
-                return this;
+                return self;
             }
-            
-            value = path[i].features instanceof Value ?
-                path[i].features.value : path[i].features;
-            path[i] = Array.isArray(value) ? value : [value];
+
+            value = /** @type {NestableAtRuleThis} */ (path[i]).features instanceof Value ?
+                /** @type {Node[]} */ (/** @type {NestableAtRuleThis} */ (path[i]).features.value) : /** @type {NestableAtRuleThis} */ (path[i]).features;
+            path[i] = /** @type {Node} */ (/** @type {unknown} */ (Array.isArray(value) ? value : [value]));
         }
 
         // Trace all permutations to generate the resulting media-query.
@@ -94,27 +142,36 @@ const NestableAtRulePrototype = {
         //    a and e
         //    b and c and d
         //    b and c and e
-        this.features = new Value(this.permute(path).map(path => {
-            path = path.map(fragment => fragment.toCSS ? fragment : new Anonymous(fragment));
+        self.features = new Value(self.permute(/** @type {Node[][]} */ (/** @type {unknown} */ (path))).map(
+            /** @param {Node | Node[]} path */
+            path => {
+            path = /** @type {Node[]} */ (path).map(
+                /** @param {Node & { toCSS?: Function }} fragment */
+                fragment => fragment.toCSS ? fragment : new Anonymous(/** @type {string} */ (/** @type {unknown} */ (fragment))));
 
-            for (i = path.length - 1; i > 0; i--) {
-                path.splice(i, 0, new Anonymous('and'));
+            for (i = /** @type {Node[]} */ (path).length - 1; i > 0; i--) {
+                /** @type {Node[]} */ (path).splice(i, 0, new Anonymous('and'));
             }
 
-            return new Expression(path);
+            return new Expression(/** @type {Node[]} */ (path));
         }));
-        this.setParent(this.features, this);
+        self.setParent(self.features, self);
 
         // Fake a tree-node that doesn't output anything.
         return new Ruleset([], []);
     },
 
+    /**
+     * @param {Node[][]} arr
+     * @returns {Node[][]}
+     */
     permute(arr) {
         if (arr.length === 0) {
             return [];
         } else if (arr.length === 1) {
-            return arr[0];
+            return /** @type {Node[][]} */ (/** @type {unknown} */ (arr[0]));
         } else {
+            /** @type {Node[][]} */
             const result = [];
             const rest = this.permute(arr.slice(1));
             for (let i = 0; i < rest.length; i++) {
@@ -126,12 +183,15 @@ const NestableAtRulePrototype = {
         }
     },
 
+    /** @param {Selector[] | undefined} selectors */
     bubbleSelectors(selectors) {
+        /** @type {NestableAtRuleThis} */
+        const self = /** @type {NestableAtRuleThis} */ (/** @type {unknown} */ (this));
         if (!selectors) {
             return;
         }
-        this.rules = [new Ruleset(utils.copyArray(selectors), [this.rules[0]])];
-        this.setParent(this.rules, this);
+        self.rules = [new Ruleset(utils.copyArray(selectors), [self.rules[0]])];
+        self.setParent(self.rules, self);
     }
 };
 

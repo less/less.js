@@ -1,3 +1,4 @@
+// @ts-check
 import Node from './node.js';
 import Color from './color.js';
 import AtRule from './atrule.js';
@@ -45,8 +46,8 @@ export default {
     Ruleset, Element, Attribute, Combinator, Selector,
     Quoted, Expression, Declaration, Call, URL, Import,
     Comment, Anonymous, Value, JavaScript, Assignment,
-    Condition, Paren, Media, Container, QueryInParens, 
-    UnicodeDescriptor, Negative, Extend, VariableCall, 
+    Condition, Paren, Media, Container, QueryInParens,
+    UnicodeDescriptor, Negative, Extend, VariableCall,
     NamespaceValue,
     mixin: {
         Call: MixinCall,

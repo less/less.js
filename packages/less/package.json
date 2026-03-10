@@ -72,7 +72,7 @@
 		"@rollup/plugin-commonjs": "^17.0.0",
 		"@rollup/plugin-json": "^4.1.0",
 		"@rollup/plugin-node-resolve": "^11.0.0",
-		"@types/node": "~25.4.0",
+		"@types/node": "^18",
 		"@typescript-eslint/eslint-plugin": "^4.28.0",
 		"@typescript-eslint/parser": "^4.28.0",
 		"benny": "^3.6.12",

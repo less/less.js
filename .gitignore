@@ -20,3 +20,6 @@ coverage
 
 # Build output
 dist
+
+# Claude Code
+.claude/

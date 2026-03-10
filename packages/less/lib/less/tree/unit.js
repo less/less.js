@@ -1,15 +1,26 @@
+// @ts-check
 import Node from './node.js';
 import unitConversions from '../data/unit-conversions.js';
 import * as utils from '../utils.js';
 
+/** @import { EvalContext, CSSOutput } from './node.js' */
+
 class Unit extends Node {
     get type() { return 'Unit'; }
 
+    /**
+     * @param {string[]} [numerator]
+     * @param {string[]} [denominator]
+     * @param {string} [backupUnit]
+     */
     constructor(numerator, denominator, backupUnit) {
         super();
+        /** @type {string[]} */
         this.numerator = numerator ? utils.copyArray(numerator).sort() : [];
+        /** @type {string[]} */
         this.denominator = denominator ? utils.copyArray(denominator).sort() : [];
         if (backupUnit) {
+            /** @type {string | undefined} */
             this.backupUnit = backupUnit;
         } else if (numerator && numerator.length) {
             this.backupUnit = numerator[0];
@@ -20,6 +31,10 @@ class Unit extends Node {
         return new Unit(utils.copyArray(this.numerator), utils.copyArray(this.denominator), this.backupUnit);
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         // Dimension checks the unit is singular and throws an error if in strict math mode.
         const strictUnits = context && context.strictUnits;
@@ -40,16 +55,21 @@ class Unit extends Node {
         return returnStr;
     }
 
+    /**
+     * @param {Unit} other
+     * @returns {0 | undefined}
+     */
     compare(other) {
         return this.is(other.toString()) ? 0 : undefined;
     }
 
+    /** @param {string} unitString */
     is(unitString) {
         return this.toString().toUpperCase() === unitString.toUpperCase();
     }
 
     isLength() {
-        return RegExp('^(px|em|ex|ch|rem|in|cm|mm|pc|pt|ex|vw|vh|vmin|vmax)$', 'gi').test(this.toCSS());
+        return RegExp('^(px|em|ex|ch|rem|in|cm|mm|pc|pt|ex|vw|vh|vmin|vmax)$', 'gi').test(this.toCSS(/** @type {import('./node.js').EvalContext} */ ({})));
     }
 
     isEmpty() {
@@ -60,6 +80,7 @@ class Unit extends Node {
         return this.numerator.length <= 1 && this.denominator.length === 0;
     }
 
+    /** @param {(atomicUnit: string, denominator: boolean) => string} callback */
     map(callback) {
         let i;
 
@@ -72,10 +93,15 @@ class Unit extends Node {
         }
     }
 
+    /** @returns {{ [groupName: string]: string }} */
     usedUnits() {
+        /** @type {{ [unitName: string]: number }} */
         let group;
+        /** @type {{ [groupName: string]: string }} */
         const result = {};
+        /** @type {(atomicUnit: string) => string} */
         let mapUnit;
+        /** @type {string} */
         let groupName;
 
         mapUnit = function (atomicUnit) {
@@ -90,7 +116,7 @@ class Unit extends Node {
         for (groupName in unitConversions) {
             // eslint-disable-next-line no-prototype-builtins
             if (unitConversions.hasOwnProperty(groupName)) {
-                group = unitConversions[groupName];
+                group = /** @type {{ [unitName: string]: number }} */ (unitConversions[/** @type {keyof typeof unitConversions} */ (groupName)]);
 
                 this.map(mapUnit);
             }
@@ -100,7 +126,9 @@ class Unit extends Node {
     }
 
     cancel() {
+        /** @type {{ [unit: string]: number }} */
         const counter = {};
+        /** @type {string} */
         let atomicUnit;
         let i;
 

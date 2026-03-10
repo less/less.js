@@ -1,5 +1,8 @@
+// @ts-check
 import Node from './node.js';
 import colors from '../data/colors.js';
+
+/** @import { EvalContext, CSSOutput } from './node.js' */
 
 //
 // RGB Colors - #ff0014, #eee
@@ -7,6 +10,11 @@ import colors from '../data/colors.js';
 class Color extends Node {
     get type() { return 'Color'; }
 
+    /**
+     * @param {number[] | string} rgb
+     * @param {number} [a]
+     * @param {string} [originalForm]
+     */
     constructor(rgb, a, originalForm) {
         super();
         const self = this;
@@ -17,10 +25,12 @@ class Color extends Node {
         // This facilitates operations and conversions.
         //
         if (Array.isArray(rgb)) {
+            /** @type {number[]} */
             this.rgb = rgb;
         } else if (rgb.length >= 6) {
+            /** @type {number[]} */
             this.rgb = [];
-            rgb.match(/.{2}/g).map(function (c, i) {
+            /** @type {RegExpMatchArray} */ (rgb.match(/.{2}/g)).map(function (c, i) {
                 if (i < 3) {
                     self.rgb.push(parseInt(c, 16));
                 } else {
@@ -28,6 +38,7 @@ class Color extends Node {
                 }
             });
         } else {
+            /** @type {number[]} */
             this.rgb = [];
             rgb.split('').map(function (c, i) {
                 if (i < 3) {
@@ -37,6 +48,7 @@ class Color extends Node {
                 }
             });
         }
+        /** @type {number} */
         if (typeof this.alpha === 'undefined') {
             this.alpha = (typeof a === 'number') ? a : 1;
         }
@@ -55,15 +67,26 @@ class Color extends Node {
         return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         output.add(this.toCSS(context));
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {boolean} [doNotCompress]
+     * @returns {string}
+     */
     toCSS(context, doNotCompress) {
         const compress = context && context.compress && !doNotCompress;
         let color;
         let alpha;
+        /** @type {string | undefined} */
         let colorFunction;
+        /** @type {(string | number)[]} */
         let args = [];
 
         // `value` is set if this color was originally
@@ -72,18 +95,18 @@ class Color extends Node {
         alpha = this.fround(context, this.alpha);
 
         if (this.value) {
-            if (this.value.indexOf('rgb') === 0) {
+            if (/** @type {string} */ (this.value).indexOf('rgb') === 0) {
                 if (alpha < 1) {
                     colorFunction = 'rgba';
                 }
-            } else if (this.value.indexOf('hsl') === 0) {
+            } else if (/** @type {string} */ (this.value).indexOf('hsl') === 0) {
                 if (alpha < 1) {
                     colorFunction = 'hsla';
                 } else {
                     colorFunction = 'hsl';
                 }
             } else {
-                return this.value;
+                return /** @type {string} */ (this.value);
             }
         } else {
             if (alpha < 1) {
@@ -134,6 +157,11 @@ class Color extends Node {
     // our result, in the form of an integer triplet,
     // we create a new Color node to hold the result.
     //
+    /**
+     * @param {EvalContext} context
+     * @param {string} op
+     * @param {Color} other
+     */
     operate(context, op, other) {
         const rgb = new Array(3);
         const alpha = this.alpha * (1 - other.alpha) + other.alpha;
@@ -151,6 +179,7 @@ class Color extends Node {
         const r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
 
         const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        /** @type {number} */
         let h;
         let s;
         const l = (max + min) / 2;
@@ -166,9 +195,9 @@ class Color extends Node {
                 case g: h = (b - r) / d + 2;               break;
                 case b: h = (r - g) / d + 4;               break;
             }
-            h /= 6;
+            /** @type {number} */ (h) /= 6;
         }
-        return { h: h * 360, s, l, a };
+        return { h: /** @type {number} */ (h) * 360, s, l, a };
     }
 
     // Adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
@@ -176,6 +205,7 @@ class Color extends Node {
         const r = this.rgb[0] / 255, g = this.rgb[1] / 255, b = this.rgb[2] / 255, a = this.alpha;
 
         const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        /** @type {number} */
         let h;
         let s;
         const v = max;
@@ -195,15 +225,19 @@ class Color extends Node {
                 case g: h = (b - r) / d + 2; break;
                 case b: h = (r - g) / d + 4; break;
             }
-            h /= 6;
+            /** @type {number} */ (h) /= 6;
         }
-        return { h: h * 360, s, v, a };
+        return { h: /** @type {number} */ (h) * 360, s, v, a };
     }
 
     toARGB() {
         return toHex([this.alpha * 255].concat(this.rgb));
     }
 
+    /**
+     * @param {Node & { rgb?: number[], alpha?: number }} x
+     * @returns {0 | undefined}
+     */
     compare(x) {
         return (x.rgb &&
             x.rgb[0] === this.rgb[0] &&
@@ -212,12 +246,14 @@ class Color extends Node {
             x.alpha  === this.alpha) ? 0 : undefined;
     }
 
+    /** @param {string} keyword */
     static fromKeyword(keyword) {
+        /** @type {Color | undefined} */
         let c;
         const key = keyword.toLowerCase();
         // eslint-disable-next-line no-prototype-builtins
         if (colors.hasOwnProperty(key)) {
-            c = new Color(colors[key].slice(1));
+            c = new Color(/** @type {string} */ (colors[/** @type {keyof typeof colors} */ (key)]).slice(1));
         }
         else if (key === 'transparent') {
             c = new Color([0, 0, 0], 0);
@@ -230,10 +266,15 @@ class Color extends Node {
     }
 }
 
+/**
+ * @param {number} v
+ * @param {number} max
+ */
 function clamp(v, max) {
     return Math.min(Math.max(v, 0), max);
 }
 
+/** @param {number[]} v */
 function toHex(v) {
     return `#${v.map(function (c) {
         c = clamp(Math.round(c), 255);

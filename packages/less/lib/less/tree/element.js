@@ -1,3 +1,5 @@
+// @ts-check
+/** @import { EvalContext, CSSOutput, TreeVisitor, FileInfo, VisibilityInfo } from './node.js' */
 import Node from './node.js';
 import Paren from './paren.js';
 import Combinator from './combinator.js';
@@ -5,6 +7,14 @@ import Combinator from './combinator.js';
 class Element extends Node {
     get type() { return 'Element'; }
 
+    /**
+     * @param {Combinator | string} combinator
+     * @param {string | Node} value
+     * @param {boolean} [isVariable]
+     * @param {number} [index]
+     * @param {FileInfo} [currentFileInfo]
+     * @param {VisibilityInfo} [visibilityInfo]
+     */
     constructor(combinator, value, isVariable, index, currentFileInfo, visibilityInfo) {
         super();
         this.combinator = combinator instanceof Combinator ?
@@ -17,6 +27,7 @@ class Element extends Node {
         } else {
             this.value = '';
         }
+        /** @type {boolean | undefined} */
         this.isVariable = isVariable;
         this._index = index;
         this._fileInfo = currentFileInfo;
@@ -24,17 +35,19 @@ class Element extends Node {
         this.setParent(this.combinator, this);
     }
 
+    /** @param {TreeVisitor} visitor */
     accept(visitor) {
         const value = this.value;
-        this.combinator = visitor.visit(this.combinator);
+        this.combinator = /** @type {Combinator} */ (visitor.visit(this.combinator));
         if (typeof value === 'object') {
-            this.value = visitor.visit(value);
+            this.value = visitor.visit(/** @type {Node} */ (value));
         }
     }
 
+    /** @param {EvalContext} context */
     eval(context) {
         return new Element(this.combinator,
-            this.value.eval ? this.value.eval(context) : this.value,
+            /** @type {Node} */ (this.value).eval ? /** @type {Node} */ (this.value).eval(context) : /** @type {string} */ (this.value),
             this.isVariable,
             this.getIndex(),
             this.fileInfo(), this.visibilityInfo());
@@ -42,31 +55,37 @@ class Element extends Node {
 
     clone() {
         return new Element(this.combinator,
-            this.value,
+            /** @type {string | Node} */ (this.value),
             this.isVariable,
             this.getIndex(),
             this.fileInfo(), this.visibilityInfo());
     }
 
+    /**
+     * @param {EvalContext} context
+     * @param {CSSOutput} output
+     */
     genCSS(context, output) {
         output.add(this.toCSS(context), this.fileInfo(), this.getIndex());
     }
 
+    /** @param {EvalContext} [context] */
     toCSS(context) {
-        context = context || {};
+        /** @type {EvalContext & { firstSelector?: boolean }} */
+        const ctx = context || {};
         let value = this.value;
-        const firstSelector = context.firstSelector;
+        const firstSelector = ctx.firstSelector;
         if (value instanceof Paren) {
             // selector in parens should not be affected by outer selector
             // flags (breaks only interpolated selectors - see #1973)
-            context.firstSelector = true;
+            ctx.firstSelector = true;
         }
-        value = value.toCSS ? value.toCSS(context) : value;
-        context.firstSelector = firstSelector;
+        value = /** @type {Node} */ (value).toCSS ? /** @type {Node} */ (value).toCSS(ctx) : /** @type {string} */ (value);
+        ctx.firstSelector = firstSelector;
         if (value === '' && this.combinator.value.charAt(0) === '&') {
             return '';
         } else {
-            return this.combinator.toCSS(context) + value;
+            return this.combinator.toCSS(ctx) + value;
         }
     }
 }

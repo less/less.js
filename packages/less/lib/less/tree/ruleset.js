@@ -928,7 +928,6 @@ class Ruleset extends Node {
                         if (hasSubSelectors) {
                             // Process each sub-selector individually
                             /** @type {(Element | Selector)[]} */
-                            /** @type {(Element | Selector)[]} */
                             const resolvedElements = [];
                             for (const subEl of nestedSelector.elements) {
                                 if (subEl instanceof Selector) {

@@ -7,19 +7,18 @@ on:
       - alpha
     paths-ignore:
       - '**.md'
-      - '.github/**'
       - 'docs/**'
 
 permissions:
   id-token: write  # Required for OIDC trusted publishing
-  contents: read
+  contents: write  # Required for creating releases and pushing tags
 
 jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    # Only run on push events, not pull requests
-    if: github.event_name == 'push'
+    # Only run on the upstream repo, not forks
+    if: github.repository == 'less/less.js'
     
     steps:
       - name: Checkout code
@@ -145,50 +144,54 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release (Master)
-        if: steps.branch-info.outputs.is_alpha != 'true'
-        uses: actions/create-release@v1
+      - name: Create GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.publish.outputs.tag }}
-          release_name: Release ${{ steps.publish.outputs.tag }}
-          body: |
-            ## Changes
-            
-            See [CHANGELOG.md](https://github.com/less/less.js/blob/master/CHANGELOG.md) for details.
-            
-            ## Installation
-            
-            ```bash
-            npm install less@${{ steps.publish.outputs.version }}
-            ```
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.publish.outputs.tag }}"
+          VERSION="${{ steps.publish.outputs.version }}"
+          IS_ALPHA="${{ steps.branch-info.outputs.is_alpha }}"
 
-      - name: Create GitHub Pre-Release (Alpha)
-        if: steps.branch-info.outputs.is_alpha == 'true'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.publish.outputs.tag }}
-          release_name: Alpha Release ${{ steps.publish.outputs.tag }}
-          body: |
-            ## Alpha Release
-            
-            This is an alpha release from the alpha branch.
-            
-            ## Installation
-            
-            ```bash
-            npm install less@${{ steps.publish.outputs.version }} --tag alpha
-            ```
-            
-            Or:
-            
-            ```bash
-            npm install less@alpha
-            ```
-          draft: false
-          prerelease: true
+          if [ "$IS_ALPHA" = "true" ]; then
+            TITLE="Alpha Release $TAG"
+            PRERELEASE="--prerelease"
+            BODY="## Alpha Release
+
+          This is an alpha release from the alpha branch.
+
+          ## Installation
+
+          \`\`\`bash
+          npm install less@${VERSION} --tag alpha
+          \`\`\`
+
+          Or:
+
+          \`\`\`bash
+          npm install less@alpha
+          \`\`\`"
+          else
+            TITLE="Release $TAG"
+            PRERELEASE=""
+            BODY="## Changes
+
+          See [CHANGELOG.md](https://github.com/less/less.js/blob/master/CHANGELOG.md) for details.
+
+          ## Installation
+
+          \`\`\`bash
+          npm install less@${VERSION}
+          \`\`\`"
+          fi
+
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists, uploading assets to existing release"
+            gh release upload "$TAG" packages/less/dist/less.js packages/less/dist/less.min.js --clobber
+          else
+            gh release create "$TAG" \
+              --title "$TITLE" \
+              $PRERELEASE \
+              --notes "$BODY" \
+              packages/less/dist/less.js \
+              packages/less/dist/less.min.js
+          fi

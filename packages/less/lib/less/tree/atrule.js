@@ -20,7 +20,7 @@ class AtRule extends Node {
     ) {
         super();
         let i;
-        var selectors = (new Selector([], null, null, this._index, this._fileInfo)).createEmptySelectors();
+        var selectors = (new Selector([], null, null, index, currentFileInfo)).createEmptySelectors();
 
         this.name  = name;
         this.value = (value instanceof Node) ? value : (value ? new Anonymous(value) : value);

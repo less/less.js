@@ -6,7 +6,7 @@ import less from '../lib/less-node/index.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let file = path.join(__dirname, 'benchmark.less');
 
-if (process.argv[2]) { file = path.join(process.cwd(), process.argv[2]); }
+if (process.argv[2]) { file = path.resolve(process.argv[2]); }
 
 fs.readFile(file, 'utf8', function (e, data) {
     console.log('Benchmarking...\n', path.basename(file) + ' (' +

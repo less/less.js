@@ -10,6 +10,7 @@
 		"prepare": "husky",
 		"changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
 		"test": "cd packages/less && npm test",
+		"test:node": "cd packages/less && npm run test:node",
 		"postinstall": "npx only-allow pnpm"
 	},
 	"author": "Alexis Sellier <self@cloudhead.net>",

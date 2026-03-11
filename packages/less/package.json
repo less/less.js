@@ -26,13 +26,18 @@
 	"bin": {
 		"lessc": "./bin/lessc"
 	},
-	"main": "./lib/less-node/index.js",
+	"main": "./dist/less-node.cjs",
 	"exports": {
 		".": {
+			"browser": "./dist/less.js",
 			"import": "./lib/less-node/index.js",
-			"require": "./index.cjs"
+			"require": "./dist/less-node.cjs",
+			"default": "./lib/less-node/index.js"
 		},
-		"./lib/*": "./lib/*"
+		"./lib/*": "./lib/*",
+		"./dist/less-node.cjs": "./dist/less-node.cjs",
+		"./dist/less.js": "./dist/less.js",
+		"./dist/less.min.js": "./dist/less.min.js"
 	},
 	"directories": {
 		"test": "./test"
@@ -42,7 +47,6 @@
 		"lib",
 		"!lib/**/*.map",
 		"dist",
-		"index.js",
 		"index.cjs",
 		"README.md"
 	],
@@ -53,13 +57,14 @@
 	"scripts": {
 		"quicktest": "grunt quicktest",
 		"test": "grunt test",
+		"test:node": "grunt test:node",
 		"test:coverage": "c8 -r lcov -r json-summary -r text-summary -r html --include=\"lib/**/*.js\" --include=\"bin/**/*.js\" --exclude=\"dist/**\" --exclude=\"**/*.test.js\" --exclude=\"**/*.spec.js\" --exclude=\"test/**\" --exclude=\"tmp/**\" --exclude=\"**/abstract-file-manager.js\" --exclude=\"**/abstract-plugin-loader.js\" grunt shell:test && node scripts/coverage-report.js && node scripts/coverage-lines.js",
 		"grunt": "grunt",
 		"lint": "eslint '**/*.{ts,js}'",
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"typecheck": "tsc --noEmit",
 		"build": "node build/rollup.js --dist",
-		"prepublishOnly": "npm run typecheck && grunt dist"
+		"prepublishOnly": "npm run typecheck && grunt dist && grunt test:node"
 	},
 	"optionalDependencies": {
 		"errno": "^0.1.1",
@@ -119,7 +124,11 @@
 		"shx": "^0.3.2",
 		"time-grunt": "^1.3.0",
 		"typescript": "^5.7.0",
-		"uikit": "2.27.4"
+		"uikit": "2.27.4",
+		"url": "^0.11.4",
+		"path-browserify": "^1.0.1",
+		"webpack": "^5.64.6",
+		"webpack-cli": "^5.1.4"
 	},
 	"keywords": [
 		"compile less",

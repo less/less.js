@@ -41,8 +41,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests
-        run: pnpm run test
+      - name: Run node tests (CJS build)
+        run: pnpm run test:node
 
       - name: Build
         run: |

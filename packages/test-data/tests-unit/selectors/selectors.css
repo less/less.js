@@ -197,3 +197,12 @@ a:is(.b, :is(.c)) {
 a:is(.b, :is(.c), :has(div)) {
   color: red;
 }
+:is(:not(:has(>.foo)), :has(>.foo.bar)) {
+  overflow: clip;
+}
+:matches(:not(:has(>.foo)), :has(>.foo.bar)) {
+  overflow: clip;
+}
+:is(:has(>.foo + .bar), :has(>.baz ~ .qux), :not(:has(.quux))) {
+  color: blue;
+}

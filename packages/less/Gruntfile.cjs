@@ -376,7 +376,7 @@ module.exports = function(grunt) {
     // Run all tests
     grunt.registerTask('test', testTasks);
 
-    // Node tests only (uses CJS build) — for prepublish, CI
+    // Node tests only (ESM + CJS) — for prepublish, CI
     grunt.registerTask('test:node', nodeTestTasks);
 
     // Run shell option tests (includes deprecated options)

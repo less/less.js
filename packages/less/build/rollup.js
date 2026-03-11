@@ -41,7 +41,7 @@ function inlinePackageVersion() {
     return {
         name: 'inline-package-version',
         transform(code, id) {
-            if (id.includes('less-node/index.js')) {
+            if (id.replace(/\\/g, '/').includes('less-node/index.js')) {
                 return {
                     code: code.replace(
                         /const\s*\{\s*version\s*\}\s*=\s*require\s*\(\s*['"]\.\.\/\.\.\/package\.json['"]\s*\)/,

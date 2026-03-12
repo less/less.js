@@ -2426,8 +2426,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     const result = this.parenthesisCondition(needsParens);
                     if (result) {
                         result.negate = !result.negate;
+                        return result;
                     }
-                    return result;
+
+                    // Allow simple bare values (keyword/variable) without parens,
+                    // e.g., `not false` or `not @var`.
+                    // Complex conditions (comparisons, function calls) require parentheses.
+                    const entities = this.entities;
+                    const index = parserInput.i;
+                    const a = entities.keyword() || entities.variable() || entities.quoted() || entities.mixinLookup();
+                    if (a) {
+                        return new(tree.Condition)('=', a, new(tree.Keyword)('true'), index + currentIndex, true);
+                    }
                 }
             },
             parenthesisCondition: function (needsParens) {

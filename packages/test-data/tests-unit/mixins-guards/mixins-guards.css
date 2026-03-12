@@ -209,3 +209,9 @@
   no-parenthesis: evaluated true 4;
   with-parenthesis: evaluated true;
 }
+.test-not-noparens1 {
+  content: "not without parens true.";
+}
+.test-not-noparens2 {
+  content: "not without parens false.";
+}

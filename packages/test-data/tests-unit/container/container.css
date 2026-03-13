@@ -273,3 +273,21 @@
     font-size: 75%;
   }
 }
+.mixin-container-test {
+  color: red;
+}
+@container name (width < 125px) {
+  .mixin-container-test {
+    display: none;
+  }
+}
+@container sidebar (width < 500px) {
+  .sidebar-test {
+    display: none;
+  }
+}
+@container header (width < 800px) {
+  .header-test {
+    display: none;
+  }
+}

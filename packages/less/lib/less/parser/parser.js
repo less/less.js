@@ -1891,6 +1891,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             spacing = true;
                         }
                     } else if (parserInput.$char('(')) {
+                        let closed = false;
                         p = this.property();
                         parserInput.save();
                         if (!p && syntaxOptions.queryInParens && parserInput.$re(/^[0-9a-z-]*\s*([<>]=|<=|>=|[<>]|=)/)) {
@@ -1904,9 +1905,20 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             }
                         } else {
                             parserInput.restore();
+                            parserInput.save();
                             e = this.value();
+                            if (e && parserInput.$char(')')) {
+                                closed = true;
+                                parserInput.forget();
+                            } else {
+                                parserInput.restore();
+                                e = this.mediaFeature(syntaxOptions);
+                            }
                         }
-                        if (parserInput.$char(')')) {
+                        if (!closed && parserInput.$char(')')) {
+                            closed = true;
+                        }
+                        if (closed) {
                             if (p && !e) {
                                 nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index)));
                                 e = p;

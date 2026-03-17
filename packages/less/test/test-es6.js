@@ -1,5 +1,6 @@
 // https://github.com/less/less.js/issues/3533
-console.log('Testing ES6 imports...')
+// Replicates: "import less from 'less'" — ESM import
+console.log("Testing: import less from 'less'...");
 
 import less from 'less';
 

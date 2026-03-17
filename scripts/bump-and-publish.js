@@ -6,9 +6,14 @@
  * This script:
  * 1. Determines the next version (patch increment or explicit)
  * 2. Updates all package.json files to the same version
- * 3. Creates a git tag
- * 4. Commits version changes
+ * 3. Commits the version bump and pushes it to the branch
+ * 4. Creates and pushes a git tag
  * 5. Publishes all packages to NPM
+ * 
+ * PREREQUISITE: The master branch must allow github-actions[bot] to push
+ * directly (branch protection → "Allow specified actors to bypass required
+ * pull requests" → add github-actions[bot]).  Without that bypass, the branch
+ * push in step 3 will fail and npm publish will be blocked.
  */
 
 const fs = require('fs');
@@ -278,11 +283,31 @@ function main() {
   console.log(`📦 Found ${publishable.length} publishable packages:`);
   publishable.forEach(pkg => console.log(`   - ${pkg.name}`));
   
-  // Create tag at the current HEAD (the actual code commit that triggered the
-  // workflow). We intentionally do NOT create a "chore: bump version" commit
-  // because the master branch has protection rules that prevent the GitHub
-  // Actions bot from pushing directly to it. Pushing a tag (refs/tags/*) is
-  // not subject to those branch-protection "require pull request" rules.
+  // Stage changes
+  console.log(`📌 Staging version changes...`);
+  if (!dryRun) {
+    execSync('git add package.json packages/*/package.json', { cwd: ROOT_DIR, stdio: 'inherit' });
+  } else {
+    console.log(`   [DRY RUN] Would stage: package.json packages/*/package.json`);
+  }
+  
+  // Commit
+  console.log(`💾 Committing version bump...`);
+  if (!dryRun) {
+    try {
+      execSync(`git commit -m "chore: bump version to ${nextVersion}"`, { 
+        cwd: ROOT_DIR, 
+        stdio: 'inherit' 
+      });
+    } catch (e) {
+      // Commit might fail if nothing changed, that's okay
+      console.log(`⚠️  Commit skipped (no changes or already committed)`);
+    }
+  } else {
+    console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
+  }
+  
+  // Create tag
   const tagName = `v${nextVersion}`;
   console.log(`🏷️  Creating git tag: ${tagName}...`);
   if (!dryRun) {
@@ -298,13 +323,18 @@ function main() {
     console.log(`   [DRY RUN] Would create tag: ${tagName}`);
   }
   
-  // Push the tag to GitHub BEFORE publishing to NPM.
-  // This ensures a GitHub tag/release always exists for every npm version.
-  // Tag pushes are not blocked by branch protection rules, unlike branch pushes.
-  console.log(`📤 Pushing tag ${tagName} to origin...`);
+  // Push the version-bump commit to the branch, then push the tag.
+  // Both pushes are fatal — if either fails, npm publish is blocked so that
+  // npm and GitHub never get out of sync.
+  // NOTE: The master branch must allow GitHub Actions to push directly
+  // (branch protection → "Allow specified actors to bypass required pull
+  // requests" → add github-actions[bot]).
+  console.log(`📤 Pushing to ${branch}...`);
   if (!dryRun) {
+    execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
     execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   } else {
+    console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
   }
   
@@ -427,7 +457,7 @@ function main() {
     publishErrors.forEach(({ name, error }) => {
       console.error(`   - ${name}: ${error}`);
     });
-    console.error(`\n⚠️  Note: Tag was pushed but some packages failed to publish. You may need to publish them manually.`);
+    console.error(`\n⚠️  Note: Version bump commit and tag were pushed successfully.`);
     console.error(`   Some packages failed to publish. You may need to publish them manually.`);
     process.exit(1);
   }

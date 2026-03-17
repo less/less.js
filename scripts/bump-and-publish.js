@@ -6,14 +6,17 @@
  * This script:
  * 1. Determines the next version (patch increment or explicit)
  * 2. Updates all package.json files to the same version
- * 3. Commits the version bump and pushes it to the branch
- * 4. Creates and pushes a git tag
- * 5. Publishes all packages to NPM
+ * 3. Creates and pushes an annotated git tag
+ * 4. Publishes all packages to NPM
  * 
- * PREREQUISITE: The master branch must allow github-actions[bot] to push
- * directly (branch protection → "Allow specified actors to bypass required
- * pull requests" → add github-actions[bot]).  Without that bypass, the branch
- * push in step 3 will fail and npm publish will be blocked.
+ * For master, the version-bump commit is NOT pushed here.  Instead it arrives
+ * via the "chore: release vX.Y.Z" pull request created by create-release-pr.yml.
+ * Merging that PR triggers this script, at which point package.json already has
+ * the target version.  Only the git tag is pushed — tag pushes are not subject
+ * to branch-protection "require pull request" rules.
+ * 
+ * For the alpha branch, the traditional commit + branch-push flow is preserved
+ * because alpha does not use the PR-based release flow.
  */
 
 const fs = require('fs');
@@ -323,18 +326,23 @@ function main() {
     console.log(`   [DRY RUN] Would create tag: ${tagName}`);
   }
   
-  // Push the version-bump commit to the branch, then push the tag.
-  // Both pushes are fatal — if either fails, npm publish is blocked so that
-  // npm and GitHub never get out of sync.
-  // NOTE: The master branch must allow GitHub Actions to push directly
-  // (branch protection → "Allow specified actors to bypass required pull
-  // requests" → add github-actions[bot]).
-  console.log(`📤 Pushing to ${branch}...`);
+  // For master the version-bump commit already lives in master (it came from
+  // the release PR).  Only push the git tag — tag pushes bypass branch
+  // protection "require pull request" rules.
+  // For alpha (direct-push branch) we still push the bump commit to the branch.
+  if (!isMaster) {
+    console.log(`📤 Pushing to ${branch}...`);
+    if (!dryRun) {
+      execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
+    } else {
+      console.log(`   [DRY RUN] Would push to: origin ${branch}`);
+    }
+  }
+
+  console.log(`📤 Pushing tag ${tagName}...`);
   if (!dryRun) {
-    execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
     execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   } else {
-    console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
   }
   

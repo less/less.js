@@ -278,31 +278,11 @@ function main() {
   console.log(`📦 Found ${publishable.length} publishable packages:`);
   publishable.forEach(pkg => console.log(`   - ${pkg.name}`));
   
-  // Stage changes
-  console.log(`📌 Staging version changes...`);
-  if (!dryRun) {
-    execSync('git add package.json packages/*/package.json', { cwd: ROOT_DIR, stdio: 'inherit' });
-  } else {
-    console.log(`   [DRY RUN] Would stage: package.json packages/*/package.json`);
-  }
-  
-  // Commit
-  console.log(`💾 Committing version bump...`);
-  if (!dryRun) {
-    try {
-      execSync(`git commit -m "chore: bump version to ${nextVersion}"`, { 
-        cwd: ROOT_DIR, 
-        stdio: 'inherit' 
-      });
-    } catch (e) {
-      // Commit might fail if nothing changed, that's okay
-      console.log(`⚠️  Commit skipped (no changes or already committed)`);
-    }
-  } else {
-    console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
-  }
-  
-  // Create tag
+  // Create tag at the current HEAD (the actual code commit that triggered the
+  // workflow). We intentionally do NOT create a "chore: bump version" commit
+  // because the master branch has protection rules that prevent the GitHub
+  // Actions bot from pushing directly to it. Pushing a tag (refs/tags/*) is
+  // not subject to those branch-protection "require pull request" rules.
   const tagName = `v${nextVersion}`;
   console.log(`🏷️  Creating git tag: ${tagName}...`);
   if (!dryRun) {
@@ -318,16 +298,13 @@ function main() {
     console.log(`   [DRY RUN] Would create tag: ${tagName}`);
   }
   
-  // Push commit and tag
-  // IMPORTANT: Push MUST succeed before publishing to NPM.
-  // If the push fails, we abort to prevent a state where NPM has the new
-  // version but GitHub has no matching tag or release.
-  console.log(`📤 Pushing to ${branch}...`);
+  // Push the tag to GitHub BEFORE publishing to NPM.
+  // This ensures a GitHub tag/release always exists for every npm version.
+  // Tag pushes are not blocked by branch protection rules, unlike branch pushes.
+  console.log(`📤 Pushing tag ${tagName} to origin...`);
   if (!dryRun) {
-    execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
     execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   } else {
-    console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
   }
   
@@ -450,7 +427,7 @@ function main() {
     publishErrors.forEach(({ name, error }) => {
       console.error(`   - ${name}: ${error}`);
     });
-    console.error(`\n⚠️  Note: Version bump and commit were successful.`);
+    console.error(`\n⚠️  Note: Tag was pushed but some packages failed to publish. You may need to publish them manually.`);
     console.error(`   Some packages failed to publish. You may need to publish them manually.`);
     process.exit(1);
   }

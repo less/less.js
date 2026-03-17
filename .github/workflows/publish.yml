@@ -19,13 +19,8 @@ jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    # Only run on the upstream repo, not forks.
-    # Also skip if the triggering commit is itself a version bump (prevents
-    # an infinite publish loop when the script pushes "chore: bump version to X"
-    # back to master and that push re-triggers this workflow).
-    if: |
-      github.repository == 'less/less.js' &&
-      !startsWith(github.event.head_commit.message, 'chore: bump version to')
+    # Only run on the upstream repo, not forks
+    if: github.repository == 'less/less.js'
     
     steps:
       - name: Checkout code

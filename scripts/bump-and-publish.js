@@ -6,9 +6,17 @@
  * This script:
  * 1. Determines the next version (patch increment or explicit)
  * 2. Updates all package.json files to the same version
- * 3. Creates a git tag
- * 4. Commits version changes
- * 5. Publishes all packages to NPM
+ * 3. Creates and pushes an annotated git tag
+ * 4. Publishes all packages to NPM
+ * 
+ * For master, the version-bump commit is NOT pushed here.  Instead it arrives
+ * via the "chore: release vX.Y.Z" pull request created by create-release-pr.yml.
+ * Merging that PR triggers this script, at which point package.json already has
+ * the target version.  Only the git tag is pushed — tag pushes are not subject
+ * to branch-protection "require pull request" rules.
+ * 
+ * For the alpha branch, the traditional commit + branch-push flow is preserved
+ * because alpha does not use the PR-based release flow.
  */
 
 const fs = require('fs');
@@ -318,17 +326,23 @@ function main() {
     console.log(`   [DRY RUN] Would create tag: ${tagName}`);
   }
   
-  // Push commit and tag
-  console.log(`📤 Pushing to ${branch}...`);
-  if (!dryRun) {
-    try {
+  // For master the version-bump commit already lives in master (it came from
+  // the release PR).  Only push the git tag — tag pushes bypass branch
+  // protection "require pull request" rules.
+  // For alpha (direct-push branch) we still push the bump commit to the branch.
+  if (!isMaster) {
+    console.log(`📤 Pushing to ${branch}...`);
+    if (!dryRun) {
       execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
-      execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
-    } catch (e) {
-      console.log(`⚠️  Push failed, but continuing with publish...`);
+    } else {
+      console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     }
+  }
+
+  console.log(`📤 Pushing tag ${tagName}...`);
+  if (!dryRun) {
+    execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   } else {
-    console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
   }
   
@@ -451,7 +465,7 @@ function main() {
     publishErrors.forEach(({ name, error }) => {
       console.error(`   - ${name}: ${error}`);
     });
-    console.error(`\n⚠️  Note: Version bump and commit were successful.`);
+    console.error(`\n⚠️  Note: Version bump commit and tag were pushed successfully.`);
     console.error(`   Some packages failed to publish. You may need to publish them manually.`);
     process.exit(1);
   }

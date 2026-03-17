@@ -1,15 +1,23 @@
 name: Publish to NPM
 
 on:
-  push:
+  # Master: publish when a "chore: release vX.Y.Z" pull request is merged.
+  # The release PR is created automatically by create-release-pr.yml.
+  pull_request:
+    types: [closed]
     branches:
       - master
+  # Alpha: publish on direct push to the alpha branch.
+  push:
+    branches:
       - alpha
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.gitignore'
       - '.claude/**'
+      - '.github/**'
+      - 'scripts/**'
 
 permissions:
   id-token: write  # Required for OIDC trusted publishing
@@ -19,15 +27,29 @@ jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    # Only run on the upstream repo, not forks
-    if: github.repository == 'less/less.js'
-    
+    # Master: only run when a release PR (title = "chore: release v*") is merged.
+    # Alpha:  only run on direct pushes; skip if it's a version-bump commit
+    #         (prevents the bump-and-publish script from triggering itself).
+    if: |
+      github.repository == 'less/less.js' &&
+      (
+        (github.event_name == 'pull_request' &&
+         github.event.pull_request.merged == true &&
+         startsWith(github.event.pull_request.title, 'chore: release v')) ||
+        (github.event_name == 'push' &&
+         github.ref_name == 'alpha' &&
+         !startsWith(github.event.head_commit.message, 'chore: bump version to'))
+      )
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          # For PR events check out the base branch (master) post-merge so the
+          # version bump from the release PR is already present.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -57,7 +79,13 @@ jobs:
       - name: Determine branch and tag type
         id: branch-info
         run: |
-          BRANCH="${{ github.ref_name }}"
+          # For PR events the branch is the PR's base (master); for push events
+          # it is the pushed branch (alpha).
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH="${{ github.event.pull_request.base.ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           if [ "$BRANCH" = "alpha" ]; then
             echo "is_alpha=true" >> $GITHUB_OUTPUT
@@ -137,7 +165,9 @@ jobs:
       - name: Bump version and publish
         id: publish
         env:
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+          # Use the branch name resolved by the branch-info step above rather
+          # than repeating the PR-vs-push detection logic here.
+          GITHUB_REF_NAME: ${{ steps.branch-info.outputs.branch }}
         run: |
           pnpm run publish
           

@@ -10,6 +10,8 @@ on:
       - 'docs/**'
       - '.gitignore'
       - '.claude/**'
+      - '.github/**'
+      - 'scripts/**'
 
 permissions:
   id-token: write  # Required for OIDC trusted publishing

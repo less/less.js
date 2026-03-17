@@ -319,14 +319,13 @@ function main() {
   }
   
   // Push commit and tag
+  // IMPORTANT: Push MUST succeed before publishing to NPM.
+  // If the push fails, we abort to prevent a state where NPM has the new
+  // version but GitHub has no matching tag or release.
   console.log(`📤 Pushing to ${branch}...`);
   if (!dryRun) {
-    try {
-      execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
-      execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
-    } catch (e) {
-      console.log(`⚠️  Push failed, but continuing with publish...`);
-    }
+    execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
+    execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   } else {
     console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);

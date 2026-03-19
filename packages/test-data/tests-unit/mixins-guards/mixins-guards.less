@@ -356,3 +356,14 @@
   .orderOfEvaluation(true, true, false);
 }
 
+// not without parentheses should work the same as not with parentheses
+.test-not-noparens (@a) when not @a {
+    content: "not without parens false.";
+}
+.test-not-noparens (@a) when (@a) {
+    content: "not without parens true.";
+}
+
+.test-not-noparens1 { .test-not-noparens(true) }
+.test-not-noparens2 { .test-not-noparens(false) }
+

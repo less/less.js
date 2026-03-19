@@ -1,0 +1,192 @@
+name: Create Release PR
+
+# When code lands on master or alpha (not a release PR merge itself),
+# automatically create or update a release pull request that bumps the
+# version.  Maintainers then merge that PR to trigger publishing.
+#
+#   master → "chore: release vX.Y.Z"        PR targets master
+#   alpha  → "chore: alpha release vX.Y.Z"  PR targets alpha
+on:
+  push:
+    branches:
+      - master
+      - alpha
+    # Only trigger for commits that touch package source files.
+    paths:
+      - 'packages/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    name: Create or Update Release PR
+    runs-on: ubuntu-latest
+    # Skip if this push is itself the merge of a release PR (prevents an
+    # infinite loop).  We catch both squash-merged and regular-merged commits
+    # for both the master and alpha release PR title conventions.
+    if: |
+      github.repository == 'less/less.js' &&
+      !contains(github.event.head_commit.message, 'chore: release v') &&
+      !contains(github.event.head_commit.message, 'chore: alpha release v') &&
+      !contains(github.event.head_commit.message, '/release-v') &&
+      !contains(github.event.head_commit.message, '/alpha-release-v')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Determine next version
+        id: version
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          CURRENT=$(node -p "require('./packages/less/package.json').version")
+
+          if [ "$BRANCH" = "alpha" ]; then
+            # Alpha: increment the alpha prerelease number.
+            # X.Y.Z-alpha.N → X.Y.Z-alpha.(N+1)
+            # If package.json doesn't carry an alpha version yet, bump the
+            # major and start a fresh alpha.1 series.
+            NEXT=$(node -e "
+              const cur = process.argv[1];
+              const m = cur.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
+              if (m) {
+                process.stdout.write(m[1] + '-alpha.' + (parseInt(m[2], 10) + 1));
+              } else {
+                const parts = cur.replace(/-.*/, '').split('.');
+                const nextMajor = parseInt(parts[0], 10) + 1;
+                process.stdout.write(nextMajor + '.0.0-alpha.1');
+              }
+            " "$CURRENT")
+            echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
+            echo "branch=chore/alpha-release-v$NEXT" >> "$GITHUB_OUTPUT"
+            echo "release_base=alpha" >> "$GITHUB_OUTPUT"
+          else
+            # Master: patch-increment from the latest npm published version.
+            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
+            NEXT=$(node -e "
+              const semver = require('semver');
+              const cur = process.argv[1];
+              const npm = process.argv[2] || null;
+              if (npm && semver.valid(cur) && semver.gt(cur, npm)) {
+                process.stdout.write(cur);
+              } else {
+                const base = npm || cur;
+                process.stdout.write(semver.inc(base, 'patch'));
+              }
+            " "$CURRENT" "$NPM_VERSION")
+            echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
+            echo "branch=chore/release-v$NEXT" >> "$GITHUB_OUTPUT"
+            echo "release_base=master" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create or update release branch and PR
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          RELEASE_BRANCH: ${{ steps.version.outputs.branch }}
+          RELEASE_BASE: ${{ steps.version.outputs.release_base }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "$RELEASE_BASE" = "alpha" ]; then
+            TITLE="chore: alpha release v${NEXT_VERSION}"
+          else
+            TITLE="chore: release v${NEXT_VERSION}"
+          fi
+
+          # Create or reset the release branch off the latest base branch so it
+          # always includes all recent commits.
+          if git ls-remote --exit-code origin "refs/heads/${RELEASE_BRANCH}" &>/dev/null; then
+            git fetch origin "${RELEASE_BRANCH}"
+            git checkout -B "${RELEASE_BRANCH}" "origin/${RELEASE_BASE}"
+          else
+            git checkout -b "${RELEASE_BRANCH}"
+          fi
+
+          # Bump version in all package.json files.
+          node -e "
+            const fs = require('fs');
+            const version = process.env.NEXT_VERSION;
+            const dirs = fs.readdirSync('packages', { withFileTypes: true })
+              .filter(d => d.isDirectory())
+              .map(d => 'packages/' + d.name + '/package.json');
+            for (const f of ['package.json', ...dirs].filter(f => fs.existsSync(f))) {
+              const pkg = JSON.parse(fs.readFileSync(f, 'utf8'));
+              if (!pkg.version) continue;
+              pkg.version = version;
+              fs.writeFileSync(f, JSON.stringify(pkg, null, '\t') + '\n');
+            }
+          "
+
+          git add package.json packages/*/package.json
+          COMMITTED=false
+          if git diff --cached --quiet; then
+            echo "No version changes; branch is already at v${NEXT_VERSION}"
+          else
+            git commit -m "${TITLE}"
+            COMMITTED=true
+          fi
+
+          # If no new commit was created the release branch has no commits
+          # ahead of master, so pushing it and trying to open a PR would fail
+          # with "no commits between head and base".  Instead, just report
+          # whether an existing release PR is open and exit cleanly.
+          if [ "$COMMITTED" = "false" ]; then
+            EXISTING=$(gh pr list --head "${RELEASE_BRANCH}" --base "${RELEASE_BASE}" \
+              --json number --jq '.[0].number' 2>/dev/null || echo "")
+            if [ -n "${EXISTING}" ]; then
+              echo "✅ No new changes; release PR #${EXISTING} already exists"
+            else
+              echo "✅ No version bump needed and no existing release PR; nothing to do"
+            fi
+            exit 0
+          fi
+
+          # --force-with-lease refuses to overwrite if the remote has advanced
+          # past what we fetched, which protects against concurrent workflow
+          # runs.  This is intentional: if two code PRs land simultaneously the
+          # second run will fail-fast here and the release branch stays coherent.
+          git push origin "${RELEASE_BRANCH}" --force-with-lease
+
+          # Open a PR if one doesn't already exist for this version.
+          EXISTING=$(gh pr list --head "${RELEASE_BRANCH}" --base "${RELEASE_BASE}" \
+            --json number --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -z "${EXISTING}" ]; then
+            BODY="## Release v${NEXT_VERSION}
+
+          This PR bumps the version to \`${NEXT_VERSION}\` and will trigger an npm publish when merged.
+
+          **Before merging:**
+          - [ ] Update CHANGELOG.md with changes for this release
+          - [ ] Verify all CI checks pass"
+
+            gh pr create \
+              --title "${TITLE}" \
+              --body "${BODY}" \
+              --base "${RELEASE_BASE}" \
+              --head "${RELEASE_BRANCH}"
+            echo "✅ Created release PR for v${NEXT_VERSION}"
+          else
+            echo "✅ Release PR #${EXISTING} already exists; branch updated to include latest ${RELEASE_BASE} commits"
+          fi

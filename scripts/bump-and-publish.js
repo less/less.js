@@ -6,9 +6,18 @@
  * This script:
  * 1. Determines the next version (patch increment or explicit)
  * 2. Updates all package.json files to the same version
- * 3. Creates a git tag
- * 4. Commits version changes
- * 5. Publishes all packages to NPM
+ * 3. Creates and pushes an annotated git tag
+ * 4. Publishes all packages to NPM
+ * 
+ * Both master and alpha now use a PR-based release flow:
+ *
+ *   master → "chore: release vX.Y.Z" PR        created by create-release-pr.yml
+ *   alpha  → "chore: alpha release vX.Y.Z" PR  created by create-release-pr.yml
+ *
+ * Merging the release PR lands the version-bump commit on the branch and
+ * triggers this script.  At that point package.json already carries the
+ * target version.  This script validates it, creates an annotated tag, pushes
+ * the tag, and publishes to npm.  No local commit or branch push is made here.
  */
 
 const fs = require('fs');
@@ -79,6 +88,16 @@ function getNpmVersion(packageName) {
     return execSync(`npm view ${packageName} version`, { encoding: 'utf8' }).trim();
   } catch (e) {
     // Package not yet published
+    return null;
+  }
+}
+
+// Get the current alpha dist-tag version from NPM
+function getNpmAlphaVersion(packageName) {
+  try {
+    const result = execSync(`npm view ${packageName} dist-tags.alpha`, { encoding: 'utf8' }).trim();
+    return result || null;
+  } catch (e) {
     return null;
   }
 }
@@ -164,143 +183,60 @@ function main() {
   console.log(`🚀 Starting publish process for branch: ${branch}`);
   
   // Get current version
-  let currentVersion = getCurrentVersion();
+  const currentVersion = getCurrentVersion();
   console.log(`📦 Current version: ${currentVersion}`);
-  
-  // Protection: If on alpha branch and version was overwritten by a merge from master
-  if (isAlpha && !currentVersion.includes('-alpha.')) {
-    console.log(`\n⚠️  WARNING: Alpha branch version (${currentVersion}) doesn't contain '-alpha.'`);
-    console.log(`   This likely happened due to merging master into alpha.`);
-    console.log(`   Attempting to restore alpha version...`);
-    
-    // Try to find the last alpha version from alpha branch history
-    let restoredVersion = null;
-    try {
-      // Get recent commits on alpha that modified package.json
-      const commits = execSync(
-        'git log alpha --oneline -20 -- packages/less/package.json',
-        { cwd: ROOT_DIR, encoding: 'utf8' }
-      ).trim().split('\n');
-      
-      // Search through commits to find the last alpha version
-      for (const commitLine of commits) {
-        const commitHash = commitLine.split(' ')[0];
-        try {
-          const pkgContent = execSync(
-            `git show ${commitHash}:packages/less/package.json 2>/dev/null`,
-            { cwd: ROOT_DIR, encoding: 'utf8' }
-          );
-          const pkg = JSON.parse(pkgContent);
-          if (pkg.version && pkg.version.includes('-alpha.')) {
-            restoredVersion = pkg.version;
-            console.log(`   Found previous alpha version in commit ${commitHash}: ${restoredVersion}`);
-            break;
-          }
-        } catch (e) {
-          // Continue to next commit
-        }
-      }
-      
-      if (restoredVersion) {
-        // Increment the alpha number from the restored version
-        const alphaMatch = restoredVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
-        if (alphaMatch) {
-          const alphaNum = parseInt(alphaMatch[2], 10);
-          const newAlphaVersion = `${alphaMatch[1]}-alpha.${alphaNum + 1}`;
-          console.log(`   Restoring and incrementing to: ${newAlphaVersion}`);
-          currentVersion = newAlphaVersion;
-          updateAllVersions(newAlphaVersion);
-        } else {
-          console.log(`   Restoring to: ${restoredVersion}`);
-          currentVersion = restoredVersion;
-          updateAllVersions(restoredVersion);
-        }
-      } else {
-        // No previous alpha version found, create one from current version
-        const parsed = parseVersion(currentVersion);
-        const nextMajor = parsed.major + 1;
-        const newAlphaVersion = `${nextMajor}.0.0-alpha.1`;
-        console.log(`   No previous alpha version found. Creating new: ${newAlphaVersion}`);
-        currentVersion = newAlphaVersion;
-        updateAllVersions(newAlphaVersion);
-      }
-    } catch (e) {
-      // If we can't find previous version, create a new alpha version
-      const parsed = parseVersion(currentVersion);
-      const nextMajor = parsed.major + 1;
-      const newAlphaVersion = `${nextMajor}.0.0-alpha.1`;
-      console.log(`   Could not find previous alpha version. Creating: ${newAlphaVersion}`);
-      currentVersion = newAlphaVersion;
-      updateAllVersions(newAlphaVersion);
-    }
-    
-    console.log(`✅ Restored/created alpha version: ${currentVersion}\n`);
-  }
-  
-  // Determine next version
+
+  // Determine next version.
+  // Both master and alpha now use the PR-based release flow: the version bump
+  // was already applied by the release PR.  Use the version in package.json
+  // as-is and fail fast if it is not ahead of the already-published version.
   let nextVersion;
 
   if (isAlpha) {
-    // For alpha branch, use alpha versions
-    const parsed = parseVersion(currentVersion);
-    if (parsed.prerelease) {
-      // Already an alpha, increment alpha number
-      const alphaMatch = currentVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
-      if (alphaMatch) {
-        const alphaNum = parseInt(alphaMatch[2], 10);
-        nextVersion = `${alphaMatch[1]}-alpha.${alphaNum + 1}`;
-      } else {
-        // Other prerelease format, determine base version and start alpha.1
-        const baseVersion = `${parsed.major}.${parsed.minor}.${parsed.patch}`;
-        nextVersion = `${baseVersion}-alpha.1`;
-      }
-    } else {
-      // Not an alpha version, determine next major and start alpha.1
-      const parsed = parseVersion(currentVersion);
-      const nextMajor = parsed.major + 1;
-      nextVersion = `${nextMajor}.0.0-alpha.1`;
+    // Validate that the version carries the expected '-alpha.' prerelease tag.
+    if (!currentVersion.includes('-alpha.')) {
+      console.error(`❌ ERROR: Alpha branch package.json version (${currentVersion}) must contain '-alpha.'`);
+      console.error(`   The alpha release PR should have bumped to an X.Y.Z-alpha.N version.`);
+      process.exit(1);
     }
-    console.log(`🔢 Auto-incrementing alpha version: ${nextVersion}`);
+
+    const npmAlphaVersion = getNpmAlphaVersion('less');
+    console.log(`📦 NPM alpha version: ${npmAlphaVersion || '(not published)'}`);
+    if (npmAlphaVersion && semver.valid(currentVersion) && !semver.gt(currentVersion, npmAlphaVersion)) {
+      console.error(`❌ ERROR: package.json version (${currentVersion}) must be greater than NPM alpha version (${npmAlphaVersion})`);
+      console.error(`   On alpha the version bump should have arrived via the alpha release PR.`);
+      process.exit(1);
+    }
+    nextVersion = currentVersion;
+    console.log(`📦 Using package.json version (no auto-increment on alpha): ${nextVersion}`);
   } else {
-    // For master: compare package.json vs NPM, bump accordingly
+    // For master: the version bump was already applied via the release PR.
+    // Use the version already in package.json as-is; never auto-increment here
+    // because that would create a local commit whose tag would point to a
+    // commit that is NOT on the master branch.
     const npmVersion = getNpmVersion('less');
     console.log(`📦 NPM version: ${npmVersion || '(not published)'}`);
-    nextVersion = getTargetVersion(currentVersion, npmVersion);
+    if (npmVersion && semver.valid(currentVersion) && !semver.gt(currentVersion, npmVersion)) {
+      console.error(`❌ ERROR: package.json version (${currentVersion}) must be greater than NPM version (${npmVersion})`);
+      console.error(`   On master the version bump should have arrived via the release PR.`);
+      process.exit(1);
+    }
+    nextVersion = currentVersion;
+    console.log(`📦 Using package.json version (no auto-increment on master): ${nextVersion}`);
   }
-  
-  // Update all package.json files
-  console.log(`📝 Updating all package.json files to version ${nextVersion}...`);
-  const updated = updateAllVersions(nextVersion);
-  console.log(`✅ Updated ${updated.length} package.json files`);
-  
+
   // Get publishable packages
   const publishable = getPublishablePackages();
   console.log(`📦 Found ${publishable.length} publishable packages:`);
   publishable.forEach(pkg => console.log(`   - ${pkg.name}`));
-  
-  // Stage changes
-  console.log(`📌 Staging version changes...`);
-  if (!dryRun) {
-    execSync('git add package.json packages/*/package.json', { cwd: ROOT_DIR, stdio: 'inherit' });
-  } else {
-    console.log(`   [DRY RUN] Would stage: package.json packages/*/package.json`);
-  }
-  
-  // Commit
-  console.log(`💾 Committing version bump...`);
-  if (!dryRun) {
-    try {
-      execSync(`git commit -m "chore: bump version to ${nextVersion}"`, { 
-        cwd: ROOT_DIR, 
-        stdio: 'inherit' 
-      });
-    } catch (e) {
-      // Commit might fail if nothing changed, that's okay
-      console.log(`⚠️  Commit skipped (no changes or already committed)`);
-    }
-  } else {
-    console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
-  }
+
+  // Both master and alpha: the version-bump commit already lives on the branch
+  // (it came from the release PR).  Do NOT create another local commit or push
+  // to the branch — doing so would produce a tag pointing at a commit that is
+  // not on the target branch.
+  //
+  // Only the annotated tag is pushed.  Tag pushes bypass branch-protection
+  // "require pull request" rules.
   
   // Create tag
   const tagName = `v${nextVersion}`;
@@ -318,17 +254,14 @@ function main() {
     console.log(`   [DRY RUN] Would create tag: ${tagName}`);
   }
   
-  // Push commit and tag
-  console.log(`📤 Pushing to ${branch}...`);
+  // For master the version-bump commit already lives in master (it came from
+  // the release PR).  Only push the git tag — tag pushes bypass branch
+  // protection "require pull request" rules.
+  // Alpha follows the same pattern: the version bump arrived via the alpha
+  // release PR, so we only push the tag here too.  console.log(`📤 Pushing tag ${tagName}...`);
   if (!dryRun) {
-    try {
-      execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
-      execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
-    } catch (e) {
-      console.log(`⚠️  Push failed, but continuing with publish...`);
-    }
+    execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   } else {
-    console.log(`   [DRY RUN] Would push to: origin ${branch}`);
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
   }
   
@@ -451,7 +384,7 @@ function main() {
     publishErrors.forEach(({ name, error }) => {
       console.error(`   - ${name}: ${error}`);
     });
-    console.error(`\n⚠️  Note: Version bump and commit were successful.`);
+    console.error(`\n⚠️  Note: Git tag was pushed successfully.`);
     console.error(`   Some packages failed to publish. You may need to publish them manually.`);
     process.exit(1);
   }

@@ -2,28 +2,40 @@
 /**
  * Release-automation test suite
  *
- * Tests three components of the release flow without requiring a live
+ * Tests four components of the release flow without requiring a live
  * GitHub token or npm credentials:
  *
- *   1. Workflow trigger-condition logic
- *      - publish.yml `if:` expression (6 scenarios)
- *      - create-release-pr.yml `if:` expression (4 scenarios)
+ *   1. publish.yml `if:` expression
+ *      - master release PR merged → publish
+ *      - alpha release PR merged  → publish (alpha tag)
+ *      - other PRs / direct pushes → skip
  *
- *   2. bump-and-publish.js behaviour (subprocess, DRY_RUN=true)
+ *   2. create-release-pr.yml `if:` expression
+ *      - normal merges to master or alpha → trigger
+ *      - release PR merges (both flavours) → skip (loop guard)
+ *
+ *   3. Alpha version increment logic (from create-release-pr.yml)
+ *      - Works for any X.Y.Z-alpha.N regardless of major version
+ *      - Double-digit rollover (alpha.9 → alpha.10)
+ *      - Non-alpha package.json on alpha branch → bump major, start alpha.1
+ *
+ *   4. bump-and-publish.js behaviour (subprocess, DRY_RUN=true)
  *      - master path: uses package.json version as-is, no commit, no branch push
- *      - master path: rejects when package.json version ≤ published npm version
- *      - alpha path: auto-increments alpha version number
+ *      - master path: rejects when package.json version ≤ npm latest version
+ *      - alpha path:  uses package.json version as-is, no commit, no branch push
+ *      - alpha path:  rejects when package.json alpha version lacks '-alpha.'
  *
- *   3. create-release-pr no-op safety (isolated temp git repo)
+ *   5. create-release-pr no-op safety (isolated temp git repo)
  *      - when a version bump produces changes → a commit is created
  *      - when no version changes are needed  → exits cleanly with no commit
  *
  * Run:
  *   node scripts/test-release-automation.js
  *
- * Uses only Node.js built-ins.  semver is resolved from either the workspace
- * node_modules (after `pnpm install`) or /tmp/test-deps/node_modules (the
- * fallback used in this sandbox).
+ * Uses only Node.js built-ins.  semver is resolved from the workspace
+ * node_modules (present after `pnpm install`).  In sandboxes where pnpm
+ * install hasn't run, install it manually:
+ *   npm install --prefix /tmp/test-deps semver
  */
 
 'use strict';
@@ -89,31 +101,29 @@ function section(title) {
  * publish.yml `if:` condition:
  *
  *   github.repository == 'less/less.js' &&
+ *   github.event.pull_request.merged == true &&
  *   (
- *     (github.event_name == 'pull_request' &&
- *      github.event.pull_request.merged == true &&
+ *     (github.event.pull_request.base.ref == 'master' &&
  *      startsWith(github.event.pull_request.title, 'chore: release v')) ||
- *     (github.event_name == 'push' &&
- *      github.ref_name == 'alpha' &&
- *      !startsWith(github.event.head_commit.message, 'chore: bump version to'))
+ *     (github.event.pull_request.base.ref == 'alpha' &&
+ *      startsWith(github.event.pull_request.title, 'chore: alpha release v'))
  *   )
  */
-function publishShouldRun({ repo, eventName, prMerged, prTitle, refName, commitMessage }) {
+function publishShouldRun({ repo, prMerged, prBaseRef, prTitle }) {
   if (repo !== 'less/less.js') return false;
+  if (!prMerged) return false;
 
-  const isReleasePRMerge =
-    eventName === 'pull_request' &&
-    prMerged === true &&
+  const isMasterRelease =
+    prBaseRef === 'master' &&
     typeof prTitle === 'string' &&
     prTitle.startsWith('chore: release v');
 
-  const isAlphaPush =
-    eventName === 'push' &&
-    refName === 'alpha' &&
-    typeof commitMessage === 'string' &&
-    !commitMessage.startsWith('chore: bump version to');
+  const isAlphaRelease =
+    prBaseRef === 'alpha' &&
+    typeof prTitle === 'string' &&
+    prTitle.startsWith('chore: alpha release v');
 
-  return isReleasePRMerge || isAlphaPush;
+  return isMasterRelease || isAlphaRelease;
 }
 
 /**
@@ -121,13 +131,34 @@ function publishShouldRun({ repo, eventName, prMerged, prTitle, refName, commitM
  *
  *   github.repository == 'less/less.js' &&
  *   !contains(github.event.head_commit.message, 'chore: release v') &&
- *   !contains(github.event.head_commit.message, '/release-v')
+ *   !contains(github.event.head_commit.message, 'chore: alpha release v') &&
+ *   !contains(github.event.head_commit.message, '/release-v') &&
+ *   !contains(github.event.head_commit.message, '/alpha-release-v')
  */
 function createReleasePRShouldRun({ repo, commitMessage }) {
   if (repo !== 'less/less.js') return false;
   if (commitMessage.includes('chore: release v')) return false;
+  if (commitMessage.includes('chore: alpha release v')) return false;
   if (commitMessage.includes('/release-v')) return false;
+  if (commitMessage.includes('/alpha-release-v')) return false;
   return true;
+}
+
+/**
+ * Alpha version increment — mirrors the inline Node script in
+ * create-release-pr.yml "Determine next version" step for the alpha branch.
+ *
+ *   X.Y.Z-alpha.N  →  X.Y.Z-alpha.(N+1)
+ *   X.Y.Z          →  (X+1).0.0-alpha.1   (no alpha suffix yet)
+ */
+function nextAlphaVersion(current) {
+  const m = current.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
+  if (m) {
+    return `${m[1]}-alpha.${parseInt(m[2], 10) + 1}`;
+  }
+  const parts = current.replace(/-.*/, '').split('.');
+  const nextMajor = parseInt(parts[0], 10) + 1;
+  return `${nextMajor}.0.0-alpha.1`;
 }
 
 // ---------------------------------------------------------------------------
@@ -164,9 +195,8 @@ function makeFakeRepo({ packageVersion }) {
 // ---------------------------------------------------------------------------
 // Run bump-and-publish.js in a fake repo
 //
-// Strategy: copy the script into the temp repo's scripts/ directory, replace
-// the ROOT_DIR constant so it points at fakeRoot, then execute it.  semver is
-// resolved via NODE_PATH.
+// Strategy: copy the script into the temp repo with ROOT_DIR patched so it
+// reads/writes from the temp dir.  semver is resolved via NODE_PATH.
 // ---------------------------------------------------------------------------
 
 function runBumpAndPublish(fakeRoot, extraEnv = {}) {
@@ -185,20 +215,24 @@ function runBumpAndPublish(fakeRoot, extraEnv = {}) {
     `const ROOT_DIR = ${JSON.stringify(fakeRoot)};`,
   );
 
+  // Redirect require('semver') to the resolved absolute path so the patched
+  // script works even when run from an isolated temp directory that has no
+  // node_modules of its own.
+  if (SEMVER_PATH) {
+    src = src.replace(
+      /require\('semver'\)/g,
+      `require(${JSON.stringify(SEMVER_PATH)})`,
+    );
+  }
+
   const patchedScript = path.join(scriptsDir, '_bap_patched.cjs');
   fs.writeFileSync(patchedScript, src);
-
-  const nodePathParts = [
-    SEMVER_PATH ? path.dirname(SEMVER_PATH) : null,
-    process.env.NODE_PATH,
-  ].filter(Boolean).join(path.delimiter);
 
   const result = spawnSync('node', [patchedScript], {
     cwd: fakeRoot,
     env: {
       ...process.env,
       ...extraEnv,
-      ...(nodePathParts ? { NODE_PATH: nodePathParts } : {}),
     },
     encoding: 'utf8',
   });
@@ -231,11 +265,6 @@ function runCreateReleasePRStep({ repoDir, nextVersion, releaseBranch }) {
 
   const initialHead = execSync('git rev-parse HEAD', { cwd: repoDir, encoding: 'utf8' }).trim();
 
-  // Run the version-bump portion of create-release-pr.yml:
-  //   - checkout release branch
-  //   - rewrite version in all package.json files
-  //   - git add + conditional commit
-  // We do NOT run `git push` or `gh pr create` (no remote / no auth needed).
   const script = `
 set -euo pipefail
 NEXT_VERSION=${JSON.stringify(nextVersion)}
@@ -304,25 +333,49 @@ echo "STATUS:COMMITTED=\${COMMITTED}"
 
 section('1. publish.yml — workflow trigger conditions');
 
-test('release PR merged → SHOULD publish', () => {
+test('master release PR merged → SHOULD publish', () => {
   assert.strictEqual(
     publishShouldRun({
       repo: 'less/less.js',
-      eventName: 'pull_request',
       prMerged: true,
+      prBaseRef: 'master',
       prTitle: 'chore: release v4.6.4',
     }),
     true,
   );
 });
 
-test('non-release PR merged → should NOT publish', () => {
+test('alpha release PR merged → SHOULD publish (alpha tag)', () => {
   assert.strictEqual(
     publishShouldRun({
       repo: 'less/less.js',
-      eventName: 'pull_request',
       prMerged: true,
+      prBaseRef: 'alpha',
+      prTitle: 'chore: alpha release v5.0.0-alpha.2',
+    }),
+    true,
+  );
+});
+
+test('non-release PR merged into master → should NOT publish', () => {
+  assert.strictEqual(
+    publishShouldRun({
+      repo: 'less/less.js',
+      prMerged: true,
+      prBaseRef: 'master',
       prTitle: 'fix: some bug fix',
+    }),
+    false,
+  );
+});
+
+test('non-release PR merged into alpha → should NOT publish', () => {
+  assert.strictEqual(
+    publishShouldRun({
+      repo: 'less/less.js',
+      prMerged: true,
+      prBaseRef: 'alpha',
+      prTitle: 'feat: add something for next major',
     }),
     false,
   );
@@ -332,45 +385,34 @@ test('release PR closed but NOT merged → should NOT publish', () => {
   assert.strictEqual(
     publishShouldRun({
       repo: 'less/less.js',
-      eventName: 'pull_request',
       prMerged: false,
+      prBaseRef: 'master',
       prTitle: 'chore: release v4.6.4',
     }),
     false,
   );
 });
 
-test('direct push to master → should NOT publish', () => {
+test('alpha release PR title used against master base → should NOT publish', () => {
+  // Wrong convention: "chore: alpha release v" into master should not trigger
   assert.strictEqual(
     publishShouldRun({
       repo: 'less/less.js',
-      eventName: 'push',
-      refName: 'master',
-      commitMessage: 'fix: something',
+      prMerged: true,
+      prBaseRef: 'master',
+      prTitle: 'chore: alpha release v5.0.0-alpha.1',
     }),
     false,
   );
 });
 
-test('push to alpha (regular commit) → SHOULD publish', () => {
+test('wrong repository → should NOT publish', () => {
   assert.strictEqual(
     publishShouldRun({
-      repo: 'less/less.js',
-      eventName: 'push',
-      refName: 'alpha',
-      commitMessage: 'fix: something on alpha',
-    }),
-    true,
-  );
-});
-
-test('push to alpha with bump-commit message → should NOT publish (loop guard)', () => {
-  assert.strictEqual(
-    publishShouldRun({
-      repo: 'less/less.js',
-      eventName: 'push',
-      refName: 'alpha',
-      commitMessage: 'chore: bump version to 5.0.0-alpha.2',
+      repo: 'fork/less.js',
+      prMerged: true,
+      prBaseRef: 'master',
+      prTitle: 'chore: release v4.6.4',
     }),
     false,
   );
@@ -389,18 +431,42 @@ test('normal merge to master → SHOULD trigger', () => {
   );
 });
 
-test('release PR merge (squash) → should NOT trigger (loop guard)', () => {
+test('normal merge to alpha → SHOULD trigger', () => {
+  assert.strictEqual(
+    createReleasePRShouldRun({ repo: 'less/less.js', commitMessage: 'feat: new feature for next major' }),
+    true,
+  );
+});
+
+test('master release PR merge → should NOT trigger (loop guard)', () => {
   assert.strictEqual(
     createReleasePRShouldRun({ repo: 'less/less.js', commitMessage: 'chore: release v4.6.4' }),
     false,
   );
 });
 
-test('release branch ref in commit message → should NOT trigger (loop guard)', () => {
+test('alpha release PR merge → should NOT trigger (loop guard)', () => {
+  assert.strictEqual(
+    createReleasePRShouldRun({ repo: 'less/less.js', commitMessage: 'chore: alpha release v5.0.0-alpha.2' }),
+    false,
+  );
+});
+
+test('release branch ref in commit message → should NOT trigger (loop guard for master)', () => {
   assert.strictEqual(
     createReleasePRShouldRun({
       repo: 'less/less.js',
       commitMessage: 'Merge chore/release-v4.6.4 into master',
+    }),
+    false,
+  );
+});
+
+test('alpha release branch ref in commit message → should NOT trigger (loop guard for alpha)', () => {
+  assert.strictEqual(
+    createReleasePRShouldRun({
+      repo: 'less/less.js',
+      commitMessage: 'Merge chore/alpha-release-v5.0.0-alpha.2 into alpha',
     }),
     false,
   );
@@ -414,10 +480,48 @@ test('wrong repository → should NOT trigger', () => {
 });
 
 // ----------------------------------------------------------------------------
-// Section 3 — bump-and-publish.js master path
+// Section 3 — Alpha version increment logic (from create-release-pr.yml)
+//
+// These are pure-logic tests of the nextAlphaVersion() helper, which mirrors
+// the inline Node script in the "Determine next version" step of the workflow.
+// This directly answers: "does this work for 5.x alphas as well?"
 // ----------------------------------------------------------------------------
 
-section('3. bump-and-publish.js — master path (DRY_RUN=true)');
+section('3. create-release-pr.yml — alpha version increment logic');
+
+test('4.x: 4.6.3-alpha.1 → 4.6.3-alpha.2', () => {
+  assert.strictEqual(nextAlphaVersion('4.6.3-alpha.1'), '4.6.3-alpha.2');
+});
+
+test('5.x: 5.0.0-alpha.1 → 5.0.0-alpha.2  (answers the original question)', () => {
+  assert.strictEqual(nextAlphaVersion('5.0.0-alpha.1'), '5.0.0-alpha.2');
+});
+
+test('5.x: 5.0.0-alpha.3 → 5.0.0-alpha.4  (preserves major, not 4.x)', () => {
+  assert.strictEqual(nextAlphaVersion('5.0.0-alpha.3'), '5.0.0-alpha.4');
+});
+
+test('5.x minor/patch: 5.1.2-alpha.7 → 5.1.2-alpha.8', () => {
+  assert.strictEqual(nextAlphaVersion('5.1.2-alpha.7'), '5.1.2-alpha.8');
+});
+
+test('double-digit rollover: 5.0.0-alpha.9 → 5.0.0-alpha.10  (integer, not string comparison)', () => {
+  assert.strictEqual(nextAlphaVersion('5.0.0-alpha.9'), '5.0.0-alpha.10');
+});
+
+test('non-alpha version on alpha branch: 4.6.3 → 5.0.0-alpha.1  (bumps major, starts fresh)', () => {
+  assert.strictEqual(nextAlphaVersion('4.6.3'), '5.0.0-alpha.1');
+});
+
+test('non-alpha 5.x version: 5.0.0 → 6.0.0-alpha.1', () => {
+  assert.strictEqual(nextAlphaVersion('5.0.0'), '6.0.0-alpha.1');
+});
+
+// ----------------------------------------------------------------------------
+// Section 4 — bump-and-publish.js master path
+// ----------------------------------------------------------------------------
+
+section('4. bump-and-publish.js — master path (DRY_RUN=true)');
 
 // A version clearly higher than any real npm publish so validation passes
 const MASTER_TEST_VERSION = '999.0.0';
@@ -495,13 +599,110 @@ test('master: rejects when package.json version ≤ npm published version', () =
 });
 
 // ----------------------------------------------------------------------------
-// Section 4 — bump-and-publish.js alpha path
+// Section 5 — bump-and-publish.js alpha path
+//
+// Alpha now uses the same PR-based flow as master: the version bump is applied
+// by the release PR, and bump-and-publish.js uses the existing version as-is.
 // ----------------------------------------------------------------------------
 
-section('4. bump-and-publish.js — alpha path (DRY_RUN=true)');
+section('5. bump-and-publish.js — alpha path (DRY_RUN=true)');
 
-test('alpha: auto-increments alpha version (4.6.3-alpha.1 → 4.6.3-alpha.2)', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '4.6.3-alpha.1' });
+test('alpha: uses package.json version as-is (no auto-increment)', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.2' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('5.0.0-alpha.2'),
+      `Expected version 5.0.0-alpha.2 in output.\nSTDOUT: ${stdout}`,
+    );
+    assert.ok(
+      stdout.includes('no auto-increment on alpha') || stdout.includes('Using package.json version'),
+      `Expected "no auto-increment" message.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('alpha: no commit step (same as master)', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.2' });
+  try {
+    const { stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.ok(
+      !stdout.includes('[DRY RUN] Would commit'),
+      `Expected no commit step on alpha path.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('alpha: no branch push step (same as master)', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.2' });
+  try {
+    const { stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.ok(
+      !stdout.includes('Would push to: origin alpha'),
+      `Expected no branch push on alpha path.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('alpha: publishes with "alpha" npm tag (not "latest")', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.2' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('tag: alpha'),
+      `Expected npm tag "alpha" in output.\nSTDOUT: ${stdout}`,
+    );
+    assert.ok(
+      !stdout.includes('tag: latest'),
+      `Expected no "latest" npm tag for alpha versions.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('alpha: rejects when package.json version lacks "-alpha." suffix', () => {
+  // If somehow the alpha release PR bumped to a non-alpha version, the script
+  // must fail fast before publishing.
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.notStrictEqual(exitCode, 0, `Expected non-zero exit.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    const combined = stdout + stderr;
+    assert.ok(
+      combined.includes('-alpha.') || combined.includes('ERROR'),
+      `Expected error about missing '-alpha.' suffix.\nCombined: ${combined}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('alpha: 4.x alpha version also accepted (4.6.3-alpha.2)', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '4.6.3-alpha.2' });
   try {
     const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
       GITHUB_REF_NAME: 'alpha',
@@ -517,63 +718,11 @@ test('alpha: auto-increments alpha version (4.6.3-alpha.1 → 4.6.3-alpha.2)', (
   }
 });
 
-test('alpha: includes a commit step', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '4.6.3-alpha.1' });
-  try {
-    const { stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.ok(
-      stdout.includes('[DRY RUN] Would commit'),
-      `Expected a commit step on alpha path.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
-test('alpha: includes a branch push step (not master push)', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '4.6.3-alpha.1' });
-  try {
-    const { stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.ok(
-      stdout.includes('Would push to: origin alpha'),
-      `Expected "push to: origin alpha" in output.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`,
-    );
-    assert.ok(
-      !stdout.includes('Would push to: origin master'),
-      `Expected NO push to master from alpha path.\nSTDOUT: ${stdout}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
-test('alpha: publishes with "alpha" npm tag', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '4.6.3-alpha.5' });
-  try {
-    const { stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.ok(
-      stdout.includes('tag: alpha'),
-      `Expected npm tag "alpha" in output.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
 // ----------------------------------------------------------------------------
-// Section 5 — create-release-pr no-op safety (the key correctness fix)
+// Section 6 — create-release-pr no-op safety
 // ----------------------------------------------------------------------------
 
-section('5. create-release-pr — no-op safety');
+section('6. create-release-pr — no-op safety');
 
 test('version bump needed: creates a commit on the release branch', () => {
   // Repo starts at 4.6.3; bump target is 4.6.4 → files change → commit
@@ -619,105 +768,23 @@ test('no version bump needed: exits cleanly, no new commit, no gh calls', () => 
   }
 });
 
-// ----------------------------------------------------------------------------
-// Section 6 — alpha auto-increment works for any major version (5.x, etc.)
-// ----------------------------------------------------------------------------
-
-section('6. bump-and-publish.js — alpha auto-increment across major versions');
-
-test('5.x alpha: auto-increments correctly (5.0.0-alpha.1 → 5.0.0-alpha.2)', () => {
-  // Answers the question: "does this work for 5.x alphas as long as
-  // package.json in the alpha branch has 5.x?"  Answer: yes.
-  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.1' });
+test('alpha version bump needed: commit created for alpha release branch', () => {
+  // Repo at 5.0.0-alpha.1; bump target is 5.0.0-alpha.2 → diff → commit
+  const repoDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.1' });
   try {
-    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
+    const res = runCreateReleasePRStep({
+      repoDir,
+      nextVersion: '5.0.0-alpha.2',
+      releaseBranch: 'chore/alpha-release-v5.0.0-alpha.2',
     });
-    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.strictEqual(res.exitCode, 0, `Script exited ${res.exitCode}.\nSTDOUT: ${res.stdout}\nSTDERR: ${res.stderr}`);
+    assert.ok(res.newCommitCreated, 'Expected a new commit for alpha version bump');
     assert.ok(
-      stdout.includes('5.0.0-alpha.2'),
-      `Expected version 5.0.0-alpha.2 in output.\nSTDOUT: ${stdout}`,
+      res.stdout.includes('STATUS:COMMITTED=true'),
+      `Expected COMMITTED=true status.\nSTDOUT: ${res.stdout}`,
     );
   } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
-test('5.x alpha: preserves base version — does not roll back to 4.x', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.3' });
-  try {
-    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
-    assert.ok(
-      stdout.includes('5.0.0-alpha.4'),
-      `Expected version 5.0.0-alpha.4 in output (not a 4.x version).\nSTDOUT: ${stdout}`,
-    );
-    assert.ok(
-      !stdout.includes('4.'),
-      `Expected no 4.x version strings in output.\nSTDOUT: ${stdout}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
-test('5.x alpha: minor/patch variants work (5.1.2-alpha.7 → 5.1.2-alpha.8)', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '5.1.2-alpha.7' });
-  try {
-    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
-    assert.ok(
-      stdout.includes('5.1.2-alpha.8'),
-      `Expected version 5.1.2-alpha.8 in output.\nSTDOUT: ${stdout}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
-test('alpha: rolls over double-digit alpha number correctly (5.0.0-alpha.9 → 5.0.0-alpha.10)', () => {
-  // Guards against a string-comparison bug where "10" < "9" would give wrong results
-  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.9' });
-  try {
-    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
-    assert.ok(
-      stdout.includes('5.0.0-alpha.10'),
-      `Expected version 5.0.0-alpha.10 in output.\nSTDOUT: ${stdout}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
-  }
-});
-
-test('5.x alpha: publishes with "alpha" npm tag (not "latest")', () => {
-  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.1' });
-  try {
-    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
-      GITHUB_REF_NAME: 'alpha',
-      DRY_RUN: 'true',
-    });
-    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
-    assert.ok(
-      stdout.includes('tag: alpha'),
-      `Expected npm tag "alpha" in output.\nSTDOUT: ${stdout}`,
-    );
-    assert.ok(
-      !stdout.includes('tag: latest'),
-      `Expected no "latest" npm tag for alpha versions.\nSTDOUT: ${stdout}`,
-    );
-  } finally {
-    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(repoDir, { recursive: true, force: true });
   }
 });
 

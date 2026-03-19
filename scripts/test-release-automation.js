@@ -619,6 +619,108 @@ test('no version bump needed: exits cleanly, no new commit, no gh calls', () => 
   }
 });
 
+// ----------------------------------------------------------------------------
+// Section 6 — alpha auto-increment works for any major version (5.x, etc.)
+// ----------------------------------------------------------------------------
+
+section('6. bump-and-publish.js — alpha auto-increment across major versions');
+
+test('5.x alpha: auto-increments correctly (5.0.0-alpha.1 → 5.0.0-alpha.2)', () => {
+  // Answers the question: "does this work for 5.x alphas as long as
+  // package.json in the alpha branch has 5.x?"  Answer: yes.
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.1' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('5.0.0-alpha.2'),
+      `Expected version 5.0.0-alpha.2 in output.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('5.x alpha: preserves base version — does not roll back to 4.x', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.3' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('5.0.0-alpha.4'),
+      `Expected version 5.0.0-alpha.4 in output (not a 4.x version).\nSTDOUT: ${stdout}`,
+    );
+    assert.ok(
+      !stdout.includes('4.'),
+      `Expected no 4.x version strings in output.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('5.x alpha: minor/patch variants work (5.1.2-alpha.7 → 5.1.2-alpha.8)', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.1.2-alpha.7' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('5.1.2-alpha.8'),
+      `Expected version 5.1.2-alpha.8 in output.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('alpha: rolls over double-digit alpha number correctly (5.0.0-alpha.9 → 5.0.0-alpha.10)', () => {
+  // Guards against a string-comparison bug where "10" < "9" would give wrong results
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.9' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('5.0.0-alpha.10'),
+      `Expected version 5.0.0-alpha.10 in output.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
+test('5.x alpha: publishes with "alpha" npm tag (not "latest")', () => {
+  const fakeDir = makeFakeRepo({ packageVersion: '5.0.0-alpha.1' });
+  try {
+    const { exitCode, stdout, stderr } = runBumpAndPublish(fakeDir, {
+      GITHUB_REF_NAME: 'alpha',
+      DRY_RUN: 'true',
+    });
+    assert.strictEqual(exitCode, 0, `Expected exit 0.\nSTDOUT: ${stdout}\nSTDERR: ${stderr}`);
+    assert.ok(
+      stdout.includes('tag: alpha'),
+      `Expected npm tag "alpha" in output.\nSTDOUT: ${stdout}`,
+    );
+    assert.ok(
+      !stdout.includes('tag: latest'),
+      `Expected no "latest" npm tag for alpha versions.\nSTDOUT: ${stdout}`,
+    );
+  } finally {
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+  }
+});
+
 // ============================================================================
 // Summary
 // ============================================================================

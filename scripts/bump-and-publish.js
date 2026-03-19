@@ -270,44 +270,59 @@ function main() {
     }
     console.log(`🔢 Auto-incrementing alpha version: ${nextVersion}`);
   } else {
-    // For master: compare package.json vs NPM, bump accordingly
+    // For master: the version bump was already applied via the release PR.
+    // Use the version already in package.json as-is; never auto-increment here
+    // because that would create a local commit whose tag would point to a
+    // commit that is NOT on the master branch.
     const npmVersion = getNpmVersion('less');
     console.log(`📦 NPM version: ${npmVersion || '(not published)'}`);
-    nextVersion = getTargetVersion(currentVersion, npmVersion);
+    if (npmVersion && semver.valid(currentVersion) && !semver.gt(currentVersion, npmVersion)) {
+      console.error(`❌ ERROR: package.json version (${currentVersion}) must be greater than NPM version (${npmVersion})`);
+      console.error(`   On master the version bump should have arrived via the release PR.`);
+      process.exit(1);
+    }
+    nextVersion = currentVersion;
+    console.log(`📦 Using package.json version (no auto-increment on master): ${nextVersion}`);
   }
-  
-  // Update all package.json files
-  console.log(`📝 Updating all package.json files to version ${nextVersion}...`);
-  const updated = updateAllVersions(nextVersion);
-  console.log(`✅ Updated ${updated.length} package.json files`);
-  
+
   // Get publishable packages
   const publishable = getPublishablePackages();
   console.log(`📦 Found ${publishable.length} publishable packages:`);
   publishable.forEach(pkg => console.log(`   - ${pkg.name}`));
-  
-  // Stage changes
-  console.log(`📌 Staging version changes...`);
-  if (!dryRun) {
-    execSync('git add package.json packages/*/package.json', { cwd: ROOT_DIR, stdio: 'inherit' });
-  } else {
-    console.log(`   [DRY RUN] Would stage: package.json packages/*/package.json`);
-  }
-  
-  // Commit
-  console.log(`💾 Committing version bump...`);
-  if (!dryRun) {
-    try {
-      execSync(`git commit -m "chore: bump version to ${nextVersion}"`, { 
-        cwd: ROOT_DIR, 
-        stdio: 'inherit' 
-      });
-    } catch (e) {
-      // Commit might fail if nothing changed, that's okay
-      console.log(`⚠️  Commit skipped (no changes or already committed)`);
+
+  // For alpha: update package.json files, stage, and commit the version bump.
+  // For master: the version bump commit already exists on master (from the
+  // release PR), so we must not create another local commit — doing so would
+  // produce a tag pointing at a commit that is not on master.
+  if (!isMaster) {
+    // Update all package.json files
+    console.log(`📝 Updating all package.json files to version ${nextVersion}...`);
+    const updated = updateAllVersions(nextVersion);
+    console.log(`✅ Updated ${updated.length} package.json files`);
+
+    // Stage changes
+    console.log(`📌 Staging version changes...`);
+    if (!dryRun) {
+      execSync('git add package.json packages/*/package.json', { cwd: ROOT_DIR, stdio: 'inherit' });
+    } else {
+      console.log(`   [DRY RUN] Would stage: package.json packages/*/package.json`);
     }
-  } else {
-    console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
+
+    // Commit
+    console.log(`💾 Committing version bump...`);
+    if (!dryRun) {
+      try {
+        execSync(`git commit -m "chore: bump version to ${nextVersion}"`, {
+          cwd: ROOT_DIR,
+          stdio: 'inherit'
+        });
+      } catch (e) {
+        // Commit might fail if nothing changed, that's okay
+        console.log(`⚠️  Commit skipped (no changes or already committed)`);
+      }
+    } else {
+      console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
+    }
   }
   
   // Create tag
@@ -465,7 +480,11 @@ function main() {
     publishErrors.forEach(({ name, error }) => {
       console.error(`   - ${name}: ${error}`);
     });
-    console.error(`\n⚠️  Note: Version bump commit and tag were pushed successfully.`);
+    if (isMaster) {
+      console.error(`\n⚠️  Note: Git tag was pushed successfully.`);
+    } else {
+      console.error(`\n⚠️  Note: Version bump commit and tag were pushed successfully.`);
+    }
     console.error(`   Some packages failed to publish. You may need to publish them manually.`);
     process.exit(1);
   }

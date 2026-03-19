@@ -35,5 +35,5 @@
 		"playwright": "1.50.1",
 		"semver": "^6.3.1"
 	},
-	"packageManager": "pnpm@8.15.0"
+	"packageManager": "pnpm@9.15.9"
 }

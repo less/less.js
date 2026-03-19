@@ -11,9 +11,6 @@ on:
     branches:
       - master
       - alpha
-    # Only trigger for commits that touch package source files.
-    paths:
-      - 'packages/**'
 
 permissions:
   contents: write

@@ -2282,11 +2282,13 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             colorOperand: function () {
                 parserInput.save();
 
-                // hsl or rgb or lch operand
-                const match = parserInput.$re(/^[lchrgbs]\s+/);
+                // Single-letter channel keywords used in relative color syntax:
+                // r, g, b (rgb), h, s, l (hsl), h, w, b (hwb),
+                // l, a, b (lab/oklab), l, c, h (lch/oklch)
+                const match = parserInput.$re(/^([abcghlrsw])(?=\s|[,/*)]|$)/);
                 if (match) {
                     parserInput.forget();
-                    return new tree.Keyword(match[0]);
+                    return new tree.Keyword(match[1]);
                 }
 
                 parserInput.restore();

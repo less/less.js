@@ -9,9 +9,9 @@
 - [#4407](https://github.com/less/less.js/pull/4407) Fix [#4331](https://github.com/less/less.js/issues/4331) Exclude CSS at-rule keywords from declarationCall parsing (@matthew-dean)
 - [#4389](https://github.com/less/less.js/pull/4389) Fix [#4354](https://github.com/less/less.js/issues/4354) Unknown at-rule expression commas (@puckowski)
 - [#4404](https://github.com/less/less.js/pull/4404) Fix no-prototype-builtins issues in Ruleset and ToCSSVisitor (@matthew-dean)
-- [#4236](https://github.com/less/less.js/pull/4236) Fix import subpath module bug (@nicolo-ribaudo)
-- [#4327](https://github.com/less/less.js/pull/4327) Remove duplicate length check from expression.genCSS() (@nicolo-ribaudo)
-- [#3791](https://github.com/less/less.js/pull/3791) Handle the lack of optional dependencies (@nicolo-ribaudo)
+- [#4236](https://github.com/less/less.js/pull/4236) Fix import subpath module bug (@HridoyHazard)
+- [#4327](https://github.com/less/less.js/pull/4327) Remove duplicate length check from expression.genCSS() (@Krinkle)
+- [#3791](https://github.com/less/less.js/pull/3791) Handle the lack of optional dependencies (@mems)
 
 #### Features & Improvements
 
@@ -29,10 +29,10 @@
 
 - [#4406](https://github.com/less/less.js/pull/4406) Add test for number with underscore parsing (@matthew-dean)
 - [#4386](https://github.com/less/less.js/pull/4386) Update README.md copyright (@matthew-dean)
-- [#3782](https://github.com/less/less.js/pull/3782) Remove phantom stuff (@nicolo-ribaudo)
-- [#3702](https://github.com/less/less.js/pull/3702) Replace deprecated String.prototype.substr() (@nicolo-ribaudo)
-- [#4265](https://github.com/less/less.js/pull/4265) Remove redundant return from parsers.blockRuleset() (@nicolo-ribaudo)
-- [#4271](https://github.com/less/less.js/pull/4271) Remove unused parsers.entities.propertyCurly() (@nicolo-ribaudo)
+- [#3782](https://github.com/less/less.js/pull/3782) Remove phantom stuff (@jimmywarting)
+- [#3702](https://github.com/less/less.js/pull/3702) Replace deprecated String.prototype.substr() (@CommanderRoot)
+- [#4265](https://github.com/less/less.js/pull/4265) Remove redundant return from parsers.blockRuleset() (@Krinkle)
+- [#4271](https://github.com/less/less.js/pull/4271) Remove unused parsers.entities.propertyCurly() (@Krinkle)
 
 ### v4.5.1 (2025-12-28)
 

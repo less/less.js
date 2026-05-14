@@ -38,7 +38,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+        run: pnpm install --frozen-lockfile
       - name: Print put node & npm version
         run: node --version && pnpm --version 
       - name: Install chromium

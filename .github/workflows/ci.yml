@@ -41,7 +41,5 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Print put node & npm version
         run: node --version && pnpm --version 
-      - name: Install chromium
-        run: pnpm exec playwright install chromium
       - name: Run node tests (ESM + CJS)
         run: pnpm run test:node

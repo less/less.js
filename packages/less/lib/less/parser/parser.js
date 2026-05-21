@@ -1878,7 +1878,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 parserInput.save();
                 do {
                     parserInput.save();
-                    if (parserInput.$re(/^[0-9a-z-]*\s+\(/)) {
+                    if (parserInput.$re(/^(?:--|-?(?:[_a-zA-Z0-9]|[^\0-\x7F]|\\[0-9a-fA-F]{1,6}\s?|\\[^\n\r\f0-9a-fA-F]))(?:[-_a-zA-Z0-9]|[^\0-\x7F]|\\[0-9a-fA-F]{1,6}\s?|\\[^\n\r\f0-9a-fA-F])*\s+\(/)) {
                         spacing = true;
                     }
                     parserInput.restore();
@@ -1920,7 +1920,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         }
                         if (closed) {
                             if (p && !e) {
-                                nodes.push(new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index)));
+                                const paren = new (tree.Paren)(new (tree.QueryInParens)(p.op, p.lvalue, p.rvalue, rangeP ? rangeP.op : null, rangeP ? rangeP.rvalue : null, p._index));
+                                if (!spacing) {
+                                    paren.noSpacing = true;
+                                }
+                                nodes.push(paren);
                                 e = p;
                             } else if (p && e) {
                                 nodes.push(new (tree.Paren)(new (tree.Declaration)(p, e, null, null, parserInput.i + currentIndex, fileInfo, true)));
@@ -1929,7 +1933,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 }
                                 spacing = false;
                             } else if (e) {
-                                nodes.push(new(tree.Paren)(e));
+                                const paren = new(tree.Paren)(e);
+                                if (!spacing) {
+                                    paren.noSpacing = true;
+                                }
+                                nodes.push(paren);
                                 spacing = false;
                             } else {
                                 error('badly formed media feature definition');
@@ -1942,7 +1950,14 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 parserInput.forget();
                 if (nodes.length > 0) {
-                    return new(tree.Expression)(nodes);
+                    const expression = new(tree.Expression)(nodes);
+                    if (nodes.length === 2
+                        && (nodes[0].type === 'Keyword' || nodes[0].type === 'Variable')
+                        && nodes[1].type === 'Paren'
+                        && nodes[1].noSpacing) {
+                        expression.noSpacing = true;
+                    }
+                    return expression;
                 }
             },
 

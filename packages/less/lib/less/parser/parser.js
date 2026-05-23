@@ -1875,6 +1875,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let p;
                 let rangeP;
                 let spacing = false;
+                const cssKeyword = () => {
+                    const k = parserInput.$re(/^(?:--|-?(?:[_a-zA-Z0-9]|[^\0-\x7F]|\\[0-9a-fA-F]{1,6}\s?|\\[^\n\r\f0-9a-fA-F]))(?:[-_a-zA-Z0-9]|[^\0-\x7F]|\\[0-9a-fA-F]{1,6}\s?|\\[^\n\r\f0-9a-fA-F])*/);
+                    if (k) {
+                        return tree.Color.fromKeyword(k) || new(tree.Keyword)(k);
+                    }
+                };
                 parserInput.save();
                 do {
                     parserInput.save();
@@ -1883,7 +1889,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     parserInput.restore();
 
-                    e = entities.declarationCall.bind(this)() || entities.keyword() || entities.variable() || entities.mixinLookup()
+                    e = entities.declarationCall.bind(this)() || cssKeyword() || entities.keyword() || entities.variable() || entities.mixinLookup()
                     if (e) {
                         nodes.push(e);
                         if (e.type === 'Variable' ||

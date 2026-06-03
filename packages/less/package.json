@@ -29,15 +29,12 @@
 	"main": "./dist/less-node.cjs",
 	"exports": {
 		".": {
-			"browser": "./dist/less.js",
 			"import": "./lib/index.js",
 			"require": "./dist/less-node.cjs",
 			"default": "./lib/index.js"
 		},
 		"./lib/*": "./lib/*",
-		"./dist/less-node.cjs": "./dist/less-node.cjs",
-		"./dist/less.js": "./dist/less.js",
-		"./dist/less.min.js": "./dist/less.min.js"
+		"./dist/less-node.cjs": "./dist/less-node.cjs"
 	},
 	"directories": {
 		"test": "./test"
@@ -64,7 +61,7 @@
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"typecheck": "tsc --noEmit",
 		"build": "node build/rollup.js --dist",
-		"benchmark": "node benchmark/benchmark-runner.cjs benchmark/benchmark.less 30 5 --math=always",
+		"benchmark": "node benchmark/benchmark-runner.cjs",
 		"benchmark:all": "node benchmark/run-and-compare.mjs",
 		"prepublishOnly": "npm run typecheck && grunt dist && grunt test:node"
 	},

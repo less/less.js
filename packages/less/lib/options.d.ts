@@ -5,6 +5,7 @@
 export interface LessRenderOptions {
   filename?: string;
   paths?: string[];
+  plugins?: unknown[];
   sourceMap?: boolean;
   sourceMapFilename?: string;
   sourceMapRootpath?: string;
@@ -34,7 +35,7 @@ export interface JessRenderResult {
   imports?: string[];
 }
 
-export function createLessOptions(options?: LessRenderOptions): {
+export function createLessOptions(options?: LessRenderOptions, runtime?: { source?: string }): {
   configOptions: object;
   filePath?: string;
 };

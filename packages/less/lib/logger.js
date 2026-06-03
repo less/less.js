@@ -19,6 +19,7 @@ function _fireEvent(type, msg) {
   }
 }
 
+// Wrap Jess's logger so Less listeners receive Jess's log output
 const original = {
   log: jessLogger.log?.bind(jessLogger),
   info: jessLogger.info?.bind(jessLogger),
@@ -45,26 +46,38 @@ jessLogger.configure?.({
   },
 });
 
+/** Less-compatible logger backed by Jess's singleton */
 const logger = {
+  /** @param {string} msg */
   error(msg) {
     _fireEvent('error', msg);
     original.error?.(msg);
   },
+
+  /** @param {string} msg */
   warn(msg) {
     _fireEvent('warn', msg);
     original.warn?.(msg);
   },
+
+  /** @param {string} msg */
   info(msg) {
     _fireEvent('info', msg);
     original.info?.(msg);
   },
+
+  /** @param {string} msg */
   debug(msg) {
     _fireEvent('debug', msg);
     original.log?.(msg);
   },
+
+  /** @param {LogListener} listener */
   addListener(listener) {
     _listeners.push(listener);
   },
+
+  /** @param {LogListener} listener */
   removeListener(listener) {
     const i = _listeners.indexOf(listener);
     if (i >= 0) _listeners.splice(i, 1);

@@ -1,5 +1,5 @@
-// Test that CJS require('less') works via the lazy proxy wrapper.
-console.log('Testing CJS require...');
+// Replicates: "const less = require('less')" — how users report importing (Node, Webpack CJS)
+console.log("Testing: require('less')...");
 
 const less = require('less');
 

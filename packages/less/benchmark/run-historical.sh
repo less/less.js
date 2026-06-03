@@ -370,9 +370,9 @@ print(json.dumps({
     # Run from the Less package directory so require() finds the compiler
     # Save result to temp file to avoid shell quoting issues
     result_file=$(mktemp)
-    # Pass --math=always for consistent cross-version results
-    # (v4+ defaults to parens-division which changes evaluation behavior)
-    (cd "$LESS_DIR" && node "$BENCH_TARGET/benchmark-runner.js" "$bench_path" "$RUNS" "$WARMUP" --math=always > "$result_file" 2>&1) || true
+    # Force parens-division explicitly for cross-version consistency without
+    # treating CSS slash syntax as arithmetic.
+    (cd "$LESS_DIR" && node "$BENCH_TARGET/benchmark-runner.js" "$bench_path" "$RUNS" "$WARMUP" --math=parens-division > "$result_file" 2>&1) || true
 
     # Use python to safely merge results
     tag_json=$(python3 -c "

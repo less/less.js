@@ -40,12 +40,12 @@ each(@colors, {
 
 // --- each() generating utility classes ---
 @spacings: {
-  0: 0;
-  1: 4px;
-  2: 8px;
-  3: 16px;
-  4: 24px;
-  5: 32px;
+  s0: 0;
+  s1: 4px;
+  s2: 8px;
+  s3: 16px;
+  s4: 24px;
+  s5: 32px;
 };
 
 @directions: top, right, bottom, left;
@@ -97,11 +97,11 @@ each(@font-weights, {
 });
 
 @opacities: {
-  0: 0;
-  25: 0.25;
-  50: 0.5;
-  75: 0.75;
-  100: 1;
+  o0: 0;
+  o25: 0.25;
+  o50: 0.5;
+  o75: 0.75;
+  o100: 1;
 };
 each(@opacities, .(@val, @key) {
   .opacity-@{key} { opacity: @val; }

@@ -9,6 +9,7 @@
  * @module less
  */
 
+import { readFile } from 'node:fs/promises';
 import { Compiler } from 'jess';
 import { createLessOptions, getCompilerCacheKey, mapRenderResult } from './options.js';
 import { version } from './version.js';
@@ -17,6 +18,23 @@ import { lesscHelper } from './lessc-helper.js';
 
 const compilerCache = new Map();
 const lessVersion = version.array;
+
+function toLessError(result, filePath) {
+  const diagnostic = result?.errors?.[0];
+  const error = new Error(diagnostic?.message || 'Less render failed');
+
+  error.type = diagnostic?.phase || 'Syntax';
+  error.filename = diagnostic?.filePath || filePath;
+  error.line = diagnostic?.line || 1;
+  error.column = diagnostic?.column || 1;
+  error.extract = Array.isArray(diagnostic?.lines)
+    ? diagnostic.lines.map((line) => typeof line === 'string' ? line : String(line))
+    : undefined;
+  error.jessErrors = result?.errors || [];
+  error.jessWarnings = result?.warnings || [];
+
+  return error;
+}
 
 /**
  * @param {object} configOptions
@@ -45,13 +63,17 @@ function render(input, options = {}, callback) {
     options = {};
   }
   const promise = (async () => {
-    const { configOptions, filePath } = createLessOptions(options);
+    const { configOptions, filePath } = createLessOptions(options, { source: input });
     const compiler = getCompiler(configOptions);
 
     const result = await compiler.renderToResult(
       { source: input, filePath, language: 'less', extension: '.less' },
       configOptions
     );
+
+    if (result.errors?.length) {
+      throw toLessError(result, filePath);
+    }
 
     return mapRenderResult(result, options);
   })();
@@ -73,10 +95,14 @@ function render(input, options = {}, callback) {
  * @returns {Promise<import('./options.js').LessRenderResult>}
  */
 async function renderFile(filePath, options = {}) {
-  const { configOptions } = createLessOptions(options);
+  const source = await readFile(filePath, 'utf8');
+  const { configOptions } = createLessOptions(options, { source });
   const compiler = getCompiler(configOptions);
 
   const result = await compiler.renderToResult(filePath, configOptions);
+  if (result.errors?.length) {
+    throw toLessError(result, filePath);
+  }
   return mapRenderResult(result, options);
 }
 

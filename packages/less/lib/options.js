@@ -3,6 +3,10 @@
  * @module less/lib/options
  */
 
+import { lessCompatPlugin } from '@jesscss/plugin-less-compat';
+
+const AT_PLUGIN_RE = /(^|[\r\n])\s*@plugin\b/m;
+
 /**
  * @param {any} value
  * @returns {string}
@@ -23,11 +27,16 @@ function stableStringify(value) {
 /**
  * Map Less render options to Jess compiler config.
  * @param {import('./options.js').LessRenderOptions} [options] Less-style options
+ * @param {{ source?: string }} [runtime] Render-time inputs used for feature detection
  * @returns {{ configOptions: object, filePath?: string }}
  */
-export function createLessOptions(options) {
+export function createLessOptions(options, runtime = {}) {
   const opts = options || {};
   const filePath = opts.filename || undefined;
+  const shouldEnableCompat =
+    Array.isArray(opts.plugins) && opts.plugins.length > 0
+      ? true
+      : typeof runtime.source === 'string' && AT_PLUGIN_RE.test(runtime.source);
 
   const math = /** @type {number|string|undefined} */ (opts.math);
   const mathMode =
@@ -39,7 +48,9 @@ export function createLessOptions(options) {
     compile: {
       searchPaths: opts.paths || [],
       mathMode,
-      plugins: ['@jesscss/plugin-less-compat'],
+      plugins: shouldEnableCompat
+        ? [lessCompatPlugin({ plugins: opts.plugins || [] })]
+        : [],
     },
     output: {},
     language: {},

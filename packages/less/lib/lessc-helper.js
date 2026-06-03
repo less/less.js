@@ -1,5 +1,6 @@
 /**
  * Helper functions for lessc CLI.
+ * Adapted from lib.bak/less-node/lessc-helper.js.
  * @module less/lib/lessc-helper
  */
 
@@ -16,10 +17,12 @@ const STYLES = {
 };
 
 const lesscHelper = {
+  /** @param {string} str @param {string} style */
   stylize(str, style) {
     const s = STYLES[style] ?? STYLES.reset;
     return `\x1b[${s[0]}m${str}\x1b[${s[1]}m`;
   },
+
   printUsage() {
     console.log('usage: lessc [option option=parameter ...] <source> [destination]');
     console.log('');

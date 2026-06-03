@@ -9,12 +9,12 @@
 
 /**
  * @typedef {Object} LessStatic
- * @property {string} version
- * @property {function(string, import('./options.js').LessRenderOptions?, function?): Promise<LessRenderResult>} render
- * @property {function(string, import('./options.js').LessRenderOptions?): Promise<LessRenderResult>} renderFile
- * @property {import('./logger.js').default} logger
- * @property {import('./lessc-helper.js').default} lesscHelper
- * @property {object} Compiler
+ * @property {number[]} version Less-compatible version tuple
+ * @property {function(string, import('./options.js').LessRenderOptions?, function?): Promise<LessRenderResult>} render Render Less to CSS
+ * @property {function(string, import('./options.js').LessRenderOptions?): Promise<LessRenderResult>} renderFile Render Less file to CSS
+ * @property {import('./logger.js').default} logger Logger instance
+ * @property {import('./lessc-helper.js').default} lesscHelper CLI helper
+ * @property {object} Compiler Jess Compiler class
  */
 
 export {};

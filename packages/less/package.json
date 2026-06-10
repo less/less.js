@@ -29,13 +29,14 @@
 	"main": "./dist/less-node.cjs",
 	"exports": {
 		".": {
-			"browser": "./dist/less.js",
+			"browser": "./dist/less.cjs",
 			"import": "./lib/less-node/index.js",
 			"require": "./dist/less-node.cjs",
 			"default": "./lib/less-node/index.js"
 		},
 		"./lib/*": "./lib/*",
 		"./dist/less-node.cjs": "./dist/less-node.cjs",
+		"./dist/less.cjs": "./dist/less.cjs",
 		"./dist/less.js": "./dist/less.js",
 		"./dist/less.min.js": "./dist/less.min.js"
 	},

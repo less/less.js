@@ -117,6 +117,17 @@ async function buildBrowser() {
             name: 'less',
             banner
         });
+
+        if (!args.out) {
+            const cjsFile = `${outDir}/less.cjs`;
+            console.log(`Writing ${cjsFile}...`);
+            await bundle.write({
+                file: path.join(rootPath, cjsFile),
+                format: 'umd',
+                name: 'less',
+                banner
+            });
+        }
     }
 
     if (!args.out || args.out.indexOf('less.min.js') > -1) {

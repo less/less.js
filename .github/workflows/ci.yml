@@ -43,3 +43,20 @@ jobs:
         run: node --version && pnpm --version
       - name: Run node tests (ESM + CJS)
         run: pnpm run test:node
+
+  copilot-review:
+    name: Request Copilot review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Request Copilot review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers \
+            -f "reviewers[]=copilot-pull-request-reviewer"

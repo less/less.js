@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [main, master]
 
-env:
-  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.playwright-browsers
-
 jobs:
   test:
     name: 'Tests on ${{matrix.os}} with Node "${{matrix.node}}"'
@@ -44,13 +41,5 @@ jobs:
         run: pnpm install
       - name: Print put node & npm version
         run: node --version && pnpm --version
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.playwright-browsers
-          key: playwright-${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - name: Install chromium
-        run: pnpm exec playwright install chromium --with-deps
-        timeout-minutes: 5
       - name: Run node tests (ESM + CJS)
         run: pnpm run test:node

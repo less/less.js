@@ -59,7 +59,9 @@ function asMediaQuery(ctx) {
  */
 function debugInfo(context, ctx, lineSeparator) {
     let result = '';
-    if (context.dumpLineNumbers && !context.compress) {
+    // Some nodes never receive a debugInfo during parsing (e.g. the implicit
+    // ruleset of a nested @supports/@document), so there is no line to emit.
+    if (context.dumpLineNumbers && !context.compress && ctx.debugInfo) {
         switch (context.dumpLineNumbers) {
             case 'comments':
                 result = asComment(ctx);

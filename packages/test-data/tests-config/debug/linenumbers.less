@@ -31,3 +31,12 @@
     }
   }
 }
+
+.supports-rule {
+  @supports (display: grid) {
+    color: green;
+    .nested-supports {
+      color: blue;
+    }
+  }
+}

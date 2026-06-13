@@ -7,7 +7,7 @@ name: Create Release PR
 # master → "chore: release vX.Y.Z" PR targets master
 # alpha → "chore: alpha release vX.Y.Z" PR targets alpha
 on:
-  push:
+  pus
     branches:
       - master
       - alpha
@@ -201,7 +201,7 @@ jobs:
           if [ -z "${EXISTING}" ]; then
             BODY="## Release v${NEXT_VERSION}
 
-This PR bumps the version to \$`${NEXT_VERSION}\$` and will trigger an npm publish when merged."
+This PR bumps the version to \`${NEXT_VERSION}\` and will trigger an npm publish when merged."
 
             gh pr create \
               --title "${TITLE}" \

@@ -2,12 +2,12 @@ name: Create Release PR
 
 # When code lands on master or alpha (not a release PR merge itself),
 # automatically create or update a release pull request that bumps the
-# version.  Maintainers then merge that PR to trigger publishing.
+# version. Maintainers then merge that PR to trigger publishing.
 #
-#   master → "chore: release vX.Y.Z"        PR targets master
-#   alpha  → "chore: alpha release vX.Y.Z"  PR targets alpha
+# master → "chore: release vX.Y.Z" PR targets master
+# alpha → "chore: alpha release vX.Y.Z" PR targets alpha
 on:
-  push:
+  pus
     branches:
       - master
       - alpha
@@ -21,7 +21,7 @@ jobs:
     name: Create or Update Release PR
     runs-on: ubuntu-latest
     # Skip if this push is itself the merge of a release PR (prevents an
-    # infinite loop).  We catch both squash-merged and regular-merged commits
+    # infinite loop). We catch both squash-merged and regular-merged commits
     # for both the master and alpha release PR title conventions.
     if: |
       github.repository == 'less/less.js' &&
@@ -60,15 +60,15 @@ jobs:
             # If package.json doesn't carry an alpha version yet, bump the
             # major and start a fresh alpha.1 series.
             NEXT=$(node -e "
-              const cur = process.argv[1];
-              const m = cur.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
-              if (m) {
-                process.stdout.write(m[1] + '-alpha.' + (parseInt(m[2], 10) + 1));
-              } else {
-                const parts = cur.replace(/-.*/, '').split('.');
-                const nextMajor = parseInt(parts[0], 10) + 1;
-                process.stdout.write(nextMajor + '.0.0-alpha.1');
-              }
+            const cur = process.argv[1];
+            const m = cur.match(/^(\\d+\\.\\d+\\.\\d+)-alpha\\.(\\d+)$/);
+            if (m) {
+              process.stdout.write(m[1] + '-alpha.' + (parseInt(m[2], 10) + 1));
+            } else {
+              const parts = cur.replace(/-.*/, '').split('.');
+              const nextMajor = parseInt(parts[0], 10) + 1;
+              process.stdout.write(nextMajor + '.0.0-alpha.1');
+            }
             " "$CURRENT")
             echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
             echo "branch=chore/alpha-release-v$NEXT" >> "$GITHUB_OUTPUT"
@@ -77,15 +77,15 @@ jobs:
             # Master: patch-increment from the latest npm published version.
             NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
             NEXT=$(node -e "
-              const semver = require('semver');
-              const cur = process.argv[1];
-              const npm = process.argv[2] || null;
-              if (npm && semver.valid(cur) && semver.gt(cur, npm)) {
-                process.stdout.write(cur);
-              } else {
-                const base = npm || cur;
-                process.stdout.write(semver.inc(base, 'patch'));
-              }
+            const semver = require('semver');
+            const cur = process.argv[1];
+            const npm = process.argv[2] || null;
+            if (npm && semver.valid(cur) && semver.gt(cur, npm)) {
+              process.stdout.write(cur);
+            } else {
+              const base = npm || cur;
+              process.stdout.write(semver.inc(base, 'patch'));
+            }
             " "$CURRENT" "$NPM_VERSION")
             echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
             echo "branch=chore/release-v$NEXT" >> "$GITHUB_OUTPUT"
@@ -122,20 +122,49 @@ jobs:
 
           # Bump version in all package.json files.
           node -e "
-            const fs = require('fs');
-            const version = process.env.NEXT_VERSION;
-            const dirs = fs.readdirSync('packages', { withFileTypes: true })
-              .filter(d => d.isDirectory())
-              .map(d => 'packages/' + d.name + '/package.json');
-            for (const f of ['package.json', ...dirs].filter(f => fs.existsSync(f))) {
-              const pkg = JSON.parse(fs.readFileSync(f, 'utf8'));
-              if (!pkg.version) continue;
-              pkg.version = version;
-              fs.writeFileSync(f, JSON.stringify(pkg, null, '\t') + '\n');
-            }
+          const fs = require('fs');
+          const version = process.env.NEXT_VERSION;
+          const dirs = fs.readdirSync('packages', { withFileTypes: true })
+            .filter(d => d.isDirectory())
+            .map(d => 'packages/' + d.name + '/package.json');
+          for (const f of ['package.json', ...dirs].filter(f => fs.existsSync(f))) {
+            const pkg = JSON.parse(fs.readFileSync(f, 'utf8'));
+            if (!pkg.version) continue;
+            pkg.version = version;
+            fs.writeFileSync(f, JSON.stringify(pkg, null, '\t') + '\n');
+          }
           "
 
           git add package.json packages/*/package.json
+
+          # Auto-generate CHANGELOG entry from merged PRs since last tag.
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            LAST_TAG_DATE=$(git log -1 --format=%aI "$LAST_TAG")
+            PR_LINES=$(gh pr list \
+              --state merged \
+              --base "${RELEASE_BASE}" \
+              --search "merged:>${LAST_TAG_DATE}" \
+              --json number,title,author \
+              --jq '.[] | "- [#\(.number)](https://github.com/${{ github.repository }}/pull/\(.number)) \(.title) (@\(.author.login))"' \
+              2>/dev/null || echo "")
+            if [ -n "$PR_LINES" ]; then
+              TODAY=$(date +%Y-%m-%d)
+              {
+                head -1 CHANGELOG.md
+                echo ""
+                echo "### v${NEXT_VERSION} (${TODAY})"
+                echo ""
+                echo "#### Changes"
+                echo ""
+                echo "$PR_LINES"
+                echo ""
+                tail -n +2 CHANGELOG.md
+              } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+              git add CHANGELOG.md
+            fi
+          fi
+
           COMMITTED=false
           if git diff --cached --quiet; then
             echo "No version changes; branch is already at v${NEXT_VERSION}"
@@ -146,7 +175,7 @@ jobs:
 
           # If no new commit was created the release branch has no commits
           # ahead of master, so pushing it and trying to open a PR would fail
-          # with "no commits between head and base".  Instead, just report
+          # with "no commits between head and base". Instead, just report
           # whether an existing release PR is open and exit cleanly.
           if [ "$COMMITTED" = "false" ]; then
             EXISTING=$(gh pr list --head "${RELEASE_BRANCH}" --base "${RELEASE_BASE}" \
@@ -161,7 +190,7 @@ jobs:
 
           # --force-with-lease refuses to overwrite if the remote has advanced
           # past what we fetched, which protects against concurrent workflow
-          # runs.  This is intentional: if two code PRs land simultaneously the
+          # runs. This is intentional: if two code PRs land simultaneously the
           # second run will fail-fast here and the release branch stays coherent.
           git push origin "${RELEASE_BRANCH}" --force-with-lease
 
@@ -172,11 +201,7 @@ jobs:
           if [ -z "${EXISTING}" ]; then
             BODY="## Release v${NEXT_VERSION}
 
-          This PR bumps the version to \`${NEXT_VERSION}\` and will trigger an npm publish when merged.
-
-          **Before merging:**
-          - [ ] Update CHANGELOG.md with changes for this release
-          - [ ] Verify all CI checks pass"
+This PR bumps the version to \`${NEXT_VERSION}\` and will trigger an npm publish when merged."
 
             gh pr create \
               --title "${TITLE}" \

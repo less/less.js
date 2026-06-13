@@ -7,7 +7,7 @@ name: Create Release PR
 # master → "chore: release vX.Y.Z" PR targets master
 # alpha → "chore: alpha release vX.Y.Z" PR targets alpha
 on:
-  pus
+  push:
     branches:
       - master
       - alpha

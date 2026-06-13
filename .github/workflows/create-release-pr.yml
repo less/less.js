@@ -199,9 +199,7 @@ jobs:
             --json number --jq '.[0].number' 2>/dev/null || echo "")
 
           if [ -z "${EXISTING}" ]; then
-            BODY="## Release v${NEXT_VERSION}
-
-This PR bumps the version to \`${NEXT_VERSION}\` and will trigger an npm publish when merged."
+            BODY=$(printf '## Release v%s\n\nThis PR bumps the version to `%s` and will trigger an npm publish when merged.' "${NEXT_VERSION}" "${NEXT_VERSION}")
 
             gh pr create \
               --title "${TITLE}" \

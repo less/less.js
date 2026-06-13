@@ -1,5 +1,49 @@
 ## Change Log
 
+### v4.6.5 (2026-06-13)
+
+#### Bug Fixes
+
+- [#4444](https://github.com/less/less.js/pull/4444) Fix browser export interop by routing bundlers to CJS-typed UMD artifact (@Copilot)
+- [#4427](https://github.com/less/less.js/pull/4427) Fix parenthesis in media query (@puckowski)
+- [#4421](https://github.com/less/less.js/pull/4421) Fix `not` keyword silently ignored when used without parentheses in conditions (@Copilot)
+- [#4426](https://github.com/less/less.js/pull/4426) Upgrade make-dir to v4 to fix security vulnerability (@jorenbroekema)
+
+#### Maintenance
+
+- [#4447](https://github.com/less/less.js/pull/4447) Automate CHANGELOG generation in release workflow (@matthew-dean)
+- [#4448](https://github.com/less/less.js/pull/4448) Add continue-on-error to copilot-review CI job (@matthew-dean)
+- [#4445](https://github.com/less/less.js/pull/4445) Fix Playwright chromium install hang on Node current/lts/* (@matthew-dean)
+- [#4431](https://github.com/less/less.js/pull/4431) PR-based release flow for alpha branches (@Copilot)
+- [#4430](https://github.com/less/less.js/pull/4430) Ensure npm publish is always backed by a GitHub tag, release, and version-bump commit (@Copilot)
+- [#4432](https://github.com/less/less.js/pull/4432) Update packageManager to pnpm@9.15.9 to match lockfileVersion 9.0 (@Copilot)
+- [#4420](https://github.com/less/less.js/pull/4420) Regression test for @container mixin parameter variable resolution (@Copilot)
+
+### v4.6.4 (2026-03-13)
+
+#### Tests
+
+- [#4422](https://github.com/less/less.js/pull/4422) Add coverage for `:is()`/`:matches()`/`:where()` containing nested `:has()` selectors and comma-separated lists (@Copilot)
+
+### v4.6.3 (2026-03-11)
+
+#### Bug Fixes
+
+- [#4424](https://github.com/less/less.js/pull/4424) Fix webpack browser build - use UMD dist/less.js, add CJS bundle (@matthew-dean)
+
+### v4.6.2 (2026-03-10)
+
+#### Maintenance
+
+- [#4418](https://github.com/less/less.js/pull/4418) Fix publish script to skip stale version markers in squash merges (@matthew-dean)
+- [#4419](https://github.com/less/less.js/pull/4419) Remove .claude directory and add to .gitignore (@matthew-dean)
+
+### v4.6.1 (2026-03-10)
+
+#### Bug Fixes
+
+- [#4417](https://github.com/less/less.js/pull/4417) Fix CJS compatibility, enriched npm README, ESM tests (@matthew-dean)
+
 ### v4.6.0 (2026-03-09)
 
 #### Bug Fixes

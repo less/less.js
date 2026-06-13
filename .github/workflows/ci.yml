@@ -47,6 +47,7 @@ jobs:
   copilot-review:
     name: Request Copilot review
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
     permissions:
       pull-requests: write

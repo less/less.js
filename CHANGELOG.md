@@ -1,5 +1,18 @@
 ## Change Log
 
+### v4.6.6 (2026-06-14)
+
+#### Changes
+
+- [#4450](https://github.com/less/less.js/pull/4450) fix: use printf for PR body to avoid YAML indentation error in run block (@matthew-dean)
+- [#4449](https://github.com/less/less.js/pull/4449) fix: correct push event typo in create-release-pr workflow (pus → push:) (@matthew-dean)
+- [#4446](https://github.com/less/less.js/pull/4446) fix: avoid TypeError on nested @supports with dumpLineNumbers (@sarathfrancis90)
+- [#4441](https://github.com/less/less.js/pull/4441) Preserve spacing for container feature functions (@puneetdixit200)
+- [#4440](https://github.com/less/less.js/pull/4440) chore: prevent dependency lifecycle scripts (@puckowski)
+- [#4437](https://github.com/less/less.js/pull/4437) docs: fix incorrect contributor attributions in v4.6.0 changelog (@barry3406)
+- [#4434](https://github.com/less/less.js/pull/4434) fix(issue#4316): color calc inside from expression (@puckowski)
+
+
 ### v4.6.5 (2026-06-13)
 
 #### Bug Fixes

@@ -1,0 +1,12 @@
+img {
+  aspect-ratio: attr(width type(<number>)) / attr(height type(<number>));
+}
+.fallback {
+  width: attr(data-width type(<length>), 0px);
+}
+.string {
+  content: attr(data-text type(<string>));
+}
+.bare {
+  --my-syntax: <length-percentage>;
+}

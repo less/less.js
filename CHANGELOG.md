@@ -1,5 +1,49 @@
 ## Change Log
 
+### v4.6.5 (2026-06-13)
+
+#### Bug Fixes
+
+- [#4444](https://github.com/less/less.js/pull/4444) Fix browser export interop by routing bundlers to CJS-typed UMD artifact (@Copilot)
+- [#4427](https://github.com/less/less.js/pull/4427) Fix parenthesis in media query (@puckowski)
+- [#4421](https://github.com/less/less.js/pull/4421) Fix `not` keyword silently ignored when used without parentheses in conditions (@Copilot)
+- [#4426](https://github.com/less/less.js/pull/4426) Upgrade make-dir to v4 to fix security vulnerability (@jorenbroekema)
+
+#### Maintenance
+
+- [#4447](https://github.com/less/less.js/pull/4447) Automate CHANGELOG generation in release workflow (@matthew-dean)
+- [#4448](https://github.com/less/less.js/pull/4448) Add continue-on-error to copilot-review CI job (@matthew-dean)
+- [#4445](https://github.com/less/less.js/pull/4445) Fix Playwright chromium install hang on Node current/lts/* (@matthew-dean)
+- [#4431](https://github.com/less/less.js/pull/4431) PR-based release flow for alpha branches (@Copilot)
+- [#4430](https://github.com/less/less.js/pull/4430) Ensure npm publish is always backed by a GitHub tag, release, and version-bump commit (@Copilot)
+- [#4432](https://github.com/less/less.js/pull/4432) Update packageManager to pnpm@9.15.9 to match lockfileVersion 9.0 (@Copilot)
+- [#4420](https://github.com/less/less.js/pull/4420) Regression test for @container mixin parameter variable resolution (@Copilot)
+
+### v4.6.4 (2026-03-13)
+
+#### Tests
+
+- [#4422](https://github.com/less/less.js/pull/4422) Add coverage for `:is()`/`:matches()`/`:where()` containing nested `:has()` selectors and comma-separated lists (@Copilot)
+
+### v4.6.3 (2026-03-11)
+
+#### Bug Fixes
+
+- [#4424](https://github.com/less/less.js/pull/4424) Fix webpack browser build - use UMD dist/less.js, add CJS bundle (@matthew-dean)
+
+### v4.6.2 (2026-03-10)
+
+#### Maintenance
+
+- [#4418](https://github.com/less/less.js/pull/4418) Fix publish script to skip stale version markers in squash merges (@matthew-dean)
+- [#4419](https://github.com/less/less.js/pull/4419) Remove .claude directory and add to .gitignore (@matthew-dean)
+
+### v4.6.1 (2026-03-10)
+
+#### Bug Fixes
+
+- [#4417](https://github.com/less/less.js/pull/4417) Fix CJS compatibility, enriched npm README, ESM tests (@matthew-dean)
+
 ### v4.6.0 (2026-03-09)
 
 #### Bug Fixes
@@ -9,9 +53,9 @@
 - [#4407](https://github.com/less/less.js/pull/4407) Fix [#4331](https://github.com/less/less.js/issues/4331) Exclude CSS at-rule keywords from declarationCall parsing (@matthew-dean)
 - [#4389](https://github.com/less/less.js/pull/4389) Fix [#4354](https://github.com/less/less.js/issues/4354) Unknown at-rule expression commas (@puckowski)
 - [#4404](https://github.com/less/less.js/pull/4404) Fix no-prototype-builtins issues in Ruleset and ToCSSVisitor (@matthew-dean)
-- [#4236](https://github.com/less/less.js/pull/4236) Fix import subpath module bug (@nicolo-ribaudo)
-- [#4327](https://github.com/less/less.js/pull/4327) Remove duplicate length check from expression.genCSS() (@nicolo-ribaudo)
-- [#3791](https://github.com/less/less.js/pull/3791) Handle the lack of optional dependencies (@nicolo-ribaudo)
+- [#4236](https://github.com/less/less.js/pull/4236) Fix import subpath module bug (@HridoyHazard)
+- [#4327](https://github.com/less/less.js/pull/4327) Remove duplicate length check from expression.genCSS() (@Krinkle)
+- [#3791](https://github.com/less/less.js/pull/3791) Handle the lack of optional dependencies (@mems)
 
 #### Features & Improvements
 
@@ -29,10 +73,10 @@
 
 - [#4406](https://github.com/less/less.js/pull/4406) Add test for number with underscore parsing (@matthew-dean)
 - [#4386](https://github.com/less/less.js/pull/4386) Update README.md copyright (@matthew-dean)
-- [#3782](https://github.com/less/less.js/pull/3782) Remove phantom stuff (@nicolo-ribaudo)
-- [#3702](https://github.com/less/less.js/pull/3702) Replace deprecated String.prototype.substr() (@nicolo-ribaudo)
-- [#4265](https://github.com/less/less.js/pull/4265) Remove redundant return from parsers.blockRuleset() (@nicolo-ribaudo)
-- [#4271](https://github.com/less/less.js/pull/4271) Remove unused parsers.entities.propertyCurly() (@nicolo-ribaudo)
+- [#3782](https://github.com/less/less.js/pull/3782) Remove phantom stuff (@jimmywarting)
+- [#3702](https://github.com/less/less.js/pull/3702) Replace deprecated String.prototype.substr() (@CommanderRoot)
+- [#4265](https://github.com/less/less.js/pull/4265) Remove redundant return from parsers.blockRuleset() (@Krinkle)
+- [#4271](https://github.com/less/less.js/pull/4271) Remove unused parsers.entities.propertyCurly() (@Krinkle)
 
 ### v4.5.1 (2025-12-28)
 

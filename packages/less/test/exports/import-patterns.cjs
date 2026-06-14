@@ -18,11 +18,15 @@ if (!exp?.['.']?.browser) {
   console.error('FAIL: exports.browser required (webpack: import less from "less")');
   process.exit(1);
 }
-if (!fs.existsSync(path.join(__dirname, '../../dist/less.js'))) {
-  console.error('FAIL: dist/less.js not found (run "npm run build" first)');
+if (exp['.'].browser !== './dist/less.cjs') {
+  console.error(`FAIL: exports.browser must point to "./dist/less.cjs", got "${exp['.'].browser}"`);
+  process.exit(1);
+}
+if (!fs.existsSync(path.join(__dirname, '../../dist/less.cjs'))) {
+  console.error('FAIL: dist/less.cjs not found (run "npm run build" first)');
   process.exit(1);
 }
 
 console.log('✓ exports support: import less from "less" (Node/ESM)');
 console.log('✓ exports support: require("less") (Node/CJS)');
-console.log('✓ exports support: import less from "less" (webpack browser → dist/less.js UMD)');
+console.log('✓ exports support: import less from "less" (bundler browser → dist/less.cjs UMD)');

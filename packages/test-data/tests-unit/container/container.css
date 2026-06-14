@@ -130,6 +130,46 @@
     margin: 0.5em 0 0 0;
   }
 }
+@container card (width > 400px), style(--responsive: true), scroll-state(stuck: top) {
+  h2 {
+    font-size: 1.5em;
+  }
+}
+@container style(--theme) {
+  .style-query {
+    color: red;
+  }
+}
+@container style((--theme: one) or (--theme: two)) {
+  .style-query-list {
+    color: blue;
+  }
+}
+@container contactBody (min-width: 1300px) {
+  .named-container {
+    width: 25%;
+  }
+}
+@container _body (min-width: 1300px) {
+  .underscored-container {
+    width: 25%;
+  }
+}
+@container --body (min-width: 1300px) {
+  .custom-ident-container {
+    width: 25%;
+  }
+}
+@container contact\.body (min-width: 1300px) {
+  .escaped-container {
+    width: 25%;
+  }
+}
+@container café (min-width: 1300px) {
+  .nonascii-container {
+    width: 25%;
+  }
+}
 @container (width < 500px) or (height < 500px) and (orientation: portrait) {
   .card-content p {
     padding: 0;
@@ -266,6 +306,11 @@
 @container scroll-state(scrollable: top) {
   #sticky-child {
     font-size: 75%;
+  }
+}
+@container sidebar (min-width: 400px), scroll-state(stuck: top) {
+  #sticky-child {
+    font-size: 80%;
   }
 }
 @container foo (min-width: 400px) {

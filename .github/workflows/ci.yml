@@ -38,7 +38,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Print put node & npm version
         run: node --version && pnpm --version
       - name: Run node tests (ESM + CJS)

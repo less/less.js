@@ -38,3 +38,12 @@
   color: red;
   width: 2;
 }
+@supports (display: grid) {
+  .supports-rule {
+    color: green;
+  }
+  /* line 38, {path}linenumbers.less */
+  .supports-rule .nested-supports {
+    color: blue;
+  }
+}

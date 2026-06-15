@@ -2547,6 +2547,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             op = '<';
                         }
                     } else
+                    if (parserInput.$str('!=')) {
+                        op = '!=';
+                    } else
                     if (parserInput.$char('=')) {
                         if (parserInput.$char('>')) {
                             op = '=>';

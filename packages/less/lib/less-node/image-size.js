@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
 import Dimension from '../less/tree/dimension.js';
 import Expression from '../less/tree/expression.js';
@@ -33,8 +34,24 @@ export default environment => {
             throw fileSync.error;
         }
 
-        const sizeOf = require('image-size');
-        return sizeOf ? sizeOf(fileSync.filename) : {width: 0, height: 0};
+        const probe = require('probe-image-size/sync');
+        if (typeof probe !== 'function') {
+            return { width: 0, height: 0 };
+        }
+
+        const size = probe(readFileSync(fileSync.filename));
+
+        if (!size) {
+            throw {
+                type: 'File',
+                message: `Unrecognised image format for '${filePath}'`
+            };
+        }
+
+        return {
+            width: size.width,
+            height: size.height
+        };
     }
 
     const imageFunctions = {

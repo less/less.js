@@ -1,5 +1,5 @@
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
-import fs from 'fs';
 import Dimension from '../less/tree/dimension.js';
 import Expression from '../less/tree/expression.js';
 import functionRegistry from './../less/functions/function-registry.js';
@@ -41,12 +41,7 @@ export default environment => {
             return { width: 0, height: 0 };
         }
 
-        // Read the file as raw bytes via its resolved filename to ensure binary
-        // integrity — the file manager may return string contents for text-mode
-        // reads which corrupts binary image data and causes probe to return null.
-        const contents = fs.readFileSync(fileSync.filename);
-
-        const size = probe(contents);
+        const size = probe(readFileSync(fileSync.filename));
 
         if (!size) {
             throw {

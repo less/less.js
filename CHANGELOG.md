@@ -1,5 +1,13 @@
 ## Change Log
 
+### v4.6.7 (2026-06-20)
+
+#### Changes
+
+- [#4457](https://github.com/less/less.js/pull/4457) Fix failing "Request Copilot review" CI job (@app/copilot-swe-agent)
+- [#4451](https://github.com/less/less.js/pull/4451) chore: release v4.6.6 (@app/github-actions)
+
+
 ### v4.6.6 (2026-06-14)
 
 #### Changes

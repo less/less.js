@@ -60,4 +60,5 @@ jobs:
             --method POST \
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers \
-            -f "reviewers[]=copilot-pull-request-reviewer"
+            -f "reviewers[]=copilot-pull-request-reviewer" \
+          || echo "::warning::Could not request Copilot review (the token may lack pull-requests: write access, or Copilot PR reviews may not be enabled for this repository)"

@@ -422,6 +422,23 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 },
 
                 //
+                // A CSS data type name, used by the `type()` notation of `attr()`
+                // and as a value component in custom properties, such as:
+                //
+                //     <number>     <length-percentage>     <custom-ident>
+                //
+                // It is emitted verbatim so the surrounding CSS function is
+                // preserved instead of throwing a parse error.
+                //
+                dataType: function () {
+                    const index = parserInput.i;
+                    const k = parserInput.$re(/^<[\w-]+>/);
+                    if (k) {
+                        return new(tree.Anonymous)(k, index + currentIndex);
+                    }
+                },
+
+                //
                 // A function call
                 //
                 //     rgb(255, 0, 255)
@@ -1288,8 +1305,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 const entities = this.entities;
 
                 return this.comment() || entities.literal() || entities.variable() || entities.url() ||
-                    entities.property() || entities.call() || entities.keyword() || this.mixin.call(true) ||
-                    entities.javascript();
+                    entities.dataType() || entities.property() || entities.call() || entities.keyword() ||
+                    this.mixin.call(true) || entities.javascript();
             },
 
             //

@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { createRequire } from 'module';
 import Dimension from '../less/tree/dimension.js';
 import Expression from '../less/tree/expression.js';
@@ -33,23 +34,41 @@ export default environment => {
             throw fileSync.error;
         }
 
-        const sizeOf = require('image-size');
-        return sizeOf ? sizeOf(fileSync.filename) : {width: 0, height: 0};
+        let probe;
+        try {
+            probe = require('probe-image-size/sync');
+        } catch (_) {
+            return { width: 0, height: 0 };
+        }
+
+        const size = probe(readFileSync(fileSync.filename));
+
+        if (!size) {
+            throw {
+                type: 'File',
+                message: `Unrecognised image format for '${filePath}'`
+            };
+        }
+
+        return {
+            width: size.width,
+            height: size.height
+        };
     }
 
     const imageFunctions = {
-        'image-size': function(filePathNode) {
+        'image-size': function (filePathNode) {
             const size = imageSize(this, filePathNode);
             return new Expression([
                 new Dimension(size.width, 'px'),
                 new Dimension(size.height, 'px')
             ]);
         },
-        'image-width': function(filePathNode) {
+        'image-width': function (filePathNode) {
             const size = imageSize(this, filePathNode);
             return new Dimension(size.width, 'px');
         },
-        'image-height': function(filePathNode) {
+        'image-height': function (filePathNode) {
             const size = imageSize(this, filePathNode);
             return new Dimension(size.height, 'px');
         }

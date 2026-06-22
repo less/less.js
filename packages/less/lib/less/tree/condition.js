@@ -45,16 +45,16 @@ class Condition extends Node {
             default:
                 switch (Node.compare(a, b)) {
                     case -1:
-                        result = this.op === '<' || this.op === '=<' || this.op === '<=';
+                        result = this.op === '<' || this.op === '=<' || this.op === '<=' || this.op === '!=';
                         break;
                     case 0:
                         result = this.op === '=' || this.op === '>=' || this.op === '=<' || this.op === '<=';
                         break;
                     case 1:
-                        result = this.op === '>' || this.op === '>=';
+                        result = this.op === '>' || this.op === '>=' || this.op === '!=';
                         break;
                     default:
-                        result = false;
+                        result = this.op === '!=';
                 }
         }
 

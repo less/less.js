@@ -28,7 +28,7 @@ function moduleShim() {
         },
         load(id) {
             if (id === '\0module') {
-                return `export function createRequire() { return require; }`;
+                return 'export function createRequire() { return require; }';
             }
             return null;
         }

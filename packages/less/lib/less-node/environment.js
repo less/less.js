@@ -8,7 +8,7 @@ class SourceMapGeneratorFallback {
     toJSON(){
         return null;
     }
-};
+}
 
 export default {
     encodeBase64: function encodeBase64(str) {
@@ -19,9 +19,9 @@ export default {
     mimeLookup: function (filename) {
         try {
             const mimeModule = require('mime');
-            return mimeModule ? mimeModule.lookup(filename) : "application/octet-stream";
+            return mimeModule ? mimeModule.lookup(filename) : 'application/octet-stream';
         } catch (e) {
-            return "application/octet-stream";
+            return 'application/octet-stream';
         }
     },
     charsetLookup: function (mime) {

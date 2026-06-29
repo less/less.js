@@ -145,16 +145,16 @@ const NestableAtRulePrototype = {
         self.features = new Value(self.permute(/** @type {Node[][]} */ (/** @type {unknown} */ (path))).map(
             /** @param {Node | Node[]} path */
             path => {
-            path = /** @type {Node[]} */ (path).map(
+                path = /** @type {Node[]} */ (path).map(
                 /** @param {Node & { toCSS?: Function }} fragment */
-                fragment => fragment.toCSS ? fragment : new Anonymous(/** @type {string} */ (/** @type {unknown} */ (fragment))));
+                    fragment => fragment.toCSS ? fragment : new Anonymous(/** @type {string} */ (/** @type {unknown} */ (fragment))));
 
-            for (i = /** @type {Node[]} */ (path).length - 1; i > 0; i--) {
+                for (i = /** @type {Node[]} */ (path).length - 1; i > 0; i--) {
                 /** @type {Node[]} */ (path).splice(i, 0, new Anonymous('and'));
-            }
+                }
 
-            return new Expression(/** @type {Node[]} */ (path));
-        }));
+                return new Expression(/** @type {Node[]} */ (path));
+            }));
         self.setParent(self.features, self);
 
         // Fake a tree-node that doesn't output anything.

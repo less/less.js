@@ -492,11 +492,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     let rule = this.ruleProperty();
                     let value;
-
+                  
                     if (rule) {
                         value = this.value();
                     }
-
+                    
                     if (rule && value) {
                         args = [new (tree.Declaration)(rule, value, null, null, parserInput.i + currentIndex, fileInfo, true)];
                     }
@@ -964,7 +964,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (elements) {
                         parensIndex = parserInput.i;
                         parensWS = parserInput.isWhitespace(-1);
-                        if (parserInput.$char('(')) {
+                        if (parserInput.$char('(')) { 
                             args = this.args(true).args;
                             expectChar(')');
                             hasParens = true;
@@ -1320,7 +1320,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 return new tree.Quoted('', `alpha(opacity=${value})`);
             },
 
-            /**
+            /** 
              * A Selector Element
              *
              *   div
@@ -1359,7 +1359,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                                 v = this.selector(false);
                             }
                             selectors.push(v);
-
+                                                        
                             if (parserInput.$char(')')) {
                                 if (selectors.length > 1) {
                                     e = new (tree.Paren)(new Selector(selectors));
@@ -1693,7 +1693,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
              * First, it will try to parse comments and entities to reach
              * the end. This is mostly like the Expression parser except no
              * math is allowed.
-             *
+             * 
              * @param {RexExp} untilTokens - Characters to stop parsing at
              */
             permissiveValue: function (untilTokens) {
@@ -2134,7 +2134,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 else {
                     parserInput.forget();
                 }
-
+                    
                 return [rules, value, isKeywordList];
             },
             //
@@ -2219,7 +2219,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     value = unknownPackage[0];
                     hasBlock = unknownPackage[1];
                 }
-
+                    
                 if (hasBlock) {
                     let blockPackage = this.atruleBlock(rules, value, isRooted, isKeywordList);
                     rules = blockPackage[0];

@@ -336,3 +336,18 @@
     display: none;
   }
 }
+@container style(var(--n) = 3) {
+  .style-query-eq {
+    color: red;
+  }
+}
+@container style(calc(6 / 2) = var(--n)) {
+  .style-query-calc-eq {
+    color: blue;
+  }
+}
+@container style(var(--size) > 1lh) {
+  .style-query-gt {
+    color: green;
+  }
+}

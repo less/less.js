@@ -404,3 +404,22 @@
 .header-test {
     .container-query-mixin(header, 800px);
 }
+
+// Range/comparison syntax in @container style() queries (issue #4460)
+@container style(var(--n) = 3) {
+    .style-query-eq {
+        color: red;
+    }
+}
+
+@container style(calc(6 / 2) = var(--n)) {
+    .style-query-calc-eq {
+        color: blue;
+    }
+}
+
+@container style(var(--size) > 1lh) {
+    .style-query-gt {
+        color: green;
+    }
+}

@@ -238,31 +238,83 @@ function main() {
   // Only the annotated tag is pushed.  Tag pushes bypass branch-protection
   // "require pull request" rules.
   
-  // Create tag
+  // Create and push the annotated tag — idempotently.
+  //
+  // The tag is created and pushed BEFORE the npm publish loop below.  If a
+  // previous run pushed the tag but then failed partway through publishing,
+  // the remote tag already exists.  A naive rerun would die on `git tag` /
+  // `git push` for the existing tag before it ever reached the publish retry,
+  // leaving the release stuck until someone deletes the tag by hand.
+  //
+  // To make reruns safe we first check the remote for the tag (dereferenced to
+  // its commit): if it already marks this exact release commit we skip the tag
+  // step and fall straight through to publish; if it marks a DIFFERENT commit
+  // we abort rather than clobber; only when it is genuinely absent do we
+  // create + push it as before.
+  //
+  // For master the version-bump commit already lives on the branch (it came
+  // from the release PR).  Only the annotated tag is pushed — tag pushes bypass
+  // branch-protection "require pull request" rules.  Alpha follows the same
+  // pattern: the version bump arrived via the alpha release PR.
   const tagName = `v${nextVersion}`;
-  console.log(`🏷️  Creating git tag: ${tagName}...`);
-  if (!dryRun) {
-    try {
-      execSync(`git tag -a "${tagName}" -m "Release ${tagName}"`, { 
-        cwd: ROOT_DIR, 
-        stdio: 'inherit' 
-      });
-    } catch (e) {
-      console.log(`⚠️  Tag might already exist, continuing...`);
-    }
-  } else {
-    console.log(`   [DRY RUN] Would create tag: ${tagName}`);
+  const releaseCommit = execSync('git rev-parse HEAD', { cwd: ROOT_DIR, encoding: 'utf8' }).trim();
+
+  // Resolve the commit a remote tag points at.  `^{}` dereferences an
+  // annotated tag to the commit it wraps; lightweight tags have no `^{}` line
+  // and the plain ref already IS the commit.  Returns null when absent.
+  function getRemoteTagCommit(name) {
+    const out = execSync(`git ls-remote origin "refs/tags/${name}" "refs/tags/${name}^{}"`, {
+      cwd: ROOT_DIR,
+      encoding: 'utf8'
+    }).trim();
+    if (!out) return null;
+    const lines = out.split('\n').filter(Boolean);
+    // Prefer the dereferenced (annotated) commit line if present.
+    const derefLine = lines.find(l => l.endsWith(`refs/tags/${name}^{}`));
+    const plainLine = lines.find(l => l.endsWith(`refs/tags/${name}`));
+    const line = derefLine || plainLine;
+    return line ? line.split('\t')[0] : null;
   }
-  
-  // For master the version-bump commit already lives in master (it came from
-  // the release PR).  Only push the git tag — tag pushes bypass branch
-  // protection "require pull request" rules.
-  // Alpha follows the same pattern: the version bump arrived via the alpha
-  // release PR, so we only push the tag here too.  console.log(`📤 Pushing tag ${tagName}...`);
-  if (!dryRun) {
-    execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
+
+  console.log(`🏷️  Preparing git tag: ${tagName} (release commit ${releaseCommit})...`);
+  const remoteTagCommit = getRemoteTagCommit(tagName);
+
+  if (remoteTagCommit && remoteTagCommit === releaseCommit) {
+    // Rerun-after-failed-publish path: the tag already marks this release.
+    console.log(`✅ Remote tag ${tagName} already marks this release commit — skipping tag create/push, proceeding to publish.`);
+  } else if (remoteTagCommit) {
+    // Tag exists but points somewhere else — refuse to clobber.
+    console.error(`❌ ERROR: Remote tag ${tagName} already exists but points at ${remoteTagCommit}, not this release commit ${releaseCommit}`);
+    console.error(`   Refusing to move or overwrite an existing release tag. Investigate before retrying.`);
+    process.exit(1);
+  } else if (dryRun) {
+    console.log(`   [DRY RUN] Remote tag ${tagName} not found — would create annotated tag and push to origin.`);
   } else {
-    console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
+    // Tag does not exist on the remote — create (or reconcile a stale local
+    // tag from a prior partial run) and push it.
+    let localTagCommit = null;
+    try {
+      localTagCommit = execSync(`git rev-list -n 1 "${tagName}"`, { cwd: ROOT_DIR, encoding: 'utf8' }).trim();
+    } catch (e) {
+      localTagCommit = null; // no local tag
+    }
+
+    if (localTagCommit && localTagCommit !== releaseCommit) {
+      // Stale local tag from an earlier attempt at a different commit — recreate.
+      console.log(`⚠️  Local tag ${tagName} points at ${localTagCommit}, recreating it at the release commit...`);
+      execSync(`git tag -d "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
+      localTagCommit = null;
+    }
+
+    if (!localTagCommit) {
+      console.log(`🏷️  Creating git tag: ${tagName}...`);
+      execSync(`git tag -a "${tagName}" -m "Release ${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
+    } else {
+      console.log(`🏷️  Local tag ${tagName} already matches the release commit — reusing it.`);
+    }
+
+    console.log(`📤 Pushing tag ${tagName}...`);
+    execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   }
   
   // Validate alpha branch requirements

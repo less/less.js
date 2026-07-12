@@ -107,7 +107,7 @@
   .mediaMixin();
 }
 @smartphone: ~"only screen and (max-width: 200px)";
-@media @smartphone {
+@media @{smartphone} {
   .body {
     width: 480px;
   }
@@ -226,7 +226,7 @@
 }
 @all: ~"all";
 @tv: ~"(tv)";
-@media @all and @tv {
+@media @{all} and @{tv} {
   .all-and-tv-variables {
     var: all-and-tv;
   }

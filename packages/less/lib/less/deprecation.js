@@ -17,10 +17,13 @@ const deprecations = {
         description: 'The ./ operator is deprecated.'
     },
     'variable-in-unknown-value': {
-        description: '@[ident] in custom property values is treated as literal text.'
+        description: '@variable in custom property values is treated as literal text.'
+    },
+    'variable-in-at-rule-prelude': {
+        description: 'A bare @variable in an at-rule prelude (e.g. @media @foo) is deprecated. Use @{variable} interpolation instead.'
     },
     'property-in-unknown-value': {
-        description: '$[ident] in custom property values is treated as literal text.'
+        description: '$property in custom property values is treated as literal text.'
     },
     'js-eval': {
         description: 'Inline JavaScript evaluation (backtick expressions) is deprecated and will be removed in Less 5.x.'

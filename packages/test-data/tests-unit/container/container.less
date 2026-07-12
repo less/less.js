@@ -375,7 +375,7 @@
 
 @varfoo: foo;
 @threshold: 400px;
-@container @varfoo (min-width: @threshold) {
+@container @{varfoo} (min-width: @threshold) {
     #sticky-child {
       font-size: 75%;
     }
@@ -387,7 +387,7 @@
 @issue-width: 125px;
 
 .container-query-mixin(@container-name; @bp) {
-    @container @container-name (width < @bp) {
+    @container @{container-name} (width < @bp) {
         display: none;
     }
 }

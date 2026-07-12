@@ -62,6 +62,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
     const deprecationHandler = new DeprecationHandler();
 
+    // Tracks `${deprecationId}@${index}` pairs already warned about, so a source
+    // position that gets re-parsed via parser backtracking only warns once.
+    const warnedDeprecations = new Set();
+
     /**
      * @param {string} msg
      * @param {number} index
@@ -71,6 +75,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
     function warn(msg, index, type, deprecationId) {
         if (context.quiet) { return; }
         if (deprecationId && context.quietDeprecations) { return; }
+        if (deprecationId) {
+            const key = `${deprecationId}@${index ?? parserInput.i}`;
+            if (warnedDeprecations.has(key)) { return; }
+            warnedDeprecations.add(key);
+        }
         if (deprecationId && !deprecationHandler.shouldWarn(deprecationId)) { return; }
 
         logger.warn(
@@ -84,6 +93,42 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 imports
             )).toString()
         );
+    }
+
+    /**
+     * Warn that a bare `@variable` reference is being used in a non-value
+     * position (an at-rule prelude, name, or identifier), where it still
+     * resolves today but is deprecated in favour of `@{variable}` interpolation.
+     *
+     * @param {number} index - source position of the bare reference
+     */
+    function warnBareAtRuleVariable(index) {
+        warn('A bare @variable in an at-rule prelude is deprecated. Use @{variable} interpolation instead.', index, 'DEPRECATED', 'variable-in-at-rule-prelude');
+    }
+
+    /**
+     * Whether `text` contains a bare `@variable` at the top level — i.e. outside
+     * any `(...)` group. A `@variable` inside parentheses is a declaration value
+     * (e.g. the `@v` in `@supports (display: @v)`) and remains valid; only a bare
+     * `@variable` in a structural position is deprecated.
+     *
+     * @param {string} text
+     * @returns {boolean}
+     */
+    function hasTopLevelBareVariable(text) {
+        let depth = 0;
+        for (let j = 0; j < text.length; j++) {
+            const c = text.charAt(j);
+            if (c === '(') {
+                depth++;
+            } else if (c === ')') {
+                if (depth > 0) { depth--; }
+            } else if (c === '@' && depth === 0) {
+                // a bare `@ident`, not `@{ident}` interpolation
+                if (/[\w-]/.test(text.charAt(j + 1))) { return true; }
+            }
+        }
+        return false;
     }
 
     function expect(arg, msg) {
@@ -1636,7 +1681,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             if (parserInput.$char(';')) {
                                 value = new Anonymous('');
                             } else {
-                                value = this.permissiveValue(/[;}]/, true);
+                                value = this.permissiveValue(/[;}]/);
                             }
                         }
                         // Try to store values as anonymous
@@ -1695,8 +1740,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
              * math is allowed.
              * 
              * @param {RexExp} untilTokens - Characters to stop parsing at
+             * @param {boolean} [deprecateVariables] - when set, this is an at-rule
+             *   prelude (non-value position); accept `@{var}` interpolation and warn
+             *   on a bare `@var` reference (which resolves today but is deprecated).
              */
-            permissiveValue: function (untilTokens) {
+            permissiveValue: function (untilTokens, deprecateVariables) {
+                const entities = this.entities;
                 let i;
                 let e;
                 let done;
@@ -1723,7 +1772,20 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         value.push(e);
                         continue;
                     }
-                    e = this.entity();
+                    if (deprecateVariables) {
+                        // In an at-rule prelude, `@{var}` interpolation is the supported
+                        // form; consume it here so its `{` is not mistaken for a block.
+                        e = entities.variableCurly();
+                        if (!e) {
+                            const varIndex = parserInput.i;
+                            e = this.entity();
+                            if (e && e.type === 'Variable') {
+                                warnBareAtRuleVariable(varIndex);
+                            }
+                        }
+                    } else {
+                        e = this.entity();
+                    }
                     if (e) {
                         value.push(e);
                     }
@@ -1776,11 +1838,18 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
                             const variableRegex = /@([\w-]+)/g;
                             const propRegex = /\$([\w-]+)/g;
-                            if (variableRegex.test(item)) {
-                                warn('@[ident] in unknown values will not be evaluated as variables in the future. Use @{[ident]}', index, 'DEPRECATED', 'variable-in-unknown-value');
+                            if (deprecateVariables) {
+                                // At-rule prelude: only a bare @var in a structural
+                                // (top-level) position is deprecated; @vars inside
+                                // `(...)` are declaration values and stay valid.
+                                if (hasTopLevelBareVariable(item)) {
+                                    warnBareAtRuleVariable(index);
+                                }
+                            } else if (variableRegex.test(item)) {
+                                warn('@variable in unknown values will not be evaluated as variables in the future. Use @{variable}', index, 'DEPRECATED', 'variable-in-unknown-value');
                             }
                             if (propRegex.test(item)) {
-                                warn('$[ident] in unknown values will not be evaluated as property references in the future. Use ${[ident]}', index, 'DEPRECATED', 'property-in-unknown-value');
+                                warn('$property in unknown values will not be evaluated as property references in the future. Use ${property}', index, 'DEPRECATED', 'property-in-unknown-value');
                             }
                             quote.variableRegex = /@([\w-]+)|@{([\w-]+)}/g;
                             quote.propRegex = /\$([\w-]+)|\${([\w-]+)}/g;
@@ -1889,7 +1958,17 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     parserInput.restore();
 
-                    e = entities.declarationCall.bind(this)() || cssKeyword() || entities.keyword() || entities.variable() || entities.mixinLookup()
+                    e = entities.declarationCall.bind(this)() || cssKeyword() || entities.keyword() || entities.variableCurly();
+                    if (!e) {
+                        const varIndex = parserInput.i;
+                        const bareVariable = entities.variable();
+                        if (bareVariable) {
+                            warnBareAtRuleVariable(varIndex);
+                            e = bareVariable;
+                        } else {
+                            e = entities.mixinLookup();
+                        }
+                    }
                     if (e) {
                         nodes.push(e);
                         if (e.type === 'Variable' ||
@@ -1980,7 +2059,17 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             features[features.length - 1].noSpacing = false;
                         }
                     } else {
-                        e = entities.variable() || entities.mixinLookup();
+                        e = entities.variableCurly();
+                        if (!e) {
+                            const varIndex = parserInput.i;
+                            const bareVariable = entities.variable();
+                            if (bareVariable) {
+                                warnBareAtRuleVariable(varIndex);
+                                e = bareVariable;
+                            } else {
+                                e = entities.mixinLookup();
+                            }
+                        }
                         if (e) {
                             features.push(e);
                             if (!parserInput.$char(',')) { break; }
@@ -2094,8 +2183,24 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     return null;
                 }
             },
+            /**
+             * An entity in a non-value at-rule position (an at-rule identifier,
+             * name, or keyword-list item — e.g. the name in `@keyframes @foo`).
+             * `@{foo}` interpolation is the supported form; a bare `@foo` still
+             * resolves but is deprecated.
+             */
+            atRuleEntity: function () {
+                const curly = this.entities.variableCurly();
+                if (curly) { return curly; }
+                const index = parserInput.i;
+                const e = this.entity();
+                if (e && e.type === 'Variable') {
+                    warnBareAtRuleVariable(index);
+                }
+                return e;
+            },
             atruleUnknown: function (value, name, hasBlock) {
-                value = this.permissiveValue(/^[{;]/);
+                value = this.permissiveValue(/^[{;]/, true);
                 hasBlock = (parserInput.currentChar() === '{');
                 if (!value) {
                     if (!hasBlock && parserInput.currentChar() !== ';') {
@@ -2111,16 +2216,16 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 rules = this.blockRuleset();
                 parserInput.save();
                 if (!rules && !isRooted) {
-                    value = this.entity();
+                    value = this.atRuleEntity();
                     rules = this.blockRuleset();
                 }
                 if (!rules && !isRooted) {
                     parserInput.restore();
                     var e = [];
-                    value = this.entity();
+                    value = this.atRuleEntity();
                     while (parserInput.$char(',')) {
                         e.push(value);
-                        value = this.entity();
+                        value = this.atRuleEntity();
                     }
                     if (value && e.length > 0) {
                         e.push(value);
@@ -2205,12 +2310,25 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 parserInput.commentStore.length = 0;
 
                 if (hasIdentifier) {
-                    value = this.entity();
+                    value = this.atRuleEntity();
                     if (!value) {
                         error(`expected ${name} identifier`);
                     }
                 } else if (hasExpression) {
+                    // `@namespace` may carry an interpolated `@{ns}` prefix (or a
+                    // deprecated bare `@ns`). Parse that prefix directly so `@{ns}`
+                    // is accepted here without treating value positions as
+                    // interpolation contexts, then read the namespace URL.
+                    let prefix = this.entities.variableCurly();
+                    if (!prefix && parserInput.peek(/^@[\w-]/)) {
+                        const prefixIndex = parserInput.i;
+                        prefix = this.entities.variable();
+                        if (prefix) { warnBareAtRuleVariable(prefixIndex); }
+                    }
                     value = this.expression();
+                    if (prefix) {
+                        value = value ? new(tree.Expression)([prefix, ...value.value]) : prefix;
+                    }
                     if (!value) {
                         error(`expected ${name} expression`);
                     }

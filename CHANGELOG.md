@@ -1,5 +1,14 @@
 ## Change Log
 
+### v4.6.8 (2026-07-12)
+
+#### Changes
+
+- [#4462](https://github.com/less/less.js/pull/4462) feat: deprecate bare @variable in non-value at-rule positions (@matthew-dean)
+- [#4461](https://github.com/less/less.js/pull/4461) Fix #4460: parse comparison/range syntax in container style() queries (@dweep-js)
+- [#4459](https://github.com/less/less.js/pull/4459) refactor: extract shared ESLint config and add lint scripts (@JessenReinhart)
+
+
 ### v4.6.7 (2026-06-20)
 
 #### Changes

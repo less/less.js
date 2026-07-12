@@ -6,10 +6,10 @@
 }
 .\34 04 {
   background: red;
-  strong {
-    color: fuchsia;
-    font-weight: bold;
-  }
+}
+.\34 04 strong {
+  color: fuchsia;
+  font-weight: bold;
 }
 .trailingTest\+ {
   color: red;

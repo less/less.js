@@ -82,8 +82,8 @@
     display: none;
   }
 }
-.container {
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .container {
     padding: 10px;
   }
 }
@@ -95,11 +95,9 @@
   margin-left: 3cm;
   margin-right: 4cm;
 }
-.wrapper {
-  @media (max-width: 600px) {
-    .mobile-only {
-      display: block;
-    }
+@media (max-width: 600px) {
+  .wrapper .mobile-only {
+    display: block;
   }
 }
 @media (min-width: 1024px) {

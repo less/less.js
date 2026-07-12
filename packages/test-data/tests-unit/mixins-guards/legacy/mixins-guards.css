@@ -158,11 +158,9 @@
   declare: 4;
   declare: 4px;
 }
-.call-lock-mixin {
-  .call-inner-lock-mixin {
-    a: 1;
-    x: 1;
-  }
+.call-lock-mixin .call-inner-lock-mixin {
+  a: 1;
+  x: 1;
 }
 .mixin-generated-class {
   a: 1;

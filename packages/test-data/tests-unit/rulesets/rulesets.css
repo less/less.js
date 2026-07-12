@@ -1,28 +1,34 @@
-#first > .one > #second .two > #deux {
-  width: 50%;
-}
-#first > .one > #second .two > #deux #third:focus {
-  color: black;
-}
-#first > .one > #second .two > #deux #third:focus #fifth > #sixth .seventh #eighth + #ninth {
-  color: purple;
-}
-#first > .one > #second .two > #deux #third {
-  height: 100%;
-}
-#first > .one > #second .two > #deux #fourth,
-#first > .one > #second .two > #deux #five,
-#first > .one > #second .two > #deux #six {
-  color: #110000;
-}
-:is(#first > .one > #second .two > #deux #fourth, #first > .one > #second .two > #deux #five, #first > .one > #second .two > #deux #six) .seven,
-:is(#first > .one > #second .two > #deux #fourth, #first > .one > #second .two > #deux #five, #first > .one > #second .two > #deux #six) .eight > #nine {
-  border: 1px solid black;
-}
-:is(#first > .one > #second .two > #deux #fourth, #first > .one > #second .two > #deux #five, #first > .one > #second .two > #deux #six) #ten {
-  color: red;
-}
 #first > .one {
+  > #second .two > #deux {
+    width: 50%;
+    #third {
+      &:focus {
+        color: black;
+        #fifth {
+          > #sixth {
+            .seventh #eighth {
+              + #ninth {
+                color: purple;
+              }
+            }
+          }
+        }
+      }
+      height: 100%;
+    }
+    #fourth,
+    #five,
+    #six {
+      color: #110000;
+      .seven,
+      .eight > #nine {
+        border: 1px solid black;
+      }
+      #ten {
+        color: red;
+      }
+    }
+  }
   font-size: 2em;
   hasOwnProperty: blue;
 }

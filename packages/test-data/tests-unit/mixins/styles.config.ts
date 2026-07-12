@@ -1,8 +1,5 @@
-module.exports = {
-  language: {
-    less: {}
-  },
+export default {
   output: [
     { file: '{name}.css', collapseNesting: false }
   ]
-};
+}

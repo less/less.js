@@ -3,18 +3,14 @@
 @import url("/import/layer-import-4.css") layer(print) print;
 @import url("/import/layer-import-4.css") layer(print) print, (max-width: 600px);
 @import url("/import/layer-import-5.css") layer(features) supports(display: grid);
-.main {
-  @layer {
-    &::before {
-      color: #f00;
-    }
+@layer {
+  .main::before {
+    color: #f00;
   }
 }
 @layer legacy {
-  .sub-rule {
-    ul {
-      color: white;
-    }
+  .sub-rule ul {
+    color: white;
   }
 }
 @layer primevue {
@@ -34,10 +30,10 @@
   body {
     margin: 0;
     font-family: system-ui, sans-serif;
-    header {
-      background-color: #f0f0f0;
-      padding: 1rem;
-    }
+  }
+  body header {
+    background-color: #f0f0f0;
+    padding: 1rem;
   }
 }
 @layer components {
@@ -46,9 +42,9 @@
     padding: 0.5rem 1rem;
     background-color: blue;
     color: white;
-    &:hover {
-      background-color: darkblue;
-    }
+  }
+  .button:hover {
+    background-color: darkblue;
   }
 }
 @layer utilities {
@@ -57,19 +53,21 @@
   }
   .responsive {
     width: 100%;
-    @media (min-width: 768px) {
+  }
+  @media (min-width: 768px) {
+    .responsive {
       width: 50%;
     }
   }
 }
 .parent {
   color: black;
-  .child {
-    color: red;
-  }
-  &:hover {
-    background: lightgray;
-  }
+}
+.parent .child {
+  color: red;
+}
+.parent:hover {
+  background: lightgray;
 }
 @layer foo.baz {
   .bar {
@@ -101,9 +99,9 @@ body {
 @layer components {
   .btn {
     color: red;
-    &:hover {
-      color: blue;
-    }
+  }
+  .btn:hover {
+    color: blue;
   }
 }
 @layer {
@@ -119,10 +117,10 @@ body {
 }
 .feature {
   color: gray;
-  @layer component {
-    h2 {
-      font-size: 1.5rem;
-    }
+}
+@layer component {
+  .feature h2 {
+    font-size: 1.5rem;
   }
 }
 @layer ui {

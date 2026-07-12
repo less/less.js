@@ -37,6 +37,7 @@
   }
 }
 @namespace less "http://lesscss.org";
+@namespace svgns "http://www.w3.org/2000/svg";
 @layer base {
   .layered {
     color: red;

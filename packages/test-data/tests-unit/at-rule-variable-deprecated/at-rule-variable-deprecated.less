@@ -63,6 +63,11 @@
 @ns: less;
 @namespace @ns "http://lesscss.org";
 
+// indirect (variable-variable) prefix — also a deprecated bare reference
+@ns-ref: svg;
+@svg: svgns;
+@namespace @@ns-ref "http://www.w3.org/2000/svg";
+
 @layer-name: base;
 @layer @layer-name {
   .layered {

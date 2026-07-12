@@ -2320,7 +2320,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     // is accepted here without treating value positions as
                     // interpolation contexts, then read the namespace URL.
                     let prefix = this.entities.variableCurly();
-                    if (!prefix && parserInput.peek(/^@[\w-]/)) {
+                    if (!prefix && parserInput.peek(/^@@?[\w-]/)) {
                         const prefixIndex = parserInput.i;
                         prefix = this.entities.variable();
                         if (prefix) { warnBareAtRuleVariable(prefixIndex); }

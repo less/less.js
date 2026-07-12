@@ -1,5 +1,14 @@
 ## Change Log
 
+### v5.0.0-alpha.1 (2026-07-12)
+
+#### Changes
+
+- [#4464](https://github.com/less/less.js/pull/4464) ci: port alpha-aware release/publish flow + pnpm 10 to alpha (@matthew-dean)
+- [#4393](https://github.com/less/less.js/pull/4393) Set up v5 parser output (attempt to publish this to NPM alpha tag also) (@matthew-dean)
+- [#4392](https://github.com/less/less.js/pull/4392) Set up v5 parser output (@matthew-dean)
+
+
 ### v4.4.2 (2025-08-27)
 
 - [#4357](https://github.com/less/less.js/pull/4357) Migrate Less test data to use valid CSS (@matthew-dean)

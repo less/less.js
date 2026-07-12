@@ -375,6 +375,16 @@ module.exports = function(grunt) {
     // Run all tests
     grunt.registerTask("test", testTasks);
 
+    // Node tests only (ESM + CJS) — used by prepublish/CI/publish workflows.
+    // Skips eslint, browser (connect/runbrowser) and SauceLabs steps.
+    grunt.registerTask("test:node", [
+        "shell:build",
+        "shell:test",
+        "shell:testcjs",
+        "shell:opts",
+        "shell:plugin"
+    ]);
+
     // Run shell option tests (includes deprecated options)
     grunt.registerTask("shell-options", ["shell:opts"]);
 

@@ -37,6 +37,7 @@
 	"scripts": {
 		"quicktest": "grunt quicktest",
 		"test": "grunt test",
+		"test:node": "grunt test:node",
 		"test:coverage": "c8 -r lcov -r json-summary -r text-summary -r html --include=\"lib/**/*.js\" --include=\"bin/**/*.js\" --exclude=\"dist/**\" --exclude=\"**/*.test.js\" --exclude=\"**/*.spec.js\" --exclude=\"test/**\" --exclude=\"tmp/**\" --exclude=\"**/abstract-file-manager.js\" --exclude=\"**/abstract-plugin-loader.js\" grunt shell:test && node scripts/coverage-report.js && node scripts/coverage-lines.js",
 		"grunt": "grunt",
 		"lint": "eslint '**/*.{ts,js}'",

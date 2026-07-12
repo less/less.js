@@ -1,32 +1,46 @@
 name: Publish to NPM
 
 on:
-  push:
+  # Publish when a release PR is merged:
+  #   master branch: "chore: release vX.Y.Z"       PR → publishes latest
+  #   alpha branch:  "chore: alpha release vX.Y.Z"  PR → publishes alpha
+  # Both release PRs are created automatically by create-release-pr.yml.
+  pull_request:
+    types: [closed]
     branches:
       - master
       - alpha
-    paths-ignore:
-      - '**.md'
-      - '.github/**'
-      - 'docs/**'
 
 permissions:
   id-token: write  # Required for OIDC trusted publishing
-  contents: read
+  contents: write  # Required for creating releases and pushing tags
 
 jobs:
   publish:
     name: Publish to NPM
     runs-on: ubuntu-latest
-    # Only run on push events, not pull requests
-    if: github.event_name == 'push'
-    
+    # Only run when a release PR with the expected title is merged into master
+    # or alpha.  Any other PR close (or merge without the right title) is
+    # silently skipped.
+    if: |
+      github.repository == 'less/less.js' &&
+      github.event.pull_request.merged == true &&
+      (
+        (github.event.pull_request.base.ref == 'master' &&
+         startsWith(github.event.pull_request.title, 'chore: release v')) ||
+        (github.event.pull_request.base.ref == 'alpha' &&
+         startsWith(github.event.pull_request.title, 'chore: alpha release v'))
+      )
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Check out the base branch (master or alpha) post-merge so the
+          # version bump from the release PR is already present.
+          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -38,10 +52,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Run tests
-        run: pnpm run test
+      - name: Run node tests (ESM + CJS)
+        run: pnpm run test:node
 
       - name: Build
         run: |
@@ -56,7 +70,8 @@ jobs:
       - name: Determine branch and tag type
         id: branch-info
         run: |
-          BRANCH="${{ github.ref_name }}"
+          # Always a pull_request event; base.ref is master or alpha.
+          BRANCH="${{ github.event.pull_request.base.ref }}"
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           if [ "$BRANCH" = "alpha" ]; then
             echo "is_alpha=true" >> $GITHUB_OUTPUT
@@ -136,7 +151,9 @@ jobs:
       - name: Bump version and publish
         id: publish
         env:
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+          # Pass the resolved base branch name (master or alpha) so that
+          # bump-and-publish.js knows which branch it is publishing for.
+          GITHUB_REF_NAME: ${{ steps.branch-info.outputs.branch }}
         run: |
           pnpm run publish
           
@@ -145,50 +162,54 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release (Master)
-        if: steps.branch-info.outputs.is_alpha != 'true'
-        uses: actions/create-release@v1
+      - name: Create GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.publish.outputs.tag }}
-          release_name: Release ${{ steps.publish.outputs.tag }}
-          body: |
-            ## Changes
-            
-            See [CHANGELOG.md](https://github.com/less/less.js/blob/master/CHANGELOG.md) for details.
-            
-            ## Installation
-            
-            ```bash
-            npm install less@${{ steps.publish.outputs.version }}
-            ```
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.publish.outputs.tag }}"
+          VERSION="${{ steps.publish.outputs.version }}"
+          IS_ALPHA="${{ steps.branch-info.outputs.is_alpha }}"
 
-      - name: Create GitHub Pre-Release (Alpha)
-        if: steps.branch-info.outputs.is_alpha == 'true'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.publish.outputs.tag }}
-          release_name: Alpha Release ${{ steps.publish.outputs.tag }}
-          body: |
-            ## Alpha Release
-            
-            This is an alpha release from the alpha branch.
-            
-            ## Installation
-            
-            ```bash
-            npm install less@${{ steps.publish.outputs.version }} --tag alpha
-            ```
-            
-            Or:
-            
-            ```bash
-            npm install less@alpha
-            ```
-          draft: false
-          prerelease: true
+          if [ "$IS_ALPHA" = "true" ]; then
+            TITLE="Alpha Release $TAG"
+            PRERELEASE="--prerelease"
+            BODY="## Alpha Release
+
+          This is an alpha release from the alpha branch.
+
+          ## Installation
+
+          \`\`\`bash
+          npm install less@${VERSION} --tag alpha
+          \`\`\`
+
+          Or:
+
+          \`\`\`bash
+          npm install less@alpha
+          \`\`\`"
+          else
+            TITLE="Release $TAG"
+            PRERELEASE=""
+            BODY="## Changes
+
+          See [CHANGELOG.md](https://github.com/less/less.js/blob/master/CHANGELOG.md) for details.
+
+          ## Installation
+
+          \`\`\`bash
+          npm install less@${VERSION}
+          \`\`\`"
+          fi
+
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists, uploading assets to existing release"
+            gh release upload "$TAG" packages/less/dist/less.js packages/less/dist/less.min.js --clobber
+          else
+            gh release create "$TAG" \
+              --title "$TITLE" \
+              $PRERELEASE \
+              --notes "$BODY" \
+              packages/less/dist/less.js \
+              packages/less/dist/less.min.js
+          fi

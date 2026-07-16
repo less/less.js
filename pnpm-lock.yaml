@@ -32,6 +32,9 @@ importers:
       '@jesscss/core':
         specifier: link:../../../../oss/jess/packages/core
         version: link:../../../jess/packages/core
+      '@jesscss/plugin-less':
+        specifier: link:../../../../oss/jess/packages/jess-plugin-less
+        version: link:../../../jess/packages/jess-plugin-less
       '@jesscss/plugin-less-compat':
         specifier: link:../../../../oss/jess/packages/jess-plugin-less-compat
         version: link:../../../jess/packages/jess-plugin-less-compat

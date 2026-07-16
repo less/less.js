@@ -123,6 +123,74 @@ if (!fs.existsSync(filePath)) {
 var data = fs.readFileSync(filePath, 'utf8');
 var fileDir = path.dirname(filePath);
 
+function resolveImportCandidate(importPath, fromDir) {
+  var base = path.isAbsolute(importPath) ? importPath : path.resolve(fromDir, importPath);
+  var candidates = [
+    base,
+    base + '.less'
+  ];
+  var parsed = path.parse(base);
+  if (parsed.base.charAt(0) !== '_') {
+    candidates.push(path.join(parsed.dir, '_' + parsed.base));
+    candidates.push(path.join(parsed.dir, '_' + parsed.base + '.less'));
+  }
+  for (var i = 0; i < candidates.length; i++) {
+    if (fs.existsSync(candidates[i])) {
+      return candidates[i];
+    }
+  }
+  return null;
+}
+
+function literalImports(source, fromDir) {
+  var imports = [];
+  var re = /@import\s+(?:\([^)]*\)\s*)?(?:"([^"]+)"|'([^']+)')\s*;/g;
+  var match;
+  while ((match = re.exec(source))) {
+    var importPath = match[1] || match[2];
+    if (!importPath || /^[a-z]+:/i.test(importPath) || importPath.endsWith('.css')) {
+      return null;
+    }
+    var resolved = resolveImportCandidate(importPath, fromDir);
+    if (!resolved) {
+      return null;
+    }
+    imports.push(resolved);
+  }
+  return imports;
+}
+
+function sourceGraphIsPluginFree(entryFile) {
+  var pending = [entryFile];
+  var seen = Object.create(null);
+  while (pending.length) {
+    var current = pending.pop();
+    if (seen[current]) {
+      continue;
+    }
+    seen[current] = true;
+    var source;
+    try {
+      source = fs.readFileSync(current, 'utf8');
+    } catch (e) {
+      return false;
+    }
+    if (source.indexOf('@plugin') !== -1) {
+      return false;
+    }
+    var imports = literalImports(source, path.dirname(current));
+    if (!imports) {
+      return false;
+    }
+    for (var i = 0; i < imports.length; i++) {
+      pending.push(imports[i]);
+    }
+  }
+  return true;
+}
+
+var benchmarkSourceGraphIsPluginFree = sourceGraphIsPluginFree(filePath);
+
 // Use less.render() - stable across all versions
 var renderTimes = [];
 var parseTimes = [];
@@ -140,6 +208,9 @@ function runOnce(callback) {
     filename: filePath,
     paths: [fileDir]
   };
+  if (benchmarkSourceGraphIsPluginFree) {
+    opts.__jessSkipLessCompatWhenPluginFree = true;
+  }
   // Forward extra options (e.g. --math=always)
   for (var key in extraOpts) { opts[key] = extraOpts[key]; }
   less.render(data, opts, function (err, output) {

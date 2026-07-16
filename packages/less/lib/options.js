@@ -3,40 +3,51 @@
  * @module less/lib/options
  */
 
+import lessPlugin from '@jesscss/plugin-less';
 import { lessCompatPlugin } from '@jesscss/plugin-less-compat';
-
-const AT_PLUGIN_RE = /(^|[\r\n])\s*@plugin\b/m;
 
 /**
  * @param {any} value
+ * @param {WeakSet<object>} [seen]
  * @returns {string}
  */
-function stableStringify(value) {
+function stableStringify(value, seen = new WeakSet()) {
   if (value == null || typeof value !== 'object') {
+    if (typeof value === 'function') {
+      return JSON.stringify(`[function ${value.name || 'anonymous'}]`);
+    }
     return JSON.stringify(value);
   }
+  if (seen.has(value)) {
+    return '"[Circular]"';
+  }
+  seen.add(value);
   if (Array.isArray(value)) {
-    return `[${value.map(stableStringify).join(',')}]`;
+    return `[${value.map((item) => stableStringify(item, seen)).join(',')}]`;
+  }
+  if (value.name && typeof value.name === 'string' && ('install' in value || 'parser' in value || 'opts' in value)) {
+    return stableStringify({
+      plugin: value.name,
+      opts: value.opts || {},
+    }, seen);
   }
   const entries = Object.keys(value)
     .sort()
-    .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`);
+    .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key], seen)}`);
   return `{${entries.join(',')}}`;
 }
 
 /**
  * Map Less render options to Jess compiler config.
  * @param {import('./options.js').LessRenderOptions} [options] Less-style options
- * @param {{ source?: string }} [runtime] Render-time inputs used for feature detection
  * @returns {{ configOptions: object, filePath?: string }}
  */
-export function createLessOptions(options, runtime = {}) {
+export function createLessOptions(options) {
   const opts = options || {};
   const filePath = opts.filename || undefined;
-  const shouldEnableCompat =
-    Array.isArray(opts.plugins) && opts.plugins.length > 0
-      ? true
-      : typeof runtime.source === 'string' && AT_PLUGIN_RE.test(runtime.source);
+  const lessPlugins = Array.isArray(opts.plugins) ? opts.plugins : [];
+  const skipLessCompat =
+    opts.__jessSkipLessCompatWhenPluginFree === true && lessPlugins.length === 0;
 
   const math = /** @type {number|string|undefined} */ (opts.math);
   const mathMode =
@@ -44,13 +55,16 @@ export function createLessOptions(options, runtime = {}) {
     math === 2 || math === 'parens' || math === 'strict' ? 'parens' :
     'parens-division';
 
+  const plugins = [lessPlugin()];
+  if (!skipLessCompat) {
+    plugins.push(lessCompatPlugin({ plugins: lessPlugins }));
+  }
+
   const configOptions = {
     compile: {
       searchPaths: opts.paths || [],
       mathMode,
-      plugins: shouldEnableCompat
-        ? [lessCompatPlugin({ plugins: opts.plugins || [] })]
-        : [],
+      plugins,
     },
     output: {},
     language: {},

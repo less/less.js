@@ -21,6 +21,8 @@ export interface LessRenderOptions {
   urlArgs?: string;
   javascriptEnabled?: boolean;
   compress?: boolean;
+  /** @internal Jess alpha benchmark-only flag for source graphs already proven @plugin-free. */
+  __jessSkipLessCompatWhenPluginFree?: boolean;
 }
 
 export interface LessRenderResult {
@@ -35,7 +37,7 @@ export interface JessRenderResult {
   imports?: string[];
 }
 
-export function createLessOptions(options?: LessRenderOptions, runtime?: { source?: string }): {
+export function createLessOptions(options?: LessRenderOptions): {
   configOptions: object;
   filePath?: string;
 };

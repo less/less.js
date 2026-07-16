@@ -3,8 +3,8 @@
  * Run benchmarks and compare against historical data.
  */
 
-import { spawn } from 'child_process';
-import { readFileSync, existsSync } from 'fs';
+import { execSync, spawn } from 'child_process';
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,10 +12,80 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BENCH_DIR = __dirname;
 const RESULTS_DIR = path.join(BENCH_DIR, 'results');
 const LATEST_FILE = path.join(RESULTS_DIR, 'latest', 'macbook-pro_arm64.json');
+const ALPHA_RUNS_DIR = path.join(RESULTS_DIR, 'alpha-runs');
+const ALPHA_LATEST_DIR = path.join(RESULTS_DIR, 'alpha-latest');
+const ALPHA_LATEST_FILE = path.join(ALPHA_LATEST_DIR, 'jess-alpha.json');
 
-const FILES = ['benchmark.less', 'benchmark-v3.less', 'benchmark-v37.less', 'benchmark-v39.less'];
+const DEFAULT_FILES = ['benchmark.less', 'benchmark-v3.less', 'benchmark-v37.less', 'benchmark-v39.less'];
+const FILES = (process.env.BENCH_FILES || '')
+    .split(',')
+    .map(file => file.trim())
+    .filter(Boolean);
+if (FILES.length === 0) {
+    FILES.push(...DEFAULT_FILES);
+}
 const RUNS = parseInt(process.env.BENCH_RUNS || '30');
 const WARMUP = parseInt(process.env.BENCH_WARMUP || '5');
+const TIMEOUT_MS = parseInt(process.env.BENCH_TIMEOUT_MS || '0');
+
+function gitValue(cwd, args) {
+    try {
+        return execSync(`git ${args}`, {
+            cwd,
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore']
+        }).trim();
+    } catch {
+        return null;
+    }
+}
+
+function createAlphaSnapshot(results, historical) {
+    const timestamp = new Date().toISOString();
+    return {
+        type: 'jess-alpha-benchmark-snapshot',
+        timestamp,
+        system: {
+            platform: process.platform,
+            arch: process.arch,
+            node: process.version
+        },
+        benchmark: {
+            files: FILES,
+            runs: RUNS,
+            warmup: WARMUP,
+            timeoutMs: TIMEOUT_MS || null,
+            math: 'parens-division'
+        },
+        repos: {
+            less: {
+                cwd: path.resolve(BENCH_DIR, '..', '..', '..'),
+                branch: gitValue(path.resolve(BENCH_DIR, '..', '..', '..'), 'branch --show-current'),
+                commit: gitValue(path.resolve(BENCH_DIR, '..', '..', '..'), 'rev-parse HEAD'),
+                dirty: gitValue(path.resolve(BENCH_DIR, '..', '..', '..'), 'status --short') ? true : false
+            },
+            jess: {
+                cwd: path.resolve(BENCH_DIR, '..', '..', '..', '..', 'jess'),
+                branch: gitValue(path.resolve(BENCH_DIR, '..', '..', '..', '..', 'jess'), 'branch --show-current'),
+                commit: gitValue(path.resolve(BENCH_DIR, '..', '..', '..', '..', 'jess'), 'rev-parse HEAD'),
+                dirty: gitValue(path.resolve(BENCH_DIR, '..', '..', '..', '..', 'jess'), 'status --short') ? true : false
+            }
+        },
+        results,
+        historicalLess45: historical
+    };
+}
+
+function saveAlphaSnapshot(snapshot) {
+    mkdirSync(ALPHA_RUNS_DIR, { recursive: true });
+    mkdirSync(ALPHA_LATEST_DIR, { recursive: true });
+    const stamp = snapshot.timestamp.replace(/[:.]/g, '-');
+    const runFile = path.join(ALPHA_RUNS_DIR, `${stamp}_jess-alpha.json`);
+    const json = `${JSON.stringify(snapshot, null, 2)}\n`;
+    writeFileSync(runFile, json);
+    writeFileSync(ALPHA_LATEST_FILE, json);
+    return { runFile, latestFile: ALPHA_LATEST_FILE };
+}
 
 function runBenchmark(file) {
     return new Promise((resolve, reject) => {
@@ -29,11 +99,19 @@ function runBenchmark(file) {
             cwd: path.join(BENCH_DIR, '..'),
             stdio: ['ignore', 'pipe', 'pipe']
         });
+        let timer;
+        if (TIMEOUT_MS > 0) {
+            timer = setTimeout(() => {
+                proc.kill('SIGTERM');
+                reject(new Error(`benchmark timed out after ${TIMEOUT_MS}ms`));
+            }, TIMEOUT_MS);
+        }
         let out = '';
         let err = '';
         proc.stdout.on('data', d => { out += d; });
         proc.stderr.on('data', d => { err += d; });
         proc.on('close', code => {
+            if (timer) clearTimeout(timer);
             if (code !== 0) {
                 reject(new Error(`benchmark-runner exited ${code}: ${err || out}`));
                 return;
@@ -75,6 +153,8 @@ async function main() {
     }
 
     const historical = loadHistorical();
+    const snapshot = createAlphaSnapshot(results, historical);
+    const snapshotFiles = saveAlphaSnapshot(snapshot);
     console.log('\n--- Comparison vs Less v4.5.x (historical) ---\n');
     const rows = FILES.map(file => {
         const jess = results[file];
@@ -103,6 +183,8 @@ async function main() {
     }
 
     console.log('\n(Historical data from benchmark/results/latest/macbook-pro_arm64.json)');
+    console.log(`Alpha snapshot: ${snapshotFiles.runFile}`);
+    console.log(`Alpha latest:   ${snapshotFiles.latestFile}`);
     console.log('Same machine (M4 Pro) for fair comparison. Jess is a new compiler; Less has years of optimization.');
 }
 

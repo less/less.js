@@ -73,11 +73,11 @@
   }
 }
 .mixin-with-directives(@keyframeName) {
-  @keyframes @keyframeName {
+  @keyframes @{keyframeName} {
     @rules1();
   }
   @supports (animation-name: test) {
-    @keyframes @keyframeName {
+    @keyframes @{keyframeName} {
       @rules2();
     }
     .selector {

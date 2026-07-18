@@ -236,6 +236,7 @@ lessTester.testSyncronous({syncImport: true}, 'tests-config/math-strict/css');
 lessTester.testNoOptions();
 lessTester.testDisablePluginRule();
 lessTester.testJSImport();
+await lessTester.testWarnings();
 lessTester.finished();
 
 console.log('\nTesting HTTP redirect functionality...');

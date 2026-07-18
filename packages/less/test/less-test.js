@@ -19,8 +19,14 @@ logger.addListener({
             process.stdout.write(msg + '\n');
         }
     },
+    // Warnings (deprecation notices etc.) are SUPPRESSED from normal test output —
+    // they are noise across the fixture corpus. Their emission is asserted directly
+    // in testWarnings() (below), which installs its own capturing listener. Set
+    // LESS_TEST_SHOW_WARNINGS=1 to print them anyway when debugging.
     warn(msg) {
-        process.stdout.write(msg + '\n');
+        if (process.env.LESS_TEST_SHOW_WARNINGS) {
+            process.stdout.write(msg + '\n');
+        }
     },
     error(msg) {
         process.stdout.write(msg + '\n');
@@ -829,10 +835,57 @@ export default function(testFilter) {
         );
     }
 
+    // Assert every render-reachable warning / deprecation notice fires (and, for the
+    // at-rule-prelude deprecation, that the declaration-value exemption holds). less.js
+    // asserts errors via tests-error/*.txt but had no warning coverage, so these were
+    // previously unguarded. Warnings are suppressed from normal output (see the logger
+    // listener at the top of this file); here we install a capturing listener instead.
+    //
+    // NOT covered (documented gaps, not render-reachable):
+    //   - property-in-unknown-value: wired (parser.js), but a `$prop` ref resolves via
+    //     the entity path before reaching the permissive text scan, so no input triggers it.
+    //   - math-always, dumpLineNumbers: registered in deprecation.js but never emitted
+    //     via a warn() call (CLI help text only).
+    async function testWarnings() {
+        const captured = [];
+        const listener = { warn: m => captured.push(m), error() {}, info() {}, debug() {} };
+        less.logger.addListener(listener);
+        // [label, source, options, message-matcher, expectedCount]
+        const cases = [
+            ['bare @var in an at-rule prelude warns', '@bar: x;\n@foo @bar { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['@var inside […] is top-level and warns', '@v: x;\n@foo bar[@v] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['@var inside (…) is a declaration value — no warning', '@v: 1px;\n@foo (x: @v) { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
+            ['inline JavaScript (backtick) is deprecated', '@x: `1 + 1`;\n.a { w: @x }', { javascriptEnabled: true }, /Inline JavaScript evaluation/, 1],
+            ['whitespace before mixin-call parens is deprecated', '.m() { a: b }\n.a { .m () }', {}, /Whitespace between a mixin name and parentheses/, 1],
+            ['mixin call without parens is deprecated', '.m() { a: b }\n.a { .m }', {}, /Calling a mixin without parentheses is deprecated/, 1],
+            ['@variable in an unknown value is deprecated', '@bar: red;\n.a { --x: bar[@bar] }', {}, /@variable in unknown values will not be evaluated/, 1],
+            ['the ./ operator is deprecated', '.a { w: 2px ./ 1 }', {}, /\.\/ operator is deprecated/, 1],
+            ['targeting complex selectors with :extend warns', '.b .c { x: y }\n.a:extend(.b .c) { }', {}, /Targeting complex selectors/, 1],
+            ['an :extend with no matches warns', '.a:extend(.zzz) { }', {}, /extend '.*' has no matches/, 1],
+            ['the compress option is deprecated', '.a { b: c }', { compress: true }, /compress option has been deprecated/, 1],
+            ['the @plugin directive is deprecated', '@plugin "less-plugin-nonexistent-xyz";\n.a { b: c }', {}, /@plugin directive is deprecated/, 1],
+        ];
+        for (const [label, src, options, matcher, expected] of cases) {
+            totalTests++;
+            captured.length = 0;
+            // Some cases (e.g. @plugin with a missing plugin) throw AFTER emitting the
+            // warning; the warning is what we assert, so a throw is not itself a failure.
+            try { await less.render(src, options); } catch (e) { /* warning already captured */ }
+            const n = captured.filter(m => matcher.test(m)).length;
+            if (n === expected) {
+                ok('- Integration - warning assertions: ' + label + ' OK\n');
+            } else {
+                fail('- Integration - warning assertions: ' + label + ' — expected ' + expected + ' match(es) for ' + matcher + ', got ' + n + '\n');
+            }
+        }
+        less.logger.removeListener(listener);
+    }
+
     return {
         runTestSet: runTestSet,
         runTestSetNormalOnly: runTestSetNormalOnly,
         testSyncronous: testSyncronous,
+        testWarnings: testWarnings,
         testErrors: testErrors,
         testTypeErrors: testTypeErrors,
         testSourcemap: testSourcemap,

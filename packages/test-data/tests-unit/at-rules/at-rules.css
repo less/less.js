@@ -15,7 +15,7 @@
 @namespace svg url(http://www.w3.org/2000/svg);
 @viewport {
   width: device-width;
-  initial-scale: 1;
+  initial-scale: 1.0;
 }
 @keyframes slidein {
   from {

@@ -1,12 +1,14 @@
 ## Change Log
 
-### v4.6.8 (2026-07-12)
+### v4.7.0 (2026-07-18)
 
 #### Changes
 
+- [#4469](https://github.com/less/less.js/pull/4469) Follow-up to #4462: migrate remaining @var fixtures, DRY the prelude bare-@var scan, add warnings coverage (@matthew-dean)
 - [#4462](https://github.com/less/less.js/pull/4462) feat: deprecate bare @variable in non-value at-rule positions (@matthew-dean)
 - [#4461](https://github.com/less/less.js/pull/4461) Fix #4460: parse comparison/range syntax in container style() queries (@dweep-js)
 - [#4459](https://github.com/less/less.js/pull/4459) refactor: extract shared ESLint config and add lint scripts (@JessenReinhart)
+- [#4456](https://github.com/less/less.js/pull/4456) Replace image-size with probe-image-size (@priyamkarn)
 
 
 ### v4.6.7 (2026-06-20)

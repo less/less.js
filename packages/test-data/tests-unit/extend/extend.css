@@ -44,21 +44,27 @@ div:is(.ext5, .ext7),
 .fuu {
   result: match-nested-foo;
 }
-.aa,
-.cc {
+.aa {
   color: black;
   .dd,
   .ee {
     background: red;
   }
 }
+.cc {
+  color: black;
+}
 .bb,
-.cc,
-.ee,
 .ff {
   background: red;
   .bb,
   .ff {
     color: black;
   }
+}
+.cc {
+  background: red;
+}
+.ee {
+  background: red;
 }

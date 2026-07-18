@@ -5,8 +5,7 @@
 .a .b .c {
   prop: not_effected;
 }
-.a,
-.effected {
+.a {
   prop: is_effected;
   .b {
     prop: not_effected;
@@ -15,9 +14,11 @@
     prop: not_effected;
   }
 }
-.c,
-.a,
 .effected {
+  prop: is_effected;
+}
+.c,
+.a {
   .b,
   .a {
     .a,
@@ -26,10 +27,12 @@
     }
   }
 }
-.e.e,
-.dbl {
+.e.e {
   prop: extend-double;
   &:hover {
     hover: not-extended;
   }
+}
+.dbl {
+  prop: extend-double;
 }

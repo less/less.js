@@ -2,17 +2,17 @@
 @charset "UTF-@{Eight}";
 
 @ns: less;
-@namespace @ns "http://lesscss.org";
+@namespace @{ns} "http://lesscss.org";
 
 @name: enlarger;
-@keyframes @name {
+@keyframes @{name} {
     from {font-size: 12px;}
     to   {font-size: 15px;}
 }
 
 .m(reducer);
 .m(@name) {
-    @-webkit-keyframes @name {
+    @-webkit-keyframes @{name} {
         from {font-size: 13px;}
         to   {font-size: 10px;}
     }

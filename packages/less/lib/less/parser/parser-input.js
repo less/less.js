@@ -204,12 +204,23 @@ export default () => {
     /**
      * Permissive parsing. Ignores everything except matching {} [] () and quotes
      * until matching token (outside of blocks)
+     *
+     * @param {string|RegExp} tok - stop token
+     * @param {boolean} [detectBareVar] - when set, also record the position of the
+     *   first bare `@variable` reference (not `@{interpolation}`) that appears at
+     *   PAREN depth 0 — i.e. a structural reference, not a declaration value inside
+     *   `(...)`. Reuses this single pass (which already skips strings/comments) so
+     *   callers don't re-scan the text. Exposed as `.bareVarIndex` on the returned
+     *   group array (or null). `[...]`/`{...}` do NOT shield a reference — only
+     *   `(...)` (a declaration-value group) does.
      */
-    parserInput.$parseUntil = tok => {
+    parserInput.$parseUntil = (tok, detectBareVar) => {
         let quote = '';
         let returnVal = null;
         let inComment = false;
         let blockDepth = 0;
+        let parenDepth = 0;
+        let bareVarIndex = null;
         const blockStack = [];
         const parseGroups = [];
         const length = input.length;
@@ -249,6 +260,12 @@ export default () => {
                     i++;
                     continue;
                 }
+                if (detectBareVar && bareVarIndex === null && nextChar === '@' && parenDepth === 0) {
+                    // A bare `@ident` (not `@{interpolation}`) outside any `(...)` —
+                    // a structural reference. Strings/comments are already skipped above.
+                    const after = input.charAt(i + 1);
+                    if (after && /[-\w]/.test(after)) { bareVarIndex = i; }
+                }
                 switch (nextChar) {
                     case '\\':
                         i++;
@@ -284,6 +301,7 @@ export default () => {
                     case '(':
                         blockStack.push(')');
                         blockDepth++;
+                        parenDepth++;
                         break;
                     case '[':
                         blockStack.push(']');
@@ -295,6 +313,7 @@ export default () => {
                         const expected = blockStack.pop();
                         if (nextChar === expected) {
                             blockDepth--;
+                            if (nextChar === ')' && parenDepth > 0) { parenDepth--; }
                         } else {
                             // move the parser to the error and return expected
                             skipWhitespace(i - startPos);
@@ -310,6 +329,7 @@ export default () => {
             }
         } while (loop);
 
+        if (Array.isArray(returnVal)) { returnVal.bareVarIndex = bareVarIndex; }
         return returnVal ? returnVal : null;
     }
 

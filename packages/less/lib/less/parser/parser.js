@@ -106,31 +106,6 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
         warn('A bare @variable in an at-rule prelude is deprecated. Use @{variable} interpolation instead.', index, 'DEPRECATED', 'variable-in-at-rule-prelude');
     }
 
-    /**
-     * Whether `text` contains a bare `@variable` at the top level — i.e. outside
-     * any `(...)` group. A `@variable` inside parentheses is a declaration value
-     * (e.g. the `@v` in `@supports (display: @v)`) and remains valid; only a bare
-     * `@variable` in a structural position is deprecated.
-     *
-     * @param {string} text
-     * @returns {boolean}
-     */
-    function hasTopLevelBareVariable(text) {
-        let depth = 0;
-        for (let j = 0; j < text.length; j++) {
-            const c = text.charAt(j);
-            if (c === '(') {
-                depth++;
-            } else if (c === ')') {
-                if (depth > 0) { depth--; }
-            } else if (c === '@' && depth === 0) {
-                // a bare `@ident`, not `@{ident}` interpolation
-                if (/[\w-]/.test(text.charAt(j + 1))) { return true; }
-            }
-        }
-        return false;
-    }
-
     function expect(arg, msg) {
         // some older browsers return typeof 'function' for RegExp
         const result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
@@ -1812,7 +1787,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
                 parserInput.save();
 
-                value = parserInput.$parseUntil(tok);
+                value = parserInput.$parseUntil(tok, deprecateVariables);
 
                 if (value) {
                     if (typeof value === 'string') {
@@ -1821,6 +1796,14 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (value.length === 1 && value[0] === ' ') {
                         parserInput.forget();
                         return new tree.Anonymous('', index);
+                    }
+                    // At-rule prelude: `$parseUntil` (deprecateVariables) records the
+                    // first bare `@var` it saw outside any `(...)` in its single pass —
+                    // a structural reference (`[...]`/`{...}` don't shield it, only a
+                    // declaration-value `(...)` does). Warn once here rather than
+                    // re-scanning the text.
+                    if (deprecateVariables && value.bareVarIndex !== null && value.bareVarIndex !== undefined) {
+                        warnBareAtRuleVariable(value.bareVarIndex);
                     }
                     /** @type {string} */
                     let item;
@@ -1838,14 +1821,10 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
                             const variableRegex = /@([\w-]+)/g;
                             const propRegex = /\$([\w-]+)/g;
-                            if (deprecateVariables) {
-                                // At-rule prelude: only a bare @var in a structural
-                                // (top-level) position is deprecated; @vars inside
-                                // `(...)` are declaration values and stay valid.
-                                if (hasTopLevelBareVariable(item)) {
-                                    warnBareAtRuleVariable(index);
-                                }
-                            } else if (variableRegex.test(item)) {
+                            // At-rule preludes are handled once above via
+                            // `value.bareVarIndex`; the `variable-in-unknown-value`
+                            // notice is for unknown declaration values only.
+                            if (!deprecateVariables && variableRegex.test(item)) {
                                 warn('@variable in unknown values will not be evaluated as variables in the future. Use @{variable}', index, 'DEPRECATED', 'variable-in-unknown-value');
                             }
                             if (propRegex.test(item)) {

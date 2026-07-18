@@ -841,7 +841,12 @@ export default function(testFilter) {
     // previously unguarded. Warnings are suppressed from normal output (see the logger
     // listener at the top of this file); here we install a capturing listener instead.
     //
-    // NOT covered (documented gaps, not render-reachable):
+    // NOT covered (documented gaps):
+    //   - variable-in-unknown-value: only reachable via an inconsistent edge — a bare
+    //     `@var` in a custom-property value warns ONLY when a bracket pushes it to the
+    //     permissive text scan (`--x: bar[@bar]`), while `--x: @bar`, `--x: 1px @bar`,
+    //     `--x: foo(@bar)` all resolve silently. Asserting it would lock in that
+    //     inconsistency, so it is deliberately not covered.
     //   - property-in-unknown-value: wired (parser.js), but a `$prop` ref resolves via
     //     the entity path before reaching the permissive text scan, so no input triggers it.
     //   - math-always, dumpLineNumbers: registered in deprecation.js but never emitted
@@ -858,7 +863,6 @@ export default function(testFilter) {
             ['inline JavaScript (backtick) is deprecated', '@x: `1 + 1`;\n.a { w: @x }', { javascriptEnabled: true }, /Inline JavaScript evaluation/, 1],
             ['whitespace before mixin-call parens is deprecated', '.m() { a: b }\n.a { .m () }', {}, /Whitespace between a mixin name and parentheses/, 1],
             ['mixin call without parens is deprecated', '.m() { a: b }\n.a { .m }', {}, /Calling a mixin without parentheses is deprecated/, 1],
-            ['@variable in an unknown value is deprecated', '@bar: red;\n.a { --x: bar[@bar] }', {}, /@variable in unknown values will not be evaluated/, 1],
             ['the ./ operator is deprecated', '.a { w: 2px ./ 1 }', {}, /\.\/ operator is deprecated/, 1],
             ['targeting complex selectors with :extend warns', '.b .c { x: y }\n.a:extend(.b .c) { }', {}, /Targeting complex selectors/, 1],
             ['an :extend with no matches warns', '.a:extend(.zzz) { }', {}, /extend '.*' has no matches/, 1],

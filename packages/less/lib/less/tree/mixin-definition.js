@@ -267,35 +267,47 @@ class Definition extends Ruleset {
      */
     matchArgs(args, context) {
         const allArgsCnt = (args && args.length) || 0;
-        let len;
-        const optionalParameters = this.optionalParameters;
-        const requiredArgsCnt = !args ? 0 : args.reduce(function (/** @type {number} */ count, /** @type {MixinArg} */ p) {
-            if (optionalParameters.indexOf(p.name) < 0) {
-                return count + 1;
-            } else {
-                return count;
-            }
-        }, 0);
+        const evaldArguments = new Array(this.params.length);
+        const positionalArgs = [];
+        let positionalIndex = 0;
 
-        if (!this.variadic) {
-            if (requiredArgsCnt < this.required) {
+        for (let i = 0; i < allArgsCnt; i++) {
+            const arg = /** @type {MixinArg[]} */ (args)[i];
+            if (!arg.name) {
+                positionalArgs.push(arg);
+                continue;
+            }
+
+            const paramIndex = this.params.findIndex((param, index) => param.name === arg.name && !evaldArguments[index]);
+            if (paramIndex < 0) {
                 return false;
             }
-            if (allArgsCnt > this.params.length) {
-                return false;
+            evaldArguments[paramIndex] = arg;
+        }
+
+        for (let i = 0; i < this.params.length; i++) {
+            if (evaldArguments[i]) {
+                continue;
             }
-        } else {
-            if (requiredArgsCnt < (this.required - 1)) {
+            if (this.params[i].variadic) {
+                positionalIndex = positionalArgs.length;
+                continue;
+            }
+            if (positionalIndex < positionalArgs.length) {
+                evaldArguments[i] = positionalArgs[positionalIndex++];
+            } else if (!this.params[i].name || !this.params[i].value) {
                 return false;
             }
         }
 
-        // check patterns
-        len = Math.min(requiredArgsCnt, this.arity);
+        if (positionalIndex < positionalArgs.length) {
+            return false;
+        }
 
-        for (let i = 0; i < len; i++) {
+        // check patterns
+        for (let i = 0; i < this.arity; i++) {
             if (!this.params[i].name && !this.params[i].variadic) {
-                if (/** @type {MixinArg[]} */ (args)[i].value.eval(context).toCSS(/** @type {EvalContext} */ ({})) != /** @type {Node} */ (this.params[i].value).eval(context).toCSS(/** @type {EvalContext} */ ({}))) {
+                if (evaldArguments[i].value.eval(context).toCSS(/** @type {EvalContext} */ ({})) != /** @type {Node} */ (this.params[i].value).eval(context).toCSS(/** @type {EvalContext} */ ({}))) {
                     return false;
                 }
             }

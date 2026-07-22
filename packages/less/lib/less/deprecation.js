@@ -22,6 +22,18 @@ const deprecations = {
     'variable-in-at-rule-prelude': {
         description: 'A bare @variable in an at-rule prelude (e.g. @media @foo) is deprecated. Use @{variable} interpolation instead.'
     },
+    'numeric-variable-name': {
+        description: 'Variable names beginning with a number are deprecated and will be removed in Less 5.x.'
+    },
+    'dash-only-variable-name': {
+        description: 'The dash-only variable names @- and @{-} are deprecated and will be removed in Less 5.x.'
+    },
+    'dash-only-mixin-name': {
+        description: 'The dash-only mixin names .-() and #-() are deprecated and will be removed in Less 5.x.'
+    },
+    'dynamic-charset': {
+        description: 'Dynamic @charset interpolation is deprecated and will be removed in Less 5.x.'
+    },
     'property-in-unknown-value': {
         description: '$property in custom property values is treated as literal text.'
     },

@@ -106,6 +106,64 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
         warn('A bare @variable in an at-rule prelude is deprecated. Use @{variable} interpolation instead.', index, 'DEPRECATED', 'variable-in-at-rule-prelude');
     }
 
+    /**
+     * Numeric-leading variable names are a Less extension rather than valid CSS
+     * identifier syntax. Keep accepting them through Less 4, but make the Less 5
+     * migration visible at every actual variable reference or definition.
+     *
+     * @param {string} name - either an @-prefixed name or the name inside @{...}
+     * @param {number} index - source position of the variable token
+     */
+    function warnNumericVariableName(name, index) {
+        if (/^(?:@@?)?[0-9]/.test(name)) {
+            warn('Variable names beginning with a number are deprecated and will be removed in Less 5.x. Rename the variable to start with a valid identifier character.', index, 'DEPRECATED', 'numeric-variable-name');
+        }
+    }
+
+    /**
+     * A lone '-' is not a CSS identifier. Less historically accepts it as a
+     * variable name; retain that in Less 4 only and warn on definitions,
+     * ordinary references, and interpolation references.
+     *
+     * @param {string} name - either @-/@@-, or the name inside @{...}
+     * @param {number} index - source position of the variable token
+     */
+    function warnDashOnlyVariableName(name, index) {
+        const bareName = name.replace(/^@@?/, '');
+        if (bareName === '-') {
+            warn('The dash-only variable names @- and @{-} are deprecated and will be removed in Less 5.x. Rename the variable to use a valid identifier.', index, 'DEPRECATED', 'dash-only-variable-name');
+        }
+    }
+
+    /**
+     * A lone '-' is not a CSS identifier. Less historically accepts it as a mixin
+     * name after '.' or '#'; retain that in Less 4 only.
+     *
+     * @param {string} name
+     * @param {number} index
+     */
+    function warnDashOnlyMixinName(name, index) {
+        if (name === '.-' || name === '#-') {
+            warn('The dash-only mixin names .-() and #-() are deprecated and will be removed in Less 5.x. Rename the mixin to use a valid CSS identifier.', index, 'DEPRECATED', 'dash-only-mixin-name');
+        }
+    }
+
+    /**
+     * CSS @charset is a source-header declaration, not a general dynamic at-rule.
+     * Less 4 keeps its historical interpolation behavior for compatibility, but
+     * makes each dynamic spelling visible before Less 5 rejects it.
+     *
+     * @param {import('../tree/node.js').default} value
+     * @param {number} index - source position of the @charset token
+     */
+    function warnDynamicCharset(value, index) {
+        if (value instanceof tree.Variable ||
+            (value instanceof tree.Quoted &&
+                (value.containsVariables() || value.value.match(value.propRegex)))) {
+            warn('Dynamic @charset interpolation is deprecated and will be removed in Less 5.x. Use a static quoted encoding declaration instead.', index, 'DEPRECATED', 'dynamic-charset');
+        }
+    }
+
     function expect(arg, msg) {
         // some older browsers return typeof 'function' for RegExp
         const result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
@@ -684,6 +742,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                     parserInput.save();
                     if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^@@?[\w-]+/))) {
+                        warnNumericVariableName(name, index);
+                        warnDashOnlyVariableName(name, index);
                         ch = parserInput.currentChar();
                         if ((ch === '(' && !parserInput.prevChar().match(/^\s/))
                             || (ch === '[' && !parserInput.prevChar().match(/^\s/))) {
@@ -706,6 +766,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     const index = parserInput.i;
 
                     if (parserInput.currentChar() === '@' && (curly = parserInput.$re(/^@\{([\w-]+)\}/))) {
+                        warnNumericVariableName(curly[1], index);
+                        warnDashOnlyVariableName(curly[1], index);
                         return new(tree.Variable)(`@${curly[1]}`, index + currentIndex, fileInfo);
                     }
                 },
@@ -828,7 +890,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
             variable: function () {
                 let name;
 
-                if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^(@[\w-]+)\s*:/))) { return name[1]; }
+                if (parserInput.currentChar() === '@' && (name = parserInput.$re(/^(@[\w-]+)\s*:/))) {
+                    warnNumericVariableName(name[1], parserInput.i - name[0].length);
+                    warnDashOnlyVariableName(name[1], parserInput.i - name[0].length);
+                    return name[1];
+                }
             },
 
             //
@@ -858,6 +924,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
 
                     if (!inValue) {
+                        warnNumericVariableName(name[1], i);
+                        warnDashOnlyVariableName(name[1], i);
                         name = name[1];
                     }
 
@@ -1014,6 +1082,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         if (inValue || parsers.end()) {
                             parserInput.forget();
                             const mixin = new(tree.mixin.Call)(elements, args, index + currentIndex, fileInfo, !lookups && important);
+                            for (const element of elements) {
+                                warnDashOnlyMixinName(element.value, element._index - currentIndex);
+                            }
                             if (lookups) {
                                 return new tree.NamespaceValue(mixin, lookups);
                             }
@@ -1210,6 +1281,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     let ruleset;
                     let cond;
                     let variadic = false;
+                    const index = parserInput.i;
                     if ((parserInput.currentChar() !== '.' && parserInput.currentChar() !== '#') ||
                         parserInput.peek(/^[^{]*\}/)) {
                         return;
@@ -1245,6 +1317,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                         if (ruleset) {
                             parserInput.forget();
+                            warnDashOnlyMixinName(name, index);
                             return new(tree.mixin.Definition)(name, params, ruleset, cond, variadic);
                         } else {
                             parserInput.restore();
@@ -2293,6 +2366,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (!value) {
                         error(`expected ${name} identifier`);
                     }
+                    if (nonVendorSpecificName === '@charset') {
+                        warnDynamicCharset(value, index);
+                    }
                 } else if (hasExpression) {
                     // `@namespace` may carry an interpolated `@{ns}` prefix (or a
                     // deprecated bare `@ns`). Parse that prefix directly so `@{ns}`
@@ -2784,6 +2860,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     for (k = 0; k < name.length; k++) {
                         s = name[k];
+                        if (s.charAt(0) === '@') {
+                            const variableName = s.slice(2, -1);
+                            warnNumericVariableName(variableName, index[k]);
+                            warnDashOnlyVariableName(variableName, index[k]);
+                        }
                         name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
                             new(tree.Keyword)(s) :
                             (s.charAt(0) === '@' ?

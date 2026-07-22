@@ -7,6 +7,7 @@
 	"scripts": {
 		"publish": "node scripts/bump-and-publish.js",
 		"publish:dry-run": "DRY_RUN=true node scripts/bump-and-publish.js",
+		"verify:alpha:packed-consumer": "node scripts/verify-alpha-packed-consumer.mjs",
 		"test:publish-dry-run": "node --test scripts/bump-and-publish.test.mjs",
 		"prepare": "husky",
 		"changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",

@@ -33,7 +33,8 @@ Please report documentation issues in [the documentation project](https://github
 Read [Developing Less](http://lesscss.org/usage/#developing-less).
 
 ## Release History
-See the [changelog](CHANGELOG.md)
+See the [changelog](CHANGELOG.md), including the [Less v5 alpha.1 release
+notes](CHANGELOG.md#v500-alpha1-unreleased).
 
 ## Contributors
 

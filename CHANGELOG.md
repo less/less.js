@@ -1,5 +1,41 @@
 ## Change Log
 
+### v5.0.0-alpha.1 (unreleased)
+
+This is the first Less 5 prerelease. It is intentionally not a claim of full
+Less 4.x compatibility.
+
+#### Alpha scope
+
+- The external `less` package is the sole owner of the Less-compatible
+  `lessc` command. The separate `jess` package exposes `jess`, not `lessc`.
+- Less 5 preserves authored nested rules by default. Opt into flattened,
+  Less-4-style selector output with the render option `collapseNesting: true`
+  or the CLI flag `lessc --collapse-nesting`.
+- Collapsing preserves source order: declarations after a nested child remain
+  after that child rather than being regrouped into an earlier parent block.
+
+#### Release safety
+
+Before this prerelease can be published, the release branch must match its
+remote, `jess@2.0.0-alpha.9` must be available from npm, and a
+registry-backed clean-consumer proof must pass. The checked local proof packs
+Less with the local Jess alpha closure and exercises built `lessc` for stdin,
+files, sibling imports, and compile errors; it is not a substitute for the
+registry-backed proof. Owner review of these release notes and their known
+limitations is also required before publication.
+
+#### Known limitations
+
+- The full Less node corpus is not a release-parity claim. Its classified
+  failures include legacy plugin-global/registry and visitor assumptions,
+  advanced parser fixtures, import/process-URL behavior, source-map artifacts,
+  and other output divergences.
+- This alpha does not promise full Less 4.x CLI parity, browser compilation,
+  source-map parity, or Less 4.x performance parity.
+- These limitations remain visible release work; they are not silently treated
+  as passing compatibility.
+
 ### v4.6.0 (2026-03-09)
 
 #### Bug Fixes

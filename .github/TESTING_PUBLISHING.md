@@ -127,10 +127,11 @@ git checkout alpha
 DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 
 # Should show:
-# - Alpha version increment (e.g., 5.0.0-alpha.1 → 5.0.0-alpha.2)
+# - The committed alpha version (for example 5.0.0-alpha.1)
 # - Publishing with 'alpha' tag
 # - Pre-release creation
-# - All alpha validations passing
+# - A release plan only; it does not prove the prerequisite Jess alpha has
+#   been published or that the worktree is clean
 ```
 
 ### Test Version Validation
@@ -147,7 +148,8 @@ DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 
 Before actually publishing:
 
-- [ ] Run dry-run mode to verify version calculation
+- [ ] Prepare, commit, and push the exact alpha version before publishing
+- [ ] Run dry-run mode to verify the release plan (not release readiness)
 - [ ] Verify branch restrictions work (try from wrong branch)
 - [ ] Test alpha validations (if testing alpha branch)
 - [ ] Check that version override works (if needed)

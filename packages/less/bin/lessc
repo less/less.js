@@ -7,6 +7,7 @@
 import path from 'path';
 import fs from 'fs';
 import less from '../lib/index.js';
+import { version as versionInfo } from '../lib/version.js';
 
 const args = process.argv.slice(1);
 let options = { paths: [], filename: '' };
@@ -28,7 +29,7 @@ function parseArgs() {
       printUsage();
     }
     if (arg === '-v' || arg === '--version') {
-      console.log(`lessc ${less.version} (Less Compiler) [Jess]`);
+      console.log(`lessc ${versionInfo.semver} (Less Compiler) [Jess]`);
       process.exit(0);
     }
     if (arg === '-s' || arg === '--silent') {

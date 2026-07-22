@@ -1,6 +1,6 @@
 {
 	"name": "less",
-	"version": "5.0.0-alpha.2",
+	"version": "5.0.0-alpha.1",
 	"description": "Leaner CSS",
 	"homepage": "http://lesscss.org",
 	"author": {
@@ -53,6 +53,7 @@
 	},
 	"scripts": {
 		"quicktest": "grunt quicktest",
+		"test:lessc": "node test/lessc-alpha.mjs",
 		"test": "grunt test",
 		"test:node": "grunt test:node",
 		"test:coverage": "c8 -r lcov -r json-summary -r text-summary -r html --include=\"lib/**/*.js\" --include=\"bin/**/*.js\" --exclude=\"dist/**\" --exclude=\"**/*.test.js\" --exclude=\"**/*.spec.js\" --exclude=\"test/**\" --exclude=\"tmp/**\" --exclude=\"**/abstract-file-manager.js\" --exclude=\"**/abstract-plugin-loader.js\" grunt shell:test && node scripts/coverage-report.js && node scripts/coverage-lines.js",
@@ -63,7 +64,7 @@
 		"build": "node build/rollup.js --dist",
 		"benchmark": "node benchmark/benchmark-runner.cjs",
 		"benchmark:all": "node benchmark/run-and-compare.mjs",
-		"prepublishOnly": "npm run typecheck && grunt dist && grunt test:node"
+		"prepublishOnly": "npm run typecheck && grunt dist && npm run test:lessc"
 	},
 	"optionalDependencies": {
 		"errno": "^0.1.1",

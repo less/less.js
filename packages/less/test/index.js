@@ -3,9 +3,11 @@ import Module from 'module';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import less from '../lib/less-node/index.js';
-import { stylize } from '../lib/less-node/lessc-helper.js';
+import less from '../lib/index.js';
+import { lesscHelper } from '../lib/lessc-helper.js';
 import createLessTester from './less-test.js';
+
+const { stylize } = lesscHelper;
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

@@ -1,12 +1,13 @@
 {
 	"name": "@less/root",
 	"private": true,
-	"version": "5.0.0-alpha.2",
+	"version": "5.0.0-alpha.1",
 	"description": "Less monorepo",
 	"homepage": "http://lesscss.org",
 	"scripts": {
 		"publish": "node scripts/bump-and-publish.js",
 		"publish:dry-run": "DRY_RUN=true node scripts/bump-and-publish.js",
+		"test:publish-dry-run": "node --test scripts/bump-and-publish.test.mjs",
 		"prepare": "husky",
 		"changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
 		"test": "cd packages/less && npm test",

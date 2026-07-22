@@ -18,6 +18,12 @@ const semver = require('semver');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PACKAGES_DIR = path.join(ROOT_DIR, 'packages');
+const JESS_RUNTIME_DEPENDENCIES = [
+  '@jesscss/core',
+  '@jesscss/plugin-less',
+  '@jesscss/plugin-less-compat',
+  'jess'
+];
 
 // Get all package.json files
 function getPackageFiles() {
@@ -42,6 +48,18 @@ function getPackageFiles() {
   }
   
   return packages;
+}
+
+// A release has one workspace version only for its root manifest and public
+// packages. Private fixtures deliberately retain their own compatibility
+// version and must never be rewritten as a side effect of publishing Less.
+function getReleasePackageFiles() {
+  return getPackageFiles().filter(pkgPath => {
+    if (pkgPath === path.join(ROOT_DIR, 'package.json')) {
+      return true;
+    }
+    return !readPackage(pkgPath).private;
+  });
 }
 
 // Read package.json
@@ -83,6 +101,103 @@ function getNpmVersion(packageName) {
   }
 }
 
+// Return the exact published version when it exists. The unqualified `version`
+// query follows `latest`, which is not useful on the alpha branch while Less
+// v5 is still unpublished (latest remains on the Less 4 line).
+function getExactNpmVersion(packageName, version) {
+  try {
+    return execSync(`npm view ${packageName}@${version} version`, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+  } catch (e) {
+    // An unpublished exact version is the expected first-alpha case.
+    return null;
+  }
+}
+
+/**
+ * Resolve the Jess alpha version that the published Less package must use.
+ * Local alpha development intentionally keeps `link:` dependencies, but npm
+ * rejects those specifiers in a clean consumer. The Jess alpha must therefore
+ * be published first, and the release command must be given that exact version
+ * explicitly instead of silently selecting a stale registry tag.
+ */
+function getJessPublishVersion(value = process.env.JESS_VERSION) {
+  if (!value) {
+    throw new Error(
+      'JESS_VERSION is required for a Less alpha publish; publish Jess first and set it to the exact Jess alpha (for example 2.0.0-alpha.9).'
+    );
+  }
+  if (!semver.valid(value) || !value.includes('-alpha.')) {
+    throw new Error(`JESS_VERSION must be a valid Jess alpha version, received: ${value}`);
+  }
+  return value;
+}
+
+/**
+ * A non-dry alpha publish must name a Jess alpha that is already on npm. Keep
+ * this guard ahead of all release mutations: failing it must not create a Less
+ * commit, tag, or push.
+ */
+function verifyJessPublishedVersion(version, lookup = getExactNpmVersion) {
+  if (lookup('jess', version) !== version) {
+    throw new Error(`Jess ${version} must be published before a Less alpha publish`);
+  }
+  return version;
+}
+
+/**
+ * Temporarily normalize Jess runtime dependencies in less/package.json to the
+ * already-published Jess alpha version (local `link:` specs and stale registry
+ * versions alike). The original manifest bytes are restored after npm publish
+ * (including failures), so local alpha development continues to use the
+ * workspace-linked Jess build.
+ */
+function rewriteJessRuntimeDependencies(packagePath, jessVersion) {
+  const raw = fs.readFileSync(packagePath, 'utf8');
+  const pkg = JSON.parse(raw);
+  if (pkg.name !== 'less') {
+    return () => {};
+  }
+  const dependencies = pkg.dependencies || {};
+  const missing = JESS_RUNTIME_DEPENDENCIES.filter(name => !(name in dependencies));
+  if (missing.length > 0) {
+    throw new Error(`less package is missing Jess runtime dependencies: ${missing.join(', ')}`);
+  }
+  const needsRewrite = JESS_RUNTIME_DEPENDENCIES.filter(name => dependencies[name] !== jessVersion);
+  if (needsRewrite.length === 0) {
+    return () => {};
+  }
+  for (const name of needsRewrite) {
+    dependencies[name] = jessVersion;
+  }
+  writePackage(packagePath, pkg);
+  return () => fs.writeFileSync(packagePath, raw, 'utf8');
+}
+
+/**
+ * Select the alpha version without treating the `latest` Less 4 release as
+ * evidence that an explicitly configured Less 5 alpha should be bumped.
+ * `exactPublishedVersion` is null when the current version is not on npm.
+ */
+function determineAlphaVersion(currentVersion, exactPublishedVersion, explicitVersion) {
+  if (explicitVersion && explicitVersion !== currentVersion) {
+    throw new Error(
+      `EXPLICIT_VERSION (${explicitVersion}) must match the committed alpha manifest (${currentVersion}); prepare the version change before publishing`
+    );
+  }
+  if (!semver.valid(currentVersion) || !/-alpha\.\d+$/u.test(currentVersion)) {
+    throw new Error(`Alpha manifest version must be X.Y.Z-alpha.N, received: ${currentVersion}`);
+  }
+  // Alpha manifests are intentional release inputs, never something this
+  // script guesses and rewrites. In particular, a first alpha remains .1.
+  // The exact-published lookup is accepted for backwards-compatible callers;
+  // `verifyUnpublishedVersion` is the actionable release guard.
+  void exactPublishedVersion;
+  return currentVersion;
+}
+
 // Determine the target version for publishing.
 // Priority: EXPLICIT_VERSION env > package.json (if ahead of NPM) > NPM patch bump
 function getTargetVersion(currentVersion, npmVersion) {
@@ -107,7 +222,7 @@ function getTargetVersion(currentVersion, npmVersion) {
 
 // Update all package.json files with new version
 function updateAllVersions(newVersion) {
-  const packageFiles = getPackageFiles();
+  const packageFiles = getReleasePackageFiles();
   const updated = [];
   
   for (const pkgPath of packageFiles) {
@@ -120,6 +235,88 @@ function updateAllVersions(newVersion) {
   }
   
   return updated;
+}
+
+function verifyReleaseManifestVersions(version, packageFiles = getReleasePackageFiles()) {
+  for (const pkgPath of packageFiles) {
+    const pkg = readPackage(pkgPath);
+    if (pkg.version !== version) {
+      throw new Error(
+        `Release manifest ${path.relative(ROOT_DIR, pkgPath)} has version ${pkg.version}; expected ${version}`
+      );
+    }
+  }
+}
+
+function verifyWorkspacePackageJson() {
+  // Parse every workspace package manifest, including private fixtures. This
+  // catches malformed package metadata without assigning private packages the
+  // public release version.
+  for (const pkgPath of getPackageFiles()) {
+    readPackage(pkgPath);
+  }
+}
+
+function verifyCleanWorktree() {
+  const status = execSync('git status --porcelain --untracked-files=all', {
+    cwd: ROOT_DIR,
+    encoding: 'utf8'
+  }).trim();
+  if (status) {
+    throw new Error('Release worktree is not clean; commit, stash, or remove local changes before publishing');
+  }
+}
+
+function hasStagedChanges() {
+  try {
+    execSync('git diff --cached --quiet', { cwd: ROOT_DIR, stdio: 'ignore' });
+    return false;
+  } catch (error) {
+    if (error.status === 1) {
+      return true;
+    }
+    throw error;
+  }
+}
+
+function verifyAlphaRepositoryState(version) {
+  execSync('git fetch origin alpha master', { cwd: ROOT_DIR, stdio: 'ignore' });
+
+  const [behind, ahead] = execSync('git rev-list --left-right --count origin/alpha...HEAD', {
+    cwd: ROOT_DIR,
+    encoding: 'utf8'
+  }).trim().split(/\s+/u).map(Number);
+  if (behind !== 0 || ahead !== 0) {
+    throw new Error(
+      `Local alpha must exactly match origin/alpha before publishing (behind ${behind}, ahead ${ahead})`
+    );
+  }
+
+  const missingMasterCommits = Number(execSync('git rev-list --count HEAD..origin/master', {
+    cwd: ROOT_DIR,
+    encoding: 'utf8'
+  }).trim());
+  if (missingMasterCommits > 0) {
+    throw new Error(`Alpha branch is behind origin/master by ${missingMasterCommits} commit(s)`);
+  }
+
+  if (!semver.valid(version) || !/-alpha\.\d+$/u.test(version)) {
+    throw new Error(`Alpha release version must be X.Y.Z-alpha.N, received: ${version}`);
+  }
+  const masterPkg = JSON.parse(execSync('git show origin/master:packages/less/package.json', {
+    cwd: ROOT_DIR,
+    encoding: 'utf8'
+  }));
+  const alphaBase = version.replace(/-alpha\.\d+$/u, '');
+  if (!semver.gte(alphaBase, masterPkg.version)) {
+    throw new Error(`Alpha base version ${alphaBase} is lower than origin/master ${masterPkg.version}`);
+  }
+}
+
+function verifyUnpublishedVersion(packageName, version, lookup = getExactNpmVersion) {
+  if (lookup(packageName, version)) {
+    throw new Error(`${packageName}@${version} is already published; prepare and commit the next release version first`);
+  }
 }
 
 // Get packages that should be published (not private)
@@ -167,110 +364,77 @@ function main() {
   let currentVersion = getCurrentVersion();
   console.log(`📦 Current version: ${currentVersion}`);
   
-  // Protection: If on alpha branch and version was overwritten by a merge from master
+  // An alpha release is always prepared and committed before publication. Do
+  // not "repair" a merge by changing manifests from the publish command.
   if (isAlpha && !currentVersion.includes('-alpha.')) {
-    console.log(`\n⚠️  WARNING: Alpha branch version (${currentVersion}) doesn't contain '-alpha.'`);
-    console.log(`   This likely happened due to merging master into alpha.`);
-    console.log(`   Attempting to restore alpha version...`);
-    
-    // Try to find the last alpha version from alpha branch history
-    let restoredVersion = null;
-    try {
-      // Get recent commits on alpha that modified package.json
-      const commits = execSync(
-        'git log alpha --oneline -20 -- packages/less/package.json',
-        { cwd: ROOT_DIR, encoding: 'utf8' }
-      ).trim().split('\n');
-      
-      // Search through commits to find the last alpha version
-      for (const commitLine of commits) {
-        const commitHash = commitLine.split(' ')[0];
-        try {
-          const pkgContent = execSync(
-            `git show ${commitHash}:packages/less/package.json 2>/dev/null`,
-            { cwd: ROOT_DIR, encoding: 'utf8' }
-          );
-          const pkg = JSON.parse(pkgContent);
-          if (pkg.version && pkg.version.includes('-alpha.')) {
-            restoredVersion = pkg.version;
-            console.log(`   Found previous alpha version in commit ${commitHash}: ${restoredVersion}`);
-            break;
-          }
-        } catch (e) {
-          // Continue to next commit
-        }
-      }
-      
-      if (restoredVersion) {
-        // Increment the alpha number from the restored version
-        const alphaMatch = restoredVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
-        if (alphaMatch) {
-          const alphaNum = parseInt(alphaMatch[2], 10);
-          const newAlphaVersion = `${alphaMatch[1]}-alpha.${alphaNum + 1}`;
-          console.log(`   Restoring and incrementing to: ${newAlphaVersion}`);
-          currentVersion = newAlphaVersion;
-          updateAllVersions(newAlphaVersion);
-        } else {
-          console.log(`   Restoring to: ${restoredVersion}`);
-          currentVersion = restoredVersion;
-          updateAllVersions(restoredVersion);
-        }
-      } else {
-        // No previous alpha version found, create one from current version
-        const parsed = parseVersion(currentVersion);
-        const nextMajor = parsed.major + 1;
-        const newAlphaVersion = `${nextMajor}.0.0-alpha.1`;
-        console.log(`   No previous alpha version found. Creating new: ${newAlphaVersion}`);
-        currentVersion = newAlphaVersion;
-        updateAllVersions(newAlphaVersion);
-      }
-    } catch (e) {
-      // If we can't find previous version, create a new alpha version
-      const parsed = parseVersion(currentVersion);
-      const nextMajor = parsed.major + 1;
-      const newAlphaVersion = `${nextMajor}.0.0-alpha.1`;
-      console.log(`   Could not find previous alpha version. Creating: ${newAlphaVersion}`);
-      currentVersion = newAlphaVersion;
-      updateAllVersions(newAlphaVersion);
-    }
-    
-    console.log(`✅ Restored/created alpha version: ${currentVersion}\n`);
+    console.error(
+      `❌ ERROR: Alpha manifest version (${currentVersion}) is not a prerelease; prepare and commit an X.Y.Z-alpha.N version before publishing`
+    );
+    process.exit(1);
   }
   
   // Determine next version
   let nextVersion;
 
   if (isAlpha) {
-    // For alpha branch, use alpha versions
-    const parsed = parseVersion(currentVersion);
-    if (parsed.prerelease) {
-      // Already an alpha, increment alpha number
-      const alphaMatch = currentVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
-      if (alphaMatch) {
-        const alphaNum = parseInt(alphaMatch[2], 10);
-        nextVersion = `${alphaMatch[1]}-alpha.${alphaNum + 1}`;
-      } else {
-        // Other prerelease format, determine base version and start alpha.1
-        const baseVersion = `${parsed.major}.${parsed.minor}.${parsed.patch}`;
-        nextVersion = `${baseVersion}-alpha.1`;
-      }
-    } else {
-      // Not an alpha version, determine next major and start alpha.1
-      const parsed = parseVersion(currentVersion);
-      const nextMajor = parsed.major + 1;
-      nextVersion = `${nextMajor}.0.0-alpha.1`;
+    // The committed alpha manifest is authoritative. A publish command must
+    // never silently invent the next alpha number or rewrite a merged branch.
+    try {
+      const explicitVersion = process.env.EXPLICIT_VERSION;
+      nextVersion = determineAlphaVersion(currentVersion, null, explicitVersion);
+      console.log(`📦 Using committed alpha version: ${nextVersion}`);
+    } catch (error) {
+      console.error(`❌ ERROR: ${error.message || error}`);
+      process.exit(1);
     }
-    console.log(`🔢 Auto-incrementing alpha version: ${nextVersion}`);
   } else {
     // For master: compare package.json vs NPM, bump accordingly
     const npmVersion = getNpmVersion('less');
     console.log(`📦 NPM version: ${npmVersion || '(not published)'}`);
     nextVersion = getTargetVersion(currentVersion, npmVersion);
   }
+
+  // A release must fail before it stages, commits, tags, or pushes if its
+  // required Jess alpha is absent. Dry runs deliberately exercise the release
+  // shape before Jess is published and therefore skip only the registry lookup.
+  let jessPublishVersion;
+  if (isAlpha) {
+    try {
+      jessPublishVersion = getJessPublishVersion();
+      if (!dryRun) {
+        verifyJessPublishedVersion(jessPublishVersion);
+      }
+    } catch (error) {
+      console.error(`❌ ERROR: ${error.message || error}`);
+      process.exit(1);
+    }
+    console.log(`✅ Less package will publish against Jess ${jessPublishVersion}`);
+  }
+
+  // These are real release guards, not post-release diagnostics. A real
+  // release must fail before it mutates manifests, commits, tags, pushes, or
+  // talks to npm. Dry-run is intentionally only a plan: it can run before the
+  // prerequisite Jess alpha is published, but cannot claim release readiness.
+  try {
+    if (isAlpha) {
+      verifyWorkspacePackageJson();
+      verifyReleaseManifestVersions(nextVersion);
+      if (!dryRun) {
+        verifyCleanWorktree();
+        verifyAlphaRepositoryState(nextVersion);
+        for (const pkg of getPublishablePackages()) {
+          verifyUnpublishedVersion(pkg.name, nextVersion);
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`❌ ERROR: ${error.message || error}`);
+    process.exit(1);
+  }
   
   // Update all package.json files
   console.log(`📝 Updating all package.json files to version ${nextVersion}...`);
-  const updated = updateAllVersions(nextVersion);
+  const updated = dryRun || currentVersion === nextVersion ? [] : updateAllVersions(nextVersion);
   console.log(`✅ Updated ${updated.length} package.json files`);
   
   // Get publishable packages
@@ -289,14 +453,13 @@ function main() {
   // Commit
   console.log(`💾 Committing version bump...`);
   if (!dryRun) {
-    try {
+    if (hasStagedChanges()) {
       execSync(`git commit -m "chore: bump version to ${nextVersion}"`, { 
         cwd: ROOT_DIR, 
         stdio: 'inherit' 
       });
-    } catch (e) {
-      // Commit might fail if nothing changed, that's okay
-      console.log(`⚠️  Commit skipped (no changes or already committed)`);
+    } else {
+      console.log(`   No version changes to commit`);
     }
   } else {
     console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
@@ -332,7 +495,7 @@ function main() {
     console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
   }
   
-  // Validate alpha branch requirements
+  // Compatibility log for the preflight validation above.
   if (isAlpha) {
     console.log(`\n🔍 Validating alpha branch requirements...`);
     
@@ -351,8 +514,8 @@ function main() {
     
     // Validation 3: Check if alpha is behind master
     try {
-      execSync('git fetch origin master:master 2>/dev/null || true', { cwd: ROOT_DIR });
-      const masterCommits = execSync('git rev-list --count alpha..master 2>/dev/null || echo "0"', { 
+      execSync('git fetch origin master', { cwd: ROOT_DIR, stdio: 'ignore' });
+      const masterCommits = execSync('git rev-list --count alpha..origin/master', {
         cwd: ROOT_DIR, 
         encoding: 'utf8' 
       }).trim();
@@ -370,7 +533,7 @@ function main() {
     
     // Validation 4: Alpha base version must be >= master version
     try {
-      const masterVersionStr = execSync('git show master:packages/less/package.json 2>/dev/null', { 
+      const masterVersionStr = execSync('git show origin/master:packages/less/package.json', {
         cwd: ROOT_DIR, 
         encoding: 'utf8' 
       });
@@ -397,7 +560,7 @@ function main() {
   // Determine NPM tag based on branch and version
   const npmTag = isAlpha ? 'alpha' : 'latest';
   const isAlphaVersion = nextVersion.includes('-alpha.');
-  
+
   // Validation: Alpha versions must use 'alpha' tag, non-alpha versions must use 'latest' tag
   if (isAlphaVersion && npmTag !== 'alpha') {
     console.error(`❌ ERROR: Alpha version (${nextVersion}) must be published with 'alpha' tag, not '${npmTag}'`);
@@ -427,7 +590,11 @@ function main() {
       console.log(`   [DRY RUN] Would publish: ${pkg.name}@${nextVersion} with tag: ${npmTag}`);
       console.log(`   [DRY RUN] Command: npm publish --tag ${npmTag}`);
     } else {
+      let restoreJessDependencies = () => {};
       try {
+        if (isAlpha) {
+          restoreJessDependencies = rewriteJessRuntimeDependencies(pkg.path, jessPublishVersion);
+        }
         // For scoped packages, ensure access is set correctly
         const publishCmd = `npm publish --tag ${npmTag} --access public`;
         execSync(publishCmd, { 
@@ -441,6 +608,8 @@ function main() {
         console.error(`❌ Failed to publish ${pkg.name}: ${errorMsg}`);
         publishErrors.push({ name: pkg.name, error: errorMsg });
         // Continue with other packages instead of exiting immediately
+      } finally {
+        restoreJessDependencies();
       }
     }
   }
@@ -482,4 +651,12 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { main };
+module.exports = {
+  determineAlphaVersion,
+  getJessPublishVersion,
+  verifyJessPublishedVersion,
+  verifyReleaseManifestVersions,
+  verifyUnpublishedVersion,
+  rewriteJessRuntimeDependencies,
+  main
+};

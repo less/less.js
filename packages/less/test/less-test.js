@@ -3,12 +3,14 @@ import { createRequire } from 'module';
 import path from 'path';
 import fs from 'fs';
 import semver from 'semver';
-import logger from '../lib/less/logger.js';
+import logger from '../lib/logger.js';
 import { cosmiconfigSync } from 'cosmiconfig';
 import { globSync } from 'glob';
 import { copy as clone } from 'copy-anything';
-import less from '../lib/less-node/index.js';
-import { stylize } from '../lib/less-node/lessc-helper.js';
+import less from '../lib/index.js';
+import { lesscHelper } from '../lib/lessc-helper.js';
+
+const { stylize } = lesscHelper;
 
 const require = createRequire(import.meta.url);
 
@@ -61,17 +63,24 @@ export default function(testFilter) {
         passedTests = 0,
         finishTimer = setInterval(endTest, 500);
 
-    less.functions.functionRegistry.addMultiple({
-        add: function (a, b) {
-            return new(less.tree.Dimension)(a.value + b.value);
-        },
-        increment: function (a) {
-            return new(less.tree.Dimension)(a.value + 1);
-        },
-        _color: function (str) {
-            if (str.value === 'evil red') { return new(less.tree.Color)('600'); }
+    // Less v5 exposes extension functions through the documented `plugins`
+    // render option. The v4 process-global function registry is deliberately
+    // not part of the v5 API.
+    const fixtureFunctionPlugin = {
+        install: function (pluginLess, _manager, functions) {
+            functions.addMultiple({
+                add: function (a, b) {
+                    return new(pluginLess.tree.Dimension)(a.value + b.value);
+                },
+                increment: function (a) {
+                    return new(pluginLess.tree.Dimension)(a.value + 1);
+                },
+                _color: function (str) {
+                    if (str.value === 'evil red') { return new(pluginLess.tree.Color)('600'); }
+                }
+            });
         }
-    });
+    };
 
     function validateSourcemapMappings(sourcemap, lessFile, compiledCSS) {
         var SourceMapConsumer = require('source-map').SourceMapConsumer;
@@ -386,11 +395,15 @@ export default function(testFilter) {
     // https://github.com/less/less.js/issues/3112
     function testJSImport() {
         process.stdout.write('- Testing root function registry');
-        less.functions.functionRegistry.add('ext', function() {
-            return new less.tree.Anonymous('file');
-        });
+        const rootRegistryPlugin = {
+            install: function (pluginLess, _manager, functions) {
+                functions.add('ext', function() {
+                    return new pluginLess.tree.Anonymous('file');
+                });
+            }
+        };
         var expected = '@charset "utf-8";\n';
-        toCSS({}, path.join(lessFolder, 'tests-config', 'root-registry', 'root.less'), function(error, output) {
+        toCSS({ plugins: [rootRegistryPlugin] }, path.join(lessFolder, 'tests-config', 'root-registry', 'root.less'), function(error, output) {
             if (error) {
                 return fail('ERROR: ' + error);
             }
@@ -770,6 +783,9 @@ export default function(testFilter) {
         if (originalOptions.getVars) {
             options.getVars = originalOptions.getVars;
         }
+        // JSON cloning intentionally drops functions. Retain test-local plugin
+        // objects so every render exercises the v5 public plugin option.
+        options.plugins = [fixtureFunctionPlugin, ...(originalOptions.plugins || [])];
         var str = fs.readFileSync(filePath, 'utf8'), addPath = path.dirname(filePath);
 
         if (typeof options.paths !== 'string') {

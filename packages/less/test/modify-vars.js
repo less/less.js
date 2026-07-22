@@ -1,4 +1,4 @@
-import less from '../lib/less-node/index.js';
+import less from '../lib/index.js';
 import fs from 'fs';
 
 var input = fs.readFileSync('./test/less/modifyVars/extended.less', 'utf8');

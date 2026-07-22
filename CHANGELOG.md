@@ -1,5 +1,11 @@
 ## Change Log
 
+### v4.8.0 (2026-07-22)
+
+#### Deprecation Warnings
+
+- [#4475](https://github.com/less/less.js/pull/4475) Deprecate numeric-leading and dash-only variable names, dash-only mixin names, and dynamic `@charset` interpolation for removal in Less 5.x. Less 4 preserves the existing output while warning; migrate names to valid identifiers and use a static quoted `@charset` declaration. (@matthew-dean)
+
 ### v4.7.0 (2026-07-18)
 
 #### Changes

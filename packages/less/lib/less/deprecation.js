@@ -31,6 +31,9 @@ const deprecations = {
     'dash-only-mixin-name': {
         description: 'The dash-only mixin names .-() and #-() are deprecated and will be removed in Less 5.x.'
     },
+    'dynamic-charset': {
+        description: 'Dynamic @charset interpolation is deprecated and will be removed in Less 5.x.'
+    },
     'property-in-unknown-value': {
         description: '$property in custom property values is treated as literal text.'
     },

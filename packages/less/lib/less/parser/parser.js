@@ -148,6 +148,22 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
         }
     }
 
+    /**
+     * CSS @charset is a source-header declaration, not a general dynamic at-rule.
+     * Less 4 keeps its historical interpolation behavior for compatibility, but
+     * makes each dynamic spelling visible before Less 5 rejects it.
+     *
+     * @param {import('../tree/node.js').default} value
+     * @param {number} index - source position of the @charset token
+     */
+    function warnDynamicCharset(value, index) {
+        if (value instanceof tree.Variable ||
+            (value instanceof tree.Quoted &&
+                (value.containsVariables() || value.value.match(value.propRegex)))) {
+            warn('Dynamic @charset interpolation is deprecated and will be removed in Less 5.x. Use a static quoted encoding declaration instead.', index, 'DEPRECATED', 'dynamic-charset');
+        }
+    }
+
     function expect(arg, msg) {
         // some older browsers return typeof 'function' for RegExp
         const result = (arg instanceof Function) ? arg.call(parsers) : parserInput.$re(arg);
@@ -908,6 +924,8 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
 
                     if (!inValue) {
+                        warnNumericVariableName(name[1], i);
+                        warnDashOnlyVariableName(name[1], i);
                         name = name[1];
                     }
 
@@ -2348,6 +2366,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     if (!value) {
                         error(`expected ${name} identifier`);
                     }
+                    if (nonVendorSpecificName === '@charset') {
+                        warnDynamicCharset(value, index);
+                    }
                 } else if (hasExpression) {
                     // `@namespace` may carry an interpolated `@{ns}` prefix (or a
                     // deprecated bare `@ns`). Parse that prefix directly so `@{ns}`
@@ -2839,6 +2860,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     for (k = 0; k < name.length; k++) {
                         s = name[k];
+                        if (s.charAt(0) === '@') {
+                            const variableName = s.slice(2, -1);
+                            warnNumericVariableName(variableName, index[k]);
+                            warnDashOnlyVariableName(variableName, index[k]);
+                        }
                         name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
                             new(tree.Keyword)(s) :
                             (s.charAt(0) === '@' ?

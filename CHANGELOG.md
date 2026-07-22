@@ -1,5 +1,14 @@
 ## Change Log
 
+### v4.7.1 (2026-07-22)
+
+#### Changes
+
+- [#4473](https://github.com/less/less.js/pull/4473) fix(mixing): resolves issue #4234 (@puckowski)
+- [#4472](https://github.com/less/less.js/pull/4472) Fix boolean() parsing for comparisons between inline condition expressions (@app/copilot-swe-agent)
+- [#4471](https://github.com/less/less.js/pull/4471) chore: release v4.7.0 (@app/github-actions)
+
+
 ### v4.7.0 (2026-07-18)
 
 #### Changes

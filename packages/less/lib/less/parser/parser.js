@@ -601,7 +601,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
 
                     function condition() {
-                        return [expect(parsers.condition, 'expected condition')];
+                        return [expect(() => parsers.condition(false, true), 'expected condition')];
                     }
                 },
 
@@ -2552,7 +2552,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     return condition || a;
                 }
             },
-            condition: function (needsParens) {
+            condition: function (needsParens, allowConditionOperands) {
                 let result;
                 let logical;
                 let next;
@@ -2560,13 +2560,13 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     return parserInput.$str('or');
                 }
 
-                result = this.conditionAnd(needsParens);
+                result = this.conditionAnd(needsParens, allowConditionOperands);
                 if (!result) {
                     return ;
                 }
                 logical = or();
                 if (logical) {
-                    next = this.condition(needsParens);
+                    next = this.condition(needsParens, allowConditionOperands);
                     if (next) {
                         result = new(tree.Condition)(logical, result, next);
                     } else {
@@ -2575,13 +2575,13 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
                 return result;
             },
-            conditionAnd: function (needsParens) {
+            conditionAnd: function (needsParens, allowConditionOperands) {
                 let result;
                 let logical;
                 let next;
                 const self = this;
                 function insideCondition() {
-                    const cond = self.negatedCondition(needsParens) || self.parenthesisCondition(needsParens);
+                    const cond = self.negatedCondition(needsParens, allowConditionOperands) || self.parenthesisCondition(needsParens, allowConditionOperands);
                     if (!cond && !needsParens) {
                         return self.atomicCondition(needsParens);
                     }
@@ -2595,9 +2595,12 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (!result) {
                     return ;
                 }
+                if (allowConditionOperands) {
+                    result = this.atomicCondition(needsParens, result, allowConditionOperands) || result;
+                }
                 logical = and();
                 if (logical) {
-                    next = this.conditionAnd(needsParens);
+                    next = this.conditionAnd(needsParens, allowConditionOperands);
                     if (next) {
                         result = new(tree.Condition)(logical, result, next);
                     } else {
@@ -2606,9 +2609,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
                 return result;
             },
-            negatedCondition: function (needsParens) {
+            negatedCondition: function (needsParens, allowConditionOperands) {
                 if (parserInput.$str('not')) {
-                    const result = this.parenthesisCondition(needsParens);
+                    const result = this.parenthesisCondition(needsParens, allowConditionOperands);
                     if (result) {
                         result.negate = !result.negate;
                         return result;
@@ -2625,11 +2628,11 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                 }
             },
-            parenthesisCondition: function (needsParens) {
+            parenthesisCondition: function (needsParens, allowConditionOperands) {
                 function tryConditionFollowedByParenthesis(me) {
                     let body;
                     parserInput.save();
-                    body = me.condition(needsParens);
+                    body = me.condition(needsParens, allowConditionOperands);
                     if (!body) {
                         parserInput.restore();
                         return ;
@@ -2666,7 +2669,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 parserInput.forget();
                 return body;
             },
-            atomicCondition: function (needsParens, preparsedCond) {
+            atomicCondition: function (needsParens, preparsedCond, allowConditionOperands) {
                 const entities = this.entities;
                 const index = parserInput.i;
                 let a;
@@ -2675,7 +2678,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 let op;
 
                 const cond = (function() {
-                    return this.addition() || entities.keyword() || entities.quoted() || entities.mixinLookup();
+                    return (allowConditionOperands && this.parenthesisCondition(needsParens)) || this.addition() || entities.keyword() || entities.quoted() || entities.mixinLookup();
                 }).bind(this)
 
                 if (preparsedCond) {

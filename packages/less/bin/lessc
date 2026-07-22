@@ -44,6 +44,10 @@ function parseArgs() {
       verbose = true;
       continue;
     }
+    if (arg === '--collapse-nesting') {
+      options.collapseNesting = true;
+      continue;
+    }
     if (arg === '-I' || arg === '--include-path') {
       const match = arg.match(/^-I(.+)$/);
       const paths = (match ? match[1] : args[++i])?.split(/[:;]/) || [];

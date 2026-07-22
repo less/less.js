@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
+import less from '../lib/index.js';
+import { createLessOptions } from '../lib/options.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lessc = path.join(packageRoot, 'bin', 'lessc');
@@ -32,16 +34,70 @@ assert.match(jessEntrypoint, /[/\\]jess[/\\]lib[/\\]index\.js$/,
     'the Less CLI must resolve the built Jess package entrypoint');
 await realpath(jessEntrypoint);
 
+{
+    assert.deepEqual(createLessOptions({}).configOptions.output, {});
+    assert.deepEqual(
+        createLessOptions({ collapseNesting: true }).configOptions.output,
+        [{ collapseNesting: true }]
+    );
+
+    const source = '.parent { before: 1; .child { inside: 2; } after: 3; }\n';
+    assert.equal((await less.render(source)).css, `.parent {
+  before: 1;
+  .child {
+    inside: 2;
+  }
+  after: 3;
+}
+`);
+    assert.equal((await less.render(source, { collapseNesting: true })).css, `.parent {
+  before: 1;
+}
+.parent .child {
+  inside: 2;
+}
+.parent {
+  after: 3;
+}
+`);
+}
+
 const tempDir = await mkdtemp(path.join(tmpdir(), 'lessc-alpha-'));
 try {
     const imported = path.join(tempDir, 'imported.less');
     const input = path.join(tempDir, 'input.less');
     const output = path.join(tempDir, 'output.css');
+    const nested = path.join(tempDir, 'nested.less');
+    const nestedOutput = path.join(tempDir, 'nested.css');
     const broken = path.join(tempDir, 'broken.less');
 
+    await writeFile(path.join(tempDir, 'styles.config.cjs'), [
+        'module.exports = {',
+        '  output: [{ file: \'{name}.css\', collapseNesting: false }]',
+        '};',
+        ''
+    ].join('\n'));
     await writeFile(imported, '.from-import { color: green; }\n');
     await writeFile(input, '@import "imported.less";\n.from-file { width: (1 + 1); }\n');
+    await writeFile(nested, '.parent { before: 1; .child { inside: 2; } after: 3; }\n');
     await writeFile(broken, '.broken { color: red;\n');
+
+    const collapsedCss = `.parent {
+  before: 1;
+}
+.parent .child {
+  inside: 2;
+}
+.parent {
+  after: 3;
+}
+`;
+
+    assert.equal(
+        (await less.renderFile(nested, { collapseNesting: true })).css,
+        collapsedCss,
+        'an explicit Less renderFile option overrides a file-local output config'
+    );
 
     const version = await runLessc(['--version']);
     assert.equal(version.code, 0, version.stderr);
@@ -52,6 +108,29 @@ try {
     assert.equal(stdin.code, 0, stdin.stderr);
     assert.match(stdin.stdout, /\.from-stdin\s*\{[\s\S]*color:\s*blue;/);
     assert.equal(stdin.stderr, '');
+
+    const collapsed = await runLessc(
+        ['--collapse-nesting', '-'],
+        '.parent { before: 1; .child { inside: 2; } after: 3; }\n'
+    );
+    assert.equal(collapsed.code, 0, collapsed.stderr);
+    assert.equal(collapsed.stderr, '');
+    assert.equal(collapsed.stdout, `.parent {
+  before: 1;
+}
+.parent .child {
+  inside: 2;
+}
+.parent {
+  after: 3;
+}
+`);
+
+    const collapsedFile = await runLessc(['--collapse-nesting', nested, nestedOutput]);
+    assert.equal(collapsedFile.code, 0, collapsedFile.stderr);
+    assert.equal(collapsedFile.stderr, '');
+    assert.equal(await readFile(nestedOutput, 'utf8'), collapsedCss,
+        'file-mode lessc preserves declaration source order while collapsing nesting');
 
     const file = await runLessc([input, output]);
     assert.equal(file.code, 0, file.stderr);

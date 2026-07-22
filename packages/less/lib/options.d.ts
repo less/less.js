@@ -21,6 +21,11 @@ export interface LessRenderOptions {
   urlArgs?: string;
   javascriptEnabled?: boolean;
   compress?: boolean;
+  /**
+   * Opt into Less 4-style flattened output. Less v5 preserves authored nesting
+   * by default.
+   */
+  collapseNesting?: boolean;
   /** @internal Jess alpha benchmark-only flag for source graphs already proven @plugin-free. */
   __jessSkipLessCompatWhenPluginFree?: boolean;
 }

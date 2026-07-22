@@ -66,7 +66,15 @@ export function createLessOptions(options) {
       mathMode,
       plugins,
     },
-    output: {},
+    // Less v5 preserves authored nesting unless its explicit compatibility
+    // switch requests flattened CSS. Keep that public Less option at the
+    // wrapper boundary; Jess owns the one renderer and its output mode.
+    // A file's styles.config may use an output array. A file-less output entry
+    // is the compiler's documented per-render override for that shape, so an
+    // explicit public Less option remains authoritative over fixture config.
+    output: Object.prototype.hasOwnProperty.call(opts, 'collapseNesting')
+      ? [{ collapseNesting: opts.collapseNesting === true }]
+      : {},
     language: {},
   };
 

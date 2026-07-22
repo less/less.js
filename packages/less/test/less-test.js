@@ -562,122 +562,166 @@ export default function(testFilter) {
 
             var configResult = cosmiconfigSync('styles').search(path.dirname(fullPath));
 
-            var options = JSON.parse(JSON.stringify(originalOptions || {}));
-
-            if (configResult && configResult.config && configResult.config.language && configResult.config.language.less) {
-                var lessConfig = JSON.parse(JSON.stringify(configResult.config.language.less));
-                Object.keys(lessConfig).forEach(function(key) {
-                    options[key] = lessConfig[key];
-                });
-            }
-
-            if (originalOptions && originalOptions.lessOptions) {
-                Object.keys(originalOptions.lessOptions).forEach(function(key) {
-                    var value = originalOptions.lessOptions[key];
-                    if (typeof value === 'function') {
-                        var result = value(fullPath);
-                        options[key] = result;
-                    } else {
-                        options[key] = value;
-                    }
-                });
-            }
-
             var name = getBasename(file, relativePath);
 
             if (oneTestOnly && typeof oneTestOnly === 'string' && !name.includes(oneTestOnly)) {
                 return;
             }
 
-            totalTests++;
+            var config = configResult && configResult.config ? configResult.config : {};
+            var outputs = getOutputTargets(config.output, file, fullPath, relativePath, nameModifier, name);
 
-            if (options.sourceMap && typeof options.sourceMap === 'object') {
-                if (!options.sourceMap.sourceMapFileInline) {
-                    if (!options.sourceMap.sourceMapOutputFilename) {
-                        options.sourceMap.sourceMapOutputFilename = name + '.css';
-                    }
-                    if (!options.sourceMap.sourceMapRootpath) {
-                        options.sourceMap.sourceMapRootpath = 'testweb/';
+            outputs.forEach(function(outputTarget) {
+                var options = JSON.parse(JSON.stringify(originalOptions || {}));
+
+                if (config.language && config.language.less) {
+                    var lessConfig = JSON.parse(JSON.stringify(config.language.less));
+                    Object.keys(lessConfig).forEach(function(key) {
+                        options[key] = lessConfig[key];
+                    });
+                }
+
+                // Fixture output config is a Jess test-corpus concern. Select
+                // only its public Less equivalent; never pass the raw output
+                // object through the Less API.
+                if (typeof outputTarget.collapseNesting === 'boolean') {
+                    options.collapseNesting = outputTarget.collapseNesting;
+                }
+
+                if (originalOptions && originalOptions.lessOptions) {
+                    Object.keys(originalOptions.lessOptions).forEach(function(key) {
+                        var value = originalOptions.lessOptions[key];
+                        if (typeof value === 'function') {
+                            var result = value(fullPath);
+                            options[key] = result;
+                        } else {
+                            options[key] = value;
+                        }
+                    });
+                }
+
+                totalTests++;
+
+                if (options.sourceMap && typeof options.sourceMap === 'object') {
+                    if (!options.sourceMap.sourceMapFileInline) {
+                        if (!options.sourceMap.sourceMapOutputFilename) {
+                            options.sourceMap.sourceMapOutputFilename = name + '.css';
+                        }
+                        if (!options.sourceMap.sourceMapRootpath) {
+                            options.sourceMap.sourceMapRootpath = 'testweb/';
+                        }
                     }
                 }
-            }
 
-            options.getVars = function(file) {
-                try {
-                    return JSON.parse(fs.readFileSync(getFilename(getBasename(file, relativePath), 'vars', baseFolder), 'utf8'));
-                }
-                catch (e) {
-                    return {};
-                }
-            };
-
-            var doubleCallCheck = false;
-            queue(function() {
-                toCSS(options, fullPath, function (err, result) {
-
-                    if (doubleCallCheck) {
-                        totalTests++;
-                        fail('less is calling back twice');
-                        process.stdout.write(doubleCallCheck + '\n');
-                        process.stdout.write((new Error()).stack + '\n');
-                        return;
+                options.getVars = function(file) {
+                    try {
+                        return JSON.parse(fs.readFileSync(getFilename(getBasename(file, relativePath), 'vars', baseFolder), 'utf8'));
                     }
-                    doubleCallCheck = (new Error()).stack;
-
-                    if (verifyFunction) {
-                        var verificationResult = verifyFunction(
-                            name, err, result && result.css, doReplacements, result && result.map, baseFolder, result && result.imports, getFilename
-                        );
-                        release();
-                        return verificationResult;
+                    catch (e) {
+                        return {};
                     }
+                };
 
-                    if (err) {
-                        fail('ERROR: ' + (err && err.message));
-                        if (isVerbose) {
-                            process.stdout.write('\n');
-                            if (err.stack) {
-                                process.stdout.write(err.stack + '\n');
-                            } else {
-                                console.log(err);
+                var doubleCallCheck = false;
+                queue(function() {
+                    toCSS(options, fullPath, function (err, result) {
+
+                        if (doubleCallCheck) {
+                            totalTests++;
+                            fail('less is calling back twice');
+                            process.stdout.write(doubleCallCheck + '\n');
+                            process.stdout.write((new Error()).stack + '\n');
+                            return;
+                        }
+                        doubleCallCheck = (new Error()).stack;
+
+                        if (verifyFunction) {
+                            var verificationResult = verifyFunction(
+                                name, err, result && result.css, doReplacements, result && result.map, baseFolder, result && result.imports, getFilename
+                            );
+                            release();
+                            return verificationResult;
+                        }
+
+                        if (err) {
+                            fail('ERROR: ' + (err && err.message));
+                            if (isVerbose) {
+                                process.stdout.write('\n');
+                                if (err.stack) {
+                                    process.stdout.write(err.stack + '\n');
+                                } else {
+                                    console.log(err);
+                                }
                             }
+                            release();
+                            return;
                         }
+                        var cssPath = outputTarget.cssPath;
+
+                        var replacementPath;
+                        if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
+                            replacementPath = path.dirname(fullPath);
+                            if (!replacementPath.endsWith(path.sep)) {
+                                replacementPath += path.sep;
+                            }
+                        } else {
+                            replacementPath = path.join(baseFolder, relativePath);
+                        }
+
+                        var testName = fullPath.replace(/\.less$/, '');
+                        process.stdout.write('- ' + testName + ': ');
+
+                        var css = fs.readFileSync(cssPath, 'utf8');
+                        css = css && doReplacements(css, replacementPath);
+                        if (result.css === css) { ok('OK'); }
+                        else {
+                            difference('FAIL', css, result.css);
+                        }
+
                         release();
-                        return;
-                    }
-                    var css_name = name;
-                    if (nameModifier) { css_name = nameModifier(name); }
-
-                    var cssPath;
-                    if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
-                        cssPath = path.join(path.dirname(fullPath), path.basename(file, '.less') + '.css');
-                    } else {
-                        cssPath = path.join(testFolder, css_name) + '.css';
-                    }
-
-                    var replacementPath;
-                    if (relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/')) {
-                        replacementPath = path.dirname(fullPath);
-                        if (!replacementPath.endsWith(path.sep)) {
-                            replacementPath += path.sep;
-                        }
-                    } else {
-                        replacementPath = path.join(baseFolder, relativePath);
-                    }
-
-                    var testName = fullPath.replace(/\.less$/, '');
-                    process.stdout.write('- ' + testName + ': ');
-
-                    var css = fs.readFileSync(cssPath, 'utf8');
-                    css = css && doReplacements(css, replacementPath);
-                    if (result.css === css) { ok('OK'); }
-                    else {
-                        difference('FAIL', css, result.css);
-                    }
-
-                    release();
+                    });
                 });
             });
+        }
+
+        function getOutputTargets(outputConfig, file, fullPath, relativePath, nameModifier, name) {
+            var baseName = path.basename(file, '.less');
+            var fallbackName = name;
+            if (nameModifier) { fallbackName = nameModifier(name); }
+            var fixtureOutput = relativePath.startsWith('tests-unit/') || relativePath.startsWith('tests-config/');
+            // `packages/test-data/styles.config.ts` establishes this corpus
+            // default. cosmiconfig stops at the test-data package boundary, so
+            // retain it here while local styles.config files override it.
+            var defaultOutput = { collapseNesting: true };
+
+            function targetFrom(entry) {
+                var outputFile = (entry.file || '{name}.css').replace(/\{name\}/g, baseName);
+                return {
+                    collapseNesting: entry.collapseNesting,
+                    cssPath: fixtureOutput
+                        ? path.join(path.dirname(fullPath), outputFile)
+                        : path.join(testFolder, entry.file ? outputFile : fallbackName + '.css')
+                };
+            }
+
+            if (!outputConfig || typeof outputConfig !== 'object') {
+                return [targetFrom(defaultOutput)];
+            }
+            if (!Array.isArray(outputConfig)) {
+                return [targetFrom(Object.assign({}, defaultOutput, outputConfig))];
+            }
+
+            var defaults = defaultOutput;
+            var targets = [];
+            outputConfig.forEach(function(entry) {
+                if (!entry || typeof entry !== 'object') { return; }
+                if (!Object.prototype.hasOwnProperty.call(entry, 'file')) {
+                    defaults = Object.assign(defaults, entry);
+                    return;
+                }
+                targets.push(targetFrom(Object.assign({}, defaults, entry)));
+            });
+            return targets.length ? targets : [targetFrom(defaults)];
         }
 
         function getBasename(file, relativePath) {

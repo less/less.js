@@ -40,6 +40,7 @@ const lesscHelper = {
     console.log('  --quiet                      Suppresses output of warnings.');
     console.log('  -v, --version                Prints version number and exit.');
     console.log('  --verbose                    Be verbose.');
+    console.log('  --collapse-nesting           Flatten nested rules using Less 4-style output.');
     console.log('  --source-map[=FILENAME]      Outputs a v3 sourcemap to the filename (or output filename.map).');
     console.log('  --source-map-rootpath=X      Adds this path onto the sourcemap filename and less file paths.');
     console.log('  --source-map-basepath=X      Sets sourcemap base path, defaults to current working directory.');

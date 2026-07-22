@@ -27,10 +27,14 @@ limitations is also required before publication.
 
 #### Known limitations
 
-- The full Less node corpus is not a release-parity claim. Its classified
-  failures include legacy plugin-global/registry and visitor assumptions,
-  advanced parser fixtures, import/process-URL behavior, source-map artifacts,
-  and other output divergences.
+- The full Less node corpus is not a release-parity claim. The durable
+  [Jess Less v5 corpus inventory](https://github.com/jesscss/jess/blob/alpha/docs/less-v5-corpus-inventory.md)
+  records the current public-route selection: 107 cases, with 86 ordinary
+  byte-identical checks, 21 active expected-failure checks, and 11 additional
+  registered-but-unselected limitations. Its classified failures include legacy
+  plugin-global/registry and visitor assumptions, advanced parser fixtures,
+  import/process-URL behavior, source-map artifacts, and other output
+  divergences.
 - This alpha does not promise full Less 4.x CLI parity, browser compilation,
   source-map parity, or Less 4.x performance parity.
 - These limitations remain visible release work; they are not silently treated

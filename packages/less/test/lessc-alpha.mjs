@@ -60,6 +60,22 @@ await realpath(jessEntrypoint);
   after: 3;
 }
 `);
+
+    await assert.rejects(
+        less.render('@Eight: 8;\n@charset "UTF-@{Eight}";\n', {
+            filename: 'dynamic-charset.less'
+        }),
+        error => {
+            assert.equal(error.type, 'parse');
+            assert.equal(error.message, 'Less 5 does not support interpolation in @charset.');
+            assert.equal(error.filename, 'dynamic-charset.less');
+            assert.equal(error.line, 2);
+            assert.equal(error.column, 1);
+            assert.equal(error.jessErrors?.[0]?.code, 'parse/dynamic-charset');
+            return true;
+        },
+        'Less 5 rejects dynamic @charset with a dedicated parse diagnostic'
+    );
 }
 
 const tempDir = await mkdtemp(path.join(tmpdir(), 'lessc-alpha-'));

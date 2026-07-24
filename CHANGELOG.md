@@ -18,8 +18,12 @@ drop-in replacement for Less 4.x.
   no longer installs a competing `lessc` binary.
 - Preserves authored CSS nesting by default. Use `collapseNesting: true` or
   `lessc --collapse-nesting` to emit flattened selector output.
+- Still supports Less-style ampersand joining for BEM-style modifiers and
+  similar selector patterns, such as `.block { &__item { ... } }`.
 - Preserves cascade order when nested rules are collapsed, so declarations
   after a nested child remain after that child in the generated CSS.
+- Uses modern selector output such as `:is()` where possible to reduce selector
+  expansion when generating nested and extended selectors.
 - Adds an alpha readiness test path for the supported Less 5 surface, including
   package loading, `lessc`, file imports, malformed-input diagnostics, and clean
   npm consumer installation.

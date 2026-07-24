@@ -175,7 +175,15 @@ jobs:
             PRERELEASE="--prerelease"
             BODY="## Alpha Release
 
-          This is an alpha release from the alpha branch.
+          This is the first Less 5 alpha: a Jess-powered compiler rewrite for early testing, not a drop-in Less 4.x replacement yet.
+
+          Highlights:
+          - CSS nesting is preserved by default.
+          - Less-style ampersand joining for BEM-style modifiers and similar selector patterns is still supported.
+          - Nested and extended selector output uses modern selectors such as :is() where possible to reduce selector expansion.
+          - Browser compilation is not included in this alpha; a new browser build mechanism will be introduced in a future alpha.
+
+          See CHANGELOG.md for the current supported surface and work-in-progress areas.
 
           ## Installation
 

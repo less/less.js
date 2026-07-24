@@ -12,8 +12,8 @@
 		"test:alpha": "pnpm --dir packages/less run test:alpha && pnpm run test:publish-dry-run && pnpm run verify:alpha:packed-consumer",
 		"prepare": "husky",
 		"changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
-		"test": "cd packages/less && npm test",
-		"test:node": "cd packages/less && npm run test:node",
+		"test": "pnpm run test:alpha",
+		"test:node": "cd packages/less && npm run test:legacy-node",
 		"postinstall": "npx only-allow pnpm"
 	},
 	"author": "Alexis Sellier <self@cloudhead.net>",

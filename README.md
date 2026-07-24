@@ -20,7 +20,8 @@ Here are other resources for using Less.js:
 
 
 ## Contributing
-Please read [CONTRIBUTING.md](CONTRIBUTING.md). Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com).
+Please read [CONTRIBUTING.md](CONTRIBUTING.md). Add tests for any new or
+changed functionality and run the npm scripts described there.
 
 ### Reporting Issues
 

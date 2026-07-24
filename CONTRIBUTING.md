@@ -43,7 +43,11 @@ Pull requests are welcome! Here's how to make them go smoothly:
 * **For new features, start with a feature request** to get feedback and see how your idea is received.
 * **If your PR solves an existing issue**, but approaches it differently, please create a new issue first and discuss it with core contributors. This helps avoid wasted effort.
 * The `dist/` folder is gitignored—builds happen automatically during releases.
-* **Please add tests** for your work. Run tests using `pnpm test`, which runs both Node.js and browser (Headless Chrome) tests.
+* **Please add tests** for your work. Run `pnpm test` for the current Less 5
+  alpha gate. The historical Less 4 fixture sweep remains available through
+  `pnpm run test:node` while the Less 5 compatibility backlog is drained.
+  Browser compilation/testing is not part of the Less 5 alpha gate; a new
+  browser build mechanism will replace the old browser harness.
 
 ### Coding Standards
 

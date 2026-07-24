@@ -34,6 +34,8 @@ The broader Less 4.x compatibility surface is still in progress. Known
 work-in-progress areas include legacy plugin execution, file-manager and
 pre/post-processor hooks, source maps, URL rewriting options, compressed-output
 parity, browser compilation, and the remaining long-tail Less 4 fixture corpus.
+Less 5 alpha.1 does not include browser compilation support; a new browser
+build mechanism will be introduced in a future alpha.
 Unsupported syntax should fail with filename, line, column, and source context
 rather than raw parser offsets.
 

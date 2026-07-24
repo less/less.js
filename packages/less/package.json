@@ -53,6 +53,7 @@
 	},
 	"scripts": {
 		"quicktest": "grunt quicktest",
+		"test:alpha": "npm run typecheck && npm run build && npm run test:lessc && node test/jess-alpha-fast-path.mjs && node test/alpha-support.mjs",
 		"test:lessc": "node test/lessc-alpha.mjs",
 		"test": "grunt test",
 		"test:node": "grunt test:node",
@@ -158,11 +159,11 @@
 	"rawcurrent": "https://raw.github.com/less/less.js/v",
 	"sourcearchive": "https://github.com/less/less.js/archive/v",
 	"dependencies": {
-		"@jesscss/core": "link:../../../../oss/jess/packages/core",
-		"@jesscss/plugin-less": "link:../../../../oss/jess/packages/jess-plugin-less",
-		"@jesscss/plugin-less-compat": "link:../../../../oss/jess/packages/jess-plugin-less-compat",
+		"@jesscss/core": "2.0.0-alpha.9",
+		"@jesscss/plugin-less": "2.0.0-alpha.9",
+		"@jesscss/plugin-less-compat": "2.0.0-alpha.9",
 		"copy-anything": "^3.0.5",
-		"jess": "link:../../../../oss/jess/packages/jess",
+		"jess": "2.0.0-alpha.9",
 		"parse-node-version": "^1.0.1"
 	},
 	"gitHead": "1df9072ee9ebdadc791bf35dfb1dbc3ef9f1948f"

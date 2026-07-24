@@ -32,7 +32,7 @@ Dry-run mode will:
 # Check current version
 node -p "require('./packages/less/package.json').version"
 
-# Run dry-run to see what version would be created
+# Run dry-run to see what version would be published
 DRY_RUN=true pnpm run publish
 ```
 
@@ -55,9 +55,9 @@ git checkout alpha
 DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 
 # This will show:
-# - Version validation (must contain -alpha.)
-# - Master sync check
-# - Version comparison with master
+# - The committed alpha version
+# - Alpha branch validation
+# - A dry-run publish plan without npm mutation
 ```
 
 ### 4. Test Version Override
@@ -134,6 +134,18 @@ DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 #   been published or that the worktree is clean
 ```
 
+### Test Less 5 Alpha Readiness
+
+```bash
+pnpm run test:alpha
+```
+
+This is the Less 5 alpha release gate. It checks the supported alpha contract
+and prints the unsupported alpha.1 inventory. The full legacy corpus remains
+available through `pnpm run test`; it is intentionally not the alpha.1 publish
+gate until the documented unsupported buckets are drained. See
+`docs/less-5-alpha-support.md`.
+
 ### Test Version Validation
 
 ```bash
@@ -149,6 +161,7 @@ DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 Before actually publishing:
 
 - [ ] Prepare, commit, and push the exact alpha version before publishing
+- [ ] Run `pnpm run test:alpha` to verify the supported Less 5 alpha contract
 - [ ] Run dry-run mode to verify the release plan (not release readiness)
 - [ ] Verify branch restrictions work (try from wrong branch)
 - [ ] Test alpha validations (if testing alpha branch)

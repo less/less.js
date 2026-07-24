@@ -19,7 +19,42 @@ import { lesscHelper } from './lessc-helper.js';
 const compilerCache = new Map();
 const lessVersion = version.array;
 
-function toLessError(result, filePath) {
+function getErrorTypeName(type) {
+  const normalized = String(type || 'Syntax').toLowerCase();
+  if (normalized === 'parse') return 'ParseError';
+  if (normalized === 'eval' || normalized === 'evaluate' || normalized === 'resolve') return 'RuntimeError';
+  if (normalized === 'syntax') return 'SyntaxError';
+  return `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}Error`;
+}
+
+function normalizeDiagnosticLines(lines, lineNumber) {
+  if (Array.isArray(lines)) {
+    return lines.map((line) => typeof line === 'string' ? line : String(line));
+  }
+  if (lines && typeof lines === 'object') {
+    const current = Number(lineNumber) || 1;
+    return [current - 1, current, current + 1]
+      .filter((line) => line > 0 && Object.prototype.hasOwnProperty.call(lines, line))
+      .map((line) => {
+        const value = lines[line];
+        return typeof value === 'string' ? value : String(value);
+      });
+  }
+  return undefined;
+}
+
+function formatRenderError(error) {
+  const type = getErrorTypeName(error.type);
+  const location = error.filename
+    ? ` in ${error.filename} on line ${error.line ?? 1}, column ${error.column ?? 1}`
+    : '';
+  const extract = Array.isArray(error.extract) && error.extract.length
+    ? `:\n${error.extract.map((line) => line ?? '').join('\n')}`
+    : '';
+  return `${type}: ${error.message}${location}${extract}`;
+}
+
+function createRenderErrorFromJessDiagnostic(result, filePath) {
   const diagnostic = result?.errors?.[0];
   const error = new Error(diagnostic?.message || 'Less render failed');
 
@@ -27,11 +62,10 @@ function toLessError(result, filePath) {
   error.filename = diagnostic?.filePath || filePath;
   error.line = diagnostic?.line || 1;
   error.column = diagnostic?.column || 1;
-  error.extract = Array.isArray(diagnostic?.lines)
-    ? diagnostic.lines.map((line) => typeof line === 'string' ? line : String(line))
-    : undefined;
+  error.extract = normalizeDiagnosticLines(diagnostic?.lines, error.line);
   error.jessErrors = result?.errors || [];
   error.jessWarnings = result?.warnings || [];
+  error.toString = () => formatRenderError(error);
 
   return error;
 }
@@ -72,7 +106,7 @@ function render(input, options = {}, callback) {
     );
 
     if (result.errors?.length) {
-      throw toLessError(result, filePath);
+      throw createRenderErrorFromJessDiagnostic(result, filePath);
     }
 
     return mapRenderResult(result, options);
@@ -101,7 +135,7 @@ async function renderFile(filePath, options = {}) {
 
   const result = await compiler.renderToResult(filePath, configOptions);
   if (result.errors?.length) {
-    throw toLessError(result, filePath);
+    throw createRenderErrorFromJessDiagnostic(result, filePath);
   }
   return mapRenderResult(result, options);
 }

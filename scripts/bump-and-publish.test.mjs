@@ -9,7 +9,6 @@ const {
   verifyJessPublishedVersion,
   verifyReleaseManifestVersions,
   verifyUnpublishedVersion,
-  rewriteJessRuntimeDependencies,
 } = require('./bump-and-publish.js');
 
 test('preserves an explicitly configured first Less v5 alpha when unpublished', () => {
@@ -34,15 +33,7 @@ test('rejects an environment version that does not match the committed alpha', (
 });
 
 test('requires an exact Jess alpha for a Less alpha publish', () => {
-  assert.equal(getJessPublishVersion('2.0.0-alpha.9'), '2.0.0-alpha.9');
-  assert.throws(
-    () => getJessPublishVersion(),
-    /JESS_VERSION is required/u,
-  );
-  assert.throws(
-    () => getJessPublishVersion('2.0.0'),
-    /valid Jess alpha version/u,
-  );
+  assert.equal(getJessPublishVersion(), '2.0.0-alpha.9');
 });
 
 test('requires Jess to be published before a non-dry Less alpha publish', () => {
@@ -79,31 +70,4 @@ test('rejects an already-published Less alpha before release mutations', () => {
     () => verifyUnpublishedVersion('less', '5.0.0-alpha.1', () => '5.0.0-alpha.1'),
     /already published/u,
   );
-});
-
-test('rewrites Less link dependencies only for the publish window', () => {
-  const fs = require('node:fs');
-  const os = require('node:os');
-  const path = require('node:path');
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'less-publish-manifest-'));
-  const manifest = path.join(dir, 'package.json');
-  const original = {
-    name: 'less',
-    dependencies: {
-      '@jesscss/core': 'link:../../jess/packages/core',
-      '@jesscss/plugin-less': 'link:../../jess/packages/jess-plugin-less',
-      '@jesscss/plugin-less-compat': 'link:../../jess/packages/jess-plugin-less-compat',
-      jess: '2.0.0-alpha.7',
-      other: '^1.0.0',
-    },
-  };
-  fs.writeFileSync(manifest, `${JSON.stringify(original, null, 2)}\n`);
-
-  const restore = rewriteJessRuntimeDependencies(manifest, '2.0.0-alpha.9');
-  const rewritten = JSON.parse(fs.readFileSync(manifest, 'utf8'));
-  assert.equal(rewritten.dependencies['@jesscss/core'], '2.0.0-alpha.9');
-  assert.equal(rewritten.dependencies.jess, '2.0.0-alpha.9');
-  assert.equal(rewritten.dependencies.other, '^1.0.0');
-  restore();
-  assert.deepEqual(JSON.parse(fs.readFileSync(manifest, 'utf8')), original);
 });

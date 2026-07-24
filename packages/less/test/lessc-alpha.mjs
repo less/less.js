@@ -71,6 +71,13 @@ await realpath(jessEntrypoint);
             assert.equal(error.filename, 'dynamic-charset.less');
             assert.equal(error.line, 2);
             assert.equal(error.column, 1);
+            assert.deepEqual(error.extract, [
+                '@Eight: 8;',
+                '@charset "UTF-@{Eight}";',
+                ''
+            ]);
+            assert.match(String(error), /ParseError: Less 5 does not support interpolation in @charset\. in dynamic-charset\.less on line 2, column 1:/);
+            assert.doesNotMatch(String(error), /offset/i);
             assert.equal(error.jessErrors?.[0]?.code, 'parse/dynamic-charset');
             return true;
         },
@@ -160,8 +167,14 @@ try {
     const failure = await runLessc([broken]);
     assert.equal(failure.code, 1, 'a Less error is a failing lessc process');
     assert.equal(failure.stdout, '');
-    assert.match(failure.stderr, /error|unexpected|invalid|parse|syntax/i,
-        'lessc reports a useful compile diagnostic on stderr');
+    assert.match(failure.stderr, /ParseError: Less parser error\./,
+        'lessc reports the Less-facing error type on stderr');
+    assert.match(failure.stderr, /broken\.less on line 1, column 1:/,
+        'lessc reports filename, line, and column on stderr');
+    assert.match(failure.stderr, /\.broken \{ color: red;/,
+        'lessc reports the source line on stderr');
+    assert.doesNotMatch(failure.stderr, /offset/i,
+        'lessc diagnostics must not expose raw offsets to users');
 } finally {
     await rm(tempDir, { recursive: true, force: true });
 }

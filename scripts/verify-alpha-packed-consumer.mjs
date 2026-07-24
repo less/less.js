@@ -2,18 +2,11 @@
 /**
  * Prove the unpublished Less v5 alpha package works as a real npm consumer.
  *
- * The alpha checkout intentionally uses local Jess `link:` dependencies for
- * development. npm consumers cannot install those paths, so this check copies
- * only the Less package to a temporary directory and rewrites exactly those
- * four direct dependencies to the current local Jess alpha tarballs. Nothing
- * in the Less checkout is rewritten, packed, installed, published, tagged, or
- * committed by this script.
- *
- * Set JESS_ALPHA_ROOT when the local alpha checkout is not adjacent to this
- * repository. The default is ../jess-alpha, next to this Less checkout. A
- * test-only JESS_ALPHA_JESS_TARBALL may replace that closure's `jess` tarball
- * while proving a pending alpha snapshot cut; it must preserve the exact
- * alpha.9 manifest and contain no Less-owned `lessc` bin.
+ * The alpha checkout commits exact published Jess alpha dependencies. This
+ * check packs the unpublished Less package, installs it in a clean temporary
+ * consumer, and lets npm resolve those committed registry dependencies. Nothing
+ * in the Less checkout is rewritten, installed, published, tagged, or committed
+ * by this script.
  */
 import { spawnSync } from 'node:child_process';
 import {
@@ -34,7 +27,6 @@ import { fileURLToPath } from 'node:url';
 
 const lessRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lessPackageDir = path.join(lessRoot, 'packages', 'less');
-const jessAlphaRoot = path.resolve(process.env.JESS_ALPHA_ROOT ?? path.join(lessRoot, '..', 'jess-alpha'));
 const keep = process.argv.includes('--keep');
 const lessJessDependencies = [
   '@jesscss/core',
@@ -42,6 +34,7 @@ const lessJessDependencies = [
   '@jesscss/plugin-less-compat',
   'jess'
 ];
+const expectedJessVersion = '2.0.0-alpha.9';
 
 function fail(message) {
   throw new Error(message);
@@ -111,101 +104,7 @@ function findPackedTarball(packDir, name) {
   fail(`No packed tarball found for ${name}`);
 }
 
-function assertPackedDependencySpecs(manifest) {
-  for (const sectionName of ['dependencies', 'optionalDependencies', 'peerDependencies', 'devDependencies']) {
-    for (const [name, specifier] of Object.entries(manifest[sectionName] ?? {})) {
-      assert(!String(specifier).startsWith('workspace:'),
-        `${manifest.name}: packed ${sectionName}.${name} still uses ${specifier}`);
-      assert(!String(specifier).startsWith('link:'),
-        `${manifest.name}: packed ${sectionName}.${name} still uses ${specifier}`);
-    }
-  }
-}
-
-function assertJessDoesNotOwnLessc(tarball, manifest = readPackedManifest(tarball)) {
-  assert(!Object.prototype.hasOwnProperty.call(manifest.bin ?? {}, 'lessc'),
-    `Packed Jess manifest still declares the Less-owned lessc command: ${tarball}`);
-
-  // Keep checking for the former file as defense in depth. A package with an
-  // unreferenced copy would not create an npm bin collision, but shipping it
-  // would still leave the removed command in the Jess release artifact.
-  const result = spawnSync('tar', ['-tzf', tarball], {
-    encoding: 'utf8',
-    shell: process.platform === 'win32'
-  });
-  assert(!result.error && result.status === 0, `Unable to list packed tarball ${tarball}`);
-  assert(!result.stdout.split(/\r?\n/u).includes('package/bin/lessc.mjs'),
-    `Packed jess tarball still contains the Less-owned lessc bin: ${tarball}`);
-}
-
-function assertJessAlphaSource() {
-  assert(existsSync(jessAlphaRoot),
-    `Jess alpha checkout is missing: ${jessAlphaRoot} (set JESS_ALPHA_ROOT to its path)`);
-  const allowlistPath = path.join(jessAlphaRoot, 'scripts', 'release', 'alpha-allowlist.json');
-  assert(existsSync(allowlistPath), `Jess alpha allowlist is missing: ${allowlistPath}`);
-  const names = readJson(allowlistPath);
-  assert(Array.isArray(names) && names.length > 0, 'Jess alpha allowlist is empty');
-  const packagesDir = path.join(jessAlphaRoot, 'packages');
-  const manifestsByName = new Map();
-  for (const entry of readdirSync(packagesDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
-    const packagePath = path.join(packagesDir, entry.name, 'package.json');
-    if (!existsSync(packagePath)) {
-      continue;
-    }
-    const manifest = readJson(packagePath);
-    if (manifest.name) {
-      manifestsByName.set(manifest.name, { packagePath, dir: path.dirname(packagePath), manifest });
-    }
-  }
-  const manifests = names.map((name) => {
-    const entry = manifestsByName.get(name);
-    assert(entry, `Jess alpha allowlist package is missing: ${name}`);
-    return { name, ...entry };
-  });
-  const versions = new Set(manifests.map(({ manifest }) => manifest.version));
-  assert(versions.size === 1, `Jess alpha closure is not lockstep: ${[...versions].join(', ')}`);
-  const version = [...versions][0];
-  assert(version === '2.0.0-alpha.9', `Expected local Jess alpha.9 closure, found ${version}`);
-  return { names, manifests, version };
-}
-
-function packJessClosure(closure, packDir) {
-  const tarballs = new Map();
-  const candidateJessTarball = process.env.JESS_ALPHA_JESS_TARBALL
-    ? path.resolve(process.env.JESS_ALPHA_JESS_TARBALL)
-    : null;
-  if (candidateJessTarball) {
-    assert(existsSync(candidateJessTarball), `Candidate Jess tarball is missing: ${candidateJessTarball}`);
-  }
-  for (const pkg of closure.manifests) {
-    if (pkg.name === 'jess' && candidateJessTarball) {
-      const manifest = readPackedManifest(candidateJessTarball);
-      assert(manifest.name === 'jess', `Candidate tarball is ${manifest.name ?? '(unnamed)'}, expected jess`);
-      assert(manifest.version === closure.version,
-        `Candidate Jess tarball is ${manifest.version ?? '(missing version)'}, expected ${closure.version}`);
-      assertPackedDependencySpecs(manifest);
-      assertJessDoesNotOwnLessc(candidateJessTarball, manifest);
-      tarballs.set(pkg.name, candidateJessTarball);
-      continue;
-    }
-    run('pnpm', ['pack', '--pack-destination', packDir], pkg.dir);
-    const tarball = findPackedTarball(packDir, pkg.name);
-    const manifest = readPackedManifest(tarball);
-    assert(manifest.version === closure.version,
-      `${pkg.name}: packed ${manifest.version ?? '(missing version)'}, expected ${closure.version}`);
-    assertPackedDependencySpecs(manifest);
-    if (pkg.name === 'jess') {
-      assertJessDoesNotOwnLessc(tarball, manifest);
-    }
-    tarballs.set(pkg.name, tarball);
-  }
-  return tarballs;
-}
-
-function packTemporaryLess(packDir, jessTarballs) {
+function packTemporaryLess(packDir) {
   const tempLessDir = path.join(path.dirname(packDir), 'less');
   cpSync(lessPackageDir, tempLessDir, {
     recursive: true,
@@ -220,21 +119,18 @@ function packTemporaryLess(packDir, jessTarballs) {
   assert(manifest.version === '5.0.0-alpha.1',
     `Expected Less 5.0.0-alpha.1 manifest, found ${manifest.version}`);
   for (const name of lessJessDependencies) {
-    assert(String(manifest.dependencies?.[name] ?? '').startsWith('link:'),
-      `Expected local alpha manifest dependency ${name} to be a link: specifier`);
-    const tarball = jessTarballs.get(name);
-    assert(tarball, `Jess alpha closure omitted direct Less dependency ${name}`);
-    manifest.dependencies[name] = `file:${tarball}`;
+    const specifier = String(manifest.dependencies?.[name] ?? '');
+    assert(specifier === expectedJessVersion,
+      `Expected committed Less dependency ${name} to be ${expectedJessVersion}, found ${specifier}`);
   }
-  writeJson(packagePath, manifest);
   run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', packDir], tempLessDir);
   const tarball = findPackedTarball(packDir, 'less');
   const packed = readPackedManifest(tarball);
   assert(packed.version === manifest.version, `Packed Less version is ${packed.version}, expected ${manifest.version}`);
   for (const name of lessJessDependencies) {
     const specifier = packed.dependencies?.[name];
-    assert(String(specifier).startsWith('file:'),
-      `Packed Less dependency ${name} is not a temporary tarball file specifier: ${specifier}`);
+    assert(specifier === expectedJessVersion,
+      `Packed Less dependency ${name} is ${specifier}, expected ${expectedJessVersion}`);
   }
   return { tarball, version: manifest.version };
 }
@@ -275,6 +171,37 @@ function assertConsumerDoesNotResolveInto(consumerDir, forbiddenRoots, packageNa
       }
     }
   }
+}
+
+function assertConsumerRegistryPackages(consumerDir, forbiddenRoots, packageNames) {
+  const normalizedRoots = forbiddenRoots.map(root => realpathSync.native(root));
+  const assertOutside = (candidate, description) => {
+    const resolved = realpathSync.native(candidate);
+    for (const root of normalizedRoots) {
+      assert(resolved !== root && !resolved.startsWith(`${root}${path.sep}`),
+        `${description} resolves into a workspace: ${resolved}`);
+    }
+  };
+  const modulesDir = path.join(consumerDir, 'node_modules');
+  const lock = readJson(path.join(consumerDir, 'package-lock.json'));
+  for (const name of packageNames) {
+    const installed = path.join(modulesDir, packageDirFor(name));
+    assert(existsSync(installed), `consumer install omitted ${name}`);
+    assert(!lstatSync(installed).isSymbolicLink(), `consumer installed ${name} as a symlink`);
+    assertOutside(installed, `consumer package ${name}`);
+    const manifest = readJson(path.join(installed, 'package.json'));
+    assert(manifest.version === expectedJessVersion,
+      `consumer installed ${name}@${manifest.version ?? '(missing version)'}, expected ${expectedJessVersion}`);
+    const entry = lock.packages?.[`node_modules/${name}`];
+    assert(entry, `consumer lock omitted ${name}`);
+    assert(entry.version === expectedJessVersion,
+      `consumer lock installed ${name}@${entry.version ?? '(missing version)'}, expected ${expectedJessVersion}`);
+  }
+  const jessManifest = readJson(path.join(modulesDir, 'jess', 'package.json'));
+  assert(!Object.prototype.hasOwnProperty.call(jessManifest.bin ?? {}, 'lessc'),
+    'consumer jess package declares the Less-owned lessc command');
+  assert(!existsSync(path.join(modulesDir, 'jess', 'bin', 'lessc.mjs')),
+    'consumer jess package contains the removed Less-owned lessc bin');
 }
 
 function writeConsumerChecks(consumerDir) {
@@ -338,18 +265,15 @@ console.log('packed lessc stdin, file/import, and malformed-input paths passed')
 }
 
 function main() {
-  const closure = assertJessAlphaSource();
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'less-alpha-packed-consumer-'));
   const packDir = path.join(tempRoot, 'packs');
   const consumerDir = path.join(tempRoot, 'consumer');
   try {
     mkdirSync(packDir, { recursive: true });
     mkdirSync(consumerDir, { recursive: true });
-    const jessTarballs = packJessClosure(closure, packDir);
-    const less = packTemporaryLess(packDir, jessTarballs);
+    const less = packTemporaryLess(packDir);
     const dependencies = Object.fromEntries([
       ['less', `file:${path.relative(consumerDir, less.tarball)}`],
-      ...closure.names.map(name => [name, `file:${path.relative(consumerDir, jessTarballs.get(name))}`])
     ]);
     writeJson(path.join(consumerDir, 'package.json'), {
       name: 'less-alpha-packed-consumer-proof',
@@ -361,12 +285,13 @@ function main() {
     run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev'], consumerDir);
     assertConsumerDoesNotResolveInto(
       consumerDir,
-      [lessRoot, jessAlphaRoot],
-      ['less', ...closure.names],
-      new Map([['less', less.tarball], ...jessTarballs])
+      [lessRoot],
+      ['less'],
+      new Map([['less', less.tarball]])
     );
+    assertConsumerRegistryPackages(consumerDir, [lessRoot], lessJessDependencies);
     run(process.execPath, [writeConsumerChecks(consumerDir)], consumerDir);
-    console.log(`\nPacked Less ${less.version} consumer proof passed with Jess ${closure.version}.`);
+    console.log(`\nPacked Less ${less.version} consumer proof passed with Jess ${expectedJessVersion}.`);
   } finally {
     if (keep) {
       console.log(`Kept packed consumer fixture: ${tempRoot}`);

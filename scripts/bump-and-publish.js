@@ -6,9 +6,18 @@
  * This script:
  * 1. Determines the next version (patch increment or explicit)
  * 2. Updates all package.json files to the same version
- * 3. Creates a git tag
- * 4. Commits version changes
- * 5. Publishes all packages to NPM
+ * 3. Creates and pushes an annotated git tag
+ * 4. Publishes all packages to NPM
+ * 
+ * Both master and alpha now use a PR-based release flow:
+ *
+ *   master → "chore: release vX.Y.Z" PR        created by create-release-pr.yml
+ *   alpha  → "chore: alpha release vX.Y.Z" PR  created by create-release-pr.yml
+ *
+ * Merging the release PR lands the version-bump commit on the branch and
+ * triggers this script.  At that point package.json already carries the
+ * target version.  This script validates it, creates an annotated tag, pushes
+ * the tag, and publishes to npm.  No local commit or branch push is made here.
  */
 
 const fs = require('fs');
@@ -116,23 +125,40 @@ function getExactNpmVersion(packageName, version) {
   }
 }
 
+// Get the current alpha dist-tag version from NPM
+function getNpmAlphaVersion(packageName) {
+  try {
+    const result = execSync(`npm view ${packageName} dist-tags.alpha`, { encoding: 'utf8' }).trim();
+    return result || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * Resolve the Jess alpha version that the published Less package must use.
- * Local alpha development intentionally keeps `link:` dependencies, but npm
- * rejects those specifiers in a clean consumer. The Jess alpha must therefore
- * be published first, and the release command must be given that exact version
- * explicitly instead of silently selecting a stale registry tag.
+ * The release branch must commit exact published Jess alpha dependencies; the
+ * publish command validates that committed manifest instead of rewriting it.
  */
-function getJessPublishVersion(value = process.env.JESS_VERSION) {
-  if (!value) {
-    throw new Error(
-      'JESS_VERSION is required for a Less alpha publish; publish Jess first and set it to the exact Jess alpha (for example 2.0.0-alpha.9).'
-    );
+function getJessPublishVersion() {
+  const lessPkgPath = path.join(PACKAGES_DIR, 'less', 'package.json');
+  const dependencies = readPackage(lessPkgPath).dependencies || {};
+  const missing = JESS_RUNTIME_DEPENDENCIES.filter(name => !(name in dependencies));
+  if (missing.length > 0) {
+    throw new Error(`less package is missing Jess runtime dependencies: ${missing.join(', ')}`);
   }
-  if (!semver.valid(value) || !value.includes('-alpha.')) {
-    throw new Error(`JESS_VERSION must be a valid Jess alpha version, received: ${value}`);
+
+  const pinned = JESS_RUNTIME_DEPENDENCIES.map(name => dependencies[name]);
+  const unique = [...new Set(pinned)];
+  if (unique.length !== 1) {
+    throw new Error(`Jess runtime dependencies must all use the same published alpha version: ${unique.join(', ')}`);
   }
-  return value;
+
+  const manifestVersion = unique[0];
+  if (!semver.valid(manifestVersion) || !manifestVersion.includes('-alpha.')) {
+    throw new Error(`Jess runtime dependencies must be pinned to a valid published alpha version, received: ${manifestVersion}`);
+  }
+  return manifestVersion;
 }
 
 /**
@@ -145,35 +171,6 @@ function verifyJessPublishedVersion(version, lookup = getExactNpmVersion) {
     throw new Error(`Jess ${version} must be published before a Less alpha publish`);
   }
   return version;
-}
-
-/**
- * Temporarily normalize Jess runtime dependencies in less/package.json to the
- * already-published Jess alpha version (local `link:` specs and stale registry
- * versions alike). The original manifest bytes are restored after npm publish
- * (including failures), so local alpha development continues to use the
- * workspace-linked Jess build.
- */
-function rewriteJessRuntimeDependencies(packagePath, jessVersion) {
-  const raw = fs.readFileSync(packagePath, 'utf8');
-  const pkg = JSON.parse(raw);
-  if (pkg.name !== 'less') {
-    return () => {};
-  }
-  const dependencies = pkg.dependencies || {};
-  const missing = JESS_RUNTIME_DEPENDENCIES.filter(name => !(name in dependencies));
-  if (missing.length > 0) {
-    throw new Error(`less package is missing Jess runtime dependencies: ${missing.join(', ')}`);
-  }
-  const needsRewrite = JESS_RUNTIME_DEPENDENCIES.filter(name => dependencies[name] !== jessVersion);
-  if (needsRewrite.length === 0) {
-    return () => {};
-  }
-  for (const name of needsRewrite) {
-    dependencies[name] = jessVersion;
-  }
-  writePackage(packagePath, pkg);
-  return () => fs.writeFileSync(packagePath, raw, 'utf8');
 }
 
 /**
@@ -361,138 +358,148 @@ function main() {
   console.log(`🚀 Starting publish process for branch: ${branch}`);
   
   // Get current version
-  let currentVersion = getCurrentVersion();
+  const currentVersion = getCurrentVersion();
   console.log(`📦 Current version: ${currentVersion}`);
-  
-  // An alpha release is always prepared and committed before publication. Do
-  // not "repair" a merge by changing manifests from the publish command.
-  if (isAlpha && !currentVersion.includes('-alpha.')) {
-    console.error(
-      `❌ ERROR: Alpha manifest version (${currentVersion}) is not a prerelease; prepare and commit an X.Y.Z-alpha.N version before publishing`
-    );
-    process.exit(1);
-  }
-  
-  // Determine next version
+
+  // Determine next version.
+  // Both master and alpha now use the PR-based release flow: the version bump
+  // was already applied by the release PR.  Use the version in package.json
+  // as-is and fail fast if it is not ahead of the already-published version.
   let nextVersion;
 
+  let jessPublishVersion;
+
   if (isAlpha) {
-    // The committed alpha manifest is authoritative. A publish command must
-    // never silently invent the next alpha number or rewrite a merged branch.
     try {
-      const explicitVersion = process.env.EXPLICIT_VERSION;
-      nextVersion = determineAlphaVersion(currentVersion, null, explicitVersion);
+      const exactPublishedVersion = getExactNpmVersion('less', currentVersion);
+      const npmAlphaVersion = getNpmAlphaVersion('less');
+      console.log(`📦 NPM alpha version: ${npmAlphaVersion || '(not published)'}`);
+      nextVersion = determineAlphaVersion(currentVersion, exactPublishedVersion, process.env.EXPLICIT_VERSION);
       console.log(`📦 Using committed alpha version: ${nextVersion}`);
+
+      jessPublishVersion = getJessPublishVersion();
+      if (!dryRun) {
+        verifyJessPublishedVersion(jessPublishVersion);
+      }
+      console.log(`✅ Less package will publish against Jess ${jessPublishVersion}`);
     } catch (error) {
       console.error(`❌ ERROR: ${error.message || error}`);
       process.exit(1);
     }
   } else {
-    // For master: compare package.json vs NPM, bump accordingly
+    // For master: the version bump was already applied via the release PR.
+    // Use the version already in package.json as-is; never auto-increment here
+    // because that would create a local commit whose tag would point to a
+    // commit that is NOT on the master branch.
     const npmVersion = getNpmVersion('less');
     console.log(`📦 NPM version: ${npmVersion || '(not published)'}`);
-    nextVersion = getTargetVersion(currentVersion, npmVersion);
-  }
-
-  // A release must fail before it stages, commits, tags, or pushes if its
-  // required Jess alpha is absent. Dry runs deliberately exercise the release
-  // shape before Jess is published and therefore skip only the registry lookup.
-  let jessPublishVersion;
-  if (isAlpha) {
-    try {
-      jessPublishVersion = getJessPublishVersion();
-      if (!dryRun) {
-        verifyJessPublishedVersion(jessPublishVersion);
-      }
-    } catch (error) {
-      console.error(`❌ ERROR: ${error.message || error}`);
+    if (npmVersion && semver.valid(currentVersion) && !semver.gt(currentVersion, npmVersion)) {
+      console.error(`❌ ERROR: package.json version (${currentVersion}) must be greater than NPM version (${npmVersion})`);
+      console.error(`   On master the version bump should have arrived via the release PR.`);
       process.exit(1);
     }
-    console.log(`✅ Less package will publish against Jess ${jessPublishVersion}`);
+    nextVersion = currentVersion;
+    console.log(`📦 Using package.json version (no auto-increment on master): ${nextVersion}`);
   }
 
   // These are real release guards, not post-release diagnostics. A real
-  // release must fail before it mutates manifests, commits, tags, pushes, or
-  // talks to npm. Dry-run is intentionally only a plan: it can run before the
-  // prerequisite Jess alpha is published, but cannot claim release readiness.
+  // release must fail before it mutates tags or talks to npm. Dry-run is
+  // intentionally only a plan: it can run before the prerequisite Jess alpha is
+  // published, but cannot claim release readiness.
   try {
-    if (isAlpha) {
-      verifyWorkspacePackageJson();
-      verifyReleaseManifestVersions(nextVersion);
-      if (!dryRun) {
-        verifyCleanWorktree();
-        verifyAlphaRepositoryState(nextVersion);
-        for (const pkg of getPublishablePackages()) {
-          verifyUnpublishedVersion(pkg.name, nextVersion);
-        }
+    verifyWorkspacePackageJson();
+    verifyReleaseManifestVersions(nextVersion);
+    if (isAlpha && !dryRun) {
+      verifyCleanWorktree();
+      verifyAlphaRepositoryState(nextVersion);
+      for (const pkg of getPublishablePackages()) {
+        verifyUnpublishedVersion(pkg.name, nextVersion);
       }
     }
   } catch (error) {
     console.error(`❌ ERROR: ${error.message || error}`);
     process.exit(1);
   }
-  
-  // Update all package.json files
-  console.log(`📝 Updating all package.json files to version ${nextVersion}...`);
-  const updated = dryRun || currentVersion === nextVersion ? [] : updateAllVersions(nextVersion);
-  console.log(`✅ Updated ${updated.length} package.json files`);
-  
+
   // Get publishable packages
   const publishable = getPublishablePackages();
   console.log(`📦 Found ${publishable.length} publishable packages:`);
   publishable.forEach(pkg => console.log(`   - ${pkg.name}`));
-  
-  // Stage changes
-  console.log(`📌 Staging version changes...`);
-  if (!dryRun) {
-    execSync('git add package.json packages/*/package.json', { cwd: ROOT_DIR, stdio: 'inherit' });
-  } else {
-    console.log(`   [DRY RUN] Would stage: package.json packages/*/package.json`);
-  }
-  
-  // Commit
-  console.log(`💾 Committing version bump...`);
-  if (!dryRun) {
-    if (hasStagedChanges()) {
-      execSync(`git commit -m "chore: bump version to ${nextVersion}"`, { 
-        cwd: ROOT_DIR, 
-        stdio: 'inherit' 
-      });
-    } else {
-      console.log(`   No version changes to commit`);
-    }
-  } else {
-    console.log(`   [DRY RUN] Would commit: "chore: bump version to ${nextVersion}"`);
-  }
-  
-  // Create tag
+
+  // Both master and alpha: the version-bump commit already lives on the branch
+  // (it came from the release PR).  Do NOT create another local commit or push
+  // to the branch — doing so would produce a tag pointing at a commit that is
+  // not on the target branch.
+  //
+  // Only the annotated tag is pushed.  Tag pushes bypass branch-protection
+  // "require pull request" rules.
+
+  // Create and push the annotated tag — idempotently.
+  //
+  // The tag is created and pushed BEFORE the npm publish loop below.  If a
+  // previous run pushed the tag but then failed partway through publishing,
+  // the remote tag already exists.  A naive rerun would die on `git tag` /
+  // `git push` for the existing tag before it ever reached the publish retry,
+  // leaving the release stuck until someone deletes the tag by hand.
+  //
+  // To make reruns safe we check the remote for the tag: if it already exists
+  // we simply skip the tag step and fall straight through to the publish retry.
+  // We do NOT compare it to HEAD — on a rerun `alpha` may have moved past the
+  // original release commit, and the goal here is only to retry publishing the
+  // already-tagged version, not to police where the tag points.  Only when the
+  // tag is genuinely absent do we create + push a fresh annotated tag.
+  //
+  // For master the version-bump commit already lives on the branch (it came
+  // from the release PR).  Only the annotated tag is pushed — tag pushes bypass
+  // branch-protection "require pull request" rules.  Alpha follows the same
+  // pattern: the version bump arrived via the alpha release PR.
   const tagName = `v${nextVersion}`;
-  console.log(`🏷️  Creating git tag: ${tagName}...`);
-  if (!dryRun) {
-    try {
-      execSync(`git tag -a "${tagName}" -m "Release ${tagName}"`, { 
-        cwd: ROOT_DIR, 
-        stdio: 'inherit' 
-      });
-    } catch (e) {
-      console.log(`⚠️  Tag might already exist, continuing...`);
-    }
-  } else {
-    console.log(`   [DRY RUN] Would create tag: ${tagName}`);
+
+  // Resolve the commit a remote tag points at.  `^{}` dereferences an
+  // annotated tag to the commit it wraps; lightweight tags have no `^{}` line
+  // and the plain ref already IS the commit.  Returns null when absent.
+  function getRemoteTagCommit(name) {
+    const out = execSync(`git ls-remote origin "refs/tags/${name}" "refs/tags/${name}^{}"`, {
+      cwd: ROOT_DIR,
+      encoding: 'utf8'
+    }).trim();
+    if (!out) return null;
+    const lines = out.split('\n').filter(Boolean);
+    // Prefer the dereferenced (annotated) commit line if present.
+    const derefLine = lines.find(l => l.endsWith(`refs/tags/${name}^{}`));
+    const plainLine = lines.find(l => l.endsWith(`refs/tags/${name}`));
+    const line = derefLine || plainLine;
+    return line ? line.split('\t')[0] : null;
   }
-  
-  // Push commit and tag
-  console.log(`📤 Pushing to ${branch}...`);
-  if (!dryRun) {
-    try {
-      execSync(`git push origin ${branch}`, { cwd: ROOT_DIR, stdio: 'inherit' });
-      execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
-    } catch (e) {
-      console.log(`⚠️  Push failed, but continuing with publish...`);
+
+  console.log(`🏷️  Preparing git tag: ${tagName}...`);
+  const remoteTagCommit = getRemoteTagCommit(tagName);
+
+  if (remoteTagCommit) {
+    // Rerun-after-failed-publish path: the version is already tagged on the
+    // remote.  Skip create/push and fall through to the publish retry.
+    console.log(`✅ Remote tag ${tagName} already exists — skipping tag create/push, proceeding to publish.`);
+    const headCommit = execSync('git rev-parse HEAD', { cwd: ROOT_DIR, encoding: 'utf8' }).trim();
+    if (remoteTagCommit !== headCommit) {
+      console.warn(`⚠️  Remote tag ${tagName} points at ${remoteTagCommit}, which differs from HEAD ${headCommit}. Proceeding to publish anyway.`);
     }
+  } else if (dryRun) {
+    console.log(`   [DRY RUN] Remote tag ${tagName} not found — would create annotated tag and push to origin.`);
   } else {
-    console.log(`   [DRY RUN] Would push to: origin ${branch}`);
-    console.log(`   [DRY RUN] Would push tag: origin ${tagName}`);
+    // Tag is absent on the remote — always create a FRESH annotated tag.  Delete
+    // any pre-existing local tag of any type first (a no-op when none exists) so
+    // we never reuse or push a stale/lightweight tag.
+    try {
+      execSync(`git tag -d "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
+    } catch (e) {
+      // No local tag to delete — fine.
+    }
+
+    console.log(`🏷️  Creating git tag: ${tagName}...`);
+    execSync(`git tag -a "${tagName}" -m "Release ${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
+
+    console.log(`📤 Pushing tag ${tagName}...`);
+    execSync(`git push origin "${tagName}"`, { cwd: ROOT_DIR, stdio: 'inherit' });
   }
   
   // Compatibility log for the preflight validation above.
@@ -590,11 +597,7 @@ function main() {
       console.log(`   [DRY RUN] Would publish: ${pkg.name}@${nextVersion} with tag: ${npmTag}`);
       console.log(`   [DRY RUN] Command: npm publish --tag ${npmTag}`);
     } else {
-      let restoreJessDependencies = () => {};
       try {
-        if (isAlpha) {
-          restoreJessDependencies = rewriteJessRuntimeDependencies(pkg.path, jessPublishVersion);
-        }
         // For scoped packages, ensure access is set correctly
         const publishCmd = `npm publish --tag ${npmTag} --access public`;
         execSync(publishCmd, { 
@@ -608,8 +611,6 @@ function main() {
         console.error(`❌ Failed to publish ${pkg.name}: ${errorMsg}`);
         publishErrors.push({ name: pkg.name, error: errorMsg });
         // Continue with other packages instead of exiting immediately
-      } finally {
-        restoreJessDependencies();
       }
     }
   }
@@ -620,7 +621,7 @@ function main() {
     publishErrors.forEach(({ name, error }) => {
       console.error(`   - ${name}: ${error}`);
     });
-    console.error(`\n⚠️  Note: Version bump and commit were successful.`);
+    console.error(`\n⚠️  Note: Git tag was pushed successfully.`);
     console.error(`   Some packages failed to publish. You may need to publish them manually.`);
     process.exit(1);
   }
@@ -657,6 +658,5 @@ module.exports = {
   verifyJessPublishedVersion,
   verifyReleaseManifestVersions,
   verifyUnpublishedVersion,
-  rewriteJessRuntimeDependencies,
   main
 };

@@ -143,8 +143,7 @@ pnpm run test:alpha
 This is the Less 5 alpha release gate. It checks the supported alpha contract
 and prints the unsupported alpha.1 inventory. The full legacy corpus remains
 available through `pnpm run test`; it is intentionally not the alpha.1 publish
-gate until the documented unsupported buckets are drained. See
-`docs/less-5-alpha-support.md`.
+gate until the unsupported buckets are drained.
 
 ### Test Version Validation
 

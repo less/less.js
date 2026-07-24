@@ -16,7 +16,7 @@ const unsupportedForAlpha1 = [
     },
     {
         area: 'Source maps',
-        detail: 'Source-map options and annotations are not alpha-supported until Jess source mapping is rebuilt around final output chunks.'
+        detail: 'Source-map options and annotations are not alpha-supported yet.'
     },
     {
         area: 'URL rewrite/process-imports compatibility',
@@ -24,7 +24,7 @@ const unsupportedForAlpha1 = [
     },
     {
         area: 'Compression/minification parity',
-        detail: 'Less 5 alpha.1 focuses on correct Jess rendering, not Less 4 compressed output identity.'
+        detail: 'Less 5 alpha.1 focuses on readable compiler output, not Less 4 compressed output identity.'
     },
     {
         area: 'Permissive legacy syntax edge cases',

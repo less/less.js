@@ -155,7 +155,7 @@ function assertConsumerDoesNotResolveInto(consumerDir, forbiddenRoots, packageNa
   for (const name of packageNames) {
     const entry = lock.packages?.[`node_modules/${name}`];
     assert(entry, `consumer lock omitted ${name}`);
-    const expected = `file:${path.relative(consumerDir, tarballs.get(name))}`;
+    const expected = `file:${path.relative(consumerDir, tarballs.get(name)).split(path.sep).join('/')}`;
     assert(entry.resolved === expected,
       `consumer did not install ${name} from its expected packed tarball: ${entry.resolved ?? '(missing resolved)'}`);
   }
@@ -233,7 +233,12 @@ if (process.platform === 'win32') {
   );
 }
 function run(args, options = {}) {
-  const result = spawnSync(lessc, args, { cwd: fixture, encoding: 'utf8', ...options });
+  const result = spawnSync(lessc, args, {
+    cwd: fixture,
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+    ...options
+  });
   if (result.error) throw result.error;
   return result;
 }

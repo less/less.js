@@ -19,14 +19,6 @@ import { lesscHelper } from './lessc-helper.js';
 const compilerCache = new Map();
 const lessVersion = version.array;
 
-function getErrorTypeName(type) {
-  const normalized = String(type || 'Syntax').toLowerCase();
-  if (normalized === 'parse') return 'ParseError';
-  if (normalized === 'eval' || normalized === 'evaluate' || normalized === 'resolve') return 'RuntimeError';
-  if (normalized === 'syntax') return 'SyntaxError';
-  return `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}Error`;
-}
-
 function normalizeDiagnosticLines(lines, lineNumber) {
   if (Array.isArray(lines)) {
     return lines.map((line) => typeof line === 'string' ? line : String(line));
@@ -43,17 +35,6 @@ function normalizeDiagnosticLines(lines, lineNumber) {
   return undefined;
 }
 
-function formatRenderError(error) {
-  const type = getErrorTypeName(error.type);
-  const location = error.filename
-    ? ` in ${error.filename} on line ${error.line ?? 1}, column ${error.column ?? 1}`
-    : '';
-  const extract = Array.isArray(error.extract) && error.extract.length
-    ? `:\n${error.extract.map((line) => line ?? '').join('\n')}`
-    : '';
-  return `${type}: ${error.message}${location}${extract}`;
-}
-
 function createRenderErrorFromJessDiagnostic(result, filePath) {
   const diagnostic = result?.errors?.[0];
   const error = new Error(diagnostic?.message || 'Less render failed');
@@ -65,7 +46,6 @@ function createRenderErrorFromJessDiagnostic(result, filePath) {
   error.extract = normalizeDiagnosticLines(diagnostic?.lines, error.line);
   error.jessErrors = result?.errors || [];
   error.jessWarnings = result?.warnings || [];
-  error.toString = () => formatRenderError(error);
 
   return error;
 }

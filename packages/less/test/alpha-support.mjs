@@ -95,7 +95,7 @@ async function assertUnsupportedSyntaxHasPreciseDiagnostic() {
                 ''
             ]);
             assert.equal(error.jessErrors?.[0]?.code, 'parse/dynamic-charset');
-            assert.match(String(error), /ParseError: Less 5 does not support interpolation in @charset\./);
+            assert.equal(String(error), 'Error: Less 5 does not support interpolation in @charset.');
             assert.doesNotMatch(String(error), /offset/i);
             return true;
         }

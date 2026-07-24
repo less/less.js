@@ -123,7 +123,7 @@ async function run() {
       process.stdout.write(result.css);
     }
   } catch (err) {
-    if (!silent) {
+    if (!silent && !(Array.isArray(err?.jessErrors) && err.jessErrors.length)) {
       console.error(err.toString?.() || err.message);
     }
     process.exitCode = 1;

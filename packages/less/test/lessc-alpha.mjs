@@ -29,6 +29,12 @@ function runLessc(args, input = '') {
     });
 }
 
+function stripTerminalFormatting(value) {
+    return value
+        .replace(/\x1B\]8;;[^\x1B]*(?:\x1B\\|\x07)/gu, '')
+        .replace(/\x1B\[[0-?]*[ -/]*[@-~]/gu, '');
+}
+
 const jessEntrypoint = fileURLToPath(import.meta.resolve('jess'));
 assert.match(jessEntrypoint, /[/\\]jess[/\\]lib[/\\]index\.js$/,
     'the Less CLI must resolve the built Jess package entrypoint');
@@ -76,9 +82,14 @@ await realpath(jessEntrypoint);
                 '@charset "UTF-@{Eight}";',
                 ''
             ]);
-            assert.match(String(error), /ParseError: Less 5 does not support interpolation in @charset\. in dynamic-charset\.less on line 2, column 1:/);
+            assert.equal(String(error), 'Error: Less 5 does not support interpolation in @charset.');
             assert.doesNotMatch(String(error), /offset/i);
             assert.equal(error.jessErrors?.[0]?.code, 'parse/dynamic-charset');
+            assert.deepEqual(error.jessErrors?.[0]?.lines, {
+                1: '@Eight: 8;',
+                2: '@charset "UTF-@{Eight}";',
+                3: ''
+            });
             return true;
         },
         'Less 5 rejects dynamic @charset with a dedicated parse diagnostic'
@@ -167,14 +178,19 @@ try {
     const failure = await runLessc([broken]);
     assert.equal(failure.code, 1, 'a Less error is a failing lessc process');
     assert.equal(failure.stdout, '');
-    assert.match(failure.stderr, /ParseError: Less parser error\./,
-        'lessc reports the Less-facing error type on stderr');
-    assert.match(failure.stderr, /broken\.less on line 1, column 1:/,
+    const failureStderr = stripTerminalFormatting(failure.stderr);
+    assert.match(failureStderr, /parse\/syntax-error \[parse\]/,
+        'lessc reports the Linecraft diagnostic code on stderr');
+    assert.match(failureStderr, /broken\.less:1:1/,
         'lessc reports filename, line, and column on stderr');
-    assert.match(failure.stderr, /\.broken \{ color: red;/,
+    assert.match(failureStderr, /\.broken \{ color: red;/,
         'lessc reports the source line on stderr');
-    assert.doesNotMatch(failure.stderr, /offset/i,
+    assert.doesNotMatch(failureStderr, /offset/i,
         'lessc diagnostics must not expose raw offsets to users');
+    assert.doesNotMatch(failureStderr, / on line \d+, column \d+/,
+        'lessc must not reformat Linecraft diagnostics into Less 4-style text');
+    assert.doesNotMatch(failureStderr, /^Error: Less parser error\.$/m,
+        'lessc must not append a duplicate plain Error after a Linecraft diagnostic');
 } finally {
     await rm(tempDir, { recursive: true, force: true });
 }

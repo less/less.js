@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const {
   determineAlphaVersion,
+  getAlreadyPublishedPackages,
   getJessPublishVersion,
   verifyJessPublishedVersion,
   verifyReleaseManifestVersions,
@@ -70,4 +71,18 @@ test('rejects an already-published Less alpha before release mutations', () => {
     () => verifyUnpublishedVersion('less', '5.0.0-alpha.1', () => '5.0.0-alpha.1'),
     /already published/u,
   );
+});
+
+test('detects already-published packages for alpha publish reruns', () => {
+  const packages = [
+    { name: 'less' },
+    { name: '@less/test-data' },
+    { name: '@less/private-fixture' },
+  ];
+  const published = getAlreadyPublishedPackages(
+    packages,
+    '5.0.0-alpha.1',
+    name => name === 'less' ? '5.0.0-alpha.1' : null,
+  );
+  assert.deepEqual(published, [{ name: 'less' }]);
 });

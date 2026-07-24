@@ -216,6 +216,9 @@ html {
   a: true;
   b: false;
   c: false;
+  d: true;
+  e: false;
+  f: true;
 }
 #if {
   a: 1;

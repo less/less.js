@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import less from '../lib/index.js';
+
+const testDataRoot = path.resolve(packageRoot(), '..', 'test-data', 'tests-unit');
 
 const unsupportedForAlpha1 = [
     {
@@ -36,11 +39,25 @@ const unsupportedForAlpha1 = [
     }
 ];
 
+function packageRoot() {
+    return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+}
+
 function printUnsupportedInventory() {
     console.log('\nLess 5 alpha.1 unsupported inventory:');
     for (const entry of unsupportedForAlpha1) {
         console.log(`- ${entry.area}: ${entry.detail}`);
     }
+}
+
+async function assertFixtureRendersByteIdentical(name) {
+    const sourcePath = path.join(testDataRoot, name, `${name}.less`);
+    const expectedPath = path.join(testDataRoot, name, `${name}.css`);
+    const [result, expected] = await Promise.all([
+        less.renderFile(sourcePath, { paths: [path.dirname(sourcePath)] }),
+        readFile(expectedPath, 'utf8')
+    ]);
+    assert.equal(result.css, expected, `${name} should render byte-identically`);
 }
 
 async function assertSupportedCompileSurface() {
@@ -102,8 +119,32 @@ async function assertUnsupportedSyntaxHasPreciseDiagnostic() {
     );
 }
 
+async function assertBareStructuralAtRuleVariablesReject() {
+    await assert.rejects(
+        less.render('@varfoo: foo;\n@container @varfoo (min-width: 400px) { .x { color: red; } }\n', {
+            filename: 'bare-at-rule-var.less'
+        }),
+        error => {
+            assert.equal(error.type, 'parse');
+            assert.equal(error.filename, 'bare-at-rule-var.less');
+            assert.equal(error.line, 2);
+            assert.equal(error.column, 1);
+            assert.deepEqual(error.extract, [
+                '@varfoo: foo;',
+                '@container @varfoo (min-width: 400px) { .x { color: red; } }',
+                ''
+            ]);
+            assert.doesNotMatch(String(error), /offset/i);
+            return true;
+        }
+    );
+}
+
 await assertSupportedCompileSurface();
 await assertUnsupportedSyntaxHasPreciseDiagnostic();
+await assertBareStructuralAtRuleVariablesReject();
+await assertFixtureRendersByteIdentical('at-rule-variable-interpolation');
+await assertFixtureRendersByteIdentical('mixins-named-args');
 printUnsupportedInventory();
 
 console.log('\nLess 5 alpha.1 support contract passed');

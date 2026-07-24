@@ -316,6 +316,10 @@ function verifyUnpublishedVersion(packageName, version, lookup = getExactNpmVers
   }
 }
 
+function getAlreadyPublishedPackages(packages, version, lookup = getExactNpmVersion) {
+  return packages.filter(pkg => lookup(pkg.name, version));
+}
+
 // Get packages that should be published (not private)
 function getPublishablePackages() {
   const packageFiles = getPackageFiles();
@@ -368,6 +372,8 @@ function main() {
   let nextVersion;
 
   let jessPublishVersion;
+  const publishable = getPublishablePackages();
+  let alreadyPublished = [];
 
   if (isAlpha) {
     try {
@@ -412,8 +418,12 @@ function main() {
     if (isAlpha && !dryRun) {
       verifyCleanWorktree();
       verifyAlphaRepositoryState(nextVersion);
-      for (const pkg of getPublishablePackages()) {
-        verifyUnpublishedVersion(pkg.name, nextVersion);
+      alreadyPublished = getAlreadyPublishedPackages(publishable, nextVersion);
+      if (alreadyPublished.length > 0) {
+        console.warn(
+          `⚠️  ${alreadyPublished.length} package(s) already exist on npm for ${nextVersion}; ` +
+          'assuming a publish rerun and skipping them.'
+        );
       }
     }
   } catch (error) {
@@ -422,9 +432,9 @@ function main() {
   }
 
   // Get publishable packages
-  const publishable = getPublishablePackages();
   console.log(`📦 Found ${publishable.length} publishable packages:`);
   publishable.forEach(pkg => console.log(`   - ${pkg.name}`));
+  const alreadyPublishedNames = new Set(alreadyPublished.map(pkg => pkg.name));
 
   // Both master and alpha: the version-bump commit already lives on the branch
   // (it came from the release PR).  Do NOT create another local commit or push
@@ -519,48 +529,54 @@ function main() {
     // (This is enforced in the code below, but we log it for clarity)
     console.log(`✅ Will publish with 'alpha' tag (enforced)`);
     
-    // Validation 3: Check if alpha is behind master
-    try {
-      execSync('git fetch origin master', { cwd: ROOT_DIR, stdio: 'ignore' });
-      const masterCommits = execSync('git rev-list --count alpha..origin/master', {
-        cwd: ROOT_DIR, 
-        encoding: 'utf8' 
-      }).trim();
-      
-      if (parseInt(masterCommits, 10) > 0) {
-        console.error(`❌ ERROR: Alpha branch is behind master by ${masterCommits} commit(s)`);
-        console.error(`   Alpha branch must include all commits from master before publishing`);
-        console.error(`   Please merge master into alpha first`);
-        process.exit(1);
+    if (dryRun) {
+      console.log(`✅ Repository state checks are skipped in dry-run mode`);
+    } else {
+      // Validation 3: Check if alpha is behind master. This intentionally uses
+      // HEAD, not a local branch named `alpha`; publish runs from the checked-out
+      // release commit.
+      try {
+        execSync('git fetch origin master', { cwd: ROOT_DIR, stdio: 'ignore' });
+        const masterCommits = execSync('git rev-list --count HEAD..origin/master', {
+          cwd: ROOT_DIR,
+          encoding: 'utf8'
+        }).trim();
+
+        if (parseInt(masterCommits, 10) > 0) {
+          console.error(`❌ ERROR: Alpha branch is behind master by ${masterCommits} commit(s)`);
+          console.error(`   Alpha branch must include all commits from master before publishing`);
+          console.error(`   Please merge master into alpha first`);
+          process.exit(1);
+        }
+        console.log(`✅ Alpha branch is up to date with master`);
+      } catch (e) {
+        console.log(`⚠️  Could not verify master sync status, continuing...`);
       }
-      console.log(`✅ Alpha branch is up to date with master`);
-    } catch (e) {
-      console.log(`⚠️  Could not verify master sync status, continuing...`);
-    }
-    
-    // Validation 4: Alpha base version must be >= master version
-    try {
-      const masterVersionStr = execSync('git show origin/master:packages/less/package.json', {
-        cwd: ROOT_DIR, 
-        encoding: 'utf8' 
-      });
-      const masterPkg = JSON.parse(masterVersionStr);
-      const masterVersion = masterPkg.version;
-      
-      // Extract base version from alpha version (remove -alpha.X)
-      const alphaBase = nextVersion.replace(/-alpha\.\d+$/, '');
-      
-      // Semver comparison using semver library
-      const isGreaterOrEqual = semver.gte(alphaBase, masterVersion);
-      
-      if (!isGreaterOrEqual) {
-        console.error(`❌ ERROR: Alpha base version (${alphaBase}) is lower than master version (${masterVersion})`);
-        console.error(`   According to semver, alpha base version must be >= master version`);
-        process.exit(1);
+
+      // Validation 4: Alpha base version must be >= master version
+      try {
+        const masterVersionStr = execSync('git show origin/master:packages/less/package.json', {
+          cwd: ROOT_DIR,
+          encoding: 'utf8'
+        });
+        const masterPkg = JSON.parse(masterVersionStr);
+        const masterVersion = masterPkg.version;
+
+        // Extract base version from alpha version (remove -alpha.X)
+        const alphaBase = nextVersion.replace(/-alpha\.\d+$/, '');
+
+        // Semver comparison using semver library
+        const isGreaterOrEqual = semver.gte(alphaBase, masterVersion);
+
+        if (!isGreaterOrEqual) {
+          console.error(`❌ ERROR: Alpha base version (${alphaBase}) is lower than master version (${masterVersion})`);
+          console.error(`   According to semver, alpha base version must be >= master version`);
+          process.exit(1);
+        }
+        console.log(`✅ Alpha base version (${alphaBase}) is >= master version (${masterVersion})`);
+      } catch (e) {
+        console.log(`⚠️  Could not compare with master version, continuing...`);
       }
-      console.log(`✅ Alpha base version (${alphaBase}) is >= master version (${masterVersion})`);
-    } catch (e) {
-      console.log(`⚠️  Could not compare with master version, continuing...`);
     }
   }
   
@@ -596,6 +612,8 @@ function main() {
     if (dryRun) {
       console.log(`   [DRY RUN] Would publish: ${pkg.name}@${nextVersion} with tag: ${npmTag}`);
       console.log(`   [DRY RUN] Command: npm publish --tag ${npmTag}`);
+    } else if (alreadyPublishedNames.has(pkg.name)) {
+      console.log(`⏭️  ${pkg.name}@${nextVersion} is already published; skipping.`);
     } else {
       try {
         // For scoped packages, ensure access is set correctly
@@ -654,6 +672,7 @@ if (require.main === module) {
 
 module.exports = {
   determineAlphaVersion,
+  getAlreadyPublishedPackages,
   getJessPublishVersion,
   verifyJessPublishedVersion,
   verifyReleaseManifestVersions,

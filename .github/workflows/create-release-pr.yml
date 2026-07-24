@@ -161,7 +161,7 @@ jobs:
               --json number,title,author \
               --jq '.[] | "- [#\(.number)](https://github.com/${{ github.repository }}/pull/\(.number)) \(.title) (@\(.author.login))"' \
               2>/dev/null || echo "")
-            if [ -n "$PR_LINES" ]; then
+            if [ -n "$PR_LINES" ] && ! grep -q "^### v${NEXT_VERSION}\\b" CHANGELOG.md; then
               TODAY=$(date +%Y-%m-%d)
               {
                 head -1 CHANGELOG.md
@@ -175,6 +175,8 @@ jobs:
                 tail -n +2 CHANGELOG.md
               } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
               git add CHANGELOG.md
+            elif grep -q "^### v${NEXT_VERSION}\\b" CHANGELOG.md; then
+              echo "CHANGELOG.md already has a v${NEXT_VERSION} section; keeping the curated release notes."
             fi
           fi
 

@@ -180,7 +180,7 @@ jobs:
           Highlights:
           - CSS nesting is preserved by default.
           - Less-style ampersand joining for BEM-style modifiers and similar selector patterns is still supported.
-          - Nested and extended selector output uses modern selectors such as :is() where possible to reduce selector expansion.
+          - Nested and extended selector output may use modern selectors such as :is(); selector compatibility remains part of the alpha feedback surface.
           - Browser compilation is not included in this alpha; a new browser build mechanism will be introduced in a future alpha.
 
           See CHANGELOG.md for the current supported surface and work-in-progress areas.

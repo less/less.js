@@ -48,10 +48,8 @@ npx lessc styles.less styles.css
 
 ### Browser
 
-```html
-<link rel="stylesheet/less" type="text/css" href="styles.less" />
-<script src="https://cdn.jsdelivr.net/npm/less"></script>
-```
+Less 5 alpha.1 does not include browser compilation support. A new browser
+build mechanism will be introduced in a future alpha.
 
 ## Why Less?
 

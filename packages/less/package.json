@@ -47,7 +47,6 @@
 		"index.cjs",
 		"README.md"
 	],
-	"browser": "./dist/less.js",
 	"engines": {
 		"node": ">=18"
 	},

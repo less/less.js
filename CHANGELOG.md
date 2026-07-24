@@ -22,8 +22,9 @@ drop-in replacement for Less 4.x.
   similar selector patterns, such as `.block { &__item { ... } }`.
 - Preserves cascade order when nested rules are collapsed, so declarations
   after a nested child remain after that child in the generated CSS.
-- Uses modern selector output such as `:is()` where possible to reduce selector
-  expansion when generating nested and extended selectors.
+- May use modern selector output such as `:is()` in generated nested and
+  extended selectors. Selector compatibility remains part of the alpha feedback
+  surface.
 - Adds an alpha readiness test path for the supported Less 5 surface, including
   package loading, `lessc`, file imports, malformed-input diagnostics, and clean
   npm consumer installation.

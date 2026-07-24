@@ -1,0 +1,72 @@
+// Less 5 coverage for variable interpolation in non-value at-rule positions
+// (at-rule preludes, names, and identifiers). Less 4.8 added a companion
+// deprecated-bare-@variable fixture; Less 5 keeps the migration target as the
+// positive parse/eval fixture.
+
+// --- nestable at-rule preludes ---
+@smartphone: ~"only screen and (max-width: 200px)";
+@media @{smartphone} {
+  .body {
+    width: 480px;
+  }
+}
+
+@all: ~"all";
+@tv: ~"(tv)";
+@media @{all} and @{tv} {
+  .all-and-tv {
+    var: yes;
+  }
+}
+
+@breakpoint: screen;
+@media @{breakpoint}, print {
+  .list {
+    margin: 0;
+  }
+}
+
+@varfoo: foo;
+@threshold: 400px;
+@container @{varfoo} (min-width: @threshold) {
+  .sticky-child {
+    font-size: 75%;
+  }
+}
+
+// --- unknown at-rule prelude ---
+@supported: ~"(display: flex)";
+@supports @{supported} {
+  .flex {
+    display: flex;
+  }
+}
+
+// A bare @variable in a *nested declaration value* (inside `(...)`) is a
+// declaration value, not a structural at-rule identifier/prelude position.
+@disp: grid;
+@supports (display: @disp) and (gap: 1rem) {
+  .grid {
+    display: grid;
+  }
+}
+
+// --- at-rule identifiers / names ---
+@anim: enlarger;
+@keyframes @{anim} {
+  from { font-size: 12px; }
+  to   { font-size: 15px; }
+}
+
+@ns: less;
+@namespace @{ns} "http://lesscss.org";
+
+@svg-ns: svgns;
+@namespace @{svg-ns} "http://www.w3.org/2000/svg";
+
+@layer-name: base;
+@layer @{layer-name} {
+  .layered {
+    color: red;
+  }
+}

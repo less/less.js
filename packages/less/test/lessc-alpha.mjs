@@ -138,6 +138,17 @@ try {
     assert.match(version.stdout, /^lessc \d+\.\d+\.\d+-alpha\.\d+ \(Less Compiler\) \[Jess\]\n$/);
     assert.equal(version.stderr, '');
 
+    const help = await runLessc(['--help']);
+    assert.equal(help.code, 0, help.stderr);
+    assert.match(help.stdout, /--collapse-nesting/,
+        'lessc help documents the supported alpha nesting flag');
+    assert.match(help.stdout, /Less 5 alpha\.1 intentionally supports a smaller CLI surface/,
+        'lessc help explicitly scopes the alpha CLI surface');
+    assert.doesNotMatch(help.stdout, /--source-map/,
+        'lessc help must not advertise unsupported source-map flags in alpha.1');
+    assert.doesNotMatch(help.stdout, /--plugin=/,
+        'lessc help must not advertise unsupported plugin flags in alpha.1');
+
     const stdin = await runLessc(['-'], '.from-stdin { color: blue; }\n');
     assert.equal(stdin.code, 0, stdin.stderr);
     assert.match(stdin.stdout, /\.from-stdin\s*\{[\s\S]*color:\s*blue;/);

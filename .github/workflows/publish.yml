@@ -210,14 +210,26 @@ jobs:
           \`\`\`"
           fi
 
+          ASSETS=()
+          if [ "$IS_ALPHA" != "true" ]; then
+            for asset in packages/less/dist/less.js packages/less/dist/less.min.js; do
+              if [ -f "$asset" ]; then
+                ASSETS+=("$asset")
+              fi
+            done
+          else
+            echo "Alpha release has no browser build assets; browser compilation will return through a future build mechanism."
+          fi
+
           if gh release view "$TAG" &>/dev/null; then
-            echo "Release $TAG already exists, uploading assets to existing release"
-            gh release upload "$TAG" packages/less/dist/less.js packages/less/dist/less.min.js --clobber
+            echo "Release $TAG already exists"
+            if [ "${#ASSETS[@]}" -gt 0 ]; then
+              gh release upload "$TAG" "${ASSETS[@]}" --clobber
+            fi
           else
             gh release create "$TAG" \
               --title "$TITLE" \
               $PRERELEASE \
               --notes "$BODY" \
-              packages/less/dist/less.js \
-              packages/less/dist/less.min.js
+              "${ASSETS[@]}"
           fi

@@ -2,43 +2,40 @@
 
 ### v5.0.0-alpha.1 (unreleased)
 
-This is the first Less 5 prerelease. It is intentionally not a claim of full
-Less 4.x compatibility.
+This is the first public alpha for Less 5, a major rewrite of the Less compiler
+on top of [Jess](https://github.com/jesscss/jess). Jess is a new CSS-family
+compiler engine that Less now uses for parsing, evaluation, rendering, imports,
+and the `lessc` command.
 
-#### Alpha scope
+This alpha is meant for early testing of the new compiler path. It is not yet a
+drop-in replacement for Less 4.x.
 
-- The external `less` package is the sole owner of the Less-compatible
-  `lessc` command. The separate `jess` package exposes `jess`, not `lessc`.
-- Less 5 preserves authored nested rules by default. Opt into flattened,
-  Less-4-style selector output with the render option `collapseNesting: true`
-  or the CLI flag `lessc --collapse-nesting`.
-- Collapsing preserves source order: declarations after a nested child remain
-  after that child rather than being regrouped into an earlier parent block.
+#### Highlights
 
-#### Release safety
+- Introduces the Jess-powered Less compiler and CLI through the existing
+  `less` package.
+- Keeps `lessc` owned by Less. The separate `jess` package has its own CLI and
+  no longer installs a competing `lessc` binary.
+- Preserves authored CSS nesting by default. Use `collapseNesting: true` or
+  `lessc --collapse-nesting` to emit flattened selector output.
+- Preserves cascade order when nested rules are collapsed, so declarations
+  after a nested child remain after that child in the generated CSS.
+- Adds an alpha readiness test path for the supported Less 5 surface, including
+  package loading, `lessc`, file imports, malformed-input diagnostics, and clean
+  npm consumer installation.
 
-Before this prerelease can be published, the release branch must match its
-remote, `jess@2.0.0-alpha.9` must be available from npm, and a
-registry-backed clean-consumer proof must pass. The checked local proof packs
-Less with the local Jess alpha closure and exercises built `lessc` for stdin,
-files, sibling imports, and compile errors; it is not a substitute for the
-registry-backed proof. Owner review of these release notes and their known
-limitations is also required before publication.
+#### Current alpha support
 
-#### Known limitations
+Less 5 alpha.1 currently focuses on core compile behavior: `less.render()`,
+`less.renderFile()`, `lessc`, variables, arithmetic, mixin calls, sibling file
+imports, and nested-rule output.
 
-- The full Less node corpus is not a release-parity claim. The durable
-  [Jess Less v5 corpus inventory](https://github.com/jesscss/jess/blob/alpha/docs/less-v5-corpus-inventory.md)
-  records the current public-route selection: 107 cases, with 86 ordinary
-  byte-identical checks, 21 active expected-failure checks, and 11 additional
-  registered-but-unselected limitations. Its classified failures include legacy
-  plugin-global/registry and visitor assumptions, advanced parser fixtures,
-  import/process-URL behavior, source-map artifacts, and other output
-  divergences.
-- This alpha does not promise full Less 4.x CLI parity, browser compilation,
-  source-map parity, or Less 4.x performance parity.
-- These limitations remain visible release work; they are not silently treated
-  as passing compatibility.
+The broader Less 4.x compatibility surface is still in progress. Known
+work-in-progress areas include legacy plugin execution, file-manager and
+pre/post-processor hooks, source maps, URL rewriting options, compressed-output
+parity, browser compilation, and the remaining long-tail Less 4 fixture corpus.
+Unsupported syntax should fail with filename, line, column, and source context
+rather than raw parser offsets.
 
 ### v4.6.0 (2026-03-09)
 

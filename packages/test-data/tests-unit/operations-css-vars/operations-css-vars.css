@@ -1,0 +1,13 @@
+.min-max-var {
+  a: min(100% - var(--w), 10px);
+  b: max(var(--x), 40px);
+  c: min(50vh - var(--y), var(--z) + 2px, 40px);
+}
+.operation-var {
+  d: 100% - var(--w);
+  e: var(--x) + 2px;
+}
+.still-evaluates {
+  f: 10px;
+  g: 5px;
+}

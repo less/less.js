@@ -1,0 +1,10 @@
+.trig {
+  a: sin(var(--angle));
+  b: cos(var(--a));
+  c: calc(tan(var(--t)) * 1px);
+  d: atan2(var(--x), var(--y));
+}
+.numeric {
+  a: 0.5;
+  b: 5;
+}

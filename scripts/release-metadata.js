@@ -187,7 +187,7 @@ function changelogUpdateForContent(content, version, previousVersion, date) {
 
   const heading = content.match(/^(### v)(\d+\.\d+\.\d+(?:-alpha\.\d+)?)( \(\d{4}-\d{2}-\d{2}\))$/m);
   if (!heading) {
-    return { status: 'unchanged', content };
+    return { status: 'inserted', content: insertChangelogVersion(content, version, date) };
   }
   if (heading[2] === version) {
     return { status: 'unchanged', content };

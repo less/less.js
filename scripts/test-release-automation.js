@@ -566,6 +566,20 @@ test('changelog title sync inserts a current heading when only history exists', 
   assert.ok(result.content.includes('- older change'));
 });
 
+test('changelog title sync inserts a heading when no dated release heading exists', () => {
+  const changelog = [
+    '# Changelog',
+    '',
+    'Unreleased notes without a dated release heading.',
+    '',
+  ].join('\n');
+
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1', '2026-07-26');
+  assert.strictEqual(result.status, 'inserted');
+  assert.ok(result.content.includes('# Changelog\n\n### v4.9.0 (2026-07-26)\n'));
+  assert.ok(result.content.includes('Unreleased notes without a dated release heading.'));
+});
+
 test('changelog title sync is idempotent when the heading already matches the title', () => {
   const changelog = [
     '# Changelog',

@@ -156,7 +156,31 @@ function replaceChangelogVersion(content, version, previousVersion) {
   };
 }
 
-function changelogUpdateForContent(content, version, previousVersion) {
+function currentDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function insertChangelogVersion(content, version, date = currentDate()) {
+  const heading = `### v${version} (${date})`;
+  const firstReleaseHeading = content.match(/^### v\d+\.\d+\.\d+(?:-alpha\.\d+)? \(\d{4}-\d{2}-\d{2}\)$/m);
+
+  if (firstReleaseHeading) {
+    return content.slice(0, firstReleaseHeading.index) +
+      `${heading}\n\n` +
+      content.slice(firstReleaseHeading.index);
+  }
+
+  const firstLineEnd = content.indexOf('\n');
+  if (firstLineEnd === -1) {
+    return `${content}\n\n${heading}\n`;
+  }
+
+  return content.slice(0, firstLineEnd + 1) +
+    `\n${heading}\n` +
+    content.slice(firstLineEnd + 1);
+}
+
+function changelogUpdateForContent(content, version, previousVersion, date) {
   if (version === previousVersion) {
     return { status: 'unchanged', content };
   }
@@ -171,7 +195,7 @@ function changelogUpdateForContent(content, version, previousVersion) {
 
   const { changed, content: updated } = replaceChangelogVersion(content, version, previousVersion);
   if (!changed) {
-    return { status: 'missing-current-heading', content };
+    return { status: 'inserted', content: insertChangelogVersion(content, version, date) };
   }
 
   return { status: 'updated', content: updated };
@@ -187,7 +211,7 @@ function readChangelogUpdate(version, previousVersion) {
 
 function syncChangelogVersion(version, previousVersion) {
   const update = readChangelogUpdate(version, previousVersion);
-  if (update.status !== 'updated') return false;
+  if (update.status !== 'updated' && update.status !== 'inserted') return false;
 
   fs.writeFileSync(update.path, update.content);
   return true;
@@ -197,7 +221,7 @@ function syncFiles(version, previousVersion) {
   const changelogUpdate = readChangelogUpdate(version, previousVersion);
 
   syncPackageVersions(version);
-  if (changelogUpdate.status === 'updated') {
+  if (changelogUpdate.status === 'updated' || changelogUpdate.status === 'inserted') {
     fs.writeFileSync(changelogUpdate.path, changelogUpdate.content);
   }
 
@@ -256,6 +280,7 @@ module.exports = {
   LEGACY_ALPHA_RELEASE_TITLE_PREFIX,
   RELEASE_TITLE_PREFIX,
   changelogUpdateForContent,
+  insertChangelogVersion,
   nextVersion,
   parseReleaseTitle,
   readChangelogUpdate,

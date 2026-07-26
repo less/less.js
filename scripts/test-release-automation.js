@@ -548,7 +548,7 @@ test('changelog title sync updates the matching current release heading only', (
   assert.ok(result.content.includes('### v4.8.0 (2026-07-25)'));
 });
 
-test('changelog title sync skips historical heading when current heading is absent', () => {
+test('changelog title sync inserts a current heading when only history exists', () => {
   const changelog = [
     '# Changelog',
     '',
@@ -560,9 +560,10 @@ test('changelog title sync skips historical heading when current heading is abse
     '',
   ].join('\n');
 
-  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1');
-  assert.strictEqual(result.status, 'missing-current-heading');
-  assert.strictEqual(result.content, changelog);
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1', '2026-07-26');
+  assert.strictEqual(result.status, 'inserted');
+  assert.ok(result.content.includes('### v4.9.0 (2026-07-26)\n\n### v4.8.0 (2026-07-25)'));
+  assert.ok(result.content.includes('- older change'));
 });
 
 test('changelog title sync is idempotent when the heading already matches the title', () => {

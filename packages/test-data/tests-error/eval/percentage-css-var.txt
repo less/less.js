@@ -1,0 +1,4 @@
+ArgumentError: Error evaluating function `percentage`: argument must be a number in {path}percentage-css-var.less on line 2, column 6:
+1 .a {
+2   b: percentage(var(--x));
+3 }

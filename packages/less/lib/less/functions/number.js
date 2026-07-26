@@ -88,7 +88,7 @@ export default {
         return new Dimension(Math.pow(x.value, y.value), x.unit);
     },
     percentage: function (n) {
-        const result = mathHelper(num => num * 100, '%', n);
+        const result = mathHelper(num => num * 100, '%', false, n);
 
         return result;
     }

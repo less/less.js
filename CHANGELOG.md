@@ -1,5 +1,15 @@
 ## Change Log
 
+### v4.8.1 (2026-07-26)
+
+#### Changes
+
+- [#4483](https://github.com/less/less.js/pull/4483) fix(release): sync release version from PR title (@matthew-dean)
+- [#4479](https://github.com/less/less.js/pull/4479) fix: leave math functions for the browser when an argument is a runtime CSS var() (@Lfan-ke)
+- [#4477](https://github.com/less/less.js/pull/4477) fix: forwarding an unset variadic no longer overrides callee defaults (@Lfan-ke)
+- [#4474](https://github.com/less/less.js/pull/4474) chore: release v4.8.0 — deprecate legacy identifier forms and dynamic @charset (@app/github-actions)
+
+
 ### v4.8.0 (2026-07-22)
 
 #### Changes

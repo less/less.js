@@ -96,11 +96,14 @@ function nextVersion(base, currentVersion, npmVersion) {
   }
 
   if (isAlphaBase(base)) {
-    const match = currentVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
+    const baseVersion = npmVersion && semver.valid(npmVersion) && semver.gt(npmVersion, currentVersion)
+      ? npmVersion
+      : currentVersion;
+    const match = baseVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
     if (match) {
       return `${match[1]}-alpha.${parseInt(match[2], 10) + 1}`;
     }
-    const parsed = semver.parse(currentVersion);
+    const parsed = semver.parse(baseVersion);
     return `${parsed.major + 1}.0.0-alpha.1`;
   }
 
@@ -128,15 +131,29 @@ function syncPackageVersions(version) {
   }
 }
 
-function syncChangelogVersion(version) {
+function replaceChangelogVersion(content, version, previousVersion) {
+  const heading = content.match(/^(### v)(\d+\.\d+\.\d+(?:-alpha\.\d+)?)( \(\d{4}-\d{2}-\d{2}\))$/m);
+  if (!heading || heading[2] !== previousVersion) {
+    return { changed: false, content };
+  }
+
+  return {
+    changed: true,
+    content: content.slice(0, heading.index) +
+      `${heading[1]}${version}${heading[3]}` +
+      content.slice(heading.index + heading[0].length),
+  };
+}
+
+function syncChangelogVersion(version, previousVersion) {
   const changelog = path.join(ROOT_DIR, 'CHANGELOG.md');
   if (!fs.existsSync(changelog)) return false;
 
   const original = fs.readFileSync(changelog, 'utf8');
-  const updated = original.replace(/^(### v)(\d+\.\d+\.\d+(?:-alpha\.\d+)?)( \(\d{4}-\d{2}-\d{2}\))$/m, `$1${version}$3`);
-  if (updated === original) return false;
+  const { changed, content } = replaceChangelogVersion(original, version, previousVersion);
+  if (!changed) return false;
 
-  fs.writeFileSync(changelog, updated);
+  fs.writeFileSync(changelog, content);
   return true;
 }
 
@@ -149,7 +166,7 @@ function usage() {
   node scripts/release-metadata.js validate <base> <version> [npmVersion]
   node scripts/release-metadata.js next-version <base> <currentVersion> [npmVersion]
   node scripts/release-metadata.js sync-package-versions <version>
-  node scripts/release-metadata.js sync-files <version>`);
+  node scripts/release-metadata.js sync-files <version> <previousVersion>`);
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -171,7 +188,7 @@ function main(argv = process.argv.slice(2)) {
       syncPackageVersions(args[0]);
     } else if (command === 'sync-files') {
       syncPackageVersions(args[0]);
-      syncChangelogVersion(args[0]);
+      syncChangelogVersion(args[0], args[1]);
     } else {
       usage();
       process.exit(1);
@@ -191,6 +208,7 @@ module.exports = {
   RELEASE_TITLE_PREFIX,
   nextVersion,
   parseReleaseTitle,
+  replaceChangelogVersion,
   releaseBody,
   releaseBranch,
   releaseTitle,

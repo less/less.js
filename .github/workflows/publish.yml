@@ -57,6 +57,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Validate release title version
+        env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
+          RELEASE_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          TITLE_VERSION=$(node scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
+          PACKAGE_VERSION=$(node -p "require('./packages/less/package.json').version")
+
+          if [ "$TITLE_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "❌ ERROR: Release PR title requests v${TITLE_VERSION}, but package.json contains v${PACKAGE_VERSION}"
+            echo "   Edit the release PR title and wait for the release-file sync check to update the branch before merging."
+            exit 1
+          fi
+
+          if [ "$RELEASE_BASE" = "alpha" ]; then
+            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
+          else
+            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
+          fi
+
+          node scripts/release-metadata.js validate "$RELEASE_BASE" "$TITLE_VERSION" "$NPM_VERSION"
+          echo "✅ Release title, package.json, and npm version checks agree on v${TITLE_VERSION}"
+
       - name: Run node tests (ESM + CJS)
         run: pnpm run test:node
 
@@ -85,30 +109,6 @@ jobs:
             echo "npm_tag=latest" >> $GITHUB_OUTPUT
             echo "release_type=release" >> $GITHUB_OUTPUT
           fi
-
-      - name: Validate release title version
-        env:
-          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
-          RELEASE_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          set -euo pipefail
-          TITLE_VERSION=$(node scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
-          PACKAGE_VERSION=$(node -p "require('./packages/less/package.json').version")
-
-          if [ "$TITLE_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "❌ ERROR: Release PR title requests v${TITLE_VERSION}, but package.json contains v${PACKAGE_VERSION}"
-            echo "   Edit the release PR title and wait for the release-file sync check to update the branch before merging."
-            exit 1
-          fi
-
-          if [ "$RELEASE_BASE" = "alpha" ]; then
-            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
-          else
-            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
-          fi
-
-          node scripts/release-metadata.js validate "$RELEASE_BASE" "$TITLE_VERSION" "$NPM_VERSION"
-          echo "✅ Release title, package.json, and npm version checks agree on v${TITLE_VERSION}"
 
       - name: Validate alpha branch requirements
         if: steps.branch-info.outputs.is_alpha == 'true'

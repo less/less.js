@@ -58,9 +58,10 @@ jobs:
         id: version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          BRANCH="${{ github.ref_name }}"
+          BRANCH="$REF_NAME"
           CURRENT=$(node -p "require('./packages/less/package.json').version")
 
           if [ "$BRANCH" = "alpha" ]; then
@@ -202,6 +203,9 @@ jobs:
   sync-release-pr-title:
     name: Sync Release PR Title
     runs-on: ubuntu-latest
+    concurrency:
+      group: sync-release-pr-title-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     if: |
       github.event_name == 'pull_request' &&
       github.repository == 'less/less.js' &&
@@ -237,6 +241,7 @@ jobs:
           RELEASE_TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -euo pipefail
+          PREVIOUS_VERSION=$(node -p "require('./packages/less/package.json').version")
           VERSION=$(node scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
           if [ "$RELEASE_BASE" = "alpha" ]; then
             NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
@@ -247,6 +252,7 @@ jobs:
           TITLE=$(node scripts/release-metadata.js title "$RELEASE_BASE" "$VERSION")
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "previous_version=$PREVIOUS_VERSION" >> "$GITHUB_OUTPUT"
           echo "title=$TITLE" >> "$GITHUB_OUTPUT"
 
       - name: Configure Git
@@ -257,11 +263,12 @@ jobs:
       - name: Sync release files to title version
         env:
           VERSION: ${{ steps.title-version.outputs.version }}
+          PREVIOUS_VERSION: ${{ steps.title-version.outputs.previous_version }}
           TITLE: ${{ steps.title-version.outputs.title }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
-          node scripts/release-metadata.js sync-files "$VERSION"
+          node scripts/release-metadata.js sync-files "$VERSION" "$PREVIOUS_VERSION"
           git add package.json packages/*/package.json CHANGELOG.md
 
           if git diff --cached --quiet; then

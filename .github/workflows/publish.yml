@@ -3,7 +3,7 @@ name: Publish to NPM
 on:
   # Publish when a release PR is merged:
   #   master branch: "chore: release vX.Y.Z"       PR → publishes latest
-  #   alpha branch:  "chore: alpha release vX.Y.Z"  PR → publishes alpha
+  #   alpha branch:  "chore: release vX.Y.Z-alpha.N" PR → publishes alpha
   # Both release PRs are created automatically by create-release-pr.yml.
   pull_request:
     types: [closed]
@@ -29,7 +29,10 @@ jobs:
         (github.event.pull_request.base.ref == 'master' &&
          startsWith(github.event.pull_request.title, 'chore: release v')) ||
         (github.event.pull_request.base.ref == 'alpha' &&
-         startsWith(github.event.pull_request.title, 'chore: alpha release v'))
+         (
+           startsWith(github.event.pull_request.title, 'chore: release v') ||
+           startsWith(github.event.pull_request.title, 'chore: alpha release v')
+         ))
       )
 
     steps:
@@ -53,6 +56,30 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Validate release title version
+        env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
+          RELEASE_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          TITLE_VERSION=$(node scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
+          PACKAGE_VERSION=$(node -p "require('./packages/less/package.json').version")
+
+          if [ "$TITLE_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "❌ ERROR: Release PR title requests v${TITLE_VERSION}, but package.json contains v${PACKAGE_VERSION}"
+            echo "   Edit the release PR title and wait for the release-file sync check to update the branch before merging."
+            exit 1
+          fi
+
+          if [ "$RELEASE_BASE" = "alpha" ]; then
+            NPM_VERSION=$(npm view less dist-tags.alpha)
+          else
+            NPM_VERSION=$(npm view less version)
+          fi
+
+          node scripts/release-metadata.js validate "$RELEASE_BASE" "$TITLE_VERSION" "$NPM_VERSION"
+          echo "✅ Release title, package.json, and npm version checks agree on v${TITLE_VERSION}"
 
       - name: Run node tests (ESM + CJS)
         run: pnpm run test:node

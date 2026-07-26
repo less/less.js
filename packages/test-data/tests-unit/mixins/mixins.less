@@ -143,3 +143,19 @@ h3 { .margin_between(15px, 5px); }
 .foo {
   .clearfix();
 }
+
+// Forwarding an unset variadic must fall through to the callee's default,
+// not pass an empty argument that overrides it (issue #4352).
+.rest-forward(@a, @rest...) {
+  .rest-target(@a, @rest);
+}
+.rest-target(@a, @b: fallback) {
+  a: @a;
+  b: @b;
+}
+.rest-forwarding-empty {
+  .rest-forward(1);
+}
+.rest-forwarding-filled {
+  .rest-forward(1, 2);
+}

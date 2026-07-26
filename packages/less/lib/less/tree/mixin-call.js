@@ -151,6 +151,10 @@ class MixinCall extends Node {
                 for (m = 0; m < expandedValues.length; m++) {
                     args.push({value: expandedValues[m]});
                 }
+            } else if (argValue.type === 'Expression' && Array.isArray(argValue.value) && argValue.value.length === 0) {
+                // an unset variadic holds no captured args; omit it so the callee
+                // falls through to its own parameter defaults instead of receiving empty
+
             } else {
                 args.push({name: arg.name, value: argValue});
             }

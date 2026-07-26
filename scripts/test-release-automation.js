@@ -560,8 +560,27 @@ test('changelog title sync skips historical heading when current heading is abse
     '',
   ].join('\n');
 
-  const result = releaseMetadata.replaceChangelogVersion(changelog, '4.9.0', '4.8.1');
-  assert.strictEqual(result.changed, false);
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1');
+  assert.strictEqual(result.status, 'missing-current-heading');
+  assert.strictEqual(result.content, changelog);
+});
+
+test('changelog title sync is idempotent when the heading already matches the title', () => {
+  const changelog = [
+    '# Changelog',
+    '',
+    '### v4.9.0 (2026-07-26)',
+    '',
+    '#### Changes',
+    '',
+    '- something',
+    '',
+    '### v4.8.0 (2026-07-25)',
+    '',
+  ].join('\n');
+
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1');
+  assert.strictEqual(result.status, 'unchanged');
   assert.strictEqual(result.content, changelog);
 });
 

@@ -156,21 +156,33 @@ function replaceChangelogVersion(content, version, previousVersion) {
   };
 }
 
+function changelogUpdateForContent(content, version, previousVersion) {
+  if (version === previousVersion) {
+    return { status: 'unchanged', content };
+  }
+
+  const heading = content.match(/^(### v)(\d+\.\d+\.\d+(?:-alpha\.\d+)?)( \(\d{4}-\d{2}-\d{2}\))$/m);
+  if (!heading) {
+    return { status: 'unchanged', content };
+  }
+  if (heading[2] === version) {
+    return { status: 'unchanged', content };
+  }
+
+  const { changed, content: updated } = replaceChangelogVersion(content, version, previousVersion);
+  if (!changed) {
+    return { status: 'missing-current-heading', content };
+  }
+
+  return { status: 'updated', content: updated };
+}
+
 function readChangelogUpdate(version, previousVersion) {
   const changelog = path.join(ROOT_DIR, 'CHANGELOG.md');
   if (!fs.existsSync(changelog)) return { path: changelog, status: 'missing' };
 
   const original = fs.readFileSync(changelog, 'utf8');
-  if (version === previousVersion) {
-    return { path: changelog, status: 'unchanged', content: original };
-  }
-
-  const { changed, content } = replaceChangelogVersion(original, version, previousVersion);
-  if (!changed) {
-    throw new Error(`CHANGELOG.md first release heading does not match previous version ${previousVersion}`);
-  }
-
-  return { path: changelog, status: 'updated', content };
+  return { path: changelog, ...changelogUpdateForContent(original, version, previousVersion) };
 }
 
 function syncChangelogVersion(version, previousVersion) {
@@ -243,6 +255,7 @@ if (require.main === module) {
 module.exports = {
   LEGACY_ALPHA_RELEASE_TITLE_PREFIX,
   RELEASE_TITLE_PREFIX,
+  changelogUpdateForContent,
   nextVersion,
   parseReleaseTitle,
   readChangelogUpdate,

@@ -515,6 +515,19 @@ test('npm alpha check rejects an alpha title version that is already published',
   );
 });
 
+test('title sync rejects versions lower than the release branch package version', () => {
+  assert.throws(
+    () => releaseMetadata.validateTitleSync('master', '4.8.0', '4.9.0', '4.7.0'),
+    /must not be lower than current branch version/,
+  );
+});
+
+test('title sync allows versions equal to the release branch package version', () => {
+  assert.doesNotThrow(
+    () => releaseMetadata.validateTitleSync('master', '4.9.0', '4.9.0', '4.8.0'),
+  );
+});
+
 test('changelog title sync updates the matching current release heading only', () => {
   const changelog = [
     '# Changelog',

@@ -65,18 +65,17 @@ jobs:
           CURRENT=$(node -p "require('./packages/less/package.json').version")
 
           if [ "$BRANCH" = "alpha" ]; then
-            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
+            NPM_VERSION=$(npm view less dist-tags.alpha)
           else
-            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
+            NPM_VERSION=$(npm view less version)
           fi
 
           DEFAULT_NEXT=$(node scripts/release-metadata.js next-version "$BRANCH" "$CURRENT" "$NPM_VERSION")
           EXISTING=$(gh pr list \
             --state open \
             --base "$BRANCH" \
-            --json title,headRefName \
-            --jq '[.[] | select((.headRefName | startswith("chore/release-v")) or (.headRefName | startswith("chore/alpha-release-v")))][0] // {}' \
-            2>/dev/null || echo "{}")
+            --json title,headRefName,headRepository,isCrossRepository \
+            --jq '[.[] | select((.isCrossRepository | not) and .headRepository.nameWithOwner == "less/less.js" and ((.headRefName | startswith("chore/release-v")) or (.headRefName | startswith("chore/alpha-release-v"))))][0] // {}')
 
           EXISTING_TITLE=$(node -e "const pr = JSON.parse(process.argv[1]); process.stdout.write(pr.title || '')" "$EXISTING")
           EXISTING_BRANCH=$(node -e "const pr = JSON.parse(process.argv[1]); process.stdout.write(pr.headRefName || '')" "$EXISTING")
@@ -211,8 +210,19 @@ jobs:
       github.repository == 'less/less.js' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       (
-        startsWith(github.event.pull_request.title, 'chore: release v') ||
-        startsWith(github.event.pull_request.title, 'chore: alpha release v')
+        (
+          github.event.pull_request.base.ref == 'master' &&
+          startsWith(github.event.pull_request.head.ref, 'chore/release-v') &&
+          startsWith(github.event.pull_request.title, 'chore: release v')
+        ) ||
+        (
+          github.event.pull_request.base.ref == 'alpha' &&
+          startsWith(github.event.pull_request.head.ref, 'chore/alpha-release-v') &&
+          (
+            startsWith(github.event.pull_request.title, 'chore: release v') ||
+            startsWith(github.event.pull_request.title, 'chore: alpha release v')
+          )
+        )
       )
 
     steps:
@@ -222,6 +232,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -234,6 +245,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Load trusted release metadata script
+        env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          git fetch origin "${RELEASE_BASE}"
+          mkdir -p .release-scripts
+          git show "origin/${RELEASE_BASE}:scripts/release-metadata.js" > .release-scripts/release-metadata.js
+
       - name: Resolve title version
         id: title-version
         env:
@@ -242,14 +262,14 @@ jobs:
         run: |
           set -euo pipefail
           PREVIOUS_VERSION=$(node -p "require('./packages/less/package.json').version")
-          VERSION=$(node scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
+          VERSION=$(node .release-scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
           if [ "$RELEASE_BASE" = "alpha" ]; then
-            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
+            NPM_VERSION=$(npm view less dist-tags.alpha)
           else
-            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
+            NPM_VERSION=$(npm view less version)
           fi
-          node scripts/release-metadata.js validate "$RELEASE_BASE" "$VERSION" "$NPM_VERSION"
-          TITLE=$(node scripts/release-metadata.js title "$RELEASE_BASE" "$VERSION")
+          node .release-scripts/release-metadata.js validate-title-sync "$RELEASE_BASE" "$VERSION" "$PREVIOUS_VERSION" "$NPM_VERSION"
+          TITLE=$(node .release-scripts/release-metadata.js title "$RELEASE_BASE" "$VERSION")
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "previous_version=$PREVIOUS_VERSION" >> "$GITHUB_OUTPUT"
@@ -266,10 +286,14 @@ jobs:
           PREVIOUS_VERSION: ${{ steps.title-version.outputs.previous_version }}
           TITLE: ${{ steps.title-version.outputs.title }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          node scripts/release-metadata.js sync-files "$VERSION" "$PREVIOUS_VERSION"
-          git add package.json packages/*/package.json CHANGELOG.md
+          node .release-scripts/release-metadata.js sync-files "$VERSION" "$PREVIOUS_VERSION"
+          git add package.json packages/*/package.json
+          if [ -f CHANGELOG.md ]; then
+            git add CHANGELOG.md
+          fi
 
           if git diff --cached --quiet; then
             echo "Release files already match v${VERSION}"
@@ -277,4 +301,4 @@ jobs:
           fi
 
           git commit -m "$TITLE"
-          git push origin "HEAD:${HEAD_REF}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${HEAD_REF}"

@@ -90,6 +90,17 @@ function validateAgainstNpm(base, version, npmVersion) {
   }
 }
 
+function validateTitleSync(base, version, previousVersion, npmVersion) {
+  validateAgainstNpm(base, version, npmVersion);
+
+  if (!semver.valid(previousVersion)) {
+    throw new Error(`Invalid previous package version: ${previousVersion}`);
+  }
+  if (semver.lt(version, previousVersion)) {
+    throw new Error(`Release title version ${version} must not be lower than current branch version ${previousVersion}`);
+  }
+}
+
 function nextVersion(base, currentVersion, npmVersion) {
   if (!semver.valid(currentVersion)) {
     throw new Error(`Invalid current package version: ${currentVersion}`);
@@ -145,15 +156,39 @@ function replaceChangelogVersion(content, version, previousVersion) {
   };
 }
 
-function syncChangelogVersion(version, previousVersion) {
+function readChangelogUpdate(version, previousVersion) {
   const changelog = path.join(ROOT_DIR, 'CHANGELOG.md');
-  if (!fs.existsSync(changelog)) return false;
+  if (!fs.existsSync(changelog)) return { path: changelog, status: 'missing' };
 
   const original = fs.readFileSync(changelog, 'utf8');
-  const { changed, content } = replaceChangelogVersion(original, version, previousVersion);
-  if (!changed) return false;
+  if (version === previousVersion) {
+    return { path: changelog, status: 'unchanged', content: original };
+  }
 
-  fs.writeFileSync(changelog, content);
+  const { changed, content } = replaceChangelogVersion(original, version, previousVersion);
+  if (!changed) {
+    throw new Error(`CHANGELOG.md first release heading does not match previous version ${previousVersion}`);
+  }
+
+  return { path: changelog, status: 'updated', content };
+}
+
+function syncChangelogVersion(version, previousVersion) {
+  const update = readChangelogUpdate(version, previousVersion);
+  if (update.status !== 'updated') return false;
+
+  fs.writeFileSync(update.path, update.content);
+  return true;
+}
+
+function syncFiles(version, previousVersion) {
+  const changelogUpdate = readChangelogUpdate(version, previousVersion);
+
+  syncPackageVersions(version);
+  if (changelogUpdate.status === 'updated') {
+    fs.writeFileSync(changelogUpdate.path, changelogUpdate.content);
+  }
+
   return true;
 }
 
@@ -164,6 +199,7 @@ function usage() {
   node scripts/release-metadata.js body
   node scripts/release-metadata.js parse-title <base> <title>
   node scripts/release-metadata.js validate <base> <version> [npmVersion]
+  node scripts/release-metadata.js validate-title-sync <base> <version> <previousVersion> [npmVersion]
   node scripts/release-metadata.js next-version <base> <currentVersion> [npmVersion]
   node scripts/release-metadata.js sync-package-versions <version>
   node scripts/release-metadata.js sync-files <version> <previousVersion>`);
@@ -182,13 +218,14 @@ function main(argv = process.argv.slice(2)) {
       process.stdout.write(parseReleaseTitle(args[0], args.slice(1).join(' ')));
     } else if (command === 'validate') {
       validateAgainstNpm(args[0], args[1], args[2] || '');
+    } else if (command === 'validate-title-sync') {
+      validateTitleSync(args[0], args[1], args[2], args[3] || '');
     } else if (command === 'next-version') {
       process.stdout.write(nextVersion(args[0], args[1], args[2] || ''));
     } else if (command === 'sync-package-versions') {
       syncPackageVersions(args[0]);
     } else if (command === 'sync-files') {
-      syncPackageVersions(args[0]);
-      syncChangelogVersion(args[0], args[1]);
+      syncFiles(args[0], args[1]);
     } else {
       usage();
       process.exit(1);
@@ -208,12 +245,15 @@ module.exports = {
   RELEASE_TITLE_PREFIX,
   nextVersion,
   parseReleaseTitle,
+  readChangelogUpdate,
   replaceChangelogVersion,
   releaseBody,
   releaseBranch,
   releaseTitle,
+  syncFiles,
   syncChangelogVersion,
   syncPackageVersions,
   validateAgainstNpm,
+  validateTitleSync,
   validateVersionForBase,
 };

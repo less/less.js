@@ -73,9 +73,9 @@ jobs:
           fi
 
           if [ "$RELEASE_BASE" = "alpha" ]; then
-            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
+            NPM_VERSION=$(npm view less dist-tags.alpha)
           else
-            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
+            NPM_VERSION=$(npm view less version)
           fi
 
           node scripts/release-metadata.js validate "$RELEASE_BASE" "$TITLE_VERSION" "$NPM_VERSION"

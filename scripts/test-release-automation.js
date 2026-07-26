@@ -45,6 +45,7 @@ const fs     = require('fs');
 const os     = require('os');
 const path   = require('path');
 const { spawnSync, execSync } = require('child_process');
+const releaseMetadata = require('./release-metadata');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 
@@ -116,12 +117,15 @@ function publishShouldRun({ repo, prMerged, prBaseRef, prTitle }) {
   const isMasterRelease =
     prBaseRef === 'master' &&
     typeof prTitle === 'string' &&
-    prTitle.startsWith('chore: release v');
+    prTitle.startsWith(releaseMetadata.RELEASE_TITLE_PREFIX);
 
   const isAlphaRelease =
     prBaseRef === 'alpha' &&
     typeof prTitle === 'string' &&
-    prTitle.startsWith('chore: alpha release v');
+    (
+      prTitle.startsWith(releaseMetadata.RELEASE_TITLE_PREFIX) ||
+      prTitle.startsWith(releaseMetadata.LEGACY_ALPHA_RELEASE_TITLE_PREFIX)
+    );
 
   return isMasterRelease || isAlphaRelease;
 }
@@ -151,14 +155,8 @@ function createReleasePRShouldRun({ repo, commitMessage }) {
  *   X.Y.Z-alpha.N  →  X.Y.Z-alpha.(N+1)
  *   X.Y.Z          →  (X+1).0.0-alpha.1   (no alpha suffix yet)
  */
-function nextAlphaVersion(current) {
-  const m = current.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
-  if (m) {
-    return `${m[1]}-alpha.${parseInt(m[2], 10) + 1}`;
-  }
-  const parts = current.replace(/-.*/, '').split('.');
-  const nextMajor = parseInt(parts[0], 10) + 1;
-  return `${nextMajor}.0.0-alpha.1`;
+function nextAlphaVersion(current, npmVersion) {
+  return releaseMetadata.nextVersion('alpha', current, npmVersion);
 }
 
 // ---------------------------------------------------------------------------
@@ -351,6 +349,18 @@ test('alpha release PR merged → SHOULD publish (alpha tag)', () => {
       repo: 'less/less.js',
       prMerged: true,
       prBaseRef: 'alpha',
+      prTitle: 'chore: release v5.0.0-alpha.2',
+    }),
+    true,
+  );
+});
+
+test('legacy alpha release PR title merged → SHOULD publish (alpha tag)', () => {
+  assert.strictEqual(
+    publishShouldRun({
+      repo: 'less/less.js',
+      prMerged: true,
+      prBaseRef: 'alpha',
       prTitle: 'chore: alpha release v5.0.0-alpha.2',
     }),
     true,
@@ -406,6 +416,22 @@ test('alpha release PR title used against master base → should NOT publish', (
   );
 });
 
+test('alpha-looking canonical title against master base → trigger, then validation rejects', () => {
+  assert.strictEqual(
+    publishShouldRun({
+      repo: 'less/less.js',
+      prMerged: true,
+      prBaseRef: 'master',
+      prTitle: 'chore: release v5.0.0-alpha.1',
+    }),
+    true,
+  );
+  assert.throws(
+    () => releaseMetadata.parseReleaseTitle('master', 'chore: release v5.0.0-alpha.1'),
+    /Master releases must not use a prerelease version/,
+  );
+});
+
 test('wrong repository → should NOT publish', () => {
   assert.strictEqual(
     publishShouldRun({
@@ -416,6 +442,161 @@ test('wrong repository → should NOT publish', () => {
     }),
     false,
   );
+});
+
+// ----------------------------------------------------------------------------
+// Section 1b — release title metadata
+// ----------------------------------------------------------------------------
+
+section('1b. release title metadata — title as version source');
+
+test('master title parses the requested release version', () => {
+  assert.strictEqual(
+    releaseMetadata.parseReleaseTitle('master', 'chore: release v4.9.0'),
+    '4.9.0',
+  );
+});
+
+test('alpha title uses the same canonical title shape', () => {
+  assert.strictEqual(
+    releaseMetadata.releaseTitle('alpha', '5.0.0-alpha.3'),
+    'chore: release v5.0.0-alpha.3',
+  );
+  assert.strictEqual(
+    releaseMetadata.parseReleaseTitle('alpha', 'chore: release v5.0.0-alpha.3'),
+    '5.0.0-alpha.3',
+  );
+});
+
+test('legacy alpha title remains accepted for existing PRs', () => {
+  assert.strictEqual(
+    releaseMetadata.parseReleaseTitle('alpha', 'chore: alpha release v5.0.0-alpha.3'),
+    '5.0.0-alpha.3',
+  );
+});
+
+test('master release title rejects alpha prerelease versions', () => {
+  assert.throws(
+    () => releaseMetadata.parseReleaseTitle('master', 'chore: release v5.0.0-alpha.3'),
+    /Master releases must not use a prerelease version/,
+  );
+});
+
+test('master release title rejects legacy alpha prefix', () => {
+  assert.throws(
+    () => releaseMetadata.parseReleaseTitle('master', 'chore: alpha release v5.0.0'),
+    /Release title must start with "chore: release v"/,
+  );
+});
+
+test('alpha release title rejects non-alpha versions', () => {
+  assert.throws(
+    () => releaseMetadata.parseReleaseTitle('alpha', 'chore: release v5.0.0'),
+    /Alpha releases must use X\.Y\.Z-alpha\.N/,
+  );
+});
+
+test('release body does not repeat the version', () => {
+  assert.ok(!releaseMetadata.releaseBody().includes('4.9.0'));
+  assert.ok(releaseMetadata.releaseBody().includes('PR title'));
+});
+
+test('npm latest check rejects a master title version that is already published', () => {
+  assert.throws(
+    () => releaseMetadata.validateAgainstNpm('master', '4.9.0', '4.9.0'),
+    /must be greater than npm latest version/,
+  );
+});
+
+test('npm alpha check rejects an alpha title version that is already published', () => {
+  assert.throws(
+    () => releaseMetadata.validateAgainstNpm('alpha', '5.0.0-alpha.3', '5.0.0-alpha.3'),
+    /must be greater than npm alpha version/,
+  );
+});
+
+test('title sync rejects versions lower than the release branch package version', () => {
+  assert.throws(
+    () => releaseMetadata.validateTitleSync('master', '4.8.0', '4.9.0', '4.7.0'),
+    /must not be lower than current branch version/,
+  );
+});
+
+test('title sync allows versions equal to the release branch package version', () => {
+  assert.doesNotThrow(
+    () => releaseMetadata.validateTitleSync('master', '4.9.0', '4.9.0', '4.8.0'),
+  );
+});
+
+test('changelog title sync updates the matching current release heading only', () => {
+  const changelog = [
+    '# Changelog',
+    '',
+    '### v4.8.1 (2026-07-26)',
+    '',
+    '#### Changes',
+    '',
+    '- something',
+    '',
+    '### v4.8.0 (2026-07-25)',
+    '',
+  ].join('\n');
+
+  const result = releaseMetadata.replaceChangelogVersion(changelog, '4.9.0', '4.8.1');
+  assert.strictEqual(result.changed, true);
+  assert.ok(result.content.includes('### v4.9.0 (2026-07-26)'));
+  assert.ok(result.content.includes('### v4.8.0 (2026-07-25)'));
+});
+
+test('changelog title sync inserts a current heading when only history exists', () => {
+  const changelog = [
+    '# Changelog',
+    '',
+    '### v4.8.0 (2026-07-25)',
+    '',
+    '#### Changes',
+    '',
+    '- older change',
+    '',
+  ].join('\n');
+
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1', '2026-07-26');
+  assert.strictEqual(result.status, 'inserted');
+  assert.ok(result.content.includes('### v4.9.0 (2026-07-26)\n\n### v4.8.0 (2026-07-25)'));
+  assert.ok(result.content.includes('- older change'));
+});
+
+test('changelog title sync inserts a heading when no dated release heading exists', () => {
+  const changelog = [
+    '# Changelog',
+    '',
+    'Unreleased notes without a dated release heading.',
+    '',
+  ].join('\n');
+
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1', '2026-07-26');
+  assert.strictEqual(result.status, 'inserted');
+  assert.ok(result.content.includes('# Changelog\n\n### v4.9.0 (2026-07-26)\n'));
+  assert.ok(result.content.includes('Unreleased notes without a dated release heading.'));
+});
+
+test('changelog title sync is idempotent when the heading already matches the title', () => {
+  const changelog = [
+    '# Changelog',
+    '',
+    '### v4.9.0 (2026-07-26)',
+    '',
+    '#### Changes',
+    '',
+    '- something',
+    '',
+    '### v4.8.0 (2026-07-25)',
+    '',
+  ].join('\n');
+
+  const result = releaseMetadata.changelogUpdateForContent(changelog, '4.9.0', '4.8.1');
+  assert.strictEqual(result.status, 'unchanged');
+  assert.strictEqual(result.content, changelog);
 });
 
 // ----------------------------------------------------------------------------
@@ -507,6 +688,10 @@ test('5.x minor/patch: 5.1.2-alpha.7 → 5.1.2-alpha.8', () => {
 
 test('double-digit rollover: 5.0.0-alpha.9 → 5.0.0-alpha.10  (integer, not string comparison)', () => {
   assert.strictEqual(nextAlphaVersion('5.0.0-alpha.9'), '5.0.0-alpha.10');
+});
+
+test('npm alpha ahead of package.json: 5.0.0-alpha.1 with npm alpha.4 → 5.0.0-alpha.5', () => {
+  assert.strictEqual(nextAlphaVersion('5.0.0-alpha.1', '5.0.0-alpha.4'), '5.0.0-alpha.5');
 });
 
 test('non-alpha version on alpha branch: 4.6.3 → 5.0.0-alpha.1  (bumps major, starts fresh)', () => {

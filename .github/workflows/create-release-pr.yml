@@ -5,9 +5,14 @@ name: Create Release PR
 # version. Maintainers then merge that PR to trigger publishing.
 #
 # master → "chore: release vX.Y.Z" PR targets master
-# alpha → "chore: alpha release vX.Y.Z" PR targets alpha
+# alpha → "chore: release vX.Y.Z-alpha.N" PR targets alpha
 on:
   push:
+    branches:
+      - master
+      - alpha
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
     branches:
       - master
       - alpha
@@ -24,6 +29,7 @@ jobs:
     # infinite loop). We catch both squash-merged and regular-merged commits
     # for both the master and alpha release PR title conventions.
     if: |
+      github.event_name == 'push' &&
       github.repository == 'less/less.js' &&
       !contains(github.event.head_commit.message, 'chore: release v') &&
       !contains(github.event.head_commit.message, 'chore: alpha release v') &&
@@ -48,49 +54,47 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Determine next version
+      - name: Determine release version
         id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           BRANCH="${{ github.ref_name }}"
           CURRENT=$(node -p "require('./packages/less/package.json').version")
 
           if [ "$BRANCH" = "alpha" ]; then
-            # Alpha: increment the alpha prerelease number.
-            # X.Y.Z-alpha.N → X.Y.Z-alpha.(N+1)
-            # If package.json doesn't carry an alpha version yet, bump the
-            # major and start a fresh alpha.1 series.
-            NEXT=$(node -e "
-            const cur = process.argv[1];
-            const m = cur.match(/^(\\d+\\.\\d+\\.\\d+)-alpha\\.(\\d+)$/);
-            if (m) {
-              process.stdout.write(m[1] + '-alpha.' + (parseInt(m[2], 10) + 1));
-            } else {
-              const parts = cur.replace(/-.*/, '').split('.');
-              const nextMajor = parseInt(parts[0], 10) + 1;
-              process.stdout.write(nextMajor + '.0.0-alpha.1');
-            }
-            " "$CURRENT")
-            echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
-            echo "branch=chore/alpha-release-v$NEXT" >> "$GITHUB_OUTPUT"
-            echo "release_base=alpha" >> "$GITHUB_OUTPUT"
+            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
           else
-            # Master: patch-increment from the latest npm published version.
             NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
-            NEXT=$(node -e "
-            const semver = require('semver');
-            const cur = process.argv[1];
-            const npm = process.argv[2] || null;
-            if (npm && semver.valid(cur) && semver.gt(cur, npm)) {
-              process.stdout.write(cur);
-            } else {
-              const base = npm || cur;
-              process.stdout.write(semver.inc(base, 'patch'));
-            }
-            " "$CURRENT" "$NPM_VERSION")
-            echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
-            echo "branch=chore/release-v$NEXT" >> "$GITHUB_OUTPUT"
-            echo "release_base=master" >> "$GITHUB_OUTPUT"
           fi
+
+          DEFAULT_NEXT=$(node scripts/release-metadata.js next-version "$BRANCH" "$CURRENT" "$NPM_VERSION")
+          EXISTING=$(gh pr list \
+            --state open \
+            --base "$BRANCH" \
+            --json title,headRefName \
+            --jq '[.[] | select((.headRefName | startswith("chore/release-v")) or (.headRefName | startswith("chore/alpha-release-v")))][0] // {}' \
+            2>/dev/null || echo "{}")
+
+          EXISTING_TITLE=$(node -e "const pr = JSON.parse(process.argv[1]); process.stdout.write(pr.title || '')" "$EXISTING")
+          EXISTING_BRANCH=$(node -e "const pr = JSON.parse(process.argv[1]); process.stdout.write(pr.headRefName || '')" "$EXISTING")
+
+          if [ -n "$EXISTING_TITLE" ]; then
+            NEXT=$(node scripts/release-metadata.js parse-title "$BRANCH" "$EXISTING_TITLE")
+            RELEASE_BRANCH="$EXISTING_BRANCH"
+          else
+            NEXT="$DEFAULT_NEXT"
+            RELEASE_BRANCH=$(node scripts/release-metadata.js branch "$BRANCH" "$NEXT")
+          fi
+
+          node scripts/release-metadata.js validate "$BRANCH" "$NEXT" "$NPM_VERSION"
+          TITLE=$(node scripts/release-metadata.js title "$BRANCH" "$NEXT")
+
+          echo "next_version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "release_base=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
 
       - name: Configure Git
         run: |
@@ -102,14 +106,11 @@ jobs:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
           RELEASE_BRANCH: ${{ steps.version.outputs.branch }}
           RELEASE_BASE: ${{ steps.version.outputs.release_base }}
+          RELEASE_TITLE: ${{ steps.version.outputs.title }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "$RELEASE_BASE" = "alpha" ]; then
-            TITLE="chore: alpha release v${NEXT_VERSION}"
-          else
-            TITLE="chore: release v${NEXT_VERSION}"
-          fi
+          TITLE="${RELEASE_TITLE}"
 
           # Create or reset the release branch off the latest base branch so it
           # always includes all recent commits.
@@ -120,20 +121,7 @@ jobs:
             git checkout -b "${RELEASE_BRANCH}"
           fi
 
-          # Bump version in all package.json files.
-          node -e "
-          const fs = require('fs');
-          const version = process.env.NEXT_VERSION;
-          const dirs = fs.readdirSync('packages', { withFileTypes: true })
-            .filter(d => d.isDirectory())
-            .map(d => 'packages/' + d.name + '/package.json');
-          for (const f of ['package.json', ...dirs].filter(f => fs.existsSync(f))) {
-            const pkg = JSON.parse(fs.readFileSync(f, 'utf8'));
-            if (!pkg.version) continue;
-            pkg.version = version;
-            fs.writeFileSync(f, JSON.stringify(pkg, null, '\t') + '\n');
-          }
-          "
+          node scripts/release-metadata.js sync-package-versions "${NEXT_VERSION}"
 
           git add package.json packages/*/package.json
 
@@ -199,7 +187,7 @@ jobs:
             --json number --jq '.[0].number' 2>/dev/null || echo "")
 
           if [ -z "${EXISTING}" ]; then
-            BODY=$(printf '## Release v%s\n\nThis PR bumps the version to `%s` and will trigger an npm publish when merged.' "${NEXT_VERSION}" "${NEXT_VERSION}")
+            BODY=$(node scripts/release-metadata.js body)
 
             gh pr create \
               --title "${TITLE}" \
@@ -210,3 +198,76 @@ jobs:
           else
             echo "✅ Release PR #${EXISTING} already exists; branch updated to include latest ${RELEASE_BASE} commits"
           fi
+
+  sync-release-pr-title:
+    name: Sync Release PR Title
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      github.repository == 'less/less.js' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (
+        startsWith(github.event.pull_request.title, 'chore: release v') ||
+        startsWith(github.event.pull_request.title, 'chore: alpha release v')
+      )
+
+    steps:
+      - name: Checkout release PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Resolve title version
+        id: title-version
+        env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
+          RELEASE_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
+          if [ "$RELEASE_BASE" = "alpha" ]; then
+            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
+          else
+            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
+          fi
+          node scripts/release-metadata.js validate "$RELEASE_BASE" "$VERSION" "$NPM_VERSION"
+          TITLE=$(node scripts/release-metadata.js title "$RELEASE_BASE" "$VERSION")
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync release files to title version
+        env:
+          VERSION: ${{ steps.title-version.outputs.version }}
+          TITLE: ${{ steps.title-version.outputs.title }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          node scripts/release-metadata.js sync-files "$VERSION"
+          git add package.json packages/*/package.json CHANGELOG.md
+
+          if git diff --cached --quiet; then
+            echo "Release files already match v${VERSION}"
+            exit 0
+          fi
+
+          git commit -m "$TITLE"
+          git push origin "HEAD:${HEAD_REF}"

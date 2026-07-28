@@ -1,4 +1,4 @@
-<p align="center"><img src="http://lesscss.org/public/img/less_logo.png" width="264" height="117"></p>
+<p align="center"><img src="https://lesscss.org/public/img/less_logo.png" width="264" height="117"></p>
 
 <p align="center">
     <a href="https://github.com/less/less.js/actions?query=branch%3Amaster"><img src="https://github.com/less/less.js/actions/workflows/ci.yml/badge.svg?branch=master" alt="Github Actions CI"/></a>
@@ -11,7 +11,7 @@ This is the Less.js monorepo.
 
 ## More information
 
-For general information on the language, configuration options or usage visit [lesscss.org](http://lesscss.org).
+For general information on the language, configuration options or usage visit [lesscss.org](https://lesscss.org).
 
 Here are other resources for using Less.js:
 
@@ -20,7 +20,7 @@ Here are other resources for using Less.js:
 
 
 ## Contributing
-Please read [CONTRIBUTING.md](CONTRIBUTING.md). Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com).
+Please read [CONTRIBUTING.md](CONTRIBUTING.md). Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](https://gruntjs.com).
 
 ### Reporting Issues
 
@@ -30,7 +30,7 @@ Please report documentation issues in [the documentation project](https://github
 
 ### Development
 
-Read [Developing Less](http://lesscss.org/usage/#developing-less).
+Read [Developing Less](https://lesscss.org/usage/#developing-less).
 
 ## Release History
 See the [changelog](CHANGELOG.md)
@@ -73,10 +73,10 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-2025 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
+Copyright (c) 2009-2025 [Alexis Sellier](https://cloudhead.io) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 
-[so]: http://stackoverflow.com/questions/tagged/less "StackOverflow.com"
+[so]: https://stackoverflow.com/questions/tagged/less "StackOverflow.com"
 [issues]: https://github.com/less/less.js/issues "GitHub Issues for Less.js"
 [download]: https://github.com/less/less.js/zipball/master "Download Less.js"

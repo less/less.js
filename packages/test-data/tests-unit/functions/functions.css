@@ -8,6 +8,8 @@
 }
 #built-in {
   escaped: -Some::weird(#thing, y);
+  escaped-direct: a%20b%28c%29%3Dd%3Ae%23f%3Bg;
+  escaped-svg-literal: url("data:image/svg+xml,%3Csvg%20fill%3D%22red%22%3E%3C/svg%3E");
   lighten: #ffcccc;
   lighten-relative: #ff6666;
   darken: #330000;

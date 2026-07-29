@@ -144,3 +144,11 @@ h3 + * {
 .button.large {
   padding-left: 40em;
 }
+.rest-forwarding-empty {
+  a: 1;
+  b: fallback;
+}
+.rest-forwarding-filled {
+  a: 1;
+  b: 2;
+}

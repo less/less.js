@@ -38,3 +38,12 @@
   color: red;
   width: 2;
 }
+@supports (display: grid) {
+  .supports-rule {
+    color: green;
+  }
+  @media -sass-debug-info{filename{font-family:file\:\/\/{pathesc}linenumbers\.less}line{font-family:\0000338}}
+  .supports-rule .nested-supports {
+    color: blue;
+  }
+}

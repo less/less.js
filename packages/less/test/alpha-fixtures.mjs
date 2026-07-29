@@ -134,6 +134,7 @@ const expectedFailureFixtures = new Map([
     ['tests-unit/parser-slashed-combinator/parser-slashed-combinator.less', 'slashed combinator not yet supported'],
     ['tests-unit/permissive-parse/permissive-parse.less', 'permissive legacy parser corners are not alpha-supported'],
     ['tests-unit/media/media.less', 'top-level bare @var at-rule preludes are rejected'],
+    ['tests-unit/at-rule-variable-deprecated/at-rule-variable-deprecated.less', 'bare @variable references in at-rule structural positions are rejected in Less 5 alpha'],
     ['tests-unit/color-functions/operations.less', 'Jess keeps un-operated overflowing rgba() calls authored instead of Less 4 channel clamping'],
     ['tests-unit/functions/functions.less', 'Jess keeps un-operated hsl() calls authored instead of Less 4 clamp/canonicalization']
 ]);
@@ -149,6 +150,7 @@ const expectedErrorPasses = new Map([
     ['tests-error/eval/color-func-invalid-color.less', 'color function argument errors are not emitted yet'],
     ['tests-error/eval/divide-mixed-units.less', 'unit compatibility errors are not emitted yet'],
     ['tests-error/eval/multiply-mixed-units.less', 'unit compatibility errors are not emitted yet'],
+    ['tests-error/eval/percentage-css-var.less', 'function argument type errors are not emitted yet'],
     ['tests-error/eval/percentage-non-number-argument.less', 'function argument type errors are not emitted yet'],
     ['tests-error/eval/svg-gradient1.less', 'svg-gradient argument validation errors are not emitted yet'],
     ['tests-error/eval/svg-gradient2.less', 'svg-gradient argument validation errors are not emitted yet'],

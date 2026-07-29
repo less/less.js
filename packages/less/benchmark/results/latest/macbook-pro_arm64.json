@@ -1,0 +1,1361 @@
+{
+  "system": {
+    "system_id": "macbook-pro_arm64",
+    "hostname": "MacBook-Pro.local",
+    "platform": "Darwin",
+    "arch": "arm64",
+    "os_version": "25.3.0",
+    "cpus": "14",
+    "cpu_model": "Apple M4 Pro",
+    "total_memory_gb": 48.0,
+    "node_version": "v24.11.1",
+    "date": "2026-03-09T21:34:11Z"
+  },
+  "versions": [
+    {
+      "tag": "v2.0.0",
+      "version": "2.0.0",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:34:21Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.0.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 29.27,
+            "max": 87.45,
+            "avg": 46.87,
+            "median": 46.89,
+            "stddev": 16.56,
+            "variance_pct": 35.33,
+            "samples": 12,
+            "throughput_kbs": 2224
+          }
+        }
+      }
+    },
+    {
+      "tag": "v2.1.2",
+      "version": "2.1.2",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:34:26Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "error": "Extra data: line 2 column 1 (char 283)"
+        }
+      }
+    },
+    {
+      "tag": "v2.2.0",
+      "version": "2.2.0",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:34:42Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.2.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 28.99,
+            "max": 62.52,
+            "avg": 38.51,
+            "median": 31.32,
+            "stddev": 12.38,
+            "variance_pct": 32.15,
+            "samples": 12,
+            "throughput_kbs": 2706
+          }
+        }
+      }
+    },
+    {
+      "tag": "v2.3.1",
+      "version": "2.3.1",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:34:47Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.3.1",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 30.8,
+            "max": 63.72,
+            "avg": 38.42,
+            "median": 33.57,
+            "stddev": 11.47,
+            "variance_pct": 29.85,
+            "samples": 12,
+            "throughput_kbs": 2713
+          }
+        }
+      }
+    },
+    {
+      "tag": "v2.4.0",
+      "version": "2.4.0",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:34:52Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.4.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 27.39,
+            "max": 57.2,
+            "avg": 35.24,
+            "median": 31.11,
+            "stddev": 9.93,
+            "variance_pct": 28.18,
+            "samples": 12,
+            "throughput_kbs": 2957
+          }
+        }
+      }
+    },
+    {
+      "tag": "v2.5.3",
+      "version": "2.5.3",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:34:56Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.5.3",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 29.83,
+            "max": 63.6,
+            "avg": 37.57,
+            "median": 30.87,
+            "stddev": 11.91,
+            "variance_pct": 31.69,
+            "samples": 12,
+            "throughput_kbs": 2774
+          }
+        }
+      }
+    },
+    {
+      "tag": "v2.6.1",
+      "version": "2.6.1",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:02Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.6.1",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 33.64,
+            "max": 69,
+            "avg": 42.08,
+            "median": 37.52,
+            "stddev": 11.96,
+            "variance_pct": 28.41,
+            "samples": 12,
+            "throughput_kbs": 2477
+          }
+        }
+      }
+    },
+    {
+      "tag": "v2.7.3",
+      "version": "2.7.3",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:08Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "2.7.3",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 33.99,
+            "max": 72.46,
+            "avg": 44.36,
+            "median": 36.95,
+            "stddev": 13,
+            "variance_pct": 29.29,
+            "samples": 12,
+            "throughput_kbs": 2349
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.0.4",
+      "version": "3.0.4",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:14Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.0.4",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 37.07,
+            "max": 75.95,
+            "avg": 43.98,
+            "median": 39.29,
+            "stddev": 10.66,
+            "variance_pct": 24.25,
+            "samples": 12,
+            "throughput_kbs": 2370
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.5.3",
+      "version": "3.5.3",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:18Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.5.3",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 35.09,
+            "max": 52.73,
+            "avg": 43.96,
+            "median": 42.4,
+            "stddev": 5.5,
+            "variance_pct": 12.5,
+            "samples": 12,
+            "throughput_kbs": 2371
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.6.0",
+      "version": "3.6.0",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:23Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.6.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 37.97,
+            "max": 49.87,
+            "avg": 42.39,
+            "median": 40.92,
+            "stddev": 3.8,
+            "variance_pct": 8.97,
+            "samples": 12,
+            "throughput_kbs": 2459
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.6.0",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.16,
+            "max": 4.09,
+            "avg": 2.94,
+            "median": 2.87,
+            "stddev": 0.63,
+            "variance_pct": 21.61,
+            "samples": 12,
+            "throughput_kbs": 1076
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.7.1",
+      "version": "3.7.1",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:28Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.7.1",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 37.82,
+            "max": 52.26,
+            "avg": 43.33,
+            "median": 40.85,
+            "stddev": 4.7,
+            "variance_pct": 10.84,
+            "samples": 12,
+            "throughput_kbs": 2405
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.7.1",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.02,
+            "max": 3.55,
+            "avg": 2.74,
+            "median": 2.89,
+            "stddev": 0.52,
+            "variance_pct": 19.1,
+            "samples": 12,
+            "throughput_kbs": 1154
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "3.7.1",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.63,
+            "max": 3.59,
+            "avg": 2.81,
+            "median": 2.9,
+            "stddev": 0.67,
+            "variance_pct": 23.77,
+            "samples": 12,
+            "throughput_kbs": 788
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.8.1",
+      "version": "3.8.1",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:35Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.8.1",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 38.31,
+            "max": 49.98,
+            "avg": 43.22,
+            "median": 41.04,
+            "stddev": 4.17,
+            "variance_pct": 9.64,
+            "samples": 12,
+            "throughput_kbs": 2412
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.8.1",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.06,
+            "max": 3.99,
+            "avg": 2.98,
+            "median": 2.91,
+            "stddev": 0.66,
+            "variance_pct": 22.1,
+            "samples": 12,
+            "throughput_kbs": 1062
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "3.8.1",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.8,
+            "max": 4.64,
+            "avg": 3.22,
+            "median": 3.06,
+            "stddev": 0.91,
+            "variance_pct": 28.34,
+            "samples": 12,
+            "throughput_kbs": 688
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.9.0",
+      "version": "3.9.0",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:41Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.9.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 38.78,
+            "max": 54.91,
+            "avg": 44.19,
+            "median": 40.7,
+            "stddev": 5.9,
+            "variance_pct": 13.35,
+            "samples": 12,
+            "throughput_kbs": 2358
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.9.0",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.16,
+            "max": 4.04,
+            "avg": 3.01,
+            "median": 3.04,
+            "stddev": 0.62,
+            "variance_pct": 20.71,
+            "samples": 12,
+            "throughput_kbs": 1051
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "3.9.0",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.68,
+            "max": 4.06,
+            "avg": 2.87,
+            "median": 2.87,
+            "stddev": 0.76,
+            "variance_pct": 26.57,
+            "samples": 12,
+            "throughput_kbs": 774
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "3.9.0",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.06,
+            "max": 8.97,
+            "avg": 4.06,
+            "median": 3.91,
+            "stddev": 1.85,
+            "variance_pct": 45.62,
+            "samples": 12,
+            "throughput_kbs": 375
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.10.3",
+      "version": "3.10.3",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:35:52Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.10.3",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 118.01,
+            "max": 152.74,
+            "avg": 130.23,
+            "median": 126.14,
+            "stddev": 10.09,
+            "variance_pct": 7.75,
+            "samples": 12,
+            "throughput_kbs": 800
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.10.3",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 3.64,
+            "max": 9.65,
+            "avg": 5.79,
+            "median": 5.61,
+            "stddev": 1.75,
+            "variance_pct": 30.26,
+            "samples": 12,
+            "throughput_kbs": 546
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "3.10.3",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 3.84,
+            "max": 10.64,
+            "avg": 6.08,
+            "median": 5.57,
+            "stddev": 1.81,
+            "variance_pct": 29.73,
+            "samples": 12,
+            "throughput_kbs": 365
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "3.10.3",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 9.19,
+            "max": 16.24,
+            "avg": 11.6,
+            "median": 10.95,
+            "stddev": 2.13,
+            "variance_pct": 18.39,
+            "samples": 12,
+            "throughput_kbs": 131
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.11.3",
+      "version": "3.11.3",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:36:02Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.11.3",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 123.6,
+            "max": 184.63,
+            "avg": 141.98,
+            "median": 135.73,
+            "stddev": 17,
+            "variance_pct": 11.97,
+            "samples": 12,
+            "throughput_kbs": 734
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.11.3",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 4.07,
+            "max": 10.74,
+            "avg": 6.67,
+            "median": 6.18,
+            "stddev": 1.94,
+            "variance_pct": 29.07,
+            "samples": 12,
+            "throughput_kbs": 474
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "3.11.3",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 5.7,
+            "max": 10.64,
+            "avg": 7.81,
+            "median": 7.46,
+            "stddev": 1.39,
+            "variance_pct": 17.78,
+            "samples": 12,
+            "throughput_kbs": 284
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "3.11.3",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 6.23,
+            "max": 14.21,
+            "avg": 7.67,
+            "median": 6.97,
+            "stddev": 2.09,
+            "variance_pct": 27.21,
+            "samples": 12,
+            "throughput_kbs": 198
+          }
+        }
+      }
+    },
+    {
+      "tag": "v3.12.2",
+      "version": "3.12.2",
+      "node_version": "v18.20.8",
+      "date": "2026-03-09T21:36:16Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "3.12.2",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 165.65,
+            "max": 209.38,
+            "avg": 187.15,
+            "median": 185.42,
+            "stddev": 12.88,
+            "variance_pct": 6.88,
+            "samples": 12,
+            "throughput_kbs": 557
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "3.12.2",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 3.76,
+            "max": 9.79,
+            "avg": 5.58,
+            "median": 5.53,
+            "stddev": 1.63,
+            "variance_pct": 29.32,
+            "samples": 12,
+            "throughput_kbs": 567
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "3.12.2",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 4.22,
+            "max": 8.17,
+            "avg": 5.92,
+            "median": 5.82,
+            "stddev": 1.04,
+            "variance_pct": 17.62,
+            "samples": 12,
+            "throughput_kbs": 375
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "3.12.2",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 7.43,
+            "max": 21.7,
+            "avg": 10.87,
+            "median": 9.85,
+            "stddev": 3.5,
+            "variance_pct": 32.22,
+            "samples": 12,
+            "throughput_kbs": 140
+          }
+        }
+      }
+    },
+    {
+      "tag": "v4.0.0",
+      "version": "4.0.0",
+      "node_version": "v20.19.6",
+      "date": "2026-03-09T21:36:27Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "4.0.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 35.71,
+            "max": 68.55,
+            "avg": 44.82,
+            "median": 39.85,
+            "stddev": 10.75,
+            "variance_pct": 24,
+            "samples": 12,
+            "throughput_kbs": 2326
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "4.0.0",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 0,
+          "errors": [
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            },
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            },
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            },
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            }
+          ],
+          "render": null
+        },
+        "benchmark-v37.less": {
+          "version": "4.0.0",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 0,
+          "errors": [
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            },
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            },
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            },
+            {
+              "run": 0,
+              "error": "Error evaluating function `if`: tslib_1.__spreadArray is not a function"
+            }
+          ],
+          "render": null
+        },
+        "benchmark-v39.less": {
+          "version": "4.0.0",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.9,
+            "max": 11.57,
+            "avg": 4,
+            "median": 3.28,
+            "stddev": 2.63,
+            "variance_pct": 65.62,
+            "samples": 12,
+            "throughput_kbs": 380
+          }
+        }
+      }
+    },
+    {
+      "tag": "v4.1.3",
+      "version": "4.1.3",
+      "node_version": "v20.19.6",
+      "date": "2026-03-09T21:36:35Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "4.1.3",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 35.55,
+            "max": 68.29,
+            "avg": 43.74,
+            "median": 39.45,
+            "stddev": 10.63,
+            "variance_pct": 24.31,
+            "samples": 12,
+            "throughput_kbs": 2383
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "4.1.3",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.51,
+            "max": 4.32,
+            "avg": 2.59,
+            "median": 2.52,
+            "stddev": 0.88,
+            "variance_pct": 34,
+            "samples": 12,
+            "throughput_kbs": 1220
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "4.1.3",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.69,
+            "max": 4.27,
+            "avg": 3,
+            "median": 3.18,
+            "stddev": 0.8,
+            "variance_pct": 26.75,
+            "samples": 12,
+            "throughput_kbs": 738
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "4.1.3",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.86,
+            "max": 11.57,
+            "avg": 4,
+            "median": 3.49,
+            "stddev": 2.58,
+            "variance_pct": 64.45,
+            "samples": 12,
+            "throughput_kbs": 380
+          }
+        }
+      }
+    },
+    {
+      "tag": "v4.2.2",
+      "version": "4.2.2",
+      "node_version": "v20.19.6",
+      "date": "2026-03-09T21:36:43Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "4.2.2",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 33.06,
+            "max": 71.26,
+            "avg": 41.5,
+            "median": 35.42,
+            "stddev": 12.93,
+            "variance_pct": 31.15,
+            "samples": 12,
+            "throughput_kbs": 2511
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "4.2.2",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.68,
+            "max": 4.18,
+            "avg": 2.67,
+            "median": 2.69,
+            "stddev": 0.79,
+            "variance_pct": 29.71,
+            "samples": 12,
+            "throughput_kbs": 1184
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "4.2.2",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.97,
+            "max": 10.6,
+            "avg": 3.77,
+            "median": 3.76,
+            "stddev": 2.2,
+            "variance_pct": 58.39,
+            "samples": 12,
+            "throughput_kbs": 587
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "4.2.2",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.35,
+            "max": 9.8,
+            "avg": 4.85,
+            "median": 4.98,
+            "stddev": 2.16,
+            "variance_pct": 44.58,
+            "samples": 12,
+            "throughput_kbs": 314
+          }
+        }
+      }
+    },
+    {
+      "tag": "v4.3.0",
+      "version": "4.3.0",
+      "node_version": "v20.19.6",
+      "date": "2026-03-09T21:36:54Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "4.3.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 34.18,
+            "max": 73.61,
+            "avg": 43.07,
+            "median": 37.23,
+            "stddev": 12.22,
+            "variance_pct": 28.38,
+            "samples": 12,
+            "throughput_kbs": 2420
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "4.3.0",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.63,
+            "max": 3.81,
+            "avg": 2.52,
+            "median": 2.45,
+            "stddev": 0.75,
+            "variance_pct": 29.7,
+            "samples": 12,
+            "throughput_kbs": 1254
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "4.3.0",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.01,
+            "max": 9.44,
+            "avg": 3.51,
+            "median": 3.37,
+            "stddev": 1.9,
+            "variance_pct": 54.29,
+            "samples": 12,
+            "throughput_kbs": 632
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "4.3.0",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.22,
+            "max": 9.85,
+            "avg": 4.7,
+            "median": 4.26,
+            "stddev": 2.16,
+            "variance_pct": 46.07,
+            "samples": 12,
+            "throughput_kbs": 324
+          }
+        }
+      }
+    },
+    {
+      "tag": "v4.4.2",
+      "version": "4.4.2",
+      "node_version": "v20.19.6",
+      "date": "2026-03-09T21:37:06Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "4.4.2",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 34.87,
+            "max": 73.71,
+            "avg": 45.83,
+            "median": 40.47,
+            "stddev": 11.86,
+            "variance_pct": 25.87,
+            "samples": 12,
+            "throughput_kbs": 2274
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "4.4.2",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.55,
+            "max": 3.67,
+            "avg": 2.53,
+            "median": 2.53,
+            "stddev": 0.66,
+            "variance_pct": 26.12,
+            "samples": 12,
+            "throughput_kbs": 1249
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "4.4.2",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.51,
+            "max": 10.07,
+            "avg": 3.59,
+            "median": 3.48,
+            "stddev": 2.11,
+            "variance_pct": 58.91,
+            "samples": 12,
+            "throughput_kbs": 618
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "4.4.2",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.47,
+            "max": 10.4,
+            "avg": 4.92,
+            "median": 4.59,
+            "stddev": 2.24,
+            "variance_pct": 45.65,
+            "samples": 12,
+            "throughput_kbs": 310
+          }
+        }
+      }
+    },
+    {
+      "tag": "v4.5.1",
+      "version": "4.5.1",
+      "node_version": "v20.19.6",
+      "date": "2026-03-09T21:37:14Z",
+      "benchmarks": {
+        "benchmark.less": {
+          "version": "4.5.0",
+          "lessPath": ".",
+          "file": "benchmark.less",
+          "fileSize": 106724,
+          "fileSizeKB": 104.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 39.63,
+            "max": 72.55,
+            "avg": 47.4,
+            "median": 42.16,
+            "stddev": 11.09,
+            "variance_pct": 23.39,
+            "samples": 12,
+            "throughput_kbs": 2199
+          }
+        },
+        "benchmark-v3.less": {
+          "version": "4.5.0",
+          "lessPath": ".",
+          "file": "benchmark-v3.less",
+          "fileSize": 3237,
+          "fileSizeKB": 3.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.61,
+            "max": 3.47,
+            "avg": 2.57,
+            "median": 2.62,
+            "stddev": 0.67,
+            "variance_pct": 26.21,
+            "samples": 12,
+            "throughput_kbs": 1231
+          }
+        },
+        "benchmark-v37.less": {
+          "version": "4.5.0",
+          "lessPath": ".",
+          "file": "benchmark-v37.less",
+          "fileSize": 2270,
+          "fileSizeKB": 2.2,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 1.65,
+            "max": 9.51,
+            "avg": 3.79,
+            "median": 3.62,
+            "stddev": 1.96,
+            "variance_pct": 51.77,
+            "samples": 12,
+            "throughput_kbs": 585
+          }
+        },
+        "benchmark-v39.less": {
+          "version": "4.5.0",
+          "lessPath": ".",
+          "file": "benchmark-v39.less",
+          "fileSize": 1558,
+          "fileSizeKB": 1.5,
+          "totalRuns": 15,
+          "warmupRuns": 3,
+          "completedRuns": 15,
+          "render": {
+            "min": 2.18,
+            "max": 10.1,
+            "avg": 4.62,
+            "median": 4.73,
+            "stddev": 2.14,
+            "variance_pct": 46.29,
+            "samples": 12,
+            "throughput_kbs": 330
+          }
+        }
+      }
+    }
+  ]
+}

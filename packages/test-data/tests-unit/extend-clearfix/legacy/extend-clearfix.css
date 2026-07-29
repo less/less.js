@@ -1,0 +1,22 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
+
+.clearfix,
+.foo,
+.bar {
+  *zoom: 1;
+}
+.clearfix:after,
+.foo:after,
+.bar:after {
+  content: '';
+  display: block;
+  clear: both;
+  height: 0;
+}
+.foo {
+  color: red;
+}
+.bar {
+  color: blue;
+}

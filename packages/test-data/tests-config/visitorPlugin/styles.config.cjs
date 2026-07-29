@@ -1,7 +1,7 @@
 module.exports = {
   language: {
     less: {
-      "plugin": "test/plugins/visitor/"
+      "plugin": "test/plugins/visitor/index.cjs"
 }
   }
 };

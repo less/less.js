@@ -33,9 +33,6 @@
   border: 1px solid black;
   background-color: grey;
 }
-#header #cookie {
-  border-style: dashed;
-}
 #header #cookie .chips {
   border-style: dotted;
 }
@@ -44,6 +41,9 @@
   border: 1px solid black;
   border-color: orange;
   background-color: grey;
+}
+#header #cookie {
+  border-style: dashed;
 }
 .secure-zone {
   color: transparent;
@@ -78,13 +78,15 @@
   border: 1px;
   background: none;
   color: orange;
-  top: 0px;
-  height: auto;
 }
 .extended .higher {
   top: 0px;
 }
 .extended.deeper {
+  height: auto;
+}
+.extended {
+  top: 0px;
   height: auto;
 }
 .do .re .mi .fa .sol .la .si {

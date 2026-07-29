@@ -1,7 +1,8 @@
 module.exports = {
   language: {
-    less: {
-      "syncImport": true
-}
-  }
+    less: {}
+  },
+  output: [
+    { file: '{name}.css', collapseNesting: false }
+  ]
 };

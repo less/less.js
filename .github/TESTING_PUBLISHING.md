@@ -32,7 +32,7 @@ Dry-run mode will:
 # Check current version
 node -p "require('./packages/less/package.json').version"
 
-# Run dry-run to see what version would be created
+# Run dry-run to see what version would be published
 DRY_RUN=true pnpm run publish
 ```
 
@@ -55,9 +55,9 @@ git checkout alpha
 DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 
 # This will show:
-# - Version validation (must contain -alpha.)
-# - Master sync check
-# - Version comparison with master
+# - The committed alpha version
+# - Alpha branch validation
+# - A dry-run publish plan without npm mutation
 ```
 
 ### 4. Test Version Override
@@ -127,11 +127,24 @@ git checkout alpha
 DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 
 # Should show:
-# - Alpha version increment (e.g., 5.0.0-alpha.1 → 5.0.0-alpha.2)
+# - The committed alpha version (for example 5.0.0-alpha.1)
 # - Publishing with 'alpha' tag
 # - Pre-release creation
-# - All alpha validations passing
+# - A release plan only; it does not prove the prerequisite Jess alpha has
+#   been published or that the worktree is clean
 ```
+
+### Test Less 5 Alpha Readiness
+
+```bash
+pnpm run test:alpha
+```
+
+This is the Less 5 alpha release gate. It checks the supported alpha contract
+and prints the unsupported alpha.1 inventory. The broad legacy corpus remains
+available through `pnpm --dir packages/less run test:legacy-node`, but it is
+not expected to be green yet and is intentionally not the alpha.1 publish gate
+until the unsupported buckets are drained.
 
 ### Test Version Validation
 
@@ -147,7 +160,9 @@ DRY_RUN=true GITHUB_REF_NAME=alpha pnpm run publish
 
 Before actually publishing:
 
-- [ ] Run dry-run mode to verify version calculation
+- [ ] Prepare, commit, and push the exact alpha version before publishing
+- [ ] Run `pnpm run test:alpha` to verify the supported Less 5 alpha contract
+- [ ] Run dry-run mode to verify the release plan (not release readiness)
 - [ ] Verify branch restrictions work (try from wrong branch)
 - [ ] Test alpha validations (if testing alpha branch)
 - [ ] Check that version override works (if needed)

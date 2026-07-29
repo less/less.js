@@ -23,9 +23,11 @@
     border: 1px solid grey;
   }
 }
-@container size(min-width: 60ch) {
+@container size (min-width: 60ch) {
   .article--post header {
-    grid-template-areas: "avatar name" "avatar headline";
+    grid-template-areas:
+      "avatar name"
+            "avatar headline";
     align-items: start;
   }
   .article--post {
@@ -54,13 +56,28 @@
     margin: 0.5em 0 0 0;
   }
 }
+@container contactBody (min-width: 1300px) {
+  .named-container {
+    width: 25%;
+  }
+}
+@container _body (min-width: 1300px) {
+  .underscored-container {
+    width: 25%;
+  }
+}
+@container café (min-width: 1300px) {
+  .nonascii-container {
+    width: 25%;
+  }
+}
 @container (width >= 500px) and (height >= 500px) {
   .card-content h2 {
     padding: 0;
     margin: 0.5em 0 0 0;
   }
 }
-@container (width > 760px) not (height > 670px) {
+@container (width > 760px) and (not (height > 670px)) {
   .card-content h2 {
     padding: 0;
     margin: 0.5em 0 0 0;
@@ -78,7 +95,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container (width < 500px) or (height < 500px) and (inline-size >= 0px) {
+@container ((width < 500px) or (height < 500px)) and (inline-size >= 0px) {
   .card-content p {
     padding: 0;
   }
@@ -86,7 +103,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container my-page-layout (width < 500px) or (height < 500px) and (block-size > 12em) {
+@container my-page-layout ((width < 500px) or (height < 500px)) and (block-size > 12em) {
   .card-content p {
     padding: 0;
   }
@@ -94,7 +111,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container (width < 500px) or (height < 500px) and (aspect-ratio: 3/2) {
+@container ((width < 500px) or (height < 500px)) and (aspect-ratio: 3 / 2) {
   .card-content p {
     padding: 0;
   }
@@ -102,7 +119,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container (width < 500px) or (height < 500px) and (orientation: portrait) {
+@container ((width < 500px) or (height < 500px)) and (orientation: portrait) {
   .card-content p {
     padding: 0;
   }
@@ -117,20 +134,20 @@
   .card-content p h2 {
     margin: 0.5em 0 0 0;
   }
-}
-@container card (inline-size > 30em) and style(--responsive: true) {
-  .card-content {
-    grid-template-columns: 1fr 2fr;
-    grid-template-rows: auto 1fr;
-    align-items: start;
-    column-gap: 20px;
+  @container style(--responsive: true) {
+    .card-content {
+      grid-template-columns: 1fr 2fr;
+      grid-template-rows: auto 1fr;
+      align-items: start;
+      column-gap: 20px;
+    }
+    .card-content h2 {
+      padding: 0;
+      margin: 0.5em 0 0 0;
+    }
   }
-  .card-content h2 {
-    padding: 0;
-    margin: 0.5em 0 0 0;
-  }
 }
-@container (width < 500px) or (height < 500px) and (orientation: portrait) {
+@container ((width < 500px) or (height < 500px)) and (orientation: portrait) {
   .card-content p {
     padding: 0;
   }
@@ -138,7 +155,7 @@
     margin: 0.5em 0 0 0;
   }
 }
-@container my-page-layout (width < 500px) or (height < 500px) and (block-size > 12em) {
+@container my-page-layout ((width < 500px) or (height < 500px)) and (block-size > 12em) {
   .card-content p {
     padding: 0;
   }
@@ -266,5 +283,28 @@
 @container scroll-state(scrollable: top) {
   #sticky-child {
     font-size: 75%;
+  }
+}
+@container foo (min-width: 400px) {
+  #sticky-child {
+    font-size: 75%;
+  }
+}
+@container name (width < 125px) {
+  .mixin-container-test {
+    display: none;
+  }
+}
+.mixin-container-test {
+  color: red;
+}
+@container sidebar (width < 500px) {
+  .sidebar-test {
+    display: none;
+  }
+}
+@container header (width < 800px) {
+  .header-test {
+    display: none;
   }
 }

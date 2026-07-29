@@ -20,9 +20,9 @@
 }
 
 .another-navbar {
-  @colors: #theme.dark.navbar.colors() !important;
-  background: @colors[primary];
-  border: 1px solid @colors[secondary];
+  @theme-colors: #theme.dark.navbar.colors() !important;
+  background: @theme-colors[primary];
+  border: 1px solid @theme-colors[secondary];
 }
 
 .another {

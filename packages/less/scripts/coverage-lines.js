@@ -6,8 +6,11 @@
  * Also outputs JSON file with uncovered lines for programmatic access
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const lcovPath = path.join(__dirname, '..', 'coverage', 'lcov.info');
 const jsonOutputPath = path.join(__dirname, '..', 'coverage', 'uncovered-lines.json');
@@ -26,28 +29,28 @@ let currentFile = null;
 const lines = lcovContent.split('\n');
 for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    
+
     // SF: source file
     if (line.startsWith('SF:')) {
         if (currentFile) {
             files.push(currentFile);
         }
         const filePath = line.substring(3);
-        // Only include src/ files (not less-browser) and bin/
+        // Only include lib/ files (not less-browser) and bin/
         // Exclude abstract base classes (they're meant to be overridden)
         const normalized = filePath.replace(/\\/g, '/');
         const abstractClasses = ['abstract-file-manager', 'abstract-plugin-loader'];
         const isAbstract = abstractClasses.some(abstract => normalized.includes(abstract));
-        
-        if (!isAbstract && 
-            ((normalized.includes('src/less/') && !normalized.includes('src/less-browser/')) ||
-             normalized.includes('src/less-node/') ||
+
+        if (!isAbstract &&
+            ((normalized.includes('lib/less/') && !normalized.includes('lib/less-browser/')) ||
+             normalized.includes('lib/less-node/') ||
              normalized.includes('bin/'))) {
-            // Extract relative path - match src/less/... or src/less-node/... or bin/...
-            // Path format: src/less/tree/debug-info.js or src/less-node/file-manager.js
-            // Match from src/ or bin/ to end of path
-            const match = normalized.match(/(src\/[^/]+\/.+|bin\/.+)$/);
-            const relativePath = match ? match[1] : (normalized.includes('/src/') || normalized.includes('/bin/') ? normalized.split('/').slice(-3).join('/') : path.basename(filePath));
+            // Extract relative path - match lib/less/... or lib/less-node/... or bin/...
+            // Path format: lib/less/tree/debug-info.js or lib/less-node/file-manager.js
+            // Match from lib/ or bin/ to end of path
+            const match = normalized.match(/(lib\/[^/]+\/.+|bin\/.+)$/);
+            const relativePath = match ? match[1] : (normalized.includes('/lib/') || normalized.includes('/bin/') ? normalized.split('/').slice(-3).join('/') : path.basename(filePath));
             currentFile = {
                 path: relativePath,
                 fullPath: filePath,
@@ -60,7 +63,7 @@ for (let i = 0; i < lines.length; i++) {
             currentFile = null;
         }
     }
-    
+
     // DA: line data (line number, execution count)
     if (currentFile && line.startsWith('DA:')) {
         const match = line.match(/^DA:(\d+),(\d+)$/);
@@ -94,7 +97,7 @@ files.forEach(file => {
                 }
             });
         } catch (err) {
-            // If we can't read the source (e.g., it's in lib/ but we want src/), that's ok
+            // If we can't read the source, that's ok
             // We'll just skip the source code
         }
     }
@@ -114,7 +117,7 @@ if (filesWithGaps.length === 0) {
         console.log('\n⚠️  No source files found in coverage data. This may indicate an issue with the coverage report.\n');
     } else {
         console.log('\n✅ All analyzed files have 100% line coverage!\n');
-        console.log(`(Analyzed ${files.length} files from src/less/, src/less-node/, and bin/)\n`);
+        console.log(`(Analyzed ${files.length} files from lib/less/, lib/less-node/, and bin/)\n`);
     }
     process.exit(0);
 }
@@ -124,18 +127,18 @@ console.log('Uncovered Lines Report');
 console.log('='.repeat(100) + '\n');
 
 filesWithGaps.forEach(file => {
-    const coveragePct = file.totalLines > 0 
+    const coveragePct = file.totalLines > 0
         ? ((file.coveredLines / file.totalLines) * 100).toFixed(1)
         : '0.0';
-    
+
     console.log(`\n${file.path} (${coveragePct}% coverage)`);
     console.log('-'.repeat(100));
-    
+
     // Group consecutive lines into ranges
     const ranges = [];
     let start = file.uncoveredLines[0];
     let end = file.uncoveredLines[0];
-    
+
     for (let i = 1; i < file.uncoveredLines.length; i++) {
         if (file.uncoveredLines[i] === end + 1) {
             end = file.uncoveredLines[i];
@@ -146,14 +149,14 @@ filesWithGaps.forEach(file => {
         }
     }
     ranges.push(start === end ? `${start}` : `${start}..${end}`);
-    
+
     // Display ranges (max 5 per line for readability)
     const linesPerRow = 5;
     for (let i = 0; i < ranges.length; i += linesPerRow) {
         const row = ranges.slice(i, i + linesPerRow);
         console.log(`  Lines: ${row.join(', ')}`);
     }
-    
+
     console.log(`  Total uncovered: ${file.uncoveredLines.length} of ${file.totalLines} lines`);
 });
 
@@ -173,7 +176,7 @@ const jsonOutput = {
             }
             return file.fullPath;
         })(),
-        coveragePercent: file.totalLines > 0 
+        coveragePercent: file.totalLines > 0
             ? parseFloat(((file.coveredLines / file.totalLines) * 100).toFixed(1))
             : 0,
         totalLines: file.totalLines,
@@ -183,10 +186,10 @@ const jsonOutput = {
         uncoveredRanges: (() => {
             const ranges = [];
             if (file.uncoveredLines.length === 0) return ranges;
-            
+
             let start = file.uncoveredLines[0];
             let end = file.uncoveredLines[0];
-            
+
             for (let i = 1; i < file.uncoveredLines.length; i++) {
                 if (file.uncoveredLines[i] === end + 1) {
                     end = file.uncoveredLines[i];
@@ -204,4 +207,3 @@ const jsonOutput = {
 
 fs.writeFileSync(jsonOutputPath, JSON.stringify(jsonOutput, null, 2), 'utf8');
 console.log('\n📄 Uncovered lines data written to: coverage/uncovered-lines.json\n');
-

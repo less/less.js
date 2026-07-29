@@ -1,10 +1,13 @@
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 const pkg = require('./../package.json');
 
-module.exports = 
+export default
 `/**
  * Less - ${ pkg.description } v${ pkg.version }
  * http://lesscss.org
- * 
+ *
  * Copyright (c) 2009-${new Date().getFullYear()}, ${ pkg.author.name } <${ pkg.author.email }>
  * Licensed under the ${ pkg.license } License.
  *

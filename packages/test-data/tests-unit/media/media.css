@@ -37,43 +37,45 @@
   .body header {
     background-color: red;
   }
-}
-@media print and (orientation: landscape) {
-  .body {
-    margin-left: 20px;
+  @media (orientation: landscape) {
+    .body {
+      margin-left: 20px;
+    }
   }
 }
 @media screen {
   .sidebar {
     width: 300px;
   }
-}
-@media screen and (orientation: landscape) {
-  .sidebar {
-    width: 500px;
+  @media (orientation: landscape) {
+    .sidebar {
+      width: 500px;
+    }
   }
 }
-@media a and (b) {
-  .first .second .third {
-    width: 300px;
-  }
-  .first .second .fourth {
-    width: 3;
-  }
-}
-@media a and (b) and (c) {
-  .first .second .third {
-    width: 500px;
+@media a {
+  @media (b) {
+    .first .second .third {
+      width: 300px;
+    }
+    @media (c) {
+      .first .second .third {
+        width: 500px;
+      }
+    }
+    .first .second .fourth {
+      width: 3;
+    }
   }
 }
 @media a, (b) and (c) {
   .body {
     width: 95%;
   }
-}
-@media a and (x), (b) and (c) and (x), a and (y), (b) and (c) and (y) {
-  .body {
-    width: 100%;
+  @media (x), (y) {
+    .body {
+      width: 100%;
+    }
   }
 }
 .a {
@@ -83,10 +85,10 @@
   .a {
     background: white;
   }
-}
-@media handheld and (max-width: 100px) {
-  .a {
-    background: red;
+  @media (max-width: 100px) {
+    .a {
+      background: red;
+    }
   }
 }
 .b {
@@ -96,10 +98,10 @@
   .b {
     background: white;
   }
-}
-@media handheld and (max-width: 200px) {
-  .b {
-    background: red;
+  @media (max-width: 200px) {
+    .b {
+      background: red;
+    }
   }
 }
 @media only screen and (max-width: 200px) {
@@ -114,7 +116,7 @@
   @page :right {
     margin: 0.5cm;
   }
-  @page Test:first {
+  @page Test :first {
     margin: 1cm;
   }
   @page :first {
@@ -169,7 +171,7 @@
     }
   }
 }
-@media (-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2/1), (min-resolution: 2dppx), (min-resolution: 128dpcm) {
+@media (-webkit-min-device-pixel-ratio: 2), (min--moz-device-pixel-ratio: 2), (-o-min-device-pixel-ratio: 2 / 1), (min-resolution: 2dppx), (min-resolution: 128dpcm) {
   .b {
     background: red;
   }
@@ -185,20 +187,22 @@
 @media (max-width: 1000px) {
   .body {
     background: red;
-    background: blue;
   }
-}
-@media (max-width: 1000px) and (max-width: 500px) {
+  @media (max-width: 500px) {
+    .body {
+      background: green;
+    }
+  }
   .body {
-    background: green;
+    background: blue;
   }
 }
 @media (max-width: 1200px) {
   /* a comment */
-}
-@media (max-width: 1200px) and (max-width: 900px) {
-  .body {
-    font-size: 11px;
+  @media (max-width: 900px) {
+    .body {
+      font-size: 11px;
+    }
   }
 }
 @media (min-width: 480px) {
@@ -206,17 +210,19 @@
     display: table-cell;
   }
 }
-@media (min-width: 768px) and (min-width: 480px) {
+@media (min-width: 768px) {
+@media (min-width: 480px) {
   .menu > li {
     display: table-cell;
   }
+}
 }
 @media all and (tv) {
   .all-and-tv-variables {
     var: all-and-tv;
   }
 }
-@media screen and (min-width: 61px) {
+@media screen and (min-width: (60px + 1)) {
   .selector {
     foo: bar;
   }
@@ -267,5 +273,15 @@
 @media print, (max-width: 992px) {
   div {
     color: red;
+  }
+}
+@media screen and (max-width: 1280px) {
+  .form-process-table {
+    color: red;
+  }
+}
+@media ((color) and (hover)), all {
+  body {
+    background: green;
   }
 }

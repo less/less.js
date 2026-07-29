@@ -1,36 +1,73 @@
-input[type=text]:focus,
-input[type=email]:focus,
-input[type=password]:focus,
-textarea:focus {
-  foo: bar;
+input[type=text],
+input[type=email],
+input[type=password],
+textarea {
+  &:focus {
+    foo: bar;
+  }
 }
-.a + .z,
-.b + .z,
-.c + .z {
-  color: blue;
+input[type=text], input[type=email], input[type=password], textarea {
+  &:focus {
+    foo: baz;
+  }
 }
-.bar .d.a,
-.bar .b,
-.c.bar:hover,
-.bar baz {
-  color: blue;
+.a,
+.b,
+.c {
+  + .z-cap {
+    color: blue;
+  }
 }
-.a + .e,
-.b.c + .e,
-.d + .e {
-  foo: bar;
+.a, .b, .c {
+  + .z-quoted {
+    color: green;
+  }
 }
-input[class="text"],
-input.text {
-  background: red;
+.bar {
+  .d:is(.a, .b, .c)&:hover, baz-cap {
+    color: blue;
+  }
 }
-.master-page-1 .selector-1,
-.master-page-1 .selector-2 {
-  background-color: red;
+.bar2 {
+  .q:is(.a, .b, .c)&:hover, baz-quoted {
+    color: green;
+  }
 }
-.fruit-apple,
-.fruit-satsuma,
-.fruit-banana,
-.fruit-pear {
-  content: "Just a test.";
+:is(.a, .b):is(.c, .d) {
+  + .e-cap {
+    foo: bar;
+  }
+}
+:is(.a, .b):is(.c, .d) {
+  + .e-quoted {
+    foo: bar;
+  }
+}
+input.cap {
+  &[class="text"],
+  &.text {
+    background: red;
+  }
+}
+input.quoted {
+  &[class="text"], &.text {
+    background: blue;
+  }
+}
+.master-page-cap {
+  .selector-1,
+  .selector-2 {
+    background-color: red;
+  }
+}
+.master-page-quoted {
+  .selector-1, .selector-2 {
+    background-color: blue;
+  }
+}
+.fruit-cap-apple,
+.fruit-cap-satsuma,
+.fruit-cap-banana,
+.fruit-cap-pear {
+  content: "Capture";
 }

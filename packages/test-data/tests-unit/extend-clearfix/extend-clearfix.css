@@ -3,9 +3,7 @@
 .bar {
   *zoom: 1;
 }
-.clearfix:after,
-.foo:after,
-.bar:after {
+:is(.clearfix, .foo, .bar):after {
   content: '';
   display: block;
   clear: both;

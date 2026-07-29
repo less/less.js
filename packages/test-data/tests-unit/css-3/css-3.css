@@ -1,8 +1,9 @@
 @namespace foo url(http://www.example.com);
 .comma-delimited {
   text-shadow: -1px -1px 1px red, 6px 5px 5px yellow;
-  -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset, 0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
-  -webkit-transform: rotate(0deg);
+  -moz-box-shadow: 0pt 0pt 2px rgba(255, 255, 255, 0.4) inset,
+    0pt 4px 6px rgba(255, 255, 255, 0.4) inset;
+  -webkit-transform: rotate(-0.0000000001deg);
 }
 @font-face {
   font-family: Headline;
@@ -74,8 +75,7 @@ p::before {
     font-size: 12px;
   }
 }
-@supports ( box-shadow: 2px 2px 2px black ) or
-          ( -moz-box-shadow: 2px 2px 2px black ) {
+@supports (box-shadow: 2px 2px 2px black) or (-moz-box-shadow: 2px 2px 2px black) {
   .outline {
     box-shadow: 2px 2px 2px black;
     -moz-box-shadow: 2px 2px 2px black;

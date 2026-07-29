@@ -4,6 +4,8 @@
 .overwrite {
   width: 99px;
 }
-.nested .class {
-  width: 5px;
+.nested {
+  .class {
+    width: 5px;
+  }
 }

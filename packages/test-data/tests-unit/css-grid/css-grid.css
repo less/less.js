@@ -20,5 +20,8 @@
   display: grid;
   grid-template-columns: 9fr 1.875em 3fr;
   grid-template-rows: auto;
-  grid-template-areas: "header header header" "content . sidebar" "footer footer footer";
+  grid-template-areas:
+    "header header header"
+    "content . sidebar"
+    "footer footer footer";
 }

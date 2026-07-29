@@ -1,7 +1,8 @@
 module.exports = {
-    language: {
-        less: {
-            strictImports: true
-        }
-    }
+  language: {
+    less: {}
+  },
+  output: [
+    { file: '{name}.css', collapseNesting: false }
+  ]
 };

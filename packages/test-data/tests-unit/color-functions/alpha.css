@@ -13,3 +13,9 @@
 #alpha #hsl {
   opacity: 1;
 }
+#alpha #transparent-hex4 {
+  opacity: 0;
+}
+#alpha #transparent-hex8 {
+  opacity: 0;
+}

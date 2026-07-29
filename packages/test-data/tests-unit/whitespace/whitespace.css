@@ -11,7 +11,7 @@
   color: white;
 }
 .whitespace {
-  color: white ;
+  color: white;
 }
 .white,
 .space,
@@ -38,5 +38,6 @@
 }
 .sel .newline_ws .tab_ws {
   color: white;
-  background-position: 45 -23;
+  background-position: 45
+    -23;
 }

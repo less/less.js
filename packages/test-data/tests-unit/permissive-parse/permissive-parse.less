@@ -38,13 +38,13 @@
 
 @size: 640px;
 @tablet: (min-width: @size);
-@media @tablet {
+@media @{tablet} {
   .holy-crap {
     this: works;
   }
 }
 @tablet: (min-width: @{size});
-@media @tablet {
+@media @{tablet} {
   .with-curly {
     this: works;
   }

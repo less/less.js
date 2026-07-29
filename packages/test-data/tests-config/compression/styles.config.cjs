@@ -3,6 +3,6 @@ module.exports = {
     less: {
       "math": "strict",
       "compress": true
-}
+    }
   }
 };

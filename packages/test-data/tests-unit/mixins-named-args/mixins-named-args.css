@@ -25,3 +25,9 @@
   height: 29%;
   color: #123456;
 }
+.arity-positional {
+  value: 3;
+}
+.arity-named {
+  value: 4;
+}

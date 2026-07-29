@@ -3,6 +3,6 @@ module.exports = {
     less: {
       "math": "strict",
       "dumpLineNumbers": "comments"
-}
+    }
   }
 };

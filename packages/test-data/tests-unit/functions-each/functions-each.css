@@ -8,22 +8,24 @@
   a: b;
 }
 .each {
-  index: 1, 2, 3, 4;
   item1: a;
   item2: b;
   item3: c;
+  index: 1, 2, 3, 4;
   item4: d;
   nest-1-1: 10px 1;
   nest-2-1: 15px 2;
   nest-1-2: 20px 1;
   nest-2-2: 25px 2;
-  padding: 10px 20px 30px 40px;
 }
 .each .nest-anon {
   nest-1-1: a c;
   nest-1-2: a d;
   nest-2-1: b c;
   nest-2-2: b d;
+}
+.each {
+  padding: 10px 20px 30px 40px;
 }
 .set {
   one: blue;

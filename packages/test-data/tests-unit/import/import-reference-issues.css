@@ -8,12 +8,12 @@ show-all-content {
   /*
   tralala
 */
-}
-show-all-content .fix {
-  fix: fix;
-}
-show-all-content .something {
-  inside: something;
+  .fix {
+    fix: fix;
+  }
+  .something {
+    inside: something;
+  }
 }
 #used-namespaced-mixin {
   was: included;

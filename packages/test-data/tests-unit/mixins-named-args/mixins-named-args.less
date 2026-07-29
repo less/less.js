@@ -34,3 +34,18 @@
 .named-args3 {
   .mixin2(@b: 30%, @c: #123456);
 }
+
+.arity-mixin(@a) {
+  value: @a;
+}
+.arity-mixin(@a: 1, @b) {
+  value: @a + @b;
+}
+
+.arity-positional {
+  .arity-mixin(3);
+}
+
+.arity-named {
+  .arity-mixin(@b: 3);
+}

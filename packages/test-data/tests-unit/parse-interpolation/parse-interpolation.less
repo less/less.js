@@ -1,54 +1,102 @@
 // Parse interpolation tests
-@inputs: input[type=text], input[type=email], input[type=password], textarea;
+// Paired variants: selector-capture (`*[]`) and quoted selectors (`~'...'`).
 
-@{inputs} {
+@inputs-cap: *[input[type=text], input[type=email], input[type=password], textarea];
+@inputs-quoted: ~'input[type=text], input[type=email], input[type=password], textarea';
+
+@{inputs-cap} {
   &:focus {
     foo: bar;
   }
-} 
+}
 
-@classes: .a, .b, .c;
-
-@{classes} {  
-  + .z {
-    color: blue; 
+@{inputs-quoted} {
+  &:focus {
+    foo: baz;
   }
 }
 
-.bar {
-  .d@{classes}&:hover, baz {
+@classes-cap: *[.a, .b, .c];
+@classes-quoted: ~'.a, .b, .c';
+
+@{classes-cap} {
+  + .z-cap {
     color: blue;
   }
 }
 
-@c: ~'.a, .b';
-@d: ~'.c, .d';
-@e: ~' + .e';
+@{classes-quoted} {
+  + .z-quoted {
+    color: green;
+  }
+}
 
-@{c}@{d} {
-  @{e} {
+.bar {
+  .d@{classes-cap}&:hover, baz-cap {
+    color: blue;
+  }
+}
+
+.bar2 {
+  .q@{classes-quoted}&:hover, baz-quoted {
+    color: green;
+  }
+}
+
+@c-cap: *[.a, .b];
+@d-cap: *[.c, .d];
+@e-cap: ~' + .e-cap';
+
+@{c-cap}@{d-cap} {
+  @{e-cap} {
     foo: bar;
   }
 }
 
-@textClasses: ~'&[class="text"], &.text';
+@c-quoted: ~'.a, .b';
+@d-quoted: ~'.c, .d';
+@e-quoted: ~' + .e-quoted';
 
-input {
-  @{textClasses} {
+@{c-quoted}@{d-quoted} {
+  @{e-quoted} {
+    foo: baz;
+  }
+}
+
+@textClasses-cap: *[&[class="text"], &.text];
+@textClasses-quoted: ~'&[class="text"], &.text';
+
+input.cap {
+  @{textClasses-cap} {
     background: red;
   }
 }
 
-@my-selector: ~'.selector-1, .selector-2';
-.master-page-1 {
-    @{my-selector} {
-        background-color: red;
-    }
+input.quoted {
+  @{textClasses-quoted} {
+    background: blue;
+  }
 }
 
-@list: apple, satsuma, banana, pear;
-@{list} {
-  .fruit-& {
-    content: "Just a test.";
+@my-selector-cap: *[.selector-1, .selector-2];
+@my-selector-quoted: ~'.selector-1, .selector-2';
+
+.master-page-cap {
+  @{my-selector-cap} {
+    background-color: red;
+  }
+}
+
+.master-page-quoted {
+  @{my-selector-quoted} {
+    background-color: blue;
+  }
+}
+
+@list-cap: *[apple, satsuma, banana, pear];
+
+@{list-cap} {
+  .fruit-cap-& {
+    content: "Capture";
   }
 }

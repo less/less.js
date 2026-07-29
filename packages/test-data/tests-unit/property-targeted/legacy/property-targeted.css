@@ -1,0 +1,7 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
+
+.test-important {
+  color: red!important;
+  background: red !important;
+}

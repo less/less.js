@@ -3,7 +3,7 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"version": "4.5.0",
+	"version": "5.0.0-alpha.1",
 	"description": "Less files and CSS results",
 	"author": "Alexis Sellier <self@cloudhead.net>",
 	"contributors": [
@@ -12,10 +12,11 @@
 	"bugs": {
 		"url": "https://github.com/less/less.js/issues"
 	},
+	"license": "Apache-2.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/less/less.js.git"
+		"url": "https://github.com/less/less.js.git",
+		"directory": "packages/test-data"
 	},
-	"license": "Apache-2.0",
 	"gitHead": "1df9072ee9ebdadc791bf35dfb1dbc3ef9f1948f"
 }

@@ -158,9 +158,11 @@
   declare: 4;
   declare: 4px;
 }
-.call-lock-mixin .call-inner-lock-mixin {
-  a: 1;
-  x: 1;
+.call-lock-mixin {
+  .call-inner-lock-mixin {
+    a: 1;
+    x: 1;
+  }
 }
 .mixin-generated-class {
   a: 1;
@@ -208,4 +210,10 @@
   no-parenthesis: evaluated true 2c;
   no-parenthesis: evaluated true 4;
   with-parenthesis: evaluated true;
+}
+.test-not-noparens1 {
+  content: "not without parens true.";
+}
+.test-not-noparens2 {
+  content: "not without parens false.";
 }

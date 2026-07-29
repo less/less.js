@@ -27,7 +27,10 @@
  *
  *   5. create-release-pr no-op safety (isolated temp git repo)
  *      - when a version bump produces changes → a commit is created
- *      - when no version changes are needed  → creates an empty sync commit
+ *      - when no version changes are needed  → creates an explicit release commit
+ *
+ *   6. release title sync no-op safety
+ *      - when release files already match → exits without an empty commit loop
  *
  * Run:
  *   node scripts/test-release-automation.js
@@ -1006,8 +1009,8 @@ test('version bump needed: creates a commit on the release branch', () => {
   }
 });
 
-test('no version bump needed: creates empty sync commit, no gh calls', () => {
-  // Repo starts at 4.6.4 (target version) → no diff → empty sync commit
+test('no version bump needed: creates explicit release commit, no gh calls', () => {
+  // Repo starts at 4.6.4 (target version) → no diff → explicit release commit
   const repoDir = makeFakeRepo({ packageVersion: '4.6.4' });
   try {
     const res = runCreateReleasePRStep({
@@ -1016,7 +1019,7 @@ test('no version bump needed: creates empty sync commit, no gh calls', () => {
       releaseBranch: 'chore/release-v4.6.4',
     });
     assert.strictEqual(res.exitCode, 0, `Script exited ${res.exitCode}.\nSTDOUT: ${res.stdout}\nSTDERR: ${res.stderr}`);
-    assert.ok(res.newCommitCreated, 'Expected an empty sync commit when version is already at target');
+    assert.ok(res.newCommitCreated, 'Expected an explicit release commit when version is already at target');
     assert.ok(
       res.stdout.includes('STATUS:NO_CHANGES'),
       `Expected NO_CHANGES status.\nSTDOUT: ${res.stdout}`,
@@ -1032,6 +1035,19 @@ test('no version bump needed: creates empty sync commit, no gh calls', () => {
   } finally {
     fs.rmSync(repoDir, { recursive: true, force: true });
   }
+});
+
+test('release title sync no-op exits without an empty commit', () => {
+  const workflow = fs.readFileSync(path.join(ROOT_DIR, '.github', 'workflows', 'create-release-pr.yml'), 'utf8');
+  const syncStep = workflow.slice(workflow.indexOf('      - name: Sync release files to title version'));
+  assert.ok(
+    syncStep.includes('echo "Release files already match v${VERSION}"\n            exit 0'),
+    'Expected sync-title no-op path to exit cleanly',
+  );
+  assert.ok(
+    !syncStep.includes('git commit --allow-empty'),
+    'Sync-title no-op must not create empty commits on synchronize events',
+  );
 });
 
 test('alpha version bump needed: commit created for alpha release branch', () => {

@@ -287,8 +287,9 @@ jobs:
           fi
 
           if git diff --cached --quiet; then
-            echo "Release files already match v${VERSION}; creating an empty sync commit"
+            echo "Release files already match v${VERSION}"
+            exit 0
           fi
 
-          git commit --allow-empty -m "$TITLE"
+          git commit -m "$TITLE"
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${HEAD_REF}"

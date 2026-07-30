@@ -2,7 +2,6 @@
 import { createRequire } from 'module';
 import path from 'path';
 import fs from 'fs';
-import semver from 'semver';
 import logger from '../lib/less/logger.js';
 import { cosmiconfigSync } from 'cosmiconfig';
 import { globSync } from 'glob';
@@ -246,6 +245,24 @@ export default function(testFilter) {
         });
     }
 
+    /**
+     * Expectation path for the sourcemap sets that keep theirs under `test/`,
+     * mirroring the fixture's own directory. Fixture names gained a leading
+     * `tests-config/` when the suite moved to packages/test-data, but the
+     * expectations stayed where they were.
+     *
+     * `name` is built from `path.relative`, so its separators are platform
+     * native — matching only `/` here silently failed to strip the prefix on
+     * Windows and looked for an expectation that was never there.
+     *
+     * @param {string} name
+     * @returns {string}
+     */
+    function sourcemapExpectationPath(name) {
+        var relative = name.replace(/[\\/]/g, '/').replace(/^tests-config\//, '');
+        return path.join('test', relative) + '.json';
+    }
+
     function testSourcemapWithoutUrlAnnotation(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         if (err) {
             fail('ERROR: ' + (err && err.message));
@@ -257,7 +274,7 @@ export default function(testFilter) {
             return;
         }
 
-        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        fs.readFile(sourcemapExpectationPath(name), 'utf8', function (e, expectedSourcemap) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
@@ -295,7 +312,7 @@ export default function(testFilter) {
             return;
         }
 
-        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        fs.readFile(sourcemapExpectationPath(name), 'utf8', function (e, expectedSourcemap) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
@@ -368,8 +385,7 @@ export default function(testFilter) {
     }
 
     function testTypeErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
-        const fileSuffix = semver.gte(process.version, 'v16.9.0') ? '-2.txt' : '.txt';
-        fs.readFile(path.join(baseFolder, name) + fileSuffix, 'utf8', function (e, expectedErr) {
+        fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             expectedErr = doReplacements(expectedErr, baseFolder, err && err.filename);
             if (!err) {
@@ -534,8 +550,14 @@ export default function(testFilter) {
                     var file = path.basename(filePath);
                     var relativePath = path.relative(baseFolder, path.dirname(filePath)) + '/';
 
+                    // Only the default compile-and-diff needs a sibling `.css`; that is
+                    // how such a fixture opts in. A set with its own verifyFunction keeps
+                    // its expectation elsewhere — a `.txt` beside the source for the
+                    // error sets, a `.json` under `test/` for the sourcemap sets — and
+                    // reports a missing one itself. Requiring `.css` of those skipped
+                    // them silently instead.
                     var cssPath = path.join(path.dirname(filePath), path.basename(file, '.less') + '.css');
-                    if (fs.existsSync(cssPath)) {
+                    if (verifyFunction || fs.existsSync(cssPath)) {
                         processFileWithInfo({
                             file: file,
                             fullPath: filePath,
@@ -860,6 +882,14 @@ export default function(testFilter) {
             ['bare @var in an at-rule prelude warns', '@bar: x;\n@foo @bar { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
             ['@var inside […] is top-level and warns', '@v: x;\n@foo bar[@v] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
             ['@var inside (…) is a declaration value — no warning', '@v: 1px;\n@foo (x: @v) { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
+            // A bare lookup parses to NamespaceValue rather than Variable; testing the
+            // node type too narrowly used to exempt every one of these from the notice.
+            ['bare lookup in a @media prelude warns', '@m: { q: ~"(min-width: 1px)"; };\n@media @m[q] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['bare lookup in an at-rule name warns', '@m: { n: fade; };\n@keyframes @m[n] { from { a: b } }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['bare lookup in an unknown at-rule prelude warns', '@m: { s: ~"(display: grid)"; };\n@supports @m[s] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['bare chained lookup warns once', '@m: { @n: { k: base; } };\n@layer @m[@n][k] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['interpolated lookup in a prelude does not warn', '@m: { q: ~"(min-width: 1px)"; };\n@media @{m[q]} { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
+            ['interpolated lookup in an at-rule name does not warn', '@m: { n: fade; };\n@keyframes @{m[n]} { from { a: b } }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
             ['numeric-leading variable names warn, including @{...}', '@1: name;\n.@{1} { value: name }', {}, /Variable names beginning with a number are deprecated/, 2],
             ['valid identifier-leading variable names do not warn', '@foo-1: name;\n.@{foo-1} { value: @foo-1 }', {}, /Variable names beginning with a number are deprecated/, 0],
             ['dash-only variable definitions and ordinary references warn', '@-: name;\n.a { value: @- }', {}, /dash-only variable names @- and @\{-\} are deprecated/, 2],

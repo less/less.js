@@ -1,0 +1,4 @@
+ParseError: Unrecognised input in {path}property-interpolation-lookup.less on line 7, column 3:
+6   color: red;
+7   ${color[k]}: value;
+8 }

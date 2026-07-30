@@ -3,10 +3,7 @@ module.exports = {
         less: {
             math: 'strict',
             strictUnits: true,
-            sourceMap: {},
-            globalVars: {
-                '@my-color': 'red'
-            }
+            sourceMap: true
         }
     }
 };

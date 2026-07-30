@@ -9,6 +9,28 @@ import logger from '../logger.js';
 import { DeprecationHandler } from '../deprecation.js';
 import Selector from '../tree/selector.js';
 import Anonymous from '../tree/anonymous.js';
+import { VARIABLE_WITH_LOOKUPS } from './lookup-pattern.js';
+import {
+    splitLookups,
+    resolveInterpolatedVariable,
+    resolveInterpolatedProperty,
+    hasInterpolation,
+    VARIABLE_INTERPOLATION,
+    PROPERTY_INTERPOLATION
+} from '../tree/interpolated-variable.js';
+
+/**
+ * One particle of a property name: a literal chunk, an `@{...}` interpolation
+ * which may carry a lookup chain, or a `${...}` interpolation which may not.
+ *
+ * The sigils are spelled out separately rather than sharing `[@$]`: properties
+ * have no lookup grammar, so accepting `${name[key]}` here would hand `name[key]`
+ * to `resolveInterpolatedProperty` and produce a misleading "undefined property"
+ * error for syntax the language does not define.
+ */
+const RULE_PROPERTY_PARTICLE = new RegExp(
+    `^((?:[\\w-]+)|(?:@\\{${VARIABLE_WITH_LOOKUPS}\\})|(?:\\$\\{[\\w-]+\\}))`
+);
 
 //
 // less.js - parser
@@ -104,6 +126,22 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
      */
     function warnBareAtRuleVariable(index) {
         warn('A bare @variable in an at-rule prelude is deprecated. Use @{variable} interpolation instead.', index, 'DEPRECATED', 'variable-in-at-rule-prelude');
+    }
+
+    /**
+     * Whether a parsed entity is a bare `@variable` reference in a structural
+     * position, and so subject to the interpolation deprecation.
+     *
+     * A lookup such as `@map[key]` is parsed by `entities.variable()` into a
+     * `NamespaceValue` wrapping a `VariableCall`, not a `Variable`. Testing for
+     * `Variable` alone silently exempted every bare lookup from the deprecation.
+     *
+     * @param {{ type?: string } | undefined | null} e
+     * @returns {boolean}
+     */
+    function isBareVariableReference(e) {
+        if (!e) { return false; }
+        return e.type === 'Variable' || e.type === 'VariableCall' || e.type === 'NamespaceValue';
     }
 
     /**
@@ -717,6 +755,20 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     value = this.quoted() || this.variable() || this.property() ||
                             parserInput.$re(/^(?:(?:\\[()'"])|[^()'"])+/) || '';
 
+                    // An unquoted url() body is otherwise raw text wrapped in an
+                    // Anonymous node, which never substitutes anything — so
+                    // `url(@{path}/a.png)` used to emit the braces verbatim while the
+                    // quoted form resolved. Hand text containing interpolation to an
+                    // escaped Quoted so both spellings resolve identically.
+                    //
+                    // The empty quote string matters: `URL.eval` escapes a rewritten
+                    // rootpath only for unquoted values, so a real quote character here
+                    // would suppress that and emit `url(a(b)/x.png)` unescaped. Escaped
+                    // means no quote is written to the output either way.
+                    if (typeof value === 'string' && hasInterpolation(value)) {
+                        value = new(tree.Quoted)('', value, true, index + currentIndex, fileInfo);
+                    }
+
                     parserInput.autoCommentAbsorb = true;
 
                     expectChar(')');
@@ -760,16 +812,44 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     parserInput.restore();
                 },
 
-                // A variable entity using the protective {} e.g. @{var}
+                // A variable entity using the protective {} e.g. @{var}, optionally
+                // followed by a lookup chain e.g. @{map[key]} or @{map[@a][b]}.
+                //
+                // The chain is consumed by `mixin.ruleLookups()` rather than matched
+                // here, so the interpolated form shares one grammar with the bare
+                // `@map[key]` form instead of re-implementing it.
                 variableCurly: function () {
                     let curly;
                     const index = parserInput.i;
 
-                    if (parserInput.currentChar() === '@' && (curly = parserInput.$re(/^@\{([\w-]+)\}/))) {
-                        warnNumericVariableName(curly[1], index);
-                        warnDashOnlyVariableName(curly[1], index);
-                        return new(tree.Variable)(`@${curly[1]}`, index + currentIndex, fileInfo);
+                    if (parserInput.currentChar() !== '@') {
+                        return;
                     }
+
+                    parserInput.save();
+                    if (!(curly = parserInput.$re(/^@\{([\w-]+)/))) {
+                        parserInput.restore();
+                        return;
+                    }
+
+                    const name = curly[1];
+                    const lookups = parsers.mixin.ruleLookups();
+
+                    if (!parserInput.$char('}')) {
+                        parserInput.restore();
+                        return;
+                    }
+
+                    parserInput.forget();
+                    warnNumericVariableName(name, index);
+                    warnDashOnlyVariableName(name, index);
+
+                    if (!lookups) {
+                        return new(tree.Variable)(`@${name}`, index + currentIndex, fileInfo);
+                    }
+
+                    const call = new(tree.VariableCall)(`@${name}`, index + currentIndex, fileInfo);
+                    return new(tree.NamespaceValue)(call, lookups, index + currentIndex, fileInfo);
                 },
                 //
                 // A Property accessor, such as `$color`, in
@@ -1725,7 +1805,9 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         merge = !isVariable && name.length > 1 && name.pop().value;
 
                         // Custom property values get permissive parsing
-                        if (name[0].value && name[0].value.slice(0, 2) === '--') {
+                        // A lookup particle (`NamespaceValue`) carries a node in `value`
+                        // rather than a string, and can never spell a `--` prefix.
+                        if (typeof name[0].value === 'string' && name[0].value.slice(0, 2) === '--') {
                             if (parserInput.$char(';')) {
                                 value = new Anonymous('');
                             } else {
@@ -1827,7 +1909,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                         if (!e) {
                             const varIndex = parserInput.i;
                             e = this.entity();
-                            if (e && e.type === 'Variable') {
+                            if (isBareVariableReference(e)) {
                                 warnBareAtRuleVariable(varIndex);
                             }
                         }
@@ -1894,17 +1976,33 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                             const quote = new tree.Quoted('\'', item, true, index, fileInfo);
                             const variableRegex = /@([\w-]+)/g;
                             const propRegex = /\$([\w-]+)/g;
+                            // These notices are about *bare* references, so test the text
+                            // with interpolations removed. A lookup key is itself allowed
+                            // to be a variable (`@{map[@key]}`), and without this the
+                            // `@key` inside the braces would be misreported as a bare use
+                            // of the very syntax the notice tells you to adopt.
+                            const bareOnly = item
+                                .replace(VARIABLE_INTERPOLATION, '')
+                                .replace(PROPERTY_INTERPOLATION, '');
                             // At-rule preludes are handled once above via
                             // `value.bareVarIndex`; the `variable-in-unknown-value`
                             // notice is for unknown declaration values only.
-                            if (!deprecateVariables && variableRegex.test(item)) {
+                            if (!deprecateVariables && variableRegex.test(bareOnly)) {
                                 warn('@variable in unknown values will not be evaluated as variables in the future. Use @{variable}', index, 'DEPRECATED', 'variable-in-unknown-value');
                             }
-                            if (propRegex.test(item)) {
+                            if (propRegex.test(bareOnly)) {
                                 warn('$property in unknown values will not be evaluated as property references in the future. Use ${property}', index, 'DEPRECATED', 'property-in-unknown-value');
                             }
-                            quote.variableRegex = /@([\w-]+)|@{([\w-]+)}/g;
-                            quote.propRegex = /\$([\w-]+)|\${([\w-]+)}/g;
+                            // Both alternatives carry the lookup chain. An unknown at-rule
+                            // prelude (`@supports`) is scanned as text, so a bare
+                            // `@map[key]` reaches this regex rather than being parsed
+                            // structurally; matching only `@map` would resolve it to the
+                            // whole ruleset and leave `[key]` behind as literal text.
+                            quote.variableRegex = new RegExp(
+                                `@(${VARIABLE_WITH_LOOKUPS})|@\\{(${VARIABLE_WITH_LOOKUPS})\\}`, 'g'
+                            );
+                            // Properties stay narrow — they have no lookup grammar.
+                            quote.propRegex = /\$([\w-]+)|\$\{([\w-]+)\}/g;
                             result.push(quote);
                         }
                     }
@@ -2246,7 +2344,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 if (curly) { return curly; }
                 const index = parserInput.i;
                 const e = this.entity();
-                if (e && e.type === 'Variable') {
+                if (isBareVariableReference(e)) {
                     warnBareAtRuleVariable(index);
                 }
                 return e;
@@ -2844,7 +2942,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
 
                 match(/^(\*?)/);
                 while (true) {
-                    if (!match(/^((?:[\w-]+)|(?:[@$]\{[\w-]+\}))/)) {
+                    if (!match(RULE_PROPERTY_PARTICLE)) {
                         break;
                     }
                 }
@@ -2860,16 +2958,22 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     }
                     for (k = 0; k < name.length; k++) {
                         s = name[k];
-                        if (s.charAt(0) === '@') {
-                            const variableName = s.slice(2, -1);
-                            warnNumericVariableName(variableName, index[k]);
-                            warnDashOnlyVariableName(variableName, index[k]);
+                        const sigil = s.charAt(0);
+                        if (sigil !== '@' && sigil !== '$') {
+                            name[k] = new(tree.Keyword)(s);
+                            continue;
                         }
-                        name[k] = (s.charAt(0) !== '@' && s.charAt(0) !== '$') ?
-                            new(tree.Keyword)(s) :
-                            (s.charAt(0) === '@' ?
-                                new(tree.Variable)(`@${s.slice(2, -1)}`, index[k] + currentIndex, fileInfo) :
-                                new(tree.Property)(`$${s.slice(2, -1)}`, index[k] + currentIndex, fileInfo));
+                        // `@{name}` / `@{name[key]}` — strip the sigil and braces, then
+                        // let the shared resolver decide between a plain reference and
+                        // a lookup so this path cannot drift from the others.
+                        const raw = s.slice(2, -1);
+                        if (sigil === '@') {
+                            warnNumericVariableName(splitLookups(raw).name, index[k]);
+                            warnDashOnlyVariableName(splitLookups(raw).name, index[k]);
+                            name[k] = resolveInterpolatedVariable(raw, index[k] + currentIndex, fileInfo);
+                        } else {
+                            name[k] = resolveInterpolatedProperty(raw, index[k] + currentIndex, fileInfo);
+                        }
                     }
                     return name;
                 }

@@ -1,8 +1,12 @@
 // @ts-check
 /** @import { EvalContext, CSSOutput, FileInfo } from './node.js' */
 import Node from './node.js';
-import Variable from './variable.js';
-import Property from './property.js';
+import {
+    VARIABLE_INTERPOLATION,
+    PROPERTY_INTERPOLATION,
+    resolveInterpolatedVariable,
+    resolveInterpolatedProperty
+} from './interpolated-variable.js';
 
 class Quoted extends Node {
     get type() { return 'Quoted'; }
@@ -25,9 +29,9 @@ class Quoted extends Node {
         this._index = index;
         this._fileInfo = currentFileInfo;
         /** @type {RegExp} */
-        this.variableRegex = /@\{([\w-]+)\}/g;
+        this.variableRegex = new RegExp(VARIABLE_INTERPOLATION.source, 'g');
         /** @type {RegExp} */
-        this.propRegex = /\$\{([\w-]+)\}/g;
+        this.propRegex = new RegExp(PROPERTY_INTERPOLATION.source, 'g');
         /** @type {boolean | undefined} */
         this.allowRoot = escaped;
     }
@@ -62,7 +66,9 @@ class Quoted extends Node {
          * @returns {string}
          */
         const variableReplacement = function (_, name1, name2) {
-            const v = new Variable(`@${name1 ?? name2}`, that.getIndex(), that.fileInfo()).eval(context);
+            const v = resolveInterpolatedVariable(
+                name1 ?? name2, that.getIndex(), that.fileInfo()
+            ).eval(context);
             return (v instanceof Quoted) ? /** @type {string} */ (v.value) : v.toCSS(context);
         };
         /**
@@ -72,7 +78,9 @@ class Quoted extends Node {
          * @returns {string}
          */
         const propertyReplacement = function (_, name1, name2) {
-            const v = new Property(`$${name1 ?? name2}`, that.getIndex(), that.fileInfo()).eval(context);
+            const v = resolveInterpolatedProperty(
+                name1 ?? name2, that.getIndex(), that.fileInfo()
+            ).eval(context);
             return (v instanceof Quoted) ? /** @type {string} */ (v.value) : v.toCSS(context);
         };
         /**

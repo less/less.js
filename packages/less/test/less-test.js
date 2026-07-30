@@ -860,6 +860,14 @@ export default function(testFilter) {
             ['bare @var in an at-rule prelude warns', '@bar: x;\n@foo @bar { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
             ['@var inside […] is top-level and warns', '@v: x;\n@foo bar[@v] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
             ['@var inside (…) is a declaration value — no warning', '@v: 1px;\n@foo (x: @v) { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
+            // A bare lookup parses to NamespaceValue rather than Variable; testing the
+            // node type too narrowly used to exempt every one of these from the notice.
+            ['bare lookup in a @media prelude warns', '@m: { q: ~"(min-width: 1px)"; };\n@media @m[q] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['bare lookup in an at-rule name warns', '@m: { n: fade; };\n@keyframes @m[n] { from { a: b } }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['bare lookup in an unknown at-rule prelude warns', '@m: { s: ~"(display: grid)"; };\n@supports @m[s] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['bare chained lookup warns once', '@m: { @n: { k: base; } };\n@layer @m[@n][k] { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 1],
+            ['interpolated lookup in a prelude does not warn', '@m: { q: ~"(min-width: 1px)"; };\n@media @{m[q]} { a: b }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
+            ['interpolated lookup in an at-rule name does not warn', '@m: { n: fade; };\n@keyframes @{m[n]} { from { a: b } }', {}, /A bare @variable in an at-rule prelude is deprecated/, 0],
             ['numeric-leading variable names warn, including @{...}', '@1: name;\n.@{1} { value: name }', {}, /Variable names beginning with a number are deprecated/, 2],
             ['valid identifier-leading variable names do not warn', '@foo-1: name;\n.@{foo-1} { value: @foo-1 }', {}, /Variable names beginning with a number are deprecated/, 0],
             ['dash-only variable definitions and ordinary references warn', '@-: name;\n.a { value: @- }', {}, /dash-only variable names @- and @\{-\} are deprecated/, 2],

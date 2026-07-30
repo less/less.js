@@ -2,6 +2,10 @@
 /** @import { EvalContext } from './node.js' */
 import Node from './node.js';
 import Variable from './variable.js';
+import {
+    VARIABLE_INTERPOLATION,
+    resolveInterpolatedVariable
+} from './interpolated-variable.js';
 
 class JsEvalNode extends Node {
     /**
@@ -21,8 +25,10 @@ class JsEvalNode extends Node {
                 index: this.getIndex() };
         }
 
-        expression = expression.replace(/@\{([\w-]+)\}/g, function (_, name) {
-            return that.jsify(new Variable(`@${name}`, that.getIndex(), that.fileInfo()).eval(context));
+        expression = expression.replace(VARIABLE_INTERPOLATION, function (_, raw) {
+            return that.jsify(resolveInterpolatedVariable(
+                raw, that.getIndex(), that.fileInfo()
+            ).eval(context));
         });
 
         /** @type {Function} */

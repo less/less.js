@@ -43,3 +43,41 @@
     color: red;
   }
 }
+@media only screen and (max-width: 300px) {
+  .lookup-media {
+    width: 240px;
+  }
+}
+@keyframes shrinker {
+  from {
+    font-size: 15px;
+  }
+  to {
+    font-size: 12px;
+  }
+}
+@supports (display: grid) {
+  .lookup-supports {
+    display: grid;
+  }
+}
+@layer overrides {
+  .lookup-layered {
+    color: blue;
+  }
+}
+@media (min-width: 900px) {
+  .lookup-chained {
+    width: 900px;
+  }
+}
+@supports (width: 500px) {
+  .lookup-value-position {
+    width: 500px;
+  }
+}
+@supports (width: 900px) {
+  .lookup-value-position-chained {
+    width: 900px;
+  }
+}

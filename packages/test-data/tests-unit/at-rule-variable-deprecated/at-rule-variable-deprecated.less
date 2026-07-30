@@ -74,3 +74,73 @@
     color: red;
   }
 }
+
+// --- bare `[...]` lookups in the same structural positions ---
+// A lookup parses into a NamespaceValue rather than a Variable. These were
+// silently exempt from the deprecation until the node-type test was widened,
+// so every position is covered explicitly here.
+@lookup: {
+  query: ~"only screen and (max-width: 300px)";
+  anim: shrinker;
+  supported: ~"(display: grid)";
+  layer-name: overrides;
+  @deep: {
+    query: ~"(min-width: 900px)";
+  }
+};
+
+@media @lookup[query] {
+  .lookup-media {
+    width: 240px;
+  }
+}
+
+@keyframes @lookup[anim] {
+  from { font-size: 15px; }
+  to   { font-size: 12px; }
+}
+
+@supports @lookup[supported] {
+  .lookup-supports {
+    display: grid;
+  }
+}
+
+@layer @lookup[layer-name] {
+  .lookup-layered {
+    color: blue;
+  }
+}
+
+// chained lookup — still one deprecation, not one per segment
+@media @lookup[@deep][query] {
+  .lookup-chained {
+    width: 900px;
+  }
+}
+
+// A lookup in a declaration value inside `(...)` stays a value position and is
+// not deprecated, mirroring the `@disp` case above.
+//
+// `@supports` scans its prelude as text, so a bare lookup reaches the permissive
+// regex rather than being parsed structurally. Matching only `@values` used to
+// resolve it to the whole ruleset and leave `[size]` behind, rendering
+// `(width: [size])`. Both the flat and chained forms are covered here.
+@values: {
+  size: 500px;
+  @deep: {
+    size: 900px;
+  }
+};
+
+@supports (width: @values[size]) {
+  .lookup-value-position {
+    width: 500px;
+  }
+}
+
+@supports (width: @values[@deep][size]) {
+  .lookup-value-position-chained {
+    width: 900px;
+  }
+}

@@ -532,12 +532,15 @@ export default function(testFilter) {
                     var file = path.basename(filePath);
                     var relativePath = path.relative(baseFolder, path.dirname(filePath)) + '/';
 
-                    // A fixture declares its expectation as either a sibling `.css`
-                    // (normal compile tests) or a sibling `.txt` (error tests, which
-                    // never produce CSS). Gating on `.css` alone silently skipped every
-                    // fixture under tests-error/ and the js-type-errors sets.
+                    // A fixture opts in by declaring an expectation. That is a sibling
+                    // `.css` for the default compile-and-diff, a sibling `.txt` for the
+                    // error sets, or a `getFilename` that resolves one elsewhere (the
+                    // sourcemap sets point at `test/sourcemaps/*.json`). Requiring
+                    // `.css` for all of them silently skipped the latter two kinds.
                     var expectedBase = path.join(path.dirname(filePath), path.basename(file, '.less'));
-                    if (fs.existsSync(expectedBase + '.css') || fs.existsSync(expectedBase + '.txt')) {
+                    if (getFilename
+                        || fs.existsSync(expectedBase + '.css')
+                        || fs.existsSync(expectedBase + '.txt')) {
                         processFileWithInfo({
                             file: file,
                             fullPath: filePath,

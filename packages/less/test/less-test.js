@@ -2,7 +2,6 @@
 import { createRequire } from 'module';
 import path from 'path';
 import fs from 'fs';
-import semver from 'semver';
 import logger from '../lib/less/logger.js';
 import { cosmiconfigSync } from 'cosmiconfig';
 import { globSync } from 'glob';
@@ -368,8 +367,7 @@ export default function(testFilter) {
     }
 
     function testTypeErrors(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
-        const fileSuffix = semver.gte(process.version, 'v16.9.0') ? '-2.txt' : '.txt';
-        fs.readFile(path.join(baseFolder, name) + fileSuffix, 'utf8', function (e, expectedErr) {
+        fs.readFile(path.join(baseFolder, name) + '.txt', 'utf8', function (e, expectedErr) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             expectedErr = doReplacements(expectedErr, baseFolder, err && err.filename);
             if (!err) {

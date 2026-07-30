@@ -99,7 +99,16 @@ class Quoted extends Node {
         }
         value = iterativeReplace(value, this.variableRegex, variableReplacement);
         value = iterativeReplace(value, this.propRegex, propertyReplacement);
-        return new Quoted(this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo());
+        const result = new Quoted(
+            this.quote + value + this.quote, value, this.escaped, this.getIndex(), this.fileInfo()
+        );
+        // Carry the quote across rather than re-deriving it from the rebuilt string.
+        // For a real quote character the two agree, but an unquoted body (empty quote)
+        // is not round-trippable that way — it would pick up the first character of the
+        // substituted value and read as quoted, which suppresses rootpath escaping in
+        // `URL.eval`.
+        result.quote = this.quote;
+        return result;
     }
 
     /**

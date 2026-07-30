@@ -20,10 +20,17 @@ import {
 } from '../tree/interpolated-variable.js';
 
 /**
- * One particle of a property name: a literal chunk, or an `@{...}` / `${...}`
- * interpolation which may carry a lookup chain.
+ * One particle of a property name: a literal chunk, an `@{...}` interpolation
+ * which may carry a lookup chain, or a `${...}` interpolation which may not.
+ *
+ * The sigils are spelled out separately rather than sharing `[@$]`: properties
+ * have no lookup grammar, so accepting `${name[key]}` here would hand `name[key]`
+ * to `resolveInterpolatedProperty` and produce a misleading "undefined property"
+ * error for syntax the language does not define.
  */
-const RULE_PROPERTY_PARTICLE = new RegExp(`^((?:[\\w-]+)|(?:[@$]\\{${VARIABLE_WITH_LOOKUPS}\\}))`);
+const RULE_PROPERTY_PARTICLE = new RegExp(
+    `^((?:[\\w-]+)|(?:@\\{${VARIABLE_WITH_LOOKUPS}\\})|(?:\\$\\{[\\w-]+\\}))`
+);
 
 //
 // less.js - parser
@@ -752,11 +759,14 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     // Anonymous node, which never substitutes anything — so
                     // `url(@{path}/a.png)` used to emit the braces verbatim while the
                     // quoted form resolved. Hand text containing interpolation to an
-                    // escaped Quoted (the same node the permissive value path builds)
-                    // so both spellings resolve identically. Escaped means no quote
-                    // characters are added back to the output.
+                    // escaped Quoted so both spellings resolve identically.
+                    //
+                    // The empty quote string matters: `URL.eval` escapes a rewritten
+                    // rootpath only for unquoted values, so a real quote character here
+                    // would suppress that and emit `url(a(b)/x.png)` unescaped. Escaped
+                    // means no quote is written to the output either way.
                     if (typeof value === 'string' && hasInterpolation(value)) {
-                        value = new(tree.Quoted)('\'', value, true, index, fileInfo);
+                        value = new(tree.Quoted)('', value, true, index, fileInfo);
                     }
 
                     parserInput.autoCommentAbsorb = true;

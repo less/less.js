@@ -1,0 +1,8 @@
+// Properties have no lookup grammar: `entities.property` parses `$name` with no
+// chaining, and nothing can hold a ruleset to look into. `${name[key]}` must
+// therefore be rejected rather than reaching the property resolver, where it
+// produced a misleading undefined-property error for undefined syntax.
+.a {
+  color: red;
+  ${color[k]}: value;
+}

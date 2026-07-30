@@ -534,8 +534,12 @@ export default function(testFilter) {
                     var file = path.basename(filePath);
                     var relativePath = path.relative(baseFolder, path.dirname(filePath)) + '/';
 
-                    var cssPath = path.join(path.dirname(filePath), path.basename(file, '.less') + '.css');
-                    if (fs.existsSync(cssPath)) {
+                    // A fixture declares its expectation as either a sibling `.css`
+                    // (normal compile tests) or a sibling `.txt` (error tests, which
+                    // never produce CSS). Gating on `.css` alone silently skipped every
+                    // fixture under tests-error/ and the js-type-errors sets.
+                    var expectedBase = path.join(path.dirname(filePath), path.basename(file, '.less'));
+                    if (fs.existsSync(expectedBase + '.css') || fs.existsSync(expectedBase + '.txt')) {
                         processFileWithInfo({
                             file: file,
                             fullPath: filePath,

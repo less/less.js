@@ -2,4 +2,3 @@ NameError: Error evaluating function `darken`: Recursive property reference for 
 1 .test {
 2   color: darken($color, 10%);
 3 }
-

@@ -2,4 +2,3 @@ NameError: Property '$undefined-prop' is undefined in {path}property-undefined.l
 1 .test {
 2   value: $undefined-prop;
 3 }
-

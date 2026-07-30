@@ -1,5 +1,12 @@
 ## Change Log
 
+### v4.8.2 (2026-07-30)
+
+#### Changes
+
+- [#4488](https://github.com/less/less.js/pull/4488) feat: support `[...]` lookups in `@{...}` interpolation (@matthew-dean)
+
+
 ### v4.8.1 (2026-07-26)
 
 #### Changes

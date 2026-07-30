@@ -251,11 +251,16 @@ export default function(testFilter) {
      * `tests-config/` when the suite moved to packages/test-data, but the
      * expectations stayed where they were.
      *
+     * `name` is built from `path.relative`, so its separators are platform
+     * native — matching only `/` here silently failed to strip the prefix on
+     * Windows and looked for an expectation that was never there.
+     *
      * @param {string} name
      * @returns {string}
      */
     function sourcemapExpectationPath(name) {
-        return path.join('test/', name.replace(/^tests-config\//, '')) + '.json';
+        var relative = name.replace(/[\\/]/g, '/').replace(/^tests-config\//, '');
+        return path.join('test', relative) + '.json';
     }
 
     function testSourcemapWithoutUrlAnnotation(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {

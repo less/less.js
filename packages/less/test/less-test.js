@@ -245,6 +245,19 @@ export default function(testFilter) {
         });
     }
 
+    /**
+     * Expectation path for the sourcemap sets that keep theirs under `test/`,
+     * mirroring the fixture's own directory. Fixture names gained a leading
+     * `tests-config/` when the suite moved to packages/test-data, but the
+     * expectations stayed where they were.
+     *
+     * @param {string} name
+     * @returns {string}
+     */
+    function sourcemapExpectationPath(name) {
+        return path.join('test/', name.replace(/^tests-config\//, '')) + '.json';
+    }
+
     function testSourcemapWithoutUrlAnnotation(name, err, compiledLess, doReplacements, sourcemap, baseFolder) {
         if (err) {
             fail('ERROR: ' + (err && err.message));
@@ -256,7 +269,7 @@ export default function(testFilter) {
             return;
         }
 
-        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        fs.readFile(sourcemapExpectationPath(name), 'utf8', function (e, expectedSourcemap) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
@@ -294,7 +307,7 @@ export default function(testFilter) {
             return;
         }
 
-        fs.readFile(path.join('test/', name) + '.json', 'utf8', function (e, expectedSourcemap) {
+        fs.readFile(sourcemapExpectationPath(name), 'utf8', function (e, expectedSourcemap) {
             process.stdout.write('- ' + path.join(baseFolder, name) + ': ');
             if (sourcemap === expectedSourcemap) {
                 ok('OK');
@@ -532,15 +545,14 @@ export default function(testFilter) {
                     var file = path.basename(filePath);
                     var relativePath = path.relative(baseFolder, path.dirname(filePath)) + '/';
 
-                    // A fixture opts in by declaring an expectation. That is a sibling
-                    // `.css` for the default compile-and-diff, a sibling `.txt` for the
-                    // error sets, or a `getFilename` that resolves one elsewhere (the
-                    // sourcemap sets point at `test/sourcemaps/*.json`). Requiring
-                    // `.css` for all of them silently skipped the latter two kinds.
-                    var expectedBase = path.join(path.dirname(filePath), path.basename(file, '.less'));
-                    if (getFilename
-                        || fs.existsSync(expectedBase + '.css')
-                        || fs.existsSync(expectedBase + '.txt')) {
+                    // Only the default compile-and-diff needs a sibling `.css`; that is
+                    // how such a fixture opts in. A set with its own verifyFunction keeps
+                    // its expectation elsewhere — a `.txt` beside the source for the
+                    // error sets, a `.json` under `test/` for the sourcemap sets — and
+                    // reports a missing one itself. Requiring `.css` of those skipped
+                    // them silently instead.
+                    var cssPath = path.join(path.dirname(filePath), path.basename(file, '.less') + '.css');
+                    if (verifyFunction || fs.existsSync(cssPath)) {
                         processFileWithInfo({
                             file: file,
                             fullPath: filePath,

@@ -1,0 +1,13 @@
+.literal {
+  background: url(literal/one.png);
+}
+.interpolated {
+  background: url(images/two.png);
+}
+.interpolated-lookup {
+  background: url(assets/three.png);
+}
+.quoted-interpolated {
+  background: url("images/four.png");
+}
+/*# sourceMappingURL=url-interpolation.css.map */

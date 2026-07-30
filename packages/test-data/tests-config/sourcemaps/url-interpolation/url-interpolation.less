@@ -1,0 +1,24 @@
+// Interpolated unquoted url() bodies are parsed into an escaped Quoted rather
+// than the Anonymous node used for literal ones, so this pins that the swap does
+// not change how url() values are mapped. All three spellings should keep the
+// same mapping structure as each other.
+@dir: images;
+@paths: {
+  dir: assets;
+};
+
+.literal {
+  background: url(literal/one.png);
+}
+
+.interpolated {
+  background: url(@{dir}/two.png);
+}
+
+.interpolated-lookup {
+  background: url(@{paths[dir]}/three.png);
+}
+
+.quoted-interpolated {
+  background: url("@{dir}/four.png");
+}

@@ -766,7 +766,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                     // would suppress that and emit `url(a(b)/x.png)` unescaped. Escaped
                     // means no quote is written to the output either way.
                     if (typeof value === 'string' && hasInterpolation(value)) {
-                        value = new(tree.Quoted)('', value, true, index, fileInfo);
+                        value = new(tree.Quoted)('', value, true, index + currentIndex, fileInfo);
                     }
 
                     parserInput.autoCommentAbsorb = true;

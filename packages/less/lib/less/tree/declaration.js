@@ -95,7 +95,10 @@ class Declaration extends Node {
             context.importantScope.push({});
             evaldValue = /** @type {Node} */ (this.value).eval(context);
 
-            if (!this.variable && evaldValue.type === 'DetachedRuleset') {
+            // A mixin call used as a property value (without a lookup) evaluates
+            // to its ruleset, which arrives here as an array of rules; without
+            // this guard it renders as `[object Object]`.
+            if (!this.variable && (evaldValue.type === 'DetachedRuleset' || Array.isArray(evaldValue))) {
                 throw { message: 'Rulesets cannot be evaluated on a property.',
                     index: this.getIndex(), filename: this.fileInfo().filename };
             }

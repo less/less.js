@@ -11,7 +11,10 @@
 
 #built-in {
   @r: 32;
+  @escaped-svg-literal: escape('<svg fill="red"></svg>');
   escaped: e("-Some::weird(#thing, y)");
+  escaped-direct: escape('a b(c)=d:e#f;g');
+  escaped-svg-literal: url("data:image/svg+xml,@{escaped-svg-literal}");
   lighten: lighten(#ff0000, 40%);
   lighten-relative: lighten(#ff0000, 40%, relative);
   darken: darken(#ff0000, 40%);

@@ -426,7 +426,9 @@ class Ruleset extends Node {
         const self = this;
         /** @param {Declaration} decl */
         function transformDeclaration(decl) {
-            if (decl.value instanceof Anonymous && !/** @type {Declaration & { parsed?: boolean }} */ (decl).parsed) {
+            if (decl.value instanceof Anonymous &&
+                !decl.value._preventReparse &&
+                !/** @type {Declaration & { parsed?: boolean }} */ (decl).parsed) {
                 if (typeof decl.value.value === 'string') {
                     new (/** @type {new (...args: [EvalContext, object, FileInfo, number]) => { parseNode: Function }} */ (/** @type {unknown} */ (Parser)))(/** @type {{ context: EvalContext, importManager: object }} */ (/** @type {Ruleset} */ (this).parse).context, /** @type {{ context: EvalContext, importManager: object }} */ (/** @type {Ruleset} */ (this).parse).importManager, decl.fileInfo(), decl.value.getIndex()).parseNode(
                         decl.value.value,

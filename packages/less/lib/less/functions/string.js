@@ -7,9 +7,12 @@ export default {
         return new Quoted('"', str instanceof JavaScript ? str.evaluated : str.value, true);
     },
     escape: function (str) {
-        return new Anonymous(
-            encodeURI(str.value).replace(/=/g, '%3D').replace(/:/g, '%3A').replace(/#/g, '%23').replace(/;/g, '%3B')
-                .replace(/\(/g, '%28').replace(/\)/g, '%29'));
+        const escapedValue = encodeURI(str.value).replace(/=/g, '%3D').replace(/:/g, '%3A').replace(/#/g, '%23').replace(/;/g, '%3B')
+            .replace(/\(/g, '%28').replace(/\)/g, '%29');
+        const escaped = new Anonymous(escapedValue);
+        // Percent escapes are literal CSS, not Less source.
+        escaped._preventReparse = escapedValue.includes('%');
+        return escaped;
     },
     replace: function (string, pattern, replacement, flags) {
         let result = string.value;

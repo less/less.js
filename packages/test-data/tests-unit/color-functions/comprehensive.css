@@ -29,17 +29,17 @@
 }
 #percentage {
   color: 255;
-  border-color: rgba(255, 0, 0, 0.5);
+  border-color: rgba(100%, 0, 0, 50%);
 }
 #grey {
-  color: #c8c8c8;
+  color: rgb(200, 200, 200);
 }
 #aa3333 {
-  color: #aa3333;
+  color: rgb(66.66%, 20%, 20%);
 }
 #bb8080 {
-  color: hsl(0, 30%, 62%);
+  color: hsl(0deg, 30%, 62%);
 }
 #ccff00 {
-  color: hsl(72, 100%, 50%);
+  color: hsl(72deg, 100%, 50%);
 }

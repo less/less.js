@@ -65,9 +65,9 @@ jobs:
           CURRENT=$(node -p "require('./packages/less/package.json').version")
 
           if [ "$BRANCH" = "alpha" ]; then
-            NPM_VERSION=$(npm view less dist-tags.alpha)
+            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
           else
-            NPM_VERSION=$(npm view less version)
+            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
           fi
 
           DEFAULT_NEXT=$(node scripts/release-metadata.js next-version "$BRANCH" "$CURRENT" "$NPM_VERSION")
@@ -83,6 +83,11 @@ jobs:
           if [ -n "$EXISTING_TITLE" ]; then
             NEXT=$(node scripts/release-metadata.js parse-title "$BRANCH" "$EXISTING_TITLE")
             RELEASE_BRANCH="$EXISTING_BRANCH"
+            if ! node scripts/release-metadata.js validate "$BRANCH" "$NEXT" "$NPM_VERSION" 2>/dev/null; then
+              echo "Existing release PR title v${NEXT} is no longer publishable; falling back to v${DEFAULT_NEXT}"
+              NEXT="$DEFAULT_NEXT"
+              RELEASE_BRANCH=$(node scripts/release-metadata.js branch "$BRANCH" "$NEXT")
+            fi
           else
             NEXT="$DEFAULT_NEXT"
             RELEASE_BRANCH=$(node scripts/release-metadata.js branch "$BRANCH" "$NEXT")
@@ -121,7 +126,7 @@ jobs:
             git checkout -b "${RELEASE_BRANCH}"
           fi
 
-          node scripts/release-metadata.js sync-package-versions "${NEXT_VERSION}"
+          node scripts/release-metadata.js sync-package-versions "${RELEASE_BASE}" "${NEXT_VERSION}"
 
           git add package.json packages/*/package.json
 
@@ -136,7 +141,7 @@ jobs:
               --json number,title,author \
               --jq '.[] | "- [#\(.number)](https://github.com/${{ github.repository }}/pull/\(.number)) \(.title) (@\(.author.login))"' \
               2>/dev/null || echo "")
-            if [ -n "$PR_LINES" ]; then
+            if [ -n "$PR_LINES" ] && ! grep -q "^### v${NEXT_VERSION}\\b" CHANGELOG.md; then
               TODAY=$(date +%Y-%m-%d)
               {
                 head -1 CHANGELOG.md
@@ -150,30 +155,16 @@ jobs:
                 tail -n +2 CHANGELOG.md
               } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
               git add CHANGELOG.md
+            elif grep -q "^### v${NEXT_VERSION}\\b" CHANGELOG.md; then
+              echo "CHANGELOG.md already has a v${NEXT_VERSION} section; keeping the curated release notes."
             fi
           fi
 
-          COMMITTED=false
           if git diff --cached --quiet; then
-            echo "No version changes; branch is already at v${NEXT_VERSION}"
+            echo "No manifest changes; creating an explicit release commit for v${NEXT_VERSION}"
+            git commit --allow-empty -m "${TITLE}"
           else
             git commit -m "${TITLE}"
-            COMMITTED=true
-          fi
-
-          # If no new commit was created the release branch has no commits
-          # ahead of master, so pushing it and trying to open a PR would fail
-          # with "no commits between head and base". Instead, just report
-          # whether an existing release PR is open and exit cleanly.
-          if [ "$COMMITTED" = "false" ]; then
-            EXISTING=$(gh pr list --head "${RELEASE_BRANCH}" --base "${RELEASE_BASE}" \
-              --json number --jq '.[0].number' 2>/dev/null || echo "")
-            if [ -n "${EXISTING}" ]; then
-              echo "✅ No new changes; release PR #${EXISTING} already exists"
-            else
-              echo "✅ No version bump needed and no existing release PR; nothing to do"
-            fi
-            exit 0
           fi
 
           # --force-with-lease refuses to overwrite if the remote has advanced
@@ -264,9 +255,9 @@ jobs:
           PREVIOUS_VERSION=$(node -p "require('./packages/less/package.json').version")
           VERSION=$(node .release-scripts/release-metadata.js parse-title "$RELEASE_BASE" "$RELEASE_TITLE")
           if [ "$RELEASE_BASE" = "alpha" ]; then
-            NPM_VERSION=$(npm view less dist-tags.alpha)
+            NPM_VERSION=$(npm view less dist-tags.alpha 2>/dev/null || echo "")
           else
-            NPM_VERSION=$(npm view less version)
+            NPM_VERSION=$(npm view less version 2>/dev/null || echo "")
           fi
           node .release-scripts/release-metadata.js validate-title-sync "$RELEASE_BASE" "$VERSION" "$PREVIOUS_VERSION" "$NPM_VERSION"
           TITLE=$(node .release-scripts/release-metadata.js title "$RELEASE_BASE" "$VERSION")

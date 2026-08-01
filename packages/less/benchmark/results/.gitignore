@@ -1,0 +1,4 @@
+# Legacy flat files (migrated to runs/ + latest/)
+system-info.json
+benchmark-results.json
+v*.json

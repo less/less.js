@@ -6,6 +6,8 @@
     color: red;
   }
 }
-.container .nested {
-  color: blue;
+.container {
+  .nested {
+    color: blue;
+  }
 }

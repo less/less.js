@@ -1,0 +1,16 @@
+@base-hue: 210;
+
+.color-gen(@i) when (@i > 0) {
+  .color-@{i} {
+    color: hsl(@base-hue, percentage((@i / 20)), 50%);
+    background: lighten(hsl(@base-hue, 80%, 50%), @i * 2%);
+    border-color: darken(hsl(@base-hue, 80%, 50%), @i * 2%);
+    outline-color: spin(hsl(@base-hue, 80%, 50%), @i * 15);
+    text-shadow: 0 1px 0 fade(#000, @i * 5%);
+    box-shadow: 0 0 (@i * 1px) saturate(hsl(@base-hue, 50%, 50%), @i * 3%);
+  }
+
+  .color-gen((@i - 1));
+}
+
+.color-gen(20);

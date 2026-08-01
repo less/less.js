@@ -81,8 +81,8 @@ jobs:
           node scripts/release-metadata.js validate "$RELEASE_BASE" "$TITLE_VERSION" "$NPM_VERSION"
           echo "✅ Release title, package.json, and npm version checks agree on v${TITLE_VERSION}"
 
-      - name: Run node tests (ESM + CJS)
-        run: pnpm run test:node
+      - name: Run Less v5 alpha support contract
+        run: pnpm run test:alpha
 
       - name: Build
         run: |
@@ -202,7 +202,15 @@ jobs:
             PRERELEASE="--prerelease"
             BODY="## Alpha Release
 
-          This is an alpha release from the alpha branch.
+          This Less 5 alpha is a Jess-powered compiler rewrite for early testing, not a drop-in Less 4.x replacement yet.
+
+          Highlights:
+          - CSS nesting is preserved by default.
+          - Less-style ampersand joining for BEM-style modifiers and similar selector patterns is still supported.
+          - Nested and extended selector output may use modern selectors such as :is(); selector compatibility remains part of the alpha feedback surface.
+          - Browser compilation is not included in this alpha; a new browser build mechanism will be introduced in a future alpha.
+
+          See CHANGELOG.md for the current supported surface and work-in-progress areas.
 
           ## Installation
 
@@ -229,14 +237,26 @@ jobs:
           \`\`\`"
           fi
 
+          ASSETS=()
+          if [ "$IS_ALPHA" != "true" ]; then
+            for asset in packages/less/dist/less.js packages/less/dist/less.min.js; do
+              if [ -f "$asset" ]; then
+                ASSETS+=("$asset")
+              fi
+            done
+          else
+            echo "Alpha release has no browser build assets; browser compilation will return through a future build mechanism."
+          fi
+
           if gh release view "$TAG" &>/dev/null; then
-            echo "Release $TAG already exists, uploading assets to existing release"
-            gh release upload "$TAG" packages/less/dist/less.js packages/less/dist/less.min.js --clobber
+            echo "Release $TAG already exists"
+            if [ "${#ASSETS[@]}" -gt 0 ]; then
+              gh release upload "$TAG" "${ASSETS[@]}" --clobber
+            fi
           else
             gh release create "$TAG" \
               --title "$TITLE" \
               $PRERELEASE \
               --notes "$BODY" \
-              packages/less/dist/less.js \
-              packages/less/dist/less.min.js
+              "${ASSETS[@]}"
           fi

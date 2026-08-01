@@ -1,5 +1,7 @@
-#theme > .mixin {
-  background-color: grey;
+#theme {
+  > .mixin {
+    background-color: grey;
+  }
 }
 #container {
   color: black;

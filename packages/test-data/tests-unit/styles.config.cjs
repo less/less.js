@@ -4,6 +4,6 @@ module.exports = {
       "relativeUrls": true,
       "silent": true,
       "javascriptEnabled": true
-}
+    }
   }
 };

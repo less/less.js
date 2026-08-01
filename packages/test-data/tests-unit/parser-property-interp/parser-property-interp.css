@@ -4,6 +4,6 @@
   value: width;
   color: red;
   border-color-width: 2px;
-  *-z-color: 1px dashed blue;
+  --z-color: 1px dashed blue;
   background-color-width: green;
 }

@@ -85,3 +85,9 @@
 }
 
 
+
+// https://github.com/less/less.js/issues/2462
+@type: 5_large;
+.icon-@{type} {
+  background-image: ~"url(/img/icon/@{type}.svg)";
+}

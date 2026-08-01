@@ -1,0 +1,10 @@
+#functions {
+  @var: 10;
+  @colors: #000, #fff;
+  color: _color("evil red"); // #660000
+  width: increment(15);
+  height: undefined("self");
+  border-width: add(2, 3);
+  variable: increment(@var);
+  background: linear-gradient(@colors);
+}

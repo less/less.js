@@ -1,0 +1,76 @@
+// Backward-compatibility coverage for the deprecated bare `@variable`
+// reference in non-value positions (at-rule preludes, names, and identifiers).
+// These still resolve, but emit a `variable-in-at-rule-prelude` deprecation
+// warning at parse time. New code should use `@{variable}` interpolation
+// instead (see media.less / variables-in-at-rules.less).
+
+// --- nestable at-rule preludes ---
+@smartphone: ~"only screen and (max-width: 200px)";
+@media @smartphone {
+  .body {
+    width: 480px;
+  }
+}
+
+@all: ~"all";
+@tv: ~"(tv)";
+@media @all and @tv {
+  .all-and-tv {
+    var: yes;
+  }
+}
+
+@breakpoint: screen;
+@media @breakpoint, print {
+  .list {
+    margin: 0;
+  }
+}
+
+@varfoo: foo;
+@threshold: 400px;
+@container @varfoo (min-width: @threshold) {
+  .sticky-child {
+    font-size: 75%;
+  }
+}
+
+// --- unknown at-rule prelude (structural bare variable — deprecated) ---
+@supported: ~"(display: flex)";
+@supports @supported {
+  .flex {
+    display: flex;
+  }
+}
+
+// A bare @variable in a *nested declaration value* (inside `(...)`) is NOT a
+// structural position — it is a declaration value and remains valid without a
+// deprecation warning, mirroring `@media (min-width: @var)`.
+@disp: grid;
+@supports (display: @disp) and (gap: 1rem) {
+  .grid {
+    display: grid;
+  }
+}
+
+// --- at-rule identifiers / names ---
+@anim: enlarger;
+@keyframes @anim {
+  from { font-size: 12px; }
+  to   { font-size: 15px; }
+}
+
+@ns: less;
+@namespace @ns "http://lesscss.org";
+
+// indirect (variable-variable) prefix — also a deprecated bare reference
+@ns-ref: svg;
+@svg: svgns;
+@namespace @@ns-ref "http://www.w3.org/2000/svg";
+
+@layer-name: base;
+@layer @layer-name {
+  .layered {
+    color: red;
+  }
+}

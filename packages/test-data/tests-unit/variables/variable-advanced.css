@@ -1,6 +1,3 @@
-.alpha {
-  filter: alpha(opacity=42);
-}
 .units-extended {
   width: 1px;
   same-unit-as-previously: 1px;
@@ -26,7 +23,7 @@
   mul-em-2: 196em;
   mul-cm-1: 196cm;
   add-px-1: 15.4px;
-  add-px-2: 393.35275591px;
+  add-px-2: 393.3527559px;
   mul-px-2: 140px;
   mul-px-3: 140px;
 }

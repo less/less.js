@@ -1,5 +1,6 @@
 // Inline comments and grid system tests
 @media all and/*! */(max-width:1024px) {}
+// In Less v5, This is an empty ruleset, so it is removed.
 @-webkit-keyframes hover /* Safari and Chrome */{  }
 .bg {
   background-image: linear-gradient(#333 /*{comment}*/, #111);
@@ -25,6 +26,8 @@
 .some-inline-comments {
     a: yes /* comment */;
     b: red /* comment */;
+    // In Less v5, the comment is considered to be attached to the source,
+    // not part of the value.
    @c: yes /* comment */;
    @d: red /* comment */;
     c: @c;

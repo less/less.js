@@ -1,9 +1,6 @@
-@import "test.css" screen, print;
-@media screen, print, handheld {
-  /* comment */
-  /* another */
+@import "test.css" screen /* comment */, print;
+@media screen /* comment */, print /* another */, handheld {
   body {
     font-size: 12pt;
   }
 }
-/* comment */

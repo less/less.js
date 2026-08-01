@@ -1,0 +1,21 @@
+[
+  {
+    "code": "selector/parentless-ampersand",
+    "phase": "eval",
+    "message": "Parentless ampersand ignored",
+    "reason": "Selector \"&\" uses \"&\" without an available parent selector in this context.",
+    "fix": "Move the selector under a real parent selector, or remove the stray \"&\".",
+    "file": {
+      "name": "parentless-ampersand.less",
+      "path": "{path}",
+      "fullPath": "{path}parentless-ampersand.less"
+    },
+    "filePath": "{path}parentless-ampersand.less",
+    "line": 1,
+    "column": 1,
+    "lines": {
+      "1": "& {",
+      "2": "  color: red;"
+    }
+  }
+]

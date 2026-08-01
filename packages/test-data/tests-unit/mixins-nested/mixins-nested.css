@@ -1,14 +1,18 @@
-.class .inner {
-  height: 300;
+.class {
+  .inner {
+    height: 300;
+    .innest {
+      width: 30;
+      border-width: 60;
+    }
+  }
 }
-.class .inner .innest {
-  width: 30;
-  border-width: 60;
-}
-.class2 .inner {
-  height: 600;
-}
-.class2 .inner .innest {
-  width: 60;
-  border-width: 120;
+.class2 {
+  .inner {
+    height: 600;
+    .innest {
+      width: 60;
+      border-width: 120;
+    }
+  }
 }

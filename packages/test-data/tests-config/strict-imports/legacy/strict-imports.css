@@ -1,0 +1,14 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
+
+.imported {
+  background: green;
+}
+@media (max-width: 768px) {
+  .mobile {
+    color: red;
+  }
+}
+.container .nested {
+  color: blue;
+}

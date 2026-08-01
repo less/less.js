@@ -1,7 +1,7 @@
 module.exports = {
   language: {
     less: {
-      "plugin": "test/plugins/preprocess/"
+      "plugin": "test/plugins/preprocess/index.cjs"
 }
   }
 };

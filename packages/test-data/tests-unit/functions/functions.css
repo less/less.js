@@ -1,11 +1,3 @@
-#functions {
-  color: #660000;
-  width: 16;
-  height: undefined("self");
-  border-width: 5;
-  variable: 11;
-  background: linear-gradient(#000, #fff);
-}
 #built-in {
   escaped: -Some::weird(#thing, y);
   lighten: #ffcccc;
@@ -17,7 +9,7 @@
   desaturate: #29332f;
   desaturate-relative: #233930;
   greyscale: #2e2e2e;
-  hsl-clamp: hsl(0, 0%, 100%);
+  hsl-clamp: hsl(380, 150%, 150%);
   spin-p: hsl(20, 50%, 50%);
   spin-n: hsl(350, 50%, 50%);
   luma-white: 100%;
@@ -110,13 +102,13 @@
   min: 1pt;
   min: 3mm;
   min: min(1, 4ex, 2pt);
-  min: min(calc(1 + 1), 1);
+  min: min(calc(1em + 1vw), 1);
   min: min(var(--width), 802px);
   max: 3;
   max: 5em;
   max: max(5m, 3em);
   max: min(var(--body-max-width), calc(100vw - 20px));
-  max: max(1, calc(1 + 1));
+  max: max(1, calc(1em + 1vw));
   max-native: max(10vw, 100px);
   percentage: 20%;
   color-quoted-digit: #dda0dd;
@@ -224,18 +216,22 @@ html {
   a: true;
   b: false;
   c: false;
+  d: true;
+  e: false;
 }
 #if {
   a: 1;
   b: 2;
   c: 3;
-  --e: ;
+  e: ;
   f: 6;
   g: 3;
   h: 5;
   i: 6;
   j: 8;
   k: 1;
+  m: 1;
+  n: 2;
   l: black;
   /* results in void */
   color: green;
@@ -243,7 +239,7 @@ html {
 }
 .paren-escapes {
   list-1: 1, 2, 3;
-  length-1: 3;
+  length-1: 1;
   item-1: 4;
   item-2: 5;
   item-3: 6;

@@ -25,15 +25,3 @@
 #alpha #hsla {
   color: hsla(11, 20%, 20%, 0.6);
 }
-#grey {
-  color: #c8c8c8;
-}
-#aa3333 {
-  color: #aa3333;
-}
-#bb8080 {
-  color: hsl(0, 30%, 62%);
-}
-#ccff00 {
-  color: hsl(72, 100%, 50%);
-}

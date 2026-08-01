@@ -15,7 +15,7 @@
 @namespace svg url(http://www.w3.org/2000/svg);
 @viewport {
   width: device-width;
-  initial-scale: 1;
+  initial-scale: 1.0;
 }
 @keyframes slidein {
   from {
@@ -82,8 +82,8 @@
     display: none;
   }
 }
-@media (max-width: 768px) {
-  .container {
+.container {
+  @media (max-width: 768px) {
     padding: 10px;
   }
 }
@@ -95,9 +95,11 @@
   margin-left: 3cm;
   margin-right: 4cm;
 }
-@media (max-width: 600px) {
-  .wrapper .mobile-only {
-    display: block;
+.wrapper {
+  @media (max-width: 600px) {
+    .mobile-only {
+      display: block;
+    }
   }
 }
 @media (min-width: 1024px) {

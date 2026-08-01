@@ -1,0 +1,10 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
+
+#theme > .mixin {
+  background-color: grey;
+}
+#container {
+  color: black;
+  background-color: grey;
+}

@@ -7,9 +7,12 @@
 	"scripts": {
 		"publish": "node scripts/bump-and-publish.js",
 		"publish:dry-run": "DRY_RUN=true node scripts/bump-and-publish.js",
+		"verify:alpha:packed-consumer": "node scripts/verify-alpha-packed-consumer.mjs",
+		"test:publish-dry-run": "node --test scripts/bump-and-publish.test.mjs",
+		"test:alpha": "pnpm --dir packages/less run test:alpha && pnpm run test:publish-dry-run && pnpm run verify:alpha:packed-consumer",
 		"prepare": "husky",
 		"changelog": "github-changes -o less -r less.js -a --only-pulls --use-commit-body -m \"(YYYY-MM-DD)\"",
-		"test": "cd packages/less && npm test",
+		"test": "pnpm run test:alpha",
 		"test:node": "cd packages/less && npm run test:node",
 		"test:release": "node scripts/test-release-automation.js",
 		"postinstall": "npx only-allow pnpm"
@@ -31,6 +34,7 @@
 		"github-changes": "^1.1.2",
 		"husky": "~9.1.7",
 		"npm-run-all": "^4.1.5",
+		"playwright": "1.50.1",
 		"semver": "^6.3.1"
 	},
 	"packageManager": "pnpm@10.34.5"

@@ -3,34 +3,22 @@
   border: 1px #f00;
   background: #fdd;
 }
-.error.intrusion,
-.badError.intrusion {
+:is(.error, .badError).intrusion {
   font-size: 1.3em;
   font-weight: bold;
 }
-.intrusion .error,
-.intrusion .badError {
+.intrusion :is(.error, .badError) {
   display: none;
 }
 .badError {
   border-width: 3px;
 }
-.foo .bar,
-.foo .baz,
-.ext1 .ext2 .bar,
-.ext1 .ext2 .baz,
-.ext3 .bar,
-.ext3 .baz,
-.foo .ext3,
-.ext4 .bar,
-.ext4 .baz,
-.foo .ext4 {
+:is(.foo, .ext1 .ext2, .ext3, .ext4) :is(.bar, .ext3, .ext4),
+:is(.foo, .ext1 .ext2, .ext3, .ext4) .baz {
   display: none;
 }
-div.ext5,
-.ext6 > .ext5,
-div.ext7,
-.ext6 > .ext7 {
+div:is(.ext5, .ext7),
+.ext6 > :is(.ext5, .ext7) {
   width: 100px;
 }
 .ext8.ext9,
@@ -56,21 +44,27 @@ div.ext7,
 .fuu {
   result: match-nested-foo;
 }
-.aa,
+.aa {
+  color: black;
+  .dd,
+  .ee {
+    background: red;
+  }
+}
 .cc {
   color: black;
 }
-.aa .dd,
-.aa .ee {
-  background: red;
-}
 .bb,
-.cc,
-.ee,
 .ff {
   background: red;
+  .bb,
+  .ff {
+    color: black;
+  }
 }
-.bb .bb,
-.ff .ff {
-  color: black;
+.cc {
+  background: red;
+}
+.ee {
+  background: red;
 }

@@ -1,0 +1,43 @@
+// Shared mixins and variables for import benchmarking
+@import-base-color: #3498db;
+@import-accent: #e74c3c;
+@import-spacing: 8px;
+
+.imported-mixin(@size: 14px, @weight: normal) {
+  font-size: @size;
+  font-weight: @weight;
+  line-height: @size * 1.5;
+}
+
+.imported-box(@w: 100px, @h: 100px) {
+  width: @w;
+  height: @h;
+  background: @import-base-color;
+  border: 1px solid darken(@import-base-color, 15%);
+  margin: @import-spacing;
+}
+
+.imported-flex(@dir: row, @justify: flex-start, @align: stretch) {
+  display: flex;
+  flex-direction: @dir;
+  justify-content: @justify;
+  align-items: @align;
+}
+
+.imported-grid(@cols: 12, @gap: @import-spacing) {
+  display: grid;
+  grid-template-columns: repeat(@cols, 1fr);
+  gap: @gap;
+}
+
+.imported-base {
+  color: @import-base-color;
+  padding: @import-spacing;
+  .imported-mixin();
+}
+
+.imported-card {
+  .imported-box(300px, auto);
+  padding: @import-spacing * 2;
+  border-radius: 4px;
+}

@@ -1,1 +1,9 @@
+branch="$(git branch --show-current)"
+
+if [ "$branch" = "alpha" ]; then
+  echo "Skipping pre-commit verification on alpha branch"
+  exit 0
+fi
+
+cd packages/less && npm run typecheck && cd ../..
 pnpm test

@@ -37,7 +37,12 @@
     number-value:  extract(12345678, 1);
     color-value:   extract(blue, 1);
     rgba-value:    extract(rgba(80, 160, 240, 0.67), 1);
+    // Custom properties are preserved as authored unless interpolation is used.
+    // Less v5 guidance for evaluation:
+    //   @tmp: extract(~'', 1);
+    //   --empty-value: @{tmp};
     --empty-value:   extract(~'', 1);
+    empty-value:     extract(~'', 1);
 
     name-length:   length(name);
     string-length: length("string");
@@ -122,9 +127,9 @@
 .md-3D {
     @a: a b c d, 1 2 3 4;
     @b: 5 6 7 8, e f g h;
-    .3D(@a, @b);
+    .three-D(@a, @b);
 
-    .3D(...) {
+    .three-D(...) {
 
         @v1:       @arguments;
         length-1:  length(@v1);

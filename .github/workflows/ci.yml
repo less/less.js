@@ -24,8 +24,6 @@ jobs:
             node: 'lts/-1'
           - os: ubuntu-latest
             node: 'lts/-2'
-          - os: ubuntu-latest
-            node: 'lts/-3'
 
     runs-on: ${{ matrix.os }}
     # This has copy/paste steps and should be refactored using DRY
@@ -41,7 +39,9 @@ jobs:
         run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Print put node & npm version
         run: node --version && pnpm --version
-      - name: Run node tests (ESM + CJS)
+      - name: Run Less v5 alpha support contract
+        run: pnpm run test:alpha
+      - name: Run Less v5 Node module smoke tests
         run: pnpm run test:node
       - name: Run release automation tests
         if: matrix.os == 'ubuntu-latest' && matrix.node == 'lts/*'

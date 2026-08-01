@@ -20,7 +20,8 @@ Here are other resources for using Less.js:
 
 
 ## Contributing
-Please read [CONTRIBUTING.md](CONTRIBUTING.md). Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com).
+Please read [CONTRIBUTING.md](CONTRIBUTING.md). Add tests for any new or
+changed functionality and run the npm scripts described there.
 
 ### Reporting Issues
 
@@ -33,7 +34,8 @@ Please report documentation issues in [the documentation project](https://github
 Read [Developing Less](http://lesscss.org/usage/#developing-less).
 
 ## Release History
-See the [changelog](CHANGELOG.md)
+See the [changelog](CHANGELOG.md), including the [Less v5 alpha.1 release
+notes](CHANGELOG.md#v500-alpha1-unreleased).
 
 ## Contributors
 
@@ -73,7 +75,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 
 ## [License](LICENSE)
 
-Copyright (c) 2009-2017 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
+Copyright (c) 2009-2025 [Alexis Sellier](http://cloudhead.io) & The Core Less Team
 Licensed under the [Apache License](LICENSE).
 
 

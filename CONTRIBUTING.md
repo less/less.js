@@ -42,8 +42,12 @@ Pull requests are welcome! Here's how to make them go smoothly:
 
 * **For new features, start with a feature request** to get feedback and see how your idea is received.
 * **If your PR solves an existing issue**, but approaches it differently, please create a new issue first and discuss it with core contributors. This helps avoid wasted effort.
-* **Don't modify the `./dist/` folder**—we handle that during releases.
-* **Please add tests** for your work. Run tests using `npm test`, which runs both Node.js and browser (Headless Chrome) tests.
+* The `dist/` folder is gitignored—builds happen automatically during releases.
+* **Please add tests** for your work. Run `pnpm test` for the current Less 5
+  alpha gate. The historical Less 4 fixture sweep remains available through
+  `pnpm run test:node` while the Less 5 compatibility backlog is drained.
+  Browser compilation/testing is not part of the Less 5 alpha gate; a new
+  browser build mechanism will replace the old browser harness.
 
 ### Coding Standards
 
@@ -86,25 +90,43 @@ When code is pushed to specific branches, GitHub Actions automatically:
 
 ### How to Publish
 
-**For regular releases:**
-1. Update version in `packages/less/package.json` (or let it auto-increment)
-2. Commit and push to `master`
-3. The workflow automatically publishes if the version changed
+**For patch releases (automatic):**
+1. Merge your PR into `master`
+2. The workflow compares `package.json` against the latest npm version
+3. If `package.json` is ahead, it uses that version; otherwise it bumps to the next patch
+4. Publishes to npm and creates a GitHub release with `less.js` and `less.min.js` attached
+
+**For minor/major releases:**
+1. Create a release branch (e.g., `release/v4.7.0`)
+2. Update `version` in all `package.json` files and update `CHANGELOG.md`
+3. Merge into `master`
+4. The workflow detects the version is ahead of npm and publishes it directly
 
 **For alpha releases:**
 1. Make your changes on the `alpha` branch
 2. Commit and push
-3. The workflow automatically increments the alpha version and publishes
+3. The workflow creates or updates an alpha release PR
+4. Merging that release PR publishes the committed alpha version to npm with
+   the `alpha` tag
 
 ### Version Override
 
-You can override auto-increment by including a version in your commit message:
+To force a specific version (useful for CI or manual runs), set the `EXPLICIT_VERSION` environment variable:
 
+```bash
+EXPLICIT_VERSION=4.7.0 pnpm run publish
 ```
-feat: new feature
 
-version: 4.5.0
-```
+### Release Assets
+
+Stable GitHub releases include:
+- `less.js` — the full browser build
+- `less.min.js` — the minified browser build
+
+These are built during the workflow and attached to the release. They are not committed to git (the `dist/` directory is gitignored).
+
+Less 5 alpha.1 does not attach browser build assets; browser compilation will
+return through a future alpha build mechanism.
 
 ### Security
 

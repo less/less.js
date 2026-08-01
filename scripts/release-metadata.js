@@ -105,10 +105,21 @@ function nextVersion(base, currentVersion, npmVersion) {
   if (!semver.valid(currentVersion)) {
     throw new Error(`Invalid current package version: ${currentVersion}`);
   }
+  const publishedVersion = npmVersion && semver.valid(npmVersion) ? npmVersion : '';
 
   if (isAlphaBase(base)) {
-    const baseVersion = npmVersion && semver.valid(npmVersion) && semver.gt(npmVersion, currentVersion)
-      ? npmVersion
+    const current = semver.parse(currentVersion);
+    if (
+      current.prerelease.length === 2 &&
+      current.prerelease[0] === 'alpha' &&
+      typeof current.prerelease[1] === 'number' &&
+      (!publishedVersion || semver.gt(currentVersion, publishedVersion))
+    ) {
+      return currentVersion;
+    }
+
+    const baseVersion = publishedVersion && semver.gt(publishedVersion, currentVersion)
+      ? publishedVersion
       : currentVersion;
     const match = baseVersion.match(/^(\d+\.\d+\.\d+)-alpha\.(\d+)$/);
     if (match) {
@@ -118,10 +129,10 @@ function nextVersion(base, currentVersion, npmVersion) {
     return `${parsed.major + 1}.0.0-alpha.1`;
   }
 
-  if (npmVersion && semver.valid(npmVersion) && semver.gt(currentVersion, npmVersion)) {
+  if (publishedVersion && semver.gt(currentVersion, publishedVersion)) {
     return currentVersion;
   }
-  return semver.inc(npmVersion || currentVersion, 'patch');
+  return semver.inc(publishedVersion || currentVersion, 'patch');
 }
 
 function packageFiles() {
@@ -132,8 +143,8 @@ function packageFiles() {
   return [...files, ...packageDirs].filter(file => fs.existsSync(file));
 }
 
-function syncPackageVersions(version) {
-  validateVersionForBase(version.includes('-alpha.') ? 'alpha' : 'master', version);
+function syncPackageVersions(base, version) {
+  validateVersionForBase(base, version);
   for (const file of packageFiles()) {
     const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
     if (!pkg.version) continue;
@@ -217,10 +228,10 @@ function syncChangelogVersion(version, previousVersion) {
   return true;
 }
 
-function syncFiles(version, previousVersion) {
+function syncFiles(base, version, previousVersion) {
   const changelogUpdate = readChangelogUpdate(version, previousVersion);
 
-  syncPackageVersions(version);
+  syncPackageVersions(base, version);
   if (changelogUpdate.status === 'updated' || changelogUpdate.status === 'inserted') {
     fs.writeFileSync(changelogUpdate.path, changelogUpdate.content);
   }
@@ -237,8 +248,8 @@ function usage() {
   node scripts/release-metadata.js validate <base> <version> [npmVersion]
   node scripts/release-metadata.js validate-title-sync <base> <version> <previousVersion> [npmVersion]
   node scripts/release-metadata.js next-version <base> <currentVersion> [npmVersion]
-  node scripts/release-metadata.js sync-package-versions <version>
-  node scripts/release-metadata.js sync-files <version> <previousVersion>`);
+  node scripts/release-metadata.js sync-package-versions <base> <version>
+  node scripts/release-metadata.js sync-files <base> <version> <previousVersion>`);
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -259,9 +270,9 @@ function main(argv = process.argv.slice(2)) {
     } else if (command === 'next-version') {
       process.stdout.write(nextVersion(args[0], args[1], args[2] || ''));
     } else if (command === 'sync-package-versions') {
-      syncPackageVersions(args[0]);
+      syncPackageVersions(args[0], args[1]);
     } else if (command === 'sync-files') {
-      syncFiles(args[0], args[1]);
+      syncFiles(args[0], args[1], args[2]);
     } else {
       usage();
       process.exit(1);

@@ -1,0 +1,40 @@
+@media screen and (max-width: 500px) {
+  .a {
+    color: red;
+  }
+}
+@media only screen and (min-width: 100px) {
+  .b {
+    color: blue;
+  }
+}
+@media all and (max-width: 9px) {
+  .c {
+    color: green;
+  }
+}
+@media print and (color) and (min-width: 1px) {
+  .d {
+    color: black;
+  }
+}
+@media screen and (max-width: 500px) {
+  .e {
+    color: red;
+  }
+}
+@media (max-width: 500px) and (min-width: 100px) {
+  .f {
+    color: red;
+  }
+}
+@media tester and (max-width: 500px) {
+  .g {
+    color: red;
+  }
+}
+@media screen and (max-width: 500px) {
+  .h {
+    color: red;
+  }
+}

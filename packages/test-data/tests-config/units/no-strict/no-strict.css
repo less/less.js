@@ -6,16 +6,16 @@
   }
 }
 #units {
-  t1: 22em;
-  t2: 22em;
-  t3: 2em;
+  t1: 22;
+  t2: 22;
+  t3: 2;
   t4: 22em;
   t5: 22em;
   t6: 2em;
-  t7: 22em;
-  t8: 22em;
-  t9: 2em;
-  t10: 22em;
-  t11: 22em;
-  t12: 2em;
+  t7: calc(2em * 1em + 20);
+  t8: calc(20 + 2em * 1em);
+  t9: calc(2em * 1em);
+  t10: calc(2em * 1px + 20);
+  t11: calc(20 + 2em * 1px);
+  t12: calc(2em * 1px);
 }

@@ -71,16 +71,22 @@
   content: "theme1" is not "theme2";
   content: "theme1" is 'theme1';
   content: "theme1" is not 'theme2';
+  content: "theme1" is theme1;
   content: 'theme1' is "theme1";
   content: 'theme1' is not "theme2";
   content: 'theme1' is 'theme1';
   content: 'theme1' is not 'theme2';
+  content: 'theme1' is theme1;
+  content: theme1 is "theme1";
   content: theme1 is not "theme2";
+  content: theme1 is 'theme1';
   content: theme1 is not 'theme2';
   content: theme1 is theme1;
 }
 .variouse-types-comparison {
   /**/
+  content: false is less than true too;
+  content: true is greater than false;
   content: true is not equal to false;
   content: false is not equal to true too;
   /**/
@@ -93,14 +99,16 @@
   content: 3 is equal to 3;
   content: 3 is equal to 3 too;
   /**/
+  content: 4 is less than 5 too;
+  content: 5 is greater than 4;
   content: 5 is not equal to 4;
   content: 4 is not equal to 5 too;
   /**/
   content: abc is equal to abc;
   content: abc is equal to abc too;
   /**/
-  content: abc is not equal to "abc";
-  content: "abc" is not equal to abc too;
+  content: abc is equal to "abc";
+  content: "abc" is equal to abc too;
   /**/
   content: 'abc' is less than "abd";
   content: "abd" is greater than 'abc' too;
@@ -115,6 +123,8 @@
   content: 9 is not equal to 8;
   content: 8 is not equal to 9 too;
   /**/
+  content: a is less than b;
+  content: b is greater than a too;
   content: a is not equal to b;
   content: b is not equal to a too;
   /**/
@@ -138,6 +148,8 @@
   content: 1 2px 300ms is equal to 1em 2 0.3s;
   content: 1em 2 0.3s is equal to 1 2px 300ms too;
   /**/
+  content: 1 2 3 is less than 1, 2, 3;
+  content: 1, 2, 3 is greater than 1 2 3 too;
   content: 1 2 3 is not equal to 1, 2, 3;
   content: 1, 2, 3 is not equal to 1 2 3 too;
   /**/
@@ -147,6 +159,8 @@
   content: 1 2 3 1, 2, 3 is equal to 1 2 3 1, 2, 3;
   content: 1 2 3 1, 2, 3 is equal to 1 2 3 1, 2, 3 too;
   /**/
+  content: 1 2 3 1, 2, 3 is less than 1, 2, 3 1 2 3;
+  content: 1, 2, 3 1 2 3 is greater than 1 2 3 1, 2, 3 too;
   content: 1 2 3 1, 2, 3 is not equal to 1, 2, 3 1 2 3;
   content: 1, 2, 3 1 2 3 is not equal to 1 2 3 1, 2, 3 too;
   /**/

@@ -41,6 +41,7 @@ class Declaration extends Node {
         super();
         this.name = name;
         this.value = (value instanceof Node) ? value : new Value([value ? new Anonymous(value) : null]);
+        this.evalFirst = /** @type {{ evalFirst?: boolean }} */ (this.value).evalFirst;
         this.important = important ? ` ${important.trim()}` : '';
         /** @type {string | undefined} */
         this.merge = merge;

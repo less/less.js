@@ -111,4 +111,15 @@ header {
   .mixin-definition({direct: works;}; @b: {named: works;});
 }
 
-
+@trigger-value: 2px;
+#trigger-test {
+    width: @trigger-value;
+}
+@variable: global;
+@detached-ruleset: {
+    variable: @variable; 
+};
+.detached-ruleset-scope {
+    @detached-ruleset();
+    @variable: if-you-see-this-in-the-output-its-a-bug; // variables defined in caller should be ignored
+}

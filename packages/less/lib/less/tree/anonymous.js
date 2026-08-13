@@ -20,13 +20,17 @@ class Anonymous extends Node {
         this._fileInfo = currentFileInfo;
         this.mapLines = mapLines;
         this.rulesetLike = (typeof rulesetLike === 'undefined') ? false : rulesetLike;
+        /** @type {boolean} */
+        this._preventReparse = false;
         this.allowRoot = true;
         this.copyVisibilityInfo(visibilityInfo);
     }
 
     /** @returns {Anonymous} */
     eval() {
-        return new Anonymous(/** @type {string | null} */ (this.value), this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
+        const anonymous = new Anonymous(/** @type {string | null} */ (this.value), this._index, this._fileInfo, this.mapLines, this.rulesetLike, this.visibilityInfo());
+        anonymous._preventReparse = this._preventReparse;
+        return anonymous;
     }
 
     /**

@@ -1079,6 +1079,14 @@ test('release title sync no-op exits without an empty commit', () => {
   const workflow = fs.readFileSync(path.join(ROOT_DIR, '.github', 'workflows', 'create-release-pr.yml'), 'utf8');
   const syncStep = workflow.slice(workflow.indexOf('      - name: Sync release files to title version'));
   assert.ok(
+    syncStep.includes('RELEASE_BASE: ${{ github.event.pull_request.base.ref }}'),
+    'Expected sync-title step to expose the release base branch',
+  );
+  assert.ok(
+    syncStep.includes('node .release-scripts/release-metadata.js sync-files "$RELEASE_BASE" "$VERSION" "$PREVIOUS_VERSION"'),
+    'Expected sync-title step to call sync-files with base, version, and previous version',
+  );
+  assert.ok(
     syncStep.includes('echo "Release files already match v${VERSION}"\n            exit 0'),
     'Expected sync-title no-op path to exit cleanly',
   );

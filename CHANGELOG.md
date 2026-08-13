@@ -1,5 +1,14 @@
 ## Change Log
 
+### v4.9.0 (2026-08-13)
+
+#### Changes
+
+- [#4488](https://github.com/less/less.js/pull/4488) feat: support `[...]` lookups in `@{...}` interpolation (@matthew-dean)
+- [#4486](https://github.com/less/less.js/pull/4486) fix: prevent reparsing escape() results (@snowyukitty)
+- [#4481](https://github.com/less/less.js/pull/4481) fix: keep the media type first when flattening nested @media queries (@Lfan-ke)
+
+
 ### v4.8.1 (2026-07-26)
 
 #### Changes

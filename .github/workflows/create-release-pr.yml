@@ -297,6 +297,7 @@ jobs:
 
       - name: Sync release files to title version
         env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
           VERSION: ${{ steps.title-version.outputs.version }}
           PREVIOUS_VERSION: ${{ steps.title-version.outputs.previous_version }}
           TITLE: ${{ steps.title-version.outputs.title }}
@@ -304,7 +305,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          node .release-scripts/release-metadata.js sync-files "$VERSION" "$PREVIOUS_VERSION"
+          node .release-scripts/release-metadata.js sync-files "$RELEASE_BASE" "$VERSION" "$PREVIOUS_VERSION"
           git add package.json packages/*/package.json
           if [ -f CHANGELOG.md ]; then
             git add CHANGELOG.md

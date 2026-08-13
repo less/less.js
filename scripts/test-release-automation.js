@@ -101,8 +101,8 @@ function section(title) {
 // ---------------------------------------------------------------------------
 // Workflow condition helpers
 //
-// These replicate the job-level `if:` expressions from the YAML files
-// verbatim in JavaScript so the tests are authoritative.
+// These replicate the workflow trigger gates from the YAML files so the tests
+// are authoritative without requiring a live GitHub Actions run.
 // ---------------------------------------------------------------------------
 
 /**
@@ -141,22 +141,22 @@ function publishShouldRun({ repo, prMerged, prBaseRef, prTitle }) {
 }
 
 /**
- * create-release-pr.yml `if:` condition:
+ * create-release-pr.yml push gate:
  *
  *   github.event_name == 'push' &&
- *   github.repository == 'less/less.js' &&
- *   !contains(github.event.head_commit.message, 'chore: release v') &&
- *   !contains(github.event.head_commit.message, 'chore: alpha release v') &&
- *   !contains(github.event.head_commit.message, '/release-v') &&
- *   !contains(github.event.head_commit.message, '/alpha-release-v')
+ *   github.repository == 'less/less.js'
+ *
+ * followed by a subject-only release-merge detector. Release titles in a
+ * normal merge commit body must not suppress the next release PR.
  */
 function createReleasePRShouldRun({ repo, eventName, commitMessage }) {
   if (eventName !== 'push') return false;
   if (repo !== 'less/less.js') return false;
-  if (commitMessage.includes('chore: release v')) return false;
-  if (commitMessage.includes('chore: alpha release v')) return false;
-  if (commitMessage.includes('/release-v')) return false;
-  if (commitMessage.includes('/alpha-release-v')) return false;
+  const subject = commitMessage.split('\n', 1)[0];
+  if (subject.startsWith('chore: release v')) return false;
+  if (subject.startsWith('chore: alpha release v')) return false;
+  if (subject.includes('from less/chore/release-v')) return false;
+  if (subject.includes('from less/chore/alpha-release-v')) return false;
   return true;
 }
 
@@ -688,6 +688,38 @@ test('normal merge to alpha → SHOULD trigger', () => {
   );
 });
 
+test('normal master merge with release history in the body → SHOULD trigger', () => {
+  assert.strictEqual(
+    createReleasePRShouldRun({
+      repo: 'less/less.js',
+      eventName: 'push',
+      commitMessage: [
+        'feat: support `[...]` lookups in `@{...}` interpolation (#4488)',
+        '',
+        '* chore: release v4.8.1 (#4482)',
+        '* chore: release v4.8.0',
+      ].join('\n'),
+    }),
+    true,
+  );
+});
+
+test('normal alpha merge with release history in the body → SHOULD trigger', () => {
+  assert.strictEqual(
+    createReleasePRShouldRun({
+      repo: 'less/less.js',
+      eventName: 'push',
+      commitMessage: [
+        'Less 5 alpha.1: Jess-powered compiler preview (#4487)',
+        '',
+        '* chore: release v4.6.0 (#4415)',
+        '* chore: release v4.8.1 (#4482)',
+      ].join('\n'),
+    }),
+    true,
+  );
+});
+
 test('master release PR merge → should NOT trigger (loop guard)', () => {
   assert.strictEqual(
     createReleasePRShouldRun({ repo: 'less/less.js', eventName: 'push', commitMessage: 'chore: release v4.6.4' }),
@@ -707,7 +739,7 @@ test('release branch ref in commit message → should NOT trigger (loop guard fo
     createReleasePRShouldRun({
       repo: 'less/less.js',
       eventName: 'push',
-      commitMessage: 'Merge chore/release-v4.6.4 into master',
+      commitMessage: 'Merge pull request #123 from less/chore/release-v4.6.4',
     }),
     false,
   );
@@ -718,7 +750,7 @@ test('alpha release branch ref in commit message → should NOT trigger (loop gu
     createReleasePRShouldRun({
       repo: 'less/less.js',
       eventName: 'push',
-      commitMessage: 'Merge chore/alpha-release-v5.0.0-alpha.2 into alpha',
+      commitMessage: 'Merge pull request #124 from less/chore/alpha-release-v5.0.0-alpha.2',
     }),
     false,
   );

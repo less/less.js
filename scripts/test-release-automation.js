@@ -155,8 +155,14 @@ function createReleasePRShouldRun({ repo, eventName, commitMessage }) {
   const subject = commitMessage.split('\n', 1)[0];
   if (subject.startsWith('chore: release v')) return false;
   if (subject.startsWith('chore: alpha release v')) return false;
-  if (subject.includes('from less/chore/release-v')) return false;
-  if (subject.includes('from less/chore/alpha-release-v')) return false;
+  if (
+    subject.startsWith('Merge pull request #') &&
+    subject.includes(' from less/chore/release-v')
+  ) return false;
+  if (
+    subject.startsWith('Merge pull request #') &&
+    subject.includes(' from less/chore/alpha-release-v')
+  ) return false;
   return true;
 }
 

@@ -1,0 +1,51 @@
+// A media type nested inside conditions must lead the flattened query,
+// otherwise the result is invalid CSS (issue #3694, #3764).
+@media (max-width: 500px) {
+  @media screen {
+    .a { color: red; }
+  }
+}
+@media (min-width: 100px) {
+  @media only screen {
+    .b { color: blue; }
+  }
+}
+@media (max-width: 9px) {
+  @media all {
+    .c { color: green; }
+  }
+}
+@media (min-width: 1px) {
+  @media print and (color) {
+    .d { color: black; }
+  }
+}
+
+// Already-correct ordering is preserved.
+@media screen {
+  @media (max-width: 500px) {
+    .e { color: red; }
+  }
+}
+
+// Queries without a media type are left untouched.
+@media (max-width: 500px) {
+  @media (min-width: 100px) {
+    .f { color: red; }
+  }
+}
+
+// Unknown media types are valid CSS non-matches, so they reorder too.
+@media (max-width: 500px) {
+  @media tester {
+    .g { color: red; }
+  }
+}
+
+// An escaped-string feature condition (Anonymous) must not be mistaken for a media type.
+@fc: ~"(max-width: 500px)";
+@media @fc {
+  @media screen {
+    .h { color: red; }
+  }
+}

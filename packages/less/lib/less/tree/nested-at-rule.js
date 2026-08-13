@@ -37,6 +37,40 @@ import Node from './node.js';
  * }} NestableAtRuleThis
  */
 
+// A media query may only carry a media type at its front, before any
+// conditions (https://drafts.csswg.org/mediaqueries-5/#typedef-media-query-list).
+// Operators that join media-query parts, so a fragment leading with one is not
+// a media type. Any other bare identifier is treated as a type, since unknown
+// media types are valid non-matches in CSS, not syntax errors.
+const MEDIA_QUERY_OPERATORS = ['and', 'or'];
+
+/**
+ * Whether a flattened media-query fragment leads with a media type, e.g.
+ * `screen`, `only screen`, `print and (color)` or an unknown type like `foo`.
+ * @param {Node & { value?: * }} fragment
+ */
+function startsWithMediaType(fragment) {
+    let head;
+    if (fragment.type === 'Keyword' || fragment.type === 'Anonymous') {
+        head = fragment.value;
+    } else if (fragment.type === 'Expression' && Array.isArray(fragment.value)) {
+        const parts = fragment.value.filter(p => p && p.value !== undefined);
+        let idx = 0;
+        const first = parts[idx] && String(parts[idx].value).toLowerCase();
+        if (first === 'not' || first === 'only') { idx++; }
+        head = parts[idx] && parts[idx].value;
+    }
+    if (typeof head !== 'string' || head === '') {
+        return false;
+    }
+    // Inspect only the first token. A media type is a bare identifier; a feature
+    // condition begins with '(' - e.g. an escaped ~"(max-width: 1px)" is an
+    // Anonymous whose whole value is "(max-width: 1px)", which is not a media type.
+    const firstToken = head.trim().split(/[\s(]/)[0];
+    return firstToken !== ''
+        && MEDIA_QUERY_OPERATORS.indexOf(firstToken.toLowerCase()) < 0;
+}
+
 const NestableAtRulePrototype = {
 
     isRulesetLike() {
@@ -148,6 +182,13 @@ const NestableAtRulePrototype = {
                 path = /** @type {Node[]} */ (path).map(
                 /** @param {Node & { toCSS?: Function }} fragment */
                     fragment => fragment.toCSS ? fragment : new Anonymous(/** @type {string} */ (/** @type {unknown} */ (fragment))));
+
+                // A media type nested inside conditions must move ahead of them
+                // so the flattened query stays valid (issue #3694, #3764).
+                const types = /** @type {Node[]} */ (path).filter(startsWithMediaType);
+                if (types.length && types.length < /** @type {Node[]} */ (path).length) {
+                    path = types.concat(/** @type {Node[]} */ (path).filter(f => !startsWithMediaType(f)));
+                }
 
                 for (i = /** @type {Node[]} */ (path).length - 1; i > 0; i--) {
                 /** @type {Node[]} */ (path).splice(i, 0, new Anonymous('and'));

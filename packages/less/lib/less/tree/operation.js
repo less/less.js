@@ -48,6 +48,11 @@ class Operation extends Node {
                 ) {
                     return new Operation(this.op, [a, b], this.isSpaced);
                 }
+                // A CSS function such as var() or env() only resolves in the browser,
+                // so keep the operation intact instead of failing to compute it here.
+                if (a.type === 'Call' || b.type === 'Call') {
+                    return new Operation(this.op, [a, b], this.isSpaced);
+                }
                 throw { type: 'Operation',
                     message: 'Operation on an invalid type' };
             }

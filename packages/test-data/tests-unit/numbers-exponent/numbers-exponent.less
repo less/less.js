@@ -1,0 +1,50 @@
+.literals {
+  width: 1e3px;
+  height: 1E3px;
+  margin: 2e+2px;
+  padding: .5e-2px;
+  top: 1e0px;
+  line-height: 1e3;
+  opacity: 1e-1;
+  flex-basis: 1.5e2%;
+  transform: scale(1e-2);
+  min-width: calc(1e3px + 1px);
+}
+
+// a unit may start with `e`, so an exponent is only read when digits follow it
+.units-starting-with-e {
+  width: 1em;
+  height: 2ex;
+  margin: 1e2em;
+  padding: 5e-1em;
+  top: 3e2ex;
+}
+
+.arithmetic {
+  width: (1e3px + 1px);
+  height: (2e-1 * 10px);
+  margin: (1e2px / 4);
+}
+
+@size: 1e2px;
+.variables {
+  width: @size;
+  height: (@size + 1px);
+}
+
+.mixin(@value) {
+  padding: @value;
+}
+.mixin-argument {
+  .mixin(1e2px);
+}
+
+.guard when (1e2px > 50px) {
+  color: red;
+}
+
+@media (min-width: 1e3px) {
+  .media-query {
+    color: red;
+  }
+}

@@ -906,14 +906,17 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 //
                 // A Dimension, that is, a number and a unit
                 //
-                //     0.5em 95%
+                //     0.5em 95% 1e3px
+                //
+                // The exponent needs at least one digit, so a unit that merely starts
+                // with `e` (`1em`, `2ex`) is still read as a unit.
                 //
                 dimension: function () {
                     if (parserInput.peekNotNumeric()) {
                         return;
                     }
 
-                    const value = parserInput.$re(/^([+-]?\d*\.?\d+)(%|[a-z_]+)?/i);
+                    const value = parserInput.$re(/^([+-]?\d*\.?\d+(?:e[+-]?\d+)?)(%|[a-z_]+)?/i);
                     if (value) {
                         return new(tree.Dimension)(value[1], value[2]);
                     }

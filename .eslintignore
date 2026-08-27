@@ -1,0 +1,7 @@
+dist/
+tmp/
+coverage/
+node_modules/
+packages/less/dist/
+packages/less/tmp/
+packages/less/test/browser/less.min.js

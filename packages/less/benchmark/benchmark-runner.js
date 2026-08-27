@@ -4,8 +4,11 @@
 //
 // Usage: node benchmark-runner.js <benchmark-file> [runs=30] [warmup=5]
 
-var fs = require('fs');
-var path = require('path');
+import { createRequire } from 'module';
+import fs from 'fs';
+import path from 'path';
+
+const require = createRequire(import.meta.url);
 
 var file = process.argv[2];
 var totalRuns = parseInt(process.argv[3]) || 30;
@@ -94,6 +97,25 @@ function hrNow() {
  * @returns {void}
  */
 function runOnce(callback) {
+    var start = hrNow();
+    var opts = {
+        filename: filePath,
+        paths: [fileDir]
+    };
+    // Forward extra options (e.g. --math=always)
+    for (var key in extraOpts) { opts[key] = extraOpts[key]; }
+    less.render(data, opts, function (err, output) {
+        var end = hrNow();
+        if (err) {
+            errors.push({ run: completed, error: err.message || String(err) });
+            callback(err);
+            return;
+        }
+        renderTimes.push(end - start);
+        completed++;
+        callback(null);
+    });
+}
 
 /**
  * Invokes runOnce repeatedly until totalRuns has been reached, then
@@ -102,6 +124,19 @@ function runOnce(callback) {
  * @returns {void}
  */
 function runAll(i) {
+    if (i >= totalRuns) {
+        reportResults();
+        return;
+    }
+    runOnce(function (err) {
+        if (err && errors.length > 3) {
+            // Too many errors, bail
+            reportResults();
+            return;
+        }
+        runAll(i + 1);
+    });
+}
 
 /**
  * Computes summary statistics for a list of timing samples, optionally
@@ -120,6 +155,41 @@ function runAll(i) {
  * }|null} Summary stats, or null if there are too few samples.
  */
 function analyze(times, skipWarmup) {
+    var start = skipWarmup ? warmupRuns : 0;
+    if (times.length <= start) return null;
+    var effective = times.slice(start);
+    var total = 0, min = Infinity, max = 0;
+    for (var i = 0; i < effective.length; i++) {
+        total += effective[i];
+        min = Math.min(min, effective[i]);
+        max = Math.max(max, effective[i]);
+    }
+    var avg = total / effective.length;
+
+    // Median
+    var sorted = effective.slice().sort(function (a, b) { return a - b; });
+    var mid = Math.floor(sorted.length / 2);
+    var median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+
+    // Standard deviation and coefficient of variation
+    var sumSqDiff = 0;
+    for (var i = 0; i < effective.length; i++) {
+        sumSqDiff += (effective[i] - avg) * (effective[i] - avg);
+    }
+    var stddev = Math.sqrt(sumSqDiff / effective.length);
+    var variancePct = avg === 0 ? 0 : (stddev / avg) * 100;
+
+    return {
+        min: Math.round(min * 100) / 100,
+        max: Math.round(max * 100) / 100,
+        avg: Math.round(avg * 100) / 100,
+        median: Math.round(median * 100) / 100,
+        stddev: Math.round(stddev * 100) / 100,
+        variance_pct: Math.round(variancePct * 100) / 100,
+        samples: effective.length,
+        throughput_kbs: Math.round(1000 / avg * data.length / 1024)
+    };
+}
 
 /**
  * Emits the final benchmark result as JSON to stdout. Includes the
@@ -128,6 +198,19 @@ function analyze(times, skipWarmup) {
  * @returns {void}
  */
 function reportResults() {
+    var result = {
+        version: version,
+        lessPath: lessPath,
+        file: path.basename(file),
+        fileSize: data.length,
+        fileSizeKB: Math.round(data.length / 1024 * 10) / 10,
+        totalRuns: totalRuns,
+        warmupRuns: warmupRuns,
+        completedRuns: completed,
+        errors: errors.length > 0 ? errors : undefined,
+        render: analyze(renderTimes, true)
+    };
+    console.log(JSON.stringify(result));
 }
 
 runAll(0);

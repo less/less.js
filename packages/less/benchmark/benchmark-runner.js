@@ -4,11 +4,8 @@
 //
 // Usage: node benchmark-runner.js <benchmark-file> [runs=30] [warmup=5]
 
-import { createRequire } from 'module';
-import fs from 'fs';
-import path from 'path';
-
-const require = createRequire(import.meta.url);
+var fs = require('fs');
+var path = require('path');
 
 var file = process.argv[2];
 var totalRuns = parseInt(process.argv[3]) || 30;
@@ -104,7 +101,7 @@ function runOnce(callback) {
     };
     // Forward extra options (e.g. --math=always)
     for (var key in extraOpts) { opts[key] = extraOpts[key]; }
-    less.render(data, opts, function (err, output) {
+    less.render(data, opts, function (err) {
         var end = hrNow();
         if (err) {
             errors.push({ run: completed, error: err.message || String(err) });
@@ -173,7 +170,7 @@ function analyze(times, skipWarmup) {
 
     // Standard deviation and coefficient of variation
     var sumSqDiff = 0;
-    for (var i = 0; i < effective.length; i++) {
+    for (i = 0; i < effective.length; i++) {
         sumSqDiff += (effective[i] - avg) * (effective[i] - avg);
     }
     var stddev = Math.sqrt(sumSqDiff / effective.length);

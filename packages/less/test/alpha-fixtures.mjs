@@ -116,6 +116,7 @@ const selectedSkippedCount = [...skippedFixtures.keys()].filter(fixtureMatches).
 const expectedFailureFixtures = new Map([
     ['tests-unit/import/import-reference.less', 'reference import filtering leaves extra at-rules'],
     ['tests-unit/import/import.less', '@plugin executes; remaining gap is @import media-query handling and @media query merging'],
+    ['tests-unit/import/import-inline.less', 'deliberate v5 divergence: a compile-time (inline) @import cannot carry a media query (jess LessImportPostludeError, parse/import-postlude-on-compile-time-import); Less 4.x wrapped the loaded rules in @media instead'],
     ['tests-unit/urls/urls.less', 'renders but CSS @import placement and multiline function formatting differ from Less'],
     ['tests-config/static-urls/urls.less', 'relativeUrls=false/rootpath static URL behavior is not implemented'],
     ['tests-config/url-args/urls.less', 'urlArgs URL query appending is not implemented'],
@@ -123,7 +124,6 @@ const expectedFailureFixtures = new Map([
     ['tests-config/sourcemaps-include-source/sourcemaps-include-source.less', 'source-map annotation and artifact output need a dedicated harness'],
     ['tests-config/sourcemaps-rootpath/sourcemaps-rootpath.less', 'source-map annotation and artifact output need a dedicated harness'],
     ['tests-config/sourcemaps-url/sourcemaps-url.less', 'source-map annotation and artifact output need a dedicated harness'],
-    ['tests-unit/detached-rulesets/detached-rulesets.less', 'detached ruleset argument closure matches Less; nested @media query merging still differs'],
     ['tests-unit/extract-and-length/extract-and-length.less', 'current published Jess dependency still has list argument evaluation gaps'],
     ['tests-unit/mixins/mixins.less', 'same-named nested ruleset resolves the outer .recursion() mixin; remaining mismatch is fixture-local collapseNesting=false rendering'],
     ['tests-unit/property-name-interp/property-name-interp.less', 'deprecated dash-only @- and @{-} variable names are rejected'],

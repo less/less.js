@@ -25,36 +25,58 @@ jobs:
   create-release-pr:
     name: Create or Update Release PR
     runs-on: ubuntu-latest
-    # Skip if this push is itself the merge of a release PR (prevents an
-    # infinite loop). We catch both squash-merged and regular-merged commits
-    # for both the master and alpha release PR title conventions.
+    # Skip only if this push is itself the merge of a release PR (prevents an
+    # infinite loop). Check the pushed commit subject, not historical release
+    # titles that can appear in a normal merge commit body.
     if: |
       github.event_name == 'push' &&
-      github.repository == 'less/less.js' &&
-      !contains(github.event.head_commit.message, 'chore: release v') &&
-      !contains(github.event.head_commit.message, 'chore: alpha release v') &&
-      !contains(github.event.head_commit.message, '/release-v') &&
-      !contains(github.event.head_commit.message, '/alpha-release-v')
+      github.repository == 'less/less.js'
 
     steps:
+      - name: Detect release PR merge
+        id: release-merge
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          set -euo pipefail
+          SUBJECT="${COMMIT_MESSAGE%%$'\n'*}"
+          IS_RELEASE_MERGE=false
+
+          case "$SUBJECT" in
+            "chore: release v"* | \
+            "chore: alpha release v"* | \
+            "Merge pull request #"*" from less/chore/release-v"* | \
+            "Merge pull request #"*" from less/chore/alpha-release-v"*)
+              IS_RELEASE_MERGE=true
+              ;;
+          esac
+
+          echo "is_release_merge=${IS_RELEASE_MERGE}" >> "$GITHUB_OUTPUT"
+          echo "commit_subject=${SUBJECT}"
+
       - name: Checkout
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install pnpm
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
 
       - name: Install dependencies
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Determine release version
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         id: version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,11 +124,13 @@ jobs:
           echo "title=$TITLE" >> "$GITHUB_OUTPUT"
 
       - name: Configure Git
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create or update release branch and PR
+        if: steps.release-merge.outputs.is_release_merge != 'true'
         env:
           NEXT_VERSION: ${{ steps.version.outputs.next_version }}
           RELEASE_BRANCH: ${{ steps.version.outputs.branch }}
@@ -273,6 +297,7 @@ jobs:
 
       - name: Sync release files to title version
         env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.ref }}
           VERSION: ${{ steps.title-version.outputs.version }}
           PREVIOUS_VERSION: ${{ steps.title-version.outputs.previous_version }}
           TITLE: ${{ steps.title-version.outputs.title }}
@@ -280,7 +305,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          node .release-scripts/release-metadata.js sync-files "$VERSION" "$PREVIOUS_VERSION"
+          node .release-scripts/release-metadata.js sync-files "$RELEASE_BASE" "$VERSION" "$PREVIOUS_VERSION"
           git add package.json packages/*/package.json
           if [ -f CHANGELOG.md ]; then
             git add CHANGELOG.md

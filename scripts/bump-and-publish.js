@@ -572,7 +572,11 @@ function main() {
       // NOTE: No "alpha must be caught up with master" gate here — the Less 5
       // alpha is a divergent rewrite that does not carry every v4.x master
       // hotfix. Validation 4 (alpha base >= master version) is the real guard.
-      execSync('git fetch origin master', { cwd: ROOT_DIR, stdio: 'ignore' });
+      //
+      // origin/master is already fetched by verifyAlphaRepositoryState() during
+      // preflight (before the tag push), so we do NOT re-fetch here: a transient
+      // fetch failure at this point runs AFTER the release tag is pushed and
+      // would strand a tagged-but-unpublished release.
 
       // Validation 4: Alpha base version must be >= master version
       try {

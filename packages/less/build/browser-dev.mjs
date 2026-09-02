@@ -25,7 +25,7 @@ const pkg = JSON.parse(readFileSync(join(pkgRoot, 'package.json'), 'utf8'));
 const pathBrowserify = 'path-browserify';
 
 const result = await esbuild.build({
-  entryPoints: [join(pkgRoot, 'lib/browser-v5.js')],
+  entryPoints: [join(pkgRoot, 'lib/browser-dev.js')],
   bundle: true,
   format: 'iife',
   globalName: 'lessV5',

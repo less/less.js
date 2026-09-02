@@ -63,7 +63,7 @@
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"typecheck": "tsc --noEmit",
 		"build": "node build/rollup.js --dist",
-		"build:browser": "node build/browser-v5.mjs --minify",
+		"build:browser": "node build/browser-dev.mjs --minify",
 		"benchmark": "node benchmark/benchmark-runner.cjs",
 		"benchmark:all": "node benchmark/run-and-compare.mjs",
 		"prepublishOnly": "npm run typecheck && npm run build && npm run build:browser && npm run test:lessc"

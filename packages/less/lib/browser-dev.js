@@ -8,7 +8,7 @@
  *
  * Bundled to an IIFE that defines `window.lessV5`.
  *
- * @module less/browser-v5
+ * @module less/browser-dev
  */
 
 import { Compiler } from '@jesscss/compiler';

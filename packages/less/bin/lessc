@@ -17,6 +17,7 @@ let output = null;
 let silent = false;
 let quiet = false;
 let verbose = false;
+let deprecatedStrictUnits = false;
 
 const unsupportedOptions = new Map([
   ['--source-map', 'source maps are not supported'],
@@ -38,7 +39,6 @@ const unsupportedOptions = new Map([
   ['--modify-var', 'modify-var injection is not supported'],
   ['--js', 'JavaScript evaluation is not supported'],
   ['--no-js', 'JavaScript evaluation flags are not supported'],
-  ['--strict-units', 'strict unit mode is not supported'],
 ]);
 
 function stripTerminalFormatting(value) {
@@ -141,6 +141,20 @@ function parseArgs() {
       options.collapseNesting = true;
       continue;
     }
+    // Deprecated 4.x spellings (--strict-units, --strict-units=on|off, -su=on|off)
+    // alias --unit-mode=strict; the warning is emitted once the logger listener
+    // is attached so --silent/--quiet are honored. `off` is the default (loose).
+    const strictUnitsMatch = arg.match(/^(?:--strict-units|-su)(?:=(on|off))?$/);
+    if (strictUnitsMatch) {
+      if (strictUnitsMatch[1] !== 'off') options.strictUnits = true;
+      deprecatedStrictUnits = true;
+      continue;
+    }
+    const unitModeMatch = arg.match(/^--unit-mode=(.+)$/);
+    if (unitModeMatch) {
+      options.unitMode = unitModeMatch[1];
+      continue;
+    }
     const optionName = arg.includes('=') ? arg.slice(0, arg.indexOf('=')) : arg;
     if (unsupportedOptions.has(optionName)) {
       failUnsupportedOption(optionName, unsupportedOptions.get(optionName));
@@ -198,6 +212,10 @@ async function run() {
       if (!silent) console.error(renderLogMessage(msg));
     },
   });
+
+  if (deprecatedStrictUnits) {
+    less.logger.warn('lessc: --strict-units is deprecated; use --unit-mode=strict (or =loose, the default)');
+  }
 
   try {
     let result;

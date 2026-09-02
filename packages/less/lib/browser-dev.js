@@ -6,7 +6,9 @@
  * config-discovery layer (cosmiconfig/env-paths/fs) is never reached. `@import`
  * / file access is unsupported here (see build/browser-stubs/fs.js).
  *
- * Bundled to an IIFE that defines `window.lessV5`.
+ * Bundled to an IIFE that defines `window.less` with the same public shape as
+ * the Less 4.x browser build: `less.render(input, options?, callback?)` returns
+ * a Promise and also invokes the err-first callback when one is given.
  *
  * @module less/browser-dev
  */
@@ -39,44 +41,46 @@ function createRenderError(result) {
 }
 
 /**
- * Render Less source to a Less-4.x-style result object ({ css, warnings }).
+ * Render Less source to CSS. Mirrors the Less 4.x API: `options` and `callback`
+ * are both optional, `callback` may be passed as the second argument, and the
+ * returned Promise resolves to a `{ css, warnings }` result. When a callback is
+ * given it is invoked err-first and the Promise is still returned.
  * @param {string} input Less source
- * @param {object} [options] Less-style options (math, collapseNesting, plugins)
+ * @param {object|Function} [options] Less-style options (math, collapseNesting, plugins) — or the callback
+ * @param {Function} [callback] err-first `(error, result)` callback
  * @returns {Promise<{ css: string, warnings?: unknown[] }>}
  */
-async function render(input, options = {}) {
-  const { configOptions } = createLessOptions(options);
-  // ponytail: fresh Compiler per call — no defaultPlugins hook, so no
-  // node-modules import plugin and no @jesscss/plugin-js. Single-file preview
-  // rarely re-renders in a hot loop; a cache map is not worth the surface.
-  const compiler = new Compiler(configOptions);
-  const result = await compiler.renderToResult(
-    { source: input, language: 'less', extension: '.less' },
-    { ...configOptions, suppressWarnings: true }
-  );
-  if (result.errors?.length) {
-    throw createRenderError(result);
+function render(input, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
   }
-  return mapRenderResult(result, options);
+  options = options || {};
+  const promise = (async () => {
+    const { configOptions } = createLessOptions(options);
+    // ponytail: fresh Compiler per call — no defaultPlugins hook, so no
+    // node-modules import plugin and no @jesscss/plugin-js. Single-file preview
+    // rarely re-renders in a hot loop; a cache map is not worth the surface.
+    const compiler = new Compiler(configOptions);
+    const result = await compiler.renderToResult(
+      { source: input, language: 'less', extension: '.less' },
+      { ...configOptions, suppressWarnings: true }
+    );
+    if (result.errors?.length) {
+      throw createRenderError(result);
+    }
+    return mapRenderResult(result, options);
+  })();
+  if (typeof callback === 'function') {
+    promise.then((result) => callback(null, result), (error) => callback(error));
+  }
+  return promise;
 }
 
-/**
- * Render Less source and resolve to the CSS string only.
- * @param {string} input
- * @param {object} [options]
- * @returns {Promise<string>}
- */
-async function renderString(input, options = {}) {
-  const { css } = await render(input, options);
-  return css;
-}
-
-const lessV5 = {
+const less = {
   version: versionArray,
   render,
-  renderString,
-  Compiler,
 };
 
-export default lessV5;
-export { render, renderString, Compiler, versionArray as version };
+export default less;
+export { render, versionArray as version };

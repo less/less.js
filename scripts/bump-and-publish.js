@@ -317,14 +317,10 @@ function verifyAlphaRepositoryState(version) {
     );
   }
 
-  const missingMasterCommits = Number(execSync('git rev-list --count HEAD..origin/master', {
-    cwd: ROOT_DIR,
-    encoding: 'utf8'
-  }).trim());
-  if (missingMasterCommits > 0) {
-    throw new Error(`Alpha branch is behind origin/master by ${missingMasterCommits} commit(s)`);
-  }
-
+  // The Less 5 alpha branch is a deliberately divergent rewrite that does not
+  // carry every v4.x master hotfix, so we intentionally do NOT gate on the alpha
+  // branch being "behind" master. The alpha-base >= master version check below
+  // is the real guard against an alpha undercutting the published 4.x latest.
   if (!semver.valid(version) || !/-alpha\.\d+$/u.test(version)) {
     throw new Error(`Alpha release version must be X.Y.Z-alpha.N, received: ${version}`);
   }
@@ -573,26 +569,14 @@ function main() {
     if (dryRun) {
       console.log(`✅ Repository state checks are skipped in dry-run mode`);
     } else {
-      // Validation 3: Check if alpha is behind master. This intentionally uses
-      // HEAD, not a local branch named `alpha`; publish runs from the checked-out
-      // release commit.
-      try {
-        execSync('git fetch origin master', { cwd: ROOT_DIR, stdio: 'ignore' });
-        const masterCommits = execSync('git rev-list --count HEAD..origin/master', {
-          cwd: ROOT_DIR,
-          encoding: 'utf8'
-        }).trim();
-
-        if (parseInt(masterCommits, 10) > 0) {
-          console.error(`❌ ERROR: Alpha branch is behind master by ${masterCommits} commit(s)`);
-          console.error(`   Alpha branch must include all commits from master before publishing`);
-          console.error(`   Please merge master into alpha first`);
-          process.exit(1);
-        }
-        console.log(`✅ Alpha branch is up to date with master`);
-      } catch (e) {
-        console.log(`⚠️  Could not verify master sync status, continuing...`);
-      }
+      // NOTE: No "alpha must be caught up with master" gate here — the Less 5
+      // alpha is a divergent rewrite that does not carry every v4.x master
+      // hotfix. Validation 4 (alpha base >= master version) is the real guard.
+      //
+      // origin/master is already fetched by verifyAlphaRepositoryState() during
+      // preflight (before the tag push), so we do NOT re-fetch here: a transient
+      // fetch failure at this point runs AFTER the release tag is pushed and
+      // would strand a tagged-but-unpublished release.
 
       // Validation 4: Alpha base version must be >= master version
       try {

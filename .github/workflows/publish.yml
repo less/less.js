@@ -113,20 +113,15 @@ jobs:
       - name: Validate alpha branch requirements
         if: steps.branch-info.outputs.is_alpha == 'true'
         run: |
-          # Fetch master branch
+          # Fetch master branch (used by the alpha-base >= master version check)
           git fetch origin master:master || true
-          
-          # Check 1: Alpha branch must not be behind master
-          echo "🔍 Checking if alpha branch is up to date with master..."
-          MASTER_COMMITS=$(git rev-list --count alpha..master 2>/dev/null || echo "0")
-          
-          if [ "$MASTER_COMMITS" -gt 0 ]; then
-            echo "❌ ERROR: Alpha branch is behind master by $MASTER_COMMITS commit(s)"
-            echo "   Alpha branch must include all commits from master before publishing"
-            exit 1
-          fi
-          echo "✅ Alpha branch is up to date with master"
-          
+
+          # NOTE: The Less 5 alpha lives on a deliberately divergent branch (a
+          # Jess-powered rewrite). It does NOT carry every v4.x master hotfix, so
+          # a "alpha must contain all master commits" gate is the wrong invariant
+          # and blocked alpha publishes. The alpha-base >= master version check
+          # below is what actually prevents an alpha undercutting the 4.x latest.
+
           # Check 2: Get current version and validate it contains 'alpha'
           CURRENT_VERSION=$(node -p "require('./packages/less/package.json').version")
           echo "📦 Current version: $CURRENT_VERSION"

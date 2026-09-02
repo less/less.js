@@ -39,7 +39,7 @@ const lesscHelper = {
     console.log('  --verbose                    Be verbose.');
     console.log('  --collapse-nesting           Flatten nested rules after preserving source-order cascade.');
     console.log('  --unit-mode=MODE             Unit handling in math: preserve (default), strict, or loose (Less 4.x guessing).');
-    console.log('  --strict-units               Deprecated alias for --unit-mode=strict.');
+    console.log('  --strict-units[=on|off]      Deprecated: on is --unit-mode=strict, off is the default (preserve).');
     console.log('');
     console.log('This release intentionally supports a smaller CLI surface.');
     console.log('Source maps, browser compilation, legacy plugin flags, lint-only mode, and');

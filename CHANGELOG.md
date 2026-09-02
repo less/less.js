@@ -1,5 +1,12 @@
 ## Change Log
 
+### v5.0.0-alpha.2 (2026-09-02)
+
+#### Changes
+
+- [#4511](https://github.com/less/less.js/pull/4511) Less 5 alpha.2: Jess-powered compiler + v5 test-data graduations (@matthew-dean)
+
+
 ### v5.0.0-alpha.1 (unreleased)
 
 This is the first public alpha for Less 5, a major rewrite of the Less compiler

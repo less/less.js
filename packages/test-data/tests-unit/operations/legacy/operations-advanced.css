@@ -1,3 +1,6 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
+
 .test-math-off {
   result: 15px;
 }
@@ -23,7 +26,7 @@
   result: 10px / 2;
 }
 .test-op-operands {
-  result: calc(15px * 10px);
+  result: 150px;
 }
 .test-math-context {
   add: 15;

@@ -1,7 +1,8 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
 @font-face {
   src: url("/fonts/garamond-pro.ttf?424242");
-  src: local(Futura-Medium),
-       url(fonts.svg?424242#MyGeometricModern) format("svg");
+  src: local(Futura-Medium), url(fonts.svg?424242#MyGeometricModern) format("svg");
 }
 #shorthands {
   background: url("http://www.lesscss.org/spec.html?424242") no-repeat 0 4px;

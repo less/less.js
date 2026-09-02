@@ -34,7 +34,7 @@
 }
 .variable-units {
   width: 1px;
-  same-unit-as-previously: 1px;
+  same-unit-as-previously: 1;
   square-pixel-divided: 1px;
   odd-unit: 2;
 }

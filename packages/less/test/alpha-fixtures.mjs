@@ -123,7 +123,6 @@ const expectedFailureFixtures = new Map([
     ['tests-config/sourcemaps-include-source/sourcemaps-include-source.less', 'source-map annotation and artifact output need a dedicated harness'],
     ['tests-config/sourcemaps-rootpath/sourcemaps-rootpath.less', 'source-map annotation and artifact output need a dedicated harness'],
     ['tests-config/sourcemaps-url/sourcemaps-url.less', 'source-map annotation and artifact output need a dedicated harness'],
-    ['tests-unit/detached-rulesets/detached-rulesets.less', 'detached ruleset argument closure matches Less; nested @media query merging still differs'],
     ['tests-unit/extract-and-length/extract-and-length.less', 'current published Jess dependency still has list argument evaluation gaps'],
     ['tests-unit/mixins/mixins.less', 'same-named nested ruleset resolves the outer .recursion() mixin; remaining mismatch is fixture-local collapseNesting=false rendering'],
     ['tests-unit/property-name-interp/property-name-interp.less', 'deprecated dash-only @- and @{-} variable names are rejected'],

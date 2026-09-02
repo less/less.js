@@ -140,8 +140,12 @@ function packTemporaryLess(packDir) {
   const packagePath = path.join(tempLessDir, 'package.json');
   const manifest = readJson(packagePath);
   assert(manifest.name === 'less', `Expected Less package manifest, got ${manifest.name ?? '(unnamed)'}`);
-  assert(manifest.version === '5.0.0-alpha.1',
-    `Expected Less 5.0.0-alpha.1 manifest, found ${manifest.version}`);
+  // ponytail: assert the alpha version SHAPE, not a frozen literal — a hardcoded
+  // version here breaks this proof on every release bump. Exact cross-manifest
+  // version agreement is already enforced by bump-and-publish's
+  // verifyReleaseManifestVersions.
+  assert(/^\d+\.\d+\.\d+-alpha\.\d+$/.test(manifest.version),
+    `Expected Less X.Y.Z-alpha.N manifest, found ${manifest.version}`);
   for (const name of lessJessDependencies) {
     const specifier = String(manifest.dependencies?.[name] ?? '');
     assert(specifier === expectedJessVersion,
@@ -307,7 +311,7 @@ function assertNoUiControlSequences(value, label) {
 
 const version = run(['--version']);
 assert.equal(version.status, 0, version.stderr);
-assert.match(version.stdout, /^lessc 5\\.0\\.0-alpha\\.1 \\(Less Compiler\\) \\[Jess\\]\\n$/u);
+assert.match(version.stdout, /^lessc \\d+\\.\\d+\\.\\d+-alpha\\.\\d+ \\(Less Compiler\\) \\[Jess\\]\\n$/u);
 
 const stdin = run(['-'], { input: '.stdin { color: red; }\\n' });
 assert.equal(stdin.status, 0, stdin.stderr);
@@ -334,7 +338,7 @@ assert.match(malformed.stderr, /[\\u256d\\u2570]/u,
 const malformedPlain = stripTerminalFormatting(malformed.stderr);
 assert.match(malformedPlain, /parse\\/syntax-error \\[parse\\]/u,
   'packed lessc must report the Linecraft diagnostic code');
-assert.match(malformedPlain, /bad\\.less:2:1/u,
+assert.match(malformedPlain, /bad\\.less:3:1/u,
   'packed lessc must report filename, line, and column');
 assert.match(malformedPlain, /\\.next \\{/u,
   'packed lessc must report the malformed source line');

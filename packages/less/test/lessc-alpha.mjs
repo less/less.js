@@ -182,8 +182,13 @@ try {
         'warning-producing compiles still emit CSS on stdout');
     assert.doesNotMatch(warning.stdout, /function\/unresolved/,
         'lessc must not mix warnings into CSS stdout');
-    assert.match(warning.stderr, /function\/unresolved/,
-        'lessc prints structured Jess warnings on stderr after successful compiles');
+    // jess DESIGN-DECISIONS C17/R3 + function-error-public-semantics.test.ts: a
+    // lenient (default functionMode) un-evaluable Less function is preserved
+    // VERBATIM with no diagnostic; strict functionMode:'error' would reject with
+    // eval/invalid-function. There is no `function/unresolved` warning in jess's
+    // vocabulary, so a successful default compile emits nothing on stderr.
+    assert.equal(warning.stderr, '',
+        'lenient un-evaluable Less functions are preserved verbatim with no stderr diagnostic (jess C17/R3)');
 
     const quietWarning = await runLessc(['--quiet', '-'], '.warn { color: lighten(red, nope); }\n');
     assert.equal(quietWarning.code, 0, quietWarning.stderr);

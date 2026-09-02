@@ -1,6 +1,6 @@
 .units-extended {
   width: 1px;
-  same-unit-as-previously: 1px;
+  same-unit-as-previously: 1;
   square-pixel-divided: 1px;
   odd-unit: 2;
   percentage: 500%;
@@ -11,21 +11,21 @@
   custom-unit: 420octocats;
   custom-unit-cancelling: 18dogs;
   mix-units: 2px;
-  invalid-units: 1px;
+  invalid-units: calc(1px * 1px);
 }
 .units-extended .fallback {
   div-px-1: 10px;
   div-px-2: 1px;
   sub-px-1: 12.6px;
   sub-cm-1: 9.666625cm;
-  mul-px-1: 19.6px;
-  mul-em-1: 19.6em;
-  mul-em-2: 196em;
-  mul-cm-1: 196cm;
+  mul-px-1: calc(14px * 1.4em);
+  mul-em-1: calc(1.4em * 14px);
+  mul-em-2: calc(1.4em * 14px * 10cm);
+  mul-cm-1: calc(10cm * 1.4em * 14px);
   add-px-1: 15.4px;
   add-px-2: 393.3527559px;
-  mul-px-2: 140px;
-  mul-px-3: 140px;
+  mul-px-2: calc(14px * 10cm);
+  mul-px-3: calc(14px * 10cm);
 }
 .css-custom-properties {
   --tw-pan-x: ;

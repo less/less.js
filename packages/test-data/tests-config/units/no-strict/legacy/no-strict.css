@@ -1,3 +1,6 @@
+/* Less 4.x output, recorded when this fixture graduated to v5.
+   Historical record only — no test reads this file. */
+
 @media (-o-min-device-pixel-ratio: 2) {
   .test-rule-math-and-units {
     font: ignores 0/0 rules;
@@ -6,9 +9,9 @@
   }
 }
 #units {
-  t1: 22;
-  t2: 22;
-  t3: 2;
+  t1: 22em;
+  t2: 22em;
+  t3: 2em;
   t4: 22em;
   t5: 22em;
   t6: 2em;

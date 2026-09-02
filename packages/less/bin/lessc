@@ -214,7 +214,7 @@ async function run() {
   });
 
   if (deprecatedStrictUnits) {
-    less.logger.warn('lessc: --strict-units is deprecated; use --unit-mode=strict (or =loose, the default)');
+    less.logger.warn('lessc: --strict-units is deprecated; use --unit-mode=strict (the default is preserve; --unit-mode=loose restores Less 4.x guessing)');
   }
 
   try {

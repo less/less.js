@@ -63,9 +63,10 @@
 		"lint:fix": "eslint '**/*.{ts,js}' --fix",
 		"typecheck": "tsc --noEmit",
 		"build": "node build/rollup.js --dist",
+		"build:browser": "node build/browser-v5.mjs --minify",
 		"benchmark": "node benchmark/benchmark-runner.cjs",
 		"benchmark:all": "node benchmark/run-and-compare.mjs",
-		"prepublishOnly": "npm run typecheck && npm run build && npm run test:lessc"
+		"prepublishOnly": "npm run typecheck && npm run build && npm run build:browser && npm run test:lessc"
 	},
 	"devDependencies": {
 		"@less/test-data": "workspace:*",
@@ -83,6 +84,7 @@
 		"chalk": "^4.1.2",
 		"cosmiconfig": "~9.0.0",
 		"cross-env": "^7.0.3",
+		"esbuild": "^0.25.0",
 		"eslint": "^7.29.0",
 		"fs-extra": "^8.1.0",
 		"glob": "~11.0.3",

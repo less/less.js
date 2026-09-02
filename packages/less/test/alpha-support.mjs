@@ -161,7 +161,6 @@ async function assertUnsupportedApiOptionsReject() {
         'rewriteUrls',
         'urlArgs',
         'javascriptEnabled',
-        'strictUnits',
         'rootpath'
     ];
     for (const option of unsupported) {
@@ -177,10 +176,31 @@ async function assertUnsupportedApiOptionsReject() {
     }
 }
 
+async function assertUnitModeSupported() {
+    const source = '.x { width: 1px + 3em; }\n';
+    // `unitMode` is the option; `strictUnits` is its deprecated boolean alias.
+    for (const options of [{ unitMode: 'strict' }, { strictUnits: true }]) {
+        await assert.rejects(
+            less.render(source, options),
+            error => {
+                assert.match(error.message, /unit/i);
+                return true;
+            },
+            `${JSON.stringify(options)} must reject incompatible units`
+        );
+    }
+    // Loose is the default; the deprecated `strictUnits: false` is a no-op, not an error.
+    for (const options of [{}, { unitMode: 'loose' }, { strictUnits: false }]) {
+        const result = await less.render(source, options);
+        assert.match(result.css, /width: 4px/, `${JSON.stringify(options)} must render loosely`);
+    }
+}
+
 await assertSupportedCompileSurface();
 await assertUnsupportedSyntaxHasPreciseDiagnostic();
 await assertBareStructuralAtRuleVariablesReject();
 await assertUnsupportedApiOptionsReject();
+await assertUnitModeSupported();
 await assertFixtureRendersByteIdentical('at-rule-variable-interpolation/at-rule-variable-interpolation');
 await assertFixtureRendersByteIdentical('color-functions/modern');
 await assertFixtureRendersByteIdentical('math-css-vars/math-css-vars');

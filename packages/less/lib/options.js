@@ -15,7 +15,6 @@ const unsupportedAlphaOptions = new Map([
   ['sourceMapFileInline', 'source maps are not supported'],
   ['globalVars', 'global variable injection is not supported'],
   ['modifyVars', 'modify-var injection is not supported'],
-  ['strictUnits', 'strict unit mode is not supported'],
   ['rootpath', 'URL rootpath rewriting is not supported'],
   ['rewriteUrls', 'URL rewriting is not supported'],
   ['urlArgs', 'URL argument rewriting is not supported'],
@@ -25,7 +24,9 @@ const unsupportedAlphaOptions = new Map([
 
 function validateAlphaOptions(options) {
   for (const [name, reason] of unsupportedAlphaOptions) {
-    if (Object.prototype.hasOwnProperty.call(options, name)) {
+    // A falsy value is the 4.x default ("off") and requests nothing, so it is
+    // a no-op here; only an actual request for the feature is unsupported.
+    if (options[name]) {
       throw new Error(`${name} is not supported: ${reason}`);
     }
   }
@@ -81,6 +82,13 @@ export function createLessOptions(options) {
     math === 2 || math === 'parens' || math === 'strict' ? 'parens' :
     'parens-division';
 
+  // `unitMode` is the option ('loose' | 'preserve' | 'strict'); `strictUnits`
+  // is its deprecated boolean alias: true → 'strict', false/undefined defers
+  // to `unitMode`. Left unset so the compiler default ('loose') applies.
+  const unitMode = opts.unitMode !== undefined ? opts.unitMode
+    : opts.strictUnits === true ? 'strict'
+    : undefined;
+
   const plugins = [lessPlugin()];
   if (!skipLessCompat) {
     plugins.push(lessCompatPlugin({ plugins: lessPlugins }));
@@ -90,6 +98,7 @@ export function createLessOptions(options) {
     compile: {
       searchPaths: opts.paths || [],
       mathMode,
+      ...(unitMode !== undefined && { unitMode }),
       plugins,
     },
     // Less v5 preserves authored nesting unless its explicit compatibility

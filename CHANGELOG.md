@@ -1,5 +1,12 @@
 ## Change Log
 
+### v4.9.1 (2026-09-02)
+
+#### Changes
+
+- [#4478](https://github.com/less/less.js/pull/4478) fix: error when a mixin call is used as a property value (@Lfan-ke)
+
+
 ### v4.9.0 (2026-08-13)
 
 #### Changes

@@ -1,8 +1,8 @@
 /**
  * Build the single-file, browser-loadable Less v5 (jess) bundle.
  *
- * Produces `dist/less-browser-dev.js`: an IIFE exposing `window.lessV5` with
- * `.render(input, options)` / `.renderString(input, options)`.
+ * Produces `dist/less-browser-dev.js`: an IIFE exposing `window.less` with the
+ * Less 4.x browser API — `less.render(input, options?, callback?)`.
  *
  * Runtime parseman (the pure-JS table interpreter) IS bundled — it does the
  * parsing. Node file/config built-ins are aliased to browser stubs because a
@@ -28,7 +28,7 @@ const result = await esbuild.build({
   entryPoints: [join(pkgRoot, 'lib/browser-dev.js')],
   bundle: true,
   format: 'iife',
-  globalName: 'lessV5',
+  globalName: 'less',
   platform: 'browser',
   target: ['es2020'],
   outfile: join(pkgRoot, 'dist/less-browser-dev.js'),
@@ -43,9 +43,9 @@ const result = await esbuild.build({
     'process.env.JESS_PROFILE': 'undefined',
     'process.env.JESS_DEBUG': 'undefined'
   },
-  // `window.lessV5` is a live binding to the IIFE's default export.
+  // Collapse `window.less` to the IIFE's default export (the render API).
   footer: {
-    js: 'if (typeof window !== "undefined" && window.lessV5 && window.lessV5.default) { window.lessV5 = window.lessV5.default; }'
+    js: 'if (typeof window !== "undefined" && window.less && window.less.default) { window.less = window.less.default; }'
   },
   // Leading /*! …*/ marks this as the EXPERIMENTAL dev build. banner is emitted
   // verbatim (not subject to minify/legalComments), so the notice always leads

@@ -116,7 +116,6 @@ const selectedSkippedCount = [...skippedFixtures.keys()].filter(fixtureMatches).
 const expectedFailureFixtures = new Map([
     ['tests-unit/import/import-reference.less', 'reference import filtering leaves extra at-rules'],
     ['tests-unit/import/import.less', '@plugin executes; remaining gap is @import media-query handling and @media query merging'],
-    ['tests-unit/import/import-inline.less', 'deliberate v5 divergence: a compile-time (inline) @import cannot carry a media query (jess LessImportPostludeError, parse/import-postlude-on-compile-time-import); Less 4.x wrapped the loaded rules in @media instead'],
     ['tests-unit/urls/urls.less', 'renders but CSS @import placement and multiline function formatting differ from Less'],
     ['tests-config/static-urls/urls.less', 'relativeUrls=false/rootpath static URL behavior is not implemented'],
     ['tests-config/url-args/urls.less', 'urlArgs URL query appending is not implemented'],

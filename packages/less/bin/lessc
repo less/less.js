@@ -17,7 +17,6 @@ let output = null;
 let silent = false;
 let quiet = false;
 let verbose = false;
-let deprecatedStrictUnits = false;
 
 const unsupportedOptions = new Map([
   ['--source-map', 'source maps are not supported'],
@@ -142,12 +141,11 @@ function parseArgs() {
       continue;
     }
     // Deprecated 4.x spellings (--strict-units, --strict-units=on|off, -su=on|off)
-    // alias --unit-mode=strict; the warning is emitted once the logger listener
-    // is attached so --silent/--quiet are honored. `off` is the default (loose).
+    // set the deprecated `strictUnits` boolean; `createLessOptions` maps it to
+    // `unitMode` and warns during compile, after the logger listener is attached.
     const strictUnitsMatch = arg.match(/^(?:--strict-units|-su)(?:=(on|off))?$/);
     if (strictUnitsMatch) {
-      if (strictUnitsMatch[1] !== 'off') options.strictUnits = true;
-      deprecatedStrictUnits = true;
+      options.strictUnits = strictUnitsMatch[1] !== 'off';
       continue;
     }
     const unitModeMatch = arg.match(/^--unit-mode=(.+)$/);
@@ -212,10 +210,6 @@ async function run() {
       if (!silent) console.error(renderLogMessage(msg));
     },
   });
-
-  if (deprecatedStrictUnits) {
-    less.logger.warn('lessc: --strict-units is deprecated; use --unit-mode=strict (or =loose, the default)');
-  }
 
   try {
     let result;

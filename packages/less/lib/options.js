@@ -5,6 +5,7 @@
 
 import lessPlugin from '@jesscss/plugin-less';
 import { lessCompatPlugin } from '@jesscss/plugin-less-compat';
+import { logger } from './logger.js';
 
 const unsupportedAlphaOptions = new Map([
   ['sourceMap', 'source maps are not supported'],
@@ -83,11 +84,19 @@ export function createLessOptions(options) {
     'parens-division';
 
   // `unitMode` is the option ('loose' | 'preserve' | 'strict'); `strictUnits`
-  // is its deprecated boolean alias: true → 'strict', false/undefined defers
-  // to `unitMode`. Left unset so the compiler default ('loose') applies.
+  // is its deprecated boolean alias: true → 'strict'; false means "not strict",
+  // i.e. the default ('preserve') — never the Less 4.x 'loose' fold, which only
+  // an explicit `unitMode: 'loose'` selects. Any use warns so the mapping is
+  // never discovered by staring at output. Left unset so the compiler default applies.
   const unitMode = opts.unitMode !== undefined ? opts.unitMode
     : opts.strictUnits === true ? 'strict'
     : undefined;
+  if (opts.strictUnits !== undefined && opts.unitMode === undefined) {
+    logger.warn(
+      `strictUnits is deprecated; use unitMode. strictUnits: ${String(opts.strictUnits)} now means `
+      + `unitMode: '${unitMode ?? 'preserve'}'${opts.strictUnits ? '' : " (Less 4.x unit folding is unitMode: 'loose')"}`
+    );
+  }
 
   const plugins = [lessPlugin()];
   if (!skipLessCompat) {

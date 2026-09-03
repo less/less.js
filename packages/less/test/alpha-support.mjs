@@ -189,11 +189,28 @@ async function assertUnitModeSupported() {
             `${JSON.stringify(options)} must reject incompatible units`
         );
     }
-    // Loose is the default; the deprecated `strictUnits: false` is a no-op, not an error.
-    for (const options of [{}, { unitMode: 'loose' }, { strictUnits: false }]) {
-        const result = await less.render(source, options);
-        assert.match(result.css, /width: 4px/, `${JSON.stringify(options)} must render loosely`);
+    // `unitMode: 'loose'` is the only way to select the Less 4.x fold.
+    const loose = await less.render(source, { unitMode: 'loose' });
+    assert.match(loose.css, /width: 4px/, 'unitMode: loose must fold');
+    // The deprecated `strictUnits: false` means "not strict" — the default — and
+    // warns; it never selects the fold. (Asserted as identity with the default so
+    // the check holds across the pinned Jess's default-mode behavior.)
+    const warnings = [];
+    const listener = { warn(msg) { warnings.push(String(msg)); } };
+    less.logger.addListener(listener);
+    try {
+        const [dflt, off] = await Promise.all([
+            less.render(source, {}),
+            less.render(source, { strictUnits: false })
+        ]);
+        assert.equal(off.css, dflt.css, 'strictUnits: false must render exactly as the default');
+    } finally {
+        less.logger.removeListener(listener);
     }
+    assert.ok(
+        warnings.some(w => /strictUnits is deprecated.*unitMode: 'preserve'/.test(w)),
+        `strictUnits: false must warn with the mapping; got ${JSON.stringify(warnings)}`
+    );
 }
 
 await assertSupportedCompileSurface();

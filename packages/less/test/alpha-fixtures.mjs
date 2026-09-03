@@ -114,7 +114,6 @@ const skippedFixtures = new Map([
 const selectedSkippedCount = [...skippedFixtures.keys()].filter(fixtureMatches).length;
 
 const expectedFailureFixtures = new Map([
-    ['tests-unit/variables/variable-advanced.less', 'V18 unit-mode ruling (preserve = strict without the error): fixture graduated to calc() for incompatible-unit math ahead of the published @jesscss/compiler; remove when the pinned Jess renders it'],
     ['tests-unit/import/import-reference.less', 'reference import filtering leaves extra at-rules'],
     ['tests-unit/import/import.less', '@plugin executes; remaining gap is @import media-query handling and @media query merging'],
     ['tests-unit/urls/urls.less', 'renders but CSS @import placement and multiline function formatting differ from Less'],

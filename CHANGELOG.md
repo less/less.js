@@ -1,5 +1,17 @@
 ## Change Log
 
+### v5.0.0-alpha.3 (2026-09-03)
+
+#### Changes
+
+- [#4522](https://github.com/less/less.js/pull/4522) chore(less5): pin Jess 2.0.0-alpha.16 (incompatible-unit math as calc(), strictUnits deprecation warning) (@matthew-dean)
+- [#4521](https://github.com/less/less.js/pull/4521) feat(less5): keep incompatible-unit math as calc(); deprecate strictUnits for unitMode (@matthew-dean)
+- [#4520](https://github.com/less/less.js/pull/4520) fix(less5): support unitMode; strictUnits is a deprecated alias, not unsupported (@matthew-dean)
+- [#4519](https://github.com/less/less.js/pull/4519) fix(less5): browser bundle exposes window.less with 4.x-compatible render (@matthew-dean)
+- [#4518](https://github.com/less/less.js/pull/4518) chore(less5): rename browser-v5 -> browser-dev (@matthew-dean)
+- [#4516](https://github.com/less/less.js/pull/4516) feat(less5): dev browser bundle (dist/less-browser-dev.js) (@matthew-dean)
+
+
 ### v5.0.0-alpha.2 (2026-09-02)
 
 #### Changes

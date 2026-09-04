@@ -1,0 +1,23 @@
+// min()/max() and bare operations holding a CSS var() cannot be computed at
+// build time, so they are preserved as-is for the browser (issue #3777).
+.min-max-var {
+  a: min(100% - var(--w), 10px);
+  b: max(var(--x), 40px);
+  c: min(50vh - var(--y), var(--z) + 2px, 40px);
+}
+.operation-var {
+  d: 100% - var(--w);
+  e: var(--x) + 2px;
+}
+// A nested operation is left for the browser too, and keeps the grouping its tree
+// has: printed flat, `(a - b) * c` would parse back as `a - b * c`.
+.nested-var {
+  h: 100% - var(--w) + 2px;
+  i: (100% - var(--w)) * 2;
+  j: min((100% - var(--w)) * 2, 10px);
+  k: 2 * (var(--x) + 1px);
+}
+.still-evaluates {
+  f: min(10px, 20px);
+  g: 2px + 3px;
+}

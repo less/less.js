@@ -56,8 +56,29 @@ function scaled(n, size) {
         return number(n);
     }
 }
+/**
+ * CSS Color Level 5 relative color: `rgb(from ... r g b / 0.9)`.
+ * Returning nothing leaves the call for the browser. Argument eval still
+ * has to succeed first; see Operation.eval() for Keyword `/` under math=always.
+ */
+function isRelativeColorFrom(node) {
+    if (!node) {
+        return false;
+    }
+    if (node.value === 'from') {
+        return true;
+    }
+    if (node instanceof Expression && node.value && node.value[0] &&
+        node.value[0].value === 'from') {
+        return true;
+    }
+    return false;
+}
 colorFunctions = {
     rgb: function (r, g, b) {
+        if (isRelativeColorFrom(r)) {
+            return;
+        }
         let a = 1
         /**
          * Comma-less syntax
@@ -101,6 +122,9 @@ colorFunctions = {
         catch (e) {}
     },
     hsl: function (h, s, l) {
+        if (isRelativeColorFrom(h)) {
+            return;
+        }
         let a = 1
         if (h instanceof Expression) {
             const val = h.value

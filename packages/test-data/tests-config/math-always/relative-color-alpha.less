@@ -1,0 +1,34 @@
+// Relative color with an alpha slash under --math=always (issue #4528).
+// The slash parses as a Less Operation on the channel keyword (`b / 0.9`).
+// Compile-time math cannot resolve that, so the call is left for the browser.
+.relative-rgb-var-alpha {
+    color: rgb(from var(--surface) r g b / 0.9);
+}
+.relative-rgb-hex-alpha {
+    color: rgb(from #112233 r g b / 0.9);
+}
+.relative-rgb-no-alpha {
+    color: rgb(from var(--surface) r g b);
+}
+.relative-hsl-var-alpha {
+    color: hsl(from var(--surface) h s l / 0.9);
+}
+.relative-oklch-var-alpha {
+    color: oklch(from var(--surface) l c h / 0.9);
+}
+.relative-rgb-light-dark {
+    color: light-dark(
+        rgb(from var(--surface) r g b / 0.9),
+        rgb(from var(--surface) r g b / 0.9)
+    );
+}
+.classic-rgb-still-evaluates {
+    color: rgb(17, 34, 51);
+}
+.keyword-not-a-channel {
+  a: auto - 1px;
+  b: hidden / 2;
+}
+.channel-letter-outside-color {
+  c: b / 0.9;
+}

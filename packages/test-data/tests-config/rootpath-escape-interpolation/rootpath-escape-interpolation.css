@@ -1,0 +1,8 @@
+#rootpath-escape-interpolation {
+  plain-unquoted: url(http://example.com/a\(b\)\ c/relative/path);
+  interp-unquoted: url(http://example.com/a\(b\)\ c/images/path);
+  lookup-unquoted: url(http://example.com/a\(b\)\ c/images/path);
+  plain-quoted: url("http://example.com/a(b) c/relative/path");
+  interp-quoted: url("http://example.com/a(b) c/images/path");
+  lookup-quoted: url("http://example.com/a(b) c/images/path");
+}

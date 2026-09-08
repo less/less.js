@@ -1,0 +1,24 @@
+// A rewritten rootpath is escaped only for *unquoted* url() values, so the node
+// produced for an interpolated unquoted body must not read as quoted. Giving it a
+// real quote character suppressed the escaping and emitted the parentheses and
+// space raw, producing a malformed url().
+//
+// The rootpath here deliberately contains `(`, `)` and a space — the characters
+// `escapePath` handles — so quoted and unquoted forms cannot look alike.
+
+@dir: images;
+@paths: {
+  dir: images;
+};
+
+#rootpath-escape-interpolation {
+  // unquoted: rootpath must be escaped
+  plain-unquoted: url(relative/path);
+  interp-unquoted: url(@{dir}/path);
+  lookup-unquoted: url(@{paths[dir]}/path);
+
+  // quoted: rootpath must not be escaped
+  plain-quoted: url("relative/path");
+  interp-quoted: url("@{dir}/path");
+  lookup-quoted: url("@{paths[dir]}/path");
+}

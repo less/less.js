@@ -1,5 +1,12 @@
 ## Change Log
 
+### v5.0.0-alpha.6 (2026-09-12)
+
+#### Changes
+
+- [#4531](https://github.com/less/less.js/pull/4531) chore: bump jess pins to 2.0.0-alpha.20 (@matthew-dean)
+
+
 ### v5.0.0-alpha.5 (2026-09-12)
 
 #### Changes

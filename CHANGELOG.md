@@ -1,5 +1,14 @@
 ## Change Log
 
+### v5.0.0-alpha.5 (2026-09-12)
+
+#### Changes
+
+- [#4530](https://github.com/less/less.js/pull/4530) chore: bump jess pins to 2.0.0-alpha.19 (@matthew-dean)
+- [#4525](https://github.com/less/less.js/pull/4525) ci(release): grouped, linked changelog in the auto-created release PR body (@matthew-dean)
+- [#4524](https://github.com/less/less.js/pull/4524) chore: release v5.0.0-alpha.4 (@app/github-actions)
+
+
 ### v5.0.0-alpha.4 (2026-09-05)
 
 #### Changes

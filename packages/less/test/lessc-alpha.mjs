@@ -70,6 +70,13 @@ await realpath(compilerEntrypoint);
         /collapseNesting must be false, 'native', 'compact', or true/,
         'an unknown collapseNesting value is rejected'
     );
+    // An explicit `undefined` (spread/forwarded options) is treated as omitted,
+    // not validated — it must default to nested, never throw.
+    assert.deepEqual(
+        createLessOptions({ collapseNesting: undefined }).configOptions.output,
+        {},
+        'collapseNesting: undefined falls back to the default'
+    );
 
     // 'native' distributes the child selector list (each branch keeps its own
     // specificity); 'compact' folds it into a single :is().

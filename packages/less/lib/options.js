@@ -134,7 +134,7 @@ export function createLessOptions(options) {
     // renderer and its output mode. A file's styles.config may use an output
     // array — a file-less output entry is the compiler's documented per-render
     // override, so an explicit public Less option stays authoritative over it.
-    output: Object.prototype.hasOwnProperty.call(opts, 'collapseNesting')
+    output: opts.collapseNesting !== undefined
       ? [{ collapseNesting: resolveCollapseNesting(opts.collapseNesting) }]
       : {},
     language: {},

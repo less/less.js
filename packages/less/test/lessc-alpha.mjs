@@ -57,6 +57,29 @@ await realpath(compilerEntrypoint);
         createLessOptions({ collapseNesting: true }).configOptions.output,
         [{ collapseNesting: true }]
     );
+    // The enum passes through unchanged (true stays the deprecated alias).
+    for (const mode of [false, 'native', 'compact']) {
+        assert.deepEqual(
+            createLessOptions({ collapseNesting: mode }).configOptions.output,
+            [{ collapseNesting: mode }],
+            `collapseNesting: ${JSON.stringify(mode)} passes through`
+        );
+    }
+    assert.throws(
+        () => createLessOptions({ collapseNesting: 'flatten' }),
+        /collapseNesting must be false, 'native', 'compact', or true/,
+        'an unknown collapseNesting value is rejected'
+    );
+
+    // 'native' distributes the child selector list (each branch keeps its own
+    // specificity); 'compact' folds it into a single :is().
+    const listNest = '.a, .b { .c, .d { x: 1 } }\n';
+    const nativeCss = (await less.render(listNest, { collapseNesting: 'native' })).css;
+    assert.match(nativeCss, /:is\(\.a, \.b\) \.c/, "'native' distributes .c");
+    assert.match(nativeCss, /:is\(\.a, \.b\) \.d/, "'native' distributes .d");
+    assert.doesNotMatch(nativeCss, /:is\(\.c, \.d\)/, "'native' does not fold the child list");
+    const compactCss = (await less.render(listNest, { collapseNesting: 'compact' })).css;
+    assert.match(compactCss, /:is\(\.a, \.b\) :is\(\.c, \.d\)/, "'compact' folds the child list");
 
     const source = '.parent { before: 1; .child { inside: 2; } after: 3; }\n';
     assert.equal((await less.render(source)).css, `.parent {

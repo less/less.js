@@ -13,10 +13,14 @@ export interface LessRenderOptions {
   plugins?: unknown[];
   math?: number | 'always' | 'parens-division' | 'parens' | 'strict';
   /**
-   * Opt into Less 4-style flattened output. Less v5 preserves authored nesting
-   * by default.
+   * How to flatten authored nesting. Less v5 preserves authored nesting by
+   * default (`false`). `'native'` applies the CSS Nesting desugaring (parent
+   * wrapped in `:is()`, child selector lists distributed — specificity-faithful,
+   * matching the browser and Less 4.x); `'compact'` additionally folds
+   * same-combinator descendant runs into a single `:is()`. `true` is a
+   * deprecated alias for `'native'`.
    */
-  collapseNesting?: boolean;
+  collapseNesting?: boolean | 'native' | 'compact';
   /** @internal Jess alpha benchmark-only flag for source graphs already proven @plugin-free. */
   __jessSkipLessCompatWhenPluginFree?: boolean;
 }

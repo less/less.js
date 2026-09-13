@@ -65,6 +65,25 @@ function stableStringify(value, seen = new WeakSet()) {
 }
 
 /**
+ * `collapseNesting` accepts `false` (keep authored nesting — the v5 default),
+ * `'native'` (CSS Nesting desugaring: parent wrapped in `:is()`, child selector
+ * lists distributed, specificity-faithful), `'compact'` (like `'native'` but
+ * also folds same-combinator descendant runs into one `:is()`), or the
+ * deprecated boolean `true` (alias for `'native'`). Anything else is rejected.
+ * @param {unknown} value
+ * @returns {boolean|'native'|'compact'}
+ */
+function resolveCollapseNesting(value) {
+  if (value === false || value === true || value === 'native' || value === 'compact') {
+    return value;
+  }
+  throw new Error(
+    `collapseNesting must be false, 'native', 'compact', or true `
+    + `(deprecated alias for 'native'); got ${JSON.stringify(value)}`
+  );
+}
+
+/**
  * Map Less render options to Jess compiler config.
  * @param {import('./options.js').LessRenderOptions} [options] Less-style options
  * @returns {{ configOptions: object, filePath?: string }}
@@ -110,14 +129,13 @@ export function createLessOptions(options) {
       ...(unitMode !== undefined && { unitMode }),
       plugins,
     },
-    // Less v5 preserves authored nesting unless its explicit compatibility
-    // switch requests flattened CSS. Keep that public Less option at the
-    // wrapper boundary; Jess owns the one renderer and its output mode.
-    // A file's styles.config may use an output array. A file-less output entry
-    // is the compiler's documented per-render override for that shape, so an
-    // explicit public Less option remains authoritative over fixture config.
-    output: Object.prototype.hasOwnProperty.call(opts, 'collapseNesting')
-      ? [{ collapseNesting: opts.collapseNesting === true }]
+    // Less v5 preserves authored nesting unless `collapseNesting` requests a
+    // flattened projection. Pass the enum through unchanged; Jess owns the one
+    // renderer and its output mode. A file's styles.config may use an output
+    // array — a file-less output entry is the compiler's documented per-render
+    // override, so an explicit public Less option stays authoritative over it.
+    output: opts.collapseNesting !== undefined
+      ? [{ collapseNesting: resolveCollapseNesting(opts.collapseNesting) }]
       : {},
     language: {},
   };

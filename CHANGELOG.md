@@ -1,5 +1,13 @@
 ## Change Log
 
+### v5.0.0-alpha.7 (2026-09-13)
+
+#### Changes
+
+- [#4533](https://github.com/less/less.js/pull/4533) feat(options): pass the collapseNesting enum through the Less wrapper (@matthew-dean)
+- [#4532](https://github.com/less/less.js/pull/4532) chore: release v5.0.0-alpha.6 (@app/github-actions)
+
+
 ### v5.0.0-alpha.6 (2026-09-12)
 
 #### Changes

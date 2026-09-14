@@ -52,7 +52,7 @@
 	},
 	"scripts": {
 		"quicktest": "npm run test:legacy-node",
-		"test:alpha": "npm run typecheck && npm run build && npm run test:lessc && node test/jess-alpha-fast-path.mjs && node test/alpha-support.mjs && node test/alpha-fixtures.mjs",
+		"test:alpha": "npm run typecheck && npm run build && npm run test:lessc && node test/jess-alpha-fast-path.mjs && node test/alpha-support.mjs && node test/alpha-sourcemaps.mjs && node test/alpha-fixtures.mjs",
 		"test:lessc": "node test/lessc-alpha.mjs",
 		"test": "npm run test:alpha",
 		"test:module": "node test/test-es6.js && node test/test-cjs.cjs",

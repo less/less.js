@@ -68,7 +68,7 @@ const fixtureFunctionPlugin = {
 const skippedFixtures = new Map([
     ['tests-config/3rd-party/bootstrap4.less', 'broad third-party fixture; keep out of config smoke progression'],
     ['tests-config/debug/linenumbers.less', 'debug output fixture; no expected CSS in upstream fixture'],
-    ['tests-config/filemanagerPlugin/filemanager.less', 'custom Less file manager plugin API needs scope decision'],
+    ['tests-config/filemanagerPlugin/filemanager.less', 'custom Less file manager plugin hook ABI is a deliberate non-goal in v5 (jess ledger A12)'],
     ['tests-config/globalVars/extended.less', 'globalVars injection is not alpha-supported'],
     ['tests-config/globalVars/simple.less', 'globalVars injection is not alpha-supported'],
     ['tests-config/include-path/include-path.less', 'data-uri() and image-size() file helpers are not alpha-supported'],
@@ -88,8 +88,8 @@ const skippedFixtures = new Map([
     ['tests-config/math-strict/parens.less', 'no expected CSS in upstream fixture'],
     ['tests-config/modifyVars/extended.less', 'modifyVars injection is not alpha-supported'],
     ['tests-config/no-js-errors/no-js-errors.less', 'expected error fixture, not render-to-CSS fixture'],
-    ['tests-config/postProcessorPlugin/postProcessor.less', 'Less postprocessor plugin API needs scope decision'],
-    ['tests-config/preProcessorPlugin/preProcessor.less', 'Less preprocessor plugin API needs scope decision'],
+    ['tests-config/postProcessorPlugin/postProcessor.less', 'Less postprocessor plugin hook ABI is a deliberate non-goal in v5 (jess ledger A12)'],
+    ['tests-config/preProcessorPlugin/preProcessor.less', 'Less preprocessor plugin hook ABI is a deliberate non-goal in v5 (jess ledger A12)'],
     ['tests-config/process-imports/google.less', 'processImports URL import removal is not alpha-supported'],
     ['tests-config/rewrite-urls-all/rewrite-urls-all.less', 'URL rewriting is not alpha-supported'],
     ['tests-config/rewrite-urls-local/rewrite-urls-local.less', 'URL rewriting is not alpha-supported'],
@@ -105,7 +105,7 @@ const skippedFixtures = new Map([
     ['tests-config/sourcemaps-empty/var-defs.less', 'source-map artifacts are gated by test/alpha-sourcemaps.mjs; this config-only fixture has no plain .css golden to byte-compare'],
     ['tests-config/sourcemaps-variable-selector/basic.less', 'source-map artifacts are gated by test/alpha-sourcemaps.mjs; this config-only fixture has no plain .css golden to byte-compare'],
     ['tests-config/sourcemaps-variable-selector/vars.less', 'source-map artifacts are gated by test/alpha-sourcemaps.mjs; this config-only fixture has no plain .css golden to byte-compare'],
-    ['tests-config/visitorPlugin/visitor.less', 'Less visitor plugin API needs scope decision'],
+    ['tests-config/visitorPlugin/visitor.less', 'Less visitor plugin hook ABI is a deliberate non-goal in v5 (jess ledger A12)'],
     ['tests-unit/import/import-remote.less', 'remote URL imports require an explicit network/IO allowlist']
 ]);
 const selectedSkippedCount = [...skippedFixtures.keys()].filter(fixtureMatches).length;

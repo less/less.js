@@ -8,19 +8,9 @@ import { lessCompatPlugin } from '@jesscss/plugin-less-compat';
 import { logger } from './logger.js';
 
 const unsupportedAlphaOptions = new Map([
-  ['sourceMap', 'source maps are not supported'],
-  ['sourceMapFilename', 'source maps are not supported'],
-  ['sourceMapRootpath', 'source maps are not supported'],
-  ['sourceMapBasepath', 'source maps are not supported'],
-  ['sourceMapURL', 'source maps are not supported'],
-  ['sourceMapFileInline', 'source maps are not supported'],
   ['globalVars', 'global variable injection is not supported'],
   ['modifyVars', 'modify-var injection is not supported'],
-  ['rootpath', 'URL rootpath rewriting is not supported'],
-  ['rewriteUrls', 'URL rewriting is not supported'],
-  ['urlArgs', 'URL argument rewriting is not supported'],
   ['javascriptEnabled', 'JavaScript evaluation is not supported'],
-  ['compress', 'compressed output is not supported'],
 ]);
 
 function validateAlphaOptions(options) {
@@ -84,6 +74,36 @@ function resolveCollapseNesting(value) {
 }
 
 /**
+ * Build the compiler's `output.sourceMap` value from Less options. Source maps
+ * are enabled when `sourceMap` is truthy; the object form (or the flat legacy
+ * `sourceMap*` options) configures the details. Returns `undefined` when no
+ * source map is requested.
+ * @param {import('./options.js').LessRenderOptions} opts
+ * @returns {undefined | true | Record<string, unknown>}
+ */
+function resolveSourceMap(opts) {
+  if (!opts.sourceMap) {
+    return undefined;
+  }
+  const config = (typeof opts.sourceMap === 'object' && opts.sourceMap !== null)
+    ? { ...opts.sourceMap }
+    : {};
+  // Fold the flat legacy `sourceMap*` options into the object form the compiler
+  // reads; an explicit object sub-option wins over its flat alias.
+  const flat = [
+    'sourceMapURL', 'sourceMapFilename', 'sourceMapFullFilename',
+    'sourceMapRootpath', 'sourceMapBasepath', 'sourceMapFileInline',
+    'sourceMapOutputFilename', 'outputSourceFiles', 'disableSourcemapAnnotation'
+  ];
+  for (const key of flat) {
+    if (opts[key] !== undefined && config[key] === undefined) {
+      config[key] = opts[key];
+    }
+  }
+  return Object.keys(config).length > 0 ? config : true;
+}
+
+/**
  * Map Less render options to Jess compiler config.
  * @param {import('./options.js').LessRenderOptions} [options] Less-style options
  * @returns {{ configOptions: object, filePath?: string }}
@@ -117,10 +137,36 @@ export function createLessOptions(options) {
     );
   }
 
-  const plugins = [lessPlugin()];
+  // URL rewriting lives on the Less plugin (it rewrites `url(...)` during
+  // serialization), not in `output`. Only forward keys the caller set so the
+  // plugin's own v5 defaults apply otherwise.
+  const lessPluginOptions = {};
+  if (opts.rootpath !== undefined) lessPluginOptions.rootpath = opts.rootpath;
+  if (opts.rewriteUrls !== undefined) lessPluginOptions.rewriteUrls = opts.rewriteUrls;
+  if (opts.urlArgs !== undefined) lessPluginOptions.urlArgs = opts.urlArgs;
+
+  const plugins = [lessPlugin(lessPluginOptions)];
   if (!skipLessCompat) {
     plugins.push(lessCompatPlugin({ plugins: lessPlugins }));
   }
+
+  // The projection/serialization options the compiler reads off `output`:
+  // `collapseNesting` (nesting flatten mode), `compress` (minified output), and
+  // `sourceMap`. Emitted as a single file-less array entry so an explicit render
+  // option overrides a file-local styles.config for every key (the config merge
+  // appends it as the override default); left `{}` when the caller set none.
+  const outputEntry = {};
+  if (opts.collapseNesting !== undefined) {
+    outputEntry.collapseNesting = resolveCollapseNesting(opts.collapseNesting);
+  }
+  if (opts.compress !== undefined) {
+    outputEntry.compress = opts.compress;
+  }
+  const sourceMap = resolveSourceMap(opts);
+  if (sourceMap !== undefined) {
+    outputEntry.sourceMap = sourceMap;
+  }
+  const output = Object.keys(outputEntry).length > 0 ? [outputEntry] : {};
 
   const configOptions = {
     compile: {
@@ -129,14 +175,7 @@ export function createLessOptions(options) {
       ...(unitMode !== undefined && { unitMode }),
       plugins,
     },
-    // Less v5 preserves authored nesting unless `collapseNesting` requests a
-    // flattened projection. Pass the enum through unchanged; Jess owns the one
-    // renderer and its output mode. A file's styles.config may use an output
-    // array — a file-less output entry is the compiler's documented per-render
-    // override, so an explicit public Less option stays authoritative over it.
-    output: opts.collapseNesting !== undefined
-      ? [{ collapseNesting: resolveCollapseNesting(opts.collapseNesting) }]
-      : {},
+    output,
     language: {},
   };
 
@@ -164,6 +203,13 @@ export function mapRenderResult(result, options) {
   const out = {
     css: result.css ?? '',
   };
+
+  // Less 4.x returns the source map as `result.map` (a JSON string) when one was
+  // requested; forward it so `less.render(src, { sourceMap: true })` behaves the
+  // same. The compiler writes the `sourceMappingURL` annotation into `css` itself.
+  if (result.map !== undefined) {
+    out.map = result.map;
+  }
 
   if (result.imports && Array.isArray(result.imports)) {
     out.imports = result.imports;

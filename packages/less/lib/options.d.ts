@@ -21,6 +21,38 @@ export interface LessRenderOptions {
    * deprecated alias for `'native'`.
    */
   collapseNesting?: boolean | 'native' | 'compact';
+  /** Minified output. */
+  compress?: boolean;
+  /** Prepend a path to every rewritten `url(...)` and imported reference. */
+  rootpath?: string;
+  /** Rewrite relative `url(...)` against the importing file: `'all'` | `'local'` | `'off'` (or boolean). */
+  rewriteUrls?: boolean | 'all' | 'local' | 'off';
+  /** Append a query string to every non-data `url(...)`. */
+  urlArgs?: string;
+  /**
+   * Emit a source map. `true` turns it on with defaults; the object form (or the
+   * flat legacy `sourceMap*` options) configures it. Returned as `result.map`.
+   */
+  sourceMap?: boolean | {
+    sourceMapURL?: string;
+    sourceMapFilename?: string;
+    sourceMapFullFilename?: string;
+    sourceMapRootpath?: string;
+    sourceMapBasepath?: string;
+    sourceMapFileInline?: boolean;
+    sourceMapOutputFilename?: string;
+    outputSourceFiles?: boolean;
+    disableSourcemapAnnotation?: boolean;
+  };
+  sourceMapURL?: string;
+  sourceMapFilename?: string;
+  sourceMapFullFilename?: string;
+  sourceMapRootpath?: string;
+  sourceMapBasepath?: string;
+  sourceMapFileInline?: boolean;
+  sourceMapOutputFilename?: string;
+  outputSourceFiles?: boolean;
+  disableSourcemapAnnotation?: boolean;
   /** @internal Jess alpha benchmark-only flag for source graphs already proven @plugin-free. */
   __jessSkipLessCompatWhenPluginFree?: boolean;
 }

@@ -67,9 +67,6 @@ const fixtureFunctionPlugin = {
 
 const skippedFixtures = new Map([
     ['tests-config/3rd-party/bootstrap4.less', 'broad third-party fixture; keep out of config smoke progression'],
-    ['tests-config/at-rules-compressed/at-rules-compressed.less', 'compression output parity not yet alpha-gated'],
-    ['tests-config/at-rules-compressed-evaluation/at-rules-compressed-evaluation.less', 'compression output parity not yet alpha-gated'],
-    ['tests-config/compression/compression.less', 'compression output parity not yet alpha-gated'],
     ['tests-config/debug/linenumbers.less', 'debug output fixture; no expected CSS in upstream fixture'],
     ['tests-config/filemanagerPlugin/filemanager.less', 'custom Less file manager plugin API needs scope decision'],
     ['tests-config/globalVars/extended.less', 'globalVars injection is not alpha-supported'],
@@ -117,8 +114,6 @@ const expectedFailureFixtures = new Map([
     ['tests-unit/import/import-reference.less', 'reference import filtering leaves extra at-rules'],
     ['tests-unit/import/import.less', '@plugin executes; remaining gap is @import media-query handling and @media query merging'],
     ['tests-unit/urls/urls.less', 'renders but CSS @import placement and multiline function formatting differ from Less'],
-    ['tests-config/static-urls/urls.less', 'relativeUrls=false/rootpath static URL behavior is not implemented'],
-    ['tests-config/url-args/urls.less', 'urlArgs URL query appending is not implemented'],
     ['tests-config/sourcemaps-basepath/sourcemaps-basepath.less', 'source-map annotation and artifact output need a dedicated harness'],
     ['tests-config/sourcemaps-include-source/sourcemaps-include-source.less', 'source-map annotation and artifact output need a dedicated harness'],
     ['tests-config/sourcemaps-rootpath/sourcemaps-rootpath.less', 'source-map annotation and artifact output need a dedicated harness'],

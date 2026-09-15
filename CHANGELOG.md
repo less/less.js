@@ -1,5 +1,13 @@
 ## Change Log
 
+### v5.0.0-alpha.8 (2026-09-15)
+
+#### Changes
+
+- [#4535](https://github.com/less/less.js/pull/4535) feat: support source maps, URL rewriting, and compress in the render API (@matthew-dean)
+- [#4534](https://github.com/less/less.js/pull/4534) chore: release v5.0.0-alpha.7 (@app/github-actions)
+
+
 ### v5.0.0-alpha.7 (2026-09-13)
 
 #### Changes

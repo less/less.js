@@ -13,7 +13,63 @@ import less from '../lib/index.js';
 
 const SRC = '.a {\n  color: red;\n  .b { width: (1 + 1); }\n}\n';
 
-/** Assert a JSON string is a v3 source map; `allowEmpty` for empty input. */
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/** Decode one base64-VLQ segment (SourceMap rev-3) into signed fields. */
+function decodeVlq(segment) {
+  const values = [];
+  let i = 0;
+  while (i < segment.length) {
+    let result = 0;
+    let shift = 0;
+    let cont;
+    do {
+      const digit = B64.indexOf(segment[i++]);
+      assert.ok(digit >= 0, `invalid base64-VLQ char in mappings: ${JSON.stringify(segment)}`);
+      cont = digit & 32;
+      result += (digit & 31) << shift;
+      shift += 5;
+    } while (cont);
+    values.push(result & 1 ? -(result >>> 1) : result >>> 1);
+  }
+  return values;
+}
+
+/**
+ * Decode a v3 `mappings` string into absolute segments, resolving the running
+ * deltas. Each mapped segment carries { genLine, genCol, srcIdx, srcLine, srcCol }.
+ */
+function decodeMappings(mappings) {
+  const segments = [];
+  let srcIdx = 0;
+  let srcLine = 0;
+  let srcCol = 0;
+  mappings.split(';').forEach((line, genLine) => {
+    if (!line) {
+      return;
+    }
+    let genCol = 0;
+    for (const raw of line.split(',')) {
+      const fields = decodeVlq(raw);
+      genCol += fields[0];
+      const seg = { genLine, genCol };
+      if (fields.length >= 4) {
+        srcIdx += fields[1];
+        srcLine += fields[2];
+        srcCol += fields[3];
+        Object.assign(seg, { srcIdx, srcLine, srcCol });
+      }
+      segments.push(seg);
+    }
+  });
+  return segments;
+}
+
+/**
+ * Assert a JSON string is a v3 source map whose mappings decode to in-bounds,
+ * non-negative positions referencing real sources. Returns the parsed map plus
+ * decoded segments. `allowEmpty` skips the non-empty requirement (empty input).
+ */
 function assertV3Map(json, { allowEmpty = false } = {}) {
   const map = JSON.parse(json);
   assert.equal(map.version, 3, 'source map must be version 3');
@@ -23,16 +79,39 @@ function assertV3Map(json, { allowEmpty = false } = {}) {
     assert.ok(map.sources.length > 0, 'map must carry at least one source');
     assert.ok(map.mappings.length > 0, 'map must carry mappings');
   }
-  return map;
+  const segments = decodeMappings(map.mappings);
+  for (const seg of segments) {
+    assert.ok(seg.genCol >= 0, 'generated column must be non-negative');
+    if ('srcIdx' in seg) {
+      assert.ok(
+        seg.srcIdx >= 0 && seg.srcIdx < map.sources.length,
+        `mapping source index ${seg.srcIdx} out of range (sources: ${map.sources.length})`
+      );
+      assert.ok(seg.srcLine >= 0 && seg.srcCol >= 0, 'source position must be non-negative');
+    }
+  }
+  return { map, segments };
 }
 
-// 1. `sourceMap: true` returns a v3 map; no annotation is written without an
-//    explicit URL or inline request.
+// 1. `sourceMap: true` returns a v3 map whose mappings round-trip to the real
+//    source positions; no annotation is written without a URL/inline request.
 {
   const { css, map } = await less.render(SRC, { sourceMap: true });
   assert.ok(map, 'sourceMap: true must return result.map');
-  assertV3Map(map);
+  const { map: parsed, segments } = assertV3Map(map);
   assert.doesNotMatch(css, /sourceMappingURL/, 'no annotation without a URL/inline request');
+
+  // SRC line 1 (0-based) is `color: red;` and line 2 is the `.b` rule; the
+  // mappings must reference those real source lines, not arbitrary positions.
+  const srcLines = new Set(segments.filter(s => 'srcLine' in s).map(s => s.srcLine));
+  assert.ok(srcLines.has(1), 'a mapping must point at the `color: red` source line');
+  assert.ok(srcLines.has(2), 'a mapping must point at the nested `.b` source line');
+
+  // sourcesContent has one slot per source; content is null unless
+  // outputSourceFiles is set (see check 7), matching Less 4.x.
+  assert.ok(Array.isArray(parsed.sourcesContent), 'map must have a sourcesContent array');
+  assert.equal(parsed.sourcesContent.length, parsed.sources.length,
+    'sourcesContent must have one slot per source');
 }
 
 // 2. `sourceMapURL` writes a plain annotation referencing that URL.
@@ -69,6 +148,16 @@ function assertV3Map(json, { allowEmpty = false } = {}) {
   const { map } = await less.render('', { sourceMap: true });
   assert.ok(map, 'empty input still returns a map');
   assertV3Map(map, { allowEmpty: true });
+}
+
+// 7. `outputSourceFiles` embeds the original source into sourcesContent.
+{
+  const { map } = await less.render(SRC, { sourceMap: { outputSourceFiles: true } });
+  const { map: parsed } = assertV3Map(map);
+  assert.ok(parsed.sourcesContent.every(c => typeof c === 'string'),
+    'outputSourceFiles must embed every source');
+  assert.ok(parsed.sourcesContent[0].includes('color: red'),
+    'embedded content must be the original Less source');
 }
 
 console.log('Less 5 alpha source-map artifact checks passed');

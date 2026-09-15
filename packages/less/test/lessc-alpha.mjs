@@ -52,6 +52,9 @@ assert.match(compilerEntrypoint, /[/\\]@jesscss[/\\]compiler[/\\]lib[/\\]index\.
 await realpath(compilerEntrypoint);
 
 {
+    // `output` is a single file-less array entry carrying the projection/
+    // serialization options (collapseNesting, compress, sourceMap) so a render
+    // option overrides a file-local config; `{}` when the caller set none.
     assert.deepEqual(createLessOptions({}).configOptions.output, {});
     assert.deepEqual(
         createLessOptions({ collapseNesting: true }).configOptions.output,
@@ -77,6 +80,34 @@ await realpath(compilerEntrypoint);
         {},
         'collapseNesting: undefined falls back to the default'
     );
+
+    // compress + sourceMap map into output; URL options go to the Less plugin.
+    assert.deepEqual(createLessOptions({ compress: true }).configOptions.output, [{ compress: true }]);
+    assert.deepEqual(createLessOptions({ sourceMap: true }).configOptions.output, [{ sourceMap: true }]);
+    assert.deepEqual(
+        createLessOptions({ sourceMap: { sourceMapFileInline: true } }).configOptions.output,
+        [{ sourceMap: { sourceMapFileInline: true } }],
+        'sourceMap object form passes through'
+    );
+    {
+        // Flat legacy sourceMap* options fold into the object form.
+        const out = createLessOptions({ sourceMap: true, sourceMapURL: 'x.map' }).configOptions.output;
+        assert.deepEqual(out, [{ sourceMap: { sourceMapURL: 'x.map' } }]);
+    }
+    // Combined options share one entry (compiler resolves all keys from it).
+    assert.deepEqual(
+        createLessOptions({ collapseNesting: 'native', compress: true, sourceMap: true }).configOptions.output,
+        [{ collapseNesting: 'native', compress: true, sourceMap: true }],
+        'collapseNesting + compress + sourceMap combine in one entry'
+    );
+    // globalVars / modifyVars / javascriptEnabled stay rejected.
+    for (const option of ['globalVars', 'modifyVars', 'javascriptEnabled']) {
+        assert.throws(
+            () => createLessOptions({ [option]: option === 'javascriptEnabled' ? true : {} }),
+            new RegExp(`${option} is not supported`),
+            `${option} still rejected`
+        );
+    }
 
     // 'native' distributes the child selector list (each branch keeps its own
     // specificity); 'compact' folds it into a single :is().

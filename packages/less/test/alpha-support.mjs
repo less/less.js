@@ -14,16 +14,12 @@ const unsupportedForAlpha1 = [
         detail: 'Less @plugin, render-option function plugins, file-manager plugins, and pre/post-processors are wired for future compatibility but are not alpha.1-supported execution paths.'
     },
     {
-        area: 'Source maps',
-        detail: 'Source-map options and annotations are not alpha-supported yet.'
-    },
-    {
-        area: 'URL rewrite/process-imports compatibility',
-        detail: 'Less 4 urlArgs/static URL/processImports behavior is not alpha-supported yet.'
+        area: 'Remote (network) imports',
+        detail: 'Importing from http(s) URLs is gated behind an explicit network policy and is not enabled by default.'
     },
     {
         area: 'Compression/minification parity',
-        detail: 'Less 5 alpha.1 focuses on readable compiler output, not Less 4 compressed output identity.'
+        detail: 'compress is supported, but output is not byte-identical to the Less 4 `-x` minifier — v5 preserves authored nesting by default (collapseNesting).'
     },
     {
         area: 'Permissive legacy syntax edge cases',
@@ -154,14 +150,9 @@ async function assertBareStructuralAtRuleVariablesReject() {
 
 async function assertUnsupportedApiOptionsReject() {
     const unsupported = [
-        'sourceMap',
         'globalVars',
         'modifyVars',
-        'compress',
-        'rewriteUrls',
-        'urlArgs',
-        'javascriptEnabled',
-        'rootpath'
+        'javascriptEnabled'
     ];
     for (const option of unsupported) {
         await assert.rejects(
@@ -174,6 +165,28 @@ async function assertUnsupportedApiOptionsReject() {
             `${option} must reject instead of silently no-oping`
         );
     }
+}
+
+async function assertOutputApiOptionsSupported() {
+    const source = '.x { color: red; background: url("img/a.png"); .y { width: (1 + 1) } }\n';
+
+    // Source maps: `sourceMap: true` returns a v3 map (Less 4.x `result.map`).
+    const sm = await less.render(source, { sourceMap: true });
+    assert.ok(sm.map, 'sourceMap: true must return result.map');
+    const map = JSON.parse(sm.map);
+    assert.equal(map.version, 3, 'source map must be v3');
+    assert.ok(Array.isArray(map.sources) && map.sources.length > 0, 'source map must carry sources');
+
+    // Compression: whitespace-stripped output.
+    const cz = await less.render(source, { compress: true });
+    assert.doesNotMatch(cz.css, /\n/, 'compress: true must strip newlines');
+    assert.match(cz.css, /color:red/, 'compress: true must minify declarations');
+
+    // URL rewriting (on the Less plugin): urlArgs appends, rootpath prepends.
+    const ua = await less.render(source, { urlArgs: 'v=1' });
+    assert.match(ua.css, /url\("img\/a\.png\?v=1"\)/, 'urlArgs must append the query');
+    const rp = await less.render(source, { rootpath: '/cdn/' });
+    assert.match(rp.css, /url\("\/cdn\/img\/a\.png"\)/, 'rootpath must prepend the path');
 }
 
 async function assertUnitModeSupported() {
@@ -217,6 +230,7 @@ await assertSupportedCompileSurface();
 await assertUnsupportedSyntaxHasPreciseDiagnostic();
 await assertBareStructuralAtRuleVariablesReject();
 await assertUnsupportedApiOptionsReject();
+await assertOutputApiOptionsSupported();
 await assertUnitModeSupported();
 await assertFixtureRendersByteIdentical('at-rule-variable-interpolation/at-rule-variable-interpolation');
 await assertFixtureRendersByteIdentical('color-functions/modern');

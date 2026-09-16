@@ -1,0 +1,35 @@
+.ext1 .ext2 {
+  background: black;
+}
+
+@container (min-width: 400px) {
+  .ext1 .ext3 {
+    color: inherit;
+  }
+  .card-narrow :extend(.ext1 all) {
+    background: blue;
+  }
+}
+
+@container sidebar (min-width: 700px) {
+  .ext1 .ext4 {
+    color: green;
+  }
+  .card-wide :extend(.ext1 all) {
+    background: red;
+  }
+}
+
+.a {
+  color: red;
+}
+
+@container container-name {
+  .b {
+    &:extend(.a);
+  }
+}
+
+.all:extend(.ext1 all) {
+
+}

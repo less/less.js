@@ -93,6 +93,16 @@ class ExtendFinderVisitor {
         this.allExtendsStack.length = this.allExtendsStack.length - 1;
     }
 
+    // Container is its own node type, so without these an extend inside @container was collected
+    // into the enclosing scope and matched selectors outside the block. Scope it like @media.
+    visitContainer(containerNode, visitArgs) {
+        this.visitMedia(containerNode, visitArgs);
+    }
+
+    visitContainerOut(containerNode) {
+        this.visitMediaOut(containerNode);
+    }
+
     visitAtRule(atRuleNode, visitArgs) {
         atRuleNode.allExtends = [];
         this.allExtendsStack.push(atRuleNode.allExtends);
@@ -488,6 +498,14 @@ class ProcessExtendsVisitor {
     visitMediaOut(mediaNode) {
         const lastIndex = this.allExtendsStack.length - 1;
         this.allExtendsStack.length = lastIndex;
+    }
+
+    visitContainer(containerNode, visitArgs) {
+        this.visitMedia(containerNode, visitArgs);
+    }
+
+    visitContainerOut(containerNode) {
+        this.visitMediaOut(containerNode);
     }
 
     visitAtRule(atRuleNode, visitArgs) {

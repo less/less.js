@@ -161,23 +161,26 @@ async function assertBareStructuralAtRuleVariablesReject() {
 
 async function assertStatusDocInSync() {
     const doc = await readFile(path.join(packageRoot(), 'V5-STATUS.md'), 'utf8');
-    // Slice a `## `-delimited section by its heading prefix.
-    const section = (heading) => {
-        const start = doc.indexOf(heading);
-        assert.ok(start >= 0, `V5-STATUS.md is missing the "${heading}" section`);
-        const rest = doc.slice(start + heading.length);
-        const next = rest.search(/\n## /u);
-        return next >= 0 ? rest.slice(0, next) : rest;
-    };
-    const implemented = section('## ✅ Implemented');
-    const intentional = section('## ❌ Intentionally not');
+    // Parse the comparison tables: | Feature | Less 4 | Less 5 | Notes |. Skip the
+    // header/separator rows (a separator's Less-5 cell has no status icon).
+    const rows = doc.split('\n')
+        .filter(line => line.trimStart().startsWith('|'))
+        .map(line => line.split('|').map(cell => cell.trim()))
+        .filter(cells => cells.length >= 5)
+        .map(cells => ({ feature: cells[1], less5: cells[3] }));
+
+    // An option is documented iff some row names it in the Feature column and its
+    // Less 5 cell carries the expected status icon.
+    const documentedAs = (option, icon) =>
+        rows.some(r => r.feature.includes(option) && r.less5.includes(icon));
+
     for (const option of SUPPORTED_OPTIONS) {
-        assert.ok(implemented.includes(option),
-            `V5-STATUS.md must list '${option}' under "Implemented" (public status drifted from the wrapper)`);
+        assert.ok(documentedAs(option, '✅'),
+            `V5-STATUS.md must show '${option}' as ✅ supported (public status drifted from the wrapper)`);
     }
     for (const option of REJECTED_OPTIONS) {
-        assert.ok(intentional.includes(option),
-            `V5-STATUS.md must list '${option}' under "Intentionally not" (public status drifted from the wrapper)`);
+        assert.ok(documentedAs(option, '❌'),
+            `V5-STATUS.md must show '${option}' as ❌ not supported (public status drifted from the wrapper)`);
     }
 }
 

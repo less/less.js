@@ -2,110 +2,69 @@
 
 Less 5 is a from-scratch compiler (the [Jess](https://github.com/jesscss/jess)
 engine) behind the same `less.render(input, options)` / `lessc` interface Less 4
-users know. This page tracks what the current alpha supports, what is still in
-progress, and what will **intentionally not** be carried over from Less 4 — and
-why.
+users know. The tables below compare Less 4 with the current Less 5 alpha —
+what's implemented, what's still in progress, and what will **intentionally
+not** be carried over (with the reason).
 
 > **Status:** alpha, published under the npm `alpha` dist-tag
-> (`npm install less@alpha`). APIs and output may still change. This document is
-> kept honest by the `packages/less` alpha test suite; if a claim here drifts
-> from behavior, the suite should catch it.
+> (`npm install less@alpha`). APIs and output may still change. This page is kept
+> honest by the `packages/less` alpha test suite — if a row here drifts from
+> actual behavior, the suite fails.
 
-The one headline behavior change: **Less 5 preserves your authored nesting by
-default** (it emits nested CSS) instead of always flattening. Opt into flattened
-output with `collapseNesting` (below).
+The headline change: **Less 5 preserves your authored nesting by default** (it
+emits nested CSS) instead of always flattening. Opt into flattened output with
+`collapseNesting`.
 
----
+**Legend:** ✅ supported · ⏳ in progress · ❌ not supported (by design) · ➖ not applicable
 
-## ✅ Implemented
+## Language & output
 
-Available through the `less.render()` / `less.renderFile()` API. The `lessc` CLI
-accepts a compile today but only wires a subset of option **flags** — see
-*In progress* below for CLI flag coverage.
+| Feature | Less 4 | Less 5 | Notes |
+| --- | :---: | :---: | --- |
+| Variables, mixins (guards, named args), operations, functions | ✅ | ✅ | The Less builtin function library is ported. |
+| `:extend` | ✅ | ✅ | |
+| Nested-rule output | ➖ | ✅ | Less 4 always flattened; Less 5 **preserves** authored nesting by default. |
+| `collapseNesting` (flatten instead) | ➖ | ✅ | `false` (default) / `'native'` (specificity-faithful) / `'compact'`. |
+| `@media` query merging | ✅ | ❌ | Less 5 emits nested `@media` instead of rewriting to `@media (a) and (b)`. Browsers have nested `@media` far longer than native *selector* nesting, so nested output is safe — and merging can blow up combinatorially (each nested query multiplies out). |
+| Inline JavaScript (backticks) | ✅ | ❌ | Removed. A script-module (`@use`) path is the planned replacement for computed values — not yet integrated (see `@use`/`@compose` below). |
+| IE `progid:` / `filter` hacks | ✅ | ❌ | Removed. |
 
-- **Core compilation** — variables, mixins (including guards and named args),
-  operations, functions, `@import`, nesting, `&`, `:extend`, and the Less
-  builtin function library.
-- **Nested output** — authored nesting is preserved by default (modern CSS
-  nesting). This is the main difference from Less 4.
-- **`collapseNesting`** — flatten the output instead. `false` (default, keep
-  nesting), `'native'` (the CSS-nesting desugaring — parent wrapped in `:is()`,
-  child selector lists distributed, so each branch keeps its own specificity,
-  matching the browser and Less 4), or `'compact'` (like `'native'` but also
-  folds same-combinator descendant runs into one `:is()`).
-- **`math`** — `'always'`, `'parens-division'` (default), `'parens'`.
-- **`unitMode`** — `'loose'` | `'preserve'` (default) | `'strict'`.
-  `strictUnits: true` is a deprecated alias for `'strict'`.
-- **Source maps** — `sourceMap: true` (or the object form / the legacy flat
-  `sourceMap*` options) returns the map as `result.map`, writes the
-  `sourceMappingURL` annotation when a URL or inline map is requested, and
-  embeds source content with `outputSourceFiles`.
-- **URL rewriting** — `rootpath`, `rewriteUrls` (`'all'`/`'local'`/`'off'`), and
-  `urlArgs` rewrite `url(...)` references.
-- **`compress`** — minified output.
-- **Function plugins** — `@plugin "file"` scripts that register custom
-  functions (via `functions.add` / `addMultiple`), through the opt-in
-  `@jesscss/plugin-less-compat` layer. This is the common `@plugin` shape.
-- **npm imports** — importing from `node_modules` packages (the
-  `less-plugin-npm-import` case) is native via `@jesscss/plugin-node-modules`.
-- **Diagnostics** — errors report `file:line:column` with a source excerpt and
-  caret, not raw parser offsets.
-- **Browser build** — a browser bundle (`npm run build:browser`) that defines
-  `window.less` with the same render API; it powers the online playground.
+## Options (`less.render` API)
 
----
+| Feature | Less 4 | Less 5 | Notes |
+| --- | :---: | :---: | --- |
+| `math` modes | ✅ | ✅ | `always` / `parens-division` (default) / `parens`. |
+| `unitMode` (formerly `strictUnits`) | ✅ | ✅ | `loose` / `preserve` (default) / `strict`. |
+| `compress` | ✅ | ✅ | Minified, but not byte-identical to Less 4 `-x` (nesting preserved by default). |
+| Source maps (`sourceMap`) | ✅ | ✅ | Returns `result.map`; annotation + `outputSourceFiles` supported. Path-variant parity is ⏳. |
+| URL rewriting (`rewriteUrls` / `rootpath` / `urlArgs`) | ✅ | ✅ | Rewrites `url(...)` references. |
+| `globalVars` / `modifyVars` injection | ✅ | ❌ | Not supported — these throw rather than silently no-op. |
+| `javascriptEnabled` | ✅ | ❌ | JavaScript evaluation is not supported. |
 
-## ⏳ In progress / not yet
+## Plugins (`@plugin`)
 
-Planned, but not complete in the current alpha.
+| Feature | Less 4 | Less 5 | Notes |
+| --- | :---: | :---: | --- |
+| Function plugins (`functions.add`) | ✅ | ✅ | Via the opt-in `@jesscss/plugin-less-compat` layer — the common `@plugin` shape. |
+| npm-package imports | ✅ | ✅ | Native via `@jesscss/plugin-node-modules` (the `less-plugin-npm-import` case). |
+| Visitor / tree-visitor ABI, full `less.tree` | ✅ | ❌ | Intentional — the Less 4 tree is not the Less 5 AST; a translation layer isn't worth it. |
+| Pre-/post-processor hooks | ✅ | ❌ | Run PostCSS after Less; minification is native via `compress`. |
+| File-manager hooks | ✅ | ❌ | The common case (npm import) is covered natively. |
+| `@plugin (options)` + `registerPlugin` lifecycle | ✅ | ❌ | Deprecated Less 4 lifecycle; not built. |
 
-- **Source-map path variants** — maps are produced and valid, but the
-  source-path normalization for `sourceMapBasepath` / `sourceMapRootpath` /
-  include-source is not yet byte-identical to Less 4.
-- **Remote imports** — importing from `http(s)` URLs is gated behind an explicit
-  network policy and is not enabled by default.
-- **Module member access** — `@use` / `@compose` member access (namespaced
-  functions/mixins) is designed but not yet wired.
-- **`lessc` CLI flags** — the render API accepts every option in the
-  *Implemented* list, but the CLI flag parser only wires a subset: flags such as
-  `--compress`, `--source-map`, `--rewrite-urls` / `--rootpath` / `--url-args`,
-  and `--math` are not accepted yet (they error as unsupported). Use the
-  `less.render()` API for these until the CLI catches up.
+## Imports, CLI & tooling
+
+| Feature | Less 4 | Less 5 | Notes |
+| --- | :---: | :---: | --- |
+| Sibling / relative `@import` | ✅ | ✅ | |
+| Remote (`http(s)`) imports | ✅ | ⏳ | Gated behind an explicit network policy; not on by default. |
+| `@use` / `@compose` modules | ➖ | ⏳ | Member access (namespaced functions/mixins) designed, not yet wired. |
+| Browser build (`window.less`) | ✅ | ✅ | `dist/less-browser-dev.js` ships and powers the playground; full 4.x browser-API parity is ⏳. |
+| `lessc` CLI (compile) | ✅ | ✅ | Compiles files. |
+| `lessc` CLI **flags** for the newer options | ✅ | ⏳ | `--compress`, `--source-map`, `--rewrite-urls` / `--rootpath` / `--url-args`, `--math` are not wired yet — use the `less.render()` API for these until the CLI catches up. |
+| Diagnostics (`file:line:column` + excerpt) | ➖ | ✅ | Precise diagnostics, not raw parser offsets. |
 
 ---
 
-## ❌ Intentionally not (and why)
-
-Deliberately not carried into Less 5. Each has a rationale and, where relevant, a
-replacement.
-
-- **`@media` query merging** — a nested `@media (a) { @media (b) { … } }` is
-  emitted **nested**, not rewritten to `@media (a) and (b)`. The 4.x merge was a
-  workaround for engines that could not nest conditional group rules; modern CSS
-  nests them natively.
-- **Inline JavaScript (backticks)** — ``@v: `...js...` `` is removed. Use a
-  script module (`@use`) for computed values.
-- **IE `progid:` / `filter` hacks** — the legacy IE-specific filter handling is
-  removed.
-- **Deprecated dash-only variable names** — `@-` / `@{-}` style names are
-  rejected.
-- **Permissive legacy parser corners** — constructs like dynamic `@charset` are
-  rejected with a precise diagnostic rather than silently accepted.
-- **The `@plugin` hook ABI** — visitor / pre-processor / post-processor /
-  file-manager hooks, the full 4.x `less.tree` node API, and the
-  `@plugin (options)` + `registerPlugin` lifecycle are **not** implemented.
-  Function plugins are supported (above), and the two hooks people most often
-  reach for are covered natively: custom import resolution by
-  `@jesscss/plugin-node-modules`, and minification by `compress`. For an
-  autoprefixer/clean-css style post-process, run PostCSS after Less. (A small
-  `addPostProcessor` hook may be revisited if there is real demand.)
-- **Byte-identical Less 4 minifier output** — `compress` produces minified CSS,
-  but not byte-for-byte the same as Less 4's `-x`; Less 5 preserves authored
-  nesting by default.
-- **`globalVars` / `modifyVars` injection and `javascriptEnabled`** — not
-  supported; these throw rather than silently no-op.
-
----
-
-*Found something that contradicts this page? Please open an issue — a drift
-between this doc and actual behavior is a bug.*
+*Found a row that contradicts actual behavior? Please open an issue — a drift
+between this page and the compiler is a bug.*

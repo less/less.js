@@ -112,7 +112,7 @@ const selectedSkippedCount = [...skippedFixtures.keys()].filter(fixtureMatches).
 
 const expectedFailureFixtures = new Map([
     ['tests-unit/import/import-reference.less', 'reference import filtering leaves extra at-rules'],
-    ['tests-unit/import/import.less', '@plugin executes; remaining gap is @import media-query handling and @media query merging'],
+    ['tests-unit/import/import.less', '@plugin executes; renders but differs from the Less 4 golden (root-@import placement, numeric precision). v5 intentionally does NOT merge nested @media (nesting is preserved by design), so that is not a gap'],
     ['tests-unit/urls/urls.less', 'renders but CSS @import placement and multiline function formatting differ from Less'],
     ['tests-config/sourcemaps-basepath/sourcemaps-basepath.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-config/sourcemaps-include-source/sourcemaps-include-source.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
@@ -122,7 +122,7 @@ const expectedFailureFixtures = new Map([
     ['tests-unit/property-name-interp/property-name-interp.less', 'deprecated dash-only @- and @{-} variable names are rejected'],
     ['tests-unit/plugin-module/plugin-module.less', 'legacy CommonJS @plugin graph with require() is not supported by the optional JS runtime'],
     ['tests-unit/plugin-preeval/plugin-preeval.less', 'legacy tree visitor ABI is not supported'],
-    ['tests-unit/plugin/plugin.less', '@plugin scripts execute; remaining gap is nested @media query merging'],
+    ['tests-unit/plugin/plugin.less', '@plugin scripts execute; the Less 4 golden uses the deprecated registerPlugin/(option) lifecycle and flattened output. v5 intentionally does NOT merge nested @media (nesting is preserved by design), so that is not a gap'],
     ['tests-unit/parse-interpolation/parse-interpolation.less', 'renders but interpolation formatting differs from Less'],
     ['tests-unit/parser-slashed-combinator/parser-slashed-combinator.less', 'slashed combinator not yet supported'],
     ['tests-unit/permissive-parse/permissive-parse.less', 'permissive legacy parser corners are not alpha-supported'],

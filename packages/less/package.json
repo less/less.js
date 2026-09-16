@@ -45,7 +45,8 @@
 		"!lib/**/*.map",
 		"dist",
 		"index.cjs",
-		"README.md"
+		"README.md",
+		"V5-STATUS.md"
 	],
 	"engines": {
 		"node": "^20.19.0 || >=22.12.0"

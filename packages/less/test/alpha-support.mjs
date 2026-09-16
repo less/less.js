@@ -8,6 +8,17 @@ import less from '../lib/index.js';
 
 const testDataRoot = path.resolve(packageRoot(), '..', 'test-data', 'tests-unit');
 
+// Options that must reject (see assertUnsupportedApiOptionsReject) and the key
+// options that must work (see assertOutputApiOptionsSupported). V5-STATUS.md is
+// kept honest against these: assertStatusDocInSync asserts the doc mentions
+// every one, so adding/removing a supported-or-rejected option without updating
+// the public status page fails the suite.
+const REJECTED_OPTIONS = ['globalVars', 'modifyVars', 'javascriptEnabled'];
+const DOC_MUST_MENTION = [
+    ...REJECTED_OPTIONS,
+    'collapseNesting', 'sourceMap', 'compress', 'rewriteUrls', 'urlArgs', 'rootpath', 'unitMode'
+];
+
 const unsupportedForAlpha1 = [
     {
         area: 'Legacy plugin host APIs',
@@ -148,13 +159,19 @@ async function assertBareStructuralAtRuleVariablesReject() {
     );
 }
 
+async function assertStatusDocInSync() {
+    const statusPath = path.join(packageRoot(), 'V5-STATUS.md');
+    const doc = await readFile(statusPath, 'utf8');
+    for (const option of DOC_MUST_MENTION) {
+        assert.ok(
+            doc.includes(option),
+            `V5-STATUS.md must document the '${option}' option (public status page drifted from the wrapper)`
+        );
+    }
+}
+
 async function assertUnsupportedApiOptionsReject() {
-    const unsupported = [
-        'globalVars',
-        'modifyVars',
-        'javascriptEnabled'
-    ];
-    for (const option of unsupported) {
+    for (const option of REJECTED_OPTIONS) {
         await assert.rejects(
             less.render('.x { color: red; }\n', { [option]: true }),
             error => {
@@ -231,6 +248,7 @@ await assertUnsupportedSyntaxHasPreciseDiagnostic();
 await assertBareStructuralAtRuleVariablesReject();
 await assertUnsupportedApiOptionsReject();
 await assertOutputApiOptionsSupported();
+await assertStatusDocInSync();
 await assertUnitModeSupported();
 await assertFixtureRendersByteIdentical('at-rule-variable-interpolation/at-rule-variable-interpolation');
 await assertFixtureRendersByteIdentical('color-functions/modern');

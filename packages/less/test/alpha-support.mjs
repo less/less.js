@@ -8,6 +8,17 @@ import less from '../lib/index.js';
 
 const testDataRoot = path.resolve(packageRoot(), '..', 'test-data', 'tests-unit');
 
+// Options that must reject (assertUnsupportedApiOptionsReject) and the key
+// options that must work (assertOutputApiOptionsSupported). V5-STATUS.md is kept
+// honest against these: assertStatusDocInSync asserts each supported option is
+// documented under "Implemented" and each rejected one under "Intentionally
+// not", so a support change that doesn't update the public status page — or that
+// files an option under the wrong heading — fails the suite.
+const REJECTED_OPTIONS = ['globalVars', 'modifyVars', 'javascriptEnabled'];
+const SUPPORTED_OPTIONS = [
+    'collapseNesting', 'sourceMap', 'compress', 'rewriteUrls', 'urlArgs', 'rootpath', 'unitMode', 'math'
+];
+
 const unsupportedForAlpha1 = [
     {
         area: 'Legacy plugin host APIs',
@@ -148,13 +159,30 @@ async function assertBareStructuralAtRuleVariablesReject() {
     );
 }
 
+async function assertStatusDocInSync() {
+    const doc = await readFile(path.join(packageRoot(), 'V5-STATUS.md'), 'utf8');
+    // Slice a `## `-delimited section by its heading prefix.
+    const section = (heading) => {
+        const start = doc.indexOf(heading);
+        assert.ok(start >= 0, `V5-STATUS.md is missing the "${heading}" section`);
+        const rest = doc.slice(start + heading.length);
+        const next = rest.search(/\n## /u);
+        return next >= 0 ? rest.slice(0, next) : rest;
+    };
+    const implemented = section('## ✅ Implemented');
+    const intentional = section('## ❌ Intentionally not');
+    for (const option of SUPPORTED_OPTIONS) {
+        assert.ok(implemented.includes(option),
+            `V5-STATUS.md must list '${option}' under "Implemented" (public status drifted from the wrapper)`);
+    }
+    for (const option of REJECTED_OPTIONS) {
+        assert.ok(intentional.includes(option),
+            `V5-STATUS.md must list '${option}' under "Intentionally not" (public status drifted from the wrapper)`);
+    }
+}
+
 async function assertUnsupportedApiOptionsReject() {
-    const unsupported = [
-        'globalVars',
-        'modifyVars',
-        'javascriptEnabled'
-    ];
-    for (const option of unsupported) {
+    for (const option of REJECTED_OPTIONS) {
         await assert.rejects(
             less.render('.x { color: red; }\n', { [option]: true }),
             error => {
@@ -231,6 +259,7 @@ await assertUnsupportedSyntaxHasPreciseDiagnostic();
 await assertBareStructuralAtRuleVariablesReject();
 await assertUnsupportedApiOptionsReject();
 await assertOutputApiOptionsSupported();
+await assertStatusDocInSync();
 await assertUnitModeSupported();
 await assertFixtureRendersByteIdentical('at-rule-variable-interpolation/at-rule-variable-interpolation');
 await assertFixtureRendersByteIdentical('color-functions/modern');

@@ -13,10 +13,12 @@
 > [!IMPORTANT]
 > This package README is for Less 5 alpha.1. Less 5 is a Jess-powered compiler
 > preview for early testing and is not yet a drop-in replacement for Less 4.x.
-> Alpha.1 focuses on Node.js `less.render()`, `less.renderFile()`, `lessc`,
-> variables, arithmetic, mixins, sibling file imports, and nested-rule output.
-> Source maps, browser compilation, legacy plugin host APIs, URL rewriting, and
-> compressed-output parity are still work in progress.
+> It covers Node.js `less.render()`, `less.renderFile()`, and `lessc`, plus
+> variables, arithmetic, mixins, imports, and nested-rule output. Source maps,
+> URL rewriting, and `compress` now work through the `less.render()` API; the
+> legacy `@plugin` hook ABI is intentionally not carried over (function plugins
+> are supported). See the **[Less 5 feature status](V5-STATUS.md)** for the full
+> list of what is implemented, in progress, and intentionally not.
 
 Less extends CSS with variables, mixins, functions, nesting, and more — then compiles to standard CSS. Write cleaner stylesheets with less code.
 
@@ -64,8 +66,10 @@ npx lessc styles.less styles.css
 
 ### Browser
 
-Less 5 alpha.1 does not include browser compilation support. A new browser
-build mechanism will be introduced in a future alpha.
+A browser build ships in the package (`dist/less-browser-dev.js`) and defines
+`window.less` with the same render API; it powers the online playground. Full
+browser-API parity with Less 4 is still being validated — see the
+[feature status](V5-STATUS.md).
 
 ## Why Less?
 

@@ -1,0 +1,29 @@
+.ext1 .ext2,
+.all .ext2 {
+  background: black;
+}
+@container (min-width: 400px) {
+  .ext1 .ext3,
+  .card-narrow .ext3,
+  .all .ext3 {
+    color: inherit;
+  }
+  .card-narrow {
+    background: blue;
+  }
+}
+@container sidebar (min-width: 700px) {
+  .ext1 .ext4,
+  .card-wide .ext4,
+  .all .ext4 {
+    color: green;
+  }
+  .card-wide {
+    background: red;
+  }
+}
+.a {
+  color: red;
+}
+@container container-name {
+}

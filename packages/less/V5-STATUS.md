@@ -19,7 +19,9 @@ output with `collapseNesting` (below).
 
 ## ✅ Implemented
 
-Works today through `less.render(...)` and `lessc`.
+Available through the `less.render()` / `less.renderFile()` API. The `lessc` CLI
+accepts a compile today but only wires a subset of option **flags** — see
+*In progress* below for CLI flag coverage.
 
 - **Core compilation** — variables, mixins (including guards and named args),
   operations, functions, `@import`, nesting, `&`, `:extend`, and the Less
@@ -64,6 +66,11 @@ Planned, but not complete in the current alpha.
   network policy and is not enabled by default.
 - **Module member access** — `@use` / `@compose` member access (namespaced
   functions/mixins) is designed but not yet wired.
+- **`lessc` CLI flags** — the render API accepts every option in the
+  *Implemented* list, but the CLI flag parser only wires a subset: flags such as
+  `--compress`, `--source-map`, `--rewrite-urls` / `--rootpath` / `--url-args`,
+  and `--math` are not accepted yet (they error as unsupported). Use the
+  `less.render()` API for these until the CLI catches up.
 
 ---
 

@@ -8,15 +8,15 @@ import less from '../lib/index.js';
 
 const testDataRoot = path.resolve(packageRoot(), '..', 'test-data', 'tests-unit');
 
-// Options that must reject (see assertUnsupportedApiOptionsReject) and the key
-// options that must work (see assertOutputApiOptionsSupported). V5-STATUS.md is
-// kept honest against these: assertStatusDocInSync asserts the doc mentions
-// every one, so adding/removing a supported-or-rejected option without updating
-// the public status page fails the suite.
+// Options that must reject (assertUnsupportedApiOptionsReject) and the key
+// options that must work (assertOutputApiOptionsSupported). V5-STATUS.md is kept
+// honest against these: assertStatusDocInSync asserts each supported option is
+// documented under "Implemented" and each rejected one under "Intentionally
+// not", so a support change that doesn't update the public status page — or that
+// files an option under the wrong heading — fails the suite.
 const REJECTED_OPTIONS = ['globalVars', 'modifyVars', 'javascriptEnabled'];
-const DOC_MUST_MENTION = [
-    ...REJECTED_OPTIONS,
-    'collapseNesting', 'sourceMap', 'compress', 'rewriteUrls', 'urlArgs', 'rootpath', 'unitMode'
+const SUPPORTED_OPTIONS = [
+    'collapseNesting', 'sourceMap', 'compress', 'rewriteUrls', 'urlArgs', 'rootpath', 'unitMode', 'math'
 ];
 
 const unsupportedForAlpha1 = [
@@ -160,13 +160,24 @@ async function assertBareStructuralAtRuleVariablesReject() {
 }
 
 async function assertStatusDocInSync() {
-    const statusPath = path.join(packageRoot(), 'V5-STATUS.md');
-    const doc = await readFile(statusPath, 'utf8');
-    for (const option of DOC_MUST_MENTION) {
-        assert.ok(
-            doc.includes(option),
-            `V5-STATUS.md must document the '${option}' option (public status page drifted from the wrapper)`
-        );
+    const doc = await readFile(path.join(packageRoot(), 'V5-STATUS.md'), 'utf8');
+    // Slice a `## `-delimited section by its heading prefix.
+    const section = (heading) => {
+        const start = doc.indexOf(heading);
+        assert.ok(start >= 0, `V5-STATUS.md is missing the "${heading}" section`);
+        const rest = doc.slice(start + heading.length);
+        const next = rest.search(/\n## /u);
+        return next >= 0 ? rest.slice(0, next) : rest;
+    };
+    const implemented = section('## ✅ Implemented');
+    const intentional = section('## ❌ Intentionally not');
+    for (const option of SUPPORTED_OPTIONS) {
+        assert.ok(implemented.includes(option),
+            `V5-STATUS.md must list '${option}' under "Implemented" (public status drifted from the wrapper)`);
+    }
+    for (const option of REJECTED_OPTIONS) {
+        assert.ok(intentional.includes(option),
+            `V5-STATUS.md must list '${option}' under "Intentionally not" (public status drifted from the wrapper)`);
     }
 }
 

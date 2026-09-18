@@ -17,23 +17,15 @@ let output = null;
 let silent = false;
 let quiet = false;
 let verbose = false;
+let sourceMapEnabled = false;
+let sourceMapExplicitFile = null;
+const sourceMapOptions = {};
 
 const unsupportedOptions = new Map([
-  ['--source-map', 'source maps are not supported'],
-  ['--source-map-map-inline', 'source maps are not supported'],
-  ['--source-map-include-source', 'source maps are not supported'],
-  ['--source-map-rootpath', 'source maps are not supported'],
-  ['--source-map-basepath', 'source maps are not supported'],
-  ['--source-map-url', 'source maps are not supported'],
   ['--plugin', 'legacy lessc plugin flags are not supported'],
   ['--depends', 'dependency-only output is not supported'],
   ['--lint', 'lint-only mode is not supported'],
-  ['--compress', 'compressed output is not supported'],
-  ['-x', 'compressed output is not supported'],
   ['--clean-css', 'clean-css compression is not supported'],
-  ['--rewrite-urls', 'URL rewriting is not supported'],
-  ['--rootpath', 'URL rootpath rewriting is not supported'],
-  ['--url-args', 'URL argument rewriting is not supported'],
   ['--global-var', 'global variable injection is not supported'],
   ['--modify-var', 'modify-var injection is not supported'],
   ['--js', 'JavaScript evaluation is not supported'],
@@ -136,8 +128,74 @@ function parseArgs() {
       verbose = true;
       continue;
     }
-    if (arg === '--collapse-nesting') {
-      options.collapseNesting = true;
+    const collapseNestingMatch = arg.match(/^--collapse-nesting(?:=(.+))?$/);
+    if (collapseNestingMatch) {
+      options.collapseNesting = collapseNestingMatch[1] ?? true;
+      continue;
+    }
+    if (arg === '--compress' || arg === '-x') {
+      options.compress = true;
+      continue;
+    }
+    const mathMatch = arg.match(/^--math=(.+)$/);
+    if (mathMatch) {
+      options.math = mathMatch[1];
+      continue;
+    }
+    // URL rewriting (forwarded to the Less plugin). `--rewrite-urls` with no
+    // value is Less 4.x's `all`.
+    const rewriteUrlsMatch = arg.match(/^--rewrite-urls(?:=(.+))?$/);
+    if (rewriteUrlsMatch) {
+      options.rewriteUrls = rewriteUrlsMatch[1] ?? 'all';
+      continue;
+    }
+    const rootpathMatch = arg.match(/^--rootpath=(.+)$/);
+    if (rootpathMatch) {
+      options.rootpath = rootpathMatch[1];
+      continue;
+    }
+    const urlArgsMatch = arg.match(/^--url-args=(.+)$/);
+    if (urlArgsMatch) {
+      options.urlArgs = urlArgsMatch[1];
+      continue;
+    }
+    // Source maps. The `--source-map-*` sub-flags are matched before the bare
+    // `--source-map[=file]` (their `$`-anchored patterns don't overlap, but the
+    // ordering documents intent). Each sub-flag also enables source maps.
+    if (arg === '--source-map-inline' || arg === '--source-map-map-inline') {
+      sourceMapEnabled = true;
+      sourceMapOptions.sourceMapFileInline = true;
+      continue;
+    }
+    if (arg === '--source-map-include-source') {
+      sourceMapEnabled = true;
+      sourceMapOptions.outputSourceFiles = true;
+      continue;
+    }
+    const smRootpathMatch = arg.match(/^--source-map-rootpath=(.+)$/);
+    if (smRootpathMatch) {
+      sourceMapEnabled = true;
+      sourceMapOptions.sourceMapRootpath = smRootpathMatch[1];
+      continue;
+    }
+    const smBasepathMatch = arg.match(/^--source-map-basepath=(.+)$/);
+    if (smBasepathMatch) {
+      sourceMapEnabled = true;
+      sourceMapOptions.sourceMapBasepath = smBasepathMatch[1];
+      continue;
+    }
+    const smUrlMatch = arg.match(/^--source-map-url=(.+)$/);
+    if (smUrlMatch) {
+      sourceMapEnabled = true;
+      sourceMapOptions.sourceMapURL = smUrlMatch[1];
+      continue;
+    }
+    const sourceMapMatch = arg.match(/^--source-map(?:=(.+))?$/);
+    if (sourceMapMatch) {
+      sourceMapEnabled = true;
+      if (sourceMapMatch[1]) {
+        sourceMapExplicitFile = sourceMapMatch[1];
+      }
       continue;
     }
     // Deprecated 4.x spellings (--strict-units, --strict-units=on|off, -su=on|off)
@@ -190,6 +248,39 @@ function parseArgs() {
   }
 }
 
+// Assemble the `sourceMap` render option from the CLI source-map flags and
+// return the sidecar `.map` path to write (null when inlined or unset). The
+// engine writes the `sourceMappingURL` annotation into the CSS and returns
+// `result.map`; the CLI owns writing that map to disk, mirroring Less 4.x lessc.
+function resolveSourceMap() {
+  if (!sourceMapEnabled) {
+    return null;
+  }
+  let mapFilePath = null;
+  if (sourceMapOptions.sourceMapFileInline !== true) {
+    if (sourceMapExplicitFile) {
+      mapFilePath = path.resolve(process.cwd(), sourceMapExplicitFile);
+    } else if (output) {
+      mapFilePath = `${output}.map`;
+    } else {
+      // Writing CSS to stdout leaves nowhere for a sidecar; inline the map.
+      sourceMapOptions.sourceMapFileInline = true;
+    }
+  }
+  if (mapFilePath) {
+    // Annotation URL defaults to the map's basename (unless --source-map-url set
+    // it); the map's `file` field to the CSS output name.
+    if (sourceMapOptions.sourceMapURL === undefined) {
+      sourceMapOptions.sourceMapFilename = path.basename(mapFilePath);
+    }
+    if (output) {
+      sourceMapOptions.sourceMapOutputFilename = path.basename(output);
+    }
+  }
+  options.sourceMap = sourceMapOptions;
+  return mapFilePath;
+}
+
 async function run() {
   parseArgs();
 
@@ -198,6 +289,8 @@ async function run() {
     console.error('');
     printUsage();
   }
+
+  const mapFilePath = resolveSourceMap();
 
   less.logger.addListener({
     info(msg) {
@@ -236,6 +329,12 @@ async function run() {
     } else {
       if (!silent) outputJessDiagnostics([], result.warnings || []);
       process.stdout.write(result.css);
+    }
+
+    if (mapFilePath && result.map) {
+      fs.mkdirSync(path.dirname(mapFilePath), { recursive: true });
+      fs.writeFileSync(mapFilePath, result.map, 'utf8');
+      if (!silent) console.log(`lessc: wrote ${mapFilePath}`);
     }
   } catch (err) {
     if (!silent) {

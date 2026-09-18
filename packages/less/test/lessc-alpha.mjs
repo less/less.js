@@ -219,12 +219,14 @@ try {
         'lessc help documents the supported alpha nesting flag');
     assert.match(help.stdout, /This release intentionally supports a smaller CLI surface/,
         'lessc help explicitly scopes the supported CLI surface');
-    assert.doesNotMatch(help.stdout, /--source-map/,
-        'lessc help must not advertise unsupported source-map flags in alpha.1');
+    assert.match(help.stdout, /--source-map\[=FILE\]/,
+        'lessc help documents the supported source-map flag');
+    assert.match(help.stdout, /--compress/,
+        'lessc help documents the supported compress flag');
     assert.doesNotMatch(help.stdout, /--plugin=/,
         'lessc help must not advertise unsupported plugin flags in alpha.1');
 
-    for (const flag of ['--source-map', '--plugin=less-plugin-clean-css', '--bogus']) {
+    for (const flag of ['--clean-css', '--plugin=less-plugin-clean-css', '--bogus']) {
         const unsupported = await runLessc([flag, '-'], '.unsupported { color: red; }\n');
         assert.equal(unsupported.code, 1, `${flag} must fail instead of silently no-oping`);
         assert.equal(unsupported.stdout, '', `${flag} must not emit CSS after rejecting the option`);
@@ -278,6 +280,84 @@ try {
     assert.equal(collapsedFile.stderr, '');
     assert.equal(await readFile(nestedOutput, 'utf8'), collapsedCss,
         'file-mode lessc preserves declaration source order while collapsing nesting');
+
+    // --compress / --math / --url-args / --rootpath forward to the render options
+    // the API already supports (see alpha-support.mjs for the API-level coverage).
+    const urlInput = path.join(tempDir, 'urls.less');
+    await writeFile(urlInput, '.a { color: red; background: url(img.png); }\n');
+
+    const compressed = await runLessc(['--compress', urlInput]);
+    assert.equal(compressed.code, 0, compressed.stderr);
+    assert.doesNotMatch(compressed.stdout, /\n\s*\n/, '--compress strips blank lines');
+    assert.match(compressed.stdout, /color:red/, '--compress minifies declarations');
+
+    const mathAlways = await runLessc(['--math=always', '-'], '.a { width: 2 + 3 * 4; }\n');
+    assert.equal(mathAlways.code, 0, mathAlways.stderr);
+    assert.match(mathAlways.stdout, /width:\s*14/, '--math=always evaluates unparenthesized math');
+
+    const urlArgs = await runLessc(['--url-args=v=9', urlInput]);
+    assert.equal(urlArgs.code, 0, urlArgs.stderr);
+    assert.match(urlArgs.stdout, /url\(img\.png\?v=9\)/, '--url-args appends the query');
+
+    const rootpath = await runLessc(['--rootpath=/cdn/', urlInput]);
+    assert.equal(rootpath.code, 0, rootpath.stderr);
+    assert.match(rootpath.stdout, /url\(\/cdn\/img\.png\)/, '--rootpath prepends to url() references');
+
+    // Source maps: `--source-map` writes a sidecar <output>.map and annotates the
+    // CSS with its basename; `--source-map-inline` embeds a data URI instead.
+    const smOutput = path.join(tempDir, 'sm.css');
+    const sm = await runLessc(['--source-map', input, smOutput]);
+    assert.equal(sm.code, 0, sm.stderr);
+    assert.match(sm.stdout, /lessc: wrote .+sm\.css\.map\n/, '--source-map reports the sidecar map it wrote');
+    const smCss = await readFile(smOutput, 'utf8');
+    assert.match(smCss, /\/\*# sourceMappingURL=sm\.css\.map \*\/\n$/,
+        '--source-map annotates the CSS with the sidecar map basename');
+    const smMap = JSON.parse(await readFile(`${smOutput}.map`, 'utf8'));
+    assert.equal(smMap.version, 3, 'the sidecar map is source-map v3');
+    assert.equal(smMap.file, 'sm.css', 'map.file is the CSS output name');
+    assert.ok(smMap.sources.some(s => s.endsWith('input.less')), 'the map carries the input source');
+
+    // A map written to a different directory than the CSS must be annotated
+    // relative to the CSS output directory, not as a bare basename.
+    const crossMap = path.join(tempDir, 'maps', 'app.map');
+    const crossCss = path.join(tempDir, 'dist', 'app.css');
+    const cross = await runLessc([`--source-map=${crossMap}`, input, crossCss]);
+    assert.equal(cross.code, 0, cross.stderr);
+    assert.match(await readFile(crossCss, 'utf8'), /sourceMappingURL=\.\.\/maps\/app\.map \*\//,
+        'a cross-directory --source-map annotates the CSS with a path relative to the output dir');
+
+    const inlineOut = path.join(tempDir, 'inline.css');
+    const inlineSm = await runLessc(['--source-map-inline', input, inlineOut]);
+    assert.equal(inlineSm.code, 0, inlineSm.stderr);
+    assert.match(await readFile(inlineOut, 'utf8'), /sourceMappingURL=data:application\/json;base64,/,
+        '--source-map-inline embeds the map as a data URI');
+    await assert.rejects(readFile(`${inlineOut}.map`, 'utf8'),
+        '--source-map-inline writes no sidecar .map file');
+
+    // Path variants: basepath strips, rootpath prepends, include-source embeds
+    // content, --source-map-url overrides the annotation. basepath must match the
+    // real (symlink-resolved) tempDir the compiler records for the source.
+    const realTempDir = await realpath(tempDir);
+    const variantMapPath = path.join(tempDir, 'variant.map');
+    const variantOut = path.join(tempDir, 'variant.css');
+    const variant = await runLessc([
+        `--source-map=${variantMapPath}`,
+        `--source-map-basepath=${realTempDir}`,
+        '--source-map-rootpath=http://cdn/',
+        '--source-map-include-source',
+        '--source-map-url=/assets/variant.map',
+        input, variantOut
+    ]);
+    assert.equal(variant.code, 0, variant.stderr);
+    assert.match(await readFile(variantOut, 'utf8'), /sourceMappingURL=\/assets\/variant\.map \*\//,
+        '--source-map-url overrides the annotation URL');
+    const variantMap = JSON.parse(await readFile(variantMapPath, 'utf8'));
+    assert.ok(variantMap.sources.length > 0 && variantMap.sources.every(s => s.startsWith('http://cdn/')),
+        '--source-map-rootpath prepends every source');
+    assert.ok(variantMap.sources.every(s => !s.includes(realTempDir)),
+        '--source-map-basepath strips the base from every source');
+    assert.ok(Array.isArray(variantMap.sourcesContent) && variantMap.sourcesContent.length > 0,
+        '--source-map-include-source embeds sourcesContent');
 
     const file = await runLessc([input, output]);
     assert.equal(file.code, 0, file.stderr);

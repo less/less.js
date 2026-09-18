@@ -36,7 +36,7 @@ emits nested CSS) instead of always flattening. Opt into flattened output with
 | `math` modes | ✅ | ✅ | `always` / `parens-division` (default) / `parens`. |
 | `unitMode` (formerly `strictUnits`) | ✅ | ✅ | `loose` / `preserve` (default) / `strict`. |
 | `compress` | ✅ | ✅ | Minified, but not byte-identical to Less 4 `-x` (nesting preserved by default). |
-| Source maps (`sourceMap`) | ✅ | ✅ | Returns `result.map`; annotation + `outputSourceFiles` supported. Path-variant parity is ⏳. |
+| Source maps (`sourceMap`) | ✅ | ✅ | Returns `result.map`; annotation, inline data URI, `outputSourceFiles`, and the `rootpath`/`basepath`/`url` path variants all supported. |
 | URL rewriting (`rewriteUrls` / `rootpath` / `urlArgs`) | ✅ | ✅ | Rewrites `url(...)` references. |
 | `globalVars` / `modifyVars` injection | ✅ | ❌ | Not supported — these throw rather than silently no-op. |
 | `javascriptEnabled` | ✅ | ❌ | JavaScript evaluation is not supported. |
@@ -61,7 +61,7 @@ emits nested CSS) instead of always flattening. Opt into flattened output with
 | `@use` / `@compose` modules | ➖ | ⏳ | Member access (namespaced functions/mixins) designed, not yet wired. |
 | Browser build (`window.less`) | ✅ | ✅ | `dist/less-browser-dev.js` ships and powers the playground; full 4.x browser-API parity is ⏳. |
 | `lessc` CLI (compile) | ✅ | ✅ | Compiles files. |
-| `lessc` CLI **flags** for the newer options | ✅ | ⏳ | `--compress`, `--source-map`, `--rewrite-urls` / `--rootpath` / `--url-args`, `--math` are not wired yet — use the `less.render()` API for these until the CLI catches up. |
+| `lessc` CLI **flags** for the newer options | ✅ | ✅ | `--compress`/`-x`, `--source-map[=file]` (+ `--source-map-inline` / `-include-source` / `-rootpath` / `-basepath` / `-url`), `--rewrite-urls` / `--rootpath` / `--url-args`, `--math` are all wired. |
 | Diagnostics (`file:line:column` + excerpt) | ➖ | ✅ | Precise diagnostics, not raw parser offsets. |
 
 ---

@@ -317,6 +317,15 @@ try {
     assert.equal(smMap.file, 'sm.css', 'map.file is the CSS output name');
     assert.ok(smMap.sources.some(s => s.endsWith('input.less')), 'the map carries the input source');
 
+    // A map written to a different directory than the CSS must be annotated
+    // relative to the CSS output directory, not as a bare basename.
+    const crossMap = path.join(tempDir, 'maps', 'app.map');
+    const crossCss = path.join(tempDir, 'dist', 'app.css');
+    const cross = await runLessc([`--source-map=${crossMap}`, input, crossCss]);
+    assert.equal(cross.code, 0, cross.stderr);
+    assert.match(await readFile(crossCss, 'utf8'), /sourceMappingURL=\.\.\/maps\/app\.map \*\//,
+        'a cross-directory --source-map annotates the CSS with a path relative to the output dir');
+
     const inlineOut = path.join(tempDir, 'inline.css');
     const inlineSm = await runLessc(['--source-map-inline', input, inlineOut]);
     assert.equal(inlineSm.code, 0, inlineSm.stderr);

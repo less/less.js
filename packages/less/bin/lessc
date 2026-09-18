@@ -268,10 +268,15 @@ function resolveSourceMap() {
     }
   }
   if (mapFilePath) {
-    // Annotation URL defaults to the map's basename (unless --source-map-url set
-    // it); the map's `file` field to the CSS output name.
+    // Annotation URL (unless --source-map-url set it) points at the map relative
+    // to the CSS output directory — so a map written to another directory still
+    // resolves (dist/app.css -> ../maps/app.map), and the same-dir common case
+    // stays a bare basename. With no output file (stdout) there is no directory
+    // to resolve against, so fall back to the basename.
     if (sourceMapOptions.sourceMapURL === undefined) {
-      sourceMapOptions.sourceMapFilename = path.basename(mapFilePath);
+      sourceMapOptions.sourceMapFilename = output
+        ? path.relative(path.dirname(output), mapFilePath).split(path.sep).join('/')
+        : path.basename(mapFilePath);
     }
     if (output) {
       sourceMapOptions.sourceMapOutputFilename = path.basename(output);

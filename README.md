@@ -40,8 +40,8 @@ is in progress, and what will intentionally not be carried over from Less 4, see
 the [Less 5 feature status](packages/less/V5-STATUS.md).
 
 ## Release History
-See the [changelog](CHANGELOG.md), including the [Less v5 alpha.1 release
-notes](CHANGELOG.md#v500-alpha1-unreleased).
+See the [changelog](CHANGELOG.md), including the
+[current Less 5 alpha release notes](CHANGELOG.md#v500-alpha9-2026-09-18).
 
 ## Contributors
 

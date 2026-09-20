@@ -26,7 +26,7 @@ emits nested CSS) instead of always flattening. Opt into flattened output with
 | Nested-rule output | ➖ | ✅ | Less 4 always flattened; Less 5 **preserves** authored nesting by default. |
 | `collapseNesting` (flatten instead) | ➖ | ✅ | `false` (default) / `'native'` (specificity-faithful) / `'compact'`. |
 | `@media` query merging | ✅ | ❌ | Less 5 emits nested `@media` instead of rewriting to `@media (a) and (b)`. Browsers have nested `@media` far longer than native *selector* nesting, so nested output is safe — and merging can blow up combinatorially (each nested query multiplies out). |
-| Inline JavaScript (backticks) | ✅ | ❌ | Removed. A script-module (`@use`) path is the planned replacement for computed values — not yet integrated (see `@use`/`@compose` below). |
+| Inline JavaScript (backticks) | ✅ | ❌ | Removed. Script modules are the planned replacement for computed values; they are tracked separately from stylesheet composition below. |
 | IE `progid:` / `filter` hacks | ✅ | ❌ | Removed. |
 
 ## Options (`less.render` API)
@@ -58,7 +58,8 @@ emits nested CSS) instead of always flattening. Opt into flattened output with
 | --- | :---: | :---: | --- |
 | Sibling / relative `@import` | ✅ | ✅ | |
 | Remote (`http(s)`) imports | ✅ | ⏳ | Gated behind an explicit network policy; not on by default. |
-| `@use` / `@compose` modules | ➖ | ⏳ | Member access (namespaced functions/mixins) designed, not yet wired. |
+| `@compose` stylesheet modules | ➖ | ✅ | Isolated, non-transitive modules with inferred or explicit namespaces, `as *`, and per-edge `with` or shared `set` configuration. See the [canonical Modules and Imports source](https://github.com/jesscss/jess/blob/dev/packages/docs/docs-content/docs/shared/02-Language/14-modules-and-imports.mdx). |
+| `@use` / `@from` script and data modules | ➖ | ⏳ | Reserved for JavaScript, TypeScript, JSON, and built-in modules; Less 5 does not recognize or execute them as modules yet. See the [canonical Modules and Imports source](https://github.com/jesscss/jess/blob/dev/packages/docs/docs-content/docs/shared/02-Language/14-modules-and-imports.mdx). |
 | Browser build (`window.less`) | ✅ | ✅ | `dist/less-browser-dev.js` ships and powers the playground; full 4.x browser-API parity is ⏳. |
 | `lessc` CLI (compile) | ✅ | ✅ | Compiles files. |
 | `lessc` CLI **flags** for the newer options | ✅ | ✅ | `--compress`/`-x`, `--source-map[=file]` (+ `--source-map-inline` / `-include-source` / `-rootpath` / `-basepath` / `-url`), `--rewrite-urls` / `--rootpath` / `--url-args`, `--math` are all wired. |

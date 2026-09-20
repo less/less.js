@@ -214,7 +214,7 @@ export default () => {
      *   group array (or null). `[...]`/`{...}` do NOT shield a reference — only
      *   `(...)` (a declaration-value group) does.
      */
-    parserInput.$parseUntil = (tok, detectBareVar) => {
+    parserInput.$parseUntil = (tok, detectBareVar, stripLineComments) => {
         let quote = '';
         let returnVal = null;
         let inComment = false;
@@ -278,6 +278,25 @@ export default () => {
                             i++;
                             inComment = true;
                             blockDepth++;
+                        } else if (stripLineComments &&
+                            input.charAt(i + 1) === '/' &&
+                            /\s/.test(input.charAt(i - 1))) {
+                            // A `//` comment, which is not CSS and must not
+                            // reach the output. Only when whitespace precedes
+                            // it: everywhere else the scanner absorbs comments
+                            // while skipping whitespace, which is exactly why
+                            // `http://host` and a protocol-relative
+                            // `url(//host/x.png)` are not comments.
+                            const before = input.slice(lastPos, i);
+                            if (before) {
+                                parseGroups.push(before);
+                            }
+                            let nextNewLine = input.indexOf('\n', i + 2);
+                            if (nextNewLine < 0) {
+                                nextNewLine = length;
+                            }
+                            lastPos = nextNewLine;
+                            i = nextNewLine - 1;
                         }
                         break;
                     case '\'':

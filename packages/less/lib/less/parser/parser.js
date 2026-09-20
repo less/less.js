@@ -1874,7 +1874,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
              *   prelude (non-value position); accept `@{var}` interpolation and warn
              *   on a bare `@var` reference (which resolves today but is deprecated).
              */
-            permissiveValue: function (untilTokens, deprecateVariables) {
+            permissiveValue: function (untilTokens, deprecateVariables, stripLineComments) {
                 const entities = this.entities;
                 let i;
                 let e;
@@ -1942,7 +1942,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 }
                 parserInput.save();
 
-                value = parserInput.$parseUntil(tok, deprecateVariables);
+                value = parserInput.$parseUntil(tok, deprecateVariables, stripLineComments);
 
                 if (value) {
                     if (typeof value === 'string') {
@@ -2350,7 +2350,7 @@ const Parser = function Parser(context, imports, fileInfo, currentIndex) {
                 return e;
             },
             atruleUnknown: function (value, name, hasBlock) {
-                value = this.permissiveValue(/^[{;]/, true);
+                value = this.permissiveValue(/^[{;]/, true, true);
                 hasBlock = (parserInput.currentChar() === '{');
                 if (!value) {
                     if (!hasBlock && parserInput.currentChar() !== ';') {

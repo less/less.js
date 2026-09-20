@@ -1,5 +1,15 @@
 ## Change Log
 
+### v5.0.0-alpha.9 (2026-09-18)
+
+#### Changes
+
+- [#4543](https://github.com/less/less.js/pull/4543) feat(lessc): wire compress, source maps, URL rewriting, and math CLI flags (@matthew-dean)
+- [#4541](https://github.com/less/less.js/pull/4541) docs: make the Less 5 status page a comparison table (@matthew-dean)
+- [#4538](https://github.com/less/less.js/pull/4538) docs: add a Less 5 alpha feature-status page (@matthew-dean)
+- [#4537](https://github.com/less/less.js/pull/4537) chore: release v5.0.0-alpha.8 (@app/github-actions)
+
+
 ### v5.0.0-alpha.8 (2026-09-15)
 
 #### Changes

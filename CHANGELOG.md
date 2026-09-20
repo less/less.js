@@ -1,5 +1,13 @@
 ## Change Log
 
+### v5.0.0-alpha.10 (2026-09-20)
+
+#### Changes
+
+- [#4545](https://github.com/less/less.js/pull/4545) docs(less5): correct module support status (@matthew-dean)
+- [#4539](https://github.com/less/less.js/pull/4539) chore: release v5.0.0-alpha.9 (@app/github-actions)
+
+
 ### v5.0.0-alpha.9 (2026-09-18)
 
 #### Changes

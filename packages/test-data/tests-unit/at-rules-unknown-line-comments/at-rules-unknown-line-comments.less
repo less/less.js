@@ -1,0 +1,58 @@
+// A `//` comment inside an unknown at-rule prelude is scanned as raw text by
+// $parseUntil, so it used to survive into the CSS and swallow the rest of the
+// line with it.
+
+@supports selector(
+  :focus-visible // a line comment
+) {
+  a {
+    color: red;
+  }
+}
+
+@supports (display: grid) // trailing comment
+{
+  .grid {
+    display: grid;
+  }
+}
+
+@supports (display: flex)// no space before it
+{
+  .flex {
+    display: flex;
+  }
+}
+
+// A `//` inside a URL function, or after a scheme's `:`, is part of an
+// address. These must be left alone.
+@supports (background: url(http://example.com/a.png)) {
+  .absolute-url {
+    color: blue;
+  }
+}
+
+@document url-prefix(http://example.com/) {
+  .doc {
+    color: green;
+  }
+}
+
+@supports (background: url(//cdn.example.com/x.png)) {
+  .protocol-relative {
+    background: url(//cdn.example.com/x.png);
+  }
+}
+
+@supports (background: url( //cdn.example.com/y.png)) {
+  .protocol-relative-spaced {
+    color: navy;
+  }
+}
+
+// Block comments are valid CSS and stay.
+@supports (a: b) /* keep me */ {
+  .block-comment {
+    color: teal;
+  }
+}

@@ -1,0 +1,41 @@
+@supports selector(
+  :focus-visible ) {
+  a {
+    color: red;
+  }
+}
+@supports (display: grid)  {
+  .grid {
+    display: grid;
+  }
+}
+@supports (display: flex) {
+  .flex {
+    display: flex;
+  }
+}
+@supports (background: url(http://example.com/a.png)) {
+  .absolute-url {
+    color: blue;
+  }
+}
+@document url-prefix(http://example.com/) {
+  .doc {
+    color: green;
+  }
+}
+@supports (background: url(//cdn.example.com/x.png)) {
+  .protocol-relative {
+    background: url(//cdn.example.com/x.png);
+  }
+}
+@supports (background: url( //cdn.example.com/y.png)) {
+  .protocol-relative-spaced {
+    color: navy;
+  }
+}
+@supports (a: b) /* keep me */ {
+  .block-comment {
+    color: teal;
+  }
+}

@@ -221,6 +221,9 @@ export default () => {
         let blockDepth = 0;
         let parenDepth = 0;
         let bareVarIndex = null;
+        // Open `(` groups, true for those that hold a URL: `url(`, `url-prefix(`, `domain(`.
+        const urlParens = [];
+        let urlDepth = 0;
         const blockStack = [];
         const parseGroups = [];
         const length = input.length;
@@ -280,13 +283,15 @@ export default () => {
                             blockDepth++;
                         } else if (stripLineComments &&
                             input.charAt(i + 1) === '/' &&
-                            /\s/.test(input.charAt(i - 1))) {
+                            urlDepth === 0 &&
+                            input.charAt(i - 1) !== ':') {
                             // A `//` comment, which is not CSS and must not
-                            // reach the output. Only when whitespace precedes
-                            // it: everywhere else the scanner absorbs comments
-                            // while skipping whitespace, which is exactly why
-                            // `http://host` and a protocol-relative
-                            // `url(//host/x.png)` are not comments.
+                            // reach the output. Two `//` are not comments: one
+                            // inside a URL function, where the value parser
+                            // turns comment absorption off too, so
+                            // `url(//host/x.png)` and `url( //host/x.png)` keep
+                            // their address; and one after a `:`, which is a
+                            // scheme, as in a bare `http://host`.
                             const before = input.slice(lastPos, i);
                             if (before) {
                                 parseGroups.push(before);
@@ -317,11 +322,16 @@ export default () => {
                         blockStack.push('}');
                         blockDepth++;
                         break;
-                    case '(':
+                    case '(': {
                         blockStack.push(')');
                         blockDepth++;
                         parenDepth++;
+                        const isUrl = /(?:^|[^\w-])(?:url|url-prefix|domain)$/i.test(
+                            input.slice(Math.max(0, i - 11), i));
+                        urlParens.push(isUrl);
+                        if (isUrl) { urlDepth++; }
                         break;
+                    }
                     case '[':
                         blockStack.push(']');
                         blockDepth++;
@@ -333,6 +343,7 @@ export default () => {
                         if (nextChar === expected) {
                             blockDepth--;
                             if (nextChar === ')' && parenDepth > 0) { parenDepth--; }
+                            if (nextChar === ')' && urlParens.pop()) { urlDepth--; }
                         } else {
                             // move the parser to the error and return expected
                             skipWhitespace(i - startPos);

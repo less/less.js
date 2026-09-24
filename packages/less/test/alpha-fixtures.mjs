@@ -95,6 +95,7 @@ const skippedFixtures = new Map([
     ['tests-config/rewrite-urls-local/rewrite-urls-local.less', 'URL rewriting is not alpha-supported'],
     ['tests-config/root-registry/file.less', 'no expected CSS in upstream fixture'],
     ['tests-config/root-registry/root.less', 'no expected CSS in upstream fixture'],
+    ['tests-config/rootpath-escape-interpolation/rootpath-escape-interpolation.less', 'URL rootpath rewriting is not alpha-supported'],
     ['tests-config/rootpath-rewrite-urls-all/rootpath-rewrite-urls-all.less', 'URL rootpath rewriting is not alpha-supported'],
     ['tests-config/rootpath-rewrite-urls-local/rootpath-rewrite-urls-local.less', 'URL rootpath rewriting is not alpha-supported'],
     ['tests-config/strict-imports/imported.less', 'helper imported by strict-imports fixture; no expected CSS'],

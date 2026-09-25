@@ -12,3 +12,9 @@
   a: sin(30deg);
   b: ceil(4.2);
 }
+
+// min()/max() with calc-like args containing var() must pass through (#3777).
+.min-max-css-vars {
+  a: min(100% - var(--some-var), 10px);
+  b: max(100% - var(--x), 10px);
+}

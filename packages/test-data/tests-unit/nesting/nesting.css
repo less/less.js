@@ -17,7 +17,7 @@
   width: 10px;
 }
 .correctly-exit-calc-mode div {
-  width: 200px;
+  width: calc(100px * 2);
 }
 .correctly-exit-calc-mode h1 {
   color: white;

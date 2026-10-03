@@ -18,7 +18,7 @@
     width: 10px;
   }
   div {
-    width: 200px;
+    width: calc(100px * 2);
   }
   h1 {
     color: white;

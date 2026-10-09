@@ -1,0 +1,60 @@
+.quoted {
+  single: "card";
+  chained: "inner";
+  quoted-value: "deep";
+  indirect-key: "indirect-hit";
+  empty-key: "tail";
+  chained-empty-key: "nested-tail";
+  surrounded: "a-card-b";
+  twice: "card/blue";
+}
+.url {
+  quoted: url("/assets/img/hero.png");
+  unquoted: url(/assets/img/plain.png);
+  unquoted-plain: url(/plain/no-lookup.png);
+  untouched: url(/static/literal.png);
+  untouched-quoted: url("/static/literal.png");
+  data-uri: url(data:image/svg+xml;base64,AAAA);
+}
+.property-interpolation {
+  color: red;
+  from-property: "red";
+  surrounded: "a-red-b";
+  bare: red;
+}
+.card {
+  a: b;
+}
+.inner {
+  c: d;
+}
+.property {
+  card: from-lookup;
+  inner: from-chained-lookup;
+}
+@keyframes card {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (min-width: 768px) {
+  .responsive {
+    e: f;
+  }
+}
+.custom-property {
+  --from-lookup: /assets/img;
+  --from-chained: inner;
+}
+.recursive {
+  g: "card";
+}
+.plain {
+  h: "name";
+}
+.name {
+  i: j;
+}

@@ -1,0 +1,4 @@
+SyntaxError: Rulesets cannot be evaluated on a property. in {path}mixin-as-value.less on line 5, column 3:
+4 .x {
+5   color: #rgbify(#fff);
+6 }

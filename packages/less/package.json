@@ -1,6 +1,6 @@
 {
 	"name": "less",
-	"version": "5.0.0-alpha.11",
+	"version": "5.0.0-alpha.14",
 	"description": "Leaner CSS",
 	"homepage": "http://lesscss.org",
 	"author": {
@@ -142,15 +142,15 @@
 	"rawcurrent": "https://raw.github.com/less/less.js/v",
 	"sourcearchive": "https://github.com/less/less.js/archive/v",
 	"dependencies": {
-		"@jesscss/compiler": "2.0.0-alpha.24",
-		"@jesscss/core": "2.0.0-alpha.24",
-		"@jesscss/plugin-less": "2.0.0-alpha.24",
-		"@jesscss/plugin-less-compat": "2.0.0-alpha.24",
-		"@jesscss/plugin-node-modules": "2.0.0-alpha.24",
+		"@jesscss/compiler": "2.0.0-alpha.27",
+		"@jesscss/core": "2.0.0-alpha.27",
+		"@jesscss/plugin-less": "2.0.0-alpha.27",
+		"@jesscss/plugin-less-compat": "2.0.0-alpha.27",
+		"@jesscss/plugin-node-modules": "2.0.0-alpha.27",
 		"parse-node-version": "^1.0.1"
 	},
 	"peerDependencies": {
-		"@jesscss/plugin-js": "2.0.0-alpha.24"
+		"@jesscss/plugin-js": "2.0.0-alpha.27"
 	},
 	"peerDependenciesMeta": {
 		"@jesscss/plugin-js": {

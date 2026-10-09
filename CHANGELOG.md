@@ -1,5 +1,13 @@
 ## Change Log
 
+### v5.0.0-alpha.15 (2026-10-09)
+
+#### Changes
+
+- [#4555](https://github.com/less/less.js/pull/4555) chore: release v5.0.0-alpha.14 (@app/github-actions)
+- [#4527](https://github.com/less/less.js/pull/4527) test(test-data): port lookup-interpolation, mixin-as-value & rootpath-escape-interpolation fixtures to alpha (@matthew-dean)
+
+
 ### v5.0.0-alpha.14 (2026-10-03)
 
 #### Changes

@@ -60,7 +60,8 @@ function captureJessDiagnostics(errors, warnings) {
     outputDiagnostics(errors, warnings, {
       suppressWarnings: quiet,
       breakOnError: false,
-      verbose
+      verbose,
+      colors: options.color !== false
     });
   } finally {
     process.stdout.write = originalStdoutWrite;

@@ -13,8 +13,10 @@
 .badError {
   border-width: 3px;
 }
-:is(.foo, .ext1 .ext2, .ext3, .ext4) :is(.bar, .ext3, .ext4),
-:is(.foo, .ext1 .ext2, .ext3, .ext4) .baz {
+:is(.foo, .ext3, .ext4) :is(.bar, .ext3, .ext4),
+.ext1 .ext2 :is(.bar, .ext3, .ext4),
+:is(.foo, .ext3, .ext4) .baz,
+.ext1 .ext2 .baz {
   display: none;
 }
 div:is(.ext5, .ext7),

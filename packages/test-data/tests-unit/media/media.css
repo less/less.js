@@ -116,7 +116,7 @@
   @page :right {
     margin: 0.5cm;
   }
-  @page Test :first {
+  @page Test:first {
     margin: 1cm;
   }
   @page :first {
@@ -275,7 +275,7 @@
     color: red;
   }
 }
-@media screen and (max-width: 1280px) {
+@media screen and(max-width: 1280px) {
   .form-process-table {
     color: red;
   }

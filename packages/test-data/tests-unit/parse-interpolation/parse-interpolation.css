@@ -29,7 +29,8 @@ input[type=text], input[type=email], input[type=password], textarea {
   }
 }
 .bar2 {
-  .q:is(.a, .b, .c)&:hover, baz-quoted {
+  .q.a, .b, .c&:hover,
+  baz-quoted {
     color: green;
   }
 }
@@ -38,7 +39,7 @@ input[type=text], input[type=email], input[type=password], textarea {
     foo: bar;
   }
 }
-:is(.a, .b):is(.c, .d) {
+.a, .b.c, .d {
   + .e-quoted {
     foo: bar;
   }

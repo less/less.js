@@ -2,11 +2,17 @@
   background: green;
 }
 @media (max-width: 768px) {
+  .imported {
+    background: green;
+  }
   .mobile {
     color: red;
   }
 }
 .container {
+  .imported {
+    background: green;
+  }
   .nested {
     color: blue;
   }

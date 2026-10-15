@@ -5,7 +5,8 @@
   width: 300px;
   background: red;
 }
-:is(.sidebar, .sidebar2, .type1 .sidebar3, .type2.sidebar4) .box {
+:is(.sidebar, .sidebar2) .box,
+:is(.type1 .sidebar3, .type2.sidebar4) .box {
   background: #FFF;
   border: 1px solid #000;
   margin: 10px 0;
@@ -33,6 +34,6 @@
   notnested: black;
 }
 .amp-test-h,
-.amp-test-f:is(.amp-test-c :is(.amp-test-a, .amp-test-b).amp-test-d:is(.amp-test-a, .amp-test-b).amp-test-e) + :is(.amp-test-c :is(.amp-test-a, .amp-test-b).amp-test-d:is(.amp-test-a, .amp-test-b).amp-test-e).amp-test-g {
+.amp-test-c :is(.amp-test-a, .amp-test-b).amp-test-d:is(.amp-test-a, .amp-test-b).amp-test-e.amp-test-f + :is(.amp-test-c :is(.amp-test-a, .amp-test-b).amp-test-d:is(.amp-test-a, .amp-test-b).amp-test-e).amp-test-g {
   test: extended by masses of selectors;
 }

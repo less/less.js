@@ -8,7 +8,8 @@
 .d {
   color: black;
 }
-:is(.g, :is(.i, .k).j).h {
+.g.h,
+:is(.i, .k).j.h {
   color: black;
 }
 :is(.i, .k).j {

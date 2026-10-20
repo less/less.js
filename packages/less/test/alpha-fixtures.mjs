@@ -117,7 +117,6 @@ const expectedFailureFixtures = new Map([
     ['tests-config/sourcemaps-basepath/sourcemaps-basepath.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-config/sourcemaps-include-source/sourcemaps-include-source.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-config/sourcemaps-rootpath/sourcemaps-rootpath.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
-    ['tests-config/sourcemaps-url/sourcemaps-url.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-unit/mixins/mixins.less', 'same-named nested ruleset resolves the outer .recursion() mixin; remaining mismatch is fixture-local collapseNesting=false rendering'],
     ['tests-unit/property-name-interp/property-name-interp.less', 'deprecated dash-only @- and @{-} variable names are rejected'],
     ['tests-unit/plugin-module/plugin-module.less', 'legacy CommonJS @plugin graph with require() is not supported by the optional JS runtime'],
@@ -127,15 +126,7 @@ const expectedFailureFixtures = new Map([
     ['tests-unit/parser-slashed-combinator/parser-slashed-combinator.less', 'slashed combinator not yet supported'],
     ['tests-unit/permissive-parse/permissive-parse.less', 'permissive legacy parser corners are not alpha-supported'],
     ['tests-unit/media/media.less', 'top-level bare @var at-rule preludes are rejected'],
-    ['tests-unit/at-rule-variable-deprecated/at-rule-variable-deprecated.less', 'bare @variable references in at-rule structural positions are rejected in Less 5 alpha'],
-    ['tests-config/strict-imports/strict-imports.less', 'golden imports the sheet again in each output context that has not placed it yet; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/calc/calc.less', 'golden keeps the parentheses authored inside calc(); the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/container/container.less', 'golden keeps the glued `size(` function token as authored; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/extend-chaining/extend-chaining.less', 'golden keeps extenders of different specificity out of one :is() group; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/extend-nest/extend-nest.less', 'golden keeps extenders of different specificity out of one :is() group and writes a leading & parent in place; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/extend-selector/extend-selector.less', 'golden keeps extenders of different specificity out of one :is() group; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/extend/extend.less', 'golden keeps extenders of different specificity out of one :is() group; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it'],
-    ['tests-unit/selectors/selectors.less', 'golden joins a compound written before & to the last compound of its parent; the pinned Jess 2.0.0-alpha.27 predates it; passes once the pin moves to a release that has it']
+    ['tests-unit/at-rule-variable-deprecated/at-rule-variable-deprecated.less', 'bare @variable references in at-rule structural positions are rejected in Less 5 alpha']
 ]);
 
 const expectedFailureDiagnosticCodes = new Map([
@@ -143,12 +134,9 @@ const expectedFailureDiagnosticCodes = new Map([
 ]);
 
 const expectedErrorPasses = new Map([
-    ['tests-error/eval/add-mixed-units.less', 'unit compatibility errors are not emitted yet'],
-    ['tests-error/eval/add-mixed-units2.less', 'unit compatibility errors are not emitted yet'],
+    ['tests-error/eval/ampersand-merge-template-invalid.less', 'accepted divergence: text prints as written (owner ruling 2026-10-09), so a merge template whose parent is escaped comma-list text renders that text instead of erroring'],
     ['tests-error/eval/color-func-invalid-color-2.less', 'color function argument errors are not emitted yet'],
     ['tests-error/eval/color-func-invalid-color.less', 'color function argument errors are not emitted yet'],
-    ['tests-error/eval/divide-mixed-units.less', 'unit compatibility errors are not emitted yet'],
-    ['tests-error/eval/multiply-mixed-units.less', 'unit compatibility errors are not emitted yet'],
     ['tests-error/eval/percentage-css-var.less', 'function argument type errors are not emitted yet'],
     ['tests-error/eval/percentage-non-number-argument.less', 'function argument type errors are not emitted yet'],
     ['tests-error/eval/svg-gradient1.less', 'svg-gradient argument validation errors are not emitted yet'],

@@ -1,7 +1,7 @@
 // Parse interpolation tests
-// Paired variants: selector-capture (`*[]`) and quoted selectors (`~'...'`).
+// Paired variants: selector-capture (`selector()`) and quoted selectors (`~'...'`).
 
-@inputs-cap: *[input[type=text], input[type=email], input[type=password], textarea];
+@inputs-cap: selector(input[type=text], input[type=email], input[type=password], textarea);
 @inputs-quoted: ~'input[type=text], input[type=email], input[type=password], textarea';
 
 @{inputs-cap} {
@@ -16,7 +16,7 @@
   }
 }
 
-@classes-cap: *[.a, .b, .c];
+@classes-cap: selector(.a, .b, .c);
 @classes-quoted: ~'.a, .b, .c';
 
 @{classes-cap} {
@@ -43,8 +43,8 @@
   }
 }
 
-@c-cap: *[.a, .b];
-@d-cap: *[.c, .d];
+@c-cap: selector(.a, .b);
+@d-cap: selector(.c, .d);
 @e-cap: ~' + .e-cap';
 
 @{c-cap}@{d-cap} {
@@ -63,7 +63,7 @@
   }
 }
 
-@textClasses-cap: *[&[class="text"], &.text];
+@textClasses-cap: selector(&[class="text"], &.text);
 @textClasses-quoted: ~'&[class="text"], &.text';
 
 input.cap {
@@ -78,7 +78,7 @@ input.quoted {
   }
 }
 
-@my-selector-cap: *[.selector-1, .selector-2];
+@my-selector-cap: selector(.selector-1, .selector-2);
 @my-selector-quoted: ~'.selector-1, .selector-2';
 
 .master-page-cap {
@@ -93,7 +93,7 @@ input.quoted {
   }
 }
 
-@list-cap: *[apple, satsuma, banana, pear];
+@list-cap: selector(apple, satsuma, banana, pear);
 
 @{list-cap} {
   .fruit-cap-& {

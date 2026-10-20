@@ -21,6 +21,9 @@
   height: 10px;
   color: red;
 }
+body {
+  width: 100%;
+}
 .test-rule-f {
   height: 10px;
 }

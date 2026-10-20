@@ -1,5 +1,7 @@
-:is(.foo, .ext1 .ext2, .ext3, .ext4) .bar,
-:is(.foo, .ext1 .ext2, .ext3, .ext4) .baz {
+:is(.foo, .ext3, .ext4) .bar,
+.ext1 .ext2 .bar,
+:is(.foo, .ext3, .ext4) .baz,
+.ext1 .ext2 .baz {
   display: none;
 }
 div:is(.ext5, .ext7),

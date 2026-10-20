@@ -44,8 +44,8 @@ p a span {
 .qux :is(.foo .bar, .foo .baz) {
   display: inline;
 }
-.qux.foo .bar,
-.qux.foo .baz {
+.foo .bar.qux,
+.foo .baz.qux {
   display: inline-block;
 }
 .qux :is(.foo .bar, .foo .baz) .biz {
@@ -140,7 +140,7 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
 .blood {
   color: red;
 }
-.foo:not(.tst.only-nested .level2:hover) {
+.foo:not(.only-nested .level2.tst:hover) {
   test: only-nested;
 }
 .foo.nestend-and-non-nested:not(.tst.nestend-and-non-nested:hover) {
@@ -150,8 +150,8 @@ blank blank blank blank blank blank blank blank blank blank blank blank blank bl
   test: global scope;
 }
 .extend-this,
-.active:is(.first-level .second-level),
-:is(.first-level .second-level).active2 {
+.first-level .second-level.active,
+.first-level .second-level.active2 {
   content: '\2661';
 }
 .x:is(.x.a) {

@@ -23,7 +23,7 @@
     border: 1px solid grey;
   }
 }
-@container size (min-width: 60ch) {
+@container size(min-width: 60ch) {
   .article--post header {
     grid-template-areas:
       "avatar name"

@@ -109,15 +109,15 @@ await realpath(compilerEntrypoint);
         );
     }
 
-    // 'native' distributes the child selector list (each branch keeps its own
-    // specificity); 'compact' folds it into a single :is().
-    const listNest = '.a, .b { .c, .d { x: 1 } }\n';
+    // 'native' groups child branches of equal specificity in one :is() and
+    // distributes branches of different specificity; 'compact' folds them all.
+    const listNest = '.a, .b { .c, #d { x: 1 } }\n';
     const nativeCss = (await less.render(listNest, { collapseNesting: 'native' })).css;
     assert.match(nativeCss, /:is\(\.a, \.b\) \.c/, "'native' distributes .c");
-    assert.match(nativeCss, /:is\(\.a, \.b\) \.d/, "'native' distributes .d");
-    assert.doesNotMatch(nativeCss, /:is\(\.c, \.d\)/, "'native' does not fold the child list");
+    assert.match(nativeCss, /:is\(\.a, \.b\) #d/, "'native' distributes #d");
+    assert.doesNotMatch(nativeCss, /:is\(\.c, #d\)/, "'native' keeps different specificities apart");
     const compactCss = (await less.render(listNest, { collapseNesting: 'compact' })).css;
-    assert.match(compactCss, /:is\(\.a, \.b\) :is\(\.c, \.d\)/, "'compact' folds the child list");
+    assert.match(compactCss, /:is\(\.a, \.b\) :is\(\.c, #d\)/, "'compact' folds the child list");
 
     const source = '.parent { before: 1; .child { inside: 2; } after: 3; }\n';
     assert.equal((await less.render(source)).css, `.parent {
@@ -310,8 +310,8 @@ try {
     assert.equal(sm.code, 0, sm.stderr);
     assert.match(sm.stdout, /lessc: wrote .+sm\.css\.map\n/, '--source-map reports the sidecar map it wrote');
     const smCss = await readFile(smOutput, 'utf8');
-    assert.match(smCss, /\/\*# sourceMappingURL=sm\.css\.map \*\/\n$/,
-        '--source-map annotates the CSS with the sidecar map basename');
+    assert.match(smCss, /\/\*# sourceMappingURL=sm\.css\.map \*\/$/,
+        '--source-map ends the CSS with the sidecar map annotation, no trailing newline');
     const smMap = JSON.parse(await readFile(`${smOutput}.map`, 'utf8'));
     assert.equal(smMap.version, 3, 'the sidecar map is source-map v3');
     assert.equal(smMap.file, 'sm.css', 'map.file is the CSS output name');

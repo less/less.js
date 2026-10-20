@@ -117,7 +117,6 @@ const expectedFailureFixtures = new Map([
     ['tests-config/sourcemaps-basepath/sourcemaps-basepath.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-config/sourcemaps-include-source/sourcemaps-include-source.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-config/sourcemaps-rootpath/sourcemaps-rootpath.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
-    ['tests-config/sourcemaps-url/sourcemaps-url.less', 'map is produced (gated by test/alpha-sourcemaps.mjs) but its source-path normalization/embedded-sources do not byte-match the 4.x golden yet'],
     ['tests-unit/mixins/mixins.less', 'same-named nested ruleset resolves the outer .recursion() mixin; remaining mismatch is fixture-local collapseNesting=false rendering'],
     ['tests-unit/property-name-interp/property-name-interp.less', 'deprecated dash-only @- and @{-} variable names are rejected'],
     ['tests-unit/plugin-module/plugin-module.less', 'legacy CommonJS @plugin graph with require() is not supported by the optional JS runtime'],
@@ -135,12 +134,9 @@ const expectedFailureDiagnosticCodes = new Map([
 ]);
 
 const expectedErrorPasses = new Map([
-    ['tests-error/eval/add-mixed-units.less', 'unit compatibility errors are not emitted yet'],
-    ['tests-error/eval/add-mixed-units2.less', 'unit compatibility errors are not emitted yet'],
+    ['tests-error/eval/ampersand-merge-template-invalid.less', 'accepted divergence: text prints as written (owner ruling 2026-10-09), so a merge template whose parent is escaped comma-list text renders that text instead of erroring'],
     ['tests-error/eval/color-func-invalid-color-2.less', 'color function argument errors are not emitted yet'],
     ['tests-error/eval/color-func-invalid-color.less', 'color function argument errors are not emitted yet'],
-    ['tests-error/eval/divide-mixed-units.less', 'unit compatibility errors are not emitted yet'],
-    ['tests-error/eval/multiply-mixed-units.less', 'unit compatibility errors are not emitted yet'],
     ['tests-error/eval/percentage-css-var.less', 'function argument type errors are not emitted yet'],
     ['tests-error/eval/percentage-non-number-argument.less', 'function argument type errors are not emitted yet'],
     ['tests-error/eval/svg-gradient1.less', 'svg-gradient argument validation errors are not emitted yet'],

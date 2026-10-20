@@ -145,9 +145,12 @@ function assertV3Map(json, { allowEmpty = false } = {}) {
 
 // 6. Empty output gets neither a map nor an annotation, and never crashes.
 {
-  const { css, map } = await less.render('', { sourceMap: true });
-  assert.equal(map, undefined, 'empty output gets no map');
-  assert.doesNotMatch(css, /sourceMappingURL/, 'empty output gets no annotation');
+  for (const sourceMap of [true, { sourceMapURL: 'empty.css.map' }, { sourceMapFileInline: true }]) {
+    const { css, map } = await less.render('', { sourceMap });
+    const label = JSON.stringify(sourceMap);
+    assert.equal(map, undefined, `empty output gets no map (${label})`);
+    assert.doesNotMatch(css, /sourceMappingURL/, `empty output gets no annotation (${label})`);
+  }
 }
 
 // 7. `outputSourceFiles` embeds the original source into sourcesContent.

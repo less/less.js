@@ -15,6 +15,8 @@
 
 // min()/max() with calc-like args containing var() must pass through (#3777).
 .min-max-css-vars {
+  @limit: 10px;
   a: min(100% - var(--some-var), 10px);
-  b: max(100% - var(--x), 10px);
+  b: max(100% - var(--x), @limit);
+  c: min(@limit + 5px, var(--x));
 }

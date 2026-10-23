@@ -59,8 +59,9 @@ const minMax = function (isMin, args) {
 
 /**
  * Evaluate min/max arguments lazily. When an argument contains CSS-native
- * constructs (e.g. var()) that cannot participate in Less math, fall back to
- * emitting the CSS min()/max() call unchanged (#3777).
+ * constructs (e.g. var()) that cannot participate in Less math, re-evaluate
+ * it in calc context so Less variables resolve while operations pass through,
+ * and emit the CSS min()/max() call (#3777).
  */
 function minMaxLazy(context, isMin, args) {
     const evaluated = [];
@@ -68,16 +69,27 @@ function minMaxLazy(context, isMin, args) {
         try {
             evaluated.push(args[i].eval(context));
         } catch (e) {
-            // Incompatible with Less evaluation — leave as a CSS function.
-            const rendered = args.map(a => a.toCSS(context)).join(context.compress ? ',' : ', ');
-            return new Anonymous(`${isMin ? 'min' : 'max'}(${rendered})`);
+            if (e && e.type === 'Operation') {
+                const prevMathOn = context.mathOn;
+                context.mathOn = false;
+                try {
+                    evaluated.push(args[i].eval(context));
+                } finally {
+                    context.mathOn = prevMathOn;
+                }
+            } else {
+                throw e;
+            }
         }
     }
     try {
         return minMax.call({ context }, isMin, evaluated);
     } catch (e) {
-        const rendered = args.map(a => a.toCSS(context)).join(context.compress ? ',' : ', ');
-        return new Anonymous(`${isMin ? 'min' : 'max'}(${rendered})`);
+        if (e && e.type === 'Argument' && e.message === 'incompatible types') {
+            const rendered = evaluated.map(a => a.toCSS(context)).join(context.compress ? ',' : ', ');
+            return new Anonymous(`${isMin ? 'min' : 'max'}(${rendered})`);
+        }
+        throw e;
     }
 }
 

@@ -11,4 +11,5 @@
 .min-max-css-vars {
   a: min(100% - var(--some-var), 10px);
   b: max(100% - var(--x), 10px);
+  c: min(15px, var(--x));
 }

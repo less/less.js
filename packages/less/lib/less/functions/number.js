@@ -57,17 +57,55 @@ const minMax = function (isMin, args) {
     return new Anonymous(`${isMin ? 'min' : 'max'}(${args})`);
 };
 
+/**
+ * Evaluate min/max arguments lazily. When an argument contains CSS-native
+ * constructs (e.g. var()) that cannot participate in Less math, re-evaluate
+ * it in calc context so Less variables resolve while operations pass through,
+ * and emit the CSS min()/max() call (#3777).
+ */
+function minMaxLazy(context, isMin, args) {
+    const evaluated = [];
+    for (let i = 0; i < args.length; i++) {
+        try {
+            evaluated.push(args[i].eval(context));
+        } catch (e) {
+            if (e && e.type === 'Operation') {
+                const prevMathOn = context.mathOn;
+                context.mathOn = false;
+                try {
+                    evaluated.push(args[i].eval(context));
+                } finally {
+                    context.mathOn = prevMathOn;
+                }
+            } else {
+                throw e;
+            }
+        }
+    }
+    try {
+        return minMax.call({ context }, isMin, evaluated);
+    } catch (e) {
+        if (e && e.type === 'Argument' && e.message === 'incompatible types') {
+            const rendered = evaluated.map(a => a.toCSS(context)).join(context.compress ? ',' : ', ');
+            return new Anonymous(`${isMin ? 'min' : 'max'}(${rendered})`);
+        }
+        throw e;
+    }
+}
+
+function min(context, ...args) {
+    return minMaxLazy(context, true, args);
+}
+min.evalArgs = false;
+
+function max(context, ...args) {
+    return minMaxLazy(context, false, args);
+}
+max.evalArgs = false;
+
 export default {
-    min: function(...args) {
-        try {
-            return minMax.call(this, true, args);
-        } catch (e) {}
-    },
-    max: function(...args) {
-        try {
-            return minMax.call(this, false, args);
-        } catch (e) {}
-    },
+    min,
+    max,
     convert: function (val, unit) {
         return val.convertTo(unit.value);
     },

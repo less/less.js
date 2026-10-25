@@ -1,3 +1,4 @@
-NameError: variable @a is undefined in {path}detached-ruleset-5.less on line 4, column 1:
+NameError: variable @a is undefined in {path}detached-ruleset-5.less on line 2, column 3:
+1 .mixin-definition(@b) {
+2   @a();
 3 }
-4 .mixin-definition({color: red;});

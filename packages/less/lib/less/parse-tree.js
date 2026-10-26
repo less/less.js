@@ -46,7 +46,7 @@ export default function(SourceMapBuilder) {
                     }
                     
                     // Default sourceMapBasepath to the input file's directory if not set
-                    // This matches the behavior documented and implemented in bin/lessc
+                    // This matches the behavior documented and implemented in bin/lessc.js
                     if (sourceMapOpts.sourceMapBasepath === undefined && options.filename) {
                         // Get directory from filename using string manipulation (works cross-platform)
                         const lastSlash = Math.max(options.filename.lastIndexOf('/'), options.filename.lastIndexOf('\\'));

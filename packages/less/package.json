@@ -24,7 +24,7 @@
 	"license": "Apache-2.0",
 	"type": "module",
 	"bin": {
-		"lessc": "./bin/lessc"
+		"lessc": "./bin/lessc.js"
 	},
 	"main": "./dist/less-node.cjs",
 	"exports": {

@@ -1,0 +1,678 @@
+#!/usr/bin/env node
+
+/* eslint indent: [2, 2, {"SwitchCase": 1}] */
+
+import path from 'path';
+import os from 'os';
+import { createRequire } from 'module';
+import fs from '../lib/less-node/fs.js';
+import * as utils from '../lib/less/utils.js';
+import * as Constants from '../lib/less/constants.js';
+import less from '../lib/less-node/index.js';
+
+const require = createRequire(import.meta.url);
+
+var errno;
+
+try {
+  errno = require('errno');
+} catch (err) {
+  errno = null;
+}
+
+var pluginManager = new less.PluginManager(less);
+var fileManager = new less.FileManager();
+var plugins = [];
+var queuePlugins = [];
+var args = process.argv.slice(1);
+var silent = false;
+var quiet = false;
+var verbose = false;
+var options = less.options;
+options.plugins = plugins;
+options.reUsePluginManager = true;
+var sourceMapOptions = {};
+var continueProcessing = true;
+
+var checkArgFunc = function checkArgFunc(arg, option) {
+  if (!option) {
+    console.error(''.concat(arg, ' option requires a parameter'));
+    continueProcessing = false;
+    process.exitCode = 1;
+    return false;
+  }
+
+  return true;
+};
+
+var checkBooleanArg = function checkBooleanArg(arg) {
+  var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
+
+  if (!onOff) {
+    console.error(' unable to parse '.concat(arg, ' as a boolean. use one of on/t/true/y/yes/off/f/false/n/no'));
+    continueProcessing = false;
+    process.exitCode = 1;
+    return false;
+  }
+
+  return Boolean(onOff[2]);
+};
+
+var parseVariableOption = function parseVariableOption(option, variables) {
+  var parts = option.split('=', 2);
+  variables[parts[0]] = parts[1];
+};
+
+var sourceMapFileInline = false;
+var pendingDeprecations = [];
+
+function printUsage() {
+  less.lesscHelper.printUsage();
+
+  pluginManager.Loader.printUsage(plugins);
+  continueProcessing = false;
+}
+
+function render() {
+  if (!continueProcessing) {
+    return;
+  }
+
+  var input = args[1];
+
+  if (input && input != '-') {
+    input = path.resolve(process.cwd(), input);
+  }
+
+  var output = args[2];
+  var outputbase = args[2];
+
+  if (output) {
+    output = path.resolve(process.cwd(), output);
+  }
+
+  if (options.disablePluginRule && queuePlugins.length > 0) {
+    console.error('--plugin and --disable-plugin-rule may not be used at the same time');
+    process.exitCode = 1;
+    return;
+  }
+
+  if (options.sourceMap) {
+    // Validate conflicting options
+    if (sourceMapOptions.sourceMapURL && sourceMapOptions.disableSourcemapAnnotation) {
+      console.error('You cannot provide flag --source-map-url with --source-map-no-annotation.');
+      console.error('Please remove one of those flags.');
+      process.exitcode = 1;
+      return;
+    }
+
+    // Handle explicit sourceMapFullFilename (from --source-map=filename)
+    // Normalization of other options (sourceMapBasepath, sourceMapRootpath, etc.)
+    // is handled automatically in parse-tree.js
+    if (sourceMapOptions.sourceMapFullFilename && !sourceMapFileInline) {
+      var mapFilename = path.resolve(process.cwd(), sourceMapOptions.sourceMapFullFilename);
+      var mapDir = path.dirname(mapFilename);
+
+      if (output) {
+        var outputDir = path.dirname(output);
+        // Set sourceMapOutputFilename relative to map directory
+        sourceMapOptions.sourceMapOutputFilename = path.join(
+          path.relative(mapDir, outputDir),
+          path.basename(output)
+        );
+        // Set sourceMapFilename relative to output directory (for sourceMappingURL comment)
+        sourceMapOptions.sourceMapFilename = path.join(
+          path.relative(outputDir, mapDir),
+          path.basename(sourceMapOptions.sourceMapFullFilename)
+        );
+      } else {
+        // No output filename, just use basename
+        sourceMapOptions.sourceMapOutputFilename = path.basename(output || 'output.css');
+        sourceMapOptions.sourceMapFilename = path.basename(sourceMapOptions.sourceMapFullFilename);
+      }
+    } else if (!sourceMapOptions.sourceMapFullFilename && output && !sourceMapFileInline) {
+      // No explicit sourcemap filename, derive from output
+      sourceMapOptions.sourceMapOutputFilename = path.basename(output);
+      sourceMapOptions.sourceMapFullFilename = ''.concat(output, '.map');
+    } else if (!output && !sourceMapFileInline) {
+      console.error('the sourcemap option only has an optional filename if the css filename is given');
+      console.error('consider adding --source-map-map-inline which embeds the sourcemap into the css');
+      process.exitCode = 1;
+      return;
+    }
+  }
+
+  if (!input) {
+    console.error('lessc: no input files');
+    console.error('');
+    printUsage();
+    process.exitCode = 1;
+    return;
+  }
+
+  var mkdirp;
+  var ensureDirectory = function ensureDirectory(filepath) {
+    var dir = path.dirname(filepath);
+    var cmd;
+    var existsSync = fs.existsSync || path.existsSync;
+
+    if (!existsSync(dir)) {
+      if (mkdirp === undefined) {
+        try {
+          mkdirp = require('make-dir');
+        } catch (e) {
+          mkdirp = null;
+        }
+      }
+
+      cmd = mkdirp && mkdirp.sync || fs.mkdirSync;
+      cmd(dir);
+    }
+  };
+
+  if (options.depends) {
+    if (!outputbase) {
+      console.error('option --depends requires an output path to be specified');
+      process.exitCode = 1;
+      return;
+    }
+
+    process.stdout.write(''.concat(outputbase, ': '));
+  }
+
+  if (!sourceMapFileInline) {
+    var writeSourceMap = function writeSourceMap() {
+      var output = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      var onDone = arguments.length > 1 ? arguments[1] : undefined;
+      var filename = sourceMapOptions.sourceMapFullFilename;
+      ensureDirectory(filename);
+
+      // To fix https://github.com/less/less.js/issues/3646
+      output = output.toString();
+
+      fs.writeFile(filename, output, 'utf8', function (err) {
+        if (err) {
+          var description = 'Error: ';
+
+          if (errno && errno.errno[err.errno]) {
+            description += errno.errno[err.errno].description;
+          } else {
+            description += ''.concat(err.code, ' ').concat(err.message);
+          }
+
+          console.error('lessc: failed to create file '.concat(filename));
+          console.error(description);
+          process.exitCode = 1;
+        } else {
+          less.logger.info('lessc: wrote '.concat(filename));
+        }
+
+        onDone();
+      });
+    };
+  }
+
+  var writeSourceMapIfNeeded = function writeSourceMapIfNeeded(output, onDone) {
+    if (options.sourceMap && !sourceMapFileInline) {
+      writeSourceMap(output, onDone);
+    } else {
+      onDone();
+    }
+  };
+
+  var writeOutput = function writeOutput(output, result, onSuccess) {
+    if (options.depends) {
+      onSuccess();
+    } else if (output) {
+      ensureDirectory(output);
+
+      fs.writeFile(output, result.css, {
+        encoding: 'utf8'
+      }, function (err) {
+        if (err) {
+          var description = 'Error: ';
+
+          if (errno && errno.errno[err.errno]) {
+            description += errno.errno[err.errno].description;
+          } else {
+            description += ''.concat(err.code, ' ').concat(err.message);
+          }
+
+          console.error('lessc: failed to create file '.concat(output));
+          console.error(description);
+          process.exitCode = 1;
+        } else {
+          less.logger.info('lessc: wrote '.concat(output));
+
+          onSuccess();
+        }
+      });
+    } else if (!options.depends) {
+      process.stdout.write(result.css);
+      onSuccess();
+    }
+  };
+
+  var logDependencies = function logDependencies(options, result) {
+    if (options.depends) {
+      var depends = '';
+
+      for (var i = 0; i < result.imports.length; i++) {
+        depends += ''.concat(result.imports[i], ' ');
+      }
+
+      console.log(depends);
+    }
+  };
+
+  var parseLessFile = function parseLessFile(e, data) {
+    if (e) {
+      console.error('lessc: '.concat(e.message));
+      process.exitCode = 1;
+      return;
+    }
+
+    data = data.replace(/^\uFEFF/, '');
+    options.paths = [path.dirname(input)].concat(options.paths);
+    options.filename = input;
+
+    if (options.lint) {
+      options.sourceMap = false;
+    }
+
+    sourceMapOptions.sourceMapFileInline = sourceMapFileInline;
+
+    if (options.sourceMap) {
+      options.sourceMap = sourceMapOptions;
+    }
+
+    less.logger.addListener({
+      info: function info(msg) {
+        if (verbose) {
+          console.log(msg);
+        }
+      },
+      warn: function warn(msg) {
+        // do not show warning if the silent option is used
+        if (!silent && !quiet) {
+          console.warn(msg);
+        }
+      },
+      error: function error(msg) {
+        if (!silent) {
+          console.error(msg);
+        }
+      }
+    });
+
+    less.render(data, options).then(function (result) {
+      if (!options.lint) {
+        writeOutput(output, result, function () {
+          writeSourceMapIfNeeded(result.map, function () {
+            logDependencies(options, result);
+          });
+        });
+      }
+    }, function (err) {
+      if (!options.silent) {
+        console.error(err.toString({
+          stylize: options.color && less.lesscHelper.stylize
+        }));
+      }
+
+      process.exitCode = 1;
+    });
+  };
+
+  if (input != '-') {
+    fs.readFile(input, 'utf8', parseLessFile);
+  } else {
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    var buffer = '';
+    process.stdin.on('data', function (data) {
+      buffer += data;
+    });
+    process.stdin.on('end', function () {
+      parseLessFile(false, buffer);
+    });
+  }
+}
+
+function processPluginQueue() {
+  var x = 0;
+
+  function pluginError(name) {
+    console.error('Unable to load plugin '.concat(name, ' please make sure that it is installed under or at the same level as less'));
+    process.exitCode = 1;
+  }
+
+  function pluginFinished(plugin) {
+    x++;
+    plugins.push(plugin);
+
+    if (x === queuePlugins.length) {
+      render();
+    }
+  }
+
+  queuePlugins.forEach(function (queue) {
+    var context = utils.clone(options);
+    pluginManager.Loader.loadPlugin(queue.name, process.cwd(), context, less.environment, fileManager).then(function (data) {
+      pluginFinished({
+        fileContent: data.contents,
+        filename: data.filename,
+        options: queue.options
+      });
+    }).catch(function () {
+      pluginError(queue.name);
+    });
+  });
+} // self executing function so we can return
+
+
+(function () {
+  args = args.filter(function (arg) {
+    var match;
+    match = arg.match(/^-I(.+)$/);
+
+    if (match) {
+      options.paths.push(match[1]);
+      return false;
+    }
+
+    match = arg.match(/^--?([a-z][0-9a-z-]*)(?:=(.*))?$/i);
+
+    if (match) {
+      arg = match[1];
+    } else {
+      return arg;
+    }
+
+    switch (arg) {
+      case 'v':
+      case 'version':
+        console.log('lessc '.concat(less.version.join('.'), ' (Less Compiler) [JavaScript]'));
+        continueProcessing = false;
+        break;
+
+      case 'verbose':
+        options.verbose = verbose = true;
+        break;
+
+      case 's':
+      case 'silent':
+        options.silent = silent = true;
+        break;
+
+      case 'quiet':
+        options.quiet = quiet = true;
+        break;
+
+      case 'quiet-deprecations':
+        options.quietDeprecations = true;
+        break;
+
+      case 'l':
+      case 'lint':
+        options.lint = true;
+        break;
+
+      case 'strict-imports':
+        options.strictImports = true;
+        break;
+
+      case 'h':
+      case 'help':
+        printUsage();
+        break;
+
+      case 'x':
+      case 'compress':
+        options.compress = true;
+        break;
+
+      case 'insecure':
+        options.insecure = true;
+        break;
+
+      case 'M':
+      case 'depends':
+        options.depends = true;
+        break;
+
+      case 'max-line-len':
+        if (checkArgFunc(arg, match[2])) {
+          options.maxLineLen = parseInt(match[2], 10);
+
+          if (options.maxLineLen <= 0) {
+            options.maxLineLen = -1;
+          }
+        }
+
+        break;
+
+      case 'no-color':
+        options.color = false;
+        break;
+
+      case 'js':
+        options.javascriptEnabled = true;
+        pendingDeprecations.push('Warning: Inline JavaScript (--js) is deprecated and will be removed in Less 5.x. Use Less functions or custom plugins instead. (js-eval)');
+        break;
+
+      case 'no-js':
+        // eslint-disable-next-line max-len
+        console.error('The "--no-js" argument is deprecated, as inline JavaScript is disabled by default. Use "--js" to enable inline JavaScript (not recommended).');
+        break;
+
+      case 'include-path':
+        if (checkArgFunc(arg, match[2])) {
+          // ; supported on windows.
+          // : supported on windows and linux, excluding a drive letter like C:\ so C:\file:D:\file parses to 2
+          options.paths = match[2].split(os.type().match(/Windows/) ? /:(?!\\)|;/ : ':').map(function (p) {
+            if (p) {
+              return path.resolve(process.cwd(), p);
+            }
+          });
+        }
+
+        break;
+
+      case 'line-numbers':
+        if (checkArgFunc(arg, match[2])) {
+          options.dumpLineNumbers = match[2];
+          pendingDeprecations.push('Warning: The --line-numbers option is deprecated and will be removed in Less 5.x. Use source maps instead (--source-map). (dump-line-numbers)');
+        }
+
+        break;
+
+      case 'source-map':
+        options.sourceMap = true;
+
+        if (match[2]) {
+          sourceMapOptions.sourceMapFullFilename = match[2];
+        }
+
+        break;
+
+      case 'source-map-rootpath':
+        if (checkArgFunc(arg, match[2])) {
+          sourceMapOptions.sourceMapRootpath = match[2];
+        }
+
+        break;
+
+      case 'source-map-basepath':
+        if (checkArgFunc(arg, match[2])) {
+          sourceMapOptions.sourceMapBasepath = match[2];
+        }
+
+        break;
+
+      case 'source-map-inline':
+      case 'source-map-map-inline':
+        sourceMapFileInline = true;
+        options.sourceMap = true;
+        break;
+
+      case 'source-map-include-source':
+      case 'source-map-less-inline':
+        sourceMapOptions.outputSourceFiles = true;
+        break;
+
+      case 'source-map-url':
+        if (checkArgFunc(arg, match[2])) {
+          sourceMapOptions.sourceMapURL = match[2];
+        }
+
+        break;
+
+      case 'source-map-no-annotation':
+        sourceMapOptions.disableSourcemapAnnotation = true;
+        break;
+
+      case 'rp':
+      case 'rootpath':
+        if (checkArgFunc(arg, match[2])) {
+          options.rootpath = match[2].replace(/\\/g, '/');
+        }
+
+        break;
+
+      case 'ie-compat':
+        pendingDeprecations.push('Warning: The --ie-compat option is deprecated, as it has no effect on compilation.');
+        break;
+
+      case 'relative-urls':
+        pendingDeprecations.push('Warning: The --relative-urls option has been deprecated. Use --rewrite-urls=all.');
+        options.rewriteUrls = Constants.RewriteUrls.ALL;
+        break;
+
+      case 'ru':
+      case 'rewrite-urls':
+        var m = match[2];
+
+        if (m) {
+          if (m === 'local') {
+            options.rewriteUrls = Constants.RewriteUrls.LOCAL;
+          } else if (m === 'off') {
+            options.rewriteUrls = Constants.RewriteUrls.OFF;
+          } else if (m === 'all') {
+            options.rewriteUrls = Constants.RewriteUrls.ALL;
+          } else {
+            console.error('Unknown rewrite-urls argument '.concat(m));
+            continueProcessing = false;
+            process.exitCode = 1;
+          }
+        } else {
+          options.rewriteUrls = Constants.RewriteUrls.ALL;
+        }
+
+        break;
+
+      case 'sm':
+      case 'strict-math':
+        pendingDeprecations.push('Warning: The --strict-math option has been deprecated. Use --math=strict.');
+
+        if (checkArgFunc(arg, match[2])) {
+          if (checkBooleanArg(match[2])) {
+            options.math = Constants.Math.PARENS;
+          }
+        }
+
+        break;
+
+      case 'm':
+      case 'math': {
+        let m = match[2];
+        if (checkArgFunc(arg, m)) {
+          if (m === 'always') {
+            pendingDeprecations.push('Warning: --math=always is deprecated and will be removed in Less 5.x. Use --math=parens-division (default) or --math=parens. (math-always)');
+            options.math = Constants.Math.ALWAYS;
+          } else if (m === 'parens-division') {
+            options.math = Constants.Math.PARENS_DIVISION;
+          } else if (m === 'parens' || m === 'strict') {
+            options.math = Constants.Math.PARENS;
+          } else if (m === 'strict-legacy') {
+            pendingDeprecations.push('Warning: --math=strict-legacy has been removed. Defaulting to --math=strict.');
+            options.math = Constants.Math.PARENS;
+          }
+        }
+
+        break;
+      }
+      case 'su':
+      case 'strict-units':
+        if (checkArgFunc(arg, match[2])) {
+          options.strictUnits = checkBooleanArg(match[2]);
+        }
+
+        break;
+
+      case 'global-var':
+        if (checkArgFunc(arg, match[2])) {
+          if (!options.globalVars) {
+            options.globalVars = {};
+          }
+
+          parseVariableOption(match[2], options.globalVars);
+        }
+
+        break;
+
+      case 'modify-var':
+        if (checkArgFunc(arg, match[2])) {
+          if (!options.modifyVars) {
+            options.modifyVars = {};
+          }
+
+          parseVariableOption(match[2], options.modifyVars);
+        }
+
+        break;
+
+      case 'url-args':
+        if (checkArgFunc(arg, match[2])) {
+          options.urlArgs = match[2];
+        }
+
+        break;
+
+      case 'plugin':
+        var splitupArg = match[2].match(/^([^=]+)(=(.*))?/);
+        var name = splitupArg[1];
+        var pluginOptions = splitupArg[3];
+        queuePlugins.push({
+          name: name,
+          options: pluginOptions
+        });
+        break;
+
+      case 'disable-plugin-rule':
+        options.disablePluginRule = true;
+        break;
+
+      default:
+        queuePlugins.push({
+          name: arg,
+          options: match[2],
+          default: true
+        });
+        break;
+    }
+  });
+
+  // Flush queued deprecation warnings (respects --silent, --quiet, --quiet-deprecations)
+  if (!silent && !quiet && !options.quietDeprecations) {
+    pendingDeprecations.forEach(function (msg) {
+      console.warn(msg);
+    });
+  }
+
+  if (queuePlugins.length > 0) {
+    processPluginQueue();
+  } else {
+    render();
+  }
+})();

@@ -1,0 +1,4 @@
+SyntaxError: Rulesets cannot be evaluated on a property. in {path}mixin-call-body-error.less on line 6, column 3:
+5 #my-mixin() {
+6   background-color: .my-color-mixin();
+7 }

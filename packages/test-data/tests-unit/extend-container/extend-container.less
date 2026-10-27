@@ -1,0 +1,41 @@
+// Extends inside a container query must stay scoped to that container
+// (mirrors @media semantics). Regression test for issue #4540: the extending
+// selector used to escape the container and merge into root-level rulesets.
+
+// The extending selector keeps its own declarations inside the container.
+.a {
+  color: red;
+}
+
+@container container-name {
+  .b {
+    &:extend(.a);
+    font-size: 2em;
+  }
+}
+
+// Extends within the same container block still apply.
+@container sidebar {
+  .list {
+    color: blue;
+  }
+  .item {
+    &:extend(.list);
+  }
+}
+
+// Nested selector paths compose inside the container.
+@container layout {
+  .grid {
+    color: green;
+  }
+  .wrap {
+    .inner {
+      &:extend(.grid);
+    }
+  }
+}
+
+// Root-level extends still reach selectors inside container queries.
+.x:extend(.list) {
+}

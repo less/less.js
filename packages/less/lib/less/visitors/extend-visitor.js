@@ -93,6 +93,15 @@ class ExtendFinderVisitor {
         this.allExtendsStack.length = this.allExtendsStack.length - 1;
     }
 
+    visitContainer(containerNode, visitArgs) {
+        containerNode.allExtends = [];
+        this.allExtendsStack.push(containerNode.allExtends);
+    }
+
+    visitContainerOut(containerNode) {
+        this.allExtendsStack.length = this.allExtendsStack.length - 1;
+    }
+
     visitAtRule(atRuleNode, visitArgs) {
         atRuleNode.allExtends = [];
         this.allExtendsStack.push(atRuleNode.allExtends);
@@ -486,6 +495,18 @@ class ProcessExtendsVisitor {
     }
 
     visitMediaOut(mediaNode) {
+        const lastIndex = this.allExtendsStack.length - 1;
+        this.allExtendsStack.length = lastIndex;
+    }
+
+    visitContainer(containerNode, visitArgs) {
+        let newAllExtends = containerNode.allExtends.concat(this.allExtendsStack[this.allExtendsStack.length - 1]);
+        newAllExtends = newAllExtends.concat(this.doExtendChaining(newAllExtends, containerNode.allExtends));
+        this.allExtendsStack.push(newAllExtends);
+    }
+
+    visitContainerOut(containerNode) {
+        this.checkExtendsForNonMatched(containerNode.allExtends);
         const lastIndex = this.allExtendsStack.length - 1;
         this.allExtendsStack.length = lastIndex;
     }

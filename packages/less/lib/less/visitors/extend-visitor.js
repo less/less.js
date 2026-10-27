@@ -506,6 +506,7 @@ class ProcessExtendsVisitor {
     }
 
     visitContainerOut(containerNode) {
+        this.checkExtendsForNonMatched(containerNode.allExtends);
         const lastIndex = this.allExtendsStack.length - 1;
         this.allExtendsStack.length = lastIndex;
     }

@@ -1,0 +1,21 @@
+.a {
+  color: red;
+}
+@container container-name {
+  .b {
+    font-size: 2em;
+  }
+}
+@container sidebar {
+  .list,
+  .item,
+  .x {
+    color: blue;
+  }
+}
+@container layout {
+  .grid,
+  .wrap .inner {
+    color: green;
+  }
+}

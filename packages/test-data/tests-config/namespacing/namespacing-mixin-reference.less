@@ -1,0 +1,8 @@
+.theme() {
+  foo: bar;
+}
+
+.val {
+  @alias: .theme;  // a variable may hold a mixin reference
+  foo: @alias[foo];
+}

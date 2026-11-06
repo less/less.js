@@ -352,11 +352,11 @@ console.log('packed lessc stdin, file/import, and malformed-input paths passed')
 }
 
 /**
- * `@plugin` through `less.render()` and `lessc`, in a consumer that installed the
- * optional peer. The render moves whole into the plugin's Deno sandbox, where the
- * compiler is made again from `LessCompiler.moduleIdentity`, so this fails with
- * `plugin/load-failed` if the identity goes away. Nothing here skips: a missing
- * Deno fails the render too.
+ * `@plugin` through `less.render()`, `require('less').render()` and `lessc`, in a
+ * consumer that installed the optional peer. The render moves whole into the
+ * plugin's Deno sandbox, where the compiler is made again from
+ * `LessCompiler.moduleIdentity`, so this fails with `plugin/load-failed` if the
+ * identity goes away. Nothing here skips: a missing Deno fails the render too.
  */
 function writeConsumerPluginCheck(consumerDir) {
   const checkPath = path.join(consumerDir, 'verify-plugin.mjs');
@@ -364,6 +364,7 @@ function writeConsumerPluginCheck(consumerDir) {
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import less from 'less';
 
@@ -376,6 +377,10 @@ writeFileSync(entry, source);
 
 const rendered = await less.render(source, { filename: entry });
 assert.match(rendered.css, /\\.a \\{\\s*b: 42;\\s*\\}/u, 'less.render() did not run the @plugin function');
+
+const required = createRequire(import.meta.url)('less');
+const requiredRender = await required.render(source, { filename: entry });
+assert.match(requiredRender.css, /\\.a \\{\\s*b: 42;\\s*\\}/u, "require('less').render() did not run the @plugin function");
 
 const lessc = path.join(process.cwd(), 'node_modules', '.bin', process.platform === 'win32' ? 'lessc.cmd' : 'lessc');
 const cli = spawnSync(lessc, ['entry.less'], { cwd: fixture, encoding: 'utf8', shell: process.platform === 'win32' });

@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { Compiler } from '@jesscss/compiler';
-import nodeModulesPlugin from '@jesscss/plugin-node-modules';
+import { LessCompiler } from './less-compiler.js';
 import { createLessOptions, getCompilerCacheKey, mapRenderResult } from './options.js';
 import { version } from './version.js';
 import { logger } from './logger.js';
@@ -71,11 +71,7 @@ function getCompiler(configOptions) {
   const cacheKey = getCompilerCacheKey(configOptions);
   let compiler = compilerCache.get(cacheKey);
   if (!compiler) {
-    compiler = new Compiler(configOptions, {
-      defaultPlugins: context => [nodeModulesPlugin({ basePath: context.resolutionBaseDir })],
-      scriptPluginSpecifier: '@jesscss/plugin-js',
-      scriptPluginResolveFrom: import.meta.url
-    });
+    compiler = new LessCompiler(configOptions);
     compilerCache.set(cacheKey, compiler);
   }
   return compiler;

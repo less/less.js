@@ -122,7 +122,6 @@ const expectedFailureFixtures = new Map([
     ['tests-unit/plugin-module/plugin-module.less', 'legacy CommonJS @plugin graph with require() is not supported by the optional JS runtime'],
     ['tests-unit/plugin-preeval/plugin-preeval.less', 'legacy tree visitor ABI is not supported'],
     ['tests-unit/plugin/plugin.less', '@plugin scripts execute; the Less 4 golden uses the deprecated registerPlugin/(option) lifecycle and flattened output. v5 intentionally does NOT merge nested @media (nesting is preserved by design), so that is not a gap'],
-    ['tests-unit/parse-interpolation/parse-interpolation.less', 'renders but interpolation formatting differs from Less'],
     ['tests-unit/parser-slashed-combinator/parser-slashed-combinator.less', 'slashed combinator not yet supported'],
     ['tests-unit/permissive-parse/permissive-parse.less', 'permissive legacy parser corners are not alpha-supported'],
     ['tests-unit/media/media.less', 'top-level bare @var at-rule preludes are rejected'],

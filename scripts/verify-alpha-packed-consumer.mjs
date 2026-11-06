@@ -351,6 +351,46 @@ console.log('packed lessc stdin, file/import, and malformed-input paths passed')
   return checkPath;
 }
 
+/**
+ * `@plugin` through `less.render()`, `require('less').render()` and `lessc`, in a
+ * consumer that installed the optional peer. The render moves whole into the
+ * plugin's Deno sandbox, where the compiler is made again from
+ * `LessCompiler.moduleIdentity`, so this fails with `plugin/load-failed` if the
+ * identity goes away. Nothing here skips: a missing Deno fails the render too.
+ */
+function writeConsumerPluginCheck(consumerDir) {
+  const checkPath = path.join(consumerDir, 'verify-plugin.mjs');
+  writeFileSync(checkPath, `
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import less from 'less';
+
+const fixture = path.join(process.cwd(), 'plugin-fixture');
+mkdirSync(fixture, { recursive: true });
+writeFileSync(path.join(fixture, 'answer.js'), "functions.add('plugin-answer', () => new tree.Anonymous('42'));\\n");
+const source = '@plugin "./answer.js";\\n.a { b: plugin-answer(); }\\n';
+const entry = path.join(fixture, 'entry.less');
+writeFileSync(entry, source);
+
+const rendered = await less.render(source, { filename: entry });
+assert.match(rendered.css, /\\.a \\{\\s*b: 42;\\s*\\}/u, 'less.render() did not run the @plugin function');
+
+const required = createRequire(import.meta.url)('less');
+const requiredRender = await required.render(source, { filename: entry });
+assert.match(requiredRender.css, /\\.a \\{\\s*b: 42;\\s*\\}/u, "require('less').render() did not run the @plugin function");
+
+const lessc = path.join(process.cwd(), 'node_modules', '.bin', process.platform === 'win32' ? 'lessc.cmd' : 'lessc');
+const cli = spawnSync(lessc, ['entry.less'], { cwd: fixture, encoding: 'utf8', shell: process.platform === 'win32' });
+assert.equal(cli.status, 0, cli.stderr);
+assert.match(cli.stdout, /\\.a \\{\\s*b: 42;\\s*\\}/u, 'lessc did not run the @plugin function');
+console.log('packed @plugin through less.render() and lessc passed');
+`.trimStart());
+  return checkPath;
+}
+
 function main() {
   const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'less-alpha-packed-consumer-'));
   const packDir = path.join(tempRoot, 'packs');
@@ -378,6 +418,11 @@ function main() {
     );
     assertConsumerRegistryPackages(consumerDir, [lessRoot], lessJessDependencies);
     run(process.execPath, [writeConsumerChecks(consumerDir)], consumerDir);
+    run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', `${optionalScriptPluginPeer}@${expectedJessVersion}`], consumerDir);
+    // The `deno` package's own install script, run directly: `npm rebuild deno`
+    // exits 0 and leaves no binary on npm 12.
+    run(process.execPath, ['install.cjs'], path.join(consumerDir, 'node_modules', 'deno'));
+    run(process.execPath, [writeConsumerPluginCheck(consumerDir)], consumerDir);
     console.log(`\nPacked Less ${less.version} consumer proof passed with Jess ${expectedJessVersion}.`);
   } finally {
     if (keep) {

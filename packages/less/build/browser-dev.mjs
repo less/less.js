@@ -54,7 +54,7 @@ const result = await esbuild.build({
   banner: {
     js:
       '/*! Less v5 (alpha) browser build. For live styling in the browser, follow the Less browser guide. Compiling Less in the browser is not intended for production — compile ahead of time (Node "less") for production builds. */\n' +
-      'var process = (typeof globalThis !== "undefined" && globalThis.process) || { env: {}, cwd: function () { return "/"; }, argv: [], platform: "browser" };'
+      'var process = (typeof globalThis !== "undefined" && globalThis.process) || { env: {}, cwd: function () { return "/"; }, argv: [], platform: "browser", stderr: {}, stdout: {} };'
   },
   alias: {
     fs: join(stubs, 'fs.js'),

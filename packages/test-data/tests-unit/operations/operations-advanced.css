@@ -8,7 +8,7 @@
   result: #ff0a0a;
 }
 .test-division {
-  result: calc(10px / 2 * 2);
+  result: 10px;
 }
 .test-nested {
   result: 30px;

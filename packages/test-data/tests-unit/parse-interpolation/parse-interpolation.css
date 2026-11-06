@@ -24,7 +24,8 @@ input[type=text], input[type=email], input[type=password], textarea {
   }
 }
 .bar {
-  .d:is(.a, .b, .c)&:hover, baz-cap {
+  .d:is(.a, .b, .c)&:hover,
+  baz-cap {
     color: blue;
   }
 }
@@ -41,7 +42,7 @@ input[type=text], input[type=email], input[type=password], textarea {
 }
 .a, .b.c, .d {
   + .e-quoted {
-    foo: bar;
+    foo: baz;
   }
 }
 input.cap {

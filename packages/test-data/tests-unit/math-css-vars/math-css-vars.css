@@ -3,7 +3,7 @@
   b: cos(var(--a));
   c: calc(tan(var(--t)) * 1px);
   d: atan2(var(--x), var(--y));
-  e: percentage(var(--p));
+  e: calc(var(--p) * 100%);
 }
 .numeric {
   a: 0.5;

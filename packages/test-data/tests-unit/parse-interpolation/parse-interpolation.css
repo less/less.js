@@ -67,9 +67,11 @@ input.quoted {
     background-color: blue;
   }
 }
-.fruit-cap-apple,
-.fruit-cap-satsuma,
-.fruit-cap-banana,
-.fruit-cap-pear {
-  content: "Capture";
+apple,
+satsuma,
+banana,
+pear {
+  .fruit-cap-& {
+    content: "Capture";
+  }
 }

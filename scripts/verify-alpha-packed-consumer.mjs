@@ -414,8 +414,9 @@ function main() {
     assertConsumerRegistryPackages(consumerDir, [lessRoot], lessJessDependencies);
     run(process.execPath, [writeConsumerChecks(consumerDir)], consumerDir);
     run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', '--omit=dev', `${optionalScriptPluginPeer}@${expectedJessVersion}`], consumerDir);
-    // npm runs this script on a normal install; only the install above opts out.
-    run('npm', ['rebuild', 'deno'], consumerDir);
+    // The `deno` package's own install script, run directly: `npm rebuild deno`
+    // exits 0 and leaves no binary on npm 12.
+    run(process.execPath, ['install.cjs'], path.join(consumerDir, 'node_modules', 'deno'));
     run(process.execPath, [writeConsumerPluginCheck(consumerDir)], consumerDir);
     console.log(`\nPacked Less ${less.version} consumer proof passed with Jess ${expectedJessVersion}.`);
   } finally {

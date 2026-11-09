@@ -80,3 +80,13 @@ html.lt-ie9 header {
 .detached-ruleset-scope {
   variable: global;
 }
+.detached-mixin-scope {
+  definition-mixin: used;
+}
+.detached-nested-scope .nested-trigger {
+  width: 1px;
+}
+.detached-nested-scope .nested-caller {
+  nested: definition;
+  outer: global;
+}

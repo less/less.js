@@ -111,4 +111,48 @@ header {
   .mixin-definition({direct: works;}; @b: {named: works;});
 }
 
+@trigger-value: 2px;
+#trigger-test {
+    width: @trigger-value;
+}
+@variable: global;
+@detached-ruleset: {
+    variable: @variable; 
+};
+.detached-ruleset-scope {
+    @detached-ruleset();
+    @variable: if-you-see-this-in-the-output-its-a-bug; // variables defined in caller should be ignored
+}
 
+.definition-scope-mixin() {
+  definition-mixin: used;
+}
+@mixin-scope-ruleset: {
+  .definition-scope-mixin();
+};
+.detached-mixin-scope {
+  @mixin-scope-ruleset();
+  .definition-scope-mixin() {
+    caller-mixin: if-you-see-this-in-the-output-its-a-bug;
+  }
+}
+
+.define-nested-ruleset() {
+  @nested-trigger-value: 1px;
+  .nested-trigger {
+    width: @nested-trigger-value;
+  }
+  @nested-value: definition;
+  @nested-ruleset: {
+    nested: @nested-value;
+    outer: @variable;
+  };
+  .nested-caller {
+    @nested-ruleset();
+    @nested-value: if-you-see-this-in-the-output-its-a-bug;
+    @variable: if-you-see-this-in-the-output-its-a-bug;
+  }
+}
+.detached-nested-scope {
+  .define-nested-ruleset();
+}

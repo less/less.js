@@ -1,5 +1,12 @@
 ## Change Log
 
+### v5.0.0-alpha.18 (2026-11-06)
+
+#### Changes
+
+- [#4569](https://github.com/less/less.js/pull/4569) chore(alpha): pin Jess 2.0.0-alpha.32; `@plugin` runs through `less.render()` and `lessc` (@matthew-dean)
+
+
 ### v5.0.0-alpha.17 (2026-10-30)
 
 #### Changes

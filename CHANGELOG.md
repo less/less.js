@@ -1,5 +1,12 @@
 ## Change Log
 
+### v5.0.0-alpha.19 (2026-11-14)
+
+#### Changes
+
+- [#4571](https://github.com/less/less.js/pull/4571) chore(alpha): pin Jess 2.0.0-alpha.33 (@matthew-dean)
+
+
 ### v5.0.0-alpha.18 (2026-11-06)
 
 #### Changes

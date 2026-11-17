@@ -230,8 +230,8 @@ class MixinCall extends Node {
                         } catch (e) {
                             const err = /** @type {{ index?: number, filename?: string }} */ (e);
                             throw Object.assign(err, {
-                                index: err.index === undefined ? this.getIndex() : err.index,
-                                filename: err.filename === undefined ? this.fileInfo().filename : err.filename });
+                                index: err.index ?? this.getIndex(),
+                                filename: err.filename ?? this.fileInfo().filename });
                         }
                     }
                 }

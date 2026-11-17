@@ -71,8 +71,15 @@ export default {
             throw { type: 'Argument', message: 'range() needs a numeric start and a positive numeric step' };
         }
 
-        for (let i = from; i <= to.value; i += stepValue) {
+        for (let i = from; i <= to.value;) {
             list.push(new Dimension(i, to.unit));
+            // Near the float precision limit a step can stop moving `i`
+            // part way through, e.g. range(9007199254740991, 9007199254740992).
+            const next = i + stepValue;
+            if (!(next > i)) {
+                throw { type: 'Argument', message: 'range() needs a numeric start and a positive numeric step' };
+            }
+            i = next;
         }
 
         return new Expression(list);

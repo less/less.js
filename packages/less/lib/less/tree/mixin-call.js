@@ -228,7 +228,10 @@ class MixinCall extends Node {
                             this._setVisibilityToReplacement(newRules);
                             Array.prototype.push.apply(rules, newRules);
                         } catch (e) {
-                            throw { .../** @type {object} */ (e), index: this.getIndex(), filename: this.fileInfo().filename };
+                            const err = /** @type {{ index?: number, filename?: string }} */ (e);
+                            throw Object.assign(err, {
+                                index: err.index ?? this.getIndex(),
+                                filename: err.filename ?? this.fileInfo().filename });
                         }
                     }
                 }

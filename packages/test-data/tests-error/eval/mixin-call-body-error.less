@@ -1,0 +1,11 @@
+.my-color-mixin() {
+  @result: #000;
+}
+
+#my-mixin() {
+  background-color: .my-color-mixin();
+}
+
+body {
+  #my-mixin();
+}

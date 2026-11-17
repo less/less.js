@@ -62,6 +62,15 @@ export default {
             to = start;
         }
 
+        // The loop below only ends if `i` moves up toward `to`. A step that is
+        // not a positive number (or too small to change `from`), or a string
+        // start or step (which `+=` would concatenate), would make it run
+        // until the process runs out of memory.
+        if (from <= to.value &&
+            !(typeof from === 'number' && typeof stepValue === 'number' && from + stepValue > from)) {
+            throw { type: 'Argument', message: 'range() needs a numeric start and a positive numeric step' };
+        }
+
         for (let i = from; i <= to.value; i += stepValue) {
             list.push(new Dimension(i, to.unit));
         }

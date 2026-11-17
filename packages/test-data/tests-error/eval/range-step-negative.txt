@@ -1,0 +1,4 @@
+ArgumentError: Error evaluating function `range`: range() needs a numeric start and a positive numeric step in {path}range-step-negative.less on line 2, column 10:
+1 .test-rule {
+2   width: range(1px, 5px, -1);
+3 }

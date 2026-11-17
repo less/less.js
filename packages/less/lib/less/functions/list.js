@@ -62,8 +62,24 @@ export default {
             to = start;
         }
 
-        for (let i = from; i <= to.value; i += stepValue) {
+        // The loop below only ends if `i` moves up toward `to`. A step that is
+        // not a positive number (or too small to change `from`), or a string
+        // start or step (which `+=` would concatenate), would make it run
+        // until the process runs out of memory.
+        if (from <= to.value &&
+            !(typeof from === 'number' && typeof stepValue === 'number' && from + stepValue > from)) {
+            throw { type: 'Argument', message: 'range() needs a numeric start and a positive numeric step' };
+        }
+
+        for (let i = from; i <= to.value;) {
             list.push(new Dimension(i, to.unit));
+            // Near the float precision limit a step can stop moving `i`
+            // part way through, e.g. range(9007199254740991, 9007199254740992).
+            const next = i + stepValue;
+            if (!(next > i)) {
+                throw { type: 'Argument', message: 'range() needs a numeric start and a positive numeric step' };
+            }
+            i = next;
         }
 
         return new Expression(list);

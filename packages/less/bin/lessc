@@ -59,8 +59,9 @@ var checkBooleanArg = function checkBooleanArg(arg) {
 };
 
 var parseVariableOption = function parseVariableOption(option, variables) {
-  var parts = option.split('=', 2);
-  variables[parts[0]] = parts[1];
+  var separator = option.indexOf('=');
+  var name = separator === -1 ? option : option.slice(0, separator);
+  variables[name] = separator === -1 ? undefined : option.slice(separator + 1);
 };
 
 var sourceMapFileInline = false;

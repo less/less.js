@@ -234,6 +234,7 @@ lessTester.testSyncronous({syncImport: true}, 'tests-unit/import/import');
 lessTester.testSyncronous({syncImport: true}, 'tests-config/math-strict/css');
 
 lessTester.testNoOptions();
+lessTester.testCliVariableOptions();
 lessTester.testDisablePluginRule();
 lessTester.testJSImport();
 await lessTester.testWarnings();

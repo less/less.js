@@ -1,5 +1,6 @@
 /* jshint latedef: nofunc */
 import { createRequire } from 'module';
+import { spawnSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import logger from '../lib/less/logger.js';
@@ -827,6 +828,63 @@ export default function(testFilter) {
         less.render(str, options, callback);
     }
 
+    function testCliVariableOptions() {
+        if (oneTestOnly && 'CLI' !== oneTestOnly) {
+            return;
+        }
+        const cli = require.resolve('../bin/lessc');
+        const cases = [
+            {
+                name: 'modify-var preserves an attribute selector',
+                args: ["--modify-var=shell_selector='html[theme=dark]'"],
+                input: '@shell_selector: "html"; @shell: (~"@{shell_selector}"); @{shell} { color: red; }',
+                css: 'html[theme=dark] {\n  color: red;\n}\n'
+            },
+            {
+                name: 'global-var preserves multiple equals signs',
+                args: ['--global-var=value="a=b=c=="'],
+                input: 'a { content: @value; }',
+                css: 'a {\n  content: "a=b=c==";\n}\n'
+            },
+            {
+                name: 'modify-var preserves equals signs while overriding a declaration',
+                args: ['--modify-var=value="=a=b="'],
+                input: '@value: "original"; a { content: @value; }',
+                css: 'a {\n  content: "=a=b=";\n}\n'
+            },
+            {
+                name: 'global-var still allows a declaration to override its value',
+                args: ['--global-var=value="a=b"'],
+                input: '@value: "original"; a { content: @value; }',
+                css: 'a {\n  content: "original";\n}\n'
+            },
+            {
+                name: 'modify-var still handles ordinary values',
+                args: ['--modify-var=value=red'],
+                input: 'a { color: @value; }',
+                css: 'a {\n  color: red;\n}\n'
+            },
+            {
+                name: 'modify-var still handles empty strings',
+                args: ['--modify-var=value=""'],
+                input: 'a { content: @value; }',
+                css: 'a {\n  content: "";\n}\n'
+            }
+        ];
+        for (const item of cases) {
+            totalTests++;
+            const result = spawnSync(process.execPath, [cli, '--no-color', ...item.args, '-'], {
+                input: item.input,
+                encoding: 'utf8'
+            });
+            if (result.status === 0 && result.stdout === item.css) {
+                ok('- CLI - ' + item.name + ': OK\n');
+            } else {
+                fail('- CLI - ' + item.name + ': FAIL\n' + (result.error || result.stderr || result.stdout));
+            }
+        }
+    }
+
     function testNoOptions() {
         if (oneTestOnly && 'Integration' !== oneTestOnly) {
             return;
@@ -942,6 +1000,7 @@ export default function(testFilter) {
         testImports: testImports,
         testEmptySourcemap: testEmptySourcemap,
         testNoOptions: testNoOptions,
+        testCliVariableOptions: testCliVariableOptions,
         testDisablePluginRule: testDisablePluginRule,
         testJSImport: testJSImport,
         finished: finished

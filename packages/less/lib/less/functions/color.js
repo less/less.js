@@ -4,6 +4,7 @@ import Quoted from '../tree/quoted.js';
 import Anonymous from '../tree/anonymous.js';
 import Expression from '../tree/expression.js';
 import Operation from '../tree/operation.js';
+import Keyword from '../tree/keyword.js';
 let colorFunctions;
 
 function clamp(val) {
@@ -427,12 +428,17 @@ colorFunctions = {
         return new Anonymous(color.toARGB());
     },
     color: function(c) {
+        // CSS color(), e.g. color(display-p3 1 1 1), should be kept as is
+        if (arguments.length === 1 && c instanceof Expression && c.value[0] instanceof Keyword &&
+            /^(from|srgb|srgb-linear|display-p3|display-p3-linear|a98-rgb|prophoto-rgb|rec2020|xyz|xyz-d50|xyz-d65|--.+)$/i.test(c.value[0].value)) {
+            return null;
+        }
         if ((c instanceof Quoted) &&
             (/^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3,4})$/i.test(c.value))) {
             const val = c.value.slice(1);
             return new Color(val, undefined, `#${val}`);
         }
-        if ((c instanceof Color) || (c = Color.fromKeyword(c.value))) {
+        if ((c instanceof Color) || (typeof c.value === 'string' && (c = Color.fromKeyword(c.value)))) {
             c.value = undefined;
             return c;
         }

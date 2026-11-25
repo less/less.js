@@ -125,6 +125,11 @@
   color-quoted-keyword: #dda0dd;
   color-color: #dda0dd;
   color-keyword: #dda0dd;
+  color-css: color(display-p3 1 0.5 0);
+  color-css-p3-linear: color(display-p3-linear 1 0.5 0);
+  color-css-alpha: color(srgb 0.5 0 1 / 50%);
+  color-css-relative: color(from red srgb r g b);
+  color-css-custom: color(--custom 1 0 0);
   tint: #898989;
   tint-full: #ffffff;
   tint-percent: #898989;
